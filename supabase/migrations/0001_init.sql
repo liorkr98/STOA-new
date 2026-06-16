@@ -42,7 +42,6 @@ create table reports (
   type content_type not null,
   title text,
   summary text,
-  body text,
   status report_status not null default 'draft',
   access access_type not null default 'free',
   price numeric(10, 2),
@@ -58,6 +57,14 @@ create table reports (
 create index reports_author_idx on reports (author_id, created_at desc);
 create index reports_status_idx on reports (status, published_at desc);
 create index reports_ticker_idx on reports (ticker);
+
+-- The long-form body lives in its own table so Row Level Security can gate the
+-- paid/subscriber content at the database layer. Report rows stay public
+-- (title, summary, ticker, prediction) as the teaser; the body is access-checked.
+create table report_bodies (
+  report_id uuid primary key references reports (id) on delete cascade,
+  body text
+);
 
 -- ── Predictions (the investment card) ────────────────────────────────────────
 create table predictions (

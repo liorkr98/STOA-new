@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
-import { publishReport, saveDraft, type ComposeInput } from "@/app/actions/reports";
+import { publishReport, saveDraft } from "@/app/actions/reports";
+import type { ComposeInput } from "@/lib/types";
 import type { AccessType, ContentType, Direction } from "@/lib/types";
 
 const inputClass =

@@ -118,6 +118,31 @@ export interface Subscription {
   renews_at: string;
 }
 
+export type AuthState = { error?: string } | null;
+
+export interface ComposeInput {
+  id?: string;
+  type: ContentType;
+  title?: string;
+  summary?: string;
+  body?: string;
+  access: AccessType;
+  price?: number | null;
+  ticker?: string | null;
+  direction?: Direction;
+  target_price?: number | null;
+  horizon_days?: number;
+}
+
+export interface SpendResult {
+  status?: string;
+  spent?: number;
+  platform_fee?: number;
+  author_share?: number;
+  new_balance?: number;
+  error?: string;
+}
+
 export interface Comment {
   id: string;
   report_id: string;

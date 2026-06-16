@@ -2,15 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-
-export interface SpendResult {
-  status?: string;
-  spent?: number;
-  platform_fee?: number;
-  author_share?: number;
-  new_balance?: number;
-  error?: string;
-}
+import type { SpendResult } from "@/lib/types";
 
 export async function purchaseReport(reportId: string): Promise<SpendResult> {
   const supabase = await createClient();

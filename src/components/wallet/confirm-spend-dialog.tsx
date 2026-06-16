@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CheckCircle, X } from "@phosphor-icons/react";
 import { useEffect } from "react";
 import { usd } from "@/lib/format";
-import type { SpendResult } from "@/app/actions/wallet";
+import type { SpendResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
 /**

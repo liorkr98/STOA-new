@@ -1,13 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ContentType, Report } from "@/lib/types";
+import type { ContentType, Prediction, Report } from "@/lib/types";
 
 const SELECT =
   "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
 
 function normalize(row: Record<string, unknown>): Report {
-  const prediction = Array.isArray(row.prediction)
-    ? (row.prediction[0] ?? null)
-    : (row.prediction ?? null);
+  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
+  const prediction = (raw ?? null) as Prediction | null;
   return { ...(row as unknown as Report), prediction };
 }
 
@@ -54,9 +53,23 @@ export async function listFeedFromAnalysts(
 }
 
 export async function getReport(id: string): Promise<Report | null> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
-  return data ? normalize(data as Record<string, unknown>) : null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
+    if (!data) return null;
+    const report = normalize(data as Record<string, unknown>);
+    // Body lives in report_bodies and is gated by RLS: it only comes back if the
+    // viewer is allowed to read it (free report, author, unlock, or subscriber).
+    const { data: bodyRow } = await supabase
+      .from("report_bodies")
+      .select("body")
+      .eq("report_id", id)
+      .maybeSingle();
+    report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+    return report;
+  } catch {
+    return null;
+  }
 }
 
 export async function listByAuthor(

@@ -108,6 +108,11 @@ async function main() {
       const target =
         direction === "hold" ? null : Math.round(lock * (direction === "short" ? 0.9 : 1.12) * 100) / 100;
 
+      const body =
+        type === "research"
+          ? `This is demo research for ${ticker}. The thesis: positioning is offside and the next catalyst resets expectations. Entry was locked at publication; the call is graded by the market.\n\nRisk: a broad market drawdown overwhelms the single-name thesis. Sizing accordingly.`
+          : `Quick ${direction} on ${ticker} with a ${horizon}-day horizon.`;
+
       const { data: report } = await db
         .from("reports")
         .insert({
@@ -121,10 +126,6 @@ async function main() {
             type === "research"
               ? `Why ${ticker} is mispriced over the next ${horizon} days, and where the risk lives.`
               : `A ${horizon}-day ${direction} on ${ticker}.`,
-          body:
-            type === "research"
-              ? `This is demo research for ${ticker}. The thesis: positioning is offside and the next catalyst resets expectations. Entry was locked at publication; the call is graded by the market.\n\nRisk: a broad market drawdown overwhelms the single-name thesis. Sizing accordingly.`
-              : `Quick ${direction} on ${ticker} with a ${horizon}-day horizon.`,
           status: "published",
           access: Math.random() < 0.25 ? "paid" : "free",
           price: a.report,
@@ -138,6 +139,7 @@ async function main() {
         .single();
 
       if (!report) continue;
+      await db.from("report_bodies").insert({ report_id: (report as { id: string }).id, body });
 
       const outcome = isResolved
         ? gradeOutcome({ direction, lock_price: lock, target_price: target, resolved_price: resolvedPrice! })

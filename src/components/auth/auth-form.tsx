@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { signIn, signUp, type AuthState } from "@/app/actions/auth";
+import { signIn, signUp } from "@/app/actions/auth";
+import type { AuthState } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
 
 function SubmitButton({ label }: { label: string }) {

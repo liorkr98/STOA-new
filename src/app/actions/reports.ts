@@ -4,21 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
-import type { AccessType, ContentType, Direction } from "@/lib/types";
-
-export interface ComposeInput {
-  id?: string;
-  type: ContentType;
-  title?: string;
-  summary?: string;
-  body?: string;
-  access: AccessType;
-  price?: number | null;
-  ticker?: string | null;
-  direction?: Direction;
-  target_price?: number | null;
-  horizon_days?: number;
-}
+import type { ComposeInput } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -37,24 +23,27 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     type: input.type,
     title: input.title ?? null,
     summary: input.summary ?? null,
-    body: input.body ?? null,
     access: input.access,
     price: input.access === "paid" ? (input.price ?? null) : null,
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
     status: "draft" as const,
   };
 
-  if (input.id) {
-    await supabase.from("reports").update(payload).eq("id", input.id);
-    return { id: input.id };
+  let reportId = input.id;
+  if (reportId) {
+    await supabase.from("reports").update(payload).eq("id", reportId);
+  } else {
+    const { data, error } = await supabase.from("reports").insert(payload).select("id").single();
+    if (error) throw new Error(error.message);
+    reportId = (data as { id: string }).id;
   }
-  const { data, error } = await supabase
-    .from("reports")
-    .insert(payload)
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-  return { id: (data as { id: string }).id };
+
+  // Body is stored separately so RLS can gate paid/subscriber content.
+  await supabase
+    .from("report_bodies")
+    .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
+
+  return { id: reportId };
 }
 
 /**

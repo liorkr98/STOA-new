@@ -2,11 +2,8 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import {
-  purchaseReport,
-  subscribeToAnalyst,
-  type SpendResult,
-} from "@/app/actions/wallet";
+import { purchaseReport, subscribeToAnalyst } from "@/app/actions/wallet";
+import type { SpendResult } from "@/lib/types";
 
 export function usePurchaseReport(reportId: string) {
   const router = useRouter();
