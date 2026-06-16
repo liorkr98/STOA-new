@@ -1,0 +1,17 @@
+---
+description: Stoa project conventions (always on)
+alwaysApply: true
+---
+
+Read `AGENTS.md` and `design-system/MASTER.md` for full context. Key rules:
+
+- Stack: Next.js App Router + React 19 + TypeScript + Tailwind v4 + Supabase. No Base44 code.
+- The only place that talks to Supabase is `src/lib/db/*`. Components and hooks import from there.
+- Server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, market-data keys, `CRON_SECRET`) never reach
+  the client and are never `NEXT_PUBLIC_*`.
+- One accent color: `--accent` (signal blue). Green/red are reserved for market sentiment only
+  (direction, gain/loss, grade tags). Never on generic UI.
+- Fonts: Space Grotesk for display + numbers, Manrope for body/UI.
+- Depth = hairline borders + surface tints. No drop shadows. Card radius 12px, buttons 8px.
+- Zero em-dashes in user-visible text.
+- `npm run lint` and `npm run typecheck` must pass before committing. No narration comments.
