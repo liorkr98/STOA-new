@@ -66,23 +66,33 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
     input.type !== "short_post" && input.ticker && input.direction;
 
   if (wantsPrediction) {
-    const ticker = input.ticker!.toUpperCase();
-    const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
-    const horizon = input.horizon_days ?? 30;
-    const resolvesAt = new Date(Date.now() + horizon * 86_400_000).toISOString();
+    const { data: existing } = await supabase
+      .from("predictions")
+      .select("id")
+      .eq("report_id", id)
+      .maybeSingle();
 
-    await supabase.from("predictions").insert({
-      report_id: id,
-      author_id: userId,
-      ticker,
-      direction: input.direction,
-      lock_price: quote.price,
-      target_price: input.target_price ?? null,
-      horizon_days: horizon,
-      resolves_at: resolvesAt,
-      bench_lock_price: bench.price,
-      outcome: "open",
-    });
+    // Investment cards are immutable once created; re-publish only updates the report.
+    if (!existing) {
+      const ticker = input.ticker!.toUpperCase();
+      const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
+      const horizon = input.horizon_days ?? 30;
+      const resolvesAt = new Date(Date.now() + horizon * 86_400_000).toISOString();
+
+      const { error: predErr } = await supabase.from("predictions").insert({
+        report_id: id,
+        author_id: userId,
+        ticker,
+        direction: input.direction,
+        lock_price: quote.price,
+        target_price: input.target_price ?? null,
+        horizon_days: horizon,
+        resolves_at: resolvesAt,
+        bench_lock_price: bench.price,
+        outcome: "open",
+      });
+      if (predErr) throw new Error(predErr.message);
+    }
   }
 
   revalidatePath("/discover");

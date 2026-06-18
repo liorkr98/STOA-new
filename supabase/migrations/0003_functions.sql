@@ -198,9 +198,17 @@ begin
   if v_buyer is null then raise exception 'not authenticated'; end if;
   if v_buyer = p_analyst_id then raise exception 'cannot subscribe to yourself'; end if;
 
+  update subscriptions
+  set status = 'expired'
+  where subscriber_id = v_buyer
+    and analyst_id = p_analyst_id
+    and status = 'active'
+    and renews_at < now();
+
   if exists (
     select 1 from subscriptions
-    where subscriber_id = v_buyer and analyst_id = p_analyst_id and status = 'active'
+    where subscriber_id = v_buyer and analyst_id = p_analyst_id
+      and status = 'active' and renews_at > now()
   ) then
     return jsonb_build_object('status', 'already_subscribed');
   end if;

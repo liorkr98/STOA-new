@@ -40,6 +40,7 @@ npm install
    - `supabase/migrations/0003_functions.sql`
    - `supabase/migrations/0004_storage.sql`
    - `supabase/migrations/0005_rating_expiry_indexes.sql`
+   - `supabase/migrations/0006_fix_subscription_renewal.sql`
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
