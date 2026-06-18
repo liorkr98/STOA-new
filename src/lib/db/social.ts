@@ -19,6 +19,7 @@ export async function isSubscribed(subscriberId: string, analystId: string): Pro
     .eq("subscriber_id", subscriberId)
     .eq("analyst_id", analystId)
     .eq("status", "active")
+    .gt("renews_at", new Date().toISOString())
     .maybeSingle();
   return Boolean(data);
 }

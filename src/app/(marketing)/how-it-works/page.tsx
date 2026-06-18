@@ -20,10 +20,11 @@ export default function HowItWorksPage() {
           When the timeframe ends, Stoa pulls the closing price and the S&amp;P 500 return over the
           same window. The call is graded Hit, Near, Partial, or Miss.
         </Section>
-        <Section title="3. Three honest pillars">
-          The 0-100 score blends a sample-adjusted win rate (Wilson lower bound), profit factor
-          (average win divided by average loss), and alpha versus the benchmark. It is mapped to a
-          600-1400 rating for display.
+        <Section title="3. Four honest pillars">
+          The 0-100 score blends a time-weighted win rate (Hit = full credit, Near = half),
+          profit factor, alpha versus the S&amp;P 500, and a consistency check for losing
+          streaks. It maps to a 600-1400 rating for display. Recent calls count more than old
+          ones.
         </Section>
         <Section title="4. Tiers reward proven edge">
           Tiers from Building to Legend require both a minimum score and a minimum number of

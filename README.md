@@ -39,6 +39,7 @@ npm install
    - `supabase/migrations/0002_rls.sql`
    - `supabase/migrations/0003_functions.sql`
    - `supabase/migrations/0004_storage.sql`
+   - `supabase/migrations/0005_rating_expiry_indexes.sql`
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
@@ -76,9 +77,9 @@ sign-in, the feed, profiles, and Studio need the backend set up.
 
 - When an analyst publishes a call, the entry price is locked from the market feed server-side
   (`src/app/actions/reports.ts`). The SPY price is captured for alpha.
-- The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) finds calls
-  whose timeframe has ended, pulls the closing price and benchmark, grades the call, and recomputes
-  the analyst's score and tier.
+- The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) expires
+  lapsed subscriptions, finds calls whose timeframe has ended, pulls prices in batched Finnhub
+  requests, grades each call, and recomputes score, rating, and tier.
 - Run it manually any time:
 
 ```bash

@@ -32,31 +32,38 @@ create policy reports_delete on reports
   for delete using (author_id = auth.uid());
 
 -- ── Report bodies: the actual paywall. Readable only for free reports, the
--- author, an unlock (pay-per-report), or an active subscription. ──────────────
+-- author, a pay-per-report unlock, or an active subscription (subscriber-only). ─
 create policy bodies_read on report_bodies
   for select using (
     exists (
       select 1 from reports r
       where r.id = report_bodies.report_id
-        and r.status = 'published'
         and (
-          r.access = 'free'
-          or r.author_id = auth.uid()
-          or exists (
-            select 1 from report_unlocks u
-            where u.report_id = r.id and u.user_id = auth.uid()
-          )
-          or exists (
-            select 1 from subscriptions s
-            where s.analyst_id = r.author_id
-              and s.subscriber_id = auth.uid()
-              and s.status = 'active'
+          r.author_id = auth.uid()
+          or (
+            r.status = 'published'
+            and (
+              r.access = 'free'
+              or (
+                r.access = 'paid'
+                and exists (
+                  select 1 from report_unlocks u
+                  where u.report_id = r.id and u.user_id = auth.uid()
+                )
+              )
+              or (
+                r.access = 'subscribers'
+                and exists (
+                  select 1 from subscriptions s
+                  where s.analyst_id = r.author_id
+                    and s.subscriber_id = auth.uid()
+                    and s.status = 'active'
+                    and s.renews_at > now()
+                )
+              )
+            )
           )
         )
-    )
-    or exists (
-      select 1 from reports r
-      where r.id = report_bodies.report_id and r.author_id = auth.uid()
     )
   );
 create policy bodies_write on report_bodies

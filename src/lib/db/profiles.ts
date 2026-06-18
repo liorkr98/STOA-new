@@ -24,7 +24,7 @@ export async function listTopAnalysts(limit = 12): Promise<Profile[]> {
       .from("profiles")
       .select("*")
       .eq("role", "analyst")
-      .order("score", { ascending: false })
+      .order("rating", { ascending: false })
       .limit(limit);
     return (data as Profile[]) ?? [];
   } catch {
@@ -38,7 +38,7 @@ export async function searchProfiles(query: string, limit = 8): Promise<Profile[
     .from("profiles")
     .select("*")
     .or(`display_name.ilike.%${query}%,handle.ilike.%${query}%`)
-    .order("score", { ascending: false })
+    .order("rating", { ascending: false })
     .limit(limit);
   return (data as Profile[]) ?? [];
 }

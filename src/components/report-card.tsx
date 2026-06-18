@@ -8,7 +8,7 @@ import {
   Eye,
 } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/design/cn";
-import { compact } from "@/lib/format";
+import { compact, analystRating } from "@/lib/format";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { Tag } from "./ui/tag";
@@ -45,8 +45,8 @@ export function ReportCard({ report }: { report: Report }) {
         </Link>
         <div className="flex items-center gap-2">
           {author && (
-            <span className="num text-sm font-semibold text-text-mute" title="Analyst score">
-              {author.score}
+            <span className="num text-sm font-semibold text-text-mute" title="Analyst rating">
+              {analystRating(author)}
             </span>
           )}
           <Tag>{typeLabel[report.type]}</Tag>

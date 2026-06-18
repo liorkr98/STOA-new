@@ -89,7 +89,15 @@ async function main() {
     await db.from("reports").delete().eq("author_id", id);
 
     const totalCalls = Math.floor(rand(16, 30));
-    const allPreds: { direction: (typeof DIRECTIONS)[number]; lock_price: number; resolved_price: number | null; target_price: number | null; outcome: string; benchmark_pct: number | null }[] = [];
+    const allPreds: {
+      direction: (typeof DIRECTIONS)[number];
+      lock_price: number;
+      resolved_price: number | null;
+      target_price: number | null;
+      outcome: string;
+      benchmark_pct: number | null;
+      resolves_at: string;
+    }[] = [];
 
     for (let i = 0; i < totalCalls; i++) {
       const ticker = pick(TICKERS);
@@ -147,6 +155,10 @@ async function main() {
       const benchmark = isResolved ? Math.round(rand(-4, 8) * 100) / 100 : null;
       const ret = isResolved ? callReturn(direction, lock, resolvedPrice) : null;
 
+      const resolvesAt = isResolved
+        ? daysAgo(ageDays - horizon)
+        : daysAhead(horizon - (ageDays % horizon));
+
       await db.from("predictions").insert({
         report_id: (report as { id: string }).id,
         author_id: id,
@@ -155,7 +167,7 @@ async function main() {
         lock_price: lock,
         target_price: target,
         horizon_days: horizon,
-        resolves_at: isResolved ? daysAgo(ageDays - horizon) : daysAhead(horizon - (ageDays % horizon)),
+        resolves_at: resolvesAt,
         resolved_price: resolvedPrice,
         bench_lock_price: Math.round(rand(380, 520) * 100) / 100,
         benchmark_pct: benchmark,
@@ -164,7 +176,15 @@ async function main() {
         created_at: daysAgo(ageDays),
       });
 
-      allPreds.push({ direction, lock_price: lock, resolved_price: resolvedPrice, target_price: target, outcome, benchmark_pct: benchmark });
+      allPreds.push({
+        direction,
+        lock_price: lock,
+        resolved_price: resolvedPrice,
+        target_price: target,
+        outcome,
+        benchmark_pct: benchmark,
+        resolves_at: resolvesAt,
+      });
     }
 
     // A couple of short posts (no card).
@@ -187,15 +207,23 @@ async function main() {
         resolved_price: p.resolved_price,
         benchmark_pct: p.benchmark_pct,
         outcome: p.outcome as never,
+        resolves_at: p.resolves_at,
       })),
     );
     const tier = computeTier(result.score, result.total);
     await db
       .from("profiles")
-      .update({ score: result.score, tier: tier.key, followers_count: Math.floor(rand(200, 14000)) })
+      .update({
+        score: result.score,
+        rating: result.rating,
+        tier: tier.key,
+        followers_count: Math.floor(rand(200, 14000)),
+      })
       .eq("id", id);
 
-    console.log(`Seeded @${a.handle}: score ${result.score} (${tier.label}), ${result.total} resolved calls.`);
+    console.log(
+      `Seeded @${a.handle}: rating ${result.rating} (score ${result.score}, ${tier.label}), ${result.total} resolved calls.`,
+    );
   }
 
   console.log("\nDone. Sign in with any analyst, e.g. maren_vos@stoa.demo /", PASSWORD);

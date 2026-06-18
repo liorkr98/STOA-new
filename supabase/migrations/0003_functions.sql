@@ -243,3 +243,17 @@ begin
   );
 end;
 $$;
+
+-- ── Expire lapsed subscriptions (called by the hourly cron) ───────────────────
+create or replace function expire_subscriptions()
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  v_count int;
+begin
+  update subscriptions
+  set status = 'expired'
+  where status = 'active' and renews_at < now();
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;

@@ -1,30 +1,39 @@
 /**
- * Stoa Scoring Engine (TypeScript port + Elo blend).
+ * Stoa Scoring Engine v3.
  *
- * A 0-100 analyst score built from four honest, defensible pillars, then mapped
- * onto a 600-1400 Elo-style rating for display.
+ * Composite 0-100 skill score mapped to a 600-1400 display rating.
  *
- *   1. Win Rate      - Wilson lower bound, penalises tiny samples honestly.
- *   2. Profit Factor - avg_win / avg_loss, captures reward/risk edge.
- *   3. Alpha         - average excess return vs the S&P benchmark.
- *   4. Sample ramp   - logarithmic confidence ramp on the composite.
- *
- * Why not raw Elo alone: Elo assumes a zero-sum opponent and a 50% baseline,
- * which ignores market regime (a bull market inflates every long). We score the
- * real distribution of outcomes, then express it on the Elo scale people expect.
+ *   1. Win rate      - Wilson lower bound on time-weighted outcomes
+ *                      (Hit = 1, Near = 0.5, Partial/Miss = 0)
+ *   2. Profit factor - decay-weighted avg win / avg loss
+ *   3. Alpha         - excess return vs SPY over the same window
+ *   4. Sample ramp   - logarithmic confidence on small samples
+ *   5. Penalties     - consecutive-miss streak + outcome drawdown
  */
 
 import type { Direction, Outcome, Prediction } from "@/lib/types";
 
 const Z = 1.645; // 90% confidence
+const DECAY_LAMBDA = 0.003; // ~8-month half-life for recent-call emphasis
 
 function wilsonLower(hits: number, total: number): number {
-  if (total === 0) return 0;
-  const p = hits / total;
+  if (total <= 0) return 0;
+  const p = Math.min(1, Math.max(0, hits / total));
   const denom = 1 + (Z * Z) / total;
   const centre = p + (Z * Z) / (2 * total);
   const margin = Z * Math.sqrt((p * (1 - p)) / total + (Z * Z) / (4 * total * total));
   return Math.max(0, (centre - margin) / denom);
+}
+
+/** Maps 0-100 composite to the public 600-1400 scale. */
+export function scoreToRating(score: number): number {
+  const clamped = Math.min(100, Math.max(0, score));
+  return Math.round(600 + (clamped / 100) * 800);
+}
+
+/** Ring fill percent from a 600-1400 rating. */
+export function ratingToPercent(rating: number): number {
+  return Math.min(100, Math.max(0, ((rating - 600) / 800) * 100));
 }
 
 /** Direction-aware signed return %, or null if not computable. */
@@ -37,7 +46,20 @@ export function callReturn(
   const raw = (resolvedPrice - lockPrice) / lockPrice;
   if (direction === "long") return raw * 100;
   if (direction === "short") return -raw * 100;
-  return null; // hold contributes accuracy only, not profit factor
+  return null;
+}
+
+/** Fractional win credit: Hit = 1, Near = 0.5, Partial/Miss = 0. */
+export function outcomeWeight(outcome: Outcome): number {
+  if (outcome === "hit") return 1;
+  if (outcome === "near") return 0.5;
+  return 0;
+}
+
+function timeWeight(resolvesAt: string | null | undefined): number {
+  if (!resolvesAt) return 1;
+  const daysAgo = (Date.now() - new Date(resolvesAt).getTime()) / 86_400_000;
+  return Math.exp(-DECAY_LAMBDA * Math.max(0, daysAgo));
 }
 
 /**
@@ -62,7 +84,6 @@ export function gradeOutcome(p: {
   if (ret <= -1.5) return "miss";
   if (Math.abs(ret) < 1.5) return "partial";
 
-  // ret > 0: moved the right way. Did it reach target?
   if (p.target_price) {
     const reached =
       p.direction === "long"
@@ -80,6 +101,7 @@ export interface ScoreResult {
   rating: number;
   total: number;
   hits: number;
+  nearHits: number;
   misses: number;
   winRate: number | null;
   wilsonWinRate: number | null;
@@ -90,42 +112,97 @@ export interface ScoreResult {
     winRate: number;
     profitFactor: number;
     alpha: number | null;
+    consistency: number;
   };
 }
 
 type Resolved = Pick<
   Prediction,
-  "direction" | "lock_price" | "resolved_price" | "benchmark_pct" | "outcome"
+  | "direction"
+  | "lock_price"
+  | "resolved_price"
+  | "benchmark_pct"
+  | "outcome"
+  | "resolves_at"
 >;
 
+function streakPenalty(sorted: Resolved[]): number {
+  let maxStreak = 0;
+  let current = 0;
+  for (const p of sorted) {
+    if (p.outcome === "miss") {
+      current++;
+      maxStreak = Math.max(maxStreak, current);
+    } else {
+      current = 0;
+    }
+  }
+  return Math.min(0.1, maxStreak * 0.02);
+}
+
+function drawdownPenalty(sorted: Resolved[]): number {
+  let peak = 0;
+  let running = 0;
+  let maxDd = 0;
+  for (const p of sorted) {
+    running += outcomeWeight(p.outcome) - 0.5;
+    peak = Math.max(peak, running);
+    maxDd = Math.max(maxDd, peak - running);
+  }
+  return Math.min(0.05, (maxDd / 6) * 0.05);
+}
+
 export function computeScore(predictions: Resolved[]): ScoreResult {
-  const resolved = predictions.filter(
-    (p) => p.outcome !== "open" && p.lock_price && p.resolved_price != null,
-  );
+  const resolved = predictions
+    .filter((p) => p.outcome !== "open" && p.lock_price && p.resolved_price != null)
+    .sort((a, b) => +new Date(a.resolves_at) - +new Date(b.resolves_at));
+
   const total = resolved.length;
   if (total === 0) return nullResult();
 
-  const hits = resolved.filter((p) => p.outcome === "hit" || p.outcome === "near").length;
-  const misses = total - hits;
-  const winRate = hits / total;
-  const wilson = wilsonLower(hits, total);
+  const fullHits = resolved.filter((p) => p.outcome === "hit").length;
+  const nearHits = resolved.filter((p) => p.outcome === "near").length;
+  const misses = resolved.filter((p) => p.outcome === "miss" || p.outcome === "partial").length;
+
+  let weightedHits = 0;
+  let weightedTotal = 0;
+  for (const p of resolved) {
+    const w = timeWeight(p.resolves_at);
+    weightedHits += w * outcomeWeight(p.outcome);
+    weightedTotal += w;
+  }
+
+  const winRate = weightedTotal > 0 ? weightedHits / weightedTotal : 0;
+  const wilson = wilsonLower(weightedHits, weightedTotal);
   const winRateScore = wilson * 100;
 
-  const returns = resolved
-    .map((p) => callReturn(p.direction, p.lock_price, p.resolved_price))
-    .filter((v): v is number => v !== null);
+  let winSum = 0;
+  let winWeight = 0;
+  let lossSum = 0;
+  let lossWeight = 0;
+  const returns: number[] = [];
 
-  const wins = returns.filter((r) => r > 0);
-  const losses = returns.filter((r) => r < 0);
-  const avgWin = wins.length ? wins.reduce((a, b) => a + b, 0) / wins.length : 0;
-  const avgLoss = losses.length
-    ? Math.abs(losses.reduce((a, b) => a + b, 0) / losses.length)
-    : null;
+  for (const p of resolved) {
+    const w = timeWeight(p.resolves_at);
+    const ret = callReturn(p.direction, p.lock_price, p.resolved_price);
+    if (ret === null) continue;
+    returns.push(ret);
+    if (ret > 0) {
+      winSum += ret * w;
+      winWeight += w;
+    } else if (ret < 0) {
+      lossSum += Math.abs(ret) * w;
+      lossWeight += w;
+    }
+  }
+
+  const avgWin = winWeight > 0 ? winSum / winWeight : 0;
+  const avgLoss = lossWeight > 0 ? lossSum / lossWeight : null;
 
   const profitFactor =
     avgLoss != null && avgLoss > 0
       ? Math.min(10, avgWin / avgLoss)
-      : wins.length
+      : winWeight > 0
         ? 5
         : 0;
   const pfScore = Math.min(100, Math.max(0, (profitFactor / 4) * 100));
@@ -134,35 +211,43 @@ export function computeScore(predictions: Resolved[]): ScoreResult {
   let avgAlpha: number | null = null;
   let alphaScore: number | null = null;
   if (withBench.length >= 5) {
-    const alphas = withBench
-      .map((p) => {
-        const r = callReturn(p.direction, p.lock_price, p.resolved_price);
-        return r !== null ? r - (p.benchmark_pct as number) : null;
-      })
-      .filter((v): v is number => v !== null);
-    if (alphas.length) {
-      avgAlpha = alphas.reduce((a, b) => a + b, 0) / alphas.length;
+    let alphaSum = 0;
+    let alphaWeight = 0;
+    for (const p of withBench) {
+      const w = timeWeight(p.resolves_at);
+      const r = callReturn(p.direction, p.lock_price, p.resolved_price);
+      if (r === null) continue;
+      alphaSum += (r - (p.benchmark_pct as number)) * w;
+      alphaWeight += w;
+    }
+    if (alphaWeight > 0) {
+      avgAlpha = alphaSum / alphaWeight;
       alphaScore = Math.min(100, Math.max(0, ((avgAlpha + 20) / 40) * 100));
     }
   }
 
+  const streak = streakPenalty(resolved);
+  const drawdown = drawdownPenalty(resolved);
+  const consistencyScore = Math.round((1 - streak - drawdown) * 100);
+
   let composite =
     alphaScore !== null
-      ? winRateScore * 0.4 + pfScore * 0.35 + alphaScore * 0.25
-      : winRateScore * 0.52 + pfScore * 0.48;
+      ? winRateScore * 0.35 + pfScore * 0.3 + alphaScore * 0.2 + consistencyScore * 0.15
+      : winRateScore * 0.45 + pfScore * 0.4 + consistencyScore * 0.15;
 
   const sampleScale = Math.min(1, Math.log(1 + total) / Math.log(1 + 75));
   composite = composite * (0.5 + 0.5 * sampleScale);
 
   const score = Math.round(Math.min(100, Math.max(0, composite)));
-  const rating = Math.round(600 + (score / 100) * 800);
+  const rating = scoreToRating(score);
   const avgReturn = returns.length ? returns.reduce((a, b) => a + b, 0) / returns.length : null;
 
   return {
     score,
     rating,
     total,
-    hits,
+    hits: fullHits,
+    nearHits,
     misses,
     winRate,
     wilsonWinRate: wilson,
@@ -173,6 +258,7 @@ export function computeScore(predictions: Resolved[]): ScoreResult {
       winRate: Math.round(winRateScore),
       profitFactor: Math.round(pfScore),
       alpha: alphaScore !== null ? Math.round(alphaScore) : null,
+      consistency: consistencyScore,
     },
   };
 }
@@ -187,13 +273,14 @@ function nullResult(): ScoreResult {
     rating: 600,
     total: 0,
     hits: 0,
+    nearHits: 0,
     misses: 0,
     winRate: null,
     wilsonWinRate: null,
     profitFactor: null,
     avgReturn: null,
     avgAlpha: null,
-    breakdown: { winRate: 0, profitFactor: 0, alpha: null },
+    breakdown: { winRate: 0, profitFactor: 0, alpha: null, consistency: 100 },
   };
 }
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import {
-  ChartLineUp,
   LockKey,
   SealCheck,
   Scales,
   Wallet,
+  ArrowRight,
 } from "@phosphor-icons/react/dist/ssr";
 import { buttonClass } from "@/components/ui/button";
 import { PredictionCard } from "@/components/prediction-card";
@@ -26,63 +26,89 @@ export default async function LandingPage() {
 
   return (
     <>
-      {/* Hero: asymmetric split */}
-      <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pt-16 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:pt-24">
-        <FadeIn>
-          <div className="flex flex-col gap-6">
-            <span className="t-eyebrow">Independent stock research</span>
-            <h1 className="t-display">
-              Research you can
-              <br />
-              actually <span className="text-accent">verify</span>.
-            </h1>
-            <p className="t-body text-lg">
-              Stoa scores every analyst&apos;s calls into a permanent public track record. Follow
-              who is right. Pay only for what you trust.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/discover" className={buttonClass("primary", "lg")}>
-                Browse analysts
-              </Link>
-              <Link href="/become-analyst" className={buttonClass("secondary", "lg")}>
-                Publish your research
-              </Link>
-            </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.12}>
-          <div className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="num font-semibold">@maren_vos</span>
-                <SealCheck size={15} weight="fill" className="text-accent" />
-              </div>
-              <span className="t-meta inline-flex items-center gap-1.5">
-                <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-                Rating 1,158
+      {/* Hero: the track record is the hero object */}
+      <section className="observatory">
+        <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-24 pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:pt-24">
+          <FadeIn>
+            <div className="flex flex-col gap-6">
+              <span
+                className="t-eyebrow"
+                style={{ color: "var(--accent)" }}
+              >
+                Verified research, not opinions
               </span>
+              <h1 className="t-display">
+                Research you can
+                <br />
+                actually <span className="accent-glow">verify</span>.
+              </h1>
+              <p className="t-body text-lg">
+                Every call an analyst makes is graded by the market into a permanent public score.
+                Follow who is right.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link href="/discover" className={buttonClass("primary", "lg")}>
+                  Browse analysts
+                  <ArrowRight size={17} weight="bold" />
+                </Link>
+                <Link href="/become-analyst" className={buttonClass("secondary", "lg")}>
+                  Publish your research
+                </Link>
+              </div>
             </div>
-            <PredictionCard prediction={samplePrediction} />
-            <div className="mt-4">
-              <span className="t-eyebrow">Rating over resolved calls</span>
-              <TrackChart data={sampleTrack} />
+          </FadeIn>
+
+          <FadeIn delay={0.12}>
+            <div className="glass p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-weak text-sm font-semibold text-accent">
+                    MV
+                  </span>
+                  <div className="leading-tight">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      @maren_vos
+                      <SealCheck size={15} weight="fill" className="text-accent" />
+                    </span>
+                    <span className="t-meta">Semiconductors</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="num text-xl font-semibold leading-none">1,158</div>
+                  <span className="t-eyebrow mt-1 inline-flex items-center justify-end gap-1.5">
+                    <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-accent" />
+                    Rating
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-[var(--radius-card)] border border-border bg-bg/40 px-1 pt-2">
+                <span className="t-eyebrow px-3">Rating over 14 resolved calls</span>
+                <TrackChart data={sampleTrack} />
+              </div>
+
+              <div className="mt-4">
+                <PredictionCard prediction={samplePrediction} />
+              </div>
             </div>
-          </div>
-        </FadeIn>
+          </FadeIn>
+        </div>
       </section>
 
-      {/* Why Stoa: asymmetric feature grid */}
-      <section className="border-y border-border bg-surface">
+      {/* Why Stoa: the track record is the product */}
+      <section className="border-y border-border bg-surface/40">
         <div className="mx-auto max-w-[1200px] px-5 py-20">
           <FadeIn>
             <h2 className="t-h1 max-w-2xl">
               The track record is the product, not a vanity badge.
             </h2>
+            <p className="t-body mt-4">
+              Other platforms ask you to trust a name. Stoa asks you to read the receipts.
+            </p>
           </FadeIn>
           <div className="mt-10 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
             <FadeIn className="h-full">
-              <div className="flex h-full flex-col justify-between rounded-[var(--radius-card)] border border-border bg-bg p-7">
+              <div className="glass flex h-full flex-col justify-between p-7">
                 <Scales size={28} className="text-accent" weight="duotone" />
                 <div className="mt-10">
                   <h3 className="t-h3">Every call is graded by the market, not by us</h3>
@@ -96,7 +122,7 @@ export default async function LandingPage() {
             </FadeIn>
             <div className="grid gap-5">
               <FadeIn delay={0.06}>
-                <div className="rounded-[var(--radius-card)] border border-border bg-bg p-7">
+                <div className="glass p-7">
                   <LockKey size={24} className="text-accent" weight="duotone" />
                   <h3 className="t-h3 mt-4">Analysts own their audience</h3>
                   <p className="t-body mt-2">
@@ -106,7 +132,7 @@ export default async function LandingPage() {
                 </div>
               </FadeIn>
               <FadeIn delay={0.12}>
-                <div className="rounded-[var(--radius-card)] border border-border bg-bg p-7">
+                <div className="glass p-7">
                   <Wallet size={24} className="text-accent" weight="duotone" />
                   <h3 className="t-h3 mt-4">Flexible monetization</h3>
                   <p className="t-body mt-2">
@@ -121,35 +147,54 @@ export default async function LandingPage() {
       </section>
 
       {/* How scoring works: connected flow */}
-      <section className="mx-auto max-w-[1200px] px-5 py-20">
-        <FadeIn>
-          <h2 className="t-h1 max-w-2xl">How a call becomes a score</h2>
-        </FadeIn>
-        <ol className="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-border bg-border md:grid-cols-4">
-          {[
-            { t: "Publish", d: "Analyst posts a call with a ticker, direction, target, and timeframe." },
-            { t: "Lock", d: "Entry price locks from the live feed. No edits, no hindsight." },
-            { t: "Resolve", d: "At the deadline, the closing price and benchmark are pulled automatically." },
-            { t: "Grade", d: "Win rate, profit factor, and alpha update the 0-100 score and tier." },
-          ].map((s, i) => (
-            <FadeIn key={s.t} delay={i * 0.05}>
-              <div className="flex h-full flex-col gap-3 bg-surface p-6">
-                <span className="num text-2xl font-semibold text-accent">{i + 1}</span>
-                <h3 className="font-semibold">{s.t}</h3>
-                <p className="t-meta text-text-mute">{s.d}</p>
-              </div>
-            </FadeIn>
-          ))}
-        </ol>
+      <section className="observatory">
+        <div className="mx-auto max-w-[1200px] px-5 py-20">
+          <FadeIn>
+            <span className="t-eyebrow" style={{ color: "var(--accent)" }}>
+              How scoring works
+            </span>
+            <h2 className="t-h1 mt-3 max-w-2xl">How a call becomes a score</h2>
+            <p className="t-body mt-4">
+              Four steps, fully automatic. No edits, no hindsight, nothing hidden.
+            </p>
+          </FadeIn>
+          <ol className="mt-12 grid gap-x-6 gap-y-10 md:grid-cols-4">
+            {[
+              { t: "Publish", d: "Analyst posts a call with a ticker, direction, target, and timeframe." },
+              { t: "Lock", d: "Entry price locks from the live feed. No edits, no hindsight." },
+              { t: "Resolve", d: "At the deadline, the closing price and benchmark are pulled automatically." },
+              { t: "Grade", d: "Win rate, profit factor, alpha, and consistency update the rating and tier." },
+            ].map((s, i) => (
+              <FadeIn key={s.t} delay={i * 0.06}>
+                <li className="relative flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="num text-2xl font-semibold text-accent">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {i < 3 && (
+                      <span className="rule-fade hidden h-px flex-1 md:block" aria-hidden="true" />
+                    )}
+                  </div>
+                  <h3 className="t-h3">{s.t}</h3>
+                  <p className="t-meta text-text-mute">{s.d}</p>
+                </li>
+              </FadeIn>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* Top analysts */}
-      <section className="border-t border-border bg-surface">
+      <section className="border-t border-border bg-surface/40">
         <div className="mx-auto max-w-[1200px] px-5 py-20">
           <div className="flex items-end justify-between gap-4">
             <h2 className="t-h1">Analysts leading the board</h2>
-            <Link href="/leaderboard" className="hidden text-sm text-accent hover:underline sm:block">
+            <Link
+              href="/leaderboard"
+              className="hidden items-center gap-1 text-sm text-accent hover:underline sm:flex"
+            >
               View the full leaderboard
+              <ArrowRight size={15} weight="bold" />
             </Link>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -171,25 +216,25 @@ export default async function LandingPage() {
       {/* Final CTA */}
       <section className="mx-auto max-w-[1200px] px-5 py-20">
         <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--accent)] px-8 py-16 text-center text-[var(--accent-ink)]">
-          <ChartLineUp size={36} weight="duotone" className="mx-auto opacity-90" />
-          <h2 className="t-h1 mx-auto mt-5 max-w-xl text-[var(--accent-ink)]">
+          <h2 className="t-h1 mx-auto max-w-xl text-[var(--accent-ink)]">
             Find research worth paying for.
           </h2>
           <p className="mx-auto mt-3 max-w-md text-[var(--accent-ink)]/85">
             Join Stoa as an investor, or start building your public track record as an analyst.
           </p>
-          <div className="mt-7 flex justify-center gap-3">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/sign-up"
-              className="inline-flex h-12 items-center rounded-[var(--radius-btn)] bg-[var(--accent-ink)] px-6 text-sm font-medium text-[var(--accent)] transition-transform active:scale-[0.98]"
+              className="inline-flex h-12 items-center gap-2 rounded-[var(--radius-btn)] bg-[var(--accent-ink)] px-6 text-sm font-medium text-[var(--accent)] transition-transform active:scale-[0.98]"
             >
               Join Stoa
+              <ArrowRight size={16} weight="bold" />
             </Link>
             <Link
-              href="/discover"
+              href="/how-it-works"
               className="inline-flex h-12 items-center rounded-[var(--radius-btn)] border border-[var(--accent-ink)]/30 px-6 text-sm font-medium text-[var(--accent-ink)] transition-colors hover:bg-[var(--accent-ink)]/10"
             >
-              Explore first
+              See how scoring works
             </Link>
           </div>
         </div>

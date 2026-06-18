@@ -8,7 +8,7 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { analystStats } from "@/lib/engine/track";
-import { compact, pct } from "@/lib/format";
+import { compact, pct, analystRating } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { TierBadge } from "@/components/ui/tier-badge";
 import { Stat } from "@/components/ui/stat";
@@ -110,7 +110,10 @@ export default async function AnalystProfilePage({
           </div>
 
           <div className="flex flex-col items-center gap-5 rounded-[var(--radius-card)] border border-border bg-bg p-5">
-            <ScoreRing score={profile.score || stats.score} />
+            <ScoreRing rating={analystRating(profile)} mode="rating" />
+            <p className="t-meta text-center">
+              Score <span className="num">{profile.score || stats.score}</span> / 100
+            </p>
             <p className="t-meta text-center">
               {stats.resolved > 0
                 ? `${stats.resolved} resolved calls`
@@ -134,7 +137,7 @@ export default async function AnalystProfilePage({
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
         <div className="flex items-center justify-between">
           <h2 className="t-h3">Track record</h2>
-          <span className="num text-sm text-text-mute">Rating {stats.rating}</span>
+          <span className="num text-sm text-text-mute">Rating {analystRating(profile)}</span>
         </div>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           {stats.series.length > 1 ? (

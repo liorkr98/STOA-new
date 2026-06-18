@@ -27,8 +27,10 @@ export interface Profile {
   cover_url: string | null;
   bio: string | null;
   headline: string | null;
-  /** 0-100 analyst score from the engine. */
+  /** 0-100 analyst score from the engine (tiers, breakdown). */
   score: number;
+  /** 600-1400 public display rating. */
+  rating: number;
   tier: string;
   followers_count: number;
   /** Monthly subscription price in USD. */
@@ -79,6 +81,8 @@ export interface Prediction {
   bench_lock_price: number | null;
   /** S&P 500 return over the same window, in percent. */
   benchmark_pct: number | null;
+  /** SPY price captured at resolution for audit. */
+  bench_resolved_price: number | null;
   outcome: Outcome;
   /** Signed return in percent, direction-aware. Null until resolved. */
   return_pct: number | null;

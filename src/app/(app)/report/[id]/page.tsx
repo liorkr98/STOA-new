@@ -8,6 +8,7 @@ import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
+import { analystRating } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
@@ -76,7 +77,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 {author.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
               </span>
               <span className="t-meta">
-                @{author.handle} · Score <span className="num">{author.score}</span>
+                @{author.handle} · Rating <span className="num">{analystRating(author)}</span>
               </span>
             </div>
           </Link>

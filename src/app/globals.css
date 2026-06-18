@@ -202,3 +202,80 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
+
+/* ------------------------------------------------------------------ *
+ * Observatory — cinematic treatment for the marketing surface.
+ * Additive only. Ambient glow is atmosphere, not card elevation, so it
+ * does not violate the no-elevation-shadow rule in MASTER.md.
+ * ------------------------------------------------------------------ */
+
+.observatory {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.observatory::before,
+.observatory::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.observatory::before {
+  width: 560px;
+  height: 560px;
+  top: -180px;
+  left: -140px;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  opacity: 0.5;
+}
+
+.observatory::after {
+  width: 480px;
+  height: 480px;
+  top: 0;
+  right: -180px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  opacity: 0.4;
+}
+
+/* Frosted data panel. Depth comes from the border, an inset top highlight,
+ * and the ambient canvas behind it, never from an elevation drop shadow. */
+.glass {
+  position: relative;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: inset 0 1px 0 0 color-mix(in srgb, #ffffff 7%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* One-word cinematic accent in the hero headline. Used sparingly. */
+.accent-glow {
+  color: var(--accent);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+/* Hairline that fades out, for connecting the scoring-flow steps. */
+.rule-fade {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-strong) 18%,
+    var(--border-strong) 82%,
+    transparent
+  );
+}

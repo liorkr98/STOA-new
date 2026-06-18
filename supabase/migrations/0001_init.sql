@@ -24,6 +24,7 @@ create table profiles (
   bio text,
   headline text,
   score int not null default 0,
+  rating int not null default 600,
   tier text not null default 'building',
   followers_count int not null default 0,
   sub_price numeric(10, 2),
@@ -33,6 +34,7 @@ create table profiles (
 );
 
 create index profiles_score_idx on profiles (score desc);
+create index profiles_rating_idx on profiles (rating desc);
 create index profiles_role_idx on profiles (role);
 
 -- ── Reports ──────────────────────────────────────────────────────────────────
@@ -81,6 +83,7 @@ create table predictions (
   -- S&P 500 (SPY) price captured at publish, used to compute alpha at resolution.
   bench_lock_price numeric(14, 4),
   benchmark_pct numeric(8, 2),
+  bench_resolved_price numeric(14, 4),
   outcome outcome not null default 'open',
   return_pct numeric(8, 2),
   created_at timestamptz not null default now()
@@ -89,6 +92,7 @@ create table predictions (
 create index predictions_author_idx on predictions (author_id, created_at desc);
 create index predictions_open_idx on predictions (outcome, resolves_at) where outcome = 'open';
 create index predictions_report_idx on predictions (report_id);
+create unique index predictions_report_unique on predictions (report_id);
 
 -- ── Wallets + transactions ────────────────────────────────────────────────────
 create table wallets (
@@ -166,6 +170,8 @@ create table report_views (
   viewer_id uuid references profiles (id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+create index report_views_report_idx on report_views (report_id);
 
 -- Records a buyer's unlock so paid reports stay readable after purchase.
 create table report_unlocks (

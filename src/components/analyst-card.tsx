@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/design/cn";
-import { compact } from "@/lib/format";
+import { compact, analystRating } from "@/lib/format";
 import type { Profile } from "@/lib/types";
 import { computeTier } from "@/lib/engine/score";
 import { Avatar } from "./ui/avatar";
@@ -20,6 +20,7 @@ export function AnalystCard({
   className?: string;
 }) {
   const tier = computeTier(analyst.score, resolvedCalls);
+  const rating = analystRating(analyst);
   return (
     <Link
       href={`/analyst/${analyst.handle}`}
@@ -42,8 +43,8 @@ export function AnalystCard({
           </div>
         </div>
         <div className="text-right">
-          <div className="num text-2xl font-semibold leading-none">{analyst.score}</div>
-          <div className="t-eyebrow mt-1">Score</div>
+          <div className="num text-2xl font-semibold leading-none">{rating}</div>
+          <div className="t-eyebrow mt-1">Rating</div>
         </div>
       </div>
 

@@ -48,7 +48,7 @@ export default async function StudioOverview() {
       </div>
 
       <div className="grid grid-cols-2 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 md:grid-cols-4">
-        <Stat label="Analyst score" value={String(stats.score)} sub={`Rating ${stats.rating}`} />
+        <Stat label="Rating" value={String(stats.rating)} sub={`Score ${stats.score} / 100`} />
         <Stat label="Subscribers" value={compact(subs)} />
         <Stat label="Earnings" value={usd(wallet?.earnings ?? 0)} />
         <Stat
