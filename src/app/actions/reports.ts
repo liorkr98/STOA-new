@@ -93,6 +93,13 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
     });
   }
 
+  // Newsletter fan-out: notify followers + active subscribers (best-effort).
+  try {
+    await supabase.rpc("notify_publication", { p_report_id: id });
+  } catch {
+    // non-critical
+  }
+
   revalidatePath("/discover");
   revalidatePath("/studio");
   redirect(`/report/${id}`);

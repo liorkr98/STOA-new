@@ -2,14 +2,32 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Bell } from "@phosphor-icons/react/dist/ssr";
+import {
+  Bell,
+  Heart,
+  ChatCircle,
+  UserPlus,
+  Megaphone,
+  Sparkle,
+  CurrencyDollar,
+} from "@phosphor-icons/react/dist/ssr";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listNotifications } from "@/lib/db/notifications";
 import { markAllNotificationsRead, markNotificationRead } from "@/app/actions/notifications";
 
 export const metadata: Metadata = { title: "Inbox" };
+
+const KIND_ICON: Record<string, typeof Bell> = {
+  like: Heart,
+  comment: ChatCircle,
+  follow: UserPlus,
+  publication: Megaphone,
+  subscribe: Sparkle,
+  sale: CurrencyDollar,
+};
 
 export default async function InboxPage() {
   const userId = await getSessionUserId();
@@ -38,44 +56,61 @@ export default async function InboxPage() {
 
       {notifications.length > 0 ? (
         <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-          {notifications.map((n) => (
-            <li
-              key={n.id}
-              className="border-b border-border px-5 py-4 last:border-0"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className={`text-sm ${n.read ? "text-text-mute" : "font-medium text-text"}`}>
-                    {n.body ?? n.kind}
-                  </p>
-                  <p className="t-meta mt-1">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                    {n.actor ? ` · ${n.actor.display_name}` : ""}
-                  </p>
+          {notifications.map((n) => {
+            const Icon = KIND_ICON[n.kind] ?? Bell;
+            return (
+              <li
+                key={n.id}
+                className={`border-b border-border px-5 py-4 last:border-0 ${n.read ? "" : "bg-accent-weak/30"}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    {n.actor ? (
+                      <Link href={`/analyst/${n.actor.handle}`} className="shrink-0">
+                        <Avatar src={n.actor.avatar_url} name={n.actor.display_name} size="md" />
+                      </Link>
+                    ) : (
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-text-mute">
+                        <Icon size={18} />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className={`text-sm ${n.read ? "text-text-mute" : "font-medium text-text"}`}>
+                        {n.actor && (
+                          <span className="font-semibold text-text">{n.actor.display_name} </span>
+                        )}
+                        {n.body ?? n.kind}
+                      </p>
+                      <p className="t-meta mt-1 flex items-center gap-1.5">
+                        <Icon size={12} />
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {n.link && (
+                      <Link href={n.link} className={buttonClass("secondary", "sm")}>
+                        View
+                      </Link>
+                    )}
+                    {!n.read && (
+                      <form action={markNotificationRead.bind(null, n.id)}>
+                        <button type="submit" className="text-xs text-text-faint hover:text-text">
+                          Mark read
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {n.link && (
-                    <Link href={n.link} className={buttonClass("secondary", "sm")}>
-                      View
-                    </Link>
-                  )}
-                  {!n.read && (
-                    <form action={markNotificationRead.bind(null, n.id)}>
-                      <button type="submit" className="text-xs text-text-faint hover:text-text">
-                        Mark read
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <EmptyState
           icon={<Bell size={32} />}
           title="No notifications yet"
-          body="When someone subscribes to you or unlocks your work, it will show up here."
+          body="Follows, likes, comments, new publications from analysts you follow, and sales all show up here."
         />
       )}
     </div>

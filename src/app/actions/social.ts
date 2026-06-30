@@ -25,6 +25,11 @@ export async function toggleFollow(analystId: string) {
     await supabase.from("follows").delete().eq("follower_id", userId).eq("analyst_id", analystId);
   } else {
     await supabase.from("follows").insert({ follower_id: userId, analyst_id: analystId });
+    try {
+      await supabase.rpc("notify_follow", { p_analyst_id: analystId });
+    } catch {
+      // non-critical
+    }
   }
   revalidatePath("/discover");
   return { following: !existing };
@@ -43,6 +48,11 @@ export async function toggleLike(reportId: string) {
     await supabase.from("likes").delete().eq("report_id", reportId).eq("user_id", userId);
   } else {
     await supabase.from("likes").insert({ report_id: reportId, user_id: userId });
+    try {
+      await supabase.rpc("notify_report_event", { p_report_id: reportId, p_kind: "like" });
+    } catch {
+      // non-critical
+    }
   }
   revalidatePath(`/report/${reportId}`);
   return { liked: !existing };
@@ -74,6 +84,11 @@ export async function addComment(reportId: string, body: string) {
     .from("comments")
     .insert({ report_id: reportId, author_id: userId, body: text });
   if (error) return { error: error.message };
+  try {
+    await supabase.rpc("notify_report_event", { p_report_id: reportId, p_kind: "comment" });
+  } catch {
+    // non-critical
+  }
   revalidatePath(`/report/${reportId}`);
   return { ok: true };
 }
