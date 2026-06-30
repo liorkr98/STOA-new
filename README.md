@@ -44,6 +44,7 @@ npm install
    - `supabase/migrations/0008_profile_config.sql`
    - `supabase/migrations/0009_ai_credits.sql`
    - `supabase/migrations/0010_profile_bootstrap.sql`
+   - `supabase/migrations/0011_social_notifications.sql`
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash

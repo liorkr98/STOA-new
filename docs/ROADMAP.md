@@ -34,6 +34,11 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **AI credits economy** — wallet balance → credits, spend on chat/outline/fact-check
 - **FactChecker** — classify claims, Yahoo price verification, results on published reports
 - **Report templates** — one-click block structures in compose (earnings recap, deep dive, etc.)
+- **Account menu** — one tap to profile, studio, wallet, saved, subs, settings, branding
+- **Notes** — inline quick-post composer on the feed (Substack-style social layer)
+- **Newsletter fan-out** — publishing notifies followers + active subscribers
+- **Social notifications** — follow, like, comment, publication, sale, subscribe in the inbox
+- **Track record surfaced** — score breakdown, hit/near/miss, tier progress, full call ledger with alpha
 
 ## In progress / next (high priority)
 
@@ -44,9 +49,10 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 
 ## Later (parity + polish)
 
+- Email delivery of newsletters (Resend/Postmark) on top of in-app fan-out
 - PDF export, translate
 - Scheduled publish, boost posts
-- Direct messages UI
+- Direct messages UI (messages table + RLS already exist)
 - Investor home dashboard
 - Creator analytics (conversion, churn, earnings breakdown)
 - Admin moderation console
