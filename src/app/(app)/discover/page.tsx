@@ -8,10 +8,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { listFeed, listFeedFromAnalysts } from "@/lib/db/reports";
 import { listTopAnalysts } from "@/lib/db/profiles";
-import { getSessionUserId } from "@/lib/db/auth";
+import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { sampleAnalysts } from "@/lib/sample";
+import { QuickPost } from "@/components/feed/quick-post";
 
 export const metadata: Metadata = { title: "Discover" };
 
@@ -29,7 +30,8 @@ export default async function DiscoverPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab = "trending" } = await searchParams;
-  const userId = await getSessionUserId();
+  const profile = await getSessionProfile();
+  const userId = profile?.id ?? null;
 
   let reports;
   let researchers: Awaited<ReturnType<typeof listTopAnalysts>> = [];
@@ -68,6 +70,8 @@ export default async function DiscoverPage({
           <h1 className="t-h1">Discover</h1>
           <p className="t-body mt-1">Research and calls from independent analysts.</p>
         </div>
+        {profile && <QuickPost profile={profile} />}
+
         <TabBar tabs={TABS} active={tab} />
 
         {needsAuth ? (

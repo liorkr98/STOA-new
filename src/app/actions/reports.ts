@@ -124,3 +124,41 @@ export async function deleteReport(id: string) {
   await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
   revalidatePath("/studio");
 }
+
+/**
+ * Posts a short note (Substack-style) — the social discovery layer. Any signed-in
+ * user can post. Published immediately, no prediction, fans out to followers.
+ */
+export async function postNote(body: string): Promise<{ ok?: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+  const text = body.trim();
+  if (!text) return { error: "Write something first." };
+  if (text.length > 1000) return { error: "Notes are limited to 1000 characters." };
+
+  await supabase.rpc("ensure_user_profile");
+
+  const { data, error } = await supabase
+    .from("reports")
+    .insert({
+      author_id: userId,
+      type: "short_post",
+      summary: text,
+      access: "free",
+      status: "published",
+      published_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+
+  const noteId = (data as { id: string }).id;
+  try {
+    await supabase.rpc("notify_publication", { p_report_id: noteId });
+  } catch {
+    // non-critical
+  }
+
+  revalidatePath("/discover");
+  return { ok: true };
+}
