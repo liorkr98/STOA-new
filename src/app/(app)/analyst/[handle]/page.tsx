@@ -20,6 +20,8 @@ import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FollowButton } from "@/components/follow-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
+import { TrackBreakdown } from "@/components/track/track-breakdown";
+import { CallHistory } from "@/components/track/call-history";
 
 export async function generateMetadata({
   params,
@@ -209,6 +211,21 @@ export default async function AnalystProfilePage({
           </div>
         </div>
       </section>
+
+      {/* Score breakdown + tier progress */}
+      {stats.total > 0 && (
+        <TrackBreakdown
+          score={stats.score}
+          breakdown={stats.breakdown}
+          hits={stats.hits}
+          nearHits={stats.nearHits}
+          misses={stats.misses}
+          total={stats.total}
+        />
+      )}
+
+      {/* Full call ledger */}
+      <CallHistory predictions={predictions} />
 
       {/* Publications */}
       <section className="flex flex-col gap-5">

@@ -16,10 +16,20 @@ export function PredictionCard({
   prediction: Prediction;
   className?: string;
 }) {
-  const { ticker, direction, lock_price, target_price, resolved_price, outcome, return_pct } =
-    prediction;
+  const {
+    ticker,
+    direction,
+    lock_price,
+    target_price,
+    resolved_price,
+    outcome,
+    return_pct,
+    benchmark_pct,
+  } = prediction;
   const resolved = outcome !== "open";
   const tone = return_pct == null ? "neutral" : return_pct >= 0 ? "up" : "down";
+  const alpha =
+    return_pct != null && benchmark_pct != null ? return_pct - benchmark_pct : null;
 
   return (
     <div
@@ -66,6 +76,18 @@ export function PredictionCard({
           {pct(return_pct)}
         </span>
       </div>
+
+      {resolved && alpha != null && (
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span className="t-meta">vs S&P {pct(benchmark_pct)}</span>
+          <span
+            className="num font-medium"
+            style={{ color: alpha >= 0 ? "var(--up)" : "var(--down)" }}
+          >
+            {pct(alpha)} alpha
+          </span>
+        </div>
+      )}
     </div>
   );
 }
