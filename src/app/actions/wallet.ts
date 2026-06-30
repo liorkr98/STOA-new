@@ -34,3 +34,14 @@ export async function subscribeToAnalyst(
   revalidatePath("/wallet");
   return data as SpendResult;
 }
+
+export async function convertToCredits(usd: number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("convert_to_ai_credits", { p_usd: usd });
+  if (error) return { ok: false as const, error: error.message };
+  const row = data as { error?: string; credits_added?: number };
+  if (row.error) return { ok: false as const, error: row.error };
+  revalidatePath("/wallet");
+  revalidatePath("/studio/compose");
+  return { ok: true as const, credits: row.credits_added };
+}

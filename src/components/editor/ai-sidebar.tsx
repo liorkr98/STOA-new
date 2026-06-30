@@ -13,9 +13,13 @@ interface Message {
 
 export function AiSidebar({
   context,
+  credits,
+  onCreditsChange,
   onInsertBlocks,
 }: {
   context: { title?: string; ticker?: string; type?: string };
+  credits: number;
+  onCreditsChange?: (n: number) => void;
   onInsertBlocks: (types: BlockType[]) => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([
@@ -26,6 +30,7 @@ export function AiSidebar({
     },
   ]);
   const [input, setInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +50,23 @@ export function AiSidebar({
         const data = (await res.json()) as {
           reply?: string;
           suggestedBlocks?: BlockType[];
+          error?: string;
+          have?: number;
+          need?: number;
+          credits_remaining?: number;
         };
+        if (!res.ok) {
+          if (res.status === 402) {
+            setError(`Need ${data.need} credits (you have ${data.have}). Convert balance in Wallet.`);
+          } else {
+            setError(data.error ?? "AI request failed");
+          }
+          return;
+        }
+        setError(null);
+        if (typeof data.credits_remaining === "number") {
+          onCreditsChange?.(data.credits_remaining);
+        }
         setMessages((m) => [
           ...m,
           { role: "assistant", content: data.reply ?? "No response." },
@@ -69,7 +90,7 @@ export function AiSidebar({
         <Sparkle size={18} weight="fill" className="text-accent accent-glow" />
         <div>
           <p className="text-sm font-semibold">Research AI</p>
-          <p className="t-meta">Conversational copilot</p>
+          <p className="t-meta">{credits} credits · 1 per message</p>
         </div>
         <span className="pulse-dot ml-auto h-2 w-2 rounded-full bg-accent" />
       </div>
@@ -91,6 +112,7 @@ export function AiSidebar({
         {pending && (
           <p className="t-meta animate-pulse px-1">Thinking...</p>
         )}
+        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
       </div>
 
       <div className="border-t border-border p-3">

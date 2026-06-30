@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { spendAiCredits } from "@/lib/ai/spend";
 import type { BlockType } from "@/lib/editor/types";
 
 interface ChatMessage {
@@ -7,10 +8,6 @@ interface ChatMessage {
   content: string;
 }
 
-/**
- * AI compose copilot. Set OPENAI_API_KEY in .env.local for live responses.
- * Without a key, returns structured fallback suggestions.
- */
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -21,7 +18,17 @@ export async function POST(req: Request) {
   const body = (await req.json()) as {
     messages: ChatMessage[];
     context?: { title?: string; ticker?: string; type?: string };
+    action?: "chat" | "outline";
   };
+
+  const action = body.action ?? (body.messages.at(-1)?.content.toLowerCase().includes("outline") ? "outline" : "chat");
+  const spend = await spendAiCredits(action, `Compose ${action}`);
+  if (spend.error) {
+    return NextResponse.json(
+      { error: spend.error, have: spend.have, need: spend.need },
+      { status: spend.error === "insufficient_credits" ? 402 : 400 },
+    );
+  }
 
   const apiKey = process.env.OPENAI_API_KEY;
   const system = `You are Stoa's research writing copilot. Help analysts write institutional-quality equity research.
@@ -54,25 +61,29 @@ Context: ${JSON.stringify(body.context ?? {})}`;
     } catch (e) {
       reply =
         e instanceof Error
-          ? `AI unavailable: ${e.message}. Add OPENAI_API_KEY to enable live assistance.`
+          ? `AI unavailable: ${e.message}`
           : "AI unavailable.";
     }
   } else {
     const last = body.messages.at(-1)?.content.toLowerCase() ?? "";
     if (last.includes("outline") || last.includes("structure")) {
       reply =
-        "Suggested outline:\n1. **Thesis** block — one-line conviction\n2. **Metrics** — revenue, margins, valuation\n3. **Chart** — 6-month price action\n4. **Thesis** — bull vs bear\n5. **Text** — catalysts and risks\n\nAdd OPENAI_API_KEY for tailored drafts.";
+        "Suggested outline:\n1. Thesis block\n2. Metrics\n3. Chart\n4. Bull/bear thesis\n5. Catalysts and risks\n\nAdd OPENAI_API_KEY for tailored drafts.";
     } else if (last.includes("thesis") || last.includes("bull")) {
       reply =
-        "Drop a **Thesis** block from the palette. Bull: what has to go right. Bear: what breaks the case. Keep each side to 2-3 sentences.";
+        "Use a Thesis block: bull case on the left, bear on the right. Keep each side to 2-3 sentences.";
     } else {
       reply =
-        "I can help outline research, expand your thesis, or suggest blocks. Try: \"Outline a NVDA research note\" or drag blocks from the left panel.\n\nSet OPENAI_API_KEY in .env.local for full AI chat.";
+        "Ask for an outline, thesis help, or drag blocks from the left panel. Set OPENAI_API_KEY for full AI.";
     }
   }
 
   const suggestedBlocks = suggestBlocksFromReply(reply);
-  return NextResponse.json({ reply, suggestedBlocks });
+  return NextResponse.json({
+    reply,
+    suggestedBlocks,
+    credits_remaining: spend.remaining,
+  });
 }
 
 function suggestBlocksFromReply(text: string): BlockType[] {
@@ -85,11 +96,4 @@ function suggestBlocksFromReply(text: string): BlockType[] {
   if (lower.includes("callout")) types.push("callout");
   if (types.length === 0 && lower.includes("text")) types.push("text");
   return [...new Set(types)];
-}
-
-export async function GET() {
-  return NextResponse.json({
-    blocks: ["heading", "text", "thesis", "metrics", "chart", "callout", "divider"],
-    hint: "POST messages with context for AI assistance",
-  });
 }

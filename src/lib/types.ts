@@ -17,7 +17,9 @@ export type TxnType =
   | "report_unlock"
   | "subscription"
   | "payout"
-  | "refund";
+  | "refund"
+  | "ai_spend"
+  | "conversion";
 export type TxnStatus = "completed" | "refunded" | "failed";
 
 export interface Profile {
@@ -61,6 +63,7 @@ export interface Report {
   comment_count: number;
   published_at: string | null;
   created_at: string;
+  fact_check_results?: Record<string, unknown> | null;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
@@ -99,6 +102,8 @@ export interface Wallet {
   balance: number;
   /** Lifetime earnings for analysts, in USD. */
   earnings: number;
+  /** AI feature credits (chat, outlines, fact-checks). */
+  ai_credits: number;
   updated_at: string;
 }
 
@@ -110,6 +115,8 @@ export interface WalletTransaction {
   status: TxnStatus;
   /** Signed amount in USD from the owner's perspective. */
   amount: number;
+  /** AI credits delta when type is ai_spend or conversion. */
+  credits?: number | null;
   related_id: string | null;
   memo: string | null;
   created_at: string;
@@ -139,6 +146,7 @@ export interface ComposeInput {
   direction?: Direction;
   target_price?: number | null;
   horizon_days?: number;
+  fact_check_results?: Record<string, unknown> | null;
 }
 
 export interface SpendResult {

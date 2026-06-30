@@ -55,9 +55,17 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
   const { supabase, userId } = await requireUser();
   const { id } = await saveDraft(input);
 
+  const publishPayload: Record<string, unknown> = {
+    status: "published",
+    published_at: new Date().toISOString(),
+  };
+  if (input.fact_check_results) {
+    publishPayload.fact_check_results = input.fact_check_results;
+  }
+
   const { error: pubErr } = await supabase
     .from("reports")
-    .update({ status: "published", published_at: new Date().toISOString() })
+    .update(publishPayload)
     .eq("id", id)
     .eq("author_id", userId);
   if (pubErr) throw new Error(pubErr.message);

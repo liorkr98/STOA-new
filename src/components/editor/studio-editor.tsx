@@ -17,7 +17,10 @@ import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
 import { BlockCanvas } from "@/components/editor/block-canvas";
 import { BlockPalette } from "@/components/editor/block-palette";
 import { AiSidebar } from "@/components/editor/ai-sidebar";
+import { TemplatesPanel } from "@/components/editor/templates-panel";
+import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import { PredictionCardPreview } from "@/components/editor/prediction-preview";
+import type { FactCheckResult } from "@/lib/ai/fact-check";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg/60 px-3 py-2 text-sm focus-ring";
@@ -31,9 +34,11 @@ const types: { key: ContentType; label: string }[] = [
 export function StudioEditor({
   analystReportPrice,
   initialDraft,
+  aiCredits = 0,
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
+  aiCredits?: number;
 }) {
   const initialDoc = initialDraft?.body
     ? parseDocument(initialDraft.body)
@@ -52,6 +57,10 @@ export function StudioEditor({
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [credits, setCredits] = useState(aiCredits);
+  const [factCheck, setFactCheck] = useState<FactCheckResult | null>(
+    (initialDraft?.fact_check_results as FactCheckResult | null) ?? null,
+  );
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
 
@@ -109,6 +118,15 @@ export function StudioEditor({
     setDoc((d) => ({ ...d, blocks: [...d.blocks, createBlock(blockType)] }));
   }
 
+  function applyTemplate(blocks: ReportDocument["blocks"], templateType: ContentType) {
+    setDoc({ version: 1, blocks });
+    if (templateType === "call" || templateType === "research") {
+      setType(templateType);
+    }
+  }
+
+  const plainText = documentPlainText(doc);
+
   function onCanvasDrop(e: React.DragEvent) {
     const blockType = e.dataTransfer.getData("application/stoa-block") as BlockType;
     if (blockType) {
@@ -133,7 +151,7 @@ export function StudioEditor({
           id: draftId,
           type,
           title: type === "short_post" ? undefined : title,
-          summary: summary || documentPlainText(doc).slice(0, 280),
+          summary: summary || plainText.slice(0, 280),
           body: type === "short_post" ? undefined : bodyJson,
           access,
           price: access === "paid" ? Number(price) : null,
@@ -141,6 +159,7 @@ export function StudioEditor({
           direction: hasCard ? direction : undefined,
           target_price: hasCard && target ? Number(target) : null,
           horizon_days: hasCard ? horizon : undefined,
+          fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         });
       } catch (e) {
         if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
@@ -197,7 +216,8 @@ export function StudioEditor({
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[200px_1fr_300px]">
         {/* Palette */}
-        <div className="glass hidden max-h-[calc(100dvh-12rem)] overflow-y-auto p-3 lg:block">
+        <div className="glass hidden max-h-[calc(100dvh-12rem)] space-y-6 overflow-y-auto p-3 lg:block">
+          <TemplatesPanel onApply={applyTemplate} />
           <BlockPalette onAdd={addBlock} />
         </div>
 
@@ -299,12 +319,25 @@ export function StudioEditor({
           {error && <p className="text-sm text-[var(--down)]">{error}</p>}
         </div>
 
-        {/* AI */}
-        <div className="hidden min-h-[400px] lg:block lg:min-h-0">
-          <AiSidebar
-            context={{ title, ticker, type }}
-            onInsertBlocks={(types) => types.forEach(addBlock)}
-          />
+        {/* AI + Fact-check */}
+        <div className="hidden min-h-[400px] flex-col gap-3 lg:flex lg:min-h-0">
+          <div className="min-h-0 flex-1">
+            <AiSidebar
+              context={{ title, ticker, type }}
+              credits={credits}
+              onCreditsChange={setCredits}
+              onInsertBlocks={(types) => types.forEach(addBlock)}
+            />
+          </div>
+          {type !== "short_post" && (
+            <FactCheckerPanel
+              text={plainText}
+              credits={credits}
+              initialResult={factCheck}
+              onCreditsChange={setCredits}
+              onResult={setFactCheck}
+            />
+          )}
         </div>
       </div>
     </div>

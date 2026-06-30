@@ -8,6 +8,7 @@ import { usd } from "@/lib/format";
 import { Stat } from "@/components/ui/stat";
 import { EmptyState } from "@/components/ui/empty-state";
 import { TopUpButton } from "@/components/wallet/top-up-button";
+import { ConvertCreditsButton } from "@/components/wallet/convert-credits-button";
 import type { TxnType } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Wallet" };
@@ -18,6 +19,8 @@ const txnLabel: Record<TxnType, string> = {
   subscription: "Subscription",
   payout: "Earnings",
   refund: "Refund",
+  ai_spend: "AI usage",
+  conversion: "Credits purchase",
 };
 
 export default async function WalletPage() {
@@ -37,12 +40,15 @@ export default async function WalletPage() {
         <TopUpButton />
       </div>
 
-      <div className="grid gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 sm:grid-cols-2">
+      <div className="grid gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Balance" value={usd(wallet?.balance ?? 0, { cents: true })} />
+        <Stat label="AI credits" value={String(wallet?.ai_credits ?? 0)} />
         {isAnalyst && (
           <Stat label="Lifetime earnings" value={usd(wallet?.earnings ?? 0, { cents: true })} />
         )}
       </div>
+
+      <ConvertCreditsButton balance={wallet?.balance ?? 0} />
 
       <div>
         <h2 className="t-h3 mb-3">Activity</h2>
@@ -50,6 +56,7 @@ export default async function WalletPage() {
           <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
             {txns.map((t) => {
               const credit = t.amount >= 0;
+              const isCreditsTxn = t.type === "ai_spend" || t.type === "conversion";
               return (
                 <li
                   key={t.id}
@@ -69,13 +76,23 @@ export default async function WalletPage() {
                       </div>
                     </div>
                   </div>
-                  <span
-                    className="num text-sm font-semibold"
-                    style={{ color: credit ? "var(--up)" : "var(--text)" }}
-                  >
-                    {credit ? "+" : ""}
-                    {usd(t.amount, { cents: true })}
-                  </span>
+                  {isCreditsTxn && t.credits != null ? (
+                    <span
+                      className="num text-sm font-semibold"
+                      style={{ color: t.credits >= 0 ? "var(--up)" : "var(--text)" }}
+                    >
+                      {t.credits >= 0 ? "+" : ""}
+                      {t.credits} credits
+                    </span>
+                  ) : (
+                    <span
+                      className="num text-sm font-semibold"
+                      style={{ color: credit ? "var(--up)" : "var(--text)" }}
+                    >
+                      {credit ? "+" : ""}
+                      {usd(t.amount, { cents: true })}
+                    </span>
+                  )}
                 </li>
               );
             })}

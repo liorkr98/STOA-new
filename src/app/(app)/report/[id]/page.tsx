@@ -15,6 +15,8 @@ import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
+import { FactCheckResults } from "@/components/editor/fact-checker-panel";
+import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
@@ -99,7 +101,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {canRead ? (
-        <ReportBody body={report.body} />
+        <>
+          <ReportBody body={report.body} />
+          {report.fact_check_results && (
+            <FactCheckResults result={report.fact_check_results as unknown as FactCheckResult} />
+          )}
+        </>
       ) : (
         <Paywall
           access={report.access}

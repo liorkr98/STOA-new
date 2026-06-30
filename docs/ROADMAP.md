@@ -31,20 +31,20 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Scoring methodology** public page
 - **Compose editor** — block-based studio with drag-and-drop, AI sidebar, live charts
 - **Profile branding** — avatar/cover upload, section reorder, specialties
+- **AI credits economy** — wallet balance → credits, spend on chat/outline/fact-check
+- **FactChecker** — classify claims, Yahoo price verification, results on published reports
+- **Report templates** — one-click block structures in compose (earnings recap, deep dive, etc.)
 
 ## In progress / next (high priority)
 
 1. **Real payments** — Stripe Connect replacing simulated `top_up`
 2. **Analyst payouts** — withdrawal flow (min balance, KYC later)
 3. **Subscription auto-renew** — or clear manual renewal UX
-4. **Rich compose editor** — blocks (text, chart, thesis, prediction), not plain textarea
-5. **Avatar/cover upload** — storage buckets exist, UI missing
-6. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
+4. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
 
 ## Later (parity + polish)
 
-- FactChecker / AI compose sidebar (needs LLM provider + credits)
-- Report templates, PDF export, translate
+- PDF export, translate
 - Scheduled publish, boost posts
 - Direct messages UI
 - Investor home dashboard
