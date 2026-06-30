@@ -11,6 +11,8 @@ export default async function SettingsPage() {
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
 
+  const isAnalyst = profile.role === "analyst" || profile.role === "admin";
+
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -18,11 +20,33 @@ export default async function SettingsPage() {
           <h1 className="t-h1">Settings</h1>
           <p className="t-body mt-1">Update your public profile and analyst pricing.</p>
         </div>
-        <Link href="/settings/branding" className={buttonClass("primary", "sm")}>
-          Branding studio
-        </Link>
+        <div className="flex gap-2">
+          <Link href={`/analyst/${profile.handle}`} className={buttonClass("secondary", "sm")}>
+            View profile
+          </Link>
+          <Link href="/settings/branding" className={buttonClass("primary", "sm")}>
+            Branding studio
+          </Link>
+        </div>
       </div>
+
       <ProfileSettingsForm profile={profile} />
+
+      {!isAnalyst && (
+        <div className="rounded-[var(--radius-card)] border border-accent/30 bg-accent-weak/40 p-5">
+          <h2 className="t-h3">Become an analyst</h2>
+          <p className="t-body mt-1">
+            Publish research, calls, and a verified track record. Set your own subscription and
+            report pricing.
+          </p>
+          <Link
+            href="/become-analyst"
+            className={buttonClass("primary", "md", "mt-4")}
+          >
+            Start publishing
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

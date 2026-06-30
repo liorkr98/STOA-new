@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { CheckCircle } from "@phosphor-icons/react";
 import { updateProfile } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
@@ -11,13 +12,17 @@ const inputClass =
 
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    setSaved(false);
     start(async () => {
       await updateProfile(fd);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
     });
   }
 
@@ -86,9 +91,17 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
 
       <p className="t-meta">Handle: @{profile.handle}</p>
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Saving..." : "Save changes"}
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving..." : "Save changes"}
+        </Button>
+        {saved && (
+          <span className="inline-flex items-center gap-1.5 text-sm text-[var(--up)]">
+            <CheckCircle size={16} weight="fill" />
+            Saved
+          </span>
+        )}
+      </div>
     </form>
   );
 }
