@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfile } from "@/app/actions/profile";
 import { buttonClass } from "@/components/ui/button";
 
 const inputClass =
@@ -47,6 +48,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           return;
         }
       }
+
+      await ensureProfile();
 
       router.push("/discover");
       router.refresh();

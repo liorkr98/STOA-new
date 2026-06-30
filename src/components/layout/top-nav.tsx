@@ -63,15 +63,17 @@ export function TopNav({
           <ThemeToggle />
           {profile ? (
             <>
+              <Link
+                href={isAnalyst ? "/studio/compose" : "/become-analyst"}
+                className={buttonClass("primary", "sm")}
+              >
+                Write
+              </Link>
               {isAnalyst ? (
                 <Link href="/studio" className={buttonClass("secondary", "sm")}>
                   Studio
                 </Link>
-              ) : (
-                <Link href="/become-analyst" className={buttonClass("secondary", "sm")}>
-                  Become an analyst
-                </Link>
-              )}
+              ) : null}
               <Link href="/wallet" className="px-2 text-sm text-text-mute hover:text-text">
                 Wallet
               </Link>
@@ -137,11 +139,15 @@ export function TopNav({
             <div className="my-2 h-px bg-border" />
             {profile ? (
               <>
+                <Link
+                  href={isAnalyst ? "/studio/compose" : "/become-analyst"}
+                  onClick={() => setOpen(false)}
+                  className={buttonClass("primary", "sm", "w-full justify-center")}
+                >
+                  Write
+                </Link>
                 <Link href="/wallet" className="rounded-md px-3 py-2 text-sm text-text-mute">
                   Wallet
-                </Link>
-                <Link href="/saved" className="rounded-md px-3 py-2 text-sm text-text-mute">
-                  Saved
                 </Link>
                 <Link href="/inbox" className="rounded-md px-3 py-2 text-sm text-text-mute">
                   Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}

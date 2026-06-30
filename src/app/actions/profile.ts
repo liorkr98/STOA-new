@@ -12,16 +12,29 @@ async function requireUser() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Sign in to continue");
-  return { supabase, userId: user.id };
+  return { supabase, userId: user.id, user };
+}
+
+/** Creates profile + wallet if the signup trigger didn't run. Safe to call repeatedly. */
+export async function ensureProfile() {
+  const { supabase } = await requireUser();
+  const { data, error } = await supabase.rpc("ensure_user_profile");
+  if (error) return { ok: false as const, error: error.message };
+  const row = data as { error?: string };
+  if (row.error) return { ok: false as const, error: row.error };
+  revalidatePath("/", "layout");
+  return { ok: true as const };
 }
 
 export async function becomeAnalyst(formData: FormData) {
   const { supabase, userId } = await requireUser();
+  await supabase.rpc("ensure_user_profile");
+
   const headline = String(formData.get("headline") ?? "").slice(0, 160);
   const subPrice = Number(formData.get("sub_price") ?? 0) || null;
   const reportPrice = Number(formData.get("report_price") ?? 0) || null;
 
-  await supabase
+  const { error } = await supabase
     .from("profiles")
     .update({
       role: "analyst",
@@ -31,8 +44,10 @@ export async function becomeAnalyst(formData: FormData) {
     })
     .eq("id", userId);
 
+  if (error) throw new Error(error.message);
+
   revalidatePath("/studio");
-  redirect("/studio");
+  redirect("/studio/compose");
 }
 
 export async function updateProfile(formData: FormData) {
