@@ -58,8 +58,6 @@ export async function getReport(id: string): Promise<Report | null> {
     const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
     if (!data) return null;
     const report = normalize(data as Record<string, unknown>);
-    // Body lives in report_bodies and is gated by RLS: it only comes back if the
-    // viewer is allowed to read it (free report, author, unlock, or subscriber).
     const { data: bodyRow } = await supabase
       .from("report_bodies")
       .select("body")
@@ -70,6 +68,30 @@ export async function getReport(id: string): Promise<Report | null> {
   } catch {
     return null;
   }
+}
+
+/** Load a draft for the compose editor. Returns null if missing or not a draft. */
+export async function getDraftForAuthor(
+  id: string,
+  authorId: string,
+): Promise<Report | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select(SELECT)
+    .eq("id", id)
+    .eq("author_id", authorId)
+    .eq("status", "draft")
+    .maybeSingle();
+  if (!data) return null;
+  const report = normalize(data as Record<string, unknown>);
+  const { data: bodyRow } = await supabase
+    .from("report_bodies")
+    .select("body")
+    .eq("report_id", id)
+    .maybeSingle();
+  report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+  return report;
 }
 
 export async function listByAuthor(

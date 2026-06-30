@@ -5,7 +5,7 @@ import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
 import type { ComposeInput } from "@/lib/types";
-import type { AccessType, ContentType, Direction } from "@/lib/types";
+import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring";
@@ -16,18 +16,30 @@ const types: { key: ContentType; label: string; hint: string }[] = [
   { key: "short_post", label: "Post", hint: "Commentary. Does not feed your track record." },
 ];
 
-export function ComposeEditor({ analystReportPrice }: { analystReportPrice: number | null }) {
-  const [type, setType] = useState<ContentType>("research");
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [body, setBody] = useState("");
-  const [ticker, setTicker] = useState("");
-  const [direction, setDirection] = useState<Direction>("long");
-  const [target, setTarget] = useState("");
-  const [horizon, setHorizon] = useState(30);
-  const [access, setAccess] = useState<AccessType>("free");
-  const [price, setPrice] = useState(analystReportPrice ?? 7);
-  const [draftId, setDraftId] = useState<string | undefined>();
+export function ComposeEditor({
+  analystReportPrice,
+  initialDraft,
+}: {
+  analystReportPrice: number | null;
+  initialDraft?: Report | null;
+}) {
+  const [type, setType] = useState<ContentType>(initialDraft?.type ?? "research");
+  const [title, setTitle] = useState(initialDraft?.title ?? "");
+  const [summary, setSummary] = useState(initialDraft?.summary ?? "");
+  const [body, setBody] = useState(initialDraft?.body ?? "");
+  const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
+  const [direction, setDirection] = useState<Direction>(
+    initialDraft?.prediction?.direction ?? "long",
+  );
+  const [target, setTarget] = useState(
+    initialDraft?.prediction?.target_price != null
+      ? String(initialDraft.prediction.target_price)
+      : "",
+  );
+  const [horizon, setHorizon] = useState(initialDraft?.prediction?.horizon_days ?? 30);
+  const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
+  const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
+  const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
@@ -38,9 +50,9 @@ export function ComposeEditor({ analystReportPrice }: { analystReportPrice: numb
     return {
       id: draftId,
       type,
-      title: type === "short_post" ? null : title,
+      title: type === "short_post" ? undefined : title,
       summary,
-      body: type === "short_post" ? null : body,
+      body: type === "short_post" ? undefined : body,
       access,
       price: access === "paid" ? Number(price) : null,
       ticker: hasCard ? ticker : null,

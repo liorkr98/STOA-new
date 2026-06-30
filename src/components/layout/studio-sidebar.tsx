@@ -6,8 +6,9 @@ import {
   ChartLineUp,
   Gauge,
   PencilSimpleLine,
+  Users,
+  Gear,
   Wallet,
-  User,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import { StoaLogo } from "@/components/brand/logo";
@@ -18,7 +19,9 @@ import { Avatar } from "@/components/ui/avatar";
 const items = [
   { href: "/studio", label: "Overview", icon: Gauge, exact: true },
   { href: "/studio/compose", label: "Compose", icon: PencilSimpleLine },
+  { href: "/studio/audience", label: "Audience", icon: Users },
   { href: "/wallet", label: "Earnings", icon: Wallet },
+  { href: "/settings", label: "Settings", icon: Gear },
 ];
 
 export function StudioSidebar({ profile }: { profile: Profile }) {
@@ -61,7 +64,6 @@ export function StudioSidebar({ profile }: { profile: Profile }) {
         <Link href={`/analyst/${profile.handle}`} className="flex items-center gap-2">
           <Avatar src={profile.avatar_url} name={profile.display_name} size="sm" />
           <span className="flex items-center gap-1 text-sm font-medium">
-            <User size={12} className="text-text-faint" />
             {profile.handle}
           </span>
         </Link>

@@ -16,9 +16,16 @@ const links = [
   { href: "/discover", label: "Discover" },
   { href: "/markets", label: "Markets" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/search", label: "Search" },
 ];
 
-export function TopNav({ profile }: { profile: Profile | null }) {
+export function TopNav({
+  profile,
+  unreadCount = 0,
+}: {
+  profile: Profile | null;
+  unreadCount?: number;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
@@ -67,6 +74,20 @@ export function TopNav({ profile }: { profile: Profile | null }) {
               )}
               <Link href="/wallet" className="px-2 text-sm text-text-mute hover:text-text">
                 Wallet
+              </Link>
+              <Link href="/saved" className="px-2 text-sm text-text-mute hover:text-text">
+                Saved
+              </Link>
+              <Link href="/inbox" className="relative px-2 text-sm text-text-mute hover:text-text">
+                Inbox
+                {unreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-accent-ink">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+              <Link href="/subscriptions" className="px-2 text-sm text-text-mute hover:text-text">
+                Subs
               </Link>
               <Link
                 href={`/analyst/${profile.handle}`}
@@ -118,6 +139,15 @@ export function TopNav({ profile }: { profile: Profile | null }) {
               <>
                 <Link href="/wallet" className="rounded-md px-3 py-2 text-sm text-text-mute">
                   Wallet
+                </Link>
+                <Link href="/saved" className="rounded-md px-3 py-2 text-sm text-text-mute">
+                  Saved
+                </Link>
+                <Link href="/inbox" className="rounded-md px-3 py-2 text-sm text-text-mute">
+                  Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
+                </Link>
+                <Link href="/settings" className="rounded-md px-3 py-2 text-sm text-text-mute">
+                  Settings
                 </Link>
                 <Link
                   href={isAnalyst ? "/studio" : "/become-analyst"}

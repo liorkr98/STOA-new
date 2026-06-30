@@ -18,6 +18,7 @@ export const metadata: Metadata = { title: "Discover" };
 const TABS = [
   { key: "trending", label: "Trending" },
   { key: "recent", label: "Recent" },
+  { key: "researchers", label: "Researchers" },
   { key: "following", label: "Following" },
   { key: "subscriptions", label: "Subscriptions" },
 ];
@@ -31,8 +32,18 @@ export default async function DiscoverPage({
   const userId = await getSessionUserId();
 
   let reports;
+  let researchers: Awaited<ReturnType<typeof listTopAnalysts>> = [];
+  let researcherCounts: Record<string, number> = {};
   let needsAuth = false;
-  if (tab === "following") {
+
+  if (tab === "researchers") {
+    researchers = await listTopAnalysts(24);
+    researcherCounts = Object.fromEntries(
+      await Promise.all(
+        researchers.map(async (a) => [a.id, await resolvedCountByAuthor(a.id)] as const),
+      ),
+    );
+  } else if (tab === "following") {
     if (!userId) needsAuth = true;
     else reports = await listFeedFromAnalysts(await followedAnalystIds(userId));
   } else if (tab === "subscriptions") {
@@ -70,6 +81,23 @@ export default async function DiscoverPage({
               </Link>
             }
           />
+        ) : tab === "researchers" ? (
+          researchers.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {researchers.map((a) => (
+                <AnalystCard
+                  key={a.id}
+                  analyst={a}
+                  resolvedCalls={researcherCounts[a.id] ?? 0}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No analysts yet"
+              body="Once analysts publish and build track records, they will appear here."
+            />
+          )
         ) : reports && reports.length > 0 ? (
           <div className="flex flex-col gap-5">
             {reports.map((r) => (

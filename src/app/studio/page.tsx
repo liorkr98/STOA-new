@@ -93,7 +93,7 @@ export default async function StudioOverview() {
               {drafts.slice(0, 6).map((d) => (
                 <li key={d.id} className="flex items-center justify-between border-b border-border px-5 py-3 last:border-0">
                   <span className="truncate text-sm">{d.title || "Untitled draft"}</span>
-                  <Link href="/studio/compose" className="text-text-faint hover:text-text">
+                  <Link href={`/studio/compose?id=${d.id}`} className="text-text-faint hover:text-text">
                     <PencilSimpleLine size={16} />
                   </Link>
                 </li>

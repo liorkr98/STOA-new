@@ -46,5 +46,6 @@ export async function updateProfile(formData: FormData) {
     .update({ display_name, bio, headline, sub_price, report_price })
     .eq("id", userId);
   revalidatePath("/studio");
+  revalidatePath("/settings");
   return { ok: true };
 }

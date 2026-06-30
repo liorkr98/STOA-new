@@ -62,6 +62,7 @@ export async function toggleSave(reportId: string) {
   } else {
     await supabase.from("saved_reports").insert({ report_id: reportId, user_id: userId });
   }
+  revalidatePath("/saved");
   return { saved: !existing };
 }
 
