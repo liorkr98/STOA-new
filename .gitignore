@@ -29,3 +29,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# large Kaggle downloads (import script reads from here)
+/data/kaggle/

@@ -10,7 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
-    "grade": "tsx scripts/grade.ts"
+    "grade": "tsx scripts/grade.ts",
+    "import:kaggle": "tsx scripts/import-kaggle.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.7",
@@ -26,6 +27,7 @@
     "react-dom": "^19.0.0",
     "recharts": "^2.15.0",
     "tailwind-merge": "^2.5.4",
+    "yahoo-finance2": "^3.15.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

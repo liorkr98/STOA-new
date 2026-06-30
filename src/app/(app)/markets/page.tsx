@@ -49,8 +49,8 @@ export default async function MarketsPage() {
 
       {anyMock && (
         <p className="t-meta">
-          Prices are simulated in demo mode. Add a market-data API key in your environment to show
-          live quotes.
+          Some prices could not be fetched live and are simulated. Yahoo Finance is the default
+          feed; optional fallback keys: TWELVE_DATA_API_KEY, ALPHA_VANTAGE_API_KEY.
         </p>
       )}
     </div>

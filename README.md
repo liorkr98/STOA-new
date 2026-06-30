@@ -22,8 +22,7 @@ See `design-system/MASTER.md` for the visual system and `AGENTS.md` for the rule
 
 - Node.js 20+ and npm.
 - A free Supabase project (https://supabase.com).
-- Optional: a Finnhub API key (https://finnhub.io) for live prices. Without it the engine runs in
-  deterministic mock-price mode, so everything still works.
+- Optional: fallback API keys for Twelve Data or Alpha Vantage if Yahoo is unavailable. Without any live feed the engine uses deterministic mock prices.
 
 ## 1. Install
 
@@ -40,6 +39,7 @@ npm install
    - `supabase/migrations/0003_functions.sql`
    - `supabase/migrations/0004_storage.sql`
    - `supabase/migrations/0005_rating_expiry_indexes.sql`
+   - `supabase/migrations/0006_market_reference_data.sql` (optional — Kaggle fundamentals)
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
@@ -50,7 +50,8 @@ cp .env.example .env.local
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...        # server only, keep secret
-FINNHUB_API_KEY=                     # optional; blank = mock prices
+TWELVE_DATA_API_KEY=                 # optional fallback if Yahoo fails
+ALPHA_VANTAGE_API_KEY=               # optional last-resort fallback
 CRON_SECRET=<a long random string>
 ```
 
@@ -78,8 +79,8 @@ sign-in, the feed, profiles, and Studio need the backend set up.
 - When an analyst publishes a call, the entry price is locked from the market feed server-side
   (`src/app/actions/reports.ts`). The SPY price is captured for alpha.
 - The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) expires
-  lapsed subscriptions, finds calls whose timeframe has ended, pulls prices in batched Finnhub
-  requests, grades each call, and recomputes score, rating, and tier.
+  lapsed subscriptions, finds calls whose timeframe has ended, pulls prices via Yahoo Finance
+  (with optional fallbacks), grades each call, and recomputes score, rating, and tier.
 - Run it manually any time:
 
 ```bash

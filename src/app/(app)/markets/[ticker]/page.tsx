@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { price } from "@/lib/format";
-import { getQuote } from "@/lib/engine/market";
+import { getQuote, getCompanyFundamentals } from "@/lib/engine/market";
 import { listByTicker } from "@/lib/db/reports";
 import { UNIVERSE } from "@/lib/universe";
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StoaCoverageBadge } from "@/components/markets/coverage-badge";
+import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
 
 export async function generateMetadata({
   params,
@@ -23,7 +24,11 @@ export default async function TickerPage({
 }) {
   const { ticker } = await params;
   const sym = ticker.toUpperCase();
-  const [quote, reports] = await Promise.all([getQuote(sym), listByTicker(sym)]);
+  const [quote, reports, fundamentals] = await Promise.all([
+    getQuote(sym),
+    listByTicker(sym),
+    getCompanyFundamentals(sym),
+  ]);
   const meta = UNIVERSE.find((u) => u.ticker === sym);
 
   return (
@@ -38,6 +43,8 @@ export default async function TickerPage({
           <StoaCoverageBadge count={reports.length} />
         </div>
       </div>
+
+      <FundamentalsPanel data={fundamentals} />
 
       <div>
         <h2 className="t-h3 mb-4">Stoa coverage</h2>
