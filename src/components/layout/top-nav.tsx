@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { Bell, PenNib } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 import { StoaLogo } from "@/components/brand/logo";
-import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
+import { AccountMenu } from "@/components/layout/account-menu";
 import { signOut } from "@/app/actions/auth";
 
 const links = [
@@ -67,40 +68,22 @@ export function TopNav({
                 href={isAnalyst ? "/studio/compose" : "/become-analyst"}
                 className={buttonClass("primary", "sm")}
               >
+                <PenNib size={15} weight="fill" />
                 Write
               </Link>
-              {isAnalyst ? (
-                <Link href="/studio" className={buttonClass("secondary", "sm")}>
-                  Studio
-                </Link>
-              ) : null}
-              <Link href="/wallet" className="px-2 text-sm text-text-mute hover:text-text">
-                Wallet
-              </Link>
-              <Link href="/saved" className="px-2 text-sm text-text-mute hover:text-text">
-                Saved
-              </Link>
-              <Link href="/inbox" className="relative px-2 text-sm text-text-mute hover:text-text">
-                Inbox
+              <Link
+                href="/inbox"
+                className="focus-ring relative rounded-full p-2 text-text-mute hover:bg-surface-2 hover:text-text"
+                aria-label="Notifications"
+              >
+                <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-accent-ink">
+                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-accent-ink">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </Link>
-              <Link href="/subscriptions" className="px-2 text-sm text-text-mute hover:text-text">
-                Subs
-              </Link>
-              <Link
-                href={`/analyst/${profile.handle}`}
-                className="focus-ring rounded-full"
-                aria-label="Your profile"
-              >
-                <Avatar src={profile.avatar_url} name={profile.display_name} size="sm" />
-              </Link>
-              <form action={signOut}>
-                <button className="px-2 text-sm text-text-faint hover:text-text">Sign out</button>
-              </form>
+              <AccountMenu profile={profile} />
             </>
           ) : (
             <>
@@ -144,22 +127,66 @@ export function TopNav({
                   onClick={() => setOpen(false)}
                   className={buttonClass("primary", "sm", "w-full justify-center")}
                 >
+                  <PenNib size={15} weight="fill" />
                   Write
                 </Link>
-                <Link href="/wallet" className="rounded-md px-3 py-2 text-sm text-text-mute">
-                  Wallet
+                <Link
+                  href={`/analyst/${profile.handle}`}
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Your profile
                 </Link>
-                <Link href="/inbox" className="rounded-md px-3 py-2 text-sm text-text-mute">
+                {isAnalyst ? (
+                  <Link
+                    href="/studio"
+                    onClick={() => setOpen(false)}
+                    className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  >
+                    Studio dashboard
+                  </Link>
+                ) : null}
+                <Link
+                  href="/inbox"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
                   Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </Link>
-                <Link href="/settings" className="rounded-md px-3 py-2 text-sm text-text-mute">
+                <Link
+                  href="/wallet"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Wallet & credits
+                </Link>
+                <Link
+                  href="/saved"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Saved
+                </Link>
+                <Link
+                  href="/subscriptions"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Subscriptions
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
                   Settings
                 </Link>
                 <Link
-                  href={isAnalyst ? "/studio" : "/become-analyst"}
+                  href="/settings/branding"
+                  onClick={() => setOpen(false)}
                   className="rounded-md px-3 py-2 text-sm text-text-mute"
                 >
-                  {isAnalyst ? "Studio" : "Become an analyst"}
+                  Profile & branding
                 </Link>
                 <form action={signOut}>
                   <button className="px-3 py-2 text-sm text-text-faint">Sign out</button>

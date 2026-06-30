@@ -28,21 +28,30 @@ export function ReportCard({ report }: { report: Report }) {
   return (
     <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[border-color] hover:border-border-strong">
       <div className="flex items-center justify-between gap-3">
-        <Link
-          href={author ? `/analyst/${author.handle}` : "#"}
-          className="flex items-center gap-3"
-        >
-          <Avatar src={author?.avatar_url} name={author?.display_name ?? "Analyst"} size="md" />
-          <div className="flex flex-col leading-tight">
-            <span className="flex items-center gap-1.5 text-sm font-semibold">
-              {author?.display_name ?? "Analyst"}
-              {author?.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
-            </span>
-            <span className="t-meta">
-              @{author?.handle} · {formatDistanceToNow(new Date(when), { addSuffix: true })}
-            </span>
+        {author ? (
+          <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">
+            <Avatar src={author.avatar_url} name={author.display_name} size="md" />
+            <div className="flex flex-col leading-tight">
+              <span className="flex items-center gap-1.5 text-sm font-semibold">
+                {author.display_name}
+                {author.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
+              </span>
+              <span className="t-meta">
+                @{author.handle} · {formatDistanceToNow(new Date(when), { addSuffix: true })}
+              </span>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-3">
+            <Avatar src={null} name="Analyst" size="md" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm font-semibold">Analyst</span>
+              <span className="t-meta">
+                {formatDistanceToNow(new Date(when), { addSuffix: true })}
+              </span>
+            </div>
           </div>
-        </Link>
+        )}
         <div className="flex items-center gap-2">
           {author && (
             <span className="num text-sm font-semibold text-text-mute" title="Analyst rating">

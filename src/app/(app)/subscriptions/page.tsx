@@ -41,12 +41,16 @@ export default async function SubscriptionsPage() {
                   <Avatar src={s.analyst.avatar_url} name={s.analyst.display_name} size="md" />
                 )}
                 <div>
-                  <Link
-                    href={`/analyst/${s.analyst?.handle ?? ""}`}
-                    className="font-medium hover:text-accent"
-                  >
-                    {s.analyst?.display_name ?? "Analyst"}
-                  </Link>
+                  {s.analyst?.handle ? (
+                    <Link
+                      href={`/analyst/${s.analyst.handle}`}
+                      className="font-medium hover:text-accent"
+                    >
+                      {s.analyst.display_name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{s.analyst?.display_name ?? "Analyst"}</span>
+                  )}
                   <p className="t-meta">
                     {usd(s.price)}/mo · access until {format(new Date(s.renews_at), "MMM d, yyyy")}
                   </p>

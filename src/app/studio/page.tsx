@@ -64,20 +64,22 @@ export default async function StudioOverview() {
           {openCalls.length > 0 ? (
             <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
               {openCalls.slice(0, 6).map((p) => (
-                <li
-                  key={p.id}
-                  className="flex items-center justify-between border-b border-border px-5 py-3 last:border-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="num font-semibold">{p.ticker}</span>
-                    <span className="t-meta capitalize">{p.direction}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="t-meta">
-                      resolves {formatDistanceToNow(new Date(p.resolves_at), { addSuffix: true })}
-                    </span>
-                    <GradeTag outcome="open" />
-                  </div>
+                <li key={p.id} className="border-b border-border last:border-0">
+                  <Link
+                    href={`/report/${p.report_id}`}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-surface-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="num font-semibold">{p.ticker}</span>
+                      <span className="t-meta capitalize">{p.direction}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="t-meta">
+                        resolves {formatDistanceToNow(new Date(p.resolves_at), { addSuffix: true })}
+                      </span>
+                      <GradeTag outcome="open" />
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>

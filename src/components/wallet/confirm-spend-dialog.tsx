@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CheckCircle, X } from "@phosphor-icons/react";
 import { useEffect } from "react";
@@ -102,9 +103,15 @@ export function ConfirmSpendDialog({
                 </dl>
 
                 {insufficient && (
-                  <p className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
-                    Not enough balance. Top up your wallet to continue.
-                  </p>
+                  <div className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                    <p>Not enough balance. Top up your wallet to continue.</p>
+                    <Link
+                      href="/wallet"
+                      className="mt-1 inline-block font-medium underline hover:no-underline"
+                    >
+                      Go to wallet
+                    </Link>
+                  </div>
                 )}
                 {result?.error && (
                   <p className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
