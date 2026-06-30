@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { StudioSidebar } from "@/components/layout/studio-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");

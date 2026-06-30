@@ -2,6 +2,8 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { unreadNotificationCount } from "@/lib/db/notifications";
 import { TopNav } from "@/components/layout/top-nav";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getSessionProfile();
   const unreadCount = profile ? await unreadNotificationCount(profile.id) : 0;

@@ -12,7 +12,6 @@ import {
 import type { FactCheckResult, FactClaim, ClaimType } from "@/lib/ai/fact-check";
 import { AI_COST } from "@/lib/ai/credits";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/design/cn";
 
 const TYPE_STYLE: Record<
   ClaimType,

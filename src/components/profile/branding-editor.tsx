@@ -18,7 +18,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { DotsSixVertical, Sparkle } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
-import { cn } from "@/lib/design/cn";
 import type { ProfileConfig, ProfileSection } from "@/lib/editor/types";
 import { updateProfileConfig } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";

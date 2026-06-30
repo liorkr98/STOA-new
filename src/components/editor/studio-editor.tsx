@@ -51,7 +51,7 @@ export function StudioEditor({
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
   const [direction, setDirection] = useState<Direction>("long");
   const [target, setTarget] = useState("");
-  const [horizon, setHorizon] = useState(30);
+  const [horizon] = useState(30);
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
