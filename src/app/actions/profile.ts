@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+import type { ProfileConfig } from "@/lib/editor/types";
+
 async function requireUser() {
   const supabase = await createClient();
   const {
@@ -48,4 +50,29 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/studio");
   revalidatePath("/settings");
   return { ok: true };
+}
+
+export async function updateAvatarUrl(url: string) {
+  const { supabase, userId } = await requireUser();
+  await supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  revalidatePath("/settings");
+  revalidatePath("/settings/branding");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+}
+
+export async function updateCoverUrl(url: string) {
+  const { supabase, userId } = await requireUser();
+  await supabase.from("profiles").update({ cover_url: url }).eq("id", userId);
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  revalidatePath("/settings/branding");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+}
+
+export async function updateProfileConfig(config: ProfileConfig) {
+  const { supabase, userId } = await requireUser();
+  await supabase.from("profiles").update({ profile_config: config }).eq("id", userId);
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  revalidatePath("/settings/branding");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }

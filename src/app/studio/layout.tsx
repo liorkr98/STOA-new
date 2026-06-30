@@ -10,9 +10,7 @@ export default async function StudioLayout({ children }: { children: React.React
   return (
     <div className="flex min-h-[100dvh]">
       <StudioSidebar profile={profile} />
-      <main className="flex-1 px-5 py-8 md:px-8">
-        <div className="mx-auto w-full max-w-5xl">{children}</div>
-      </main>
+      <main className="flex-1 px-5 py-8 md:px-8">{children}</main>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
 import { CommentsSection } from "@/components/report/comments-section";
+import { ReportBody } from "@/components/editor/report-body";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
@@ -98,9 +99,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {canRead ? (
-        <div className="prose-stoa mt-8 whitespace-pre-wrap text-[1.0625rem] leading-[1.8] text-text">
-          {report.body}
-        </div>
+        <ReportBody body={report.body} />
       ) : (
         <Paywall
           access={report.access}

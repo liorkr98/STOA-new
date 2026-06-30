@@ -3,6 +3,8 @@
  * These mirror the Postgres schema in supabase/migrations.
  */
 
+import type { ProfileConfig } from "@/lib/editor/types";
+
 export type Role = "user" | "analyst" | "admin";
 export type ContentType = "research" | "call" | "short_post";
 export type ReportStatus = "draft" | "published" | "archived";
@@ -39,6 +41,7 @@ export interface Profile {
   report_price: number | null;
   verified: boolean;
   created_at: string;
+  profile_config?: ProfileConfig | null;
 }
 
 export interface Report {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   ChartLineUp,
   Gauge,
+  PaintBrushBroad,
   PencilSimpleLine,
   Users,
   Gear,
@@ -22,6 +23,7 @@ const items = [
   { href: "/studio/audience", label: "Audience", icon: Users },
   { href: "/wallet", label: "Earnings", icon: Wallet },
   { href: "/settings", label: "Settings", icon: Gear },
+  { href: "/settings/branding", label: "Branding", icon: PaintBrushBroad },
 ];
 
 export function StudioSidebar({ profile }: { profile: Profile }) {

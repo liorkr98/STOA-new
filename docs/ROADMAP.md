@@ -29,7 +29,8 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - Studio overview, compose, **draft resume**, **audience**
 - **Saved library**, **inbox**, **subscriptions management**, **search**, **settings**
 - **Scoring methodology** public page
-- Yahoo Finance market data + optional Kaggle fundamentals
+- **Compose editor** — block-based studio with drag-and-drop, AI sidebar, live charts
+- **Profile branding** — avatar/cover upload, section reorder, specialties
 
 ## In progress / next (high priority)
 
