@@ -34,25 +34,31 @@ npm install
 ## 2. Set up Supabase
 
 1. Create a project at https://supabase.com.
-2. In the Supabase dashboard, open **SQL Editor** and run the migration files in order:
-   - `supabase/migrations/0001_init.sql`
-   - `supabase/migrations/0002_rls.sql`
-   - `supabase/migrations/0003_functions.sql`
-   - `supabase/migrations/0004_storage.sql`
-   - `supabase/migrations/0005_rating_expiry_indexes.sql`
-   - `supabase/migrations/0006_market_reference_data.sql` (optional — Kaggle fundamentals)
-   - `supabase/migrations/0007_subscription_cancel.sql`
-   - `supabase/migrations/0008_profile_config.sql`
-   - `supabase/migrations/0009_ai_credits.sql`
-   - `supabase/migrations/0010_profile_bootstrap.sql`
-   - `supabase/migrations/0011_social_notifications.sql`
-   - `supabase/migrations/0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
-   - `supabase/migrations/0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
-   - `supabase/migrations/0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
-   - `supabase/migrations/0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
-   - `supabase/migrations/0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
-   - `supabase/migrations/0017_analyst_applications.sql` (analyst application funnel + admin approval)
-3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
+2. In the Supabase dashboard, open **SQL Editor → New query**.
+3. **Paste the SQL contents** — not the filename. Typing `0001_init.sql` in the editor will fail with `trailing junk after numeric literal`.
+
+   **Easiest (recommended):** open `supabase/bootstrap-remote.sql` in this repo, copy **the entire file**, paste into SQL Editor, and click **Run once**. It runs migrations `0001`–`0017` in order.
+
+   **Or run one file at a time:** open each file under `supabase/migrations/`, copy **all of its SQL**, paste into SQL Editor, run, then move to the next:
+
+   - `0001_init.sql` — starts with `-- Stoa schema: core tables`
+   - `0002_rls.sql`
+   - `0003_functions.sql`
+   - `0004_storage.sql`
+   - `0005_rating_expiry_indexes.sql`
+   - `0006_market_reference_data.sql` (optional — Kaggle fundamentals)
+   - `0007_subscription_cancel.sql`
+   - `0008_profile_config.sql`
+   - `0009_ai_credits.sql`
+   - `0010_profile_bootstrap.sql`
+   - `0011_social_notifications.sql`
+   - `0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
+   - `0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
+   - `0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
+   - `0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
+   - `0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
+   - `0017_analyst_applications.sql` (analyst application funnel + admin approval)
+4. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
 cp .env.example .env.local
