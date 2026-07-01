@@ -39,13 +39,19 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Newsletter fan-out** — publishing notifies followers + active subscribers
 - **Social notifications** — follow, like, comment, publication, sale, subscribe in the inbox
 - **Track record surfaced** — score breakdown, hit/near/miss, tier progress, full call ledger with alpha
+- **Analyst application funnel** — investors apply with a short questionnaire, admin approves/rejects at `/admin/applications`, only approved analysts get compose access
+- **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
+- **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
+- **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
+- **Stripe Connect + Identity — schema, lib, routes, webhooks scaffolded** (`src/lib/stripe/`), additive to the simulated wallet. Needs live API keys to actually move money — see next section.
 
 ## In progress / next (high priority)
 
-1. **Real payments** — Stripe Connect replacing simulated `top_up`
-2. **Analyst payouts** — withdrawal flow (min balance, KYC later)
+1. **Real payments — go live** — the Stripe Connect/Identity plumbing exists (`src/lib/stripe/`, `platform_transfers` ledger, `connect_accounts`/`identity_verifications` tables); what's left is: add `STRIPE_*` keys, build the Checkout/Elements UI for subscribe + unlock, and switch `subscribe_to_analyst`/`purchase_report` callers to the Stripe path once a creator's `connect_accounts.status = 'active'`.
+2. **Analyst payouts UI** — Stripe Express dashboard link exists server-side (`GET /api/creator/connect/dashboard-link`); needs a Settings page entry point.
 3. **Subscription auto-renew** — or clear manual renewal UX
 4. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
+5. **Disclosure block UI** — backend contract exists (`reports.position_disclosed/held`, `compensation_*`, `views_certified`, enforced server-side in `publishReport`); compose editor needs the actual step before publish.
 
 ## Later (parity + polish)
 
@@ -69,7 +75,8 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 
 ## Migrations to run
 
-Apply in order through `0007_subscription_cancel.sql` on your Supabase project.
+Apply every file in `supabase/migrations/` in order (see README.md for the current full list,
+through `0016_platform_transfers.sql`) on your Supabase project via the SQL Editor.
 
 ```bash
 npm run seed          # demo analysts + investor

@@ -45,6 +45,11 @@ npm install
    - `supabase/migrations/0009_ai_credits.sql`
    - `supabase/migrations/0010_profile_bootstrap.sql`
    - `supabase/migrations/0011_social_notifications.sql`
+   - `supabase/migrations/0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
+   - `supabase/migrations/0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
+   - `supabase/migrations/0014_identity_connect.sql` (Stripe Identity + Connect scaffolding — safe to run without Stripe keys)
+   - `supabase/migrations/0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
+   - `supabase/migrations/0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
@@ -78,6 +83,60 @@ npm run dev
 
 Open http://localhost:3000. The public marketing site renders even before Supabase is configured;
 sign-in, the feed, profiles, and Studio need the backend set up.
+
+## Trust & compliance layer
+
+Anything that becomes part of a creator's public track record is append-only — enforced with
+Postgres triggers, not just app-level checks:
+
+- **Locking:** the instant a report's status becomes `published`, `locked_at` is set and a trigger
+  blocks further edits to its title, summary, ticker, access, price, and body. Only `status`
+  (archiving), engagement counters, and `fact_check_results` stay mutable.
+- **Calls are permanently frozen** the moment they're created — ticker, direction, lock/target
+  price, horizon, and the SPY benchmark lock can never change, calls can never be deleted, and a
+  resolved outcome can never be re-resolved.
+- **Fact-check claims** (`claims` table — one row per atomic assertion, with character offsets for
+  inline highlighting) freeze the same instant the parent report locks.
+- **`audit_log`** is an append-only trail (admin-read only, no update/delete policy) auto-populated
+  by triggers on report lock/archive, call resolution, and payouts — the answerable record for any
+  future regulatory question.
+- **Mandatory disclosure block:** `reports.position_disclosed/held`, `compensation_disclosed/tied/detail`,
+  and `views_certified` (a Reg-AC-style "these are my own views" cert). `publishReport` blocks the
+  publish server-side once the caller starts sending a certification value — see
+  `src/app/actions/reports.ts`.
+
+## Fact-checker pipeline
+
+`src/lib/fact-check/` splits the pipeline into pure, independently testable steps:
+
+1. **`claim-extraction.ts`** — sends the report body to OpenAI (mock fallback without a key) to
+   decompose it into atomic claims.
+2. **`claim-classification.ts`** — cross-checks numeric claims against live Yahoo Finance quotes,
+   maps the result onto the `claim_verdict` enum (`fact` / `unproven` / `opinion` / `contradicted`),
+   and locates each claim's character offsets in the source text.
+3. Claims persist to the `claims` table via `persistClaims` (`src/app/actions/claims.ts`), called
+   from `POST /api/ai/fact-check` when a `reportId` is supplied. Debate comments
+   (`postDebateComment`) are only allowed on `opinion`-verdict claims, enforced both server-side and
+   by RLS.
+
+## Real-money rail (Stripe Connect + Identity) — scaffolded, optional
+
+The simulated wallet is the live economy today; nothing below is required to run the app. Once
+`STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_IDENTITY_WEBHOOK_SECRET` are set:
+
+- `src/lib/stripe/connect.ts` — creates Stripe Express accounts, onboarding links, and dashboard
+  login links. `POST /api/creator/connect/onboard`, `GET /api/creator/connect/dashboard-link`.
+- `src/lib/stripe/identity.ts` — creates Stripe Identity verification sessions.
+  `POST /api/creator/verify-identity`.
+- `src/lib/stripe/webhooks.ts` — `POST /api/webhooks/stripe` (`account.updated`,
+  `payment_intent.succeeded`, `invoice.paid`) and `POST /api/webhooks/stripe-identity`
+  (`identity.verification_session.verified/.requires_input`) keep `connect_accounts`,
+  `identity_verifications`, `profiles.identity_verified`, and the `platform_transfers` earnings
+  ledger in sync.
+- The platform fee split (10%) lives in `splitPlatformFee()` — the same rate the wallet's SQL
+  functions already use, kept in one place.
+
+See `docs/platform.md` for the full external-services table.
 
 ## How grading works
 
@@ -122,12 +181,14 @@ git push -u origin main
 ## Project layout
 
 ```
-src/app/            Routes. (marketing) public, (app) investor, studio/ analyst.
+src/app/            Routes. (marketing) public, (app) investor, studio/ analyst, api/ route handlers.
 src/components/     UI primitives (ui/), charts, layout, and feature components.
 src/lib/db/         The only place that talks to Supabase (typed queries).
-src/lib/engine/     Scoring, market data, and the grading job.
+src/lib/engine/     Scoring (score.ts), market data (engine/market/), and the grading job (grade.ts).
+src/lib/fact-check/ Claim extraction + classification — pure, testable pipeline steps.
+src/lib/stripe/     Connect (payouts), Identity (KYC), and webhook dispatch. Optional, additive.
 src/lib/wallet/...  Wallet flows live in actions/wallet.ts + Postgres RPCs.
-supabase/migrations Schema, RLS, functions, storage.
+supabase/migrations Schema, RLS, functions, storage, immutability triggers, audit log.
 scripts/            seed.ts (demo data), grade.ts (run the engine once).
 ```
 
