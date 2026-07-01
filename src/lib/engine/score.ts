@@ -25,6 +25,19 @@ function wilsonLower(hits: number, total: number): number {
   return Math.max(0, (centre - margin) / denom);
 }
 
+/**
+ * Percentile rank of `value` within `distribution`, as a 0-100 number.
+ * Used to normalize a creator's average alpha against every other creator's,
+ * so a single outsized call can't permanently swamp the score — the MOAT
+ * formula's "normalized_return" step.
+ */
+export function percentileRank(value: number, distribution: number[]): number {
+  if (distribution.length === 0) return 50;
+  const below = distribution.filter((v) => v < value).length;
+  const equal = distribution.filter((v) => v === value).length;
+  return Math.round(((below + 0.5 * equal) / distribution.length) * 100);
+}
+
 /** Maps 0-100 composite to the public 600-1400 scale. */
 export function scoreToRating(score: number): number {
   const clamped = Math.min(100, Math.max(0, score));
@@ -152,7 +165,17 @@ function drawdownPenalty(sorted: Resolved[]): number {
   return Math.min(0.05, (maxDd / 6) * 0.05);
 }
 
-export function computeScore(predictions: Resolved[]): ScoreResult {
+export function computeScore(
+  predictions: Resolved[],
+  /**
+   * Every other creator's avgAlpha, gathered by the caller (grade.ts) across
+   * a single grading pass. When supplied, alpha is scored by percentile rank
+   * against the platform instead of a fixed linear band — the MOAT formula's
+   * normalization step, aligned to real distribution rather than a guessed
+   * +/-20% range.
+   */
+  globalAlphaDistribution?: number[],
+): ScoreResult {
   const resolved = predictions
     .filter((p) => p.outcome !== "open" && p.lock_price && p.resolved_price != null)
     .sort((a, b) => +new Date(a.resolves_at) - +new Date(b.resolves_at));
@@ -222,7 +245,10 @@ export function computeScore(predictions: Resolved[]): ScoreResult {
     }
     if (alphaWeight > 0) {
       avgAlpha = alphaSum / alphaWeight;
-      alphaScore = Math.min(100, Math.max(0, ((avgAlpha + 20) / 40) * 100));
+      alphaScore =
+        globalAlphaDistribution && globalAlphaDistribution.length >= 5
+          ? percentileRank(avgAlpha, globalAlphaDistribution)
+          : Math.min(100, Math.max(0, ((avgAlpha + 20) / 40) * 100));
     }
   }
 

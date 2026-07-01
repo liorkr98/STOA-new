@@ -164,7 +164,7 @@ begin
 end;
 $$;
 
--- ── Demo top-up (simulated deposit; replace with Stripe later) ───────────────
+-- ── Demo top-up (simulated deposit; replace with PayPal later) ────────────────
 create or replace function top_up(p_amount numeric)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare

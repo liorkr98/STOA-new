@@ -12,8 +12,9 @@ Tagline: Think clearly. Invest better.
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
 - **Engine:** a 0-100 analyst score (win rate + profit factor + alpha) mapped to a 600-1400 rating,
   with automatic grading of calls against live prices on a schedule.
-- **Money:** a simulated wallet/credits system with a 90/10 split, built so real Stripe can drop
-  in later.
+- **Money:** a simulated wallet/credits system with a 90/10 split, built so real PayPal payouts can
+  drop in later (PayPal, not Stripe Connect, since Stripe Connect payouts aren't available for
+  Israel-based platforms/sellers).
 
 See `design-system/MASTER.md` for the visual system and `AGENTS.md` for the rules every AI agent
 (Cursor and Claude Code) follows.
@@ -45,6 +46,11 @@ npm install
    - `supabase/migrations/0009_ai_credits.sql`
    - `supabase/migrations/0010_profile_bootstrap.sql`
    - `supabase/migrations/0011_social_notifications.sql`
+   - `supabase/migrations/0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
+   - `supabase/migrations/0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
+   - `supabase/migrations/0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
+   - `supabase/migrations/0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
+   - `supabase/migrations/0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
@@ -78,6 +84,72 @@ npm run dev
 
 Open http://localhost:3000. The public marketing site renders even before Supabase is configured;
 sign-in, the feed, profiles, and Studio need the backend set up.
+
+## Trust & compliance layer
+
+Anything that becomes part of a creator's public track record is append-only — enforced with
+Postgres triggers, not just app-level checks:
+
+- **Locking:** the instant a report's status becomes `published`, `locked_at` is set and a trigger
+  blocks further edits to its title, summary, ticker, access, price, and body. Only `status`
+  (archiving), engagement counters, and `fact_check_results` stay mutable.
+- **Calls are permanently frozen** the moment they're created — ticker, direction, lock/target
+  price, horizon, and the SPY benchmark lock can never change, calls can never be deleted, and a
+  resolved outcome can never be re-resolved.
+- **Fact-check claims** (`claims` table — one row per atomic assertion, with character offsets for
+  inline highlighting) freeze the same instant the parent report locks.
+- **`audit_log`** is an append-only trail (admin-read only, no update/delete policy) auto-populated
+  by triggers on report lock/archive, call resolution, and payouts — the answerable record for any
+  future regulatory question.
+- **Mandatory disclosure block:** `reports.position_disclosed/held`, `compensation_disclosed/tied/detail`,
+  and `views_certified` (a Reg-AC-style "these are my own views" cert). `publishReport` blocks the
+  publish server-side once the caller starts sending a certification value — see
+  `src/app/actions/reports.ts`.
+
+## Fact-checker pipeline
+
+`src/lib/fact-check/` splits the pipeline into pure, independently testable steps:
+
+1. **`claim-extraction.ts`** — sends the report body to OpenAI (mock fallback without a key) to
+   decompose it into atomic claims.
+2. **`claim-classification.ts`** — cross-checks numeric claims against live Yahoo Finance quotes,
+   maps the result onto the `claim_verdict` enum (`fact` / `unproven` / `opinion` / `contradicted`),
+   and locates each claim's character offsets in the source text.
+3. Claims persist to the `claims` table via `persistClaims` (`src/app/actions/claims.ts`), called
+   from `POST /api/ai/fact-check` when a `reportId` is supplied. Debate comments
+   (`postDebateComment`) are only allowed on `opinion`-verdict claims, enforced both server-side and
+   by RLS.
+
+## Real-money rail (PayPal) — scaffolded, optional
+
+PayPal, not Stripe Connect — Stripe Connect payouts aren't available for Israel-based
+platforms/sellers, PayPal is. The simulated wallet is the live economy today; nothing below is
+required to run the app. No SDK dependency — PayPal's REST API is plain JSON over `fetch`, same
+pattern as the OpenAI integration. Once `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` /
+`PAYPAL_PARTNER_ID` are set:
+
+- `src/lib/paypal/partner.ts` — Partner Referrals onboarding (PayPal's analog to Stripe Connect
+  Express): creates a hosted onboarding link, and polls
+  `GET /v1/customer/partners/{partner_id}/merchant-integrations` for status.
+  `POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`.
+- **No separate identity/KYC step** — PayPal performs its own verification during the seller's
+  onboarding flow itself (signing up for / logging into PayPal and granting permissions), so
+  `profiles.identity_verified` is derived directly from PayPal's own
+  `payments_receivable` + `primary_email_confirmed` signals via `upsert_paypal_account()`, not a
+  separate product like Stripe Identity.
+- `src/lib/paypal/orders.ts` — Orders API v2 one-time payments with a platform-fee split via
+  `purchase_units[].payment_instruction.platform_fees`.
+- `src/lib/paypal/webhooks.ts` — `POST /api/webhooks/paypal` handles `MERCHANT.ONBOARDING.COMPLETED`,
+  `PAYMENT.CAPTURE.COMPLETED`, and `BILLING.SUBSCRIPTION.*`. Signature verification calls PayPal's
+  own `/v1/notifications/verify-webhook-signature` endpoint (PayPal doesn't do local HMAC
+  verification the way Stripe does).
+- The platform fee split (10%) lives in `splitPlatformFee()` — the same rate the wallet's SQL
+  functions already use, kept in one place.
+- **Real platform-fee splits require PayPal partner approval** (the `PARTNER_FEE` feature) — same
+  category of caveat as Stripe Connect requiring platform approval. Onboarding itself works in
+  sandbox without it.
+
+See `docs/platform.md` for the full external-services table.
 
 ## How grading works
 
@@ -122,12 +194,14 @@ git push -u origin main
 ## Project layout
 
 ```
-src/app/            Routes. (marketing) public, (app) investor, studio/ analyst.
+src/app/            Routes. (marketing) public, (app) investor, studio/ analyst, api/ route handlers.
 src/components/     UI primitives (ui/), charts, layout, and feature components.
 src/lib/db/         The only place that talks to Supabase (typed queries).
-src/lib/engine/     Scoring, market data, and the grading job.
+src/lib/engine/     Scoring (score.ts), market data (engine/market/), and the grading job (grade.ts).
+src/lib/fact-check/ Claim extraction + classification — pure, testable pipeline steps.
+src/lib/paypal/     Partner Referrals (payouts + onboarding KYC) and webhook dispatch. Optional, additive.
 src/lib/wallet/...  Wallet flows live in actions/wallet.ts + Postgres RPCs.
-supabase/migrations Schema, RLS, functions, storage.
+supabase/migrations Schema, RLS, functions, storage, immutability triggers, audit log.
 scripts/            seed.ts (demo data), grade.ts (run the engine once).
 ```
 
