@@ -219,7 +219,7 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - **Repo:** https://github.com/liorkr98/STOA-new
 - **Branch:** `main` (all feature work merged as of July 2026)
 - **Owner:** liorkr98@gmail.com (Israel-based — **PayPal for payouts, not Stripe Connect**)
-- **Supabase project:** `https://zpjxvotouqstnbdmblqv.supabase.co` (credentials in local `.env.local`, not in git)
+- **Supabase project:** `https://cqhenicrfdkbsshyszex.supabase.co` (credentials in local `.env.local`, not in git)
 - **Tagline:** Think clearly. Invest better.
 - **Product:** Substack-style marketplace for independent stock research. Analysts publish calls/research; investors subscribe or pay per report. Moat = verified, permanent track record (server-side price lock + automatic grading).
 
@@ -329,7 +329,7 @@ cp .env.example .env.local
 
 Required:
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://zpjxvotouqstnbdmblqv.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://cqhenicrfdkbsshyszex.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<from Supabase dashboard>
 SUPABASE_SERVICE_ROLE_KEY=<from Supabase dashboard — server only>
 CRON_SECRET=<any long random string>
