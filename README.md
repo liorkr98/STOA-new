@@ -207,3 +207,262 @@ scripts/            seed.ts (demo data), grade.ts (run the engine once).
 ```
 
 Not financial advice. Stoa is a research marketplace, not a broker or investment adviser.
+
+---
+
+## Agent handoff — current state & next steps
+
+**Copy everything below this line into a new agent session** when continuing work on Stoa.
+
+### Project
+
+- **Repo:** https://github.com/liorkr98/STOA-new
+- **Branch:** `main` (all feature work merged as of July 2026)
+- **Owner:** liorkr98@gmail.com (Israel-based — **PayPal for payouts, not Stripe Connect**)
+- **Supabase project:** `https://zpjxvotouqstnbdmblqv.supabase.co` (credentials in local `.env.local`, not in git)
+- **Tagline:** Think clearly. Invest better.
+- **Product:** Substack-style marketplace for independent stock research. Analysts publish calls/research; investors subscribe or pay per report. Moat = verified, permanent track record (server-side price lock + automatic grading).
+
+### Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js 15 App Router, React 19, TypeScript, Tailwind v4, Motion, Phosphor icons |
+| Backend | Supabase (Postgres, Auth, Storage, RLS, RPCs) |
+| Market data | **Yahoo Finance** primary (`yahoo-finance2`), Twelve Data + Alpha Vantage fallbacks — abstracted behind `MarketProvider` in `src/lib/engine/market/` |
+| AI | OpenAI (`gpt-4o-mini`) for fact-check + compose assist; mock fallback without key |
+| Payments (live) | **PayPal Partner Referrals** (scaffolded) — simulated wallet is the live economy today |
+| Cron | Vercel hourly → `/api/cron/grade` (or `npm run grade` locally) |
+| Lint | ESLint (Next.js), no Biome in this repo |
+
+### Roles & access model
+
+| Role | Can do |
+|---|---|
+| `user` (investor) | Read, subscribe, unlock, like, comment, save, post quick notes on Discover |
+| `analyst` | Everything above + Studio compose, publish research/calls, set pricing |
+| `admin` | Everything above + `/admin/applications` (approve/reject analyst applications) |
+
+**Analyst access is gated:** investors apply at `/become-analyst` → admin approves at `/admin/applications` → role flips to `analyst`. Migration `0017` auto-approves `liorkr98@gmail.com`.
+
+### What is DONE (merged to `main`)
+
+#### Core product loop
+- Auth (Supabase magic link / OAuth), profiles, wallets (simulated $100 on signup)
+- Publish research, calls, short posts via block compose editor (`/studio/compose`)
+- Server-side price lock at publish (Yahoo Finance) + SPY benchmark for alpha
+- Hourly grading cron grades open calls, recomputes score/rating/tier
+- Discover feed, analyst profiles, leaderboard, markets browser, search
+- Wallet: top-up (demo), subscribe (90/10 split), pay-per-report unlock
+- Comments, likes, follows, saves, inbox notifications
+- Account dropdown menu, settings, profile branding (avatar/cover/sections)
+
+#### Social / Substack-style layer
+- QuickPost composer on Discover (`postNote` — any signed-in user)
+- Newsletter fan-out on publish (notifies followers + active subscribers)
+- Social notifications (follow, like, comment, publication, sale, subscribe)
+
+#### Track record UI
+- Score breakdown, hit/near/miss counts, tier progress on analyst profiles
+- Full call ledger with alpha vs SPY on `/analyst/[handle]`
+
+#### AI features
+- AI credits economy (wallet → credits, spend on chat/outline/fact-check)
+- FactChecker panel in compose (classify claims, Yahoo price cross-check)
+- Report templates (earnings recap, deep dive, etc.)
+
+#### Analyst application funnel (migration 0017)
+- `/become-analyst` — 3 required + 2 optional questions, pending/approved/rejected status screens
+- `/admin/applications` — admin-only list with inline approve/reject + optional note
+- Server actions: `submitAnalystApplication`, `approveAnalystApplication`, `rejectAnalystApplication`
+- Nav: investors see "Apply to publish"; admins see "Review applications"
+
+#### Backend deep dive (migrations 0012–0016)
+
+**Trust & compliance (`0012_trust_compliance.sql`)**
+- `locked_at` set automatically when report status → `published`
+- DB triggers freeze report content, call terms, and fact-check claims after lock
+- Calls cannot be deleted; resolved outcomes cannot be re-resolved
+- Append-only `audit_log` (admin-read only) auto-populated on lock/archive/resolve/payout
+- Mandatory disclosure columns on `reports` (position, compensation, views_certified)
+- `publishReport` enforces disclosure server-side once caller sends certification values
+
+**Structured fact-checker (`0013_claims_debate.sql`)**
+- `claims` table: one row per atomic assertion, character offsets, `claim_verdict` enum
+- `debate_comments` scoped to single claim, opinion-verdict only (RLS + server action)
+- Pure pipeline: `src/lib/fact-check/claim-extraction.ts` + `claim-classification.ts`
+- Persists via `persistClaims()` when `POST /api/ai/fact-check` receives a `reportId`
+
+**PayPal payouts (`0014_paypal_accounts.sql`, `0016_platform_transfers.sql`)**
+- `paypal_accounts` table + Partner Referrals onboarding
+- PayPal does KYC itself during onboarding (no separate Identity product)
+- `src/lib/paypal/{client,partner,orders,webhooks}.ts`
+- Routes: `POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`, `POST /api/webhooks/paypal`
+- `platform_transfers` earnings ledger for real-money audit trail
+- **Stripe was removed** — not available for Israel-based platforms
+
+**MOAT score transparency (`0015_score_breakdown.sql`)**
+- `profiles` persists `wilson_win_rate`, `profit_factor`, `avg_return`, `avg_alpha`, `sample_size`
+- Alpha percentile-ranked against platform distribution (not fixed ±20% band)
+- Grading job (`src/lib/engine/grade.ts`) writes breakdown on each pass
+
+### Migrations — RUN THESE IN SUPABASE SQL EDITOR
+
+Apply **in order** through **`0017`**. If you've already run `0001`–`0011`, only run the new ones:
+
+```
+0012_trust_compliance.sql      ← immutability triggers, audit_log, disclosure fields
+0013_claims_debate.sql         ← structured claims + debate comments
+0014_paypal_accounts.sql       ← PayPal onboarding table (safe without PayPal keys)
+0015_score_breakdown.sql       ← score breakdown columns on profiles
+0016_platform_transfers.sql    ← real-money earnings ledger
+0017_analyst_applications.sql  ← application funnel + auto-approve liorkr98@gmail.com
+```
+
+After `0017`, sign in as `liorkr98@gmail.com` → role should be `analyst` → **Write** button opens compose.
+
+### Environment (`.env.local`)
+
+```bash
+cp .env.example .env.local
+```
+
+Required:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://zpjxvotouqstnbdmblqv.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<from Supabase dashboard>
+SUPABASE_SERVICE_ROLE_KEY=<from Supabase dashboard — server only>
+CRON_SECRET=<any long random string>
+```
+
+Optional:
+```
+OPENAI_API_KEY=              # fact-check + compose AI (mock fallback without)
+OPENAI_MODEL=gpt-4o-mini
+TWELVE_DATA_API_KEY=         # market data fallback
+ALPHA_VANTAGE_API_KEY=       # market data last resort
+PAYPAL_MODE=sandbox          # real payments (not needed yet)
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_PARTNER_ID=
+PAYPAL_WEBHOOK_ID=
+```
+
+### Run locally
+
+```bash
+npm install
+npm run dev          # http://localhost:3000 (or 3001 if 3000 busy)
+npm run seed         # demo analysts + investor@stoa.demo / stoademo123
+npm run grade        # manually run grading engine once
+```
+
+### Key file map
+
+```
+src/app/
+  (app)/become-analyst/       Application funnel (investors apply)
+  (app)/admin/applications/   Admin approve/reject UI
+  (app)/discover/             Feed + QuickPost composer
+  (app)/analyst/[handle]/     Public analyst profile + track record
+  (app)/report/[id]/          Report reader + fact-check results
+  (app)/settings/             Profile settings
+  studio/compose/             Block editor (analysts only)
+  actions/
+    profile.ts                submitAnalystApplication, approve/reject, ensureProfile
+    reports.ts                saveDraft, publishReport (disclosure + price lock)
+    claims.ts                 persistClaims, postDebateComment
+    social.ts                 follow, like, comment, save
+  api/
+    ai/fact-check/            POST — run fact-check, optionally persist claims
+    creator/paypal/onboard/   POST — start PayPal onboarding
+    creator/paypal/status/    GET — poll onboarding status
+    webhooks/paypal/          POST — PayPal webhook handler
+    cron/grade/               GET — hourly grading job (CRON_SECRET)
+
+src/lib/
+  engine/score.ts             MOAT formula (Wilson + PF + alpha percentile)
+  engine/grade.ts             Grading job (resolve calls, recompute scores)
+  engine/market/              Yahoo Finance + fallbacks (MarketProvider interface)
+  fact-check/                 Pure claim extraction + classification
+  paypal/                     PayPal REST client, partner, orders, webhooks
+  ai/fact-check.ts            Backward-compat shim for compose UI
+  db/                         Typed Supabase queries (only place that talks to DB)
+  types.ts                    Domain types mirroring Postgres schema
+
+supabase/migrations/          0001–0017 (see list above)
+docs/ROADMAP.md               Product roadmap (done vs next)
+docs/platform.md              External services tracker
+```
+
+### Git push notes (Cursor cloud VM)
+
+The cloud agent terminal uses SSH keys at `~/.ssh/id_ed25519_github`. Cursor injects global git config that rewrites SSH → HTTPS with `cursor[bot]` (which gets 403). Before pushing:
+
+```bash
+# Remove Cursor URL rewrites
+python3 << 'PY'
+from pathlib import Path
+p = Path.home() / '.gitconfig'
+lines = p.read_text().splitlines(keepends=True)
+out, skip = [], False
+for line in lines:
+    if line.startswith('[url '): skip = True; continue
+    if skip:
+        if line.startswith('\t') or line.startswith(' '): continue
+        skip = False
+    out.append(line)
+p.write_text(''.join(out))
+PY
+git remote set-url origin git@github.com:liorkr98/STOA-new.git
+git push origin main
+```
+
+### What is NOT done yet — recommended next steps
+
+Priority order for the next agent pass:
+
+1. **Run migrations 0012–0017 in Supabase** (if not done) — nothing new works without these
+2. **Disclosure block UI in compose** — backend contract exists (`position_held`, `compensation_tied`, `views_certified` in `ComposeInput` + `publishReport`); compose editor needs the actual checkbox/step before Publish is enabled
+3. **Settings → Payouts page** — wire `POST /api/creator/paypal/onboard` + `GET /api/creator/paypal/status` into a UI at `/settings/payouts` so analysts can connect PayPal
+4. **PayPal checkout UI** — replace simulated wallet subscribe/unlock with PayPal Orders flow once creator has `paypal_accounts.status = 'active'` (requires PayPal partner approval for `PARTNER_FEE`)
+5. **Inline claim highlighting** — `claims` table has `char_start`/`char_end` offsets; report reader should highlight claims inline (data exists, UI not built)
+6. **Debate UI on opinion claims** — `postDebateComment` action + RLS exist; no UI on report page yet
+7. **Email newsletter delivery** — in-app fan-out works; add Resend/Postmark for actual emails
+8. **Legal pages** — `/terms`, `/privacy` are placeholders; need real investment disclaimers
+9. **Direct messages UI** — `messages` table + RLS exist; no frontend
+10. **Automated tests** — engine (`score.ts`, `grade.ts`) and paywall RPCs have no test coverage
+
+### Architecture decisions (do not reverse without discussion)
+
+- **PayPal, not Stripe** — owner is Israel-based; Stripe Connect unavailable
+- **Yahoo Finance, not Finnhub** — live API; Finnhub only appears as Kaggle dataset names for static imports
+- **Simulated wallet stays live** — PayPal is additive; demo/top-up/subscribe/unlock RPCs unchanged until PayPal checkout UI ships
+- **Analyst approval required** — no instant role upgrade; admin must approve (except liorkr98@gmail.com via migration 0017)
+- **Append-only track record** — enforced by Postgres triggers, not app code; do not add "edit published report" features
+- **RLS on `report_bodies`** — paywall at DB layer; never expose full body to client without entitlement check
+- **Score engine is server-side only** — `src/lib/engine/score.ts` is the single source of truth; UI reads persisted breakdown from `profiles`
+
+### Scoring engine summary
+
+Composite 0–100 → display rating 600–1400:
+
+1. **Win rate** — Wilson lower bound on time-weighted outcomes (Hit=1, Near=0.5, Miss/Partial=0)
+2. **Profit factor** — decay-weighted avg win / avg loss
+3. **Alpha** — excess return vs SPY; percentile-ranked against all creators when 5+ benchmarked calls exist
+4. **Consistency** — penalties for miss streaks and drawdown
+5. **Sample ramp** — logarithmic confidence discount for small samples
+
+Tiers: Building (<5 calls) → Rising → Strong → Expert → Elite → Legend
+
+Grading outcomes: Hit (reached target), Near (right direction, short of target), Partial (flat ±1.5%), Miss (wrong direction).
+
+### Demo accounts (after `npm run seed`)
+
+| Account | Password | Role |
+|---|---|---|
+| `investor@stoa.demo` | `stoademo123` | investor |
+| `maren_vos@stoa.demo` | `stoademo123` | analyst |
+| `liorkr98@gmail.com` | (your password) | analyst (after migration 0017) |
+
+### End of agent handoff section

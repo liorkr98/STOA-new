@@ -76,7 +76,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 ## Migrations to run
 
 Apply every file in `supabase/migrations/` in order (see README.md for the current full list,
-through `0016_platform_transfers.sql`) on your Supabase project via the SQL Editor.
+through **`0017_analyst_applications.sql`**) on your Supabase project via the SQL Editor.
 
 ```bash
 npm run seed          # demo analysts + investor
