@@ -43,12 +43,12 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
 - **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
-- **Stripe Connect + Identity — schema, lib, routes, webhooks scaffolded** (`src/lib/stripe/`), additive to the simulated wallet. Needs live API keys to actually move money — see next section.
+- **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
 
 ## In progress / next (high priority)
 
-1. **Real payments — go live** — the Stripe Connect/Identity plumbing exists (`src/lib/stripe/`, `platform_transfers` ledger, `connect_accounts`/`identity_verifications` tables); what's left is: add `STRIPE_*` keys, build the Checkout/Elements UI for subscribe + unlock, and switch `subscribe_to_analyst`/`purchase_report` callers to the Stripe path once a creator's `connect_accounts.status = 'active'`.
-2. **Analyst payouts UI** — Stripe Express dashboard link exists server-side (`GET /api/creator/connect/dashboard-link`); needs a Settings page entry point.
+1. **Real payments — go live** — the PayPal plumbing exists (`src/lib/paypal/`, `platform_transfers` ledger, `paypal_accounts` table); what's left is: add `PAYPAL_*` keys, get the platform approved by PayPal for the `PARTNER_FEE` feature (required for the 10% split — same category of approval Stripe Connect would have needed), build the Checkout UI for subscribe + unlock, and switch `subscribe_to_analyst`/`purchase_report` callers to the PayPal path once a creator's `paypal_accounts.status = 'active'`.
+2. **Analyst payout status UI** — onboarding + status-poll routes exist server-side (`POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`); needs a Settings page entry point.
 3. **Subscription auto-renew** — or clear manual renewal UX
 4. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
 5. **Disclosure block UI** — backend contract exists (`reports.position_disclosed/held`, `compensation_*`, `views_certified`, enforced server-side in `publishReport`); compose editor needs the actual step before publish.

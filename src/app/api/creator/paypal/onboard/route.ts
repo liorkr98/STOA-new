@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createOrResumeOnboarding } from "@/lib/stripe/connect";
-import { isStripeConfigured } from "@/lib/stripe/client";
+import { createOnboardingLink } from "@/lib/paypal/partner";
+import { isPayPalConfigured } from "@/lib/paypal/client";
 
 export const dynamic = "force-dynamic";
 
-/** Creates (or resumes) a creator's Stripe Express account and returns the onboarding URL to redirect to. */
+/** Creates (or resumes) a creator's PayPal partner referral and returns the onboarding URL to redirect to. */
 export async function POST(request: Request) {
-  if (!isStripeConfigured()) {
-    return NextResponse.json({ error: "Stripe is not configured on this deployment yet." }, { status: 503 });
+  if (!isPayPalConfigured()) {
+    return NextResponse.json({ error: "PayPal is not configured on this deployment yet." }, { status: 503 });
   }
 
   const supabase = await createClient();
@@ -22,11 +22,10 @@ export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
 
   try {
-    const result = await createOrResumeOnboarding({
+    const result = await createOnboardingLink({
       userId: user.id,
       email: user.email,
       returnUrl: `${origin}/settings/payouts?onboarding=complete`,
-      refreshUrl: `${origin}/settings/payouts?onboarding=refresh`,
     });
     return NextResponse.json(result);
   } catch (e) {

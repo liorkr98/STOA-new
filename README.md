@@ -12,8 +12,9 @@ Tagline: Think clearly. Invest better.
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
 - **Engine:** a 0-100 analyst score (win rate + profit factor + alpha) mapped to a 600-1400 rating,
   with automatic grading of calls against live prices on a schedule.
-- **Money:** a simulated wallet/credits system with a 90/10 split, built so real Stripe can drop
-  in later.
+- **Money:** a simulated wallet/credits system with a 90/10 split, built so real PayPal payouts can
+  drop in later (PayPal, not Stripe Connect, since Stripe Connect payouts aren't available for
+  Israel-based platforms/sellers).
 
 See `design-system/MASTER.md` for the visual system and `AGENTS.md` for the rules every AI agent
 (Cursor and Claude Code) follows.
@@ -47,7 +48,7 @@ npm install
    - `supabase/migrations/0011_social_notifications.sql`
    - `supabase/migrations/0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
    - `supabase/migrations/0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
-   - `supabase/migrations/0014_identity_connect.sql` (Stripe Identity + Connect scaffolding — safe to run without Stripe keys)
+   - `supabase/migrations/0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
    - `supabase/migrations/0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
    - `supabase/migrations/0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
@@ -119,22 +120,34 @@ Postgres triggers, not just app-level checks:
    (`postDebateComment`) are only allowed on `opinion`-verdict claims, enforced both server-side and
    by RLS.
 
-## Real-money rail (Stripe Connect + Identity) — scaffolded, optional
+## Real-money rail (PayPal) — scaffolded, optional
 
-The simulated wallet is the live economy today; nothing below is required to run the app. Once
-`STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_IDENTITY_WEBHOOK_SECRET` are set:
+PayPal, not Stripe Connect — Stripe Connect payouts aren't available for Israel-based
+platforms/sellers, PayPal is. The simulated wallet is the live economy today; nothing below is
+required to run the app. No SDK dependency — PayPal's REST API is plain JSON over `fetch`, same
+pattern as the OpenAI integration. Once `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` /
+`PAYPAL_PARTNER_ID` are set:
 
-- `src/lib/stripe/connect.ts` — creates Stripe Express accounts, onboarding links, and dashboard
-  login links. `POST /api/creator/connect/onboard`, `GET /api/creator/connect/dashboard-link`.
-- `src/lib/stripe/identity.ts` — creates Stripe Identity verification sessions.
-  `POST /api/creator/verify-identity`.
-- `src/lib/stripe/webhooks.ts` — `POST /api/webhooks/stripe` (`account.updated`,
-  `payment_intent.succeeded`, `invoice.paid`) and `POST /api/webhooks/stripe-identity`
-  (`identity.verification_session.verified/.requires_input`) keep `connect_accounts`,
-  `identity_verifications`, `profiles.identity_verified`, and the `platform_transfers` earnings
-  ledger in sync.
+- `src/lib/paypal/partner.ts` — Partner Referrals onboarding (PayPal's analog to Stripe Connect
+  Express): creates a hosted onboarding link, and polls
+  `GET /v1/customer/partners/{partner_id}/merchant-integrations` for status.
+  `POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`.
+- **No separate identity/KYC step** — PayPal performs its own verification during the seller's
+  onboarding flow itself (signing up for / logging into PayPal and granting permissions), so
+  `profiles.identity_verified` is derived directly from PayPal's own
+  `payments_receivable` + `primary_email_confirmed` signals via `upsert_paypal_account()`, not a
+  separate product like Stripe Identity.
+- `src/lib/paypal/orders.ts` — Orders API v2 one-time payments with a platform-fee split via
+  `purchase_units[].payment_instruction.platform_fees`.
+- `src/lib/paypal/webhooks.ts` — `POST /api/webhooks/paypal` handles `MERCHANT.ONBOARDING.COMPLETED`,
+  `PAYMENT.CAPTURE.COMPLETED`, and `BILLING.SUBSCRIPTION.*`. Signature verification calls PayPal's
+  own `/v1/notifications/verify-webhook-signature` endpoint (PayPal doesn't do local HMAC
+  verification the way Stripe does).
 - The platform fee split (10%) lives in `splitPlatformFee()` — the same rate the wallet's SQL
   functions already use, kept in one place.
+- **Real platform-fee splits require PayPal partner approval** (the `PARTNER_FEE` feature) — same
+  category of caveat as Stripe Connect requiring platform approval. Onboarding itself works in
+  sandbox without it.
 
 See `docs/platform.md` for the full external-services table.
 
@@ -186,7 +199,7 @@ src/components/     UI primitives (ui/), charts, layout, and feature components.
 src/lib/db/         The only place that talks to Supabase (typed queries).
 src/lib/engine/     Scoring (score.ts), market data (engine/market/), and the grading job (grade.ts).
 src/lib/fact-check/ Claim extraction + classification — pure, testable pipeline steps.
-src/lib/stripe/     Connect (payouts), Identity (KYC), and webhook dispatch. Optional, additive.
+src/lib/paypal/     Partner Referrals (payouts + onboarding KYC) and webhook dispatch. Optional, additive.
 src/lib/wallet/...  Wallet flows live in actions/wallet.ts + Postgres RPCs.
 supabase/migrations Schema, RLS, functions, storage, immutability triggers, audit log.
 scripts/            seed.ts (demo data), grade.ts (run the engine once).
