@@ -44,6 +44,8 @@ export function AccountMenu({ profile }: { profile: Profile }) {
     };
   }, []);
 
+  const isAdmin = profile.role === "admin";
+
   const items: MenuItem[] = [
     { href: `/analyst/${profile.handle}`, label: "Your profile", icon: User },
     ...(isAnalyst
@@ -51,6 +53,9 @@ export function AccountMenu({ profile }: { profile: Profile }) {
           { href: "/studio", label: "Studio dashboard", icon: ChartLineUp },
           { href: "/studio/audience", label: "Audience", icon: Users },
         ]
+      : [{ href: "/become-analyst", label: "Apply to publish", icon: ChartLineUp }]),
+    ...(isAdmin
+      ? [{ href: "/admin/applications", label: "Review applications", icon: Users }]
       : []),
     { href: "/wallet", label: "Wallet & credits", icon: WalletIcon },
     { href: "/saved", label: "Saved", icon: Bookmark },

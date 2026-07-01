@@ -26,28 +26,55 @@ export async function ensureProfile() {
   return { ok: true as const };
 }
 
-export async function becomeAnalyst(formData: FormData) {
+/** Submit an analyst application — replaces the old one-click becomeAnalyst. */
+export async function submitAnalystApplication(formData: FormData) {
   const { supabase, userId } = await requireUser();
   await supabase.rpc("ensure_user_profile");
 
-  const headline = String(formData.get("headline") ?? "").slice(0, 160);
-  const subPrice = Number(formData.get("sub_price") ?? 0) || null;
-  const reportPrice = Number(formData.get("report_price") ?? 0) || null;
+  const why_analyst    = String(formData.get("why_analyst") ?? "").trim().slice(0, 1000);
+  const background     = String(formData.get("background") ?? "").trim().slice(0, 1000);
+  const coverage_areas = String(formData.get("coverage_areas") ?? "").trim().slice(0, 500);
+  const sample_thesis  = String(formData.get("sample_thesis") ?? "").trim().slice(0, 2000) || null;
+  const linkedin_url   = String(formData.get("linkedin_url") ?? "").trim().slice(0, 300) || null;
 
+  if (!why_analyst || !background || !coverage_areas) {
+    throw new Error("Please fill in all required fields");
+  }
+
+  // Upsert so re-submission replaces a rejected application
   const { error } = await supabase
-    .from("profiles")
-    .update({
-      role: "analyst",
-      headline: headline || null,
-      sub_price: subPrice,
-      report_price: reportPrice,
-    })
-    .eq("id", userId);
+    .from("analyst_applications")
+    .upsert(
+      { user_id: userId, why_analyst, background, coverage_areas, sample_thesis, linkedin_url, status: "pending", submitted_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/studio");
-  redirect("/studio/compose");
+  revalidatePath("/become-analyst");
+  redirect("/become-analyst?submitted=1");
+}
+
+/** Admin: approve an application. */
+export async function approveAnalystApplication(applicationId: string, note?: string) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("approve_analyst_application", {
+    p_application_id: applicationId,
+    p_note: note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/applications");
+}
+
+/** Admin: reject an application. */
+export async function rejectAnalystApplication(applicationId: string, note?: string) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("reject_analyst_application", {
+    p_application_id: applicationId,
+    p_note: note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/applications");
 }
 
 export async function updateProfile(formData: FormData) {
