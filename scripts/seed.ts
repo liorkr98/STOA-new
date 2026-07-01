@@ -63,7 +63,14 @@ async function ensureUser(db: SupabaseClient, email: string, meta: Record<string
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY first.");
+  if (!url || !key) {
+    throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local first.");
+  }
+  if (key === "your-service-role-key" || key.startsWith("sb_publishable_")) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY must be your Supabase secret key (sb_secret_... or legacy service_role JWT), not the publishable key. Copy it from Supabase → Project Settings → API → Secret keys.",
+    );
+  }
   const db = createClient(url, key, { auth: { persistSession: false } });
 
   // Investor account
