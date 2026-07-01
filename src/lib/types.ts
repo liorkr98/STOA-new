@@ -62,8 +62,18 @@ export interface Report {
   views: number;
   comment_count: number;
   published_at: string | null;
+  /** Set the instant status becomes 'published'; freezes content via a DB trigger. */
+  locked_at: string | null;
   created_at: string;
   fact_check_results?: Record<string, unknown> | null;
+  /** Mandatory disclosure block — never optional, always shown on published content. */
+  position_disclosed: boolean;
+  position_held: boolean | null;
+  compensation_disclosed: boolean;
+  compensation_tied: boolean | null;
+  compensation_detail: string | null;
+  /** "These are my own views" cert, Reg-AC-style. */
+  views_certified: boolean;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
@@ -147,6 +157,11 @@ export interface ComposeInput {
   target_price?: number | null;
   horizon_days?: number;
   fact_check_results?: Record<string, unknown> | null;
+  /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
+  position_held?: boolean;
+  compensation_tied?: boolean;
+  compensation_detail?: string;
+  views_certified?: boolean;
 }
 
 export interface SpendResult {

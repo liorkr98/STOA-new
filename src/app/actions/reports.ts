@@ -53,6 +53,15 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
  */
 export async function publishReport(input: ComposeInput): Promise<{ id: string }> {
   const { supabase, userId } = await requireUser();
+
+  // Mandatory disclosure block (Reg-AC-style). Only enforced once the caller
+  // actually sends a certification value — i.e. once the compose UI grows the
+  // disclosure step. Until then existing publish flows are unaffected.
+  const disclosureProvided = input.views_certified !== undefined;
+  if (disclosureProvided && !input.views_certified) {
+    throw new Error("You must certify these are your own views before publishing.");
+  }
+
   const { id } = await saveDraft(input);
 
   const publishPayload: Record<string, unknown> = {
@@ -61,6 +70,14 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
   };
   if (input.fact_check_results) {
     publishPayload.fact_check_results = input.fact_check_results;
+  }
+  if (disclosureProvided) {
+    publishPayload.position_disclosed = true;
+    publishPayload.position_held = input.position_held ?? false;
+    publishPayload.compensation_disclosed = true;
+    publishPayload.compensation_tied = input.compensation_tied ?? false;
+    publishPayload.compensation_detail = input.compensation_detail?.slice(0, 500) ?? null;
+    publishPayload.views_certified = input.views_certified;
   }
 
   const { error: pubErr } = await supabase
