@@ -2,53 +2,89 @@
 
 /* ------------------------------------------------------------------ *
  * Stoa design tokens. See design-system/MASTER.md.
- * Light is the default; .dark overrides. One accent (signal blue).
- * Green/red are sentiment-only.
+ * The notary's ledger, not a trading terminal: ink on paper, a seal
+ * that makes a claim permanent. Light is the default; .dark overrides.
  * ------------------------------------------------------------------ */
 
 :root {
-  --bg: #fbfbfc;
-  --surface: #ffffff;
-  --surface-2: #f4f5f7;
-  --text: #16181d;
-  --text-mute: #5b6270;
-  --text-faint: #8b919e;
-  --border: #e7e9ee;
-  --border-strong: #d3d7df;
-  --accent: #2f5fff;
-  --accent-ink: #ffffff;
-  --accent-weak: #eaeeff;
-  --up: #0f9d6b;
-  --down: #e0483d;
-  --shadow-soft: 0 12px 40px -12px rgb(16 24 40 / 0.18);
+  --ink: #14171f;
+  --paper: #eff1ed;
+  --verdigris: #2f6e5d;
+  --brass: #b8863b;
+  --plum: #5b4b6b;
+  --rust: #a6483c;
+
+  --surface: #f7f8f5;
+  --surface-2: #e6e8e2;
+  --text: var(--ink);
+  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --border: color-mix(in srgb, var(--ink) 14%, transparent);
+  --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
+
+  --accent: var(--verdigris);
+  --accent-ink: #f4f6f2;
+  --accent-weak: color-mix(in srgb, var(--verdigris) 12%, transparent);
+
+  --up: var(--verdigris);
+  --down: var(--rust);
+
+  --shadow-card: 0 1px 2px rgba(20, 23, 31, 0.06), 0 4px 12px rgba(20, 23, 31, 0.04);
 
   --r-card: 12px;
-  --r-btn: 8px;
+  --r-btn: 6px;
   --r-tag: 6px;
 
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
 }
 
 .dark {
-  --bg: #0c0d10;
-  --surface: #15171c;
-  --surface-2: #1c1f26;
-  --text: #f3f4f6;
-  --text-mute: #9aa3b2;
-  --text-faint: #6b7280;
-  --border: #262a33;
-  --border-strong: #363b46;
-  --accent: #5a82ff;
-  --accent-ink: #0b1020;
-  --accent-weak: #1b2240;
-  --up: #34d39e;
-  --down: #ff6b5e;
-  --shadow-soft: 0 12px 40px -12px rgb(0 0 0 / 0.55);
+  --ink: #eff1ed;
+  --paper: #14171f;
+  --verdigris: #4f9c86;
+  --brass: #d1a35f;
+  --plum: #8672a0;
+  --rust: #d17868;
+
+  --surface: #1a1d26;
+  --surface-2: #23262f;
+  --text: var(--ink);
+  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --border: color-mix(in srgb, var(--ink) 16%, transparent);
+  --border-strong: color-mix(in srgb, var(--ink) 30%, transparent);
+
+  --accent: var(--verdigris);
+  --accent-ink: #0e1712;
+  --accent-weak: color-mix(in srgb, var(--verdigris) 16%, transparent);
+
+  --up: var(--verdigris);
+  --down: var(--rust);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.24);
 }
 
 @theme inline {
-  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-verdigris: var(--verdigris);
+  --color-brass: var(--brass);
+  --color-plum: var(--plum);
+  --color-rust: var(--rust);
+
+  --color-bg: var(--paper);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-text: var(--text);
@@ -68,8 +104,19 @@
 
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 
   --default-font-family: var(--font-sans);
+
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-7: var(--space-7);
+  --spacing-8: var(--space-8);
+  --spacing-9: var(--space-9);
 }
 
 * {
@@ -77,7 +124,7 @@
 }
 
 html {
-  background: var(--bg);
+  background: var(--paper);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -85,7 +132,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg);
+  background: var(--paper);
   color: var(--text);
 }
 
@@ -100,34 +147,34 @@ body {
 
 .t-display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
-  font-size: clamp(2.5rem, 1.6rem + 4.4vw, 5rem);
+  font-weight: 680;
+  letter-spacing: -0.01em;
+  line-height: 1.04;
+  font-size: clamp(2.5rem, 1.6rem + 4.4vw, 4rem);
 }
 
 .t-h1 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.08;
-  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 3rem);
+  font-weight: 640;
+  letter-spacing: -0.008em;
+  line-height: 1.1;
+  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 2.75rem);
 }
 
 .t-h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-  font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2rem);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-size: clamp(1.375rem, 1.15rem + 1vw, 1.5rem);
 }
 
 .t-h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.2;
-  font-size: 1.25rem;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  font-size: 1.125rem;
 }
 
 .t-body {
@@ -138,24 +185,33 @@ body {
   max-width: 65ch;
 }
 
+.t-body-editorial {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--text);
+  max-width: 68ch;
+}
+
 .t-meta {
   font-family: var(--font-sans);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: 1.4;
   color: var(--text-faint);
 }
 
 .t-eyebrow {
   font-family: var(--font-sans);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .num {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-feature-settings: "tnum" 1, "lnum" 1;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -168,6 +224,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
 }
 
 .hairline {
@@ -179,6 +236,18 @@ body {
   outline-offset: 2px;
 }
 
+/* Ledger-entry treatment. Reserved for trust-critical blocks: the call
+ * block, the disclosure block. Never used for ordinary cards -- a double
+ * rule should keep meaning something. */
+.ledger-card {
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-card);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
+    var(--shadow-card);
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.45; transform: scale(0.82); }
@@ -188,8 +257,32 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
+/* ------------------------------------------------------------------ *
+ * Seal stamp -- the signature motif. See SealStamp component.
+ * ------------------------------------------------------------------ */
+
+@keyframes seal-press {
+  0% { transform: scale(0.96) rotate(-6deg); opacity: 0; }
+  55% { transform: scale(1.04) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes seal-ink-bleed {
+  0% { opacity: 0.5; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+.seal-press {
+  animation: seal-press 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.seal-ink-bleed {
+  animation: seal-ink-bleed 400ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-dot { animation: none; }
+  .seal-press, .seal-ink-bleed { animation: none !important; opacity: 1; transform: none; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -204,78 +297,62 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
- * Observatory — cinematic treatment for the marketing surface.
- * Additive only. Ambient glow is atmosphere, not card elevation, so it
- * does not violate the no-elevation-shadow rule in MASTER.md.
+ * Modal enter/exit. Modals stay centered (transform-origin: center),
+ * unlike popovers which should be origin-aware from their trigger.
+ * Never animate from scale(0) -- start visible, just smaller.
  * ------------------------------------------------------------------ */
 
-.observatory {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+@keyframes modal-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-.observatory::before,
-.observatory::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  border-radius: 9999px;
-  filter: blur(100px);
-  pointer-events: none;
+@keyframes modal-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
 }
 
-.observatory::before {
-  width: 560px;
-  height: 560px;
-  top: -180px;
-  left: -140px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
-  opacity: 0.5;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.observatory::after {
-  width: 480px;
-  height: 480px;
-  top: 0;
-  right: -180px;
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  opacity: 0.4;
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
-/* Frosted data panel. Depth comes from the border, an inset top highlight,
- * and the ambient canvas behind it, never from an elevation drop shadow. */
-.glass {
-  position: relative;
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid var(--border);
-  border-radius: var(--r-card);
-  box-shadow: inset 0 1px 0 0 color-mix(in srgb, #ffffff 7%, transparent);
+/* Popovers (FactCheckLayer claim popovers, etc.) scale in from their
+ * trigger via Radix's CSS var, not from center. */
+@keyframes popover-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .glass {
-    background: var(--surface);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
+.popover-content {
+  transform-origin: var(--radix-popover-content-transform-origin);
 }
 
-/* One-word cinematic accent in the hero headline. Used sparingly. */
-.accent-glow {
-  color: var(--accent);
-  text-shadow: 0 0 28px color-mix(in srgb, var(--accent) 42%, transparent);
+.popover-content[data-state="open"] {
+  animation: popover-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Hairline that fades out, for connecting the scoring-flow steps. */
-.rule-fade {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--border-strong) 18%,
-    var(--border-strong) 82%,
-    transparent
-  );
+/* DebateThread sheet: slides from the bottom on mobile, from the right on
+ * desktop (sm+). Two axes because a single transform can't serve both
+ * edges -- picked per breakpoint via the Tailwind animate-[...] classes. */
+@keyframes sheet-in-y {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes sheet-out-y {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+@keyframes sheet-in-x {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes sheet-out-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
 }

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
-import { LockSimple, SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { PaywallGate } from "@/components/ui/paywall-gate";
 import { getReport } from "@/lib/db/reports";
 import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
@@ -15,7 +16,7 @@ import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
-import { FactCheckResults } from "@/components/editor/fact-checker-panel";
+import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
@@ -101,12 +102,16 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {canRead ? (
-        <>
-          <ReportBody body={report.body} />
-          {report.fact_check_results && (
-            <FactCheckResults result={report.fact_check_results as unknown as FactCheckResult} />
-          )}
-        </>
+        (() => {
+          const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
+          const claims = factCheck?.claims ?? [];
+          return (
+            <>
+              <FactCheckLayer claims={claims} />
+              <ReportBody body={report.body} claims={claims} isAuthed={Boolean(userId)} />
+            </>
+          );
+        })()
       ) : (
         <Paywall
           access={report.access}
@@ -147,41 +152,38 @@ function Paywall({
   isAuthed: boolean;
   subscribed: boolean;
 }) {
+  // access is a single exclusive mode today (see BACKEND_DATA_CONTRACTS.md) --
+  // showing both CTAs would offer a subscribe path that wouldn't actually
+  // unlock a per-report-priced piece, so only the real path renders.
+  const unlockButton =
+    access === "paid" ? (
+      <BuyReportButton
+        reportId={reportId}
+        price={price}
+        balance={balance}
+        isAuthed={isAuthed}
+        authorHandle={authorHandle}
+      />
+    ) : null;
+
+  const subscribeButton =
+    access === "subscribers" ? (
+      <SubscribeButton
+        analystId={authorId}
+        handle={authorHandle}
+        price={subPrice}
+        balance={balance}
+        isAuthed={isAuthed}
+        subscribed={subscribed}
+      />
+    ) : null;
+
   return (
-    <div className="mt-8 flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface px-6 py-12 text-center">
-      <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-weak text-accent">
-        <LockSimple size={22} weight="bold" />
-      </span>
-      <div>
-        <h2 className="t-h3">
-          {access === "paid" ? "Unlock the full report" : "For subscribers"}
-        </h2>
-        <p className="t-body mx-auto mt-1 text-center">
-          {access === "paid"
-            ? "Pay once to read this report. 90% goes straight to the analyst."
-            : `Subscribe to @${authorHandle} to read this and everything they publish.`}
-        </p>
-      </div>
-      {access === "paid" ? (
-        <BuyReportButton
-          reportId={reportId}
-          price={price}
-          balance={balance}
-          isAuthed={isAuthed}
-          authorHandle={authorHandle}
-        />
-      ) : (
-        <div className="w-full max-w-xs">
-          <SubscribeButton
-            analystId={authorId}
-            handle={authorHandle}
-            price={subPrice}
-            balance={balance}
-            isAuthed={isAuthed}
-            subscribed={subscribed}
-          />
-        </div>
-      )}
-    </div>
+    <PaywallGate
+      onUnlock={unlockButton}
+      onSubscribe={subscribeButton}
+      isAuthed={isAuthed}
+      loginHref="/sign-in"
+    />
   );
 }

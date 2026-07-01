@@ -30,7 +30,7 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-2 border border-border text-text-mute font-semibold",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[var(--r-card)] bg-surface-2 border border-border text-text-mute font-semibold",
         className,
       )}
       style={{ width: dim, height: dim, fontSize: dim * 0.36 }}
