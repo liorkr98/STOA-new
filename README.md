@@ -51,6 +51,7 @@ npm install
    - `supabase/migrations/0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
    - `supabase/migrations/0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
    - `supabase/migrations/0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
+   - `supabase/migrations/0017_analyst_applications.sql` (analyst application funnel + admin approval)
 3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
