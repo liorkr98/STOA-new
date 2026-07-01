@@ -80,6 +80,32 @@ export interface Report {
   prediction?: Prediction | null;
 }
 
+export type ClaimVerdict = "fact" | "unproven" | "opinion" | "contradicted";
+
+/** One atomic factual assertion extracted from a report body, with its verdict and highlight offsets. */
+export interface Claim {
+  id: string;
+  report_id: string;
+  claim_text: string;
+  verdict: ClaimVerdict;
+  confidence: number | null;
+  note: string | null;
+  source_url: string | null;
+  char_start: number;
+  char_end: number;
+  created_at: string;
+}
+
+/** A debate comment scoped to a single claim — only allowed on `opinion` verdicts. */
+export interface DebateComment {
+  id: string;
+  claim_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+  author?: Profile;
+}
+
 export interface Prediction {
   id: string;
   report_id: string;
