@@ -105,7 +105,11 @@ Checklist:
 | `POST /api/ai/fact-check` | Claim extraction — **20 req/hour/creator** (`check_rate_limit` RPC) |
 | `POST /api/webhooks/paypal` | PayPal events — **idempotent** via `processed_webhook_events` |
 | `POST /api/admin/resolve-report` | Manual resolution for pending-review reports |
-| `GET /api/cron/grade` | Hourly grading |
+| `GET /api/cron/grade` | Hourly grading + platform stats MV refresh |
+| `GET /api/creators/[id]/moat` | **Addendum #2** — `{ current, previous }` MOAT snapshots for odometer animation |
+| `GET /api/search?q=` | **Addendum #2** — trigram typeahead: `{ creators, tickers }` (~5 each) |
+| `GET /api/stats/platform` | **Addendum #2** — trust-bar aggregates from `platform_stats` MV (`Cache-Control: max-age=3600`) |
+| `POST /api/feed/dismiss` | **Addendum #2** — persist "Not interested"; excluded in `listFeed()` |
 
 ### Webhook idempotency (Must #5 — adapted for PayPal)
 
@@ -135,7 +139,12 @@ src/lib/engine/
   tickers.ts            Per-symbol timezone + status
 src/app/actions/reports.ts   publishReport + horizon validation
 src/app/api/admin/resolve-report/route.ts
+src/app/api/creators/[id]/moat/route.ts
+src/app/api/search/route.ts
+src/app/api/stats/platform/route.ts
+src/app/api/feed/dismiss/route.ts
 supabase/migrations/0018_pm_framework_backend.sql
+supabase/migrations/0019_addendum_contract_gaps.sql
 ```
 
 ---
@@ -166,7 +175,7 @@ On verified deletion request:
 
 ## Migrations
 
-Run in order through **`0018_pm_framework_backend.sql`** after `0017`.
+Run in order through **`0019_addendum_contract_gaps.sql`** after `0018`.
 
 ```bash
 # Or use combined bootstrap for fresh projects:
@@ -192,3 +201,15 @@ Run in order through **`0018_pm_framework_backend.sql`** after `0017`.
 | 11 | Could | Draft lifecycle nudges | 📋 ticket |
 | 12 | Could | PITR launch checklist | 📋 doc |
 | 13 | Could | MoSCoW on build order | ✅ |
+
+---
+
+## Changelog (Addendum #2 — motion/polish contract gaps)
+
+| # | Priority | Item | Status |
+|---|----------|------|--------|
+| A1 | Must | `GET /api/creators/[id]/moat` → `{ current, previous }` from `moat_score_snapshots` | ✅ |
+| A2 | Must | `GET /api/search?q=` + `pg_trgm` indexes on profiles + tickers | ✅ |
+| A3 | Should | `GET /api/stats/platform` via `platform_stats` MV (cron refresh) | ✅ |
+| A4 | Should | `feed_dismissals` + `POST /api/feed/dismiss` + feed exclusion | ✅ |
+| A5 | Could | Referral `?ref=<handle>` → `profiles.referred_by` + audience count | ✅ |

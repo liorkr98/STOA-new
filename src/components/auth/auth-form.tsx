@@ -19,7 +19,13 @@ function SubmitButton({ label }: { label: string }) {
 const inputClass =
   "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm text-text placeholder:text-text-faint focus-ring";
 
-export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
+export function AuthForm({
+  mode,
+  refHandle,
+}: {
+  mode: "sign-in" | "sign-up";
+  refHandle?: string;
+}) {
   const action = mode === "sign-in" ? signIn : signUp;
   const [state, formAction] = useActionState<AuthState, FormData>(action, null);
 
@@ -33,6 +39,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       </p>
 
       <form action={formAction} className="mt-8 flex flex-col gap-4">
+        {refHandle && <input type="hidden" name="ref" value={refHandle} />}
         {mode === "sign-up" && (
           <div className="flex flex-col gap-2">
             <label htmlFor="display_name" className="text-sm font-medium">
