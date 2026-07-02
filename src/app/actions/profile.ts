@@ -17,12 +17,16 @@ async function requireUser() {
 
 /** Creates profile + wallet if the signup trigger didn't run. Safe to call repeatedly. */
 export async function ensureProfile() {
-  const { supabase } = await requireUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "Not signed in" };
+
   const { data, error } = await supabase.rpc("ensure_user_profile");
   if (error) return { ok: false as const, error: error.message };
   const row = data as { error?: string };
   if (row.error) return { ok: false as const, error: row.error };
-  revalidatePath("/", "layout");
   return { ok: true as const };
 }
 

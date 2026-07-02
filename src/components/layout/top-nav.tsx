@@ -69,7 +69,7 @@ export function TopNav({
                 className={buttonClass("primary", "sm")}
               >
                 <PenNib size={15} weight="fill" />
-                Write
+                {isAnalyst ? "Write" : "Become analyst"}
               </Link>
               <Link
                 href="/inbox"
@@ -128,7 +128,7 @@ export function TopNav({
                   className={buttonClass("primary", "sm", "w-full justify-center")}
                 >
                   <PenNib size={15} weight="fill" />
-                  Write
+                  {isAnalyst ? "Write" : "Become analyst"}
                 </Link>
                 <Link
                   href={`/analyst/${profile.handle}`}
