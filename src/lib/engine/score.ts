@@ -177,7 +177,7 @@ export function computeScore(
   globalAlphaDistribution?: number[],
 ): ScoreResult {
   const resolved = predictions
-    .filter((p) => p.outcome !== "open" && p.lock_price && p.resolved_price != null)
+    .filter((p) => p.outcome !== "open" && p.outcome !== "neutral" && p.lock_price && p.resolved_price != null)
     .sort((a, b) => +new Date(a.resolves_at) - +new Date(b.resolves_at));
 
   const total = resolved.length;

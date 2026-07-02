@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
+import { getTickerMeta } from "@/lib/engine/tickers";
+import {
+  effectiveResolutionDate,
+  horizonDateFromDays,
+  marketCloseIso,
+  todayInTimezone,
+} from "@/lib/engine/trading-calendar";
 import type { ComposeInput } from "@/lib/types";
 
 async function requireUser() {
@@ -92,9 +99,20 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
 
   if (wantsPrediction) {
     const ticker = input.ticker!.toUpperCase();
-    const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
+    const meta = await getTickerMeta(ticker);
     const horizon = input.horizon_days ?? 30;
-    const resolvesAt = new Date(Date.now() + horizon * 86_400_000).toISOString();
+    const targetHorizonDate =
+      input.target_horizon_date ?? horizonDateFromDays(horizon, meta.timezone);
+
+    if (targetHorizonDate <= todayInTimezone(meta.timezone)) {
+      throw new Error(
+        `Target horizon date must be after today. "${targetHorizonDate}" is not a valid horizon date for ${ticker}.`,
+      );
+    }
+
+    const { tradingDate } = effectiveResolutionDate(targetHorizonDate, meta.timezone);
+    const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
+    const resolvesAt = marketCloseIso(tradingDate, meta.timezone);
 
     await supabase.from("predictions").insert({
       report_id: id,
@@ -104,6 +122,8 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
       lock_price: quote.price,
       target_price: input.target_price ?? null,
       horizon_days: horizon,
+      target_horizon_date: targetHorizonDate,
+      resolution_trading_date: tradingDate,
       resolves_at: resolvesAt,
       bench_lock_price: bench.price,
       outcome: "open",

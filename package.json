@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
     "grade": "tsx scripts/grade.ts",
-    "import:kaggle": "tsx scripts/import-kaggle.ts"
+    "import:kaggle": "tsx scripts/import-kaggle.ts",
+    "test:engine": "node --import tsx --test src/lib/engine/score.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

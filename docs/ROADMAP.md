@@ -40,6 +40,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Social notifications** — follow, like, comment, publication, sale, subscribe in the inbox
 - **Track record surfaced** — score breakdown, hit/near/miss, tier progress, full call ledger with alpha
 - **Analyst application funnel** — investors apply with a short questionnaire, admin approves/rejects at `/admin/applications`, only approved analysts get compose access
+- **PM framework backend (0018)** — horizon validation, trading-calendar resolution, `resolution_pending_review`, webhook idempotency, fact-check rate limits — see `docs/Stoa_Backend_Deep_Dive.md`
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
 - **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page

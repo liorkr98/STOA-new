@@ -19,11 +19,28 @@ export async function GET(request: NextRequest) {
   try {
     const db = createAdminClient();
     const summary = await gradeDuePredictions(db);
+
+    if (process.env.CRON_ALERT_WEBHOOK_URL) {
+      // Fire-and-forget success ping (optional monitoring §8).
+      fetch(process.env.CRON_ALERT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "grade.ok", summary, at: new Date().toISOString() }),
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "grading failed" },
-      { status: 500 },
-    );
+    const message = e instanceof Error ? e.message : "grading failed";
+
+    if (process.env.CRON_ALERT_WEBHOOK_URL) {
+      fetch(process.env.CRON_ALERT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "grade.failed", error: message, at: new Date().toISOString() }),
+      }).catch(() => {});
+    }
+
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
