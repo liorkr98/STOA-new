@@ -183,6 +183,8 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
 12. **No 1:1 messaging between an analyst and a subscriber anywhere in the product.** Public
     surfaces only — reports, and scoped debate threads on opinion-tagged claims. This is a
     deliberate guardrail, not a missing feature.
+13. **Motion: follow `docs/MOTION.md` exactly.** Easing/duration tokens, the component-by-component
+    table, and the "do NOT animate" list are law, not taste.
 
 ### Code quality
 
@@ -223,3 +225,5 @@ Never trust client-supplied prices.
   already RLS-gated for this reason; keep it that way.
 - "OnlyFans," dating-app, or other casual-platform comparisons in any user-facing or internal
   copy.
+- Running any design-system generator that persists output into this repo (e.g. UI/UX Pro Max
+  `--design-system --persist`) — it overwrites the ledger-and-seal system with a generic one.
