@@ -91,3 +91,16 @@ export async function updateProfileConfig(config: ProfileConfig) {
   revalidatePath("/settings/branding");
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }
+
+/** Merges into the existing profile_config rather than overwriting it --
+ * onboarding shouldn't be able to wipe out creator branding fields. */
+export async function setInvestorInterests(interests: string[]) {
+  const { supabase, userId } = await requireUser();
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config")
+    .eq("id", userId)
+    .single();
+  const config: ProfileConfig = { ...(existing?.profile_config ?? {}), interests };
+  await supabase.from("profiles").update({ profile_config: config }).eq("id", userId);
+}

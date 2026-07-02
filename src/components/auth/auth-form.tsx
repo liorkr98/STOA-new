@@ -51,7 +51,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
       await ensureProfile();
 
-      router.push("/discover");
+      router.push(mode === "sign-up" ? "/onboarding/investor" : "/discover");
       router.refresh();
     });
   }
