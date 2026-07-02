@@ -1,4 +1,3 @@
-import { TierBadge } from "@/components/ui/tier-badge";
 import { tierProgress } from "@/lib/engine/score";
 
 interface Breakdown {
@@ -80,7 +79,7 @@ export function TrackBreakdown({
         <div className="border-t border-border pt-4">
           <div className="mb-2 flex items-center justify-between">
             <span className="t-meta">Progress to next tier</span>
-            <TierBadge tier={progress.next.key} label={progress.next.label} />
+            <span className="text-sm font-medium">{progress.next.label}</span>
           </div>
           <ul className="flex flex-col gap-2">
             {progress.requirements.map((r) => (

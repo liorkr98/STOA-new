@@ -35,7 +35,6 @@ export default async function BecomeAnalystPage({
   const { submitted, reapply } = await searchParams;
   const existing = await getExistingApplication(profile.id);
 
-  // Already submitted / approved / rejected (but not reapplying)
   if (existing && !submitted && !reapply) {
     return (
       <div className="mx-auto max-w-xl py-8">
@@ -44,7 +43,6 @@ export default async function BecomeAnalystPage({
     );
   }
 
-  // Confirmed submission
   if (submitted === "1") {
     return (
       <div className="mx-auto max-w-xl py-8">
@@ -69,7 +67,6 @@ export default async function BecomeAnalystPage({
       </p>
 
       <form action={submitAnalystApplication} className="mt-8 flex flex-col gap-6">
-        {/* Required questions */}
         <fieldset className="flex flex-col gap-5">
           <legend className="text-sm font-semibold uppercase tracking-wide text-text-mute">
             Required
@@ -123,7 +120,6 @@ export default async function BecomeAnalystPage({
           </div>
         </fieldset>
 
-        {/* Optional questions */}
         <fieldset className="flex flex-col gap-5">
           <legend className="text-sm font-semibold uppercase tracking-wide text-text-mute">
             Optional — helps us review faster
@@ -195,10 +191,10 @@ function ApplicationStatus({
         <CheckCircle size={48} weight="duotone" className="text-green-500" />
         <h2 className="t-h2">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
-          Your account has been upgraded. You can now publish research.
+          Your account has been upgraded. Set up your profile and publish your first report.
         </p>
-        <a href="/studio/compose" className={`inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
-          Open compose editor
+        <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
+          Set up your profile
         </a>
       </div>
     );

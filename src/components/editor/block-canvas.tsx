@@ -44,7 +44,7 @@ function SortableBlock({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group glass relative rounded-[var(--radius-card)] p-4 transition-[border-color,opacity]",
+        "group relative rounded-[var(--radius-card)] border border-border bg-surface-2 p-4 transition-[border-color,opacity]",
         isDragging && "z-10 opacity-90 ring-1 ring-accent/40",
       )}
     >

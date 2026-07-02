@@ -1,13 +1,22 @@
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 
-export const manrope = Manrope({
+export const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-fraunces",
+  weight: "variable",
   display: "swap",
 });
 
-export const spaceGrotesk = Space_Grotesk({
+export const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-plex-sans",
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+export const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-plex-mono",
+  weight: ["400", "500", "600"],
   display: "swap",
 });

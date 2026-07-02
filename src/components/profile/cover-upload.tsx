@@ -54,7 +54,7 @@ export function CoverUpload({
         type="button"
         disabled={pending}
         onClick={() => inputRef.current?.click()}
-        className={`${buttonClass("secondary", "sm")} absolute bottom-3 right-3 glass`}
+        className={`${buttonClass("secondary", "sm")} absolute bottom-3 right-3 shadow-[var(--shadow-card)]`}
       >
         <ImageIcon size={16} />
         {pending ? "Uploading..." : "Cover image"}

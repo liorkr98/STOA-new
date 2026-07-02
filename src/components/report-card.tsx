@@ -8,10 +8,11 @@ import {
   Eye,
 } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/design/cn";
-import { compact, analystRating } from "@/lib/format";
+import { compact } from "@/lib/format";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { Tag } from "./ui/tag";
+import { MoatBadge } from "./ui/moat-badge";
 import { PredictionCard } from "./prediction-card";
 
 const typeLabel: Record<Report["type"], string> = {
@@ -53,11 +54,7 @@ export function ReportCard({ report }: { report: Report }) {
           </div>
         )}
         <div className="flex items-center gap-2">
-          {author && (
-            <span className="num text-sm font-semibold text-text-mute" title="Analyst rating">
-              {analystRating(author)}
-            </span>
-          )}
+          {author && <MoatBadge handle={author.handle} score={author.score || null} size="sm" />}
           <Tag>{typeLabel[report.type]}</Tag>
         </div>
       </div>

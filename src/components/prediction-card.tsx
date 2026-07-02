@@ -3,11 +3,16 @@ import { cn } from "@/lib/design/cn";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
 import { DirectionTag, GradeTag } from "./ui/tag";
+import { SealStamp } from "./ui/seal-stamp";
 
 /**
  * The investment card. The signature object of Stoa: ticker, direction, entry,
  * target, horizon, and a live/graded outcome. Sentiment color is allowed here
  * on the direction tag, grade tag, and the return number only.
+ *
+ * This is a trust-critical block (the "receipt"), so it gets ledger-card
+ * treatment (double-ruled border) rather than the plain surface used by
+ * ordinary content cards. The seal sits beside the target once locked.
  */
 export function PredictionCard({
   prediction,
@@ -25,19 +30,16 @@ export function PredictionCard({
     outcome,
     return_pct,
     benchmark_pct,
+    created_at,
   } = prediction;
   const resolved = outcome !== "open";
   const tone = return_pct == null ? "neutral" : return_pct >= 0 ? "up" : "down";
   const alpha =
     return_pct != null && benchmark_pct != null ? return_pct - benchmark_pct : null;
+  const sealStatus = outcome === "hit" || outcome === "near" ? "hit" : outcome === "miss" ? "miss" : "locked";
 
   return (
-    <div
-      className={cn(
-        "rounded-[var(--radius-card)] border border-border bg-surface-2/60 p-4",
-        className,
-      )}
-    >
+    <div className={cn("ledger-card p-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="num text-lg font-semibold tracking-tight">{ticker}</span>
@@ -52,6 +54,7 @@ export function PredictionCard({
           label="Target"
           value={target_price ? `$${price(target_price)}` : "Open"}
           icon={<Target size={12} weight="bold" />}
+          trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" />}
         />
         <Field
           label={resolved ? "Resolved" : "Now"}
@@ -96,10 +99,12 @@ function Field({
   label,
   value,
   icon,
+  trailing,
 }: {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  trailing?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -107,7 +112,10 @@ function Field({
         {icon}
         {label}
       </span>
-      <span className="num text-sm font-medium">{value}</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="num text-sm font-medium">{value}</span>
+        {trailing}
+      </span>
     </div>
   );
 }

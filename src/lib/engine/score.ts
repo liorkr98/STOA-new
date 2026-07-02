@@ -1,7 +1,9 @@
 /**
  * Stoa Scoring Engine v3.
  *
- * Composite 0-100 skill score mapped to a 600-1400 display rating.
+ * Composite 0-100 skill score. Also derives a legacy 600-1400 `rating` field
+ * for the existing `profiles.rating` column, but the UI only ever shows the
+ * 0-100 score now.
  *
  *   1. Win rate      - Wilson lower bound on time-weighted outcomes
  *                      (Hit = 1, Near = 0.5, Partial/Miss = 0)
@@ -28,8 +30,7 @@ function wilsonLower(hits: number, total: number): number {
 /**
  * Percentile rank of `value` within `distribution`, as a 0-100 number.
  * Used to normalize a creator's average alpha against every other creator's,
- * so a single outsized call can't permanently swamp the score — the MOAT
- * formula's "normalized_return" step.
+ * so a single outsized call can't permanently swamp the score.
  */
 export function percentileRank(value: number, distribution: number[]): number {
   if (distribution.length === 0) return 50;
@@ -38,15 +39,10 @@ export function percentileRank(value: number, distribution: number[]): number {
   return Math.round(((below + 0.5 * equal) / distribution.length) * 100);
 }
 
-/** Maps 0-100 composite to the public 600-1400 scale. */
+/** Maps 0-100 composite to the legacy 600-1400 scale, stored but no longer displayed. */
 export function scoreToRating(score: number): number {
   const clamped = Math.min(100, Math.max(0, score));
   return Math.round(600 + (clamped / 100) * 800);
-}
-
-/** Ring fill percent from a 600-1400 rating. */
-export function ratingToPercent(rating: number): number {
-  return Math.min(100, Math.max(0, ((rating - 600) / 800) * 100));
 }
 
 /** Direction-aware signed return %, or null if not computable. */
@@ -167,13 +163,6 @@ function drawdownPenalty(sorted: Resolved[]): number {
 
 export function computeScore(
   predictions: Resolved[],
-  /**
-   * Every other creator's avgAlpha, gathered by the caller (grade.ts) across
-   * a single grading pass. When supplied, alpha is scored by percentile rank
-   * against the platform instead of a fixed linear band — the MOAT formula's
-   * normalization step, aligned to real distribution rather than a guessed
-   * +/-20% range.
-   */
   globalAlphaDistribution?: number[],
 ): ScoreResult {
   const resolved = predictions

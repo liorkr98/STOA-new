@@ -29,13 +29,13 @@ export const samplePrediction: Prediction = {
 };
 
 export const sampleTrack: TrackPoint[] = [
-  { label: "Jan", rating: 920 },
-  { label: "Feb", rating: 905 },
-  { label: "Mar", rating: 970 },
-  { label: "Apr", rating: 1010 },
-  { label: "May", rating: 1065 },
-  { label: "Jun", rating: 1120 },
-  { label: "Jul", rating: 1158 },
+  { label: "Jan", score: 58 },
+  { label: "Feb", score: 55 },
+  { label: "Mar", score: 65 },
+  { label: "Apr", score: 71 },
+  { label: "May", score: 79 },
+  { label: "Jun", score: 84 },
+  { label: "Jul", score: 87 },
 ];
 
 export const sampleAnalysts: (Profile & { spark: number[]; resolved: number })[] = [

@@ -5,6 +5,7 @@ import { UNIVERSE } from "@/lib/universe";
 import { getQuote } from "@/lib/engine/market";
 import { tickerCoverage } from "@/lib/db/reports";
 import { StoaCoverageBadge } from "@/components/markets/coverage-badge";
+import { WatchlistButton } from "@/components/markets/watchlist-button";
 
 export const metadata: Metadata = { title: "Markets" };
 
@@ -37,9 +38,12 @@ export default async function MarketsPage() {
                 <div className="num text-lg font-semibold">{r.ticker}</div>
                 <div className="t-meta">{r.name}</div>
               </div>
-              <div className="text-right">
-                <div className="num text-lg font-semibold">${price(r.quote.price)}</div>
-                <div className="t-meta">{r.sector}</div>
+              <div className="flex items-start gap-1">
+                <div className="text-right">
+                  <div className="num text-lg font-semibold">${price(r.quote.price)}</div>
+                  <div className="t-meta">{r.sector}</div>
+                </div>
+                <WatchlistButton ticker={r.ticker} className="-mr-2 -mt-1" />
               </div>
             </div>
             <StoaCoverageBadge count={r.cover} />

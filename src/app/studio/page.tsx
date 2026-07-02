@@ -12,7 +12,7 @@ import { compact, usd, pct } from "@/lib/format";
 import { buttonClass } from "@/components/ui/button";
 import { Stat } from "@/components/ui/stat";
 import { GradeTag } from "@/components/ui/tag";
-import { TierBadge } from "@/components/ui/tier-badge";
+import { MoatBadge } from "@/components/ui/moat-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata: Metadata = { title: "Studio" };
@@ -36,10 +36,7 @@ export default async function StudioOverview() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="t-h1">Studio</h1>
-          <p className="t-body mt-1 flex items-center gap-2">
-            Welcome back, {profile.display_name}.
-            <TierBadge tier={stats.tier.key} label={stats.tier.label} />
-          </p>
+          <p className="t-body mt-1">Welcome back, {profile.display_name}.</p>
         </div>
         <Link href="/studio/compose" className={buttonClass("primary", "lg")}>
           <PlusCircle size={18} weight="bold" />
@@ -47,15 +44,24 @@ export default async function StudioOverview() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 md:grid-cols-4">
-        <Stat label="Rating" value={String(stats.rating)} sub={`Score ${stats.score} / 100`} />
-        <Stat label="Subscribers" value={compact(subs)} />
-        <Stat label="Earnings" value={usd(wallet?.earnings ?? 0)} />
-        <Stat
-          label="Avg return"
-          value={pct(stats.avgReturn)}
-          tone={stats.avgReturn == null ? "neutral" : stats.avgReturn >= 0 ? "up" : "down"}
+      <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+        <MoatBadge
+          handle={profile.handle}
+          score={stats.score || null}
+          hitRate={stats.winRate}
+          sampleSize={stats.resolved}
+          size="lg"
+          className="col-span-2"
         />
+        <div className="col-span-2 grid grid-cols-3 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-5">
+          <Stat label="Subscribers" value={compact(subs)} />
+          <Stat label="Earnings" value={usd(wallet?.earnings ?? 0)} />
+          <Stat
+            label="Avg return"
+            value={pct(stats.avgReturn)}
+            tone={stats.avgReturn == null ? "neutral" : stats.avgReturn >= 0 ? "up" : "down"}
+          />
+        </div>
       </div>
 
       <section className="grid gap-6 lg:grid-cols-2">

@@ -85,9 +85,9 @@ export function AiSidebar({
   const quick = ["Outline this research", "Expand bull case", "Add metrics block"];
 
   return (
-    <aside className="glass flex h-full min-h-0 flex-col overflow-hidden border-accent/20">
+    <aside className="surface flex h-full min-h-0 flex-col overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <Sparkle size={18} weight="fill" className="text-accent accent-glow" />
+        <Sparkle size={18} weight="fill" className="text-accent" />
         <div>
           <p className="text-sm font-semibold">Research AI</p>
           <p className="t-meta">{credits} credits · 1 per message</p>

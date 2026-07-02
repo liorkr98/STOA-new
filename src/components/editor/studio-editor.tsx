@@ -171,13 +171,13 @@ export function StudioEditor({
 
   return (
     <div
-      className="observatory dark flex min-h-[calc(100dvh-2rem)] flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-bg p-1 md:p-2"
+      className="dark surface flex min-h-[calc(100dvh-2rem)] flex-col gap-4 p-1 md:p-2"
       onDragOver={(e) => e.preventDefault()}
     >
       {/* Toolbar */}
-      <div className="glass flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--r-card)] border border-border bg-surface-2 px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="t-eyebrow accent-glow">Compose</span>
+          <span className="t-eyebrow text-accent">Compose</span>
           <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg/50 p-0.5">
             {types.map((t) => (
               <button
@@ -216,7 +216,7 @@ export function StudioEditor({
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[200px_1fr_300px]">
         {/* Palette */}
-        <div className="glass hidden max-h-[calc(100dvh-12rem)] space-y-6 overflow-y-auto p-3 lg:block">
+        <div className="hidden max-h-[calc(100dvh-12rem)] space-y-6 overflow-y-auto rounded-[var(--r-card)] border border-border bg-surface-2 p-3 lg:block">
           <TemplatesPanel onApply={applyTemplate} />
           <BlockPalette onAdd={addBlock} />
         </div>
@@ -246,7 +246,7 @@ export function StudioEditor({
           ) : null}
 
           {hasCard && (
-            <div className="glass p-4">
+            <div className="rounded-[var(--r-card)] border border-border bg-surface-2 p-4">
               <p className="t-eyebrow mb-3">Investment card</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-sm">
@@ -291,7 +291,7 @@ export function StudioEditor({
             </div>
           )}
 
-          <div className="glass p-4">
+          <div className="rounded-[var(--r-card)] border border-border bg-surface-2 p-4">
             <p className="t-eyebrow mb-2">Access</p>
             <div className="flex flex-wrap gap-3 text-sm">
               {(["free", "subscribers", "paid"] as AccessType[]).map((a) => (

@@ -109,7 +109,7 @@ export function FactCheckerPanel({
   }
 
   return (
-    <div className="glass flex flex-col gap-3 rounded-[var(--radius-card)] border border-border p-4">
+    <div className="surface flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <MagnifyingGlass size={18} className="text-accent" />
@@ -144,21 +144,5 @@ export function FactCheckerPanel({
         </div>
       )}
     </div>
-  );
-}
-
-export function FactCheckResults({ result }: { result: FactCheckResult }) {
-  return (
-    <section className="mt-8 rounded-[var(--radius-card)] border border-border bg-surface p-5">
-      <h2 className="t-h3 mb-1">Fact-check</h2>
-      <p className="t-meta mb-4">
-        AI-classified claims · checked {new Date(result.checked_at).toLocaleDateString()}
-      </p>
-      <div className="flex flex-col gap-3">
-        {result.claims.map((c, i) => (
-          <ClaimRow key={i} claim={c} />
-        ))}
-      </div>
-    </section>
   );
 }

@@ -35,6 +35,8 @@ export interface ProfileConfig {
   specialties?: string[];
   social?: { label: string; url: string }[];
   featured_tickers?: string[];
+  /** Investor-side sector picks from onboarding. Shapes the Discover feed. */
+  interests?: string[];
 }
 
 export const BLOCK_META: Record<

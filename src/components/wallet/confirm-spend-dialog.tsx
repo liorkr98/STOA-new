@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { CheckCircle, X } from "@phosphor-icons/react";
-import { useEffect } from "react";
+import { cn } from "@/lib/design/cn";
 import { usd } from "@/lib/format";
 import type { SpendResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 /**
  * The single confirmation surface for any wallet spend. Per the Stoa rule, it
  * always shows cost, current balance, new balance, and the 90/10 split before
- * money moves.
+ * money moves. Built on Radix Dialog for real focus-trap/restore/Escape
+ * behavior, matching LockConfirmModal and DebateThread. Bottom sheet on
+ * mobile, centered dialog on desktop (sm+) -- same dual-axis technique as
+ * DebateThread's sheet-in-y/modal-in split.
  */
 export function ConfirmSpendDialog({
   open,
@@ -34,109 +37,103 @@ export function ConfirmSpendDialog({
   result?: SpendResult;
   onConfirm: () => void;
 }) {
-  const reduce = useReducedMotion();
   const fee = Math.round(amount * 0.1 * 100) / 100;
   const toAnalyst = amount - fee;
   const newBalance = balance - amount;
   const insufficient = newBalance < 0;
   const done = result?.status && !result.error;
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    if (open) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
+    <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-[fade-in_150ms_ease-out] data-[state=closed]:animate-[fade-out_150ms_ease-in]" />
+        <Dialog.Content
+          className={cn(
+            "fixed z-50 w-full border-border bg-surface p-6 focus:outline-none",
+            "inset-x-0 bottom-0 rounded-t-[var(--radius-card)] border-t",
+            "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--radius-card)] sm:border",
+            "data-[state=open]:animate-[sheet-in-y_250ms_cubic-bezier(0.32,0.72,0,1)]",
+            "data-[state=closed]:animate-[sheet-out-y_200ms_ease-in]",
+            "sm:data-[state=open]:animate-[modal-in_200ms_cubic-bezier(0.16,1,0.3,1)]",
+            "sm:data-[state=closed]:animate-[modal-out_150ms_ease-in]",
+          )}
+          style={{ boxShadow: "var(--shadow-soft)" }}
         >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-md rounded-[var(--radius-card)] border border-border bg-surface p-6"
-            style={{ boxShadow: "var(--shadow-soft)" }}
-            initial={reduce ? false : { opacity: 0, y: 16, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between">
-              <h2 className="t-h3">{title}</h2>
-              <button onClick={onClose} className="text-text-faint hover:text-text" aria-label="Close">
+          <div className="flex items-start justify-between">
+            <Dialog.Title className="t-h3">{title}</Dialog.Title>
+            <Dialog.Close asChild>
+              <button className="text-text-faint hover:text-text" aria-label="Close">
                 <X size={18} />
               </button>
-            </div>
+            </Dialog.Close>
+          </div>
+          <Dialog.Description className="sr-only">
+            Confirm this wallet spend before it processes.
+          </Dialog.Description>
 
-            {done ? (
-              <div className="mt-6 flex flex-col items-center gap-2 py-4 text-center">
-                <CheckCircle size={40} weight="fill" className="text-[var(--up)]" />
-                <p className="font-semibold">You are all set</p>
-                <p className="t-meta">New balance {usd(result!.new_balance ?? newBalance, { cents: true })}</p>
-                <Button variant="secondary" className="mt-3" onClick={onClose}>
+          {done ? (
+            <div className="mt-6 flex flex-col items-center gap-2 py-4 text-center">
+              <CheckCircle size={40} weight="fill" className="text-[var(--up)]" />
+              <p className="font-semibold">You are all set</p>
+              <p className="t-meta">New balance {usd(result!.new_balance ?? newBalance, { cents: true })}</p>
+              <Dialog.Close asChild>
+                <Button variant="secondary" className="mt-3">
                   Done
                 </Button>
-              </div>
-            ) : (
-              <>
-                <dl className="mt-5 flex flex-col gap-2.5 text-sm">
-                  <Row label="Cost" value={usd(amount, { cents: true })} strong />
-                  <Row label="To the analyst (90%)" value={usd(toAnalyst, { cents: true })} />
-                  <Row label="Platform fee (10%)" value={usd(fee, { cents: true })} />
-                  <div className="my-1 h-px bg-border" />
-                  <Row label="Current balance" value={usd(balance, { cents: true })} />
-                  <Row
-                    label="New balance"
-                    value={usd(newBalance, { cents: true })}
-                    strong
-                    tone={insufficient ? "down" : undefined}
-                  />
-                </dl>
+              </Dialog.Close>
+            </div>
+          ) : (
+            <>
+              <dl className="mt-5 flex flex-col gap-2.5 text-sm">
+                <Row label="Cost" value={usd(amount, { cents: true })} strong />
+                <Row label="To the analyst (90%)" value={usd(toAnalyst, { cents: true })} />
+                <Row label="Platform fee (10%)" value={usd(fee, { cents: true })} />
+                <div className="my-1 h-px bg-border" />
+                <Row label="Current balance" value={usd(balance, { cents: true })} />
+                <Row
+                  label="New balance"
+                  value={usd(newBalance, { cents: true })}
+                  strong
+                  tone={insufficient ? "down" : undefined}
+                />
+              </dl>
 
-                {insufficient && (
-                  <div className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
-                    <p>Not enough balance. Top up your wallet to continue.</p>
-                    <Link
-                      href="/wallet"
-                      className="mt-1 inline-block font-medium underline hover:no-underline"
-                    >
-                      Go to wallet
-                    </Link>
-                  </div>
-                )}
-                {result?.error && (
-                  <p className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
-                    {result.error}
-                  </p>
-                )}
+              {insufficient && (
+                <div className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                  <p>Not enough balance. Top up your wallet to continue.</p>
+                  <Link
+                    href="/wallet"
+                    className="mt-1 inline-block font-medium underline hover:no-underline"
+                  >
+                    Go to wallet
+                  </Link>
+                </div>
+              )}
+              {result?.error && (
+                <p className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                  {result.error}
+                </p>
+              )}
 
-                <div className="mt-5 flex gap-3">
-                  <Button variant="secondary" className="flex-1" onClick={onClose}>
+              <div className="mt-5 flex gap-3">
+                <Dialog.Close asChild>
+                  <Button variant="secondary" className="flex-1">
                     Cancel
                   </Button>
-                  <Button
-                    className="flex-1"
-                    disabled={pending || insufficient}
-                    onClick={onConfirm}
-                  >
-                    {pending ? "Processing..." : confirmLabel}
-                  </Button>
-                </div>
-              </>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+                </Dialog.Close>
+                <Button
+                  className="flex-1"
+                  disabled={pending || insufficient}
+                  onClick={onConfirm}
+                >
+                  {pending ? "Processing..." : confirmLabel}
+                </Button>
+              </div>
+            </>
+          )}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { manrope, spaceGrotesk } from "./fonts";
+import { fraunces, plexSans, plexMono } from "./fonts";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -17,7 +17,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.variable} ${spaceGrotesk.variable}`}>
+      <body className={`${plexSans.variable} ${fraunces.variable} ${plexMono.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

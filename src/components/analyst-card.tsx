@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/design/cn";
-import { compact, analystRating } from "@/lib/format";
+import { compact } from "@/lib/format";
 import type { Profile } from "@/lib/types";
-import { computeTier } from "@/lib/engine/score";
 import { Avatar } from "./ui/avatar";
-import { TierBadge } from "./ui/tier-badge";
+import { MoatBadge } from "./ui/moat-badge";
 import { Sparkline } from "./charts/sparkline";
 
 export function AnalystCard({
@@ -19,8 +18,6 @@ export function AnalystCard({
   resolvedCalls?: number;
   className?: string;
 }) {
-  const tier = computeTier(analyst.score, resolvedCalls);
-  const rating = analystRating(analyst);
   return (
     <Link
       href={`/analyst/${analyst.handle}`}
@@ -42,10 +39,13 @@ export function AnalystCard({
             <span className="t-meta">@{analyst.handle}</span>
           </div>
         </div>
-        <div className="text-right">
-          <div className="num text-2xl font-semibold leading-none">{rating}</div>
-          <div className="t-eyebrow mt-1">Rating</div>
-        </div>
+        <MoatBadge
+          handle={analyst.handle}
+          score={analyst.score || null}
+          sampleSize={resolvedCalls}
+          size="sm"
+          linked={false}
+        />
       </div>
 
       {analyst.headline && (
@@ -53,12 +53,8 @@ export function AnalystCard({
       )}
 
       <div className="flex items-end justify-between">
-        <TierBadge tier={tier.key} label={tier.label} />
-        {spark && spark.length > 1 ? (
-          <Sparkline data={spark} width={96} height={28} />
-        ) : (
-          <span className="t-meta num">{compact(analyst.followers_count)} followers</span>
-        )}
+        <span className="t-meta num">{compact(analyst.followers_count)} followers</span>
+        {spark && spark.length > 1 && <Sparkline data={spark} width={96} height={28} />}
       </div>
     </Link>
   );

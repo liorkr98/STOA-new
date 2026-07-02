@@ -11,6 +11,7 @@ import { StoaLogo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { signOut } from "@/app/actions/auth";
 
 const links = [
@@ -30,14 +31,23 @@ export function TopNav({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
+  // role is a single exclusive enum today (see BACKEND_DATA_CONTRACTS.md),
+  // so no account has both capabilities yet -- this always evaluates false
+  // until that changes, which is the spec's own intended fallback.
+  const hasInvestorRole = false;
+  const hasCreatorRole = isAnalyst;
+  const showRoleSwitcher = hasInvestorRole && hasCreatorRole;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 px-5">
         <div className="flex items-center gap-8">
-          <Link href="/" className="focus-ring rounded-md">
-            <StoaLogo />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="focus-ring rounded-md">
+              <StoaLogo />
+            </Link>
+            {showRoleSwitcher && <RoleSwitcher current={hasCreatorRole ? "creator" : "investor"} />}
+          </div>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((l) => {
               const active = pathname.startsWith(l.href);
@@ -166,6 +176,13 @@ export function TopNav({
                   className="rounded-md px-3 py-2 text-sm text-text-mute"
                 >
                   Saved
+                </Link>
+                <Link
+                  href="/watchlist"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Watchlist
                 </Link>
                 <Link
                   href="/subscriptions"
