@@ -36,6 +36,13 @@ export interface Profile {
   /** 600-1400 public display rating. */
   rating: number;
   tier: string;
+  /** Score breakdown, persisted at grading time so the analytics page never recomputes from raw calls. */
+  wilson_win_rate?: number | null;
+  profit_factor?: number | null;
+  avg_return?: number | null;
+  avg_alpha?: number | null;
+  sample_size?: number;
+  identity_verified?: boolean;
   followers_count: number;
   /** Monthly subscription price in USD. */
   sub_price: number | null;
@@ -62,12 +69,48 @@ export interface Report {
   views: number;
   comment_count: number;
   published_at: string | null;
+  /** Set the instant status becomes 'published'; freezes content via a DB trigger. */
+  locked_at: string | null;
   created_at: string;
   fact_check_results?: Record<string, unknown> | null;
+  /** Mandatory disclosure block — never optional, always shown on published content. */
+  position_disclosed: boolean;
+  position_held: boolean | null;
+  compensation_disclosed: boolean;
+  compensation_tied: boolean | null;
+  compensation_detail: string | null;
+  /** "These are my own views" cert, Reg-AC-style. */
+  views_certified: boolean;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
   prediction?: Prediction | null;
+}
+
+export type ClaimVerdict = "fact" | "unproven" | "opinion" | "contradicted";
+
+/** One atomic factual assertion extracted from a report body, with its verdict and highlight offsets. */
+export interface Claim {
+  id: string;
+  report_id: string;
+  claim_text: string;
+  verdict: ClaimVerdict;
+  confidence: number | null;
+  note: string | null;
+  source_url: string | null;
+  char_start: number;
+  char_end: number;
+  created_at: string;
+}
+
+/** A debate comment scoped to a single claim — only allowed on `opinion` verdicts. */
+export interface DebateComment {
+  id: string;
+  claim_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+  author?: Profile;
 }
 
 export interface Prediction {
@@ -147,6 +190,11 @@ export interface ComposeInput {
   target_price?: number | null;
   horizon_days?: number;
   fact_check_results?: Record<string, unknown> | null;
+  /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
+  position_held?: boolean;
+  compensation_tied?: boolean;
+  compensation_detail?: string;
+  views_certified?: boolean;
 }
 
 export interface SpendResult {

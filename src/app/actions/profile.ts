@@ -17,14 +17,72 @@ async function requireUser() {
 
 /** Creates profile + wallet if the signup trigger didn't run. Safe to call repeatedly. */
 export async function ensureProfile() {
-  const { supabase } = await requireUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "Not signed in" };
+
   const { data, error } = await supabase.rpc("ensure_user_profile");
   if (error) return { ok: false as const, error: error.message };
   const row = data as { error?: string };
   if (row.error) return { ok: false as const, error: row.error };
-  revalidatePath("/", "layout");
   return { ok: true as const };
 }
+
+// ── Analyst application (review-gated flow from main) ─────────────────────
+
+/** Submit an analyst application — replaces the old one-click becomeAnalyst. */
+export async function submitAnalystApplication(formData: FormData) {
+  const { supabase, userId } = await requireUser();
+  await supabase.rpc("ensure_user_profile");
+
+  const why_analyst    = String(formData.get("why_analyst") ?? "").trim().slice(0, 1000);
+  const background     = String(formData.get("background") ?? "").trim().slice(0, 1000);
+  const coverage_areas = String(formData.get("coverage_areas") ?? "").trim().slice(0, 500);
+  const sample_thesis  = String(formData.get("sample_thesis") ?? "").trim().slice(0, 2000) || null;
+  const linkedin_url   = String(formData.get("linkedin_url") ?? "").trim().slice(0, 300) || null;
+
+  if (!why_analyst || !background || !coverage_areas) {
+    throw new Error("Please fill in all required fields");
+  }
+
+  const { error } = await supabase
+    .from("analyst_applications")
+    .upsert(
+      { user_id: userId, why_analyst, background, coverage_areas, sample_thesis, linkedin_url, status: "pending", submitted_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/become-analyst");
+  redirect("/become-analyst?submitted=1");
+}
+
+/** Admin: approve an application. */
+export async function approveAnalystApplication(applicationId: string, note?: string) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("approve_analyst_application", {
+    p_application_id: applicationId,
+    p_note: note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/applications");
+}
+
+/** Admin: reject an application. */
+export async function rejectAnalystApplication(applicationId: string, note?: string) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("reject_analyst_application", {
+    p_application_id: applicationId,
+    p_note: note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/applications");
+}
+
+// ── Analyst onboarding wizard (post-approval) ─────────────────────────────
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -106,6 +164,8 @@ export async function completeAnalystOnboarding(formData: FormData) {
   revalidatePath("/studio");
   redirect("/studio/compose?onboarding=1");
 }
+
+// ── General profile actions ───────────────────────────────────────────────
 
 export async function updateProfile(formData: FormData) {
   const { supabase, userId } = await requireUser();
