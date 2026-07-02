@@ -6,8 +6,8 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const base =
   "inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap rounded-[var(--radius-btn)] " +
-  "transition-[transform,background-color,border-color,color,filter] duration-150 ease-out " +
-  "active:scale-[0.98] focus-ring disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer";
+  "transition-[transform,background-color,border-color,color,filter] duration-[var(--dur-1)] ease-[var(--ease-out)] " +
+  "active:scale-[0.97] focus-ring disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer";
 
 const variants: Record<ButtonVariant, string> = {
   primary: "bg-accent text-accent-ink hover:brightness-[1.06]",

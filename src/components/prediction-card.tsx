@@ -54,7 +54,7 @@ export function PredictionCard({
           label="Target"
           value={target_price ? `$${price(target_price)}` : "Open"}
           icon={<Target size={12} weight="bold" />}
-          trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" />}
+          trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />}
         />
         <Field
           label={resolved ? "Resolved" : "Now"}

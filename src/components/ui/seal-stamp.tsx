@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/design/cn";
 
 export type SealStatus = "locked" | "hit" | "miss";
@@ -27,24 +27,52 @@ function formatRingDate(date: Date) {
  * circular element in the product; every other rounded surface uses
  * --r-card. Reserving the circle for this one motif keeps it meaningful.
  *
- * `animate` should only be true the instant a call is actually locked (or
- * resolved) client-side -- never on ordinary re-renders of historical data.
+ * `animate` should only be true the instant a call is actually locked
+ * client-side -- never on ordinary re-renders of historical data.
+ *
+ * `animateOnView` is the resolution-stamp variant (docs/MOTION.md A.3):
+ * the HIT/MISS drop-in plays once when the stamp first enters the
+ * viewport and never re-triggers on scroll.
  */
 export function SealStamp({
   status,
   date,
   size = "md",
   animate = false,
+  animateOnView = false,
   className,
 }: {
   status: SealStatus;
   date: Date;
   size?: keyof typeof px;
   animate?: boolean;
+  animateOnView?: boolean;
   className?: string;
 }) {
   const dim = px[size];
   const ringId = useId();
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const playedRef = useRef(false);
+  const [resolveIn, setResolveIn] = useState(false);
+
+  useEffect(() => {
+    if (!animateOnView || status === "locked" || playedRef.current) return;
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !playedRef.current) {
+          playedRef.current = true;
+          setResolveIn(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [animateOnView, status]);
+
   const ringDate = formatRingDate(date);
   const ringLabel =
     status === "locked"
@@ -65,6 +93,7 @@ export function SealStamp({
 
   return (
     <span
+      ref={rootRef}
       role="img"
       aria-label={a11yLabel}
       className={cn("relative inline-flex shrink-0 items-center justify-center", className)}
@@ -74,7 +103,10 @@ export function SealStamp({
         width={dim}
         height={dim}
         viewBox={`0 0 ${dim} ${dim}`}
-        className={cn(status === "locked" && animate && "seal-press")}
+        className={cn(
+          status === "locked" && animate && "seal-press",
+          resolveIn && "seal-resolve",
+        )}
       >
         <defs>
           <path

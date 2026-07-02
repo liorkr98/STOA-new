@@ -155,39 +155,40 @@ export function StudioEditor({
     return null;
   })();
 
-  const doPublish = useCallback(() => {
+  // Awaitable so LockConfirmModal can hold its "Locking..." state on the
+  // real round-trip and only stamp/toast once the lock actually happened.
+  const doPublish = useCallback(async () => {
     setError(null);
-    start(async () => {
-      try {
-        await publishReport({
-          id: draftId,
-          type,
-          title: type === "short_post" ? undefined : title,
-          summary: summary || plainText.slice(0, 280),
-          body: type === "short_post" ? undefined : bodyJson,
-          access,
-          price: access === "paid" ? Number(price) : null,
-          ticker: hasCard ? ticker : null,
-          direction: hasCard ? direction : undefined,
-          target_price: hasCard && target ? Number(target) : null,
-          horizon_days: hasCard ? horizon : undefined,
-          fact_check_results: factCheck as unknown as Record<string, unknown> | null,
-          ...(hasCard
-            ? {
-                position_held: disclosure.positionHeld ?? false,
-                compensation_tied: disclosure.compTied ?? false,
-                compensation_detail: disclosure.compDetail || undefined,
-                views_certified: disclosure.viewsCertified,
-              }
-            : {}),
-        });
-      } catch (e) {
-        if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
-          setError(e.message);
-          setConfirmOpen(false);
-        }
+    try {
+      await publishReport({
+        id: draftId,
+        type,
+        title: type === "short_post" ? undefined : title,
+        summary: summary || plainText.slice(0, 280),
+        body: type === "short_post" ? undefined : bodyJson,
+        access,
+        price: access === "paid" ? Number(price) : null,
+        ticker: hasCard ? ticker : null,
+        direction: hasCard ? direction : undefined,
+        target_price: hasCard && target ? Number(target) : null,
+        horizon_days: hasCard ? horizon : undefined,
+        fact_check_results: factCheck as unknown as Record<string, unknown> | null,
+        ...(hasCard
+          ? {
+              position_held: disclosure.positionHeld ?? false,
+              compensation_tied: disclosure.compTied ?? false,
+              compensation_detail: disclosure.compDetail || undefined,
+              views_certified: disclosure.viewsCertified,
+            }
+          : {}),
+      });
+    } catch (e) {
+      if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
+        setError(e.message);
+        setConfirmOpen(false);
+        throw e;
       }
-    });
+    }
   }, [
     draftId,
     type,
@@ -211,7 +212,9 @@ export function StudioEditor({
     if (hasCard) {
       setConfirmOpen(true);
     } else {
-      doPublish();
+      start(async () => {
+        await doPublish().catch(() => {});
+      });
     }
   }
 

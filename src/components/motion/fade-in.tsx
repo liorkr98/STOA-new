@@ -11,7 +11,7 @@ import { cn } from "@/lib/design/cn";
 export function FadeIn({
   children,
   delay = 0,
-  y = 16,
+  y = 8,
   className,
 }: {
   children: ReactNode;

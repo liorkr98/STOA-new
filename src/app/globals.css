@@ -48,6 +48,16 @@
   --space-7: 48px;
   --space-8: 64px;
   --space-9: 96px;
+
+  /* Motion tokens (docs/MOTION.md A.1). Use nothing else. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-hover: ease;
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+  --dur-ceremony: 400ms;
 }
 
 .dark {
@@ -252,12 +262,12 @@ body {
  * default; the keyframe supplies the transient hidden state, so a renderer
  * that never runs animations still paints everything. */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(var(--fade-y, 16px)); }
+  from { opacity: 0; transform: translateY(var(--fade-y, 8px)); }
   to { opacity: 1; transform: none; }
 }
 
 .fade-up {
-  animation: fade-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-up var(--dur-3) var(--ease-out) both;
 }
 
 @keyframes pulse-dot {
@@ -273,23 +283,46 @@ body {
  * Seal stamp -- the signature motif. See SealStamp component.
  * ------------------------------------------------------------------ */
 
+/* The lock ceremony (docs/MOTION.md A.3), three phases in one 400ms run:
+ * press (0-20%, the only sanctioned ease-in -- it's a physical press),
+ * settle with the 8deg rotation returning to rest (ease-out), and the
+ * ink-bleed overlapping the settle on a separate element. */
 @keyframes seal-press {
-  0% { transform: scale(0.96) rotate(-6deg); opacity: 0; }
-  55% { transform: scale(1.04) rotate(2deg); opacity: 1; }
+  0% {
+    transform: scale(1) rotate(8deg);
+    opacity: 0;
+    animation-timing-function: ease-in;
+  }
+  20% {
+    transform: scale(0.96) rotate(8deg);
+    opacity: 1;
+    animation-timing-function: var(--ease-out);
+  }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes seal-ink-bleed {
-  0% { opacity: 0.5; transform: scale(0.6); }
-  100% { opacity: 0; transform: scale(1.8); }
+  0% { opacity: 0.5; transform: scale(0.6); filter: blur(2px); }
+  100% { opacity: 0; transform: scale(1.8); filter: blur(0); }
 }
 
 .seal-press {
-  animation: seal-press 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: seal-press var(--dur-ceremony) both;
 }
 
 .seal-ink-bleed {
-  animation: seal-ink-bleed 400ms ease-out both;
+  animation: seal-ink-bleed 320ms var(--ease-out) 80ms both;
+}
+
+/* Resolution stamp (HIT/MISS): same language, smaller. Plays once when the
+ * resolved card first enters the viewport; never re-triggers on scroll. */
+@keyframes seal-resolve {
+  from { transform: scale(1.15) rotate(4deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.seal-resolve {
+  animation: seal-resolve 300ms var(--ease-out) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -315,7 +348,7 @@ body {
  * ------------------------------------------------------------------ */
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.98); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
@@ -335,10 +368,16 @@ body {
 }
 
 /* Popovers (FactCheckLayer claim popovers, etc.) scale in from their
- * trigger via Radix's CSS var, not from center. */
+ * trigger via Radix's CSS var, not from center. Exit one token step
+ * faster than the enter (docs/MOTION.md law 3). */
 @keyframes popover-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popover-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.98); }
 }
 
 .popover-content {
@@ -346,12 +385,34 @@ body {
 }
 
 .popover-content[data-state="open"] {
-  animation: popover-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: popover-in var(--dur-2) var(--ease-out);
 }
 
-/* DebateThread sheet: slides from the bottom on mobile, from the right on
- * desktop (sm+). Two axes because a single transform can't serve both
- * edges -- picked per breakpoint via the Tailwind animate-[...] classes. */
+.popover-content[data-state="closed"] {
+  animation: popover-out var(--dur-1) var(--ease-out);
+}
+
+/* In-group popovers (Emil's tooltip pattern): while a reader scans
+ * claim-to-claim the group is warm and subsequent popovers appear
+ * instantly -- see ClaimMark in fact-check-layer.tsx. */
+.popover-content.popover-instant[data-state="open"],
+.popover-content.popover-instant[data-state="closed"] {
+  animation: none;
+}
+
+/* Hand-rolled dropdowns (account menu): scale from the trigger edge. */
+@keyframes menu-pop {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.menu-pop {
+  transform-origin: top right;
+  animation: menu-pop var(--dur-2) var(--ease-out) both;
+}
+
+/* Bottom sheets (ConfirmSpendDialog on mobile). Full-travel slide is the
+ * one sanctioned off-screen entrance -- drawers only (docs/MOTION.md law 5). */
 @keyframes sheet-in-y {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -360,13 +421,16 @@ body {
   from { transform: translateY(0); }
   to { transform: translateY(100%); }
 }
-@keyframes sheet-in-x {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+
+/* Desktop side panels (DebateThread on sm+): a quiet 8px drift + fade,
+ * not a full-width slide. */
+@keyframes panel-in-x {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
-@keyframes sheet-out-x {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
+@keyframes panel-out-x {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(8px); }
 }
 
 /* Hairline that fades out at both ends. A tasteful gradient divider, not

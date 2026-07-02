@@ -3,6 +3,7 @@
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { price } from "@/lib/format";
 import { Button } from "./button";
@@ -36,9 +37,18 @@ export function LockConfirmModal({
 
   async function handleConfirm() {
     setPending(true);
-    await onConfirm();
+    try {
+      await onConfirm();
+    } catch {
+      setPending(false);
+      return;
+    }
     setPending(false);
     setLocked(true);
+    toast("Locked", {
+      description: `${ticker} · ${targetPrice != null ? `$${price(targetPrice)}` : "market entry"}`,
+      icon: <SealStamp status="locked" date={new Date()} size="sm" />,
+    });
     window.setTimeout(() => onOpenChange(false), 1400);
   }
 
@@ -50,13 +60,13 @@ export function LockConfirmModal({
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-[fade-in_150ms_ease-out] data-[state=closed]:animate-[fade-out_150ms_ease-in]" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-[fade-in_var(--dur-3)_var(--ease-out)] data-[state=closed]:animate-[fade-out_var(--dur-2)_var(--ease-out)]" />
         <Dialog.Content
           className={cn(
             "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
             "ledger-card p-6 focus:outline-none",
-            "data-[state=open]:animate-[modal-in_200ms_cubic-bezier(0.16,1,0.3,1)]",
-            "data-[state=closed]:animate-[modal-out_150ms_ease-in]",
+            "data-[state=open]:animate-[modal-in_var(--dur-3)_var(--ease-out)]",
+            "data-[state=closed]:animate-[modal-out_var(--dur-2)_var(--ease-out)]",
           )}
         >
           {!locked ? (
