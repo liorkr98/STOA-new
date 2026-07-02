@@ -138,7 +138,7 @@ the spec's IA; this build keeps existing route names, e.g. `/studio/analytics` r
 | Screen              | Route                        |
 | -------------------- | ------------------------------ |
 | Onboarding (investor) | `/onboarding/investor` — **done** |
-| Onboarding (analyst)  | `/onboarding/analyst/*` (brand → price → first-report — Verify step dropped, PayPal handles KYC during its own onboarding rather than exposing a separate identity-verification product) |
+| Onboarding (analyst)  | `/onboarding/analyst/*` (brand → price → first-report — Verify step dropped, PayPal handles KYC during its own onboarding rather than exposing a separate identity-verification product) — **done** |
 | Following             | `/following`                  |
 | Watchlist             | `/watchlist` — **done**       |
 | Notifications          | covered by existing `/inbox`, extended with day-grouping — **done** |
@@ -148,7 +148,7 @@ the spec's IA; this build keeps existing route names, e.g. `/studio/analytics` r
 | Audience                | `/studio/audience`            |
 | Earnings & Payouts      | covered by existing `/wallet`, extended with gross/fee/net breakdown + payout status — **done** |
 | Branding                | `/settings/branding`          |
-| Pricing                 | covered by existing `/become-analyst`; full wizard still outstanding |
+| Pricing                 | folded into the analyst onboarding wizard's Price step (`/onboarding/analyst/price`) — **done**; `/become-analyst` now redirects into the wizard rather than a separate single-screen form |
 
 ## Anti-patterns (do not ship)
 

@@ -41,7 +41,7 @@ export async function checkHandleAvailable(handle: string): Promise<boolean> {
   return !data;
 }
 
-/** Creator onboarding step 1 (Brand). Saved immediately rather than held in
+/** Analyst onboarding step 1 (Brand). Saved immediately rather than held in
  * client state, so a creator can leave and resume the wizard from the
  * backend's profile row instead of losing progress on refresh. */
 export async function saveOnboardingBrand({
@@ -85,13 +85,13 @@ export async function saveOnboardingBrand({
     .eq("id", userId);
   if (error) return { ok: false as const, error: error.message };
 
-  revalidatePath("/onboarding/creator");
+  revalidatePath("/onboarding/analyst");
   return { ok: true as const };
 }
 
-/** Creator onboarding step 2 (Price) + implicit Done. Flips role to analyst
+/** Analyst onboarding step 2 (Price) + implicit Done. Flips role to analyst
  * and always lands in the guided first-report flow. */
-export async function completeCreatorOnboarding(formData: FormData) {
+export async function completeAnalystOnboarding(formData: FormData) {
   const { supabase, userId } = await requireUser();
 
   const subPrice = Number(formData.get("sub_price") ?? 0) || null;

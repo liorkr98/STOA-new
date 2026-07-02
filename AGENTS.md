@@ -60,10 +60,11 @@ research model with Patreon's creator economics and a trust layer neither has."
    (entry-price locking, scheduled grading against live prices), renamed and reformulated to a
    single number per `docs/FRONTEND.md` §2.2. Drop the second 600–1400 scale; a score and a
    separately-scaled rating on the same card reads as two competing numbers, not one clear
-   signal. **Not yet done**: `MoatBadge` shows the 0–100 score everywhere it's used, but several
-   places still show the 600–1400 rating alongside it (analyst profile "Track record" header,
-   homepage/leaderboard copy) and `TierBadge` is still in active use. Retiring both is tracked,
-   not finished.
+   signal. **Done**: `MoatBadge` (0–100) is the only score shown anywhere in the UI now; the
+   600–1400 rating display and `TierBadge` are fully retired from every route (analyst profile,
+   leaderboard, studio, homepage, scoring pages). The engine still derives a legacy `rating` value
+   to populate the existing `profiles.rating` column — that's a stored/backend concern, not a UI
+   one — but nothing in the UI reads it.
 
 ### The seal
 

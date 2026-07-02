@@ -4,7 +4,7 @@ import { PriceStep } from "@/components/onboarding/price-step";
 
 export const metadata: Metadata = { title: "Set your pricing" };
 
-export default async function CreatorPricePage() {
+export default async function AnalystPricePage() {
   const profile = (await getSessionProfile())!;
   return (
     <div>

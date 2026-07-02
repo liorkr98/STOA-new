@@ -4,7 +4,7 @@ import { BrandStep } from "@/components/onboarding/brand-step";
 
 export const metadata: Metadata = { title: "Brand your profile" };
 
-export default async function CreatorBrandPage() {
+export default async function AnalystBrandPage() {
   const profile = (await getSessionProfile())!;
   return (
     <div>

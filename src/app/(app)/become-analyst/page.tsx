@@ -5,5 +5,5 @@ export default async function BecomeAnalystPage() {
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
   if (profile.role === "analyst" || profile.role === "admin") redirect("/studio/compose");
-  redirect("/onboarding/creator");
+  redirect("/onboarding/analyst");
 }

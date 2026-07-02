@@ -72,7 +72,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
         setError(res.error);
         return;
       }
-      router.push("/onboarding/creator/price");
+      router.push("/onboarding/analyst/price");
     });
   }
 

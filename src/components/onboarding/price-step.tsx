@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
-import { completeCreatorOnboarding } from "@/app/actions/profile";
+import { completeAnalystOnboarding } from "@/app/actions/profile";
 
 type Mode = "sub" | "report" | "both";
 
@@ -30,7 +30,7 @@ export function PriceStep({
 
   return (
     <form
-      action={(formData) => start(() => completeCreatorOnboarding(formData))}
+      action={(formData) => start(() => completeAnalystOnboarding(formData))}
       className="mx-auto mt-8 flex max-w-md flex-col gap-6"
     >
       <div className="flex gap-2">
