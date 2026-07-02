@@ -121,7 +121,7 @@ export default async function WalletPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-text-mute"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-surface-2 text-text-mute"
                     >
                       {credit ? <ArrowDown size={15} /> : <ArrowUp size={15} />}
                     </span>
