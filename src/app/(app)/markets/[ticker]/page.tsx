@@ -7,6 +7,7 @@ import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StoaCoverageBadge } from "@/components/markets/coverage-badge";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
+import { WatchlistButton } from "@/components/markets/watchlist-button";
 
 export async function generateMetadata({
   params,
@@ -34,9 +35,12 @@ export default async function TickerPage({
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <div>
-          <h1 className="num t-display text-5xl">{sym}</h1>
-          {meta && <p className="t-meta mt-1">{meta.name} · {meta.sector}</p>}
+        <div className="flex items-start gap-2">
+          <div>
+            <h1 className="num t-display text-5xl">{sym}</h1>
+            {meta && <p className="t-meta mt-1">{meta.name} · {meta.sector}</p>}
+          </div>
+          <WatchlistButton ticker={sym} className="mt-1 h-9 w-9" />
         </div>
         <div className="flex flex-col items-end gap-2">
           <span className="num text-3xl font-semibold">${price(quote.price)}</span>

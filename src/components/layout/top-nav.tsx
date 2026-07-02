@@ -178,6 +178,13 @@ export function TopNav({
                   Saved
                 </Link>
                 <Link
+                  href="/watchlist"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                >
+                  Watchlist
+                </Link>
+                <Link
                   href="/subscriptions"
                   onClick={() => setOpen(false)}
                   className="rounded-md px-3 py-2 text-sm text-text-mute"

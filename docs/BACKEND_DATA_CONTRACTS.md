@@ -71,3 +71,8 @@ place that talks to Supabase per AGENTS.md, and payments/schema are backend scop
   discounted price, claimed count (spec 6.8).
 - **Referral tracking**: a creator-specific referral code/link and attribution on signup (spec
   6.5). Simple one-table job (`referral_code`, `referred_by`, `attributed_at`).
+- **`watchlists` table** (spec 5.6). `/watchlist` is built and fully working, but backed by
+  `localStorage` (`src/lib/watchlist.ts`) rather than the database -- doesn't sync across devices
+  or survive a cleared browser. Needs `watchlist_items(user_id, ticker, created_at)`, RLS scoped to
+  the owner. Swap `useWatchlist()`'s localStorage read/write for a Supabase query once it exists;
+  the component API (`tickers`, `toggle`, `has`) can stay the same.

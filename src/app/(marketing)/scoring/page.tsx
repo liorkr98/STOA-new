@@ -51,7 +51,7 @@ export default function ScoringPage() {
         </div>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+      <section id="moat-score" className="scroll-mt-20 rounded-[var(--radius-card)] border border-border bg-surface p-6">
         <h2 className="t-h2">MOAT score (0-100)</h2>
         <ul className="mt-4 space-y-3 text-sm text-text-mute">
           <li>

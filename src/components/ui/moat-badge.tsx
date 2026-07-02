@@ -67,7 +67,7 @@ export function MoatBadge({
   const empty = score == null;
   const color = empty ? "var(--text-faint)" : scoreColor(score);
   const provisional = sampleSize != null && sampleSize < 10;
-  const href = `/@${handle}/moat`;
+  const href = `/analyst/${handle}/moat`;
 
   if (size === "sm") {
     return (
