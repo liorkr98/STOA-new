@@ -2,11 +2,35 @@ import { NextResponse } from "next/server";
 import { runFactCheck } from "@/lib/ai/fact-check";
 import { spendAiCredits } from "@/lib/ai/spend";
 import { persistClaims } from "@/app/actions/claims";
+import { createClient } from "@/lib/supabase/server";
+
+const FACT_CHECK_LIMIT = 20;
+const FACT_CHECK_WINDOW_SEC = 3600;
 
 export async function POST(req: Request) {
   const { text, reportId } = (await req.json()) as { text?: string; reportId?: string };
   if (!text?.trim()) {
     return NextResponse.json({ error: "No content to check" }, { status: 400 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Sign in to continue" }, { status: 401 });
+  }
+
+  const { data: allowed } = await supabase.rpc("check_rate_limit", {
+    p_rate_key: `fact-check:${user.id}`,
+    p_window_seconds: FACT_CHECK_WINDOW_SEC,
+    p_max_requests: FACT_CHECK_LIMIT,
+  });
+  if (allowed === false) {
+    return NextResponse.json(
+      { error: `Fact-check limit reached (${FACT_CHECK_LIMIT}/hour). Try again later.` },
+      { status: 429 },
+    );
   }
 
   const spend = await spendAiCredits("factCheck", "Fact-check report");

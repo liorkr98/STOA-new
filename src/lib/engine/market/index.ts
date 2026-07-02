@@ -24,7 +24,7 @@ export async function getQuote(symbol: string): Promise<Quote> {
  */
 export async function getQuotesBatch(
   symbols: string[],
-  opts: { fetchBenchmark?: boolean; concurrency?: number; delayMs?: number } = {},
+  opts: { fetchBenchmark?: boolean; concurrency?: number; delayMs?: number; allowMock?: boolean } = {},
 ): Promise<Map<string, Quote>> {
   const unique = [...new Set(symbols.map((s) => s.toUpperCase()))];
   if (opts.fetchBenchmark !== false && !unique.includes(BENCHMARK_SYMBOL)) {
@@ -33,9 +33,13 @@ export async function getQuotesBatch(
 
   const map = await fetchQuotesBatch(unique);
 
-  // Ensure every requested symbol has an entry (chain already mocks misses).
   for (const sym of unique) {
-    if (!map.has(sym)) map.set(sym, await fetchQuote(sym));
+    if (!map.has(sym)) {
+      if (opts.allowMock === false) continue;
+      map.set(sym, await fetchQuote(sym));
+    } else if (opts.allowMock === false && map.get(sym)?.mock) {
+      map.delete(sym);
+    }
   }
 
   return map;

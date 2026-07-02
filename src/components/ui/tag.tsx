@@ -53,6 +53,7 @@ const outcomeMeta: Record<Outcome, { label: string; tone: "up" | "down" | "mid" 
   near: { label: "Near", tone: "up" },
   partial: { label: "Partial", tone: "mid" },
   miss: { label: "Miss", tone: "down" },
+  neutral: { label: "Neutral", tone: "mid" },
   open: { label: "Open", tone: "open" },
 };
 

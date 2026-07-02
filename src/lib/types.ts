@@ -7,9 +7,9 @@ import type { ProfileConfig } from "@/lib/editor/types";
 
 export type Role = "user" | "analyst" | "admin";
 export type ContentType = "research" | "call" | "short_post";
-export type ReportStatus = "draft" | "published" | "archived";
+export type ReportStatus = "draft" | "published" | "archived" | "resolution_pending_review";
 export type Direction = "long" | "short" | "hold";
-export type Outcome = "open" | "hit" | "near" | "partial" | "miss";
+export type Outcome = "open" | "hit" | "near" | "partial" | "miss" | "neutral";
 export type AccessType = "free" | "subscribers" | "paid";
 export type SubscriptionStatus = "active" | "cancelled" | "expired";
 export type TxnType =
@@ -124,7 +124,11 @@ export interface Prediction {
   target_price: number | null;
   /** Horizon in days from publish. */
   horizon_days: number;
+  /** Last calendar day of the call horizon in the listing exchange timezone. */
+  target_horizon_date: string | null;
   resolves_at: string;
+  /** Actual trading session date used when weekend/holiday substitution applies. */
+  resolution_trading_date: string | null;
   resolved_price: number | null;
   /** SPY price captured at publish, used for alpha. */
   bench_lock_price: number | null;
@@ -189,6 +193,8 @@ export interface ComposeInput {
   direction?: Direction;
   target_price?: number | null;
   horizon_days?: number;
+  /** Explicit horizon end date (exchange-local). Must be after today when publishing. */
+  target_horizon_date?: string;
   fact_check_results?: Record<string, unknown> | null;
   /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
   position_held?: boolean;

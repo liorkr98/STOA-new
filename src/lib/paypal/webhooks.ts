@@ -50,8 +50,19 @@ export async function verifyWebhookSignature(headers: PayPalHeaders, event: PayP
   return result.verification_status === "SUCCESS";
 }
 
+/** Returns true when this event was already processed (idempotent no-op). */
+export async function claimWebhookEvent(provider: string, eventId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { error } = await admin.from("processed_webhook_events").insert({ provider, event_id: eventId });
+  if (error?.code === "23505") return false;
+  if (error) throw error;
+  return true;
+}
+
 /** Dispatches a verified PayPal webhook event. Handles onboarding completion, order captures, and subscription lifecycle. */
 export async function handlePayPalEvent(event: PayPalEvent): Promise<void> {
+  if (!(await claimWebhookEvent("paypal", event.id))) return;
+
   const admin = createAdminClient();
 
   switch (event.event_type) {
