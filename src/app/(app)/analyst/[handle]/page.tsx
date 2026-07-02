@@ -9,9 +9,8 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { analystStats } from "@/lib/engine/track";
-import { compact, pct, analystRating } from "@/lib/format";
+import { compact, pct } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
-import { TierBadge } from "@/components/ui/tier-badge";
 import { Stat } from "@/components/ui/stat";
 import { MoatBadge } from "@/components/ui/moat-badge";
 import { TrackChart } from "@/components/charts/track-chart";
@@ -109,7 +108,6 @@ export default async function AnalystProfilePage({
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="t-h2">{profile.display_name}</h1>
                 {profile.verified && <SealCheck size={20} weight="fill" className="text-accent" />}
-                <TierBadge tier={stats.tier.key} label={stats.tier.label} />
               </div>
               <p className="t-meta mt-1">
                 @{profile.handle} · <Users size={13} className="inline" />{" "}
@@ -175,10 +173,7 @@ export default async function AnalystProfilePage({
 
       {/* Track record */}
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="t-h3">Track record</h2>
-          <span className="num text-sm text-text-mute">Rating {analystRating(profile)}</span>
-        </div>
+        <h2 className="t-h3">Track record</h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           {stats.series.length > 1 ? (
             <TrackChart data={stats.series} />

@@ -62,7 +62,7 @@ export default async function LandingPage() {
             <div className="ledger-card p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-weak text-sm font-semibold text-accent">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-[var(--r-card)] bg-accent-weak text-sm font-semibold text-accent">
                     MV
                   </span>
                   <div className="leading-tight">
@@ -74,16 +74,16 @@ export default async function LandingPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="num text-xl font-semibold leading-none">1,158</div>
+                  <div className="num text-xl font-semibold leading-none">87</div>
                   <span className="t-eyebrow mt-1 inline-flex items-center justify-end gap-1.5">
                     <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-                    Rating
+                    MOAT
                   </span>
                 </div>
               </div>
 
               <div className="rounded-[var(--radius-card)] border border-border bg-bg/40 px-1 pt-2">
-                <span className="t-eyebrow px-3">Rating over 14 resolved calls</span>
+                <span className="t-eyebrow px-3">MOAT score over 14 resolved calls</span>
                 <TrackChart data={sampleTrack} />
               </div>
 
@@ -163,7 +163,7 @@ export default async function LandingPage() {
               { t: "Publish", d: "Analyst posts a call with a ticker, direction, target, and timeframe." },
               { t: "Lock", d: "Entry price locks from the live feed. No edits, no hindsight." },
               { t: "Resolve", d: "At the deadline, the closing price and benchmark are pulled automatically." },
-              { t: "Grade", d: "Win rate, profit factor, alpha, and consistency update the rating and tier." },
+              { t: "Grade", d: "Win rate, profit factor, alpha, and consistency update the MOAT score." },
             ].map((s, i) => (
               <FadeIn key={s.t} delay={i * 0.06}>
                 <li className="relative flex flex-col gap-3">

@@ -1,7 +1,9 @@
 /**
  * Stoa Scoring Engine v3.
  *
- * Composite 0-100 skill score mapped to a 600-1400 display rating.
+ * Composite 0-100 skill score. Also derives a legacy 600-1400 `rating` field
+ * for the existing `profiles.rating` column, but the UI only ever shows the
+ * 0-100 score now.
  *
  *   1. Win rate      - Wilson lower bound on time-weighted outcomes
  *                      (Hit = 1, Near = 0.5, Partial/Miss = 0)
@@ -25,15 +27,10 @@ function wilsonLower(hits: number, total: number): number {
   return Math.max(0, (centre - margin) / denom);
 }
 
-/** Maps 0-100 composite to the public 600-1400 scale. */
+/** Maps 0-100 composite to the legacy 600-1400 scale, stored but no longer displayed. */
 export function scoreToRating(score: number): number {
   const clamped = Math.min(100, Math.max(0, score));
   return Math.round(600 + (clamped / 100) * 800);
-}
-
-/** Ring fill percent from a 600-1400 rating. */
-export function ratingToPercent(rating: number): number {
-  return Math.min(100, Math.max(0, ((rating - 600) / 800) * 100));
 }
 
 /** Direction-aware signed return %, or null if not computable. */

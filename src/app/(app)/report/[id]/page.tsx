@@ -9,8 +9,8 @@ import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
-import { analystRating } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
+import { MoatBadge } from "@/components/ui/moat-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
@@ -73,18 +73,19 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
       {author && (
         <div className="mt-5 flex items-center justify-between border-y border-border py-4">
-          <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">
-            <Avatar src={author.avatar_url} name={author.display_name} size="md" />
-            <div className="leading-tight">
-              <span className="flex items-center gap-1.5 text-sm font-semibold">
-                {author.display_name}
-                {author.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
-              </span>
-              <span className="t-meta">
-                @{author.handle} · Rating <span className="num">{analystRating(author)}</span>
-              </span>
-            </div>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">
+              <Avatar src={author.avatar_url} name={author.display_name} size="md" />
+              <div className="leading-tight">
+                <span className="flex items-center gap-1.5 text-sm font-semibold">
+                  {author.display_name}
+                  {author.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
+                </span>
+                <span className="t-meta">@{author.handle}</span>
+              </div>
+            </Link>
+            <MoatBadge handle={author.handle} score={author.score || null} size="md" />
+          </div>
           <ReportActions
             reportId={id}
             initialLikes={report.likes}

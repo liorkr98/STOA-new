@@ -12,7 +12,6 @@ import { compact, usd, pct } from "@/lib/format";
 import { buttonClass } from "@/components/ui/button";
 import { Stat } from "@/components/ui/stat";
 import { GradeTag } from "@/components/ui/tag";
-import { TierBadge } from "@/components/ui/tier-badge";
 import { MoatBadge } from "@/components/ui/moat-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -37,10 +36,7 @@ export default async function StudioOverview() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="t-h1">Studio</h1>
-          <p className="t-body mt-1 flex items-center gap-2">
-            Welcome back, {profile.display_name}.
-            <TierBadge tier={stats.tier.key} label={stats.tier.label} />
-          </p>
+          <p className="t-body mt-1">Welcome back, {profile.display_name}.</p>
         </div>
         <Link href="/studio/compose" className={buttonClass("primary", "lg")}>
           <PlusCircle size={18} weight="bold" />

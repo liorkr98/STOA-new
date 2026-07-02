@@ -12,11 +12,11 @@ import {
 export interface TrackPoint {
   /** Resolved call index or label. */
   label: string;
-  /** Running rating value (600-1400). */
-  rating: number;
+  /** Running MOAT score (0-100). */
+  score: number;
 }
 
-/** The analyst's rating over their resolved calls. Accent stroke, no grid noise. */
+/** The analyst's MOAT score over their resolved calls. Accent stroke, no grid noise. */
 export function TrackChart({ data }: { data: TrackPoint[] }) {
   return (
     <div className="h-56 w-full">
@@ -36,7 +36,7 @@ export function TrackChart({ data }: { data: TrackPoint[] }) {
             minTickGap={24}
           />
           <YAxis
-            domain={[600, 1400]}
+            domain={[0, 100]}
             tick={{ fill: "var(--text-faint)", fontSize: 11 }}
             tickLine={false}
             axisLine={false}
@@ -54,7 +54,7 @@ export function TrackChart({ data }: { data: TrackPoint[] }) {
           />
           <Area
             type="monotone"
-            dataKey="rating"
+            dataKey="score"
             stroke="var(--accent)"
             strokeWidth={2}
             fill="url(#trackFill)"

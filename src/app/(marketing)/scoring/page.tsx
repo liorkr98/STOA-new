@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GradeTag } from "@/components/ui/tag";
-import { TierBadge } from "@/components/ui/tier-badge";
 import { TIERS } from "@/lib/engine/score";
 
 export const metadata: Metadata = {
@@ -27,7 +26,7 @@ export default function ScoringPage() {
           <li>An analyst publishes a call with ticker, direction, optional target, and horizon.</li>
           <li>Stoa locks the entry price from the live feed and captures SPY as the benchmark.</li>
           <li>When the horizon ends, the grading job fetches resolved prices and assigns an outcome.</li>
-          <li>The MOAT score (0-100) and its public 600-1400 rating equivalent update on the analyst profile.</li>
+          <li>The MOAT score (0-100) updates on the analyst profile.</li>
         </ol>
       </section>
 
@@ -77,20 +76,21 @@ export default function ScoringPage() {
             wherever it is displayed.
           </li>
         </ul>
-        <p className="t-meta mt-4">
-          The public rating maps linearly from the MOAT score: 0 → 600, 100 → 1400.
-        </p>
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
         <h2 className="t-h2">Tiers</h2>
+        <p className="t-meta mt-2">
+          Not shown as a separate badge anywhere in the product -- the MOAT score is the one
+          number. Tier names are just shorthand for score ranges, used in copy like &ldquo;reached
+          Elite&rdquo; rather than as a competing signal on a profile.
+        </p>
         <div className="mt-4 flex flex-col gap-3">
           {TIERS.map((t) => (
             <div key={t.key} className="flex items-center justify-between gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <TierBadge tier={t.key} label={t.label} />
-                <span className="text-text-mute">{t.minCalls}+ resolved calls</span>
-              </div>
+              <span className="font-medium">
+                {t.label} <span className="text-text-mute">&middot; {t.minCalls}+ resolved calls</span>
+              </span>
               <span className="num text-text-mute">score {t.minScore}+</span>
             </div>
           ))}
