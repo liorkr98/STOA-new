@@ -11,10 +11,12 @@ export function AvatarUpload({
   userId,
   displayName,
   currentUrl,
+  onUploaded,
 }: {
   userId: string;
   displayName: string;
   currentUrl: string | null;
+  onUploaded?: (url: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(currentUrl);
@@ -32,6 +34,7 @@ export function AvatarUpload({
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
       setPreview(url);
+      onUploaded?.(url);
       await updateAvatarUrl(url);
     });
   }
