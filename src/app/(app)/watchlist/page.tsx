@@ -41,7 +41,7 @@ function WatchlistRow({ ticker, onRemove }: { ticker: string; onRemove: () => vo
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${ticker} from watchlist`}
-        className="focus-ring rounded-[var(--radius-btn)] p-1.5 text-text-faint transition-colors hover:text-text"
+        className="tap-target focus-ring rounded-[var(--radius-btn)] p-1.5 text-text-faint transition-colors hover:text-text"
       >
         <X size={16} />
       </button>

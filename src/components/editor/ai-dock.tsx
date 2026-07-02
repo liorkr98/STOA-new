@@ -172,7 +172,7 @@ export function AiDock({
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Collapse copilot"
-              className="ml-auto rounded-[var(--r-tag)] p-1 text-text-faint transition-colors hover:text-text focus-ring"
+              className="tap-target ml-auto rounded-[var(--r-tag)] p-1 text-text-faint transition-colors hover:text-text focus-ring"
             >
               <CaretDown size={16} />
             </button>
@@ -246,10 +246,8 @@ export function AiDock({
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className={cn(
-          "flex items-center gap-2 rounded-[var(--radius-btn)] border px-4 py-2.5 text-sm font-medium shadow-[var(--shadow-card)] transition-colors focus-ring",
-          open
-            ? "border-border bg-surface text-text-mute hover:text-text"
-            : "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90",
+          "flex items-center gap-2 rounded-[var(--radius-btn)] border border-border bg-surface px-4 py-2.5 text-sm font-medium shadow-[var(--shadow-card)] transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] focus-ring",
+          open ? "text-text-mute hover:text-text" : "text-text hover:border-border-strong",
         )}
       >
         <Sparkle size={16} weight="fill" className={open ? "text-accent" : ""} />

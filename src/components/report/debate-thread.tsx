@@ -147,7 +147,7 @@ function ThreadBody({
         </div>
         <Close asChild>
           <button
-            className="shrink-0 text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]"
+            className="tap-target shrink-0 text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]"
             aria-label="Close"
           >
             <X size={18} />

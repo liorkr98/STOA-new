@@ -74,7 +74,7 @@ export function LockConfirmModal({
               <div className="flex items-start justify-between">
                 <Dialog.Title className="t-h3">Lock this call in?</Dialog.Title>
                 <Dialog.Close asChild>
-                  <button className="text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]" aria-label="Close">
+                  <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]" aria-label="Close">
                     <X size={18} />
                   </button>
                 </Dialog.Close>

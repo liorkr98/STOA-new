@@ -246,6 +246,17 @@ body {
   outline-offset: 2px;
 }
 
+/* Expands a small icon control's hit area to 44px without changing its
+ * visual size (docs/MOTION.md C.2 item 6). */
+.tap-target {
+  position: relative;
+}
+.tap-target::after {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((100% - 44px) / 2));
+}
+
 /* Ledger-entry treatment. Reserved for trust-critical blocks: the call
  * block, the disclosure block. Never used for ordinary cards -- a double
  * rule should keep meaning something. */

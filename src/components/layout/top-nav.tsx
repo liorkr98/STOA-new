@@ -30,6 +30,9 @@ export function TopNav({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // These routes render their own primary CTA; the nav CTA steps down so
+  // exactly one filled button is visible per screen (docs/MOTION.md C.2).
+  const pageHasPrimary = pathname === "/" || pathname.startsWith("/sign-");
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   // role is a single exclusive enum today (see BACKEND_DATA_CONTRACTS.md),
   // so no account has both capabilities yet -- this always evaluates false
@@ -76,7 +79,7 @@ export function TopNav({
             <>
               <Link
                 href={isAnalyst ? "/studio/compose" : "/become-analyst"}
-                className={buttonClass("primary", "sm")}
+                className={buttonClass("secondary", "sm")}
               >
                 <PenNib size={15} weight="fill" />
                 {isAnalyst ? "Write" : "Become analyst"}
@@ -100,7 +103,7 @@ export function TopNav({
               <Link href="/sign-in" className="px-3 text-sm text-text-mute hover:text-text">
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+              <Link href="/sign-up" className={buttonClass(pageHasPrimary ? "secondary" : "primary", "sm")}>
                 Join Stoa
               </Link>
             </>
@@ -135,7 +138,7 @@ export function TopNav({
                 <Link
                   href={isAnalyst ? "/studio/compose" : "/become-analyst"}
                   onClick={() => setOpen(false)}
-                  className={buttonClass("primary", "sm", "w-full justify-center")}
+                  className={buttonClass("secondary", "sm", "w-full justify-center")}
                 >
                   <PenNib size={15} weight="fill" />
                   {isAnalyst ? "Write" : "Become analyst"}
@@ -214,7 +217,7 @@ export function TopNav({
                 <Link href="/sign-in" className={buttonClass("secondary", "sm")}>
                   Sign in
                 </Link>
-                <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+                <Link href="/sign-up" className={buttonClass(pageHasPrimary ? "secondary" : "primary", "sm")}>
                   Join Stoa
                 </Link>
               </div>
