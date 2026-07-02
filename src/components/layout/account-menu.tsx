@@ -69,7 +69,7 @@ export function AccountMenu({ profile }: { profile: Profile }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="focus-ring flex items-center gap-2 rounded-full"
+        className="focus-ring flex items-center gap-2 rounded-[var(--r-card)]"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
@@ -80,7 +80,7 @@ export function AccountMenu({ profile }: { profile: Profile }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 overflow-hidden rounded-[var(--radius-card)] border border-border bg-popover shadow-[var(--shadow-soft)]"
+          className="menu-pop absolute right-0 top-[calc(100%+8px)] z-50 w-60 overflow-hidden rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-card)]"
           style={{ background: "var(--surface)" }}
         >
           <Link

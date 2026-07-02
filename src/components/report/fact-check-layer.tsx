@@ -127,6 +127,12 @@ export function FactCheckedText({
   );
 }
 
+// Shared across every ClaimMark on the page (Emil's tooltip-group pattern,
+// docs/MOTION.md A.3): the first popover a reader opens animates; while they
+// scan claim-to-claim with under-300ms gaps, subsequent popovers appear
+// instantly. The group goes cold after 1.5s idle.
+let lastClaimCloseAt = 0;
+
 function ClaimMark({
   claim,
   children,
@@ -137,10 +143,21 @@ function ClaimMark({
   isAuthed: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [instant, setInstant] = useState(false);
   const [debateOpen, setDebateOpen] = useState(false);
   const [replies, setReplies] = useState<Comment[]>([]);
   const verdict = verdictOf(claim);
   const { color, label } = VERDICT_STYLE[verdict];
+
+  function setOpenGrouped(next: boolean) {
+    const now = Date.now();
+    if (next) {
+      setInstant(now - lastClaimCloseAt < 300);
+    } else {
+      lastClaimCloseAt = now;
+    }
+    setOpen(next);
+  }
 
   function addLocalReply(body: string) {
     // Not persisted -- debate_threads/debate_replies don't exist yet (see
@@ -161,15 +178,15 @@ function ClaimMark({
 
   return (
     <>
-      <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Root open={open} onOpenChange={setOpenGrouped}>
         <Popover.Trigger asChild>
           <button
             type="button"
             data-claim-verdict={verdict}
-            className="cursor-default rounded-sm underline decoration-2 underline-offset-2 transition-colors hover:bg-surface-2 focus-ring"
+            className="cursor-default rounded-sm underline decoration-2 underline-offset-2 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:bg-surface-2 focus-ring"
             style={{ textDecorationColor: color }}
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
+            onMouseEnter={() => setOpenGrouped(true)}
+            onMouseLeave={() => setOpenGrouped(false)}
           >
             {children}
             {verdict === "opinion" && (
@@ -179,10 +196,10 @@ function ClaimMark({
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
-            className="popover-content ledger-card z-40 max-w-xs p-3 text-sm"
+            className={`popover-content ledger-card z-40 max-w-xs p-3 text-sm ${instant ? "popover-instant" : ""}`}
             sideOffset={6}
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
+            onMouseEnter={() => setOpenGrouped(true)}
+            onMouseLeave={() => setOpenGrouped(false)}
           >
             <div className="mb-1 flex items-center gap-1.5">
               <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />

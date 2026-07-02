@@ -47,11 +47,11 @@ export default async function BecomeAnalystPage({
     return (
       <div className="mx-auto max-w-xl py-8">
         <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
-          <Clock size={48} weight="duotone" className="text-amber-500" />
+          <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
           <h1 className="t-h2">Application submitted!</h1>
           <p className="t-body text-text-mute max-w-sm">
             We&apos;ll review your application and notify you by email and in-app notification.
-            Usually within 1–2 business days.
+            Usually within 1-2 business days.
           </p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default async function BecomeAnalystPage({
     <div className="mx-auto max-w-xl py-8">
       <h1 className="t-h1">Apply to publish research</h1>
       <p className="t-body mt-2 text-text-mute">
-        Stoa is invite-quality — we review every application to keep the signal high. Once
+        Stoa is invite quality. We review every application to keep the signal high. Once
         approved you can publish reports, price predictions, and short notes.
       </p>
 
@@ -75,7 +75,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="why_analyst" className="text-sm font-medium">
               Why do you want to publish on Stoa?
-              <span className="ml-1 text-red-500">*</span>
+              <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
             <textarea
               id="why_analyst"
@@ -91,7 +91,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="background" className="text-sm font-medium">
               What is your financial or professional background?
-              <span className="ml-1 text-red-500">*</span>
+              <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
             <textarea
               id="background"
@@ -107,7 +107,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="coverage_areas" className="text-sm font-medium">
               What markets or sectors will you cover?
-              <span className="ml-1 text-red-500">*</span>
+              <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
             <input
               id="coverage_areas"
@@ -122,7 +122,7 @@ export default async function BecomeAnalystPage({
 
         <fieldset className="flex flex-col gap-5">
           <legend className="text-sm font-semibold uppercase tracking-wide text-text-mute">
-            Optional — helps us review faster
+            Optional (helps us review faster)
           </legend>
 
           <div className="flex flex-col gap-2">
@@ -174,7 +174,7 @@ function ApplicationStatus({
   if (application.status === "pending") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
-        <Clock size={48} weight="duotone" className="text-amber-500" />
+        <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
         <h2 className="t-h2">Application under review</h2>
         <p className="t-body text-text-mute max-w-sm">
           Your application was submitted on{" "}
@@ -188,7 +188,7 @@ function ApplicationStatus({
   if (application.status === "approved") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
-        <CheckCircle size={48} weight="duotone" className="text-green-500" />
+        <CheckCircle size={48} weight="duotone" className="text-[var(--up)]" />
         <h2 className="t-h2">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
           Your account has been upgraded. Set up your profile and publish your first report.
@@ -203,7 +203,7 @@ function ApplicationStatus({
   // rejected
   return (
     <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
-      <XCircle size={48} weight="duotone" className="text-red-500" />
+      <XCircle size={48} weight="duotone" className="text-[var(--down)]" />
       <h2 className="t-h2">Application not approved</h2>
       {application.review_note && (
         <p className="t-body text-text-mute max-w-sm">{application.review_note}</p>

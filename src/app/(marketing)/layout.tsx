@@ -9,7 +9,7 @@ export default async function MarketingLayout({
 }) {
   const profile = await getSessionProfile();
   return (
-    <div className="dark flex min-h-[100dvh] flex-col bg-bg text-text">
+    <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
       <TopNav profile={profile} />
       <main className="flex-1">{children}</main>
       <Footer />

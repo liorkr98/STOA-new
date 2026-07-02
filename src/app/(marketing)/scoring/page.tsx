@@ -54,23 +54,23 @@ export default function ScoringPage() {
         <h2 className="t-h2">MOAT score (0-100)</h2>
         <ul className="mt-4 space-y-3 text-sm text-text-mute">
           <li>
-            <strong className="text-text">Win rate</strong> — Wilson lower bound on time-weighted
+            <strong className="text-text">Win rate</strong>: Wilson lower bound on time-weighted
             outcomes (recent calls count more).
           </li>
           <li>
-            <strong className="text-text">Profit factor</strong> — decay-weighted average win divided
+            <strong className="text-text">Profit factor</strong>: decay-weighted average win divided
             by average loss.
           </li>
           <li>
-            <strong className="text-text">Alpha</strong> — excess return vs SPY over the same window
+            <strong className="text-text">Alpha</strong>: excess return vs SPY over the same window
             (needs at least five benchmarked calls).
           </li>
           <li>
-            <strong className="text-text">Consistency</strong> — penalties for miss streaks and
+            <strong className="text-text">Consistency</strong>: penalties for miss streaks and
             outcome drawdowns.
           </li>
           <li>
-            <strong className="text-text">Sample confidence</strong> — a logarithmic ramp discounts
+            <strong className="text-text">Sample confidence</strong>: a logarithmic ramp discounts
             small sample sizes, so a six-call streak and a sixty-call streak are never shown with
             the same confidence. Under 10 resolved calls, the score is marked provisional
             wherever it is displayed.

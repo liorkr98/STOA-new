@@ -81,7 +81,7 @@ export default async function AnalystProfilePage({
 
   const bannerClass =
     bannerStyle === "gradient-cool"
-      ? "bg-gradient-to-r from-[#1a2a4a] via-accent/20 to-transparent"
+      ? "bg-gradient-to-r from-[var(--ink)] via-accent/20 to-transparent"
       : bannerStyle === "minimal"
         ? "bg-gradient-to-r from-surface-2 to-bg"
         : "bg-gradient-to-r from-accent/25 via-accent/10 to-transparent";

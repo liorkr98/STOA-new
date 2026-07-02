@@ -30,6 +30,9 @@ export function TopNav({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // These routes render their own primary CTA; the nav CTA steps down so
+  // exactly one filled button is visible per screen (docs/MOTION.md C.2).
+  const pageHasPrimary = pathname === "/" || pathname.startsWith("/sign-");
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   // role is a single exclusive enum today (see BACKEND_DATA_CONTRACTS.md),
   // so no account has both capabilities yet -- this always evaluates false
@@ -43,7 +46,7 @@ export function TopNav({
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 px-5">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <Link href="/" className="focus-ring rounded-md">
+            <Link href="/" className="focus-ring rounded-[var(--radius-btn)]">
               <StoaLogo />
             </Link>
             {showRoleSwitcher && <RoleSwitcher current={hasCreatorRole ? "creator" : "investor"} />}
@@ -76,19 +79,19 @@ export function TopNav({
             <>
               <Link
                 href={isAnalyst ? "/studio/compose" : "/become-analyst"}
-                className={buttonClass("primary", "sm")}
+                className={buttonClass("secondary", "sm")}
               >
                 <PenNib size={15} weight="fill" />
                 {isAnalyst ? "Write" : "Become analyst"}
               </Link>
               <Link
                 href="/inbox"
-                className="focus-ring relative rounded-full p-2 text-text-mute hover:bg-surface-2 hover:text-text"
+                className="focus-ring relative rounded-[var(--radius-btn)] p-2 text-text-mute hover:bg-surface-2 hover:text-text"
                 aria-label="Notifications"
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-medium text-accent-ink">
+                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-[var(--radius-tag)] bg-accent px-1 text-[10px] font-medium text-accent-ink">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -100,7 +103,7 @@ export function TopNav({
               <Link href="/sign-in" className="px-3 text-sm text-text-mute hover:text-text">
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+              <Link href="/sign-up" className={buttonClass(pageHasPrimary ? "secondary" : "primary", "sm")}>
                 Join Stoa
               </Link>
             </>
@@ -108,7 +111,7 @@ export function TopNav({
         </div>
 
         <button
-          className="focus-ring rounded-md p-2 text-text-mute md:hidden"
+          className="focus-ring rounded-[var(--radius-btn)] p-2 text-text-mute md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"
         >
@@ -124,7 +127,7 @@ export function TopNav({
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
+                className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
               >
                 {l.label}
               </Link>
@@ -135,7 +138,7 @@ export function TopNav({
                 <Link
                   href={isAnalyst ? "/studio/compose" : "/become-analyst"}
                   onClick={() => setOpen(false)}
-                  className={buttonClass("primary", "sm", "w-full justify-center")}
+                  className={buttonClass("secondary", "sm", "w-full justify-center")}
                 >
                   <PenNib size={15} weight="fill" />
                   {isAnalyst ? "Write" : "Become analyst"}
@@ -143,7 +146,7 @@ export function TopNav({
                 <Link
                   href={`/analyst/${profile.handle}`}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Your profile
                 </Link>
@@ -151,7 +154,7 @@ export function TopNav({
                   <Link
                     href="/studio"
                     onClick={() => setOpen(false)}
-                    className="rounded-md px-3 py-2 text-sm text-text-mute"
+                    className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                   >
                     Studio dashboard
                   </Link>
@@ -159,49 +162,49 @@ export function TopNav({
                 <Link
                   href="/inbox"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </Link>
                 <Link
                   href="/wallet"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Wallet & credits
                 </Link>
                 <Link
                   href="/saved"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Saved
                 </Link>
                 <Link
                   href="/watchlist"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Watchlist
                 </Link>
                 <Link
                   href="/subscriptions"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Subscriptions
                 </Link>
                 <Link
                   href="/settings"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Settings
                 </Link>
                 <Link
                   href="/settings/branding"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-text-mute"
+                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >
                   Profile & branding
                 </Link>
@@ -214,7 +217,7 @@ export function TopNav({
                 <Link href="/sign-in" className={buttonClass("secondary", "sm")}>
                   Sign in
                 </Link>
-                <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+                <Link href="/sign-up" className={buttonClass(pageHasPrimary ? "secondary" : "primary", "sm")}>
                   Join Stoa
                 </Link>
               </div>

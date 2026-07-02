@@ -97,7 +97,7 @@ export default async function InboxPage() {
                               <Avatar src={n.actor.avatar_url} name={n.actor.display_name} size="md" />
                             </Link>
                           ) : (
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-surface-2 text-text-mute">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-card)] bg-surface-2 text-text-mute">
                               <Icon size={18} />
                             </span>
                           )}

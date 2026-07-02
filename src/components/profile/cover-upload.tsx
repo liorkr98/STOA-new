@@ -21,7 +21,7 @@ export function CoverUpload({
 
   const gradient =
     bannerStyle === "gradient-cool"
-      ? "from-[#1a2a4a] via-accent/20 to-transparent"
+      ? "from-[var(--ink)] via-accent/20 to-transparent"
       : bannerStyle === "minimal"
         ? "from-surface-2 to-bg"
         : "from-accent/30 via-accent/10 to-transparent";

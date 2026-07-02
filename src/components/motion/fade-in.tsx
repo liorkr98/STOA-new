@@ -1,12 +1,17 @@
-"use client";
+import type { CSSProperties, ReactNode } from "react";
+import { cn } from "@/lib/design/cn";
 
-import { motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
-
+/**
+ * Mount fade. A CSS animation rather than a scroll-triggered reveal: the spec
+ * bans scroll reveals (MOTION dial 3), and gating visibility on an observer
+ * ships blank sections in hidden tabs and headless renderers. With `both`
+ * fill the element starts at the keyframe's `from`, and the global
+ * prefers-reduced-motion rule collapses it to an instant state-swap.
+ */
 export function FadeIn({
   children,
   delay = 0,
-  y = 16,
+  y = 8,
   className,
 }: {
   children: ReactNode;
@@ -14,16 +19,17 @@ export function FadeIn({
   y?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
   return (
-    <motion.div
-      className={className}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] }}
+    <div
+      className={cn("fade-up", className)}
+      style={
+        {
+          animationDelay: delay ? `${delay}s` : undefined,
+          "--fade-y": `${y}px`,
+        } as CSSProperties
+      }
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

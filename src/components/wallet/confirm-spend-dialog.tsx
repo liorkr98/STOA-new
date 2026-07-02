@@ -46,23 +46,23 @@ export function ConfirmSpendDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-[fade-in_150ms_ease-out] data-[state=closed]:animate-[fade-out_150ms_ease-in]" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-[fade-in_var(--dur-3)_var(--ease-out)] data-[state=closed]:animate-[fade-out_var(--dur-2)_var(--ease-out)]" />
         <Dialog.Content
           className={cn(
             "fixed z-50 w-full border-border bg-surface p-6 focus:outline-none",
             "inset-x-0 bottom-0 rounded-t-[var(--radius-card)] border-t",
             "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--radius-card)] sm:border",
-            "data-[state=open]:animate-[sheet-in-y_250ms_cubic-bezier(0.32,0.72,0,1)]",
-            "data-[state=closed]:animate-[sheet-out-y_200ms_ease-in]",
-            "sm:data-[state=open]:animate-[modal-in_200ms_cubic-bezier(0.16,1,0.3,1)]",
-            "sm:data-[state=closed]:animate-[modal-out_150ms_ease-in]",
+            "data-[state=open]:animate-[sheet-in-y_var(--dur-3)_var(--ease-drawer)]",
+            "data-[state=closed]:animate-[sheet-out-y_var(--dur-2)_var(--ease-out)]",
+            "sm:data-[state=open]:animate-[modal-in_var(--dur-3)_var(--ease-out)]",
+            "sm:data-[state=closed]:animate-[modal-out_var(--dur-2)_var(--ease-out)]",
           )}
-          style={{ boxShadow: "var(--shadow-soft)" }}
+          style={{ boxShadow: "var(--shadow-card)" }}
         >
           <div className="flex items-start justify-between">
             <Dialog.Title className="t-h3">{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="text-text-faint hover:text-text" aria-label="Close">
+              <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]" aria-label="Close">
                 <X size={18} />
               </button>
             </Dialog.Close>

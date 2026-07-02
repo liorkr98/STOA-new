@@ -27,7 +27,7 @@ export function ReportCard({ report }: { report: Report }) {
   const locked = report.access !== "free";
 
   return (
-    <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[border-color] hover:border-border-strong">
+    <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
       <div className="flex items-center justify-between gap-3">
         {author ? (
           <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">
