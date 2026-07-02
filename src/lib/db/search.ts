@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Report } from "@/lib/types";
-import { UNIVERSE } from "@/lib/universe";
 
 const REPORT_SELECT =
   "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
@@ -23,21 +22,8 @@ export async function searchAll(query: string, limit = 8): Promise<SearchResults
   const supabase = await createClient();
   const upper = q.toUpperCase();
 
-  const tickers = UNIVERSE.filter(
-    (u) =>
-      u.ticker.includes(upper) ||
-      u.name.toLowerCase().includes(q.toLowerCase()) ||
-      u.sector.toLowerCase().includes(q.toLowerCase()),
-  ).slice(0, limit);
-
-  const [{ data: analysts }, { data: reports }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("role", "analyst")
-      .or(`display_name.ilike.%${q}%,handle.ilike.%${q}%,headline.ilike.%${q}%`)
-      .order("rating", { ascending: false })
-      .limit(limit),
+  const [{ data: platform }, { data: reports }] = await Promise.all([
+    supabase.rpc("search_platform", { p_query: q, p_limit: limit }),
     supabase
       .from("reports")
       .select(REPORT_SELECT)
@@ -47,9 +33,18 @@ export async function searchAll(query: string, limit = 8): Promise<SearchResults
       .limit(limit),
   ]);
 
+  const payload = (platform ?? { creators: [], tickers: [] }) as {
+    creators: Profile[];
+    tickers: { symbol: string; company_name: string; sector: string | null }[];
+  };
+
   return {
-    analysts: (analysts as Profile[]) ?? [],
+    analysts: payload.creators ?? [],
     reports: ((reports as Record<string, unknown>[]) ?? []).map(normalizeReport),
-    tickers,
+    tickers: (payload.tickers ?? []).map((t) => ({
+      ticker: t.symbol,
+      name: t.company_name,
+      sector: t.sector ?? "",
+    })),
   };
 }

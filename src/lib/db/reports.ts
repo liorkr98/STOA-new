@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUserId } from "@/lib/db/auth";
+import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
 import type { ContentType, Prediction, Report } from "@/lib/types";
 
 const SELECT =
@@ -23,14 +25,21 @@ export async function listFeed({
 } = {}): Promise<Report[]> {
   try {
     const supabase = await createClient();
+    const userId = await getSessionUserId();
+    const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
+    const fetchLimit = dismissed.size > 0 ? limit + dismissed.size : limit;
+
     let q = supabase.from("reports").select(SELECT).eq("status", "published");
     if (type) q = q.eq("type", type);
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
         : q.order("published_at", { ascending: false });
-    const { data } = await q.limit(limit);
-    return ((data as Record<string, unknown>[]) ?? []).map(normalize);
+    const { data } = await q.limit(fetchLimit);
+    return ((data as Record<string, unknown>[]) ?? [])
+      .map(normalize)
+      .filter((r) => !dismissed.has(r.id))
+      .slice(0, limit);
   } catch {
     return [];
   }
@@ -42,14 +51,21 @@ export async function listFeedFromAnalysts(
 ): Promise<Report[]> {
   if (analystIds.length === 0) return [];
   const supabase = await createClient();
+  const userId = await getSessionUserId();
+  const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
+  const fetchLimit = dismissed.size > 0 ? limit + dismissed.size : limit;
+
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
     .eq("status", "published")
     .in("author_id", analystIds)
     .order("published_at", { ascending: false })
-    .limit(limit);
-  return ((data as Record<string, unknown>[]) ?? []).map(normalize);
+    .limit(fetchLimit);
+  return ((data as Record<string, unknown>[]) ?? [])
+    .map(normalize)
+    .filter((r) => !dismissed.has(r.id))
+    .slice(0, limit);
 }
 
 export async function getReport(id: string): Promise<Report | null> {

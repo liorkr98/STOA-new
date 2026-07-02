@@ -5,19 +5,27 @@ import { Users } from "@phosphor-icons/react/dist/ssr";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getSessionProfile } from "@/lib/db/auth";
+import { countReferrals } from "@/lib/db/profiles";
 import { listAnalystSubscribers } from "@/lib/db/subscriptions";
 import { subscriberCount } from "@/lib/db/social";
 import { Stat } from "@/components/ui/stat";
 import { compact } from "@/lib/format";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = { title: "Audience" };
 
 export default async function StudioAudiencePage() {
   const profile = (await getSessionProfile())!;
-  const [subs, count] = await Promise.all([
+  const [subs, count, referralCount] = await Promise.all([
     listAnalystSubscribers(profile.id),
     subscriberCount(profile.id),
+    countReferrals(profile.id),
   ]);
+  const host = (await headers()).get("host");
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const referralLink = host
+    ? `${protocol}://${host}/sign-up?ref=${profile.handle}`
+    : `/sign-up?ref=${profile.handle}`;
 
   return (
     <div className="flex flex-col gap-8">
@@ -26,11 +34,22 @@ export default async function StudioAudiencePage() {
         <p className="t-body mt-1">People who subscribe to your research.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 md:grid-cols-4">
         <Stat label="Active subscribers" value={compact(count)} />
         <Stat label="Monthly sub price" value={profile.sub_price ? `$${profile.sub_price}` : "Not set"} />
         <Stat label="Followers" value={compact(profile.followers_count)} />
+        <Stat label="Referral signups" value={compact(referralCount)} />
       </div>
+
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <h2 className="t-h3">Referral link</h2>
+        <p className="t-meta mt-1">
+          Share this link — signups attributed to you are counted above.
+        </p>
+        <code className="num mt-3 block overflow-x-auto rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm">
+          {referralLink}
+        </code>
+      </section>
 
       {subs.length > 0 ? (
         <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">

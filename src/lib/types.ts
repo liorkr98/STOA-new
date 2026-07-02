@@ -50,6 +50,8 @@ export interface Profile {
   report_price: number | null;
   verified: boolean;
   created_at: string;
+  /** Analyst who referred this user (?ref=handle at signup). */
+  referred_by?: string | null;
   profile_config?: ProfileConfig | null;
 }
 

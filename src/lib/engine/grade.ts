@@ -244,6 +244,17 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
         sample_size: result.total,
       })
       .eq("id", authorId);
+
+    await db.from("moat_score_snapshots").insert({
+      creator_id: authorId,
+      score: result.score,
+      sample_size: result.total,
+      wilson_win_rate: result.wilsonWinRate,
+      profit_factor: result.profitFactor,
+      avg_return: result.avgReturn,
+      avg_alpha: result.avgAlpha,
+      breakdown: result.breakdown,
+    });
   }
 
   const graded = updates.filter((u) => u && !u.pendingReview && u.outcome !== "open").length;

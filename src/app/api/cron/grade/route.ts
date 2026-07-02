@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
   try {
     const db = createAdminClient();
     const summary = await gradeDuePredictions(db);
+    try {
+      await db.rpc("refresh_platform_stats");
+    } catch {
+      // platform_stats MV lands in migration 0019
+    }
 
     if (process.env.CRON_ALERT_WEBHOOK_URL) {
       // Fire-and-forget success ping (optional monitoring §8).
