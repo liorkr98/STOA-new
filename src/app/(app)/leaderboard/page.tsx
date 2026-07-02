@@ -4,9 +4,10 @@ import { SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { listTopAnalysts } from "@/lib/db/profiles";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { computeTier } from "@/lib/engine/score";
-import { compact, analystRating } from "@/lib/format";
+import { compact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { TierBadge } from "@/components/ui/tier-badge";
+import { MoatBadge } from "@/components/ui/moat-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { sampleAnalysts } from "@/lib/sample";
 
@@ -26,8 +27,8 @@ export default async function LeaderboardPage() {
       <div>
         <h1 className="t-h1">Leaderboard</h1>
         <p className="t-body mt-1">
-          Ranked by verified rating (600-1400): win rate, profit factor, alpha, and consistency
-          over resolved calls.
+          Ranked by MOAT score (0-100): win rate, profit factor, alpha, and consistency over
+          resolved calls.
         </p>
       </div>
 
@@ -57,12 +58,7 @@ export default async function LeaderboardPage() {
                     </div>
                   </div>
                   <TierBadge tier={tier.key} label={tier.label} className="hidden sm:inline-flex" />
-                  <div className="text-right">
-                    <div className="num text-lg font-semibold leading-none">{analystRating(a)}</div>
-                    <div className="t-meta">
-                      <span className="num">{a.resolved}</span> calls
-                    </div>
-                  </div>
+                  <MoatBadge handle={a.handle} score={a.score || null} sampleSize={a.resolved} linked={false} />
                 </Link>
               </li>
             );

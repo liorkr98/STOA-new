@@ -13,7 +13,7 @@ import { compact, pct, analystRating } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { TierBadge } from "@/components/ui/tier-badge";
 import { Stat } from "@/components/ui/stat";
-import { ScoreRing } from "@/components/score-ring";
+import { MoatBadge } from "@/components/ui/moat-badge";
 import { TrackChart } from "@/components/charts/track-chart";
 import { TabBar } from "@/components/feed/tab-bar";
 import { ReportCard } from "@/components/report-card";
@@ -151,16 +151,14 @@ export default async function AnalystProfilePage({
             )}
           </div>
 
-          <div className="flex flex-col items-center gap-5 rounded-[var(--radius-card)] border border-border bg-bg p-5">
-            <ScoreRing rating={analystRating(profile)} mode="rating" />
-            <p className="t-meta text-center">
-              Score <span className="num">{profile.score || stats.score}</span> / 100
-            </p>
-            <p className="t-meta text-center">
-              {stats.resolved > 0
-                ? `${stats.resolved} resolved calls`
-                : "Building a track record"}
-            </p>
+          <div className="flex flex-col gap-4">
+            <MoatBadge
+              handle={profile.handle}
+              score={profile.score || stats.score || null}
+              hitRate={stats.winRate}
+              sampleSize={stats.resolved}
+              size="lg"
+            />
             {!isSelf && (
               <SubscribeButton
                 analystId={profile.id}
@@ -225,6 +223,7 @@ export default async function AnalystProfilePage({
       )}
 
       {/* Full call ledger */}
+      <p className="t-meta">All calls, including missed targets, stay visible permanently.</p>
       <CallHistory predictions={predictions} />
 
       {/* Publications */}

@@ -1,102 +1,135 @@
 # Stoa Design System — MASTER
 
-Version 1.0. The single source of truth for the Stoa Next rebuild. Read this before any visual
-change. Tokens are defined in `src/app/globals.css` under `@theme`; do not hardcode values that a
-token already covers.
+Version 2.0. The single source of truth for Stoa. Read this before any visual change. Tokens are
+defined in `src/app/globals.css` under `@theme`; do not hardcode values that a token already
+covers.
 
 ## Design read
 
-Trust-first fintech marketplace for retail investors and independent analysts. Sharp,
-editorial-data language: confident type, mono numerals, generous structure, restrained motion.
-It must feel credible (people pay real money) and premium (analysts want to be seen here).
+The notary's seal, not a trading terminal. Stoa is a public ledger of claims made and outcomes
+proven, where nothing can be quietly erased. The design borrows from the world of certified
+documents, rubber date-stamps, and ledger books — not from generic "dark mode SaaS" or "editorial"
+templates. Every locked call is a permanent, attributable record; the visual language should make
+that feel true before a single word is read.
 
-Dials: VARIANCE 6, MOTION 4, DENSITY 5. Light is the default theme; a dark theme ships alongside it.
+Route names are intentionally unchanged from the original build (`/discover`, `/analyst/[handle]`,
+`/studio`, `/report/[id]`, etc.) to avoid conflicting with in-flight backend work. The new design
+is applied within the existing information architecture, not a URL rename.
 
 ## Color
 
-One accent. Neutrals are a cool slate ramp. Sentiment colors are restricted.
+Six named values, used consistently everywhere, never introduced ad hoc per-page.
 
-| Token             | Light        | Dark         | Use                                                |
-| ----------------- | ------------ | ------------ | -------------------------------------------------- |
-| `--bg`            | `#fbfbfc`    | `#0c0d10`    | Page background                                    |
-| `--surface`       | `#ffffff`    | `#15171c`    | Cards, panels                                      |
-| `--surface-2`     | `#f4f5f7`    | `#1c1f26`    | Inset / secondary surfaces                         |
-| `--text`          | `#16181d`    | `#f3f4f6`    | Primary text                                       |
-| `--text-mute`     | `#5b6270`    | `#9aa3b2`    | Secondary text, labels                             |
-| `--text-faint`    | `#8b919e`    | `#6b7280`    | Tertiary, captions                                 |
-| `--border`        | `#e7e9ee`    | `#262a33`    | Hairline borders (used at 1px, low contrast)       |
-| `--border-strong` | `#d3d7df`    | `#363b46`    | Hover / focus borders                              |
-| `--accent`        | `#2f5fff`    | `#5a82ff`    | The one brand accent. Signal blue.                 |
-| `--accent-weak`   | `#eaeeff`    | `#1b2240`    | Accent tint backgrounds                            |
-| `--up`            | `#0f9d6b`    | `#34d39e`    | Sentiment: gains, long, hit                        |
-| `--down`          | `#e0483d`    | `#ff6b5e`    | Sentiment: losses, short, miss                     |
+| Token          | Hex       | Use                                                              |
+| -------------- | --------- | ----------------------------------------------------------------|
+| `--ink`        | `#14171F` | Primary text, dark UI surfaces. Near-black navy, not pure black.|
+| `--paper`      | `#EFF1ED` | Primary background. Cool sage-gray, not warm cream.             |
+| `--verdigris`  | `#2F6E5D` | Brand accent. Also: **Fact** claims, **Hit** outcomes.           |
+| `--brass`      | `#B8863B` | Certification accent (the seal itself). Also: **Unproven** claims.|
+| `--plum`       | `#5B4B6B` | **Opinion** claims. A distinct hue family, not a shade of fact/unproven.|
+| `--rust`       | `#A6483C` | **Contradicted** claims, **Miss** outcomes. Muted brick, not alarm-red.|
 
-**Sentiment rule (strict):** `--up` / `--down` appear only on direction tags (Long/Short), grade
-tags (Hit/Near/Partial/Miss/Open), gain/loss numbers, and chart strokes. Never on buttons,
-backgrounds, generic borders, or decoration.
+Derived tokens (`--surface`, `--surface-2`, `--text-mute`, `--border`, `--up`/`--down`, etc.) live
+in `globals.css` and are computed from these six — don't add new named colors without a real
+reason tied to one of the six roles above.
 
-**Accent lock:** `--accent` is the only accent on the whole product. Do not introduce a second
-hue for a CTA or badge.
+**Sentiment rule (strict):** `--up`/`--down` (mapped to verdigris/rust) appear only on direction
+tags, grade tags, gain/loss numbers, and chart strokes. Never on generic buttons or decoration.
 
 ## Typography
 
-- **Display + numbers:** Space Grotesk. Headlines use tight tracking. All numerals, tickers,
-  prices, scores, and percentages use it via the `.num` / `font-mono` utility for tabular figures.
-- **Body + UI:** Manrope. Paragraphs, labels, navigation, buttons, inputs.
+- **Display / editorial:** Fraunces (variable). Report titles, creator display names in profile
+  heroes, homepage headline, marketing section headers. Only where the product is being *read* —
+  never in UI chrome.
+- **UI / body:** IBM Plex Sans. All interface chrome — nav, buttons, labels, form inputs, card
+  metadata.
+- **Numeric / data:** IBM Plex Mono, tabular figures. Ticker symbols, prices, percentages, MOAT
+  scores, timestamps, dates — anything scanned and compared rather than read as prose.
 - Type scale (utility classes in `globals.css`): `.t-display`, `.t-h1`, `.t-h2`, `.t-h3`,
-  `.t-body`, `.t-meta`, `.t-eyebrow`. Body copy maxes at `65ch`.
-- Emphasis inside a headline uses weight or italic of the same family. Never mix a serif word
-  into a sans headline.
+  `.t-body`, `.t-body-editorial` (Fraunces, for long-form reading), `.t-meta`, `.t-eyebrow`, `.num`.
 
 ## Shape and depth
 
-- Radii: cards `--r-card` (12px), buttons `--r-btn` (8px), tags `--r-tag` (6px), pills full.
-  Pick from the scale; do not invent values.
-- No drop shadows for elevation. Depth comes from `--surface` tint changes and 1px `--border`
-  hairlines. A single soft ambient shadow token (`--shadow-soft`) exists only for floating
-  overlays (menus, modals, toasts).
-- Borders are 1px. Use `--border` by default, `--border-strong` on hover/focus.
+- Radii: cards `--r-card` (12px), buttons/tags `--r-btn`/`--r-tag` (6px), pills full.
+- **The seal is the only fully circular element in the product.** Avatars use `--r-card`, not
+  `rounded-full` — reserving true circles for the seal keeps the motif meaningful.
+- `--shadow-card` exists for ordinary elevation. **Ledger-card treatment** (`.ledger-card` utility
+  — 1px `--ink` border + inset hairline + shadow) is reserved for trust-critical blocks only: the
+  call block (`PredictionCard`), `DisclosureBlock`, `MoatBadge` (lg), confirmation modals. Never
+  use it for ordinary content cards — a double-ruled border should keep meaning something.
 
-## Motion (intensity 4)
+## Motion
 
-- Entry: short fade + 8-16px rise, `ease: [0.16, 1, 0.3, 1]`, 0.4-0.6s. Stagger lists by ~0.05s.
-- Hover: `translateY(-1px)` on cards, `scale(0.98)` on `:active` for buttons.
-- Everything above intensity 3 honors `prefers-reduced-motion` via `useReducedMotion()`.
-- Motion must be motivated (hierarchy, feedback, state). No infinite loops for decoration.
+- UI interactions: 150–250ms, custom ease-out (`cubic-bezier(0.16, 1, 0.3, 1)`). Never `ease-in`
+  on entering elements. Buttons get `active:scale-[0.97-0.98]` press feedback.
+- Popovers scale in from their trigger (`transform-origin`, see `.popover-content` utility and
+  Radix's `--radix-popover-content-transform-origin`). Modals stay centered — they're exempt.
+- Never animate from `scale(0)`. Start from `scale(0.9)`+ with opacity.
+- **The seal-stamp animation is the one deliberately ceremonial moment in the product** (`.seal-
+  press`/`.seal-ink-bleed`, ~400ms, in `SealStamp`): press + slight rotate + ink-bleed on lock.
+  Everything else stays quiet so this one moment lands. Under `prefers-reduced-motion`, it becomes
+  an instant state-swap, not a faded-down animation.
+- `prefers-reduced-motion` is handled globally in `globals.css`.
 
 ## Core components (canonical, reuse — do not reinvent)
 
-- `Button` — `src/components/ui/button.tsx`. Variants: `primary` (accent fill), `secondary`
-  (surface + border), `ghost`, `subtle`. Sizes `sm | md | lg`. One line of label, max 3 words.
-- `Card` / `Surface` — `src/components/ui/card.tsx`. The base panel.
-- `Tag` — `src/components/ui/tag.tsx`. Variants for direction (`long`/`short`/`hold`) and grade
-  (`hit`/`near`/`partial`/`miss`/`open`). These are the only place sentiment color appears as a tag.
-- `Avatar` — `src/components/ui/avatar.tsx`. Sizes `sm | md | lg | xl`.
-- `Stat` — `src/components/ui/stat.tsx`. A labeled number block (mono).
-- `TierBadge` — `src/components/ui/tier-badge.tsx`. Renders the engine tier.
-- `Sparkline` / `TrackChart` — `src/components/charts/`. Sentiment-stroked.
-- `PredictionCard` — `src/components/prediction-card.tsx`. The investment card. The signature object.
-- `AnalystCard` — `src/components/analyst-card.tsx`. Browse/Discover unit.
-- `ScoreRing` — `src/components/score-ring.tsx`. The 0-100 analyst score dial.
-- Layout: `TopNav` (investor pages) and `StudioSidebar` (analyst Studio) in `components/layout/`.
+- `Button` — `src/components/ui/button.tsx`. Variants: `primary`, `secondary`, `ghost`, `subtle`.
+  Already has correct press feedback; rarely needs touching.
+- `Avatar` — `src/components/ui/avatar.tsx`. Card-radius, not circular.
+- `Tag` / `DirectionTag` / `GradeTag` — `src/components/ui/tag.tsx`.
+- `SealStamp` — `src/components/ui/seal-stamp.tsx`. The signature motif: `locked`/`hit`/`miss`
+  states, embossed date ring, lock animation. `sm`/`md`/`lg`.
+- `MoatBadge` — `src/components/ui/moat-badge.tsx`. Wraps `profiles.score`/`rating`/`tier` (the
+  existing 0-100 engine score — no new schema). Links to `/@[handle]/moat`. `sm`/`md`/`lg`, with a
+  provisional-score note under a small sample size.
+- `StatusChip` — `src/components/ui/status-chip.tsx`. `draft`/`open`/`hit`/`miss`, icon + label.
+- `DisclosureBlock` — `src/components/ui/disclosure-block.tsx`. Fixed 3-row ledger card. **Never
+  accepts a theme/color prop** — the one component creators cannot restyle.
+- `PaywallGate` — `src/components/ui/paywall-gate.tsx`. Wraps report body only; accepts real
+  `BuyReportButton`/`SubscribeButton` as slots.
+- `LockConfirmModal` — `src/components/ui/lock-confirm-modal.tsx`. Radix Dialog. The seal ritual.
+- `FactCheckLayer` / `FactCheckedText` — `src/components/report/fact-check-layer.tsx`. Summary
+  strip + inline underlined claim annotations with origin-aware Radix popovers. Adapts the
+  existing `FactClaim`/`ClaimType` data (`src/lib/ai/fact-check.ts`) to the 4-value verdict
+  taxonomy (fact/unproven/opinion/contradicted) client-side — no schema change needed.
+- `DebateThread` — `src/components/report/debate-thread.tsx`. Side panel (desktop) / bottom sheet
+  (mobile), scoped to one opinion claim. Not persisted yet — see `docs/BACKEND_DATA_CONTRACTS.md`.
+- `RoleSwitcher` — `src/components/layout/role-switcher.tsx`. Only renders when an account has
+  both investor and creator capability; schema doesn't support that yet, so it's currently always
+  hidden by design, not broken.
+- `PredictionCard` — `src/components/prediction-card.tsx`. The investment card. Now `ledger-card`
+  styled, with a `SealStamp` beside the target price.
+- `TierBadge`, `Stat`, `AnalystCard`, `ScoreRing` — unchanged in behavior, inherit new tokens
+  automatically.
+- Layout: `TopNav` (now includes conditional `RoleSwitcher`) and `StudioSidebar`.
+
+## Legacy dialogs (migration in progress)
+
+`confirm-spend-dialog.tsx`, `subscribe-button.tsx`, and `buy-report-button.tsx` still use a
+hand-rolled Motion-based dialog (manual Escape listener, no real focus trap). `LockConfirmModal`
+and `DebateThread` use Radix Dialog instead, for real accessibility guarantees. Migrate the
+legacy three to Radix when touched next, so there's one dialog pattern in the codebase, not two.
 
 ## Screens
 
-| Screen   | Route                         | Purpose                                          |
-| -------- | ----------------------------- | ------------------------------------------------ |
-| Landing  | `/`                           | Public marketing. Asymmetric hero + live track.  |
-| Discover | `/discover`                   | Investor feed (Trending / Following / Subs).     |
-| Markets  | `/markets`                    | Ticker browser with the Stoa coverage badge.     |
-| Profile  | `/analyst/[handle]`           | The analyst's public surface. The hero of Stoa.  |
-| Report   | `/report/[id]`                | Long-form reading view + comments.               |
-| Studio   | `/studio`                     | Analyst home base (Overview / Audience / Earn).  |
-| Compose  | `/studio/compose`             | Full-bleed block editor.                         |
+| Screen   | Route                | Purpose                                                          |
+| -------- | --------------------- | ------------------------------------------------------------------------ |
+| Landing  | `/`                   | Public marketing. Hero, track-record proof, scoring mechanics, leaderboard.|
+| Discover | `/discover`           | Investor feed.                                                    |
+| Markets  | `/markets`             | Ticker browser.                                                   |
+| Profile  | `/analyst/[handle]`   | The creator's public surface, with `MoatBadge` (lg) and ledger archive.  |
+| Report   | `/report/[id]`        | Long-form reading view. `FactCheckLayer` + `PaywallGate` + comments.     |
+| Studio   | `/studio`              | Creator home base.                                                |
+| Compose  | `/studio/compose`     | Block editor. Fact-check panel feeds `FactCheckLayer` on publish.        |
 
 ## Anti-patterns (do not ship)
 
-- AI-purple gradients, neon glows, pure black/white, three identical feature cards.
-- Green/red on anything that is not market sentiment.
-- A second accent color anywhere.
-- Drop shadows used for card elevation.
+- AI-purple gradients, neon glows, glassmorphism, pure black/white, three identical feature cards.
+- A second accent hue outside the six named tokens.
+- `ledger-card` treatment on ordinary content — reserve it for trust-critical blocks.
+- Full circles anywhere except the seal.
+- Green/red (raw) on anything that is not market sentiment — use `--verdigris`/`--rust` via the
+  semantic tokens, which already carry the correct meaning in this palette.
 - Em-dashes in any user-visible string.
 - Components calling Supabase directly. Data flows through `src/lib/db/*` only.
+- Introducing Lucide icons alongside the existing Phosphor set — pick one icon language and keep it.

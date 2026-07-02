@@ -9,7 +9,9 @@ Before any visual change, also read **[design-system/MASTER.md](./design-system/
 Quick reminders:
 
 - Next.js App Router + React 19 + TypeScript + Tailwind v4 + Supabase. No Base44.
-- One accent color (signal blue). Green/red are for market sentiment only.
-- Space Grotesk for headlines + numbers, Manrope for body/UI.
+- Ledger/notary palette: ink, paper, verdigris, brass, plum, rust. Green/red sentiment is expressed
+  via verdigris/rust, never raw hex.
+- Fraunces for display/editorial, IBM Plex Sans for UI, IBM Plex Mono for numerals.
+- The seal (`SealStamp`) is the only fully circular element in the product.
 - The data layer in `src/lib/db/*` is the only place that talks to Supabase.
 - `npm run lint` and `npm run typecheck` must pass. No narration comments. Zero em-dashes.

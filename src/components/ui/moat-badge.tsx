@@ -10,12 +10,42 @@ function scoreColor(score: number) {
   return "var(--rust)";
 }
 
+function Wrapper({
+  linked,
+  href,
+  className,
+  title,
+  children,
+}: {
+  linked: boolean;
+  href: string;
+  className: string;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  // linked=false when an ancestor is already an <a> (e.g. AnalystCard) --
+  // nested anchors are invalid HTML and break hydration.
+  if (!linked) {
+    return (
+      <span className={className} title={title}>
+        {children}
+      </span>
+    );
+  }
+  return (
+    <Link href={href} className={className} title={title}>
+      {children}
+    </Link>
+  );
+}
+
 /**
- * Appears everywhere a creator's name does. Always links to that creator's
- * MOAT Analytics. sampleSize gates the "provisional" note -- the engine's
- * own sample-ramp confidence weighting already discounts small samples in
- * `score` itself; this just surfaces that honestly rather than presenting a
- * six-call score with the same confidence as a sixty-call one.
+ * Appears everywhere a creator's name does. Links to that creator's MOAT
+ * Analytics unless `linked={false}` (use when already nested inside another
+ * link, e.g. AnalystCard). sampleSize gates the "provisional" note -- the
+ * engine's own sample-ramp confidence weighting already discounts small
+ * samples in `score` itself; this just surfaces that honestly rather than
+ * presenting a six-call score with the same confidence as a sixty-call one.
  */
 export function MoatBadge({
   handle,
@@ -23,6 +53,7 @@ export function MoatBadge({
   hitRate,
   sampleSize,
   size = "md",
+  linked = true,
   className,
 }: {
   handle: string;
@@ -30,16 +61,19 @@ export function MoatBadge({
   hitRate?: number | null;
   sampleSize?: number;
   size?: Size;
+  linked?: boolean;
   className?: string;
 }) {
   const empty = score == null;
   const color = empty ? "var(--text-faint)" : scoreColor(score);
   const provisional = sampleSize != null && sampleSize < 10;
+  const href = `/@${handle}/moat`;
 
   if (size === "sm") {
     return (
-      <Link
-        href={`/@${handle}/moat`}
+      <Wrapper
+        linked={linked}
+        href={href}
         className={cn(
           "inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
           className,
@@ -50,14 +84,15 @@ export function MoatBadge({
         <span className="num text-xs font-semibold" style={{ color }}>
           {empty ? "—" : score}
         </span>
-      </Link>
+      </Wrapper>
     );
   }
 
   if (size === "md") {
     return (
-      <Link
-        href={`/@${handle}/moat`}
+      <Wrapper
+        linked={linked}
+        href={href}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
           className,
@@ -70,14 +105,18 @@ export function MoatBadge({
         {!empty && hitRate != null && (
           <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
         )}
-      </Link>
+      </Wrapper>
     );
   }
 
   return (
-    <Link
-      href={`/@${handle}/moat`}
-      className={cn("ledger-card flex items-center gap-4 p-4 transition-transform active:scale-[0.99] focus-ring", className)}
+    <Wrapper
+      linked={linked}
+      href={href}
+      className={cn(
+        "ledger-card flex items-center gap-4 p-4 transition-transform active:scale-[0.99] focus-ring",
+        className,
+      )}
     >
       <SealDot color={color} size={40} />
       <div className="flex flex-col gap-0.5">
@@ -98,7 +137,7 @@ export function MoatBadge({
         {provisional && <span className="t-meta text-[var(--brass)]">Provisional -- small sample</span>}
         <span className="t-meta underline">View full breakdown</span>
       </div>
-    </Link>
+    </Wrapper>
   );
 }
 
