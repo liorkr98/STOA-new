@@ -6,7 +6,7 @@ import { TIERS } from "@/lib/engine/score";
 
 export const metadata: Metadata = {
   title: "Scoring methodology",
-  description: "How Stoa grades analyst calls and computes the public 600-1400 rating.",
+  description: "How Stoa grades analyst calls and computes the public MOAT score.",
 };
 
 export default function ScoringPage() {
@@ -27,7 +27,7 @@ export default function ScoringPage() {
           <li>An analyst publishes a call with ticker, direction, optional target, and horizon.</li>
           <li>Stoa locks the entry price from the live feed and captures SPY as the benchmark.</li>
           <li>When the horizon ends, the grading job fetches resolved prices and assigns an outcome.</li>
-          <li>The composite score and public 600-1400 rating update on the analyst profile.</li>
+          <li>The MOAT score (0-100) and its public 600-1400 rating equivalent update on the analyst profile.</li>
         </ol>
       </section>
 
@@ -52,7 +52,7 @@ export default function ScoringPage() {
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">Composite score (0-100)</h2>
+        <h2 className="t-h2">MOAT score (0-100)</h2>
         <ul className="mt-4 space-y-3 text-sm text-text-mute">
           <li>
             <strong className="text-text">Win rate</strong> — Wilson lower bound on time-weighted
@@ -70,9 +70,15 @@ export default function ScoringPage() {
             <strong className="text-text">Consistency</strong> — penalties for miss streaks and
             outcome drawdowns.
           </li>
+          <li>
+            <strong className="text-text">Sample confidence</strong> — a logarithmic ramp discounts
+            small sample sizes, so a six-call streak and a sixty-call streak are never shown with
+            the same confidence. Under 10 resolved calls, the score is marked provisional
+            wherever it is displayed.
+          </li>
         </ul>
         <p className="t-meta mt-4">
-          The public rating maps linearly: 0 → 600, 100 → 1400.
+          The public rating maps linearly from the MOAT score: 0 → 600, 100 → 1400.
         </p>
       </section>
 

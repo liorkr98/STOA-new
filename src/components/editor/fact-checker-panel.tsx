@@ -109,7 +109,7 @@ export function FactCheckerPanel({
   }
 
   return (
-    <div className="glass flex flex-col gap-3 rounded-[var(--radius-card)] border border-border p-4">
+    <div className="surface flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <MagnifyingGlass size={18} className="text-accent" />

@@ -27,7 +27,7 @@ export default async function LandingPage() {
   return (
     <>
       {/* Hero: the track record is the hero object */}
-      <section className="observatory">
+      <section>
         <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-24 pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:pt-24">
           <FadeIn>
             <div className="flex flex-col gap-6">
@@ -40,7 +40,7 @@ export default async function LandingPage() {
               <h1 className="t-display">
                 Research you can
                 <br />
-                actually <span className="accent-glow">verify</span>.
+                actually <span className="text-accent">verify</span>.
               </h1>
               <p className="t-body text-lg">
                 Every call an analyst makes is graded by the market into a permanent public score.
@@ -59,7 +59,7 @@ export default async function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={0.12}>
-            <div className="glass p-5">
+            <div className="ledger-card p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-weak text-sm font-semibold text-accent">
@@ -108,7 +108,7 @@ export default async function LandingPage() {
           </FadeIn>
           <div className="mt-10 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
             <FadeIn className="h-full">
-              <div className="glass flex h-full flex-col justify-between p-7">
+              <div className="surface flex h-full flex-col justify-between p-7">
                 <Scales size={28} className="text-accent" weight="duotone" />
                 <div className="mt-10">
                   <h3 className="t-h3">Every call is graded by the market, not by us</h3>
@@ -122,7 +122,7 @@ export default async function LandingPage() {
             </FadeIn>
             <div className="grid gap-5">
               <FadeIn delay={0.06}>
-                <div className="glass p-7">
+                <div className="surface p-7">
                   <LockKey size={24} className="text-accent" weight="duotone" />
                   <h3 className="t-h3 mt-4">Analysts own their audience</h3>
                   <p className="t-body mt-2">
@@ -132,7 +132,7 @@ export default async function LandingPage() {
                 </div>
               </FadeIn>
               <FadeIn delay={0.12}>
-                <div className="glass p-7">
+                <div className="surface p-7">
                   <Wallet size={24} className="text-accent" weight="duotone" />
                   <h3 className="t-h3 mt-4">Flexible monetization</h3>
                   <p className="t-body mt-2">
@@ -147,7 +147,7 @@ export default async function LandingPage() {
       </section>
 
       {/* How scoring works: connected flow */}
-      <section className="observatory">
+      <section>
         <div className="mx-auto max-w-[1200px] px-5 py-20">
           <FadeIn>
             <span className="t-eyebrow" style={{ color: "var(--accent)" }}>

@@ -46,7 +46,7 @@ function SortableSection({
     <div
       ref={setNodeRef}
       style={style}
-      className="glass flex items-center justify-between gap-3 rounded-[var(--radius-btn)] px-3 py-2.5"
+      className="flex items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2.5"
     >
       <div className="flex items-center gap-2">
         <button
@@ -135,7 +135,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
   }
 
   return (
-    <div className="observatory flex flex-col gap-6 rounded-[var(--radius-card)] border border-border bg-bg p-6">
+    <div className="surface flex flex-col gap-6 p-6">
       <div>
         <h2 className="t-h3">Profile layout</h2>
         <p className="t-meta mt-1">Drag sections to reorder what visitors see on your public profile.</p>
@@ -195,7 +195,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
       </div>
 
       {aiHint && (
-        <div className="glass rounded-[var(--radius-btn)] p-4 text-sm text-text-mute">{aiHint}</div>
+        <div className="rounded-[var(--radius-btn)] border border-border bg-surface-2 p-4 text-sm text-text-mute">{aiHint}</div>
       )}
     </div>
   );

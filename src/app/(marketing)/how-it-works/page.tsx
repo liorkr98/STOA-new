@@ -21,7 +21,7 @@ export default function HowItWorksPage() {
           same window. The call is graded Hit, Near, Partial, or Miss.
         </Section>
         <Section title="3. Four honest pillars">
-          The 0-100 score blends a time-weighted win rate (Hit = full credit, Near = half),
+          The 0-100 MOAT score blends a time-weighted win rate (Hit = full credit, Near = half),
           profit factor, alpha versus the S&amp;P 500, and a consistency check for losing
           streaks. It maps to a 600-1400 rating for display. Recent calls count more than old
           ones.

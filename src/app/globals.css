@@ -356,3 +356,16 @@ body {
   from { transform: translateX(0); }
   to { transform: translateX(100%); }
 }
+
+/* Hairline that fades out at both ends. A tasteful gradient divider, not
+ * a glow effect -- used to visually connect sequential steps (scoring
+ * flow, block dividers). */
+.rule-fade {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-strong) 18%,
+    var(--border-strong) 82%,
+    transparent
+  );
+}
