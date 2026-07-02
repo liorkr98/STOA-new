@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle, Clock, XCircle } from "@phosphor-icons/react/dist/ssr";
 import { getSessionProfile } from "@/lib/db/auth";
-import { ensureProfile, submitAnalystApplication } from "@/app/actions/profile";
+import { submitAnalystApplication } from "@/app/actions/profile";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 
@@ -31,8 +31,6 @@ export default async function BecomeAnalystPage({
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
   if (profile.role === "analyst" || profile.role === "admin") redirect("/studio/compose");
-
-  await ensureProfile();
 
   const { submitted, reapply } = await searchParams;
   const existing = await getExistingApplication(profile.id);

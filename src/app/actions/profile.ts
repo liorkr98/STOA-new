@@ -27,7 +27,6 @@ export async function ensureProfile() {
   if (error) return { ok: false as const, error: error.message };
   const row = data as { error?: string };
   if (row.error) return { ok: false as const, error: row.error };
-  revalidatePath("/", "layout");
   return { ok: true as const };
 }
 
