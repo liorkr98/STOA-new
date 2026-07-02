@@ -16,7 +16,7 @@ type BannerStyle = NonNullable<ProfileConfig["banner_style"]>;
 
 const BANNER_OPTIONS: { value: BannerStyle; label: string; className: string }[] = [
   { value: "gradient-accent", label: "Signal", className: "bg-gradient-to-r from-accent/25 via-accent/10 to-transparent" },
-  { value: "gradient-cool", label: "Cool", className: "bg-gradient-to-r from-[#1a2a4a] via-accent/20 to-transparent" },
+  { value: "gradient-cool", label: "Cool", className: "bg-gradient-to-r from-[var(--ink)] via-accent/20 to-transparent" },
   { value: "minimal", label: "Minimal", className: "bg-gradient-to-r from-surface-2 to-bg" },
 ];
 

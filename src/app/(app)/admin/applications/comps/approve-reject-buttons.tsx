@@ -34,7 +34,7 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
         size="sm"
         disabled={isPending}
         onClick={handleReject}
-        className="bg-red-600 hover:bg-red-700 text-white"
+        className="bg-[var(--rust)] text-[var(--accent-ink)] hover:brightness-[1.06]"
       >
         <XCircle size={15} weight="fill" />
         Confirm reject
@@ -60,7 +60,6 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
         size="sm"
         disabled={isPending}
         onClick={handleApprove}
-        className="bg-green-600 hover:bg-green-700 text-white"
       >
         <CheckCircle size={15} weight="fill" />
         Approve
@@ -71,7 +70,7 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
         size="sm"
         disabled={isPending}
         onClick={() => setRejectMode(true)}
-        className="text-red-500 border-red-500/30 hover:bg-red-500/10"
+        className="text-[var(--rust)] border-[color-mix(in_srgb,var(--rust)_30%,transparent)] hover:bg-[color-mix(in_srgb,var(--rust)_10%,transparent)]"
       >
         <XCircle size={15} weight="fill" />
         Reject

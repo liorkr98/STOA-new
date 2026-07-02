@@ -55,7 +55,7 @@ export function SealStamp({
 
   const a11yLabel =
     status === "locked"
-      ? `Locked ${ringDate} — price target cannot be edited`
+      ? `Locked ${ringDate}. Price target cannot be edited`
       : status === "hit"
         ? `Resolved hit on ${ringDate}`
         : `Resolved miss on ${ringDate}`;

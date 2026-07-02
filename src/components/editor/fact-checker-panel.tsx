@@ -109,17 +109,14 @@ export function FactCheckerPanel({
   }
 
   return (
-    <div className="surface flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <MagnifyingGlass size={18} className="text-accent" />
-          <div>
-            <p className="text-sm font-semibold">FactChecker</p>
-            <p className="t-meta">Classify claims · verify vs Yahoo</p>
-          </div>
+          <MagnifyingGlass size={16} className="text-accent" />
+          <p className="t-eyebrow">Fact-check</p>
         </div>
-        <span className="flex items-center gap-1 t-meta">
-          <Coins size={14} />
+        <span className="flex items-center gap-1 t-meta text-[11px]">
+          <Coins size={13} />
           {credits} credits
         </span>
       </div>
@@ -136,12 +133,26 @@ export function FactCheckerPanel({
 
       {error && <p className="text-sm text-[var(--down)]">{error}</p>}
 
+      {!result && !pending && (
+        <p className="t-meta text-[11px]">
+          Required before publishing. Claims are classified and checked against live market data.
+        </p>
+      )}
+
       {result && (
-        <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
-          {result.claims.map((c, i) => (
-            <ClaimRow key={i} claim={c} />
-          ))}
-        </div>
+        <>
+          <p className="t-meta text-[11px]">
+            {result.claims.length} claim{result.claims.length === 1 ? "" : "s"} checked
+            {result.claims.some((c) => c.type === "Yahoo-Disputed" || c.type === "Misleading")
+              ? " · some need attention"
+              : ""}
+          </p>
+          <div className="scroll-area flex max-h-56 flex-col gap-2 overflow-y-auto">
+            {result.claims.map((c, i) => (
+              <ClaimRow key={i} claim={c} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

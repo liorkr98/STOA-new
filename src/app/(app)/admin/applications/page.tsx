@@ -5,9 +5,10 @@ import { formatDistanceToNow } from "date-fns";
 import { LinkedinLogo } from "@phosphor-icons/react/dist/ssr";
 import { getSessionProfile } from "@/lib/db/auth";
 import { createClient } from "@/lib/supabase/server";
+import { Avatar } from "@/components/ui/avatar";
 import { ApproveRejectButtons } from "./comps/approve-reject-buttons";
 
-export const metadata: Metadata = { title: "Applications — Admin" };
+export const metadata: Metadata = { title: "Applications · Admin" };
 
 async function listApplications() {
   const supabase = await createClient();
@@ -26,9 +27,9 @@ async function listApplications() {
 }
 
 const statusBadge: Record<string, { label: string; className: string }> = {
-  pending:  { label: "Pending",  className: "bg-amber-500/15 text-amber-500" },
-  approved: { label: "Approved", className: "bg-green-500/15 text-green-600" },
-  rejected: { label: "Rejected", className: "bg-red-500/15 text-red-500" },
+  pending:  { label: "Pending",  className: "bg-[color-mix(in_srgb,var(--brass)_14%,transparent)] text-[var(--brass)]" },
+  approved: { label: "Approved", className: "bg-[color-mix(in_srgb,var(--up)_14%,transparent)] text-[var(--up)]" },
+  rejected: { label: "Rejected", className: "bg-[color-mix(in_srgb,var(--down)_14%,transparent)] text-[var(--down)]" },
 };
 
 export default async function AdminApplicationsPage() {
@@ -64,24 +65,18 @@ export default async function AdminApplicationsPage() {
               {/* Header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  {applicant?.avatar_url ? (
-                    <span className="h-10 w-10 rounded-full overflow-hidden block">
-                      {/* Avatar — external URL, next/image overkill for admin page */}
-                      {/* eslint-disable-next-line */}
-                      <img src={applicant.avatar_url} alt="" className="h-full w-full object-cover" />
-                    </span>
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                      {applicant?.display_name?.[0] ?? "?"}
-                    </div>
-                  )}
+                  <Avatar
+                    src={applicant?.avatar_url ?? null}
+                    name={applicant?.display_name ?? "?"}
+                    size="md"
+                  />
                   <div>
                     <p className="font-semibold">{applicant?.display_name ?? "Unknown"}</p>
                     <p className="text-sm text-text-mute">@{applicant?.handle}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}>
+                  <span className={`rounded-[var(--radius-tag)] px-2 py-0.5 text-xs font-medium ${badge.className}`}>
                     {badge.label}
                   </span>
                   <span className="text-xs text-text-mute">
@@ -113,7 +108,7 @@ export default async function AdminApplicationsPage() {
 
               {/* Review note */}
               {app.review_note && (
-                <p className="rounded-md bg-muted px-3 py-2 text-sm text-text-mute">
+                <p className="rounded-[var(--radius-btn)] bg-surface-2 px-3 py-2 text-sm text-text-mute">
                   Note: {app.review_note}
                 </p>
               )}

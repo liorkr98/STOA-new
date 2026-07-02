@@ -47,7 +47,7 @@ export function AvatarUpload({
         disabled={pending}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full",
+          "absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-[var(--radius-btn)]",
           "border border-border bg-surface text-accent shadow-sm hover:bg-accent-weak",
         )}
         aria-label="Upload avatar"

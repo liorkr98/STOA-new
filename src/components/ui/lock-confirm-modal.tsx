@@ -26,7 +26,8 @@ export function LockConfirmModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticker: string;
-  targetPrice: number;
+  /** null = no explicit target; the call locks at the live market entry price. */
+  targetPrice: number | null;
   horizonDate: Date;
   onConfirm: () => void | Promise<void>;
 }) {
@@ -76,7 +77,10 @@ export function LockConfirmModal({
 
               <dl className="mt-5 flex flex-col gap-2 rounded-[var(--r-card)] bg-surface-2 p-4 text-sm">
                 <Row label="Ticker" value={ticker} />
-                <Row label="Target" value={`$${price(targetPrice)}`} />
+                <Row
+                  label="Target"
+                  value={targetPrice != null ? `$${price(targetPrice)}` : "Locks at market entry"}
+                />
                 <Row label="Horizon" value={horizonDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
               </dl>
 
@@ -102,7 +106,7 @@ export function LockConfirmModal({
               <div>
                 <p className="t-h3">Locked</p>
                 <p className="t-meta mt-1">
-                  {ticker} &middot; ${price(targetPrice)} &middot; can&apos;t be edited
+                  {ticker} &middot; {targetPrice != null ? `$${price(targetPrice)}` : "market entry"} &middot; can&apos;t be edited
                 </p>
               </div>
             </div>

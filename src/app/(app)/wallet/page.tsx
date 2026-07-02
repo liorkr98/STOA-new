@@ -91,7 +91,7 @@ export default async function WalletPage() {
         <section>
           <p className="t-eyebrow mb-3">Payout method</p>
           <div className="flex items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-tag)] bg-surface-2 text-text-mute">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-card)] bg-surface-2 text-text-mute">
               <WalletIcon size={20} weight="bold" />
             </span>
             <div className="flex-1">
@@ -121,7 +121,7 @@ export default async function WalletPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-surface-2 text-text-mute"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] bg-surface-2 text-text-mute"
                     >
                       {credit ? <ArrowDown size={15} /> : <ArrowUp size={15} />}
                     </span>
