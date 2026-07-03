@@ -3,7 +3,7 @@ import type { Report } from "@/lib/types";
 
 /**
  * Dev-only preview of the compose editor without the studio auth gate.
- * Seeds a chartNode so the Layer 3 financial nodes can be verified on load
+ * Seeds one of each Layer 3 financial node so they can be verified on load
  * (the slash menu needs a real keystroke the test harness can't send).
  */
 const seedBody = JSON.stringify({
@@ -12,6 +12,28 @@ const seedBody = JSON.stringify({
     { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Nvidia: data center thesis" }] },
     { type: "paragraph", content: [{ type: "text", text: "A quick look at the price action before the print." }] },
     { type: "chartNode", attrs: { ticker: "NVDA", range: "3M", kind: "area" } },
+    {
+      type: "dataFigureNode",
+      attrs: { label: "Revenue TTM", value: "$96.3B", note: "+122% YoY", source: "https://example.com/10q" },
+    },
+    {
+      type: "compareNode",
+      attrs: {
+        tickers: ["NVDA", "AMD", "INTC"],
+        rows: [
+          { label: "P/E", values: ["52", "44", "31"] },
+          { label: "Rev growth", values: ["122%", "18%", "-1%"] },
+        ],
+      },
+    },
+    {
+      type: "financialTableNode",
+      attrs: {
+        columns: ["Segment", "Revenue", "YoY"],
+        rows: [["Data center", "$83.0B", "+217%"], ["Gaming", "$10.4B", "+15%"]],
+        source: "Q3 FY25 10-Q",
+      },
+    },
     { type: "paragraph" },
   ],
 });

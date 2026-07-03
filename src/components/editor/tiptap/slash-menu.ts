@@ -10,6 +10,9 @@ import {
   Megaphone,
   Minus,
   ChartCandlestick,
+  Sigma,
+  Columns3,
+  Table,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -100,6 +103,33 @@ export const SLASH_ITEMS: SlashItem[] = [
         .deleteRange(range)
         .insertContent({ type: "chartNode", attrs: { ticker: "", range: "3M", kind: "area" } })
         .run(),
+  },
+  {
+    title: "Figure",
+    subtitle: "A single sourced number",
+    icon: Sigma,
+    keywords: ["figure", "stat", "metric", "number", "data"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "dataFigureNode" }).run(),
+  },
+  {
+    title: "Peer comparison",
+    subtitle: "Compare 2-4 tickers",
+    icon: Columns3,
+    keywords: ["compare", "peer", "versus", "vs", "comps"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "compareNode" }).run(),
+  },
+  {
+    title: "Table",
+    subtitle: "Data table",
+    icon: Table,
+    keywords: ["table", "grid", "data", "rows"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "financialTableNode" }).run(),
   },
 ];
 

@@ -3,6 +3,9 @@ import Placeholder from "@tiptap/extension-placeholder";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
 import { ChartNode } from "./nodes/chart-node";
+import { DataFigureNode } from "./nodes/data-figure-node";
+import { CompareNode } from "./nodes/compare-node";
+import { FinancialTableNode } from "./nodes/financial-table-node";
 
 /**
  * The single Tiptap extension set, shared by the editor and the read-only
@@ -28,6 +31,9 @@ export function buildExtensions({
     }),
     Callout,
     ChartNode,
+    DataFigureNode,
+    CompareNode,
+    FinancialTableNode,
     ...(editable
       ? [
           Placeholder.configure({
