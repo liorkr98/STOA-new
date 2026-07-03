@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch } from "@phosphor-icons/react";
+import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
@@ -22,6 +22,7 @@ import {
   disclosuresAnswered,
   type DisclosureState,
 } from "@/components/editor/lock-publish-panel";
+import { AskPanel } from "@/components/editor/tiptap/ask-panel";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 
@@ -93,6 +94,7 @@ export function StudioEditor({
     viewsCertified: false,
   });
   const [panelOpen, setPanelOpen] = useState(true);
+  const [askOpen, setAskOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
@@ -104,6 +106,10 @@ export function StudioEditor({
   const onEditorChange = useCallback((change: EditorChange) => {
     setDocJson(change.json);
     setPlainText(change.text);
+  }, []);
+
+  const insertNode = useCallback((node: JSONContent) => {
+    editorRef.current?.chain().focus().insertContent(node).run();
   }, []);
 
   const persistDraft = useCallback(async () => {
@@ -262,6 +268,21 @@ export function StudioEditor({
         </span>
 
         <div className="ml-auto flex items-center gap-2">
+          {hasCard && (
+            <button
+              type="button"
+              aria-label="Ask AI"
+              aria-pressed={askOpen}
+              onClick={() => setAskOpen((o) => !o)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
+                askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
+              )}
+            >
+              <Sparkle size={15} weight="fill" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </button>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -370,6 +391,15 @@ export function StudioEditor({
           Lock &amp; Publish
         </button>
       )}
+
+      <AskPanel
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        context={{ ticker, title }}
+        credits={credits}
+        onCreditsChange={setCredits}
+        onInsertNode={insertNode}
+      />
 
       <LockConfirmModal
         open={confirmOpen}
