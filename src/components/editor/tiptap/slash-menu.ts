@@ -9,6 +9,7 @@ import {
   Quote,
   Megaphone,
   Minus,
+  ChartCandlestick,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -85,6 +86,20 @@ export const SLASH_ITEMS: SlashItem[] = [
     keywords: ["hr", "rule", "separator"],
     group: "Text",
     run: (editor, range) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
+  },
+  {
+    title: "Chart",
+    subtitle: "Live price chart",
+    icon: ChartCandlestick,
+    keywords: ["chart", "price", "candles", "graph", "ohlc"],
+    group: "Data",
+    run: (editor, range) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({ type: "chartNode", attrs: { ticker: "", range: "3M", kind: "area" } })
+        .run(),
   },
 ];
 

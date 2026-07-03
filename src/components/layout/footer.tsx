@@ -55,10 +55,22 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="mx-auto max-w-[1200px] px-5 pb-10">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-5 pb-10">
         <p className="t-meta">
           Stoa is a research marketplace, not a broker or investment adviser. Nothing here is
           financial advice. Past performance does not guarantee future results.
+        </p>
+        <p className="t-meta text-[11px]">
+          Charts by{" "}
+          <a
+            href="https://www.tradingview.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline"
+          >
+            TradingView
+          </a>
+          .
         </p>
       </div>
     </footer>

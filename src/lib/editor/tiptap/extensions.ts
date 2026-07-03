@@ -2,6 +2,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
+import { ChartNode } from "./nodes/chart-node";
 
 /**
  * The single Tiptap extension set, shared by the editor and the read-only
@@ -26,6 +27,7 @@ export function buildExtensions({
       },
     }),
     Callout,
+    ChartNode,
     ...(editable
       ? [
           Placeholder.configure({
