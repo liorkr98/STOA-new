@@ -110,6 +110,9 @@ Checklist:
 | `GET /api/search?q=` | **Addendum #2** — trigram typeahead: `{ creators, tickers }` (~5 each) |
 | `GET /api/stats/platform` | **Addendum #2** — trust-bar aggregates from `platform_stats` MV (`Cache-Control: max-age=3600`) |
 | `POST /api/feed/dismiss` | **Addendum #2** — persist "Not interested"; excluded in `listFeed()` |
+| `POST /api/reports/[id]/publish` | Publish + chart screenshot URL validation + `report.published` audit |
+| `DELETE /api/reports/[id]` | Delete draft + chart-snapshots storage cleanup |
+| `GET /api/market/candles` | Authenticated OHLC for chartNode (`symbol` + `range`, 60 req/min) |
 
 ### Webhook idempotency (Must #5 — adapted for PayPal)
 
@@ -145,6 +148,8 @@ src/app/api/stats/platform/route.ts
 src/app/api/feed/dismiss/route.ts
 supabase/migrations/0018_pm_framework_backend.sql
 supabase/migrations/0019_addendum_contract_gaps.sql
+supabase/migrations/0020_chart_snapshots_storage.sql
+src/lib/reports/chart-screenshots.ts
 ```
 
 ---
@@ -175,7 +180,7 @@ On verified deletion request:
 
 ## Migrations
 
-Run in order through **`0019_addendum_contract_gaps.sql`** after `0018`.
+Run in order through **`0020_chart_snapshots_storage.sql`** after `0019`.
 
 ```bash
 # Or use combined bootstrap for fresh projects:
@@ -213,3 +218,15 @@ Run in order through **`0019_addendum_contract_gaps.sql`** after `0018`.
 | A3 | Should | `GET /api/stats/platform` via `platform_stats` MV (cron refresh) | ✅ |
 | A4 | Should | `feed_dismissals` + `POST /api/feed/dismiss` + feed exclusion | ✅ |
 | A5 | Could | Referral `?ref=<handle>` → `profiles.referred_by` + audience count | ✅ |
+
+---
+
+## Changelog (Chart screenshots + candles)
+
+| # | Priority | Item | Status |
+|---|----------|------|--------|
+| C1 | Must | `chart-snapshots` storage bucket + RLS | ✅ |
+| C2 | Must | `GET /api/market/candles` (auth + rate limit on Yahoo OHLC proxy) | ✅ |
+| C3 | Must | Publish chart URL validation + `report.published` audit | ✅ |
+| C4 | Should | Draft delete → storage cleanup | ✅ |
+| C5 | Should | `extract_chart_screenshot_urls` SQL helper | ✅ |
