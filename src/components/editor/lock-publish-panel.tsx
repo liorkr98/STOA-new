@@ -8,16 +8,10 @@ import { price as fmtPrice } from "@/lib/format";
 import type { AccessType, Direction } from "@/lib/types";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
+import { HorizonPicker } from "@/components/editor/horizon-picker";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-faint";
-
-const HORIZONS = [
-  { days: 7, label: "1 week" },
-  { days: 30, label: "1 month" },
-  { days: 90, label: "3 months" },
-  { days: 180, label: "6 months" },
-] as const;
 
 export interface DisclosureState {
   positionHeld: boolean | null;
@@ -209,20 +203,9 @@ export function LockPublishPanel({
             ))}
           </div>
 
-          <label className="mt-2.5 block text-xs font-medium text-text-mute">
-            Horizon
-            <select
-              value={horizon}
-              onChange={(e) => onHorizon(Number(e.target.value))}
-              className={cn(inputClass, "mt-1")}
-            >
-              {HORIZONS.map((h) => (
-                <option key={h.days} value={h.days}>
-                  {h.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="mt-2.5">
+            <HorizonPicker value={horizon} onChange={onHorizon} />
+          </div>
 
           {ticker.trim() && (
             <div className="mt-3 border-t border-dashed border-border pt-3">

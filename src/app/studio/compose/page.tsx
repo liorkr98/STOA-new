@@ -22,8 +22,12 @@ export default async function ComposePage({
   if (id && !draft) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl">
-      {onboarding === "1" && <FirstReportBanner />}
+    <div className="-mx-5 -my-8 md:-mx-8">
+      {onboarding === "1" && (
+        <div className="mx-auto max-w-3xl px-4 pt-6">
+          <FirstReportBanner />
+        </div>
+      )}
       <StudioEditor
         analystReportPrice={profile.report_price}
         initialDraft={draft}

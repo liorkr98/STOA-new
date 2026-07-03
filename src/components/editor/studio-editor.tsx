@@ -1,28 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
-import { FloppyDisk, Plus } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import type { Editor } from "@tiptap/react";
+import type { JSONContent } from "@tiptap/core";
+import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
+import { documentPlainText, parseDocument } from "@/lib/editor/document";
 import {
-  createBlock,
-  documentPlainText,
-  emptyDocument,
-  parseDocument,
-  serializeDocument,
-} from "@/lib/editor/document";
-import { BLOCK_META, type BlockType, type ReportDocument } from "@/lib/editor/types";
+  emptyTiptapDoc,
+  isTiptapDoc,
+  parseTiptapDoc,
+  tiptapPlainText,
+} from "@/lib/editor/tiptap/serialize";
 import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
-import { BlockCanvas } from "@/components/editor/block-canvas";
-import { BlockPalette } from "@/components/editor/block-palette";
-import { TemplatesPanel } from "@/components/editor/templates-panel";
-import { AiDock } from "@/components/editor/ai-dock";
+import { TiptapEditor, type EditorChange } from "@/components/editor/tiptap/tiptap-editor";
 import {
   LockPublishPanel,
   disclosuresAnswered,
   type DisclosureState,
 } from "@/components/editor/lock-publish-panel";
+import { AskPanel } from "@/components/editor/tiptap/ask-panel";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 
@@ -31,6 +31,32 @@ const types: { key: ContentType; label: string }[] = [
   { key: "call", label: "Call" },
   { key: "short_post", label: "Post" },
 ];
+
+/**
+ * Bring an existing draft into the Tiptap editor. New drafts are already
+ * Tiptap JSON; legacy block-JSON and plain-text drafts are migrated to
+ * paragraphs so the author never loses their words on the format switch.
+ */
+function initialTiptap(body: string | null | undefined): JSONContent {
+  if (isTiptapDoc(body)) return parseTiptapDoc(body);
+  let text = "";
+  if (body && body.trimStart().startsWith("{")) {
+    try {
+      text = documentPlainText(parseDocument(body));
+    } catch {
+      text = "";
+    }
+  } else {
+    text = body ?? "";
+  }
+  if (!text.trim()) return emptyTiptapDoc();
+  const paras = text
+    .split(/\n{2,}/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t) => ({ type: "paragraph", content: [{ type: "text", text: t }] }));
+  return { type: "doc", content: paras.length ? paras : [{ type: "paragraph" }] };
+}
 
 export function StudioEditor({
   analystReportPrice,
@@ -41,14 +67,13 @@ export function StudioEditor({
   initialDraft?: Report | null;
   aiCredits?: number;
 }) {
-  const initialDoc = initialDraft?.body
-    ? parseDocument(initialDraft.body)
-    : emptyDocument();
+  const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
   const [type, setType] = useState<ContentType>(initialDraft?.type ?? "research");
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
-  const [doc, setDoc] = useState<ReportDocument>(initialDoc);
+  const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
+  const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
   const [direction, setDirection] = useState<Direction>("long");
   const [target, setTarget] = useState("");
@@ -68,13 +93,24 @@ export function StudioEditor({
     compDetail: "",
     viewsCertified: false,
   });
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [askOpen, setAskOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
+  const editorRef = useRef<Editor | null>(null);
 
   const hasCard = type !== "short_post";
-  const bodyJson = serializeDocument(doc);
-  const plainText = documentPlainText(doc);
+  const bodyJson = useMemo(() => JSON.stringify(docJson), [docJson]);
+
+  const onEditorChange = useCallback((change: EditorChange) => {
+    setDocJson(change.json);
+    setPlainText(change.text);
+  }, []);
+
+  const insertNode = useCallback((node: JSONContent) => {
+    editorRef.current?.chain().focus().insertContent(node).run();
+  }, []);
 
   const persistDraft = useCallback(async () => {
     setSaveStatus("saving");
@@ -83,7 +119,7 @@ export function StudioEditor({
         id: draftId,
         type,
         title: type === "short_post" ? undefined : title,
-        summary: summary || documentPlainText(doc).slice(0, 280),
+        summary: summary || plainText.slice(0, 280),
         body: type === "short_post" ? undefined : bodyJson,
         access,
         price: access === "paid" ? Number(price) : null,
@@ -103,8 +139,8 @@ export function StudioEditor({
     type,
     title,
     summary,
+    plainText,
     bodyJson,
-    doc,
     access,
     price,
     ticker,
@@ -116,35 +152,13 @@ export function StudioEditor({
 
   useEffect(() => {
     const t = setInterval(() => {
-      if (summary.trim() || doc.blocks.some((b) => String(b.content.text ?? "").trim())) {
-        void persistDraft();
-      }
+      if (summary.trim() || plainText.trim()) void persistDraft();
     }, 30_000);
     return () => clearInterval(t);
-  }, [persistDraft, summary, doc]);
+  }, [persistDraft, summary, plainText]);
 
-  function addBlock(blockType: BlockType) {
-    setDoc((d) => ({ ...d, blocks: [...d.blocks, createBlock(blockType)] }));
-  }
-
-  function applyTemplate(blocks: ReportDocument["blocks"], templateType: ContentType) {
-    setDoc({ version: 1, blocks });
-    if (templateType === "call" || templateType === "research") {
-      setType(templateType);
-    }
-  }
-
-  function onCanvasDrop(e: React.DragEvent) {
-    const blockType = e.dataTransfer.getData("application/stoa-block") as BlockType;
-    if (blockType) {
-      e.preventDefault();
-      addBlock(blockType);
-    }
-  }
-
-  // The first unmet publish requirement, or null when ready. Mirrors the
-  // server-side enforcement in publishReport; the panel shows it under the
-  // disabled button so the author always knows what is left.
+  // First unmet publish requirement, or null when ready. Mirrors the
+  // server-side enforcement in publishReport.
   const publishBlockedBy: string | null = (() => {
     if (type === "short_post") {
       return summary.trim() ? null : "Write your post first.";
@@ -155,8 +169,6 @@ export function StudioEditor({
     return null;
   })();
 
-  // Awaitable so LockConfirmModal can hold its "Locking..." state on the
-  // real round-trip and only stamp/toast once the lock actually happened.
   const doPublish = useCallback(async () => {
     setError(null);
     try {
@@ -208,7 +220,12 @@ export function StudioEditor({
   ]);
 
   function onPublishClick() {
-    if (publishBlockedBy) return;
+    // The publish requirements live in the panel; if anything is missing,
+    // open the panel so the author sees exactly what is left.
+    if (publishBlockedBy) {
+      setPanelOpen(true);
+      return;
+    }
     if (hasCard) {
       setConfirmOpen(true);
     } else {
@@ -219,136 +236,170 @@ export function StudioEditor({
   }
 
   return (
-    <div onDragOver={(e) => e.preventDefault()}>
-      {/* Sticky toolbar: type, autosave state, explicit save. Publish lives
-          in the Lock & Publish rail so its requirements stay beside it. */}
-      <div className="sticky top-0 z-30 -mx-5 mb-6 border-b border-border bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-5 py-3 backdrop-blur-sm md:-mx-8 md:px-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="t-eyebrow text-accent">Compose</span>
-          <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-surface p-0.5">
-            {types.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setType(t.key)}
-                className={cn(
-                  "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors",
-                  type === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <span className="t-meta min-w-16 text-[11px]" aria-live="polite">
-            {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : ""}
-          </span>
-          <div className="ml-auto">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={savingDraft}
-              onClick={() => startDraft(() => persistDraft())}
+    <div className="flex min-h-[calc(100dvh-1px)] flex-col">
+      {/* Top bar: back, type, save status, Save draft, Publish. Nothing else. */}
+      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-2.5 backdrop-blur-sm md:px-6">
+        <Link
+          href="/studio"
+          className="flex items-center gap-1.5 text-sm text-text-mute transition-colors hover:text-text focus-ring rounded-[var(--radius-btn)]"
+        >
+          <ArrowLeft size={16} />
+          <span className="hidden sm:inline">Studio</span>
+        </Link>
+
+        <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-surface p-0.5">
+          {types.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setType(t.key)}
+              className={cn(
+                "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors",
+                type === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
+              )}
             >
-              <FloppyDisk size={16} />
-              Save draft
-            </Button>
-          </div>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <span className="t-meta min-w-14 text-[11px]" aria-live="polite">
+          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Draft"}
+        </span>
+
+        <div className="ml-auto flex items-center gap-2">
+          {hasCard && (
+            <button
+              type="button"
+              aria-label="Ask AI"
+              aria-pressed={askOpen}
+              onClick={() => setAskOpen((o) => !o)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
+                askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
+              )}
+            >
+              <Sparkle size={15} weight="fill" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </button>
+          )}
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={savingDraft}
+            onClick={() => startDraft(() => persistDraft())}
+          >
+            <FloppyDisk size={16} />
+            <span className="hidden sm:inline">Save draft</span>
+          </Button>
+          <Button size="sm" disabled={pending} onClick={onPublishClick}>
+            <RocketLaunch size={15} weight="fill" />
+            {pending ? "Publishing..." : hasCard ? "Publish & Lock" : "Publish"}
+          </Button>
+          <button
+            type="button"
+            aria-label={panelOpen ? "Hide publish panel" : "Show publish panel"}
+            aria-pressed={panelOpen}
+            onClick={() => setPanelOpen((o) => !o)}
+            className={cn(
+              "hidden h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] border transition-colors focus-ring lg:flex",
+              panelOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
+            )}
+          >
+            <SidebarSimple size={16} />
+          </button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[212px_minmax(0,1fr)_330px]">
-        {/* Left rail: templates + block palette. Sticky so it walks with the
-            author instead of getting left behind on long drafts. */}
-        <aside className="scroll-area hidden self-start lg:sticky lg:top-16 lg:block lg:max-h-[calc(100dvh-5.5rem)] lg:space-y-6 lg:overflow-y-auto lg:pb-4 lg:pr-1">
-          <TemplatesPanel onApply={applyTemplate} />
-          <BlockPalette onAdd={addBlock} />
-        </aside>
-
-        {/* Canvas: flows with the page; the whole column is a drop target. */}
-        <div className="flex min-w-0 flex-col gap-4 pb-24" onDrop={onCanvasDrop}>
+      <div
+        className={cn(
+          "mx-auto grid w-full flex-1 gap-8 px-4 py-8 md:px-6",
+          panelOpen ? "max-w-6xl lg:grid-cols-[minmax(0,1fr)_340px]" : "max-w-3xl grid-cols-1",
+        )}
+      >
+        {/* Editor column */}
+        <div className="min-w-0">
           {type !== "short_post" && (
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Report title"
-              className="w-full bg-transparent text-3xl font-semibold tracking-tight placeholder:text-text-faint focus:outline-none"
+              className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-faint focus:outline-none"
+              style={{ fontFamily: "var(--font-display)" }}
             />
           )}
-          <textarea
+          <input
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            rows={type === "short_post" ? 5 : 2}
-            placeholder={
-              type === "short_post" ? "What's on your mind?" : "One-line summary shown in feeds"
-            }
-            className="w-full resize-none rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2.5 text-base leading-relaxed focus-ring placeholder:text-text-faint"
+            placeholder={type === "short_post" ? "What's on your mind?" : "One-line summary shown in feeds"}
+            className="mb-6 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
           />
 
-          {/* Mobile-only quick add; the palette rail is hidden below lg. */}
           {type !== "short_post" && (
-            <div className="flex flex-wrap gap-1.5 lg:hidden">
-              {(Object.keys(BLOCK_META) as BlockType[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => addBlock(t)}
-                  className="inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-border px-2.5 py-1.5 text-xs text-text-mute transition-colors hover:text-text focus-ring"
-                >
-                  <Plus size={12} />
-                  {BLOCK_META[t].label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {type !== "short_post" && (
-            <>
-              <BlockCanvas blocks={doc.blocks} onChange={(blocks) => setDoc({ ...doc, blocks })} />
-              {doc.blocks.length === 0 && (
-                <div className="flex min-h-44 flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card)] border border-dashed border-border-strong p-8 text-center">
-                  <p className="text-sm font-medium text-text-mute">Build your analysis</p>
-                  <p className="t-meta max-w-xs text-[12px]">
-                    Drag blocks from the left, start from a template, or ask the copilot for a
-                    structure.
-                  </p>
-                </div>
-              )}
-            </>
+            <TiptapEditor
+              initialContent={initialDoc}
+              onChange={onEditorChange}
+              onReady={(e) => {
+                editorRef.current = e;
+              }}
+            />
           )}
         </div>
 
-        {/* Right rail: the persistent Lock & Publish panel. */}
-        <aside className="scroll-area self-start pb-8 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:pb-4 lg:pl-1">
-          <LockPublishPanel
-            hasCard={hasCard}
-            ticker={ticker}
-            onTicker={setTicker}
-            direction={direction}
-            onDirection={setDirection}
-            target={target}
-            onTarget={setTarget}
-            horizon={horizon}
-            onHorizon={setHorizon}
-            access={access}
-            onAccess={setAccess}
-            price={price}
-            onPrice={setPrice}
-            plainText={plainText}
-            credits={credits}
-            onCreditsChange={setCredits}
-            factCheck={factCheck}
-            onFactCheck={setFactCheck}
-            disclosure={disclosure}
-            onDisclosure={setDisclosure}
-            publishLabel={hasCard ? "Publish & Lock" : "Publish"}
-            publishDisabledReason={publishBlockedBy}
-            onPublish={onPublishClick}
-            pending={pending}
-            error={error}
-          />
-        </aside>
+        {/* Lock & Publish panel (collapsible) */}
+        {panelOpen && (
+          <aside className="scroll-area self-start lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:pl-1">
+            <LockPublishPanel
+              hasCard={hasCard}
+              ticker={ticker}
+              onTicker={setTicker}
+              direction={direction}
+              onDirection={setDirection}
+              target={target}
+              onTarget={setTarget}
+              horizon={horizon}
+              onHorizon={setHorizon}
+              access={access}
+              onAccess={setAccess}
+              price={price}
+              onPrice={setPrice}
+              plainText={plainText}
+              credits={credits}
+              onCreditsChange={setCredits}
+              factCheck={factCheck}
+              onFactCheck={setFactCheck}
+              disclosure={disclosure}
+              onDisclosure={setDisclosure}
+              publishLabel={hasCard ? "Publish & Lock" : "Publish"}
+              publishDisabledReason={publishBlockedBy}
+              onPublish={onPublishClick}
+              pending={pending}
+              error={error}
+            />
+          </aside>
+        )}
       </div>
+
+      {/* Collapsed-panel affordance: reopen to set the call and publish. */}
+      {!panelOpen && (
+        <button
+          type="button"
+          onClick={() => setPanelOpen(true)}
+          className={buttonClass("secondary", "sm", "fixed bottom-5 right-5 z-40 shadow-[var(--shadow-card)]")}
+        >
+          <SidebarSimple size={15} />
+          Lock &amp; Publish
+        </button>
+      )}
+
+      <AskPanel
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        context={{ ticker, title }}
+        credits={credits}
+        onCreditsChange={setCredits}
+        onInsertNode={insertNode}
+      />
 
       <LockConfirmModal
         open={confirmOpen}
@@ -357,13 +408,6 @@ export function StudioEditor({
         targetPrice={target ? Number(target) : null}
         horizonDate={new Date(Date.now() + horizon * 86_400_000)}
         onConfirm={doPublish}
-      />
-
-      <AiDock
-        context={{ title, ticker, type }}
-        credits={credits}
-        onCreditsChange={setCredits}
-        onInsertBlock={addBlock}
       />
     </div>
   );
