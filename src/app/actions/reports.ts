@@ -3,14 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
-import { getTickerMeta } from "@/lib/engine/tickers";
-import {
-  effectiveResolutionDate,
-  horizonDateFromDays,
-  marketCloseIso,
-  todayInTimezone,
-} from "@/lib/engine/trading-calendar";
+import { deleteChartSnapshotsForReport } from "@/lib/reports/chart-storage";
+import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
 import type { ComposeInput } from "@/lib/types";
 
 async function requireUser() {
@@ -45,7 +39,6 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     reportId = (data as { id: string }).id;
   }
 
-  // Body is stored separately so RLS can gate paid/subscriber content.
   await supabase
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
@@ -61,85 +54,15 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
 export async function publishReport(input: ComposeInput): Promise<{ id: string }> {
   const { supabase, userId } = await requireUser();
 
-  // Mandatory disclosure block (Reg-AC-style). Only enforced once the caller
-  // actually sends a certification value — i.e. once the compose UI grows the
-  // disclosure step. Until then existing publish flows are unaffected.
-  const disclosureProvided = input.views_certified !== undefined;
-  if (disclosureProvided && !input.views_certified) {
-    throw new Error("You must certify these are your own views before publishing.");
-  }
-
-  const { id } = await saveDraft(input);
-
-  const publishPayload: Record<string, unknown> = {
-    status: "published",
-    published_at: new Date().toISOString(),
-  };
-  if (input.fact_check_results) {
-    publishPayload.fact_check_results = input.fact_check_results;
-  }
-  if (disclosureProvided) {
-    publishPayload.position_disclosed = true;
-    publishPayload.position_held = input.position_held ?? false;
-    publishPayload.compensation_disclosed = true;
-    publishPayload.compensation_tied = input.compensation_tied ?? false;
-    publishPayload.compensation_detail = input.compensation_detail?.slice(0, 500) ?? null;
-    publishPayload.views_certified = input.views_certified;
-  }
-
-  const { error: pubErr } = await supabase
-    .from("reports")
-    .update(publishPayload)
-    .eq("id", id)
-    .eq("author_id", userId);
-  if (pubErr) throw new Error(pubErr.message);
-
-  const wantsPrediction =
-    input.type !== "short_post" && input.ticker && input.direction;
-
-  if (wantsPrediction) {
-    const ticker = input.ticker!.toUpperCase();
-    const meta = await getTickerMeta(ticker);
-    const horizon = input.horizon_days ?? 30;
-    const targetHorizonDate =
-      input.target_horizon_date ?? horizonDateFromDays(horizon, meta.timezone);
-
-    if (targetHorizonDate <= todayInTimezone(meta.timezone)) {
-      throw new Error(
-        `Target horizon date must be after today. "${targetHorizonDate}" is not a valid horizon date for ${ticker}.`,
-      );
-    }
-
-    const { tradingDate } = effectiveResolutionDate(targetHorizonDate, meta.timezone);
-    const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
-    const resolvesAt = marketCloseIso(tradingDate, meta.timezone);
-
-    await supabase.from("predictions").insert({
-      report_id: id,
-      author_id: userId,
-      ticker,
-      direction: input.direction,
-      lock_price: quote.price,
-      target_price: input.target_price ?? null,
-      horizon_days: horizon,
-      target_horizon_date: targetHorizonDate,
-      resolution_trading_date: tradingDate,
-      resolves_at: resolvesAt,
-      bench_lock_price: bench.price,
-      outcome: "open",
-    });
-  }
-
-  // Newsletter fan-out: notify followers + active subscribers (best-effort).
   try {
-    await supabase.rpc("notify_publication", { p_report_id: id });
-  } catch {
-    // non-critical
+    const { id } = await validateAndPublishReport(supabase, userId, input);
+    revalidatePath("/discover");
+    revalidatePath("/studio");
+    redirect(`/report/${id}`);
+  } catch (e) {
+    if (e instanceof PublishReportError) throw new Error(e.message);
+    throw e;
   }
-
-  revalidatePath("/discover");
-  revalidatePath("/studio");
-  redirect(`/report/${id}`);
 }
 
 /** Best-effort view log. Safe to call repeatedly; failures are swallowed. */
@@ -158,7 +81,20 @@ export async function recordView(reportId: string) {
 
 export async function deleteReport(id: string) {
   const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("status, locked_at")
+    .eq("id", id)
+    .eq("author_id", userId)
+    .maybeSingle();
+
+  if (report?.status !== "draft" || report.locked_at) {
+    throw new Error("Only unlocked drafts can be deleted.");
+  }
+
   await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
+  await deleteChartSnapshotsForReport(supabase, userId, id);
   revalidatePath("/studio");
 }
 
