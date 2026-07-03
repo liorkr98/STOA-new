@@ -20,6 +20,9 @@ export const ChartNode = Node.create({
       ticker: { default: "" },
       range: { default: "3M" },
       kind: { default: "area" },
+      annotations: { default: [] },
+      visibleRange: { default: null },
+      screenshotUrl: { default: null },
     };
   },
 

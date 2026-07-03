@@ -148,8 +148,8 @@ function filterItems(query: string): SlashItem[] {
  * it would overflow the viewport bottom. Avoids pulling in a positioning
  * library for one popup.
  */
-function positionPopup(el: HTMLElement, rect: DOMRect | null) {
-  if (!rect) return;
+function positionPopup(el: HTMLElement | null, rect: DOMRect | null) {
+  if (!el || !rect) return;
   const margin = 8;
   el.style.left = `${rect.left}px`;
   const below = rect.bottom + margin;
@@ -179,8 +179,9 @@ const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
       positionPopup(popup, props.clientRect?.() ?? null);
     },
     onUpdate: (props) => {
+      if (!popup) return;
       component?.updateProps({ items: props.items, command: props.command });
-      positionPopup(popup!, props.clientRect?.() ?? null);
+      positionPopup(popup, props.clientRect?.() ?? null);
     },
     onKeyDown: (props) => {
       if (props.event.key === "Escape") {
