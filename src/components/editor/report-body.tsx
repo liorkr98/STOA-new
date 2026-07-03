@@ -1,6 +1,8 @@
 import { parseDocument } from "@/lib/editor/document";
+import { isTiptapDoc, parseTiptapDoc } from "@/lib/editor/tiptap/serialize";
 import type { EditorBlock } from "@/lib/editor/types";
 import { BlockEditor } from "@/components/editor/block-editor";
+import { TiptapReportRenderer } from "@/components/editor/tiptap/report-renderer";
 import { FactCheckedText } from "@/components/report/fact-check-layer";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
@@ -14,6 +16,17 @@ export function ReportBody({
   isAuthed?: boolean;
 }) {
   if (!body?.trim()) return null;
+
+  // New reports are Tiptap JSON. Inline fact-check highlighting over Tiptap
+  // content lands with the Layer 4 fact-check pass; the summary strip above
+  // the body carries the verdict counts in the meantime.
+  if (isTiptapDoc(body)) {
+    return (
+      <div className="mt-8">
+        <TiptapReportRenderer json={parseTiptapDoc(body)} />
+      </div>
+    );
+  }
 
   if (!body.trimStart().startsWith("{")) {
     return (

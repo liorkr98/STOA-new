@@ -353,6 +353,89 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ * Tiptap editor + read renderer (Compose). One .stoa-prose base drives
+ * both surfaces; the --read modifier swaps the drafting sans for the
+ * editorial face so a report reads identically to how it was written.
+ * ------------------------------------------------------------------ */
+.stoa-prose {
+  font-family: var(--font-sans);
+  color: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  padding-left: 1.75rem; /* gutter the drag handle sits in */
+}
+.stoa-prose > * + * { margin-top: 0.85em; }
+.stoa-prose h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-top: 1.6em;
+}
+.stoa-prose h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.3em;
+}
+.stoa-prose p { min-height: 1.2em; }
+.stoa-prose ul,
+.stoa-prose ol { padding-left: 1.4em; }
+.stoa-prose ul { list-style: disc; }
+.stoa-prose ol { list-style: decimal; }
+.stoa-prose li { margin-top: 0.3em; }
+.stoa-prose li > p { margin: 0; }
+.stoa-prose blockquote {
+  border-left: 2px solid var(--border-strong);
+  padding-left: 1em;
+  color: var(--text-mute);
+  font-style: italic;
+}
+.stoa-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.stoa-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface-2);
+  border-radius: var(--r-tag);
+  padding: 0.1em 0.35em;
+}
+.stoa-prose hr {
+  border: none;
+  height: 1px;
+  background: var(--border-strong);
+  margin: 1.6em 0;
+}
+.stoa-callout {
+  border: 1px solid var(--border);
+  background: var(--accent-weak);
+  border-radius: var(--r-card);
+  padding: 0.7em 1em;
+  color: var(--text);
+}
+/* Placeholder (empty node) */
+.stoa-prose .is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-faint);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/* Read modifier: editorial body, no drag gutter */
+.stoa-prose--read {
+  padding-left: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.8;
+  max-width: 68ch;
+}
+.stoa-prose--read h2,
+.stoa-prose--read h3 { font-family: var(--font-sans); }
+
+/* ------------------------------------------------------------------ *
  * Modal enter/exit. Modals stay centered (transform-origin: center),
  * unlike popovers which should be origin-aware from their trigger.
  * Never animate from scale(0) -- start visible, just smaller.
