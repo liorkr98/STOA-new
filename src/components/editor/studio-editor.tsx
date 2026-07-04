@@ -98,6 +98,7 @@ export function StudioEditor({
   const [askOpen, setAskOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [captureStatus, setCaptureStatus] = useState<string | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
   const editorRef = useRef<Editor | null>(null);
@@ -113,6 +114,69 @@ export function StudioEditor({
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
   }, []);
+
+  // Phase 1.4: keep exactly one lockedCallNode, pinned first, its attrs synced
+  // one-way from the panel (the panel stays the single editable source). On a
+  // post (no card) any call block is removed.
+  const syncLockedCall = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    let found: { pos: number; size: number; attrs: Record<string, unknown> } | null = null;
+    editor.state.doc.descendants((n, pos) => {
+      if (n.type.name === "lockedCallNode" && !found) {
+        found = { pos, size: n.nodeSize, attrs: n.attrs };
+      }
+    });
+
+    if (!hasCard) {
+      if (found) {
+        const f = found as { pos: number; size: number; attrs: Record<string, unknown> };
+        editor
+          .chain()
+          .command(({ tr }) => {
+            tr.delete(f.pos, f.pos + f.size);
+            return true;
+          })
+          .run();
+      }
+      return;
+    }
+
+    const desired = {
+      ticker,
+      direction,
+      target: target ? Number(target) : null,
+      horizonDays: horizon,
+    };
+    if (found) {
+      const f = found as { pos: number; size: number; attrs: Record<string, unknown> };
+      const a = f.attrs;
+      if (
+        a.ticker !== desired.ticker ||
+        a.direction !== desired.direction ||
+        a.target !== desired.target ||
+        a.horizonDays !== desired.horizonDays
+      ) {
+        editor
+          .chain()
+          .command(({ tr }) => {
+            tr.setNodeMarkup(f.pos, undefined, { ...a, ...desired });
+            return true;
+          })
+          .run();
+      }
+    } else {
+      editor.chain().insertContentAt(0, { type: "lockedCallNode", attrs: desired }).run();
+    }
+  }, [hasCard, ticker, direction, target, horizon]);
+
+  useEffect(() => {
+    // Defer the editor transaction out of React's commit phase so the
+    // dispatch doesn't trigger a synchronous flushSync during render.
+    if (!editorReady) return;
+    const id = window.setTimeout(syncLockedCall, 0);
+    return () => window.clearTimeout(id);
+  }, [syncLockedCall, editorReady]);
 
   const persistDraft = useCallback(async () => {
     setSaveStatus("saving");
@@ -375,6 +439,7 @@ export function StudioEditor({
               onChange={onEditorChange}
               onReady={(e) => {
                 editorRef.current = e;
+                setEditorReady(true);
               }}
             />
           )}

@@ -269,6 +269,17 @@ body {
     var(--shadow-card);
 }
 
+/* The in-editor call block (Phase 1.4). Doubled hairline -- an outer ink rule
+ * and an inner ink-at-15% rule with a tint gap between -- over an ink-at-4%
+ * ground, so the call can never be mistaken for body content. */
+.ledger-call {
+  background: color-mix(in srgb, var(--ink) 4%, var(--paper));
+  border: 1px solid var(--ink);
+  box-shadow:
+    inset 0 0 0 3px color-mix(in srgb, var(--ink) 4%, var(--paper)),
+    inset 0 0 0 4px color-mix(in srgb, var(--ink) 15%, transparent);
+}
+
 /* Mount fade for section content (FadeIn component). Content is visible by
  * default; the keyframe supplies the transient hidden state, so a renderer
  * that never runs animations still paints everything. */
