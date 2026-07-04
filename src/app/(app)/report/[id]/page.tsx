@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { getReport } from "@/lib/db/reports";
+import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
@@ -29,7 +30,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const report = await getReport(id);
-  return { title: report?.title ?? "Report" };
+  // The first chart's captured screenshot becomes the link-preview image.
+  const firstChartUrl = analyzeChartBody(report?.body).screenshotUrls[0];
+  return {
+    title: report?.title ?? "Report",
+    openGraph: {
+      title: report?.title ?? "Report",
+      description: report?.summary ?? undefined,
+      images: firstChartUrl ? [{ url: firstChartUrl, width: 800 }] : [],
+    },
+  };
 }
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
