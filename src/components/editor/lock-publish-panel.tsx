@@ -351,7 +351,14 @@ export function LockPublishPanel({
       </section>
 
       <div className="flex flex-col gap-2">
-        <Button size="lg" disabled={pending || publishDisabledReason != null} onClick={onPublish}>
+        {/* Secondary here: the top bar holds the one filled primary CTA
+            (docs/MOTION.md C.2 item 2). This mirrors it for reach. */}
+        <Button
+          variant="secondary"
+          size="lg"
+          disabled={pending || publishDisabledReason != null}
+          onClick={onPublish}
+        >
           <Stamp size={18} weight="fill" />
           {pending ? "Publishing..." : publishLabel}
         </Button>

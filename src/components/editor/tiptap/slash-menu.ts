@@ -13,6 +13,8 @@ import {
   Sigma,
   Columns3,
   Table,
+  LayoutList,
+  ListTree,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -22,8 +24,25 @@ export interface SlashItem {
   subtitle: string;
   icon: LucideIcon;
   keywords: string[];
-  group: "Text" | "Data";
+  group: "Structure" | "Text" | "Data";
   run: (editor: Editor, range: Range) => void;
+}
+
+/** The industry-convergent report skeleton (docs research). Inserted as
+ * ordinary editable H2 blocks -- no lock-in, delete freely. */
+function scaffold(editor: Editor, range: Range, sections: string[]) {
+  editor
+    .chain()
+    .focus()
+    .deleteRange(range)
+    .insertContent(
+      sections.map((text) => ({
+        type: "heading",
+        attrs: { level: 2 },
+        content: [{ type: "text", text }],
+      })),
+    )
+    .run();
 }
 
 /**
@@ -32,6 +51,30 @@ export interface SlashItem {
  * touching the extension wiring.
  */
 export const SLASH_ITEMS: SlashItem[] = [
+  {
+    title: "Full research scaffold",
+    subtitle: "Thesis, Numbers, Catalysts, Valuation, Risks, Bottom line",
+    icon: LayoutList,
+    keywords: ["scaffold", "structure", "skeleton", "template", "research", "outline"],
+    group: "Structure",
+    run: (editor, range) =>
+      scaffold(editor, range, [
+        "Thesis",
+        "The numbers",
+        "Catalysts",
+        "Valuation",
+        "Risks",
+        "Bottom line",
+      ]),
+  },
+  {
+    title: "Quick call scaffold",
+    subtitle: "Thesis, Catalysts, Risks",
+    icon: ListTree,
+    keywords: ["scaffold", "structure", "skeleton", "quick", "call", "outline"],
+    group: "Structure",
+    run: (editor, range) => scaffold(editor, range, ["Thesis", "Catalysts", "Risks"]),
+  },
   {
     title: "Heading",
     subtitle: "Section heading",
