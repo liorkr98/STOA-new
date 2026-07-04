@@ -24,7 +24,7 @@ export default async function SettingsPage() {
           <Link href={`/analyst/${profile.handle}`} className={buttonClass("secondary", "sm")}>
             View profile
           </Link>
-          <Link href="/settings/branding" className={buttonClass("primary", "sm")}>
+          <Link href="/studio/branding" className={buttonClass("primary", "sm")}>
             Branding studio
           </Link>
         </div>

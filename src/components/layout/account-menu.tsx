@@ -61,7 +61,7 @@ export function AccountMenu({ profile }: { profile: Profile }) {
     { href: "/saved", label: "Saved", icon: Bookmark },
     { href: "/subscriptions", label: "Subscriptions", icon: Sparkle },
     { href: "/settings", label: "Settings", icon: Gear },
-    { href: "/settings/branding", label: "Profile & branding", icon: PaintBrushBroad },
+    { href: "/studio/branding", label: "Profile & branding", icon: PaintBrushBroad },
   ];
 
   return (

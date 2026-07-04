@@ -21,13 +21,16 @@ const typeLabel: Record<Report["type"], string> = {
   short_post: "Post",
 };
 
-export function ReportCard({ report }: { report: Report }) {
+export function ReportCard({ report, promoted = false }: { report: Report; promoted?: boolean }) {
   const author = report.author;
   const when = report.published_at ?? report.created_at;
   const locked = report.access !== "free";
 
   return (
     <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
+      {promoted && (
+        <p className="t-meta mb-2 text-[10px] font-medium uppercase tracking-wide text-accent">Promoted</p>
+      )}
       <div className="flex items-center justify-between gap-3">
         {author ? (
           <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">

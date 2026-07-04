@@ -147,7 +147,7 @@ the spec's IA; this build keeps existing route names, e.g. `/studio/analytics` r
 | MOAT Analytics         | `/analyst/[handle]/moat` — **done** |
 | Audience                | `/studio/audience`            |
 | Earnings & Payouts      | covered by existing `/wallet`, extended with gross/fee/net breakdown + payout status — **done** |
-| Branding                | `/settings/branding`          |
+| Branding studio         | `/studio/branding`            |
 | Pricing                 | folded into the analyst onboarding wizard's Price step (`/onboarding/analyst/price`) — **done**; `/become-analyst` now redirects into the wizard rather than a separate single-screen form |
 
 ## Anti-patterns (do not ship)

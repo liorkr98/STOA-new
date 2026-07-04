@@ -110,6 +110,11 @@ export async function getDraftForAuthor(
   return report;
 }
 
+export async function getReportsByIds(ids: string[]): Promise<Report[]> {
+  const rows = await Promise.all(ids.map((id) => getReport(id)));
+  return rows.filter((r): r is Report => r != null);
+}
+
 export async function listByAuthor(
   authorId: string,
   opts: { status?: "published" | "draft"; limit?: number } = {},

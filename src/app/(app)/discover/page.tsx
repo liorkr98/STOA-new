@@ -6,8 +6,9 @@ import { ReportCard } from "@/components/report-card";
 import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
-import { listFeed, listFeedFromAnalysts } from "@/lib/db/reports";
-import { listTopAnalysts } from "@/lib/db/profiles";
+import { listFeed, listFeedFromAnalysts, getReportsByIds } from "@/lib/db/reports";
+import { listTopAnalysts, getProfilesByIds } from "@/lib/db/profiles";
+import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
@@ -38,8 +39,20 @@ export default async function DiscoverPage({
   let researcherCounts: Record<string, number> = {};
   let needsAuth = false;
 
+  let promotedAnalystIds = new Set<string>();
+  let promotedReportIds = new Set<string>();
+
   if (tab === "researchers") {
-    researchers = await listTopAnalysts(24);
+    try {
+      const boostedIds = await listBoostedProfileIds("discover_researchers", 4);
+      promotedAnalystIds = new Set(boostedIds);
+      const boosted = await getProfilesByIds(boostedIds);
+      const organic = await listTopAnalysts(24);
+      const seen = new Set(boostedIds);
+      researchers = [...boosted, ...organic.filter((a) => !seen.has(a.id))].slice(0, 24);
+    } catch {
+      researchers = await listTopAnalysts(24);
+    }
     researcherCounts = Object.fromEntries(
       await Promise.all(
         researchers.map(async (a) => [a.id, await resolvedCountByAuthor(a.id)] as const),
@@ -52,16 +65,44 @@ export default async function DiscoverPage({
     if (!userId) needsAuth = true;
     else reports = await listFeedFromAnalysts(await subscribedAnalystIds(userId));
   } else {
-    reports = await listFeed({ sort: tab === "recent" ? "recent" : "trending" });
+    const sort = tab === "recent" ? "recent" : "trending";
+    reports = await listFeed({ sort });
+    if (sort === "trending") {
+      try {
+        const boostedIds = await listBoostedReportIds("feed_trending", 2);
+        promotedReportIds = new Set(boostedIds);
+        const boosted = await getReportsByIds(boostedIds);
+        const seen = new Set(boostedIds);
+        reports = [...boosted, ...(reports ?? []).filter((r) => !seen.has(r.id))];
+      } catch {
+        // boosts table may not exist until migration 0021 is applied
+      }
+    }
   }
 
-  const topRaw = await listTopAnalysts(5);
-  const top =
-    topRaw.length > 0
-      ? await Promise.all(
-          topRaw.map(async (a) => ({ analyst: a, resolved: await resolvedCountByAuthor(a.id) })),
-        )
-      : null;
+  let top;
+  try {
+    const sidebarBoosted = await listBoostedProfileIds("discover_sidebar", 2);
+    promotedAnalystIds = new Set([...promotedAnalystIds, ...sidebarBoosted]);
+    const boostedTop = await getProfilesByIds(sidebarBoosted);
+    const topRaw = await listTopAnalysts(5);
+    const seen = new Set(sidebarBoosted);
+    const merged = [...boostedTop, ...topRaw.filter((a) => !seen.has(a.id))].slice(0, 5);
+    top =
+      merged.length > 0
+        ? await Promise.all(
+            merged.map(async (a) => ({ analyst: a, resolved: await resolvedCountByAuthor(a.id) })),
+          )
+        : null;
+  } catch {
+    const topRaw = await listTopAnalysts(5);
+    top =
+      topRaw.length > 0
+        ? await Promise.all(
+            topRaw.map(async (a) => ({ analyst: a, resolved: await resolvedCountByAuthor(a.id) })),
+          )
+        : null;
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -93,6 +134,7 @@ export default async function DiscoverPage({
                   key={a.id}
                   analyst={a}
                   resolvedCalls={researcherCounts[a.id] ?? 0}
+                  promoted={promotedAnalystIds.has(a.id)}
                 />
               ))}
             </div>
@@ -105,7 +147,7 @@ export default async function DiscoverPage({
         ) : reports && reports.length > 0 ? (
           <div className="flex flex-col gap-5">
             {reports.map((r) => (
-              <ReportCard key={r.id} report={r} />
+              <ReportCard key={r.id} report={r} promoted={promotedReportIds.has(r.id)} />
             ))}
           </div>
         ) : (
@@ -131,7 +173,12 @@ export default async function DiscoverPage({
         <div className="flex flex-col gap-4">
           {(top
             ? top.map(({ analyst, resolved }) => (
-                <AnalystCard key={analyst.id} analyst={analyst} resolvedCalls={resolved} />
+                <AnalystCard
+                  key={analyst.id}
+                  analyst={analyst}
+                  resolvedCalls={resolved}
+                  promoted={promotedAnalystIds.has(analyst.id)}
+                />
               ))
             : sampleAnalysts.slice(0, 3).map((a) => (
                 <AnalystCard key={a.id} analyst={a} spark={a.spark} resolvedCalls={a.resolved} />
