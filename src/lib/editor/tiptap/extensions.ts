@@ -1,7 +1,10 @@
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import Highlight from "@tiptap/extension-highlight";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
+import { OpinionMark } from "./opinion-mark";
+import { Dir } from "./dir-attribute";
 import { ChartNode } from "./nodes/chart-node";
 import { DataFigureNode } from "./nodes/data-figure-node";
 import { CompareNode } from "./nodes/compare-node";
@@ -36,6 +39,9 @@ export function buildExtensions({
     DataFigureNode,
     CompareNode,
     FinancialTableNode,
+    Highlight.configure({ multicolor: true }),
+    OpinionMark,
+    Dir,
     ...(editable
       ? [
           Placeholder.configure({

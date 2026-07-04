@@ -362,7 +362,8 @@ body {
   color: var(--text);
   font-size: 1.0625rem;
   line-height: 1.7;
-  padding-left: 1.75rem; /* gutter the drag handle sits in */
+  padding-inline-start: 1.75rem; /* gutter the drag handle sits in (dir-aware) */
+  text-align: start; /* follows block dir; never hardcoded left (Phase 1.3) */
 }
 .stoa-prose > * + * { margin-top: 0.85em; }
 .stoa-prose h2 {
@@ -380,16 +381,26 @@ body {
 }
 .stoa-prose p { min-height: 1.2em; }
 .stoa-prose ul,
-.stoa-prose ol { padding-left: 1.4em; }
+.stoa-prose ol { padding-inline-start: 1.4em; }
 .stoa-prose ul { list-style: disc; }
 .stoa-prose ol { list-style: decimal; }
 .stoa-prose li { margin-top: 0.3em; }
 .stoa-prose li > p { margin: 0; }
 .stoa-prose blockquote {
-  border-left: 2px solid var(--border-strong);
-  padding-left: 1em;
+  border-inline-start: 2px solid var(--border-strong);
+  padding-inline-start: 1em;
   color: var(--text-mute);
   font-style: italic;
+}
+/* Marks: highlight tints + "mark as opinion" (Phase 1.2). */
+.stoa-prose mark {
+  border-radius: var(--r-tag);
+  padding: 0 0.1em;
+  color: inherit;
+}
+.stoa-opinion {
+  text-decoration: underline dotted var(--plum);
+  text-underline-offset: 2px;
 }
 .stoa-prose a {
   color: var(--accent);
