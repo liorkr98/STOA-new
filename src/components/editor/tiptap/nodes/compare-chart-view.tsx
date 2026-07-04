@@ -171,6 +171,8 @@ export function CompareChartView({
       delete el.__lwChart;
       chart.remove();
     };
+    // tickerKey is the stable proxy for the tickers array (avoids identity churn).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tickerKey, range, hidden]);
 
   function toggle(ticker: string) {

@@ -203,7 +203,7 @@ export function ChartNodeView({
         }),
     });
     return () => unregisterChart(nodeId);
-  }, [isEditable, nodeId, getPos]);
+  }, [isEditable, nodeId, getPos, isCompare]);
 
   useEffect(() => {
     const el = containerRef.current;
