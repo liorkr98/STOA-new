@@ -12,6 +12,7 @@ const seedBody = JSON.stringify({
     { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Nvidia: data center thesis" }] },
     { type: "paragraph", content: [{ type: "text", text: "A quick look at the price action before the print." }] },
     { type: "chartNode", attrs: { ticker: "NVDA", range: "3M", kind: "area" } },
+    { type: "chartNode", attrs: { nodeId: "cmp1", tickers: ["NVDA", "AMD", "INTC"], range: "1Y" } },
     {
       type: "dataFigureNode",
       attrs: { label: "Revenue TTM", value: "$96.3B", note: "+122% YoY", source: "https://example.com/10q" },

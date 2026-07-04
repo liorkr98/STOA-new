@@ -15,7 +15,7 @@ import {
   type SeriesType,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { Trash2, ChartCandlestick, MousePointer2, Minus, TrendingUp, Eraser } from "lucide-react";
+import { Trash2, ChartCandlestick, MousePointer2, Minus, TrendingUp, Eraser, Columns2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { BarChart2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -27,6 +27,7 @@ import {
   type ChartVisibleRange,
 } from "@/lib/market/chart-annotations";
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
+import { CompareChartView } from "@/components/editor/tiptap/nodes/compare-chart-view";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -149,6 +150,11 @@ export function ChartNodeView({
   const kind = (node.attrs.kind ?? "area") as ChartKind;
   const nodeId = String(node.attrs.nodeId ?? "");
   const screenshotUrl = node.attrs.screenshotUrl ? String(node.attrs.screenshotUrl) : null;
+  const tickersAttr = Array.isArray(node.attrs.tickers)
+    ? (node.attrs.tickers as string[]).filter(Boolean)
+    : [];
+  const compareTickers = tickersAttr.length ? tickersAttr : ticker ? [ticker] : [];
+  const isCompare = compareTickers.length > 1;
   const annotations = parseAnnotations(node.attrs.annotations);
   const savedVisibleRange = parseVisibleRange(node.attrs.visibleRange);
   const visibleRangeRef = useRef(savedVisibleRange);
@@ -179,8 +185,9 @@ export function ChartNodeView({
   }, [isEditable, nodeId, updateAttributes]);
 
   // Register the screenshot capture for the publish flow (editor mode only).
+  // In compare mode the CompareChartView owns registration.
   useEffect(() => {
-    if (!isEditable || !nodeId) return;
+    if (!isEditable || !nodeId || isCompare) return;
     registerChart(nodeId, {
       getPos: () => (typeof getPos === "function" ? getPos() : undefined),
       takeScreenshot: () =>
@@ -200,7 +207,7 @@ export function ChartNodeView({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || !ticker || (useScreenshot && !imgFailed)) {
+    if (!el || !ticker || isCompare || (useScreenshot && !imgFailed)) {
       if (!ticker) setStatus("idle");
       return;
     }
@@ -334,7 +341,7 @@ export function ChartNodeView({
       delete el.__trendSeries;
       chart.remove();
     };
-  }, [ticker, range, kind, updateAttributes, isEditable, useScreenshot, imgFailed]);
+  }, [ticker, range, kind, updateAttributes, isEditable, useScreenshot, imgFailed, isCompare]);
 
   useEffect(() => {
     const chart = containerRef.current?.__lwChart;
@@ -447,6 +454,27 @@ export function ChartNodeView({
     );
   }
 
+  // Compare mode (Phase 2.3): 2-4 tickers, %-normalized (own component).
+  if (isCompare) {
+    return (
+      <CompareChartView
+        tickers={compareTickers}
+        range={range}
+        isEditable={isEditable}
+        nodeId={nodeId}
+        getPos={() => (typeof getPos === "function" ? getPos() : undefined)}
+        selected={selected}
+        onRange={(r) => updateAttributes({ range: r })}
+        onTickers={(next) =>
+          next.length <= 1
+            ? updateAttributes({ tickers: null, ticker: next[0] ?? ticker })
+            : updateAttributes({ tickers: next })
+        }
+        onDelete={() => deleteNode()}
+      />
+    );
+  }
+
   return (
     <NodeViewWrapper
       contentEditable={false}
@@ -528,10 +556,26 @@ export function ChartNodeView({
 
         <button
           type="button"
+          aria-label="Compare with another ticker"
+          title="Compare tickers"
+          onMouseDown={stopEditorCapture}
+          onClick={() => {
+            const second = window.prompt("Compare with ticker")?.trim().toUpperCase();
+            if (second && ticker && second !== ticker) updateAttributes({ tickers: [ticker, second] });
+          }}
+          disabled={!ticker}
+          className="ml-auto flex h-7 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-[11px] font-medium text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring disabled:opacity-40"
+        >
+          <Columns2 size={13} />
+          Compare
+        </button>
+
+        <button
+          type="button"
           aria-label="Delete chart"
           onMouseDown={stopEditorCapture}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

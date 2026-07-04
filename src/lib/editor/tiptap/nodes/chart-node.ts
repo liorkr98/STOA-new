@@ -21,6 +21,10 @@ export const ChartNode = Node.create({
       // survive edits (assigned lazily by the node view if missing).
       nodeId: { default: null },
       ticker: { default: "" },
+      // Compare mode (Phase 2.3): 2-4 tickers, %-normalized. When set with
+      // more than one symbol the node renders a comparison chart instead of a
+      // single-symbol candles/line/area chart.
+      tickers: { default: null },
       range: { default: "3M" },
       kind: { default: "area" },
       annotations: { default: [] },
