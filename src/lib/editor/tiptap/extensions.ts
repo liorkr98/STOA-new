@@ -28,6 +28,8 @@ export function buildExtensions({
         autolink: true,
         HTMLAttributes: { rel: "noopener noreferrer nofollow" },
       },
+      // The drop indicator when dragging a block by its handle (Phase 1.1).
+      dropcursor: { color: "var(--verdigris)", width: 2 },
     }),
     Callout,
     ChartNode,

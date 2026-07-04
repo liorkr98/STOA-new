@@ -5,7 +5,7 @@ import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
 import { SlashMenu } from "./slash-menu";
 import { BubbleToolbar } from "./bubble-toolbar";
-import { BlockDragHandle } from "./block-drag-handle";
+import { BlockDragHandle, BlockActionsShortcut } from "./block-drag-handle";
 
 export interface EditorChange {
   json: JSONContent;
@@ -31,7 +31,7 @@ export function TiptapEditor({
   const editor = useEditor({
     // Required for Next.js SSR: render on the client to avoid hydration drift.
     immediatelyRender: false,
-    extensions: [...buildExtensions({ editable: true }), SlashMenu],
+    extensions: [...buildExtensions({ editable: true }), SlashMenu, BlockActionsShortcut],
     content: initialContent,
     editorProps: {
       attributes: {
