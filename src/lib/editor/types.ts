@@ -30,6 +30,7 @@ export interface ProfileSection {
 }
 
 export interface ProfileConfig {
+  theme_id?: "signal" | "cool" | "minimal" | "warm" | "slate" | "cover";
   banner_style?: "gradient-accent" | "gradient-cool" | "minimal" | "cover";
   sections?: ProfileSection[];
   specialties?: string[];

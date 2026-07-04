@@ -11,11 +11,13 @@ export function AnalystCard({
   analyst,
   spark,
   resolvedCalls = 0,
+  promoted = false,
   className,
 }: {
   analyst: Profile;
   spark?: number[];
   resolvedCalls?: number;
+  promoted?: boolean;
   className?: string;
 }) {
   return (
@@ -26,7 +28,7 @@ export function AnalystCard({
         className,
       )}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <Avatar src={analyst.avatar_url} name={analyst.display_name} size="lg" />
           <div className="flex flex-col gap-0.5">
@@ -39,13 +41,20 @@ export function AnalystCard({
             <span className="t-meta">@{analyst.handle}</span>
           </div>
         </div>
-        <MoatBadge
+        <div className="flex flex-col items-end gap-1">
+          {promoted && (
+            <span className="rounded-[var(--radius-tag)] bg-accent-weak px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">
+              Promoted
+            </span>
+          )}
+          <MoatBadge
           handle={analyst.handle}
           score={analyst.score || null}
           sampleSize={resolvedCalls}
           size="sm"
           linked={false}
         />
+        </div>
       </div>
 
       {analyst.headline && (

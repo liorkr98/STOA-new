@@ -202,7 +202,7 @@ export function TopNav({
                   Settings
                 </Link>
                 <Link
-                  href="/settings/branding"
+                  href="/studio/branding"
                   onClick={() => setOpen(false)}
                   className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
                 >

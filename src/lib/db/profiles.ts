@@ -17,6 +17,14 @@ export async function getProfileById(id: string): Promise<Profile | null> {
   return (data as Profile) ?? null;
 }
 
+export async function getProfilesByIds(ids: string[]): Promise<Profile[]> {
+  if (!ids.length) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("*").in("id", ids);
+  const map = new Map(((data as Profile[]) ?? []).map((p) => [p.id, p]));
+  return ids.map((id) => map.get(id)).filter(Boolean) as Profile[];
+}
+
 export async function listTopAnalysts(limit = 12): Promise<Profile[]> {
   try {
     const supabase = await createClient();

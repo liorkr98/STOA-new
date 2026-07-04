@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SealCheck, Users } from "@phosphor-icons/react/dist/ssr";
 import { getProfileByHandle } from "@/lib/db/profiles";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
@@ -9,8 +8,8 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { analystStats } from "@/lib/engine/track";
-import { compact, pct } from "@/lib/format";
-import { Avatar } from "@/components/ui/avatar";
+import { pct } from "@/lib/format";
+import { ProfileHeader } from "@/components/profile/profile-header";
 import { Stat } from "@/components/ui/stat";
 import { MoatBadge } from "@/components/ui/moat-badge";
 import { TrackChart } from "@/components/charts/track-chart";
@@ -76,80 +75,15 @@ export default async function AnalystProfilePage({
   );
 
   const config = profile.profile_config ?? {};
-  const bannerStyle = config.banner_style ?? "gradient-accent";
-  const specialties = config.specialties ?? [];
-
-  const bannerClass =
-    bannerStyle === "gradient-cool"
-      ? "bg-gradient-to-r from-[var(--ink)] via-accent/20 to-transparent"
-      : bannerStyle === "minimal"
-        ? "bg-gradient-to-r from-surface-2 to-bg"
-        : "bg-gradient-to-r from-accent/25 via-accent/10 to-transparent";
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-        {profile.cover_url && bannerStyle === "cover" ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.cover_url} alt="" className="h-28 w-full object-cover" />
-        ) : (
-          <div className={`h-28 w-full ${bannerClass}`} />
-        )}
-        <div className="grid gap-6 px-6 pb-6 lg:grid-cols-[1fr_280px]">
-          <div className="-mt-10 flex flex-col gap-4">
-            <Avatar
-              src={profile.avatar_url}
-              name={profile.display_name}
-              size="xl"
-              className="ring-4 ring-[var(--surface)]"
-            />
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="t-h2">{profile.display_name}</h1>
-                {profile.verified && <SealCheck size={20} weight="fill" className="text-accent" />}
-              </div>
-              <p className="t-meta mt-1">
-                @{profile.handle} · <Users size={13} className="inline" />{" "}
-                <span className="num">{compact(profile.followers_count)}</span> followers
-              </p>
-              {profile.headline && <p className="t-body mt-3">{profile.headline}</p>}
-              {specialties.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {specialties.map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-[var(--radius-tag)] border border-border bg-bg px-2 py-0.5 text-xs text-text-mute"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {profile.bio && config.sections?.find((x) => x.type === "bio")?.visible !== false && (
-                <p className="t-body mt-3 text-text-mute">{profile.bio}</p>
-              )}
-            </div>
-            {!isSelf && (
-              <div className="flex flex-wrap items-center gap-3">
-                <FollowButton
-                  analystId={profile.id}
-                  initialFollowing={following}
-                  isAuthed={Boolean(userId)}
-                />
-              </div>
-            )}
-            {isSelf && (
-              <Link
-                href="/settings/branding"
-                className="text-sm text-accent hover:underline"
-              >
-                Edit branding
-              </Link>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-4">
+      <ProfileHeader
+        profile={profile}
+        config={config}
+        showEditLink={isSelf}
+        aside={
+          <>
             <MoatBadge
               handle={profile.handle}
               score={profile.score || stats.score || null}
@@ -167,9 +101,16 @@ export default async function AnalystProfilePage({
                 subscribed={subscribed}
               />
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
+      {!isSelf && (
+        <FollowButton
+          analystId={profile.id}
+          initialFollowing={following}
+          isAuthed={Boolean(userId)}
+        />
+      )}
 
       {/* Track record */}
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">

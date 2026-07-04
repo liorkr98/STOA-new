@@ -206,7 +206,40 @@ export async function updateProfileConfig(config: ProfileConfig) {
   await supabase.from("profiles").update({ profile_config: config }).eq("id", userId);
   const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/settings/branding");
+  revalidatePath("/studio/branding");
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+}
+
+/** Branding studio — identity fields + profile_config in one save. */
+export async function saveBrandingStudio({
+  display_name,
+  headline,
+  bio,
+  profile_config,
+}: {
+  display_name: string;
+  headline: string;
+  bio: string;
+  profile_config: ProfileConfig;
+}) {
+  const { supabase, userId } = await requireUser();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      display_name: display_name.trim(),
+      headline: headline.trim() || null,
+      bio: bio.trim() || null,
+      profile_config,
+    })
+    .eq("id", userId);
+  if (error) return { ok: false as const, error: error.message };
+
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  revalidatePath("/studio/branding");
+  revalidatePath("/settings/branding");
+  revalidatePath("/settings");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  return { ok: true as const };
 }
 
 /** Merges into the existing profile_config rather than overwriting it --

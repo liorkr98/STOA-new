@@ -7,6 +7,7 @@ export const AI_COST = {
   chat: 1,
   outline: 2,
   factCheck: 3,
+  brandAnalyze: 2,
   template: 0,
 } as const;
 
