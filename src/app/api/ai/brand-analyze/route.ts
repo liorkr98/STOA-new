@@ -33,6 +33,13 @@ function mockAnalyze(input: z.infer<typeof inputSchema>): BrandAnalyzeResult {
       reason: "Lead with coverage and accountability.",
     });
   }
+  if (input.social.length === 0) {
+    suggestions.push({
+      field: "social",
+      proposed: ["https://x.com/yourhandle", "https://linkedin.com/in/you"],
+      reason: "Add one or two proof-of-work links investors can verify.",
+    });
+  }
   if (input.specialties.length < 3) {
     suggestions.push({
       field: "specialties",

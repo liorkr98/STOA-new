@@ -242,6 +242,23 @@ export async function saveBrandingStudio({
   return { ok: true as const };
 }
 
+/** Pricing tab in branding studio — subscription + per-report prices. */
+export async function saveBrandingPricing({
+  sub_price,
+  report_price,
+}: {
+  sub_price: number | null;
+  report_price: number | null;
+}) {
+  const { supabase, userId } = await requireUser();
+  await supabase.from("profiles").update({ sub_price, report_price }).eq("id", userId);
+  revalidatePath("/studio/branding");
+  revalidatePath("/settings");
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  return { ok: true as const };
+}
+
 /** Merges into the existing profile_config rather than overwriting it --
  * onboarding shouldn't be able to wipe out creator branding fields. */
 export async function setInvestorInterests(interests: string[]) {

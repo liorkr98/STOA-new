@@ -28,7 +28,29 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params;
   const profile = await getProfileByHandle(handle);
-  return { title: profile ? `${profile.display_name} (@${profile.handle})` : "Analyst" };
+  if (!profile) return { title: "Analyst" };
+
+  const title = `${profile.display_name} (@${profile.handle})`;
+  const description =
+    profile.headline || profile.bio?.slice(0, 160) || `Independent analyst on Stoa — @${profile.handle}`;
+  const image = profile.cover_url || profile.avatar_url;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      ...(image ? { images: [{ url: image, alt: profile.display_name }] } : {}),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+  };
 }
 
 const VIEWS = [

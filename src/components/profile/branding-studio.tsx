@@ -28,6 +28,7 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { CoverUpload } from "@/components/profile/cover-upload";
 import { ProfilePreview } from "@/components/profile/profile-preview";
 import { BrandAnalyzerPanel } from "@/components/profile/brand-analyzer-panel";
+import { PricingPanel } from "@/components/profile/pricing-panel";
 import { BoostPanel } from "@/components/profile/boost-panel";
 import type { BrandSuggestion } from "@/lib/profile/brand-analyze";
 import type { ProfileBoost } from "@/lib/db/boosts";
@@ -40,7 +41,7 @@ const DEFAULT_SECTIONS: ProfileSection[] = [
   { id: "featured", type: "featured", visible: false },
 ];
 
-type Tab = "brand" | "ai" | "boost";
+type Tab = "brand" | "pricing" | "ai" | "boost";
 
 function SortableSection({
   section,
@@ -150,6 +151,19 @@ export function BrandingStudio({
     if (field === "headline" && typeof value === "string") setHeadline(value);
     if (field === "bio" && typeof value === "string") setBio(value.slice(0, 500));
     if (field === "specialties" && Array.isArray(value)) setSpecialties(value.join(", "));
+    if (field === "social" && Array.isArray(value)) {
+      setSocial(
+        value.map((url) => {
+          try {
+            const host = new URL(url).hostname.replace("www.", "");
+            return { label: host, url };
+          } catch {
+            return { label: "Link", url };
+          }
+        }),
+      );
+      setSections(sections.map((s) => (s.type === "social" ? { ...s, visible: true } : s)));
+    }
   }
 
   return (
@@ -159,6 +173,7 @@ export function BrandingStudio({
           {(
             [
               ["brand", "Brand"],
+              ["pricing", "Pricing"],
               ["ai", "AI analyzer"],
               ["boost", "Boost"],
             ] as const
@@ -191,11 +206,13 @@ export function BrandingStudio({
               onUploaded={setAvatarUrl}
             />
 
-            <CoverUpload
-              userId={profile.id}
-              currentUrl={coverUrl}
-              bannerStyle={theme.banner_style}
-            />
+        <CoverUpload
+          userId={profile.id}
+          currentUrl={coverUrl}
+          bannerStyle={theme.banner_style}
+          onUploaded={setCoverUrl}
+          onUseCoverTheme={() => setThemeId("cover")}
+        />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="text-sm sm:col-span-2">
@@ -338,6 +355,10 @@ export function BrandingStudio({
               {saved && <span className="text-sm text-[var(--up)]">Saved</span>}
             </div>
           </div>
+        )}
+
+        {tab === "pricing" && (
+          <PricingPanel subPrice={profile.sub_price} reportPrice={profile.report_price} />
         )}
 
         {tab === "ai" && (

@@ -48,3 +48,24 @@ Publish validates every `screenshotUrl` in the body starts with:
 \*Required once chart screenshots ship; defaults from `NEXT_PUBLIC_SUPABASE_URL` if unset.
 
 Chart candles use Yahoo Finance server-side (`src/lib/engine/market/candles.ts`) — no extra API key.
+
+## Profile branding & boosts
+
+`profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. MOAT badge and disclosure blocks are **not** brandable.
+
+| Route | Auth | Purpose |
+|-------|------|---------|
+| `/studio/branding` | Analyst | Branding studio (identity, themes, AI analyzer, pricing, boosts) |
+| `POST /api/ai/brand-analyze` | Signed in | AI brand scores + copy suggestions (2 AI credits) |
+| `purchase_boost` RPC | Signed in | Debit wallet, activate Discover placement |
+
+### Boost packages (wallet balance)
+
+| Package | Price | Placement |
+|---------|-------|-----------|
+| Profile 24h | $5 | Researchers + sidebar |
+| Profile 7d | $15 | Researchers + sidebar |
+| Report 24h | $8 | Trending feed |
+| Report 7d | $20 | Trending feed |
+
+Migrations: `0021_profile_boosts.sql`, `0022_boost_polish.sql`

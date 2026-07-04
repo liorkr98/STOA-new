@@ -35,7 +35,7 @@ export async function listBoostedProfileIds(placement: string, limit = 3): Promi
     .gt("ends_at", new Date().toISOString())
     .order("starts_at", { ascending: false })
     .limit(limit);
-  return (data ?? []).map((r) => r.creator_id as string);
+  return [...new Set((data ?? []).map((r) => r.creator_id as string))];
 }
 
 export async function listBoostedReportIds(placement: string, limit = 2): Promise<string[]> {

@@ -82,7 +82,7 @@ export default async function DiscoverPage({
 
   let top;
   try {
-    const sidebarBoosted = await listBoostedProfileIds("discover_researchers", 2);
+    const sidebarBoosted = await listBoostedProfileIds("discover_sidebar", 2);
     promotedAnalystIds = new Set([...promotedAnalystIds, ...sidebarBoosted]);
     const boostedTop = await getProfilesByIds(sidebarBoosted);
     const topRaw = await listTopAnalysts(5);

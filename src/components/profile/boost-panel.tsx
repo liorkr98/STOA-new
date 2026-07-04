@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { RocketLaunch } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { purchaseBoost } from "@/app/actions/boost";
 import { BOOST_PACKAGES } from "@/lib/profile/boost-packages";
 import type { ProfileBoost } from "@/lib/db/boosts";
@@ -18,22 +20,26 @@ export function BoostPanel({
   activeBoosts: ProfileBoost[];
   reports: Report[];
 }) {
+  const router = useRouter();
   const [packageId, setPackageId] = useState(BOOST_PACKAGES[0].id);
   const [reportId, setReportId] = useState(reports[0]?.id ?? "");
-  const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   const pkg = BOOST_PACKAGES.find((p) => p.id === packageId)!;
   const needsReport = pkg.target_type === "report";
 
   function buy() {
-    setError(null);
     start(async () => {
       const res = await purchaseBoost({
         package_id: packageId,
         report_id: needsReport ? reportId : undefined,
       });
-      if (!res.ok) setError(res.error ?? "Could not purchase boost");
+      if (!res.ok) {
+        toast.error(res.error ?? "Could not purchase boost");
+        return;
+      }
+      toast.success("Boost activated — your placement is live in Discover");
+      router.refresh();
     });
   }
 
@@ -42,8 +48,8 @@ export function BoostPanel({
       <div>
         <h2 className="t-h3">Boost visibility</h2>
         <p className="t-meta mt-1">
-          Promote your profile in Researchers or a report in Trending. Labeled &quot;Promoted&quot; for
-          transparency.
+          Promote your profile in Researchers + sidebar, or a report in Trending. Labeled
+          &quot;Promoted&quot; for transparency.
         </p>
       </div>
 
@@ -98,10 +104,6 @@ export function BoostPanel({
         <span className="t-meta text-[11px]">Wallet balance: ${walletBalance.toFixed(2)}</span>
       </div>
 
-      {error && (
-        <p className="text-sm text-[var(--down)]">{error}</p>
-      )}
-
       {activeBoosts.length > 0 && (
         <div>
           <p className="text-sm font-medium">Active boosts</p>
@@ -111,7 +113,7 @@ export function BoostPanel({
                 key={b.id}
                 className="rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm"
               >
-                {b.target_type === "profile" ? "Profile" : "Report"} · ends{" "}
+                {b.target_type === "profile" ? "Profile" : "Report"} · {b.placement} · ends{" "}
                 {new Date(b.ends_at).toLocaleString()}
               </li>
             ))}
