@@ -17,6 +17,9 @@ export const ChartNode = Node.create({
 
   addAttributes() {
     return {
+      // Stable id so a chart's screenshot filename and capture registration
+      // survive edits (assigned lazily by the node view if missing).
+      nodeId: { default: null },
       ticker: { default: "" },
       range: { default: "3M" },
       kind: { default: "area" },

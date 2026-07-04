@@ -22,6 +22,7 @@ export function LockConfirmModal({
   ticker,
   targetPrice,
   horizonDate,
+  busyLabel,
   onConfirm,
 }: {
   open: boolean;
@@ -30,6 +31,8 @@ export function LockConfirmModal({
   /** null = no explicit target; the call locks at the live market entry price. */
   targetPrice: number | null;
   horizonDate: Date;
+  /** Live status while onConfirm runs (e.g. "Capturing charts..."). */
+  busyLabel?: string | null;
   onConfirm: () => void | Promise<void>;
 }) {
   const [locked, setLocked] = useState(false);
@@ -106,7 +109,7 @@ export function LockConfirmModal({
                   disabled={pending}
                   onClick={handleConfirm}
                 >
-                  {pending ? "Locking..." : "Lock it in"}
+                  {pending ? (busyLabel ?? "Locking...") : "Lock it in"}
                 </Button>
               </div>
             </>

@@ -17,6 +17,7 @@ import {
 } from "@/lib/editor/tiptap/serialize";
 import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
 import { TiptapEditor, type EditorChange } from "@/components/editor/tiptap/tiptap-editor";
+import { captureChartScreenshots } from "@/lib/editor/tiptap/nodes/chart-capture";
 import {
   LockPublishPanel,
   disclosuresAnswered,
@@ -96,6 +97,7 @@ export function StudioEditor({
   const [panelOpen, setPanelOpen] = useState(true);
   const [askOpen, setAskOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [captureStatus, setCaptureStatus] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
   const editorRef = useRef<Editor | null>(null);
@@ -171,13 +173,44 @@ export function StudioEditor({
 
   const doPublish = useCallback(async () => {
     setError(null);
+    const editor = editorRef.current;
     try {
+      let id = draftId;
+      // Screenshot every chart between "Lock it in" and the publish call, so
+      // the reading view has a static image and the report gets an og:image.
+      // Save first (charts upload under the report id); failures never block.
+      if (hasCard && editor) {
+        if (!id) {
+          const res = await saveDraft({
+            id: undefined,
+            type,
+            title,
+            summary: summary || plainText.slice(0, 280),
+            body: JSON.stringify(editor.getJSON()),
+            access,
+            price: access === "paid" ? Number(price) : null,
+            ticker,
+            direction,
+            target_price: target ? Number(target) : null,
+            horizon_days: horizon,
+          });
+          id = res.id;
+          setDraftId(id);
+        }
+        setCaptureStatus("Capturing charts...");
+        await captureChartScreenshots(editor, id);
+        setCaptureStatus("Publishing...");
+      }
+
+      const finalBody =
+        type === "short_post" ? undefined : editor ? JSON.stringify(editor.getJSON()) : bodyJson;
+
       await publishReport({
-        id: draftId,
+        id,
         type,
         title: type === "short_post" ? undefined : title,
         summary: summary || plainText.slice(0, 280),
-        body: type === "short_post" ? undefined : bodyJson,
+        body: finalBody,
         access,
         price: access === "paid" ? Number(price) : null,
         ticker: hasCard ? ticker : null,
@@ -198,6 +231,7 @@ export function StudioEditor({
       if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
         setError(e.message);
         setConfirmOpen(false);
+        setCaptureStatus(null);
         throw e;
       }
     }
@@ -407,6 +441,7 @@ export function StudioEditor({
         ticker={ticker.trim().toUpperCase()}
         targetPrice={target ? Number(target) : null}
         horizonDate={new Date(Date.now() + horizon * 86_400_000)}
+        busyLabel={captureStatus}
         onConfirm={doPublish}
       />
     </div>

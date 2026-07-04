@@ -17,6 +17,7 @@ import {
 } from "lightweight-charts";
 import { Trash2, ChartCandlestick, MousePointer2, Minus, TrendingUp, Eraser } from "lucide-react";
 import { nanoid } from "nanoid";
+import { BarChart2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { CHART_RANGES, type Candle, type ChartRange } from "@/lib/market/candle-types";
 import {
@@ -25,6 +26,7 @@ import {
   type ChartAnnotation,
   type ChartVisibleRange,
 } from "@/lib/market/chart-annotations";
+import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -133,14 +135,29 @@ function applyAnnotations(
  * so the provider key stays server-side. Analysts can pan/zoom and add
  * horizontal levels or trend segments; overlays persist in node attrs.
  */
-export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
+export function ChartNodeView({
+  node,
+  updateAttributes,
+  deleteNode,
+  selected,
+  editor,
+  getPos,
+}: NodeViewProps) {
+  const isEditable = editor?.isEditable ?? true;
   const ticker = String(node.attrs.ticker ?? "");
   const range = (node.attrs.range ?? "3M") as ChartRange;
   const kind = (node.attrs.kind ?? "area") as ChartKind;
+  const nodeId = String(node.attrs.nodeId ?? "");
+  const screenshotUrl = node.attrs.screenshotUrl ? String(node.attrs.screenshotUrl) : null;
   const annotations = parseAnnotations(node.attrs.annotations);
   const savedVisibleRange = parseVisibleRange(node.attrs.visibleRange);
   const visibleRangeRef = useRef(savedVisibleRange);
   visibleRangeRef.current = savedVisibleRange;
+
+  // Reading mode with a captured screenshot: show the PNG, never mount a live
+  // chart (avoids an authed candle fetch for logged-out readers).
+  const useScreenshot = !isEditable && !!screenshotUrl;
+  const [imgFailed, setImgFailed] = useState(false);
 
   const [draftTicker, setDraftTicker] = useState(ticker);
   const [status, setStatus] = useState<"idle" | "loading" | "empty" | "auth" | "ready">(
@@ -155,10 +172,36 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
 
   useEffect(() => setDraftTicker(ticker), [ticker]);
 
+  // Assign a stable id once, so screenshot capture can find this chart at
+  // publish time. Editable-only; a read-only editor can't updateAttributes.
+  useEffect(() => {
+    if (isEditable && !nodeId) updateAttributes({ nodeId: nanoid(10) });
+  }, [isEditable, nodeId, updateAttributes]);
+
+  // Register the screenshot capture for the publish flow (editor mode only).
+  useEffect(() => {
+    if (!isEditable || !nodeId) return;
+    registerChart(nodeId, {
+      getPos: () => (typeof getPos === "function" ? getPos() : undefined),
+      takeScreenshot: () =>
+        new Promise<Blob | null>((resolve) => {
+          const chart = containerRef.current?.__lwChart;
+          if (!chart) return resolve(null);
+          try {
+            const canvas = chart.takeScreenshot();
+            canvas.toBlob((blob) => resolve(blob), "image/png");
+          } catch {
+            resolve(null);
+          }
+        }),
+    });
+    return () => unregisterChart(nodeId);
+  }, [isEditable, nodeId, getPos]);
+
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || !ticker) {
-      setStatus("idle");
+    if (!el || !ticker || (useScreenshot && !imgFailed)) {
+      if (!ticker) setStatus("idle");
       return;
     }
 
@@ -266,15 +309,17 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
       }
     });
 
-    chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
-      if (!logicalRange || disposed) return;
-      if (rangeTimer) clearTimeout(rangeTimer);
-      rangeTimer = setTimeout(() => {
-        updateAttributes({
-          visibleRange: { from: logicalRange.from, to: logicalRange.to } satisfies ChartVisibleRange,
-        });
-      }, 200);
-    });
+    if (isEditable) {
+      chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
+        if (!logicalRange || disposed) return;
+        if (rangeTimer) clearTimeout(rangeTimer);
+        rangeTimer = setTimeout(() => {
+          updateAttributes({
+            visibleRange: { from: logicalRange.from, to: logicalRange.to } satisfies ChartVisibleRange,
+          });
+        }, 200);
+      });
+    }
 
     const ro = new ResizeObserver(() => chart.applyOptions({ width: el.clientWidth }));
     ro.observe(el);
@@ -289,7 +334,7 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
       delete el.__trendSeries;
       chart.remove();
     };
-  }, [ticker, range, kind, updateAttributes]);
+  }, [ticker, range, kind, updateAttributes, isEditable, useScreenshot, imgFailed]);
 
   useEffect(() => {
     const chart = containerRef.current?.__lwChart;
@@ -378,16 +423,43 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
           ? "Sign in to load live chart data"
           : "No price data for this ticker";
 
+  const ariaLabel = isEditable
+    ? `Price chart: ${ticker || "unconfigured"} ${range}. Use the configuration bar above to change settings.`
+    : `Price chart for ${ticker} over ${range}`;
+
+  // Reading mode with a captured screenshot: render the PNG, no live chart.
+  if (useScreenshot && !imgFailed) {
+    return (
+      <NodeViewWrapper
+        contentEditable={false}
+        role="figure"
+        aria-label={`Price chart for ${ticker} over ${range}`}
+        className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={screenshotUrl ?? ""}
+          alt={`Price chart for ${ticker} over ${range}`}
+          onError={() => setImgFailed(true)}
+          className="block w-full"
+        />
+      </NodeViewWrapper>
+    );
+  }
+
   return (
     <NodeViewWrapper
       contentEditable={false}
+      role="figure"
+      aria-label={ariaLabel}
       className={cn(
-        "my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stopEditorCapture}
       onClick={stopEditorCapture}
     >
+      {isEditable && (
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <span className="flex h-7 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
           <ChartCandlestick size={13} className="text-text-faint" />
@@ -464,6 +536,7 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
           <Trash2 size={15} />
         </button>
       </div>
+      )}
 
       {ticker && (
         <div className="flex flex-wrap items-center gap-3 px-3 pt-2 text-[11px] text-text-mute">
@@ -496,14 +569,26 @@ export function ChartNodeView({ node, updateAttributes, deleteNode, selected }: 
       <div className="relative px-1 pb-2">
         <div
           ref={containerRef}
-          className={cn("h-[260px] w-full", drawMode !== "pan" && status === "ready" && "cursor-crosshair")}
-          onPointerDown={handleChartPointerDown}
+          aria-hidden="true"
+          className={cn(
+            "h-[260px] w-full",
+            isEditable && drawMode !== "pan" && status === "ready" && "cursor-crosshair",
+          )}
+          onPointerDown={isEditable ? handleChartPointerDown : undefined}
         />
-        {status !== "ready" && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <p className="t-meta text-[12px]">{statusMessage}</p>
-          </div>
-        )}
+        {status !== "ready" &&
+          (!isEditable && (status === "empty" || status === "auth") ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+              <BarChart2 size={22} className="text-text-faint" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }} />
+              <p className="text-sm" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }}>
+                Chart unavailable
+              </p>
+            </div>
+          ) : (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <p className="t-meta text-[12px]">{statusMessage}</p>
+            </div>
+          ))}
       </div>
     </NodeViewWrapper>
   );
