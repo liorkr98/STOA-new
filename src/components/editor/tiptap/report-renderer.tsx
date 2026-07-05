@@ -1,5 +1,6 @@
 "use client";
 
+import "katex/dist/katex.min.css";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";

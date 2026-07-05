@@ -1,6 +1,7 @@
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Highlight from "@tiptap/extension-highlight";
+import { Mathematics } from "@tiptap/extension-mathematics";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
 import { OpinionMark } from "./opinion-mark";
@@ -59,6 +60,9 @@ export function buildExtensions({
     Highlight.configure({ multicolor: true }),
     OpinionMark,
     TickerMark,
+    // KaTeX formulas (A11). CSS is imported at the two mount points
+    // (tiptap-editor, report-renderer) so this module stays style-free.
+    Mathematics,
     Dir,
     ...(editable
       ? [

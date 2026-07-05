@@ -211,6 +211,18 @@ export const SLASH_ITEMS: SlashItem[] = [
     run: (editor, range) =>
       editor.chain().focus().deleteRange(range).insertContent({ type: "videoNode" }).run(),
   },
+  {
+    title: "Formula",
+    subtitle: "KaTeX math block for valuation write-ups",
+    icon: Sigma,
+    keywords: ["math", "formula", "katex", "latex", "equation", "dcf"],
+    group: "Data",
+    run: (editor, range) => {
+      const latex = window.prompt("LaTeX formula", "FV = \\sum_{t=1}^{N} \\frac{FCF_t}{(1+r)^t}");
+      if (!latex) return;
+      editor.chain().focus().deleteRange(range).insertBlockMath({ latex }).run();
+    },
+  },
 ];
 
 function filterItems(query: string): SlashItem[] {
