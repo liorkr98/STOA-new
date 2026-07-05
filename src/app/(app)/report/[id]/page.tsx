@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
 import { SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { PaywallGate } from "@/components/ui/paywall-gate";
+import { DisclosureBlock } from "@/components/ui/disclosure-block";
+import { DyorBar } from "@/components/ui/dyor-bar";
 import { getReport } from "@/lib/db/reports";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
@@ -135,6 +137,20 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           isAuthed={Boolean(userId)}
           subscribed={subscribed}
         />
+      )}
+
+      {/* Trust footer (Phase 4.2): conflict-of-interest disclosure + DYOR bar.
+          Shown for every published report regardless of paywall state -- a reader
+          must be able to see a creator's position/compensation before purchasing. */}
+      {report.position_disclosed && (
+        <div className="mt-8 space-y-3">
+          <DisclosureBlock
+            holdsPosition={Boolean(report.position_held)}
+            compensationTied={Boolean(report.compensation_tied)}
+            compensationDetail={report.compensation_detail ?? undefined}
+          />
+          <DyorBar />
+        </div>
       )}
 
       <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
