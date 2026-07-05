@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { purchaseReport, subscribeToAnalyst } from "@/app/actions/wallet";
+import { purchaseReport, subscribeToAnalyst, subscribeToPlan } from "@/app/actions/wallet";
 import type { SpendResult } from "@/lib/types";
 
 export function usePurchaseReport(reportId: string) {
@@ -19,6 +19,16 @@ export function useSubscribe(analystId: string, handle?: string) {
   const router = useRouter();
   return useMutation<SpendResult>({
     mutationFn: () => subscribeToAnalyst(analystId, handle),
+    onSuccess: (res) => {
+      if (!res.error) router.refresh();
+    },
+  });
+}
+
+export function useSubscribeToPlan(handle?: string) {
+  const router = useRouter();
+  return useMutation<SpendResult, Error, string>({
+    mutationFn: (planId: string) => subscribeToPlan(planId, handle),
     onSuccess: (res) => {
       if (!res.error) router.refresh();
     },

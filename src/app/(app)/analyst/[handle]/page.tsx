@@ -9,7 +9,9 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listPollsByCreator } from "@/lib/db/polls";
+import { listActivePlans } from "@/lib/db/plans";
 import { PollCard } from "@/components/polls/poll-card";
+import { PlanPicker } from "@/components/wallet/plan-picker";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
@@ -77,11 +79,12 @@ export default async function AnalystProfilePage({
   const profile = await getProfileByHandle(handle);
   if (!profile) notFound();
 
-  const [predictions, reports, userId, polls] = await Promise.all([
+  const [predictions, reports, userId, polls, plans] = await Promise.all([
     listPredictionsByAuthor(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     getSessionUserId(),
     listPollsByCreator(profile.id, 3),
+    listActivePlans(profile.id),
   ]);
 
   const stats = analystStats(predictions);
@@ -126,16 +129,25 @@ export default async function AnalystProfilePage({
               sampleSize={stats.resolved}
               size="lg"
             />
-            {!isSelf && (
-              <SubscribeButton
-                analystId={profile.id}
-                handle={profile.handle}
-                price={profile.sub_price}
-                balance={wallet?.balance ?? 0}
-                isAuthed={Boolean(userId)}
-                subscribed={subscribed}
-              />
-            )}
+            {!isSelf &&
+              (plans.length > 0 ? (
+                <PlanPicker
+                  plans={plans}
+                  handle={profile.handle}
+                  balance={wallet?.balance ?? 0}
+                  isAuthed={Boolean(userId)}
+                  subscribed={subscribed}
+                />
+              ) : (
+                <SubscribeButton
+                  analystId={profile.id}
+                  handle={profile.handle}
+                  price={profile.sub_price}
+                  balance={wallet?.balance ?? 0}
+                  isAuthed={Boolean(userId)}
+                  subscribed={subscribed}
+                />
+              ))}
           </>
         }
       />
