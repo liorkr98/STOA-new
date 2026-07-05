@@ -9,6 +9,7 @@ export const AI_COST = {
   factCheck: 3,
   brandAnalyze: 2,
   template: 0,
+  audioBrief: 3,
 } as const;
 
 export type AiAction = keyof typeof AI_COST;
