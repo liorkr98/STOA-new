@@ -6,6 +6,7 @@ import { getWallet } from "@/lib/db/wallet";
 import { listEntries, listNotebooks } from "@/lib/db/notebooks";
 import { notebookToDoc } from "@/lib/editor/notebook-seed";
 import { StudioEditor } from "@/components/editor/studio-editor";
+import { VersionHistory } from "@/components/editor/version-history";
 import { FirstReportBanner } from "@/components/onboarding/first-report-banner";
 import type { Report } from "@/lib/types";
 
@@ -51,6 +52,7 @@ export default async function ComposePage({
         initialDraft={draft ?? seeded}
         aiCredits={wallet?.ai_credits ?? 0}
       />
+      {draft?.id && <VersionHistory reportId={draft.id} />}
     </div>
   );
 }

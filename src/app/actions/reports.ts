@@ -48,6 +48,59 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
   return { id: reportId };
 }
 
+/** List versions for the history panel (author-only via RLS). */
+export async function listVersionsAction(reportId: string) {
+  const { listVersions } = await import("@/lib/db/report-versions");
+  return listVersions(reportId);
+}
+
+/**
+ * Restore a draft to an earlier version (Part E). Snapshots the CURRENT state
+ * first (so a restore is itself undoable), then overwrites title + body.
+ * Drafts only -- published reports are locked at the database level.
+ */
+export async function restoreVersionAction(
+  reportId: string,
+  versionId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status, title")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (!report || report.author_id !== userId) return { ok: false, error: "Not your draft" };
+  if (report.status !== "draft") return { ok: false, error: "Published reports are locked" };
+
+  const { getVersionBody } = await import("@/lib/db/report-versions");
+  const version = await getVersionBody(versionId);
+  if (!version) return { ok: false, error: "Version not found" };
+
+  const { data: current } = await supabase
+    .from("report_bodies")
+    .select("body")
+    .eq("report_id", reportId)
+    .maybeSingle();
+  if (current?.body) {
+    await supabase.from("report_versions").insert({
+      report_id: reportId,
+      author_id: userId,
+      title: report.title,
+      body: current.body,
+    });
+  }
+
+  await supabase.from("reports").update({ title: version.title }).eq("id", reportId);
+  const { error } = await supabase
+    .from("report_bodies")
+    .upsert({ report_id: reportId, body: version.body }, { onConflict: "report_id" });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/studio/compose");
+  return { ok: true };
+}
+
 const VERSION_INTERVAL_MS = 5 * 60_000;
 
 /**
