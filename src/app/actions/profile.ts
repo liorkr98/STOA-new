@@ -192,6 +192,34 @@ export async function saveStorefrontBranding({
   return { ok: true as const };
 }
 
+/**
+ * Save the addable storefront sections (B3). Merge-safe: touches only the
+ * storefront_sections key, never the rest of profile_config.
+ */
+export async function saveStorefrontSections(sections: ProfileConfig["storefront_sections"]) {
+  const { supabase, userId } = await requireUser();
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+
+  const config: ProfileConfig = {
+    ...(existing?.profile_config ?? {}),
+    storefront_sections: sections ?? [],
+  };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ profile_config: config })
+    .eq("id", userId);
+  if (error) return { ok: false as const, error: error.message };
+
+  revalidatePath("/studio/branding");
+  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
+  return { ok: true as const };
+}
+
 /** Analyst onboarding step 2 (Price) + implicit Done. Flips role to analyst
  * and always lands in the guided first-report flow. */
 export async function completeAnalystOnboarding(formData: FormData) {

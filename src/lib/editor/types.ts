@@ -24,7 +24,15 @@ export interface ReportDocument {
 
 export interface ProfileSection {
   id: string;
-  type: "bio" | "headline" | "specialties" | "social" | "featured";
+  type:
+    | "bio"
+    | "headline"
+    | "specialties"
+    | "social"
+    | "featured"
+    | "richText"
+    | "faq"
+    | "featuredReport";
   visible: boolean;
   data?: Record<string, unknown>;
 }
@@ -43,6 +51,9 @@ export interface ProfileConfig {
   accent?: string;
   /** Storefront font pairing id (B2). */
   font_pairing?: "ledger" | "modern" | "editorial" | "mono";
+  /** Addable storefront content sections (B3), rendered below the hero.
+   * Separate key from `sections` (hero layout) so the two never collide. */
+  storefront_sections?: ProfileSection[];
 }
 
 export const BLOCK_META: Record<

@@ -8,6 +8,7 @@ import { listPlansForCreator } from "@/lib/db/plans";
 import { BrandingStudio } from "@/components/profile/branding-studio";
 import { PlanManager } from "@/components/profile/plan-manager";
 import { AccentPicker } from "@/components/profile/accent-picker";
+import { StorefrontSectionsEditor } from "@/components/profile/storefront-sections-editor";
 
 export const metadata: Metadata = { title: "Branding studio" };
 
@@ -40,6 +41,10 @@ export default async function StudioBrandingPage() {
       <AccentPicker
         initialAccent={profile.profile_config?.accent ?? null}
         initialFontPairing={profile.profile_config?.font_pairing ?? null}
+      />
+      <StorefrontSectionsEditor
+        initialSections={profile.profile_config?.storefront_sections ?? []}
+        reports={reports.map((r) => ({ id: r.id, title: r.title }))}
       />
       <PlanManager initialPlans={plans} handle={profile.handle} />
     </div>

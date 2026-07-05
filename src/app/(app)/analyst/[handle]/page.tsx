@@ -12,6 +12,7 @@ import { listPollsByCreator } from "@/lib/db/polls";
 import { listActivePlans } from "@/lib/db/plans";
 import { PollCard } from "@/components/polls/poll-card";
 import { PlanPicker } from "@/components/wallet/plan-picker";
+import { StorefrontSections } from "@/components/profile/storefront-sections";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
@@ -166,6 +167,8 @@ export default async function AnalystProfilePage({
           ))}
         </section>
       )}
+
+      <StorefrontSections sections={config.storefront_sections ?? []} reports={reports} />
 
       {/* Track record */}
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
