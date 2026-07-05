@@ -119,7 +119,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           return (
             <>
               <FactCheckLayer claims={claims} />
-              <ReportBody body={report.body} claims={claims} isAuthed={Boolean(userId)} />
+              <ReportBody
+                body={report.body}
+                claims={claims}
+                isAuthed={Boolean(userId)}
+                reportId={id}
+              />
             </>
           );
         })()

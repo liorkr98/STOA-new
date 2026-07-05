@@ -5,6 +5,7 @@ import * as Popover from "@radix-ui/react-popover";
 import { ChatCircle } from "@phosphor-icons/react";
 import type { ClaimType, FactClaim } from "@/lib/ai/fact-check";
 import { DebateThread } from "@/components/report/debate-thread";
+import { ClaimVoteBar } from "@/components/report/claim-vote-bar";
 import type { Comment } from "@/lib/types";
 
 export type Verdict = "fact" | "unproven" | "opinion" | "contradicted";
@@ -106,17 +107,19 @@ export function FactCheckedText({
   text,
   claims,
   isAuthed = false,
+  reportId,
 }: {
   text: string;
   claims: FactClaim[];
   isAuthed?: boolean;
+  reportId?: string;
 }) {
   const segments = useMemo(() => segmentText(text, claims), [text, claims]);
   return (
     <>
       {segments.map((seg, i) =>
         seg.claim ? (
-          <ClaimMark key={i} claim={seg.claim} isAuthed={isAuthed}>
+          <ClaimMark key={i} claim={seg.claim} isAuthed={isAuthed} reportId={reportId}>
             {seg.text}
           </ClaimMark>
         ) : (
@@ -137,10 +140,12 @@ function ClaimMark({
   claim,
   children,
   isAuthed,
+  reportId,
 }: {
   claim: FactClaim;
   children: string;
   isAuthed: boolean;
+  reportId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [instant, setInstant] = useState(false);
@@ -226,6 +231,9 @@ function ClaimMark({
                 <ChatCircle size={12} weight="fill" />
                 Debate this claim
               </button>
+            )}
+            {reportId && open && (
+              <ClaimVoteBar reportId={reportId} claimText={claim.text} isAuthed={isAuthed} />
             )}
           </Popover.Content>
         </Popover.Portal>

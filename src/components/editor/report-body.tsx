@@ -10,10 +10,12 @@ export function ReportBody({
   body,
   claims,
   isAuthed = false,
+  reportId,
 }: {
   body: string | null;
   claims?: FactClaim[];
   isAuthed?: boolean;
+  reportId?: string;
 }) {
   if (!body?.trim()) return null;
 
@@ -32,7 +34,7 @@ export function ReportBody({
     return (
       <div className="mt-8 whitespace-pre-wrap text-[1.0625rem] leading-[1.8] text-text">
         {claims && claims.length > 0 ? (
-          <FactCheckedText text={body} claims={claims} isAuthed={isAuthed} />
+          <FactCheckedText text={body} claims={claims} isAuthed={isAuthed} reportId={reportId} />
         ) : (
           body
         )}
