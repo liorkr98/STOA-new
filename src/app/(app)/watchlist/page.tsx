@@ -1,57 +1,150 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MagnifyingGlass, Star, X } from "@phosphor-icons/react";
 import { UNIVERSE } from "@/lib/universe";
 import { useWatchlist } from "@/lib/watchlist";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Sparkline } from "@/components/charts/sparkline";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import type { ScreenerRow } from "@/app/api/market/screener/route";
+
+/**
+ * Watchlist (Part G) on the shared DataTable: price, day change, 30d trend,
+ * and fundamentals columns (P/E, revenue growth via the day-cached screener
+ * sweep), with sort, column chooser, summary row, and CSV export.
+ */
 
 const inputClass =
   "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-surface pl-10 pr-3 text-sm focus-ring";
 
-function WatchlistRow({ ticker, onRemove }: { ticker: string; onRemove: () => void }) {
-  const meta = UNIVERSE.find((u) => u.ticker === ticker);
-  const { data: quote } = useQuery({
-    queryKey: ["quote", ticker],
-    queryFn: () => fetch(`/api/market/quote?ticker=${ticker}`).then((r) => r.json()),
-  });
-  const { data: sparkline } = useQuery({
-    queryKey: ["sparkline", ticker],
-    queryFn: () => fetch(`/api/market/sparkline?ticker=${ticker}`).then((r) => r.json()),
-  });
-
-  return (
-    <li className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 last:border-0">
-      <Link href={`/markets/${ticker}`} className="flex min-w-0 flex-1 items-center gap-4">
-        <div className="min-w-0">
-          <div className="num font-semibold">{ticker}</div>
-          <div className="t-meta truncate">{meta?.name ?? "Ticker"}</div>
-        </div>
-        {sparkline?.points?.length > 1 && (
-          <Sparkline data={sparkline.points} width={80} height={24} />
-        )}
-        <span className="num ml-auto text-sm font-medium">
-          {quote?.price != null ? `$${quote.price.toFixed(2)}` : "—"}
-        </span>
-      </Link>
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remove ${ticker} from watchlist`}
-        className="tap-target focus-ring rounded-[var(--radius-btn)] p-1.5 text-text-faint transition-colors hover:text-text"
-      >
-        <X size={16} />
-      </button>
-    </li>
-  );
+interface Row {
+  ticker: string;
+  name: string;
+  price: number | null;
+  dayPct: number | null;
+  points: number[];
+  pe: number | null;
+  revenueGrowth: number | null;
 }
+
+const money = (v: number) => `$${v.toFixed(2)}`;
+const pct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+const one = (v: number) => v.toFixed(1);
 
 export default function WatchlistPage() {
   const { tickers, ready, toggle } = useWatchlist();
   const [query, setQuery] = useState("");
+
+  const { data: market } = useQuery({
+    queryKey: ["watchlist-market", tickers.slice().sort().join(",")],
+    enabled: tickers.length > 0,
+    queryFn: async () => {
+      const entries = await Promise.all(
+        tickers.map(async (t) => {
+          const [quote, spark] = await Promise.all([
+            fetch(`/api/market/quote?ticker=${t}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            fetch(`/api/market/sparkline?ticker=${t}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          ]);
+          return [t, { price: quote?.price ?? null, points: spark?.points ?? [] }] as const;
+        }),
+      );
+      return Object.fromEntries(entries) as Record<string, { price: number | null; points: number[] }>;
+    },
+  });
+
+  const { data: screener } = useQuery({
+    queryKey: ["screener"],
+    enabled: tickers.length > 0,
+    staleTime: 60 * 60_000,
+    queryFn: async () => {
+      const res = await fetch("/api/market/screener");
+      if (!res.ok) return { rows: [] as ScreenerRow[] };
+      return (await res.json()) as { rows: ScreenerRow[] };
+    },
+  });
+
+  const rows: Row[] = useMemo(
+    () =>
+      tickers.map((t) => {
+        const meta = UNIVERSE.find((u) => u.ticker === t);
+        const m = market?.[t];
+        const s = screener?.rows.find((r) => r.ticker === t);
+        const points = m?.points ?? [];
+        const prev = points.length > 1 ? points[points.length - 2] : null;
+        const dayPct =
+          m?.price != null && prev ? ((m.price - prev) / prev) * 100 : null;
+        return {
+          ticker: t,
+          name: meta?.name ?? "",
+          price: m?.price ?? null,
+          dayPct,
+          points,
+          pe: s?.pe ?? null,
+          revenueGrowth: s?.revenueGrowth ?? null,
+        };
+      }),
+    [tickers, market, screener],
+  );
+
+  const columns: Column<Row>[] = [
+    {
+      key: "ticker",
+      header: "Ticker",
+      render: (r) => (
+        <Link href={`/markets/${r.ticker}`} className="hover:underline">
+          <span className="num font-semibold">{r.ticker}</span>
+          {r.name && <span className="t-meta ml-2 text-[11px]">{r.name}</span>}
+        </Link>
+      ),
+    },
+    {
+      key: "trend",
+      header: "30d",
+      sortable: false,
+      render: (r) =>
+        r.points.length > 1 ? (
+          <Sparkline data={r.points} width={80} height={22} />
+        ) : (
+          <span className="text-text-faint">-</span>
+        ),
+    },
+    { key: "price", header: "Price", numeric: true, format: money, accessor: (r) => r.price },
+    {
+      key: "dayPct",
+      header: "Day",
+      numeric: true,
+      sentiment: true,
+      format: pct,
+      accessor: (r) => r.dayPct,
+    },
+    { key: "pe", header: "P/E", numeric: true, format: one, accessor: (r) => r.pe },
+    {
+      key: "revenueGrowth",
+      header: "Rev growth",
+      numeric: true,
+      sentiment: true,
+      format: (v) => `${v.toFixed(1)}%`,
+      accessor: (r) => r.revenueGrowth,
+    },
+    {
+      key: "actions",
+      header: "",
+      sortable: false,
+      render: (r) => (
+        <button
+          type="button"
+          onClick={() => toggle(r.ticker)}
+          aria-label={`Remove ${r.ticker} from watchlist`}
+          className="tap-target focus-ring rounded-[var(--radius-btn)] p-1 text-text-faint transition-colors hover:text-text"
+        >
+          <X size={15} />
+        </button>
+      ),
+    },
+  ];
 
   const results =
     query.trim().length > 0
@@ -63,13 +156,13 @@ export default function WatchlistPage() {
       : [];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <div>
         <h1 className="t-h1">Watchlist</h1>
         <p className="t-body mt-1">Tickers you are tracking, with Stoa coverage one tap away.</p>
       </div>
 
-      <div className="relative">
+      <div className="relative max-w-2xl">
         <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-faint" />
         <input
           value={query}
@@ -101,12 +194,14 @@ export default function WatchlistPage() {
         )}
       </div>
 
-      {!ready ? null : tickers.length > 0 ? (
-        <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-          {tickers.map((t) => (
-            <WatchlistRow key={t} ticker={t} onRemove={() => toggle(t)} />
-          ))}
-        </ul>
+      {!ready ? null : rows.length > 0 ? (
+        <DataTable
+          columns={columns}
+          data={rows}
+          rowKey={(r) => r.ticker}
+          summary={["avg", "median"]}
+          csvName="watchlist"
+        />
       ) : (
         <EmptyState
           icon={<Star size={32} />}
