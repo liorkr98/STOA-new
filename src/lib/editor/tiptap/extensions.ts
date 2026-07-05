@@ -4,6 +4,7 @@ import Highlight from "@tiptap/extension-highlight";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
 import { OpinionMark } from "./opinion-mark";
+import { TickerMark } from "./ticker-mark";
 import { Dir } from "./dir-attribute";
 import { ChartNode } from "./nodes/chart-node";
 import { DataFigureNode } from "./nodes/data-figure-node";
@@ -57,6 +58,7 @@ export function buildExtensions({
     VideoNode,
     Highlight.configure({ multicolor: true }),
     OpinionMark,
+    TickerMark,
     Dir,
     ...(editable
       ? [

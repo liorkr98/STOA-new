@@ -106,6 +106,34 @@ Paste any of these to Claude Code (design/frontend) or Cursor (backend) to conti
 **Data Service (Cursor)**
 > Stand up the FastAPI sidecar per docs/DATA_STACK.md §3 (yfinance default; finvizfinance; OpenBB as isolated AGPL sidecar) exposing /v1/fundamentals /statements /segments /estimates /peers /screener /transcripts. Deploy on Fly/Railway, set DATA_SERVICE_URL.
 
+### Part H (engagement layer) — schema (0024) + H1 shipped; remaining prompts
+
+Hard rule for all of H: community sentiment NEVER feeds the scoring cron or any HIT/MISS record;
+H surfaces use `surface` cards (never `.ledger-card`) and carry "community sentiment - not
+investment advice."
+
+**H1 polish — ticker autocomplete + add-to-prediction**
+> The tickerMark ($NVDA converts as you type, live hover card in the reader) is live. Add: (1) a $-triggered autocomplete popup reusing the slash-menu suggestion machinery (src/components/editor/tiptap/slash-menu.ts render pattern) listing UNIVERSE matches; (2) an "add to prediction" action on the hover card that prefills the Lock & Publish ticker; (3) mount TickerHoverLayer in the editor surface too (it currently mounts in report-renderer).
+
+**H2 — micro-debates on claims**
+> claim_votes table exists (0024; replies reuse the existing debate_comments). Add bull/bear tap + tally to the claim popovers in src/components/report/fact-check-layer.tsx, with a db layer src/lib/db/claim-votes.ts and optimistic toggle. Tallies are community sentiment only — never scored, never ledger-card styled.
+
+**H3 — community polls**
+> polls/poll_options/poll_votes exist (0024, plan-rank RLS, one vote per user, closes_at enforced). Build: src/lib/db/polls.ts + actions, a PollCard (horizontal bars, categorical palette from chart-theme, tabular %, "community sentiment - not a call" line), a create-poll dialog in the studio (kinds: sentiment/choice/coverage/target with bucketed targets), and render on report + storefront + feed.
+
+**H4 — audio briefs**
+> On publish (or on demand), generate a ~60s TTS brief (thesis, target, horizon, key risk) via the existing OpenAI integration (spendAiCredits metering), store at Supabase storage report-audio/<reportId>, add a minimal player in the reading view. Premium-gated via meetsPlanRank.
+
+**H5 — social watchlists** (needs backend: watchlists table first — current watchlist is localStorage)
+> Create a watchlists table (owner, name, is_public, tickers[]) + RLS, migrate the localStorage hook, add follow + a mover-notification cron ("X in @handle's list moved >=5%") through the existing notifications system.
+
+**H6 — Rising Stars league** (mostly Cursor)
+> QuickPost short predictions (N/week cap) scored by the existing cron into a weekly Rising Stars board. Promotion guardrail: verified-Analyst requires a long, risk-adjusted, minimum-sample record — one hot month is not enough; "can charge money" is a separate, higher bar.
+
+### Part Z — parked, do NOT build (legal review required)
+Research bounties and referral-unlock paywalls are parked pending securities counsel — do not
+build these even if asked casually; require an explicit legal go-ahead in the request.
+
 ## 5. Known risks
 
 - **Unverified build**: ~9k lines never typechecked locally. Likely failure classes: lucide icon

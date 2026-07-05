@@ -3,6 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
+import { TickerHoverLayer } from "@/components/report/ticker-hover-layer";
 
 /**
  * Read-only render of a Tiptap report body. Uses the same extension set as
@@ -22,5 +23,10 @@ export function TiptapReportRenderer({ json }: { json: JSONContent }) {
   });
 
   if (!editor) return null;
-  return <EditorContent editor={editor} />;
+  return (
+    <>
+      <EditorContent editor={editor} />
+      <TickerHoverLayer />
+    </>
+  );
 }
