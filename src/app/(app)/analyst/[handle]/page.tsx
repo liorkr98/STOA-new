@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -9,6 +10,8 @@ import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
+import { accentVars, checkAccent } from "@/lib/profile/accent";
+import { fontPairingVars } from "@/lib/profile/fonts";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { Stat } from "@/components/ui/stat";
 import { MoatBadge } from "@/components/ui/moat-badge";
@@ -97,9 +100,16 @@ export default async function AnalystProfilePage({
   );
 
   const config = profile.profile_config ?? {};
+  // Scoped custom accent (B1): overrides --accent for this storefront subtree
+  // only. Re-validated at render so a bad stored value never ships.
+  const accentCheck = config.accent ? checkAccent(config.accent) : null;
+  const storefrontStyle = {
+    ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
+    ...fontPairingVars(config.font_pairing),
+  } as CSSProperties;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8" style={storefrontStyle}>
       <ProfileHeader
         profile={profile}
         config={config}

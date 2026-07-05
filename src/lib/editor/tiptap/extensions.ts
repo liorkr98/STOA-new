@@ -9,6 +9,14 @@ import { ChartNode } from "./nodes/chart-node";
 import { DataFigureNode } from "./nodes/data-figure-node";
 import { CompareNode } from "./nodes/compare-node";
 import { FinancialTableNode } from "./nodes/financial-table-node";
+import { StatementNode } from "./nodes/statement-node";
+import { EstimatesNode } from "./nodes/estimates-node";
+import { ComparisonNode } from "./nodes/comparison-node";
+import { EmbedNode } from "./nodes/embed-node";
+import { ImageNode } from "./nodes/image-node";
+import { ValuationNode } from "./nodes/valuation-node";
+import { ScenarioNode } from "./nodes/scenario-node";
+import { VideoNode } from "./nodes/video-node";
 
 /**
  * The single Tiptap extension set, shared by the editor and the read-only
@@ -39,6 +47,14 @@ export function buildExtensions({
     DataFigureNode,
     CompareNode,
     FinancialTableNode,
+    StatementNode,
+    EstimatesNode,
+    ComparisonNode,
+    EmbedNode,
+    ImageNode,
+    ValuationNode,
+    ScenarioNode,
+    VideoNode,
     Highlight.configure({ multicolor: true }),
     OpinionMark,
     Dir,

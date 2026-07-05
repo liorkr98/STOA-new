@@ -38,6 +38,11 @@ export interface ProfileConfig {
   featured_tickers?: string[];
   /** Investor-side sector picks from onboarding. Shapes the Discover feed. */
   interests?: string[];
+  /** Custom storefront accent (B1). Hex string; overrides only --accent on the
+   * public profile, never app-wide. Validated for WCAG AA vs --paper on save. */
+  accent?: string;
+  /** Storefront font pairing id (B2). */
+  font_pairing?: "ledger" | "modern" | "editorial" | "mono";
 }
 
 export const BLOCK_META: Record<

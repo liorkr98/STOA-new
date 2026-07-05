@@ -13,6 +13,14 @@ import {
   Sigma,
   Columns3,
   Table,
+  Landmark,
+  Target,
+  LineChart,
+  Link2,
+  Image as ImageIcon,
+  Calculator,
+  BarChart2,
+  Film,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -130,6 +138,78 @@ export const SLASH_ITEMS: SlashItem[] = [
     group: "Data",
     run: (editor, range) =>
       editor.chain().focus().deleteRange(range).insertContent({ type: "financialTableNode" }).run(),
+  },
+  {
+    title: "Financial statement",
+    subtitle: "Income, balance, or cash flow from EDGAR",
+    icon: Landmark,
+    keywords: ["statement", "income", "balance", "cashflow", "financials", "10-k", "edgar", "sec"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "statementNode" }).run(),
+  },
+  {
+    title: "Estimates",
+    subtitle: "Consensus EPS vs actuals + price target",
+    icon: Target,
+    keywords: ["estimates", "consensus", "eps", "beat", "miss", "price target", "analyst"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "estimatesNode" }).run(),
+  },
+  {
+    title: "Metric comparison",
+    subtitle: "Chart a metric across 2-8 tickers over time",
+    icon: LineChart,
+    keywords: ["comparison", "metric", "revenue", "margin", "growth", "versus", "multi", "koyfin"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "comparisonNode" }).run(),
+  },
+  {
+    title: "Embed",
+    subtitle: "X, YouTube, or SEC link as a cited card",
+    icon: Link2,
+    keywords: ["embed", "link", "twitter", "x", "youtube", "video", "tweet", "sec", "url"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "embedNode" }).run(),
+  },
+  {
+    title: "Image",
+    subtitle: "Upload an image with a caption",
+    icon: ImageIcon,
+    keywords: ["image", "photo", "picture", "upload", "figure", "screenshot"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "imageNode" }).run(),
+  },
+  {
+    title: "Valuation (DCF)",
+    subtitle: "Fair value, upside, and a sensitivity grid",
+    icon: Calculator,
+    keywords: ["valuation", "dcf", "fair value", "discounted", "intrinsic", "model"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "valuationNode" }).run(),
+  },
+  {
+    title: "Scenario",
+    subtitle: "Bull / base / bear probability-weighted target",
+    icon: BarChart2,
+    keywords: ["scenario", "bull", "bear", "base", "probability", "weighted", "target"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "scenarioNode" }).run(),
+  },
+  {
+    title: "Video",
+    subtitle: "Subscriber-gated video upload",
+    icon: Film,
+    keywords: ["video", "clip", "webinar", "stream", "upload", "media"],
+    group: "Data",
+    run: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertContent({ type: "videoNode" }).run(),
   },
 ];
 

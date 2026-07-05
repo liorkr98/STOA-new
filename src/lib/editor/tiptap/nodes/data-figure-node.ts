@@ -20,7 +20,11 @@ export const DataFigureNode = Node.create({
       label: { default: "" },
       value: { default: "" },
       note: { default: "" },
+      // Manual/legacy source URL (kept for back-compat).
       source: { default: "" },
+      // Structured provenance (A10): { kind, provider, url, asOf, accession, concept }.
+      // Set when a figure is pulled from filings via "find in filings".
+      sourceRef: { default: null },
     };
   },
 

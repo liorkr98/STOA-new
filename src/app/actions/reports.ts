@@ -43,7 +43,45 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
+  await captureVersion(supabase, reportId, userId, input);
+
   return { id: reportId };
+}
+
+const VERSION_INTERVAL_MS = 5 * 60_000;
+
+/**
+ * Autosave history (Part E). Snapshots title+body into report_versions at most
+ * once per interval, so an analyst can recover an earlier draft. Best-effort:
+ * a failed snapshot never blocks the save. Publish still locks permanently.
+ */
+async function captureVersion(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reportId: string,
+  userId: string,
+  input: ComposeInput,
+) {
+  try {
+    if (!input.body) return;
+    const { data: latest } = await supabase
+      .from("report_versions")
+      .select("created_at")
+      .eq("report_id", reportId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latest && Date.now() - new Date(latest.created_at as string).getTime() < VERSION_INTERVAL_MS) {
+      return;
+    }
+    await supabase.from("report_versions").insert({
+      report_id: reportId,
+      author_id: userId,
+      title: input.title ?? null,
+      body: input.body,
+    });
+  } catch {
+    // History is a convenience; the draft save must never fail because of it.
+  }
 }
 
 /**
