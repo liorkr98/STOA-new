@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ChartBar,
   ChartLineUp,
   Gauge,
   PaintBrushBroad,
@@ -21,6 +22,7 @@ const items = [
   { href: "/studio", label: "Overview", icon: Gauge, exact: true },
   { href: "/studio/compose", label: "Compose", icon: PencilSimpleLine },
   { href: "/studio/audience", label: "Audience", icon: Users },
+  { href: "/studio/polls", label: "Polls", icon: ChartBar },
   { href: "/wallet", label: "Earnings", icon: Wallet },
   { href: "/settings", label: "Settings", icon: Gear },
   { href: "/studio/branding", label: "Branding", icon: PaintBrushBroad },

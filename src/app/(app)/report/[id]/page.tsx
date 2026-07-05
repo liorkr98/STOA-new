@@ -18,6 +18,7 @@ import { ReportActions } from "@/components/report/report-actions";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
+import { AudioBrief } from "@/components/report/audio-brief";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
@@ -119,7 +120,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           return (
             <>
               <FactCheckLayer claims={claims} />
-              <ReportBody body={report.body} claims={claims} isAuthed={Boolean(userId)} />
+              <AudioBrief reportId={id} isAuthor={isAuthor} />
+              <ReportBody
+                body={report.body}
+                claims={claims}
+                isAuthed={Boolean(userId)}
+                reportId={id}
+              />
             </>
           );
         })()

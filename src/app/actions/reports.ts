@@ -43,7 +43,98 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
+  await captureVersion(supabase, reportId, userId, input);
+
   return { id: reportId };
+}
+
+/** List versions for the history panel (author-only via RLS). */
+export async function listVersionsAction(reportId: string) {
+  const { listVersions } = await import("@/lib/db/report-versions");
+  return listVersions(reportId);
+}
+
+/**
+ * Restore a draft to an earlier version (Part E). Snapshots the CURRENT state
+ * first (so a restore is itself undoable), then overwrites title + body.
+ * Drafts only -- published reports are locked at the database level.
+ */
+export async function restoreVersionAction(
+  reportId: string,
+  versionId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status, title")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (!report || report.author_id !== userId) return { ok: false, error: "Not your draft" };
+  if (report.status !== "draft") return { ok: false, error: "Published reports are locked" };
+
+  const { getVersionBody } = await import("@/lib/db/report-versions");
+  const version = await getVersionBody(versionId);
+  if (!version) return { ok: false, error: "Version not found" };
+
+  const { data: current } = await supabase
+    .from("report_bodies")
+    .select("body")
+    .eq("report_id", reportId)
+    .maybeSingle();
+  if (current?.body) {
+    await supabase.from("report_versions").insert({
+      report_id: reportId,
+      author_id: userId,
+      title: report.title,
+      body: current.body,
+    });
+  }
+
+  await supabase.from("reports").update({ title: version.title }).eq("id", reportId);
+  const { error } = await supabase
+    .from("report_bodies")
+    .upsert({ report_id: reportId, body: version.body }, { onConflict: "report_id" });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/studio/compose");
+  return { ok: true };
+}
+
+const VERSION_INTERVAL_MS = 5 * 60_000;
+
+/**
+ * Autosave history (Part E). Snapshots title+body into report_versions at most
+ * once per interval, so an analyst can recover an earlier draft. Best-effort:
+ * a failed snapshot never blocks the save. Publish still locks permanently.
+ */
+async function captureVersion(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reportId: string,
+  userId: string,
+  input: ComposeInput,
+) {
+  try {
+    if (!input.body) return;
+    const { data: latest } = await supabase
+      .from("report_versions")
+      .select("created_at")
+      .eq("report_id", reportId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latest && Date.now() - new Date(latest.created_at as string).getTime() < VERSION_INTERVAL_MS) {
+      return;
+    }
+    await supabase.from("report_versions").insert({
+      report_id: reportId,
+      author_id: userId,
+      title: input.title ?? null,
+      body: input.body,
+    });
+  } catch {
+    // History is a convenience; the draft save must never fail because of it.
+  }
 }
 
 /**

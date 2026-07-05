@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import type { ProfileConfig } from "@/lib/editor/types";
+import { checkAccent } from "@/lib/profile/accent";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -144,6 +145,84 @@ export async function saveOnboardingBrand({
   if (error) return { ok: false as const, error: error.message };
 
   revalidatePath("/onboarding/analyst");
+  return { ok: true as const };
+}
+
+/**
+ * Save (or clear) the custom storefront accent + font pairing (B1/B2). The
+ * accent is validated for WCAG AA vs --paper; an invalid hue is rejected.
+ * Merges into profile_config without disturbing other keys.
+ */
+export async function saveStorefrontBranding({
+  accent,
+  fontPairing,
+  layout,
+  texture,
+}: {
+  accent?: string | null;
+  fontPairing?: ProfileConfig["font_pairing"];
+  layout?: ProfileConfig["layout"];
+  texture?: boolean;
+}) {
+  const { supabase, userId } = await requireUser();
+
+  let accentHex: string | null | undefined;
+  if (accent === null || accent === "") {
+    accentHex = null;
+  } else if (typeof accent === "string") {
+    const check = checkAccent(accent);
+    if (!check.valid) return { ok: false as const, error: check.reason ?? "Invalid accent" };
+    accentHex = check.hex;
+  }
+
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+
+  const config: ProfileConfig = { ...(existing?.profile_config ?? {}) };
+  if (accentHex !== undefined) config.accent = accentHex ?? undefined;
+  if (fontPairing !== undefined) config.font_pairing = fontPairing;
+  if (layout !== undefined) config.layout = layout;
+  if (texture !== undefined) config.texture = texture;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ profile_config: config })
+    .eq("id", userId);
+  if (error) return { ok: false as const, error: error.message };
+
+  revalidatePath("/studio/branding");
+  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
+  return { ok: true as const };
+}
+
+/**
+ * Save the addable storefront sections (B3). Merge-safe: touches only the
+ * storefront_sections key, never the rest of profile_config.
+ */
+export async function saveStorefrontSections(sections: ProfileConfig["storefront_sections"]) {
+  const { supabase, userId } = await requireUser();
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+
+  const config: ProfileConfig = {
+    ...(existing?.profile_config ?? {}),
+    storefront_sections: sections ?? [],
+  };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ profile_config: config })
+    .eq("id", userId);
+  if (error) return { ok: false as const, error: error.message };
+
+  revalidatePath("/studio/branding");
+  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
   return { ok: true as const };
 }
 

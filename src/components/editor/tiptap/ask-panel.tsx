@@ -12,6 +12,10 @@ import {
   Table,
   Quote,
   GripVertical,
+  Landmark,
+  Target,
+  LineChart,
+  Calculator,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -32,10 +36,27 @@ interface Message {
 }
 
 const TICKER_RE = /\b[A-Z]{1,5}\b/;
+const TICKER_RE_G = /\b[A-Z]{2,5}\b/g;
+// Uppercase words that read as tickers but aren't, so multi-ticker detection
+// doesn't turn "DCF vs EPS" into fake symbols.
+const NOT_TICKERS = new Set([
+  "DCF", "EPS", "YOY", "CAGR", "CEO", "CFO", "USD", "AI", "SEC", "GAAP", "TTM",
+  "ROIC", "FCF", "IPO", "ETF", "API", "AND", "THE", "VS", "OR",
+]);
 
 function detectTicker(text: string, fallback?: string): string {
   const m = text.toUpperCase().match(TICKER_RE);
   return (m?.[0] ?? fallback ?? "").toUpperCase();
+}
+
+/** All plausible tickers in the text (for multi-ticker comparison), max 8. */
+function detectTickers(text: string, fallback?: string): string[] {
+  const found = [...text.toUpperCase().matchAll(TICKER_RE_G)]
+    .map((m) => m[0])
+    .filter((t) => !NOT_TICKERS.has(t));
+  const unique = [...new Set(found)].slice(0, 8);
+  if (unique.length > 0) return unique;
+  return fallback ? [fallback.toUpperCase()] : [];
 }
 
 /** A neutral summary the analyst absorbs into their own prose -- never a
@@ -57,6 +78,46 @@ function chartCard(ticker: string): ResultCard {
     label: `${ticker} chart`,
     subtitle: "Live price, pre-configured",
     node: { type: "chartNode", attrs: { ticker, range: "3M", kind: "area" } },
+  };
+}
+
+function statementCard(ticker: string): ResultCard {
+  return {
+    kind: "statement",
+    icon: Landmark,
+    label: `${ticker} financials`,
+    subtitle: "EDGAR statement, pull inside",
+    node: { type: "statementNode", attrs: { ticker, kind: "income", years: 5 } },
+  };
+}
+
+function estimatesCard(ticker: string): ResultCard {
+  return {
+    kind: "estimates",
+    icon: Target,
+    label: `${ticker} estimates`,
+    subtitle: "Consensus vs actuals",
+    node: { type: "estimatesNode", attrs: { ticker } },
+  };
+}
+
+function comparisonCard(symbols: string[]): ResultCard {
+  return {
+    kind: "comparison",
+    icon: LineChart,
+    label: `Compare ${symbols.slice(0, 3).join(", ")}${symbols.length > 3 ? "..." : ""}`,
+    subtitle: "Metric over time",
+    node: { type: "comparisonNode", attrs: { symbols, metric: "revenue", years: 5, kind: "line" } },
+  };
+}
+
+function valuationCard(ticker: string): ResultCard {
+  return {
+    kind: "valuation",
+    icon: Calculator,
+    label: `${ticker} valuation`,
+    subtitle: "DCF, fill your assumptions",
+    node: { type: "valuationNode", attrs: { ticker } },
   };
 }
 
@@ -83,6 +144,34 @@ const SCAFFOLDS: ResultCard[] = [
     label: "Data table",
     subtitle: "Rows and columns",
     node: { type: "financialTableNode", attrs: {} },
+  },
+  {
+    kind: "statement",
+    icon: Landmark,
+    label: "Financial statement",
+    subtitle: "EDGAR income / balance / cash flow",
+    node: { type: "statementNode", attrs: { kind: "income", years: 5 } },
+  },
+  {
+    kind: "estimates",
+    icon: Target,
+    label: "Estimates",
+    subtitle: "Consensus EPS vs actuals",
+    node: { type: "estimatesNode", attrs: {} },
+  },
+  {
+    kind: "comparison",
+    icon: LineChart,
+    label: "Metric comparison",
+    subtitle: "A metric across tickers",
+    node: { type: "comparisonNode", attrs: {} },
+  },
+  {
+    kind: "valuation",
+    icon: Calculator,
+    label: "Valuation (DCF)",
+    subtitle: "Fair value + sensitivity",
+    node: { type: "valuationNode", attrs: {} },
   },
 ];
 
@@ -190,9 +279,21 @@ export function AskPanel({
 
         const cards: ResultCard[] = [];
         if (data.reply) cards.push(textCard(data.reply));
-        const wantsChart = /chart|price|graph/i.test(text);
         const ticker = detectTicker(text, context.ticker);
-        if (wantsChart && ticker) cards.push(chartCard(ticker));
+        if (/chart|price|graph/i.test(text) && ticker) cards.push(chartCard(ticker));
+        if (/statement|income|balance|cash ?flow|financials|10-?k/i.test(text) && ticker) {
+          cards.push(statementCard(ticker));
+        }
+        if (/estimate|consensus|\beps\b|beat|miss|price target/i.test(text) && ticker) {
+          cards.push(estimatesCard(ticker));
+        }
+        if (/compar|versus|\bvs\b|peers?|comps?/i.test(text)) {
+          const symbols = detectTickers(text, context.ticker);
+          if (symbols.length) cards.push(comparisonCard(symbols));
+        }
+        if (/valuation|\bdcf\b|fair value|intrinsic|target price/i.test(text) && ticker) {
+          cards.push(valuationCard(ticker));
+        }
 
         setMessages((m) => [
           ...m,

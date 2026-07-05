@@ -24,7 +24,15 @@ export interface ReportDocument {
 
 export interface ProfileSection {
   id: string;
-  type: "bio" | "headline" | "specialties" | "social" | "featured";
+  type:
+    | "bio"
+    | "headline"
+    | "specialties"
+    | "social"
+    | "featured"
+    | "richText"
+    | "faq"
+    | "featuredReport";
   visible: boolean;
   data?: Record<string, unknown>;
 }
@@ -38,6 +46,18 @@ export interface ProfileConfig {
   featured_tickers?: string[];
   /** Investor-side sector picks from onboarding. Shapes the Discover feed. */
   interests?: string[];
+  /** Custom storefront accent (B1). Hex string; overrides only --accent on the
+   * public profile, never app-wide. Validated for WCAG AA vs --paper on save. */
+  accent?: string;
+  /** Storefront font pairing id (B2). */
+  font_pairing?: "ledger" | "modern" | "editorial" | "mono";
+  /** Addable storefront content sections (B3), rendered below the hero.
+   * Separate key from `sections` (hero layout) so the two never collide. */
+  storefront_sections?: ProfileSection[];
+  /** Storefront report-list layout preset (B4). */
+  layout?: "list" | "grid" | "magazine";
+  /** Optional <=3% paper texture on the storefront only (B4). Default off. */
+  texture?: boolean;
 }
 
 export const BLOCK_META: Record<

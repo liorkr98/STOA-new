@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -7,8 +8,15 @@ import { listByAuthor } from "@/lib/db/reports";
 import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
+import { listPollsByCreator } from "@/lib/db/polls";
+import { listActivePlans } from "@/lib/db/plans";
+import { PollCard } from "@/components/polls/poll-card";
+import { PlanPicker } from "@/components/wallet/plan-picker";
+import { StorefrontSections } from "@/components/profile/storefront-sections";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
+import { accentVars, checkAccent } from "@/lib/profile/accent";
+import { fontPairingVars } from "@/lib/profile/fonts";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { Stat } from "@/components/ui/stat";
 import { MoatBadge } from "@/components/ui/moat-badge";
@@ -72,10 +80,12 @@ export default async function AnalystProfilePage({
   const profile = await getProfileByHandle(handle);
   if (!profile) notFound();
 
-  const [predictions, reports, userId] = await Promise.all([
+  const [predictions, reports, userId, polls, plans] = await Promise.all([
     listPredictionsByAuthor(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     getSessionUserId(),
+    listPollsByCreator(profile.id, 3),
+    listActivePlans(profile.id),
   ]);
 
   const stats = analystStats(predictions);
@@ -97,9 +107,21 @@ export default async function AnalystProfilePage({
   );
 
   const config = profile.profile_config ?? {};
+  // Scoped custom accent (B1): overrides --accent for this storefront subtree
+  // only. Re-validated at render so a bad stored value never ships.
+  const accentCheck = config.accent ? checkAccent(config.accent) : null;
+  const storefrontStyle = {
+    ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
+    ...fontPairingVars(config.font_pairing),
+  } as CSSProperties;
+
+  const layout = config.layout ?? "list";
 
   return (
-    <div className="flex flex-col gap-8">
+    <div
+      className={`flex flex-col gap-8 ${config.texture ? "paper-texture" : ""}`}
+      style={storefrontStyle}
+    >
       <ProfileHeader
         profile={profile}
         config={config}
@@ -113,16 +135,25 @@ export default async function AnalystProfilePage({
               sampleSize={stats.resolved}
               size="lg"
             />
-            {!isSelf && (
-              <SubscribeButton
-                analystId={profile.id}
-                handle={profile.handle}
-                price={profile.sub_price}
-                balance={wallet?.balance ?? 0}
-                isAuthed={Boolean(userId)}
-                subscribed={subscribed}
-              />
-            )}
+            {!isSelf &&
+              (plans.length > 0 ? (
+                <PlanPicker
+                  plans={plans}
+                  handle={profile.handle}
+                  balance={wallet?.balance ?? 0}
+                  isAuthed={Boolean(userId)}
+                  subscribed={subscribed}
+                />
+              ) : (
+                <SubscribeButton
+                  analystId={profile.id}
+                  handle={profile.handle}
+                  price={profile.sub_price}
+                  balance={wallet?.balance ?? 0}
+                  isAuthed={Boolean(userId)}
+                  subscribed={subscribed}
+                />
+              ))}
           </>
         }
       />
@@ -133,6 +164,16 @@ export default async function AnalystProfilePage({
           isAuthed={Boolean(userId)}
         />
       )}
+
+      {polls.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {polls.map((poll) => (
+            <PollCard key={poll.id} poll={poll} isAuthed={Boolean(userId)} />
+          ))}
+        </section>
+      )}
+
+      <StorefrontSections sections={config.storefront_sections ?? []} reports={reports} />
 
       {/* Track record */}
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
@@ -188,11 +229,22 @@ export default async function AnalystProfilePage({
       <section className="flex flex-col gap-5">
         <TabBar tabs={VIEWS} active={view} param="view" />
         {filtered.length > 0 ? (
-          <div className="grid gap-5">
-            {filtered.map((r) => (
-              <ReportCard key={r.id} report={{ ...r, author: profile }} />
-            ))}
-          </div>
+          layout === "magazine" && filtered.length > 1 ? (
+            <div className="flex flex-col gap-5">
+              <ReportCard report={{ ...filtered[0], author: profile }} />
+              <div className="grid gap-5 sm:grid-cols-2">
+                {filtered.slice(1).map((r) => (
+                  <ReportCard key={r.id} report={{ ...r, author: profile }} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={layout === "grid" ? "grid gap-5 sm:grid-cols-2" : "grid gap-5"}>
+              {filtered.map((r) => (
+                <ReportCard key={r.id} report={{ ...r, author: profile }} />
+              ))}
+            </div>
+          )
         ) : (
           <EmptyState title="Nothing published here yet" />
         )}

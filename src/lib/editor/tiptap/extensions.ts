@@ -1,14 +1,24 @@
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Highlight from "@tiptap/extension-highlight";
+import { Mathematics } from "@tiptap/extension-mathematics";
 import type { Extensions } from "@tiptap/core";
 import { Callout } from "./callout";
 import { OpinionMark } from "./opinion-mark";
+import { TickerMark } from "./ticker-mark";
 import { Dir } from "./dir-attribute";
 import { ChartNode } from "./nodes/chart-node";
 import { DataFigureNode } from "./nodes/data-figure-node";
 import { CompareNode } from "./nodes/compare-node";
 import { FinancialTableNode } from "./nodes/financial-table-node";
+import { StatementNode } from "./nodes/statement-node";
+import { EstimatesNode } from "./nodes/estimates-node";
+import { ComparisonNode } from "./nodes/comparison-node";
+import { EmbedNode } from "./nodes/embed-node";
+import { ImageNode } from "./nodes/image-node";
+import { ValuationNode } from "./nodes/valuation-node";
+import { ScenarioNode } from "./nodes/scenario-node";
+import { VideoNode } from "./nodes/video-node";
 
 /**
  * The single Tiptap extension set, shared by the editor and the read-only
@@ -39,8 +49,20 @@ export function buildExtensions({
     DataFigureNode,
     CompareNode,
     FinancialTableNode,
+    StatementNode,
+    EstimatesNode,
+    ComparisonNode,
+    EmbedNode,
+    ImageNode,
+    ValuationNode,
+    ScenarioNode,
+    VideoNode,
     Highlight.configure({ multicolor: true }),
     OpinionMark,
+    TickerMark,
+    // KaTeX formulas (A11). CSS is imported at the two mount points
+    // (tiptap-editor, report-renderer) so this module stays style-free.
+    Mathematics,
     Dir,
     ...(editable
       ? [

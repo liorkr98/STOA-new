@@ -352,6 +352,26 @@ body {
   scrollbar-color: var(--border-strong) transparent;
 }
 
+/* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
+ * never under reading text. Default off; the storefront opts in per-analyst.
+ * Removed entirely under reduced motion (it is decoration, not content). */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-texture::before {
+    display: none;
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Tiptap editor + read renderer (Compose). One .stoa-prose base drives
  * both surfaces; the --read modifier swaps the drafting sans for the
@@ -401,6 +421,16 @@ body {
 .stoa-opinion {
   text-decoration: underline dotted var(--plum);
   text-underline-offset: 2px;
+}
+/* $TICKER mark (H1): a quiet accent chip, never sentiment-colored -- a
+ * reference, not a call. The hover card supplies the live data. */
+.stoa-ticker {
+  color: var(--accent);
+  background: var(--accent-weak);
+  border-radius: var(--r-tag);
+  padding: 0 0.2em;
+  font-size: 0.92em;
+  cursor: default;
 }
 .stoa-prose a {
   color: var(--accent);

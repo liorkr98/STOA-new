@@ -21,6 +21,16 @@ export async function topUp(amount: number): Promise<SpendResult> {
   return data as SpendResult;
 }
 
+/** Plan-aware subscribe (Part C). Free tiers and trials move no money. */
+export async function subscribeToPlan(planId: string, handle?: string): Promise<SpendResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("subscribe_to_plan", { p_plan_id: planId });
+  if (error) return { error: error.message };
+  if (handle) revalidatePath(`/analyst/${handle}`);
+  revalidatePath("/wallet");
+  return data as SpendResult;
+}
+
 export async function subscribeToAnalyst(
   analystId: string,
   handle?: string,

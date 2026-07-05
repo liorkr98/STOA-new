@@ -164,3 +164,38 @@ the spec's IA; this build keeps existing route names, e.g. `/studio/analytics` r
 - A score shown alongside a separately-scaled tier/rating, as if they're two different signals.
 - The disclosure block restyled per analyst, collapsed into an accordion, or hidden behind a tab.
 - A fully circular element anywhere except the seal.
+
+---
+
+## v3 addendum — data-visualization canon
+
+**Hand-written, synced from `docs/DESIGN_LANGUAGE.md` §2/§3/§6.** Not generator output. This is the
+one place new decisions were added to this deprecated file, because the data-viz vocabulary is
+genuinely new and agents check MASTER.md as the short reference. The long form (and the tie-breaker
+if the two disagree) is `docs/DESIGN_LANGUAGE.md`; base tokens still defer to `docs/FRONTEND.md`.
+
+### Backgrounds (§2.2)
+
+Layer by elevation, not new colors: app base `--paper`; cards `--surface` + 1px `--border`; nested
+panels `--surface-2`. Reader body is plain `--paper`, editorial, no texture. Storefront is the one
+expressive surface (banner may use theme gradient + creator `--accent` wash). Dashboards/Notebook
+are dense: `--surface-2` field with `--surface` widgets. `.ledger-card` (doubled hairline) stays
+reserved for trust-critical blocks only (call card, disclosures, a locked `valuationNode` that
+drives the target, HIT/MISS). Optional paper texture (≤3%) is storefront + seal moments only,
+default off.
+
+### Data-viz palette (§2.3) — derived only from the six hues; import from `src/lib/design/chart-theme.ts`
+
+- **Semantic (always):** positive = `--up` (verdigris), negative = `--down` (rust). Never swap.
+- **Categorical (≤6):** `--verdigris`, `--brass`, `--plum`, `--rust`,
+  `color-mix(--verdigris 55% + --ink)`, `color-mix(--brass 60% + --ink)`. Muted, no neon.
+- **Sequential:** paper → verdigris, 5 steps via `color-mix(in oklch, --verdigris X%, --surface)`.
+- **Diverging (sensitivity/scenario):** `--rust` → `--surface-2` → `--verdigris`.
+- **Axes/grid:** `--border` lines, `--text-faint` labels, `--border-strong` baseline.
+- **Numbers:** always `.num` (tabular Plex Mono).
+
+### Density (§2.6)
+
+`data-density="comfortable" | "compact"` (default comfortable), persisted per user. Compact tightens
+spacing + table row height for dashboards, watchlists, screeners, and the statement block. The
+reader stays editorial regardless.

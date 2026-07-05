@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { price } from "@/lib/format";
 import { getQuote, getCompanyFundamentals } from "@/lib/engine/market";
 import { listByTicker } from "@/lib/db/reports";
@@ -7,6 +8,7 @@ import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StoaCoverageBadge } from "@/components/markets/coverage-badge";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
+import { CompanyFinancials } from "@/components/markets/company-financials";
 import { WatchlistButton } from "@/components/markets/watchlist-button";
 
 export async function generateMetadata({
@@ -49,6 +51,10 @@ export default async function TickerPage({
       </div>
 
       <FundamentalsPanel data={fundamentals} />
+
+      <Suspense fallback={<p className="t-meta">Loading financials...</p>}>
+        <CompanyFinancials ticker={sym} />
+      </Suspense>
 
       <div>
         <h2 className="t-h3 mb-4">Stoa coverage</h2>
