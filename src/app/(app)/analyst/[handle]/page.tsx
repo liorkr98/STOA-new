@@ -8,6 +8,8 @@ import { listByAuthor } from "@/lib/db/reports";
 import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
+import { listPollsByCreator } from "@/lib/db/polls";
+import { PollCard } from "@/components/polls/poll-card";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
@@ -75,10 +77,11 @@ export default async function AnalystProfilePage({
   const profile = await getProfileByHandle(handle);
   if (!profile) notFound();
 
-  const [predictions, reports, userId] = await Promise.all([
+  const [predictions, reports, userId, polls] = await Promise.all([
     listPredictionsByAuthor(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     getSessionUserId(),
+    listPollsByCreator(profile.id, 3),
   ]);
 
   const stats = analystStats(predictions);
@@ -142,6 +145,14 @@ export default async function AnalystProfilePage({
           initialFollowing={following}
           isAuthed={Boolean(userId)}
         />
+      )}
+
+      {polls.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {polls.map((poll) => (
+            <PollCard key={poll.id} poll={poll} isAuthed={Boolean(userId)} />
+          ))}
+        </section>
       )}
 
       {/* Track record */}
