@@ -5,6 +5,7 @@ import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Landmark, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Download } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { FinancialStatement, StatementKind } from "@/lib/market/types";
+import { SaveToNotebookButton } from "@/components/notebook/save-to-notebook-button";
 
 /**
  * statementNode view (A4). In the editor an analyst pulls an EDGAR statement via
@@ -326,12 +327,30 @@ export function StatementNodeView({
             <span className="num text-sm font-semibold">{statement.symbol}</span>
             <span className="t-eyebrow">{kindLabel}</span>
           </span>
-          {statement.source?.provider && (
-            <span className="t-meta text-[11px]">
-              Source: {statement.source.provider.toUpperCase()}
-              {statement.source.asOf ? ` - filed ${statement.source.asOf}` : ""}
-            </span>
-          )}
+          <span className="flex items-center gap-2">
+            {statement.source?.provider && (
+              <span className="t-meta text-[11px]">
+                Source: {statement.source.provider.toUpperCase()}
+                {statement.source.asOf ? ` - filed ${statement.source.asOf}` : ""}
+              </span>
+            )}
+            <SaveToNotebookButton
+              compact
+              label="Save"
+              entry={{
+                kind: "snippet",
+                payload: {
+                  quote: `${statement.symbol} ${kindLabel} statement, ${statement.periods[0] ?? ""}-${statement.periods[statement.periods.length - 1] ?? ""}`,
+                },
+                source: {
+                  title: `${statement.symbol} ${kindLabel} (EDGAR)`,
+                  ticker: statement.symbol,
+                  asOf: statement.source?.asOf,
+                },
+                tags: [statement.symbol],
+              }}
+            />
+          </span>
         </div>
         {renderTable(statement)}
       </NodeViewWrapper>
