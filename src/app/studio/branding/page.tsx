@@ -41,6 +41,8 @@ export default async function StudioBrandingPage() {
       <AccentPicker
         initialAccent={profile.profile_config?.accent ?? null}
         initialFontPairing={profile.profile_config?.font_pairing ?? null}
+        initialLayout={profile.profile_config?.layout ?? null}
+        initialTexture={profile.profile_config?.texture ?? false}
       />
       <StorefrontSectionsEditor
         initialSections={profile.profile_config?.storefront_sections ?? []}

@@ -54,6 +54,10 @@ export interface ProfileConfig {
   /** Addable storefront content sections (B3), rendered below the hero.
    * Separate key from `sections` (hero layout) so the two never collide. */
   storefront_sections?: ProfileSection[];
+  /** Storefront report-list layout preset (B4). */
+  layout?: "list" | "grid" | "magazine";
+  /** Optional <=3% paper texture on the storefront only (B4). Default off. */
+  texture?: boolean;
 }
 
 export const BLOCK_META: Record<

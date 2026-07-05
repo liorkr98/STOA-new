@@ -156,9 +156,13 @@ export async function saveOnboardingBrand({
 export async function saveStorefrontBranding({
   accent,
   fontPairing,
+  layout,
+  texture,
 }: {
   accent?: string | null;
   fontPairing?: ProfileConfig["font_pairing"];
+  layout?: ProfileConfig["layout"];
+  texture?: boolean;
 }) {
   const { supabase, userId } = await requireUser();
 
@@ -180,6 +184,8 @@ export async function saveStorefrontBranding({
   const config: ProfileConfig = { ...(existing?.profile_config ?? {}) };
   if (accentHex !== undefined) config.accent = accentHex ?? undefined;
   if (fontPairing !== undefined) config.font_pairing = fontPairing;
+  if (layout !== undefined) config.layout = layout;
+  if (texture !== undefined) config.texture = texture;
 
   const { error } = await supabase
     .from("profiles")

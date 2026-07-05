@@ -115,8 +115,13 @@ export default async function AnalystProfilePage({
     ...fontPairingVars(config.font_pairing),
   } as CSSProperties;
 
+  const layout = config.layout ?? "list";
+
   return (
-    <div className="flex flex-col gap-8" style={storefrontStyle}>
+    <div
+      className={`flex flex-col gap-8 ${config.texture ? "paper-texture" : ""}`}
+      style={storefrontStyle}
+    >
       <ProfileHeader
         profile={profile}
         config={config}
@@ -224,11 +229,22 @@ export default async function AnalystProfilePage({
       <section className="flex flex-col gap-5">
         <TabBar tabs={VIEWS} active={view} param="view" />
         {filtered.length > 0 ? (
-          <div className="grid gap-5">
-            {filtered.map((r) => (
-              <ReportCard key={r.id} report={{ ...r, author: profile }} />
-            ))}
-          </div>
+          layout === "magazine" && filtered.length > 1 ? (
+            <div className="flex flex-col gap-5">
+              <ReportCard report={{ ...filtered[0], author: profile }} />
+              <div className="grid gap-5 sm:grid-cols-2">
+                {filtered.slice(1).map((r) => (
+                  <ReportCard key={r.id} report={{ ...r, author: profile }} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={layout === "grid" ? "grid gap-5 sm:grid-cols-2" : "grid gap-5"}>
+              {filtered.map((r) => (
+                <ReportCard key={r.id} report={{ ...r, author: profile }} />
+              ))}
+            </div>
+          )
         ) : (
           <EmptyState title="Nothing published here yet" />
         )}

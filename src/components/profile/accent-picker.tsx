@@ -15,15 +15,29 @@ import { saveStorefrontBranding } from "@/app/actions/profile";
 
 const SWATCHES = ["#2f6e5d", "#5b4b6b", "#a6483c", "#24544a", "#34507a", "#7a3b52"];
 
+type LayoutId = "list" | "grid" | "magazine";
+
+const LAYOUTS: { id: LayoutId; label: string; description: string }[] = [
+  { id: "list", label: "List", description: "One report per row - the default" },
+  { id: "grid", label: "Grid", description: "Two-up cards, denser browse" },
+  { id: "magazine", label: "Magazine", description: "Lead story large, rest in a grid" },
+];
+
 export function AccentPicker({
   initialAccent,
   initialFontPairing,
+  initialLayout,
+  initialTexture,
 }: {
   initialAccent?: string | null;
   initialFontPairing?: FontPairingId | null;
+  initialLayout?: LayoutId | null;
+  initialTexture?: boolean;
 }) {
   const [value, setValue] = useState(initialAccent ?? "#2f6e5d");
   const [pairing, setPairing] = useState<FontPairingId>(initialFontPairing ?? "ledger");
+  const [layout, setLayout] = useState<LayoutId>(initialLayout ?? "list");
+  const [texture, setTexture] = useState<boolean>(initialTexture ?? false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -39,7 +53,12 @@ export function AccentPicker({
       return;
     }
     start(async () => {
-      const res = await saveStorefrontBranding({ accent: check.hex, fontPairing: pairing });
+      const res = await saveStorefrontBranding({
+        accent: check.hex,
+        fontPairing: pairing,
+        layout,
+        texture,
+      });
       if (res.ok) setSaved(true);
       else setError(res.error);
     });
@@ -132,6 +151,32 @@ export function AccentPicker({
           contrast {check.contrast.toFixed(1)}:1
         </span>
       </div>
+
+      <div>
+        <span className="t-eyebrow">Report layout</span>
+        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => setLayout(l.id)}
+              className={`rounded-[var(--radius-btn)] border px-3 py-2 text-left transition-colors focus-ring ${
+                layout === l.id
+                  ? "border-accent bg-accent-weak"
+                  : "border-border bg-bg hover:border-border-strong"
+              }`}
+            >
+              <span className="block text-sm font-medium">{l.label}</span>
+              <span className="t-meta block text-[11px]">{l.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-text-mute">
+        <input type="checkbox" checked={texture} onChange={(e) => setTexture(e.target.checked)} />
+        Paper texture on the storefront (subtle, off for reduced-motion visitors)
+      </label>
 
       {!check.valid && (
         <p className="flex items-center gap-1.5 text-sm text-[var(--down)]">
