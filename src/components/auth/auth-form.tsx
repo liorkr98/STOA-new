@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import { signIn, signUp } from "@/app/actions/auth";
 import type { AuthState } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -38,7 +39,11 @@ export function AuthForm({
           : "Start with 100 demo credits to explore the marketplace."}
       </p>
 
-      <form action={formAction} className="mt-8 flex flex-col gap-4">
+      <div className="mt-8">
+        <OAuthButtons refHandle={refHandle} />
+      </div>
+
+      <form action={formAction} className="mt-4 flex flex-col gap-4">
         {refHandle && <input type="hidden" name="ref" value={refHandle} />}
         {mode === "sign-up" && (
           <div className="flex flex-col gap-2">

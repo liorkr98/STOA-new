@@ -15,6 +15,7 @@ import { MoatBadge } from "@/components/ui/moat-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
+import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
@@ -103,6 +104,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             initialLiked={liked}
             initialSaved={saved}
             isAuthed={Boolean(userId)}
+          />
+          <ShareMenu
+            target={{
+              url: `/report/${id}`,
+              title: report.title ?? "Research on Stoa",
+              ticker: report.ticker ?? undefined,
+            }}
           />
         </div>
       )}

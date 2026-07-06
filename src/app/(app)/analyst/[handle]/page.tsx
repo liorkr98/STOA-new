@@ -13,6 +13,7 @@ import { listActivePlans } from "@/lib/db/plans";
 import { PollCard } from "@/components/polls/poll-card";
 import { PlanPicker } from "@/components/wallet/plan-picker";
 import { StorefrontSections } from "@/components/profile/storefront-sections";
+import { ShareMenu } from "@/components/share/share-menu";
 import { analystStats } from "@/lib/engine/track";
 import { pct } from "@/lib/format";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
@@ -157,13 +158,22 @@ export default async function AnalystProfilePage({
           </>
         }
       />
-      {!isSelf && (
-        <FollowButton
-          analystId={profile.id}
-          initialFollowing={following}
-          isAuthed={Boolean(userId)}
+      <div className="flex items-center gap-3">
+        {!isSelf && (
+          <FollowButton
+            analystId={profile.id}
+            initialFollowing={following}
+            isAuthed={Boolean(userId)}
+          />
+        )}
+        <ShareMenu
+          target={{
+            url: `/analyst/${profile.handle}`,
+            title: `${profile.display_name} on Stoa - verified track record`,
+          }}
+          label="Share profile"
         />
-      )}
+      </div>
 
       {polls.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
