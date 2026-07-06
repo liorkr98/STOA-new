@@ -1,6 +1,7 @@
 "use client";
 
 import "katex/dist/katex.min.css";
+import { useMemo } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
@@ -29,10 +30,19 @@ export function TiptapEditor({
   onChange: (change: EditorChange) => void;
   onReady?: (editor: Editor) => void;
 }) {
+  // Stable identity across renders. Every parent onChange re-renders this
+  // component; a fresh extensions array makes newer @tiptap/react reconfigure
+  // the editor, destroying plugin views mid-keystroke -- which killed the
+  // slash-menu popup the instant it opened.
+  const extensions = useMemo(
+    () => [...buildExtensions({ editable: true }), SlashMenu, BlockActionsShortcut],
+    [],
+  );
+
   const editor = useEditor({
     // Required for Next.js SSR: render on the client to avoid hydration drift.
     immediatelyRender: false,
-    extensions: [...buildExtensions({ editable: true }), SlashMenu, BlockActionsShortcut],
+    extensions,
     content: initialContent,
     editorProps: {
       attributes: {

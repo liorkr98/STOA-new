@@ -1,6 +1,7 @@
 "use client";
 
 import "katex/dist/katex.min.css";
+import { useMemo } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
@@ -13,10 +14,11 @@ import { TickerHoverLayer } from "@/components/report/ticker-hover-layer";
  * editorial face and reading-scale leading.
  */
 export function TiptapReportRenderer({ json }: { json: JSONContent }) {
+  const extensions = useMemo(() => buildExtensions({ editable: false }), []);
   const editor = useEditor({
     immediatelyRender: false,
     editable: false,
-    extensions: buildExtensions({ editable: false }),
+    extensions,
     content: json,
     editorProps: {
       attributes: { class: "stoa-prose stoa-prose--read focus:outline-none" },
