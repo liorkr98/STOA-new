@@ -472,3 +472,5 @@ Grading outcomes: Hit (reached target), Near (right direction, short of target),
 | `liorkr98@gmail.com` | (your password) | analyst (after migration 0017) |
 
 ### End of agent handoff section
+
+<!-- deploy trigger 2026-07-06T09:16:38Z -->
