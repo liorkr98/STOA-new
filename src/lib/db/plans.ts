@@ -35,7 +35,7 @@ const COLUMNS =
 
 function normalize(row: Record<string, unknown>): Plan {
   return {
-    ...(row as Plan),
+    ...(row as unknown as Plan),
     perks: Array.isArray(row.perks) ? (row.perks as string[]) : [],
   };
 }
