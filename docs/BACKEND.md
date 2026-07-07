@@ -49,6 +49,42 @@ Publish validates every `screenshotUrl` in the body starts with:
 
 Chart candles use Yahoo Finance server-side (`src/lib/engine/market/candles.ts`) — no extra API key.
 
+## §11 — Billing disputes, chargebacks, and clawbacks
+
+Stripe/PayPal disputes are handled as **ledger events**, not silent balance edits.
+
+- Store every dispute lifecycle event in an immutable audit trail (event id, source provider, dispute status, amount).
+- If a previously paid analyst sale is disputed and funds are clawed back by the processor, record a compensating negative transfer in `platform_transfers` (or its successor ledger table) instead of mutating historical rows.
+- If the analyst balance cannot fully cover clawback immediately, carry the deficit forward as an outstanding platform receivable and net it against future payouts.
+- Keep the user-facing transaction history explicit: original sale, dispute opened, dispute resolved, clawback applied.
+
+This is a policy addendum only; it does not change the earnings split architecture.
+
+## §12 — Deletion requests and immutable-call history
+
+Right-to-erasure handling uses **pseudonymization + key severance** for immutable market records.
+
+- Personally identifying profile attributes are erased or replaced with neutral placeholders.
+- Authentication data is removed through the auth provider deletion workflow.
+- Locked-call artifacts needed for historical scoring/market integrity remain, but are detached from identifying profile fields.
+- Keep a minimal compliance record of request execution (request id, timestamp, operator/system actor, scope), excluding personal content.
+
+This is an engineering pattern note, not legal advice; legal/compliance sign-off is required before launch.
+
+## §13 — Prompt-injection baseline (AI endpoints)
+
+Applies to:
+
+- `POST /api/ai/fact-check`
+- `POST /api/ai/compose` (ask-panel backend)
+
+Baseline controls:
+
+- Treat analyst input as untrusted data, never instructions.
+- Enforce instruction/data separation with explicit wrappers (e.g. `<report_text>`, `<user_message>`) in prompts.
+- Sanitize and bound user-provided input before interpolation (control-char stripping, max-length caps).
+- Keep fact-check model contract deterministic and bounded (single pass, structured JSON output, no tool loops).
+
 ## Profile branding & boosts
 
 `profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. MOAT badge and disclosure blocks are **not** brandable.
