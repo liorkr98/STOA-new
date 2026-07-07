@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { FadeIn } from "@/components/motion/fade-in";
+import { cn } from "@/lib/design/cn";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
 function scoreColor(score: number) {
@@ -37,9 +38,16 @@ function LeadScore({ handle, score }: { handle: string; score: number | null }) 
   );
 }
 
-export function DispatchLead({ story }: { story: DispatchStory }) {
+export function DispatchLead({
+  story,
+  align = "center",
+}: {
+  story: DispatchStory;
+  align?: "center" | "start";
+}) {
   const { report, author, prediction, headline, dek } = story;
   const ticker = (report.ticker ?? prediction?.ticker ?? "").toUpperCase();
+  const centered = align === "center";
 
   return (
     <FadeIn>
@@ -75,10 +83,24 @@ export function DispatchLead({ story }: { story: DispatchStory }) {
           href={`/report/${report.id}`}
           className="group mt-4 block focus-ring rounded-[var(--radius-btn)]"
         >
-          <h2 className="dispatch-lead-headline transition-colors duration-[var(--dur-2)] group-hover:text-accent">
+          <h2
+            className={cn(
+              "dispatch-lead-headline transition-colors duration-[var(--dur-2)] group-hover:text-accent",
+              !centered && "dispatch-lead-headline--start text-left",
+            )}
+          >
             {headline}
           </h2>
-          {dek && <p className="dispatch-lead-dek mt-4">{dek}</p>}
+          {dek && (
+            <p
+              className={cn(
+                "dispatch-lead-dek mt-4",
+                !centered && "dispatch-lead-dek--start text-left mx-0",
+              )}
+            >
+              {dek}
+            </p>
+          )}
         </Link>
 
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-border pt-5">

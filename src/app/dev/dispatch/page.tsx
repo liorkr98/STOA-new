@@ -153,5 +153,5 @@ const payload: DispatchPayload = {
 };
 
 export default function DispatchPreviewPage() {
-  return <DispatchView dispatch={payload} />;
+  return <DispatchView dispatch={payload} mode="public" />;
 }

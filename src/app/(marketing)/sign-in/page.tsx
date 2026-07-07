@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Sign in" };
 
 export default async function SignInPage() {
   const userId = await getSessionUserId();
-  if (userId) redirect("/");
+  if (userId) redirect("/home");
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-[1200px] items-center px-5 py-16">

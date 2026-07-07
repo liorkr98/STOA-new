@@ -1,4 +1,5 @@
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
+import type { DispatchViewMode } from "@/lib/dispatch/types";
 
 /**
  * Front-page masthead (ref: dailydispatch.app): issue block and date block
@@ -11,6 +12,7 @@ export function DispatchMasthead({
   readMinutes,
   personalized,
   followedCount = 0,
+  mode = "public",
   className,
 }: {
   issueNumber: number;
@@ -18,6 +20,7 @@ export function DispatchMasthead({
   readMinutes: number;
   personalized?: boolean;
   followedCount?: number;
+  mode?: DispatchViewMode;
   className?: string;
 }) {
   const [year, month, day] = dateIso.split("-");
@@ -25,6 +28,8 @@ export function DispatchMasthead({
     .toLocaleDateString("en-US", { month: "short", timeZone: "America/New_York" })
     .toUpperCase();
   const dateline = formatDispatchDateline(dateIso);
+  const personalizedLabel =
+    mode === "home" && personalized ? "Your briefing" : personalized ? "Your dispatch" : null;
 
   return (
     <header className={className}>
@@ -56,12 +61,12 @@ export function DispatchMasthead({
           ·
         </span>
         <span>{readMinutes} min read</span>
-        {personalized && (
+        {personalizedLabel && (
           <>
             <span className="dispatch-dateline-sep" aria-hidden>
               ·
             </span>
-            <span className="font-semibold text-[var(--accent)]">Your dispatch</span>
+            <span className="font-semibold text-[var(--accent)]">{personalizedLabel}</span>
             {followedCount > 0 && (
               <>
                 <span className="dispatch-dateline-sep" aria-hidden>

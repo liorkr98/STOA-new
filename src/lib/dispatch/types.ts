@@ -50,3 +50,5 @@ export interface DispatchPayload {
   resolved: DispatchLedgerRow[];
   leaderboard: DispatchLeaderboardEntry[];
 }
+
+export type DispatchViewMode = "public" | "home";

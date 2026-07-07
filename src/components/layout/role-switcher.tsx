@@ -18,7 +18,7 @@ export function RoleSwitcher({ current }: { current: ViewRole }) {
   const router = useRouter();
 
   function switchTo(role: ViewRole) {
-    router.push(role === "investor" ? "/" : "/dashboard");
+    router.push(role === "investor" ? "/home" : "/dashboard");
   }
 
   return (

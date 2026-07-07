@@ -14,8 +14,16 @@ import { AccountMenu } from "@/components/layout/account-menu";
 import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { signOut } from "@/app/actions/auth";
 
-const links = [
+const publicLinks = [
   { href: "/", label: "Today" },
+  { href: "/discover", label: "Discover" },
+  { href: "/markets", label: "Markets" },
+  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/search", label: "Search" },
+];
+
+const appLinks = [
+  { href: "/home", label: "Home" },
   { href: "/discover", label: "Discover" },
   { href: "/markets", label: "Markets" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -40,6 +48,8 @@ export function TopNav({
   // exactly one filled button is visible per screen (docs/MOTION.md C.2).
   const pageHasPrimary = pathname === "/" || pathname.startsWith("/sign-");
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
+  const links = profile ? appLinks : publicLinks;
+  const logoHref = profile ? "/home" : "/";
   // role is a single exclusive enum today (see BACKEND_DATA_CONTRACTS.md),
   // so no account has both capabilities yet -- this always evaluates false
   // until that changes, which is the spec's own intended fallback.
@@ -52,7 +62,7 @@ export function TopNav({
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 px-5">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <Link href="/" className="focus-ring rounded-[var(--radius-btn)]">
+            <Link href={logoHref} className="focus-ring rounded-[var(--radius-btn)]">
               <StoaLogo />
             </Link>
             {showRoleSwitcher && <RoleSwitcher current={hasCreatorRole ? "creator" : "investor"} />}
