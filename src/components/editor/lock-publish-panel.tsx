@@ -9,6 +9,7 @@ import type { AccessType, Direction } from "@/lib/types";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import type { Plan } from "@/lib/db/plans";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
+import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
 
@@ -81,6 +82,8 @@ export function LockPublishPanel({
   onPrice,
   minPlanRank,
   onMinPlanRank,
+  requiredPerks,
+  onRequiredPerks,
   plans,
   plainText,
   credits,
@@ -110,6 +113,8 @@ export function LockPublishPanel({
   onPrice: (v: number) => void;
   minPlanRank: number;
   onMinPlanRank: (v: number) => void;
+  requiredPerks: string[];
+  onRequiredPerks: (v: string[]) => void;
   plans: Plan[];
   plainText: string;
   credits: number;
@@ -357,7 +362,10 @@ export function LockPublishPanel({
           </label>
         )}
         {access === "subscribers" && (
-          <PlanTierSelect plans={plans} value={minPlanRank} onChange={onMinPlanRank} />
+          <>
+            <PlanTierSelect plans={plans} value={minPlanRank} onChange={onMinPlanRank} />
+            <PerkAccessSelect plans={plans} value={requiredPerks} onChange={onRequiredPerks} />
+          </>
         )}
       </section>
 

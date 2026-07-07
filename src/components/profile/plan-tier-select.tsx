@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/design/cn";
 import type { Plan } from "@/lib/db/plans";
+import { collectAnalystPerks } from "@/lib/perks";
 
 /**
  * Pick which subscription tier unlocks content. Uses plan rank — perks on each
@@ -65,10 +66,20 @@ export function formatReportAccess(
   access: string,
   minPlanRank: number,
   plans: Plan[],
+  requiredPerks: string[] = [],
 ): string {
   if (access === "free") return "Free";
   if (access === "paid") return "Paid unlock";
-  if (minPlanRank <= 0) return "Subscribers";
-  const plan = [...plans].sort((a, b) => a.rank - b.rank).find((p) => p.rank >= minPlanRank);
-  return plan ? `${plan.name}+` : `Tier ${minPlanRank}+`;
+  const tier =
+    minPlanRank <= 0
+      ? "Subscribers"
+      : (() => {
+          const plan = [...plans].sort((a, b) => a.rank - b.rank).find((p) => p.rank >= minPlanRank);
+          return plan ? `${plan.name}+` : `Tier ${minPlanRank}+`;
+        })();
+  if (requiredPerks.length === 0) return tier;
+  const perkLabels = requiredPerks
+    .map((slug) => collectAnalystPerks(plans).find((p) => p.slug === slug)?.label ?? slug)
+    .join(", ");
+  return `${tier} · ${perkLabels}`;
 }

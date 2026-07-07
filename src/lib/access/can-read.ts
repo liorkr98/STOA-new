@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { planHasRequiredPerks } from "@/lib/perks";
 
 /**
  * Server-side entitlement gate for report bodies (Part C). Mirrors the
@@ -7,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
  * the hard backstop; this is the readable, reusable front check.
  *
  * Access ladder: author -> published + (free | unlocked | active sub whose plan
- * rank meets the report's min_plan_rank).
+ * rank meets min_plan_rank and includes required_perks).
  */
 export async function canReadReport(reportId: string): Promise<boolean> {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function canReadReport(reportId: string): Promise<boolean> {
 
   const { data: report } = await supabase
     .from("reports")
-    .select("author_id, status, access, min_plan_rank")
+    .select("author_id, status, access, min_plan_rank, required_perks")
     .eq("id", reportId)
     .maybeSingle();
   if (!report) return false;
@@ -40,16 +41,19 @@ export async function canReadReport(reportId: string): Promise<boolean> {
   if (report.access === "subscribers") {
     const { data } = await supabase
       .from("subscriptions")
-      .select("renews_at, status, plans(rank)")
+      .select("renews_at, status, plans(rank, perks)")
       .eq("analyst_id", report.author_id)
       .eq("subscriber_id", user.id)
       .eq("status", "active")
       .maybeSingle();
     if (!data || !data.renews_at) return false;
     if (new Date(data.renews_at as string) <= new Date()) return false;
-    const plan = data.plans as { rank?: number } | { rank?: number }[] | null;
-    const rank = Array.isArray(plan) ? (plan[0]?.rank ?? 0) : (plan?.rank ?? 0);
-    return rank >= (report.min_plan_rank ?? 0);
+    const plan = data.plans as { rank?: number; perks?: string[] } | { rank?: number; perks?: string[] }[] | null;
+    const row = Array.isArray(plan) ? plan[0] : plan;
+    const rank = row?.rank ?? 0;
+    const perks = Array.isArray(row?.perks) ? row.perks : [];
+    const required = (report.required_perks as string[] | null) ?? [];
+    return rank >= (report.min_plan_rank ?? 0) && planHasRequiredPerks(perks, required);
   }
 
   return false;

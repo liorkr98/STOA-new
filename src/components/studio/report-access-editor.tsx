@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import type { Plan } from "@/lib/db/plans";
 import { PlanTierSelect, formatReportAccess } from "@/components/profile/plan-tier-select";
+import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import type { AccessType, Report } from "@/lib/types";
 
 const inputClass =
@@ -17,12 +18,13 @@ export function ReportAccessEditor({
   report,
   plans,
 }: {
-  report: Pick<Report, "id" | "access" | "price" | "min_plan_rank">;
+  report: Pick<Report, "id" | "access" | "price" | "min_plan_rank" | "required_perks">;
   plans: Plan[];
 }) {
   const [open, setOpen] = useState(false);
   const [access, setAccess] = useState<AccessType>(report.access);
   const [minPlanRank, setMinPlanRank] = useState(report.min_plan_rank ?? 0);
+  const [requiredPerks, setRequiredPerks] = useState<string[]>(report.required_perks ?? []);
   const [price, setPrice] = useState(report.price ?? 7);
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +37,7 @@ export function ReportAccessEditor({
         access,
         price: access === "paid" ? price : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
+        required_perks: access === "subscribers" ? requiredPerks : [],
       });
       if (!res.ok) {
         setError(res.error ?? "Could not save");
@@ -54,7 +57,7 @@ export function ReportAccessEditor({
           )}
         >
           <Lock size={11} />
-          {formatReportAccess(access, minPlanRank, plans)}
+          {formatReportAccess(access, minPlanRank, plans, requiredPerks)}
         </button>
       </Popover.Trigger>
       <Popover.Portal>
@@ -62,7 +65,7 @@ export function ReportAccessEditor({
           side="left"
           align="start"
           sideOffset={8}
-          className="z-50 w-72 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-[var(--shadow-card)]"
+          className="z-50 w-80 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-[var(--shadow-card)]"
         >
           <p className="t-eyebrow mb-2">Report access</p>
           <div className="flex flex-col gap-1.5 text-sm">
@@ -104,7 +107,10 @@ export function ReportAccessEditor({
             </label>
           )}
           {access === "subscribers" && (
-            <PlanTierSelect plans={plans} value={minPlanRank} onChange={setMinPlanRank} />
+            <>
+              <PlanTierSelect plans={plans} value={minPlanRank} onChange={setMinPlanRank} />
+              <PerkAccessSelect plans={plans} value={requiredPerks} onChange={setRequiredPerks} />
+            </>
           )}
           {error ? <p className="mt-2 text-xs text-[var(--down)]">{error}</p> : null}
           <Button type="button" size="sm" className="mt-3 w-full" disabled={pending} onClick={save}>

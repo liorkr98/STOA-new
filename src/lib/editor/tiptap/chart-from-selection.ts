@@ -191,6 +191,7 @@ function buildDiagramNode(
       chartTicker: chartMode ? intent.ticker : "",
       chartMode,
       styleId: NAPKIN_CHART_STYLE_ID,
+      provider: "open",
       visualQuery: "",
       autoGenerate: true,
     },

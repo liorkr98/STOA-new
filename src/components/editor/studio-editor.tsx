@@ -86,6 +86,7 @@ export function StudioEditor({
   const [horizon, setHorizon] = useState(30);
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
   const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
+  const [requiredPerks, setRequiredPerks] = useState<string[]>(initialDraft?.required_perks ?? []);
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +156,7 @@ export function StudioEditor({
         access,
         price: access === "paid" ? Number(price) : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
+        required_perks: access === "subscribers" ? requiredPerks : [],
         ticker: hasCard ? ticker : null,
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
@@ -175,6 +177,7 @@ export function StudioEditor({
     bodyJson,
     access,
     minPlanRank,
+    requiredPerks,
     price,
     ticker,
     direction,
@@ -221,6 +224,7 @@ export function StudioEditor({
             access,
             price: access === "paid" ? Number(price) : null,
             min_plan_rank: access === "subscribers" ? minPlanRank : 0,
+        required_perks: access === "subscribers" ? requiredPerks : [],
             ticker,
             direction,
             target_price: target ? Number(target) : null,
@@ -246,6 +250,7 @@ export function StudioEditor({
         access,
         price: access === "paid" ? Number(price) : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
+        required_perks: access === "subscribers" ? requiredPerks : [],
         ticker: hasCard ? ticker : null,
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
@@ -277,6 +282,7 @@ export function StudioEditor({
     bodyJson,
     access,
     minPlanRank,
+    requiredPerks,
     price,
     hasCard,
     ticker,
@@ -444,6 +450,8 @@ export function StudioEditor({
               onPrice={setPrice}
               minPlanRank={minPlanRank}
               onMinPlanRank={setMinPlanRank}
+              requiredPerks={requiredPerks}
+              onRequiredPerks={setRequiredPerks}
               plans={plans}
               plainText={plainText}
               credits={credits}

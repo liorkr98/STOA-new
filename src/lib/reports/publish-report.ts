@@ -39,6 +39,7 @@ async function saveDraftBody(
     price: input.access === "paid" ? (input.price ?? null) : null,
     min_plan_rank:
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
+    required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
     status: "draft" as const,
   };

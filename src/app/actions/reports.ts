@@ -28,6 +28,7 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     price: input.access === "paid" ? (input.price ?? null) : null,
     min_plan_rank:
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
+    required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
     status: "draft" as const,
   };
@@ -180,6 +181,7 @@ export async function updateReportAccess(input: {
   access: AccessType;
   price?: number | null;
   min_plan_rank?: number;
+  required_perks?: string[];
 }): Promise<{ ok: boolean; error?: string }> {
   const { supabase, userId } = await requireUser();
   const { data: report } = await supabase
@@ -196,6 +198,7 @@ export async function updateReportAccess(input: {
       access: input.access,
       price: input.access === "paid" ? (input.price ?? null) : null,
       min_plan_rank: input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
+      required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     })
     .eq("id", input.id);
   if (error) return { ok: false, error: error.message };
