@@ -3,13 +3,15 @@ import { runFactCheck } from "@/lib/ai/fact-check";
 import { spendAiCredits } from "@/lib/ai/spend";
 import { persistClaims } from "@/app/actions/claims";
 import { createClient } from "@/lib/supabase/server";
+import { normalizePromptInput } from "@/lib/ai/prompt-safety";
 
 const FACT_CHECK_LIMIT = 20;
 const FACT_CHECK_WINDOW_SEC = 3600;
 
 export async function POST(req: Request) {
   const { text, reportId } = (await req.json()) as { text?: string; reportId?: string };
-  if (!text?.trim()) {
+  const normalizedText = text ? normalizePromptInput(text, 24_000) : "";
+  if (!normalizedText) {
     return NextResponse.json({ error: "No content to check" }, { status: 400 });
   }
 
@@ -41,14 +43,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await runFactCheck(text);
+  const result = await runFactCheck(normalizedText);
 
   // Persist to the structured `claims` table for a draft the caller owns, so
   // the debate feature and inline highlighting have offsets to work with.
   // Optional — the caller may not know the report id yet (new, unsaved draft).
   if (reportId) {
     try {
-      await persistClaims(reportId, text, result.claims);
+      await persistClaims(reportId, normalizedText, result.claims);
     } catch {
       // non-critical — the jsonb summary on the report still gets saved by the editor
     }
