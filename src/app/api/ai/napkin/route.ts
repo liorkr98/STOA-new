@@ -15,7 +15,10 @@ export async function POST(req: Request) {
   const token = process.env.NAPKIN_API_KEY?.trim();
   if (!token) {
     return NextResponse.json(
-      { error: "Napkin is not configured. Set NAPKIN_API_KEY on the server." },
+      {
+        error:
+          "Napkin is not configured on this deployment. In Vercel, add NAPKIN_API_KEY to the stoa-new project (link the team variable to the project if using shared env), then redeploy.",
+      },
       { status: 503 },
     );
   }
@@ -44,6 +47,7 @@ export async function POST(req: Request) {
   const format = body.format === "png" ? "png" : "svg";
   const numberOfVisuals = Math.min(4, Math.max(1, body.number_of_visuals ?? 2));
   const visualQuery = body.visual_query?.trim() || undefined;
+  const useVisualQuery = visualQuery && numberOfVisuals === 1;
 
   try {
     const { requestId, files, buffers } = await napkinGenerateAndDownload(token, {
@@ -58,7 +62,7 @@ export async function POST(req: Request) {
       language: "en-US",
       style_id: body.style_id?.trim() || NAPKIN_DEFAULT_STYLE_ID,
       number_of_visuals: numberOfVisuals,
-      ...(visualQuery ? { visual_query: visualQuery } : {}),
+      ...(useVisualQuery ? { visual_query: visualQuery } : {}),
       transparent_background: format === "png",
       width: format === "png" ? 1200 : undefined,
     });

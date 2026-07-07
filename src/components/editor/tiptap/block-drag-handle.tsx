@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { Extension } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import type { Node as PMNode } from "@tiptap/pm/model";
 import { GripVertical, Plus, Copy, ArrowUp, ArrowDown, Trash2, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { InsertBlockMenu } from "./insert-block-menu";
 
 interface BlockTarget {
   node: PMNode;
   pos: number;
-}
-
-/** Insert an empty paragraph below the block and open the slash menu there. */
-function insertBelow(editor: Editor, t: BlockTarget) {
-  const at = t.pos + t.node.nodeSize;
-  editor
-    .chain()
-    .focus()
-    .insertContentAt(at, { type: "paragraph" })
-    .setTextSelection(at + 1)
-    .insertContent("/")
-    .run();
 }
 
 function duplicate(editor: Editor, t: BlockTarget) {
@@ -76,21 +66,24 @@ export const BlockActionsShortcut = Extension.create({
   },
 });
 
+type PinnedMenu =
+  | { kind: "insert"; target: BlockTarget; anchor: { top: number; left: number }; docPos: number }
+  | { kind: "actions"; target: BlockTarget; anchor: { top: number; left: number } };
+
 /**
- * The follower side-menu (Phase 1.1). A [+] (insert below, opens the slash
- * menu) and a [⠿] grip (drag to reorder + click for block actions) sit in the
- * left gutter beside the hovered block. Dragging the grip is the only thing
- * that starts a reorder; clicking text never drags. Keyboard users reach the
- * same actions via Cmd/Ctrl+Shift+K.
+ * The follower side-menu (Phase 1.1). A [+] opens the insert palette; [⠿]
+ * opens block actions. Menus are portaled and pinned so moving the pointer off
+ * the gutter does not dismiss them before you can click.
  */
 export function BlockDragHandle({ editor }: { editor: Editor }) {
   const [hoverTarget, setHoverTarget] = useState<BlockTarget | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [pinned, setPinned] = useState<PinnedMenu | null>(null);
+  const pinnedRef = useRef<PinnedMenu | null>(null);
+  pinnedRef.current = pinned;
 
-  // Keyboard-anchored menu (Cmd/Ctrl+Shift+K).
-  const [kbd, setKbd] = useState<{ target: BlockTarget; top: number; left: number } | null>(null);
-  const kbdRef = useRef<HTMLDivElement>(null);
+  const closePinned = useCallback(() => setPinned(null), []);
 
+  // Keyboard-anchored actions menu (Cmd/Ctrl+Shift+K).
   useEffect(() => {
     function onShortcut(e: Event) {
       const pos = (e as CustomEvent<{ pos: number }>).detail?.pos;
@@ -98,27 +91,70 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
       const node = editor.state.doc.nodeAt(pos);
       if (!node) return;
       const coords = editor.view.coordsAtPos(pos + 1);
-      setKbd({ target: { node, pos }, top: coords.top, left: coords.left - 36 });
+      setPinned({
+        kind: "actions",
+        target: { node, pos },
+        anchor: { top: coords.bottom + 4, left: coords.left - 36 },
+      });
     }
     window.addEventListener("stoa-block-actions", onShortcut);
     return () => window.removeEventListener("stoa-block-actions", onShortcut);
   }, [editor]);
 
   useEffect(() => {
-    if (!kbd) return;
-    function onAway(e: MouseEvent) {
-      if (kbdRef.current && !kbdRef.current.contains(e.target as Node)) setKbd(null);
+    if (!pinned) return;
+    function onPointerDown(e: PointerEvent) {
+      const menu = document.getElementById("stoa-pinned-block-menu");
+      if (menu?.contains(e.target as Node)) return;
+      // Ignore clicks on the gutter buttons themselves (they toggle menus).
+      const el = e.target as HTMLElement | null;
+      if (el?.closest?.("[data-stoa-gutter]")) return;
+      setPinned(null);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setKbd(null);
+      if (e.key === "Escape") setPinned(null);
     }
-    document.addEventListener("mousedown", onAway);
+    document.addEventListener("pointerdown", onPointerDown, true);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onAway);
+      document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("keydown", onKey);
     };
-  }, [kbd]);
+  }, [pinned]);
+
+  function openInsert(e: React.MouseEvent, target: BlockTarget) {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const at = target.pos + target.node.nodeSize;
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(at, { type: "paragraph" })
+      .setTextSelection(at + 1)
+      .run();
+    setPinned({
+      kind: "insert",
+      target,
+      anchor: { top: rect.bottom + 6, left: rect.left },
+      docPos: at + 1,
+    });
+  }
+
+  function openActions(e: React.MouseEvent, target: BlockTarget) {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    if (pinnedRef.current?.kind === "actions" && pinnedRef.current.target.pos === target.pos) {
+      setPinned(null);
+      return;
+    }
+    setPinned({
+      kind: "actions",
+      target,
+      anchor: { top: rect.bottom + 6, left: rect.left },
+    });
+  }
 
   return (
     <>
@@ -126,14 +162,15 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
         editor={editor}
         onNodeChange={({ node, pos }) => {
           if (node && pos >= 0) setHoverTarget({ node, pos });
-          setMenuOpen(false);
+          // Do not close pinned menus when hover moves — that was the bug.
         }}
       >
-        <div className="relative flex items-center gap-0.5">
+        <div data-stoa-gutter className="relative flex items-center gap-0.5">
           <button
             type="button"
             aria-label="Insert block below"
-            onClick={() => hoverTarget && insertBelow(editor, hoverTarget)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={(e) => hoverTarget && openInsert(e, hoverTarget)}
             className="flex h-6 w-5 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:bg-surface-2 hover:text-text focus-ring"
           >
             <Plus size={15} />
@@ -141,59 +178,81 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
           <button
             type="button"
             aria-label="Block actions"
-            onClick={() => setMenuOpen((o) => !o)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={(e) => hoverTarget && openActions(e, hoverTarget)}
             className="flex h-6 w-5 cursor-grab items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:bg-surface-2 hover:text-text active:cursor-grabbing"
           >
             <GripVertical size={15} />
           </button>
-          {menuOpen && hoverTarget && (
-            <ActionsMenu
-              editor={editor}
-              target={hoverTarget}
-              className="absolute left-0 top-7 z-50"
-              onClose={() => setMenuOpen(false)}
-            />
-          )}
         </div>
       </DragHandle>
 
-      {kbd && (
-        <div
-          ref={kbdRef}
-          style={{ position: "fixed", top: kbd.top, left: kbd.left }}
-          className="z-50"
-        >
-          <ActionsMenu editor={editor} target={kbd.target} onClose={() => setKbd(null)} />
-        </div>
-      )}
+      {pinned &&
+        typeof document !== "undefined" &&
+        createPortal(
+          pinned.kind === "insert" ? (
+            <InsertBlockMenu
+              editor={editor}
+              docPos={pinned.docPos}
+              anchor={pinned.anchor}
+              onClose={closePinned}
+            />
+          ) : (
+            <ActionsMenu
+              id="stoa-pinned-block-menu"
+              editor={editor}
+              target={pinned.target}
+              anchor={pinned.anchor}
+              onClose={closePinned}
+            />
+          ),
+          document.body,
+        )}
     </>
   );
 }
 
 function ActionsMenu({
+  id,
   editor,
   target,
-  className,
+  anchor,
   onClose,
 }: {
+  id: string;
   editor: Editor;
   target: BlockTarget;
-  className?: string;
+  anchor: { top: number; left: number };
   onClose: () => void;
 }) {
   function run(fn: () => void) {
     fn();
     onClose();
   }
+
   return (
     <div
+      id={id}
       role="menu"
-      className={cn(
-        "menu-pop w-44 overflow-hidden rounded-[var(--r-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]",
-        className,
-      )}
+      className="menu-pop fixed z-[250] w-44 overflow-hidden rounded-[var(--r-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+      style={{ top: anchor.top, left: anchor.left }}
+      onMouseDown={(e) => e.stopPropagation()}
     >
-      <Item icon={Plus} label="Insert below" onClick={() => run(() => insertBelow(editor, target))} />
+      <Item
+        icon={Plus}
+        label="Insert below"
+        onClick={() =>
+          run(() => {
+            const at = target.pos + target.node.nodeSize;
+            editor
+              .chain()
+              .focus()
+              .insertContentAt(at, { type: "paragraph" })
+              .setTextSelection(at + 1)
+              .run();
+          })
+        }
+      />
       <Item icon={Copy} label="Duplicate" onClick={() => run(() => duplicate(editor, target))} />
       <Item icon={ArrowUp} label="Move up" onClick={() => run(() => moveBlock(editor, target, "up"))} />
       <Item icon={ArrowDown} label="Move down" onClick={() => run(() => moveBlock(editor, target, "down"))} />
@@ -217,6 +276,7 @@ function Item({
     <button
       type="button"
       role="menuitem"
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-2 rounded-[var(--radius-btn)] px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-surface-2",

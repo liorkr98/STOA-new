@@ -1,7 +1,7 @@
 /** Serializable chart overlays stored on chartNode attrs (see docs/BACKEND.md). */
 
 export type ChartAnnotation =
-  | { id: string; kind: "hline"; price: number }
+  | { id: string; kind: "hline"; price: number; title?: string }
   | { id: string; kind: "trend"; t1: number; p1: number; t2: number; p2: number };
 
 /** Logical time-scale window (Lightweight Charts visible logical range). */
@@ -19,7 +19,8 @@ export function parseAnnotations(raw: unknown): ChartAnnotation[] {
     const id = typeof o.id === "string" ? o.id : "";
     if (!id) continue;
     if (o.kind === "hline" && typeof o.price === "number") {
-      out.push({ id, kind: "hline", price: o.price });
+      const title = typeof o.title === "string" ? o.title : undefined;
+      out.push({ id, kind: "hline", price: o.price, ...(title ? { title } : {}) });
     } else if (
       o.kind === "trend" &&
       typeof o.t1 === "number" &&

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { buttonClass } from "@/components/ui/button";
+import { detectTicker, detectTickers } from "@/lib/editor/tiptap/ticker-detect";
 
 interface ResultCard {
   kind: string;
@@ -33,30 +34,6 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   cards?: ResultCard[];
-}
-
-const TICKER_RE = /\b[A-Z]{1,5}\b/;
-const TICKER_RE_G = /\b[A-Z]{2,5}\b/g;
-// Uppercase words that read as tickers but aren't, so multi-ticker detection
-// doesn't turn "DCF vs EPS" into fake symbols.
-const NOT_TICKERS = new Set([
-  "DCF", "EPS", "YOY", "CAGR", "CEO", "CFO", "USD", "AI", "SEC", "GAAP", "TTM",
-  "ROIC", "FCF", "IPO", "ETF", "API", "AND", "THE", "VS", "OR",
-]);
-
-function detectTicker(text: string, fallback?: string): string {
-  const m = text.toUpperCase().match(TICKER_RE);
-  return (m?.[0] ?? fallback ?? "").toUpperCase();
-}
-
-/** All plausible tickers in the text (for multi-ticker comparison), max 8. */
-function detectTickers(text: string, fallback?: string): string[] {
-  const found = [...text.toUpperCase().matchAll(TICKER_RE_G)]
-    .map((m) => m[0])
-    .filter((t) => !NOT_TICKERS.has(t));
-  const unique = [...new Set(found)].slice(0, 8);
-  if (unique.length > 0) return unique;
-  return fallback ? [fallback.toUpperCase()] : [];
 }
 
 /** A neutral summary the analyst absorbs into their own prose -- never a

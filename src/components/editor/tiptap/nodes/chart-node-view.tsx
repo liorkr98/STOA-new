@@ -26,6 +26,16 @@ import {
   type ChartAnnotation,
   type ChartVisibleRange,
 } from "@/lib/market/chart-annotations";
+import {
+  parseIndicators,
+  INDICATOR_PRESETS,
+  type ChartIndicator,
+} from "@/lib/market/chart-indicators";
+import {
+  applyChartIndicators,
+  createIndicatorHandles,
+  type IndicatorHandles,
+} from "@/lib/market/chart-indicator-render";
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
 
 type ChartKind = "candles" | "line" | "area";
@@ -73,6 +83,8 @@ interface ChartContainerEl extends HTMLDivElement {
   __lwSeries?: ISeriesApi<SeriesType>;
   __priceLines?: IPriceLine[];
   __trendSeries?: ISeriesApi<"Line">[];
+  __indicatorHandles?: IndicatorHandles;
+  __candles?: Candle[];
 }
 
 function stopEditorCapture(e: React.SyntheticEvent) {
@@ -110,6 +122,7 @@ function applyAnnotations(
           lineWidth: 1,
           lineStyle: 2,
           axisLabelVisible: true,
+          title: ann.title ?? "",
         }),
       );
     } else {
@@ -150,6 +163,8 @@ export function ChartNodeView({
   const nodeId = String(node.attrs.nodeId ?? "");
   const screenshotUrl = node.attrs.screenshotUrl ? String(node.attrs.screenshotUrl) : null;
   const annotations = parseAnnotations(node.attrs.annotations);
+  const indicators = parseIndicators(node.attrs.indicators);
+  const sourceText = node.attrs.sourceText ? String(node.attrs.sourceText) : "";
   const savedVisibleRange = parseVisibleRange(node.attrs.visibleRange);
   const visibleRangeRef = useRef(savedVisibleRange);
   visibleRangeRef.current = savedVisibleRange;
@@ -169,6 +184,11 @@ export function ChartNodeView({
   const containerRef = useRef<ChartContainerEl>(null);
   const annotationsRef = useRef(annotations);
   annotationsRef.current = annotations;
+  const indicatorsRef = useRef(indicators);
+  indicatorsRef.current = indicators;
+
+  const hasRsi = indicators.some((i) => i.type === "rsi");
+  const chartHeight = hasRsi ? 332 : 260;
 
   useEffect(() => setDraftTicker(ticker), [ticker]);
 
@@ -209,8 +229,10 @@ export function ChartNodeView({
     let rangeTimer: ReturnType<typeof setTimeout> | null = null;
     const priceLines: IPriceLine[] = [];
     const trendSeries: ISeriesApi<"Line">[] = [];
+    const indicatorHandles = createIndicatorHandles();
     el.__priceLines = priceLines;
     el.__trendSeries = trendSeries;
+    el.__indicatorHandles = indicatorHandles;
 
     const ink = cssVar("--ink");
     const accent = cssVar("--verdigris");
@@ -221,7 +243,7 @@ export function ChartNodeView({
 
     const chart = createChart(el, {
       width: el.clientWidth,
-      height: 260,
+      height: chartHeight,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: axis,
@@ -285,6 +307,8 @@ export function ChartNodeView({
         } else {
           series.setData(candles.map((c) => ({ time: c.time, value: c.close })) as never);
         }
+        el.__candles = candles;
+        applyChartIndicators(chart, candles, indicatorsRef.current, indicatorHandles);
         if (visibleRangeRef.current) {
           chart.timeScale().setVisibleLogicalRange(visibleRangeRef.current);
         } else {
@@ -332,9 +356,11 @@ export function ChartNodeView({
       delete el.__lwSeries;
       delete el.__priceLines;
       delete el.__trendSeries;
+      delete el.__indicatorHandles;
+      delete el.__candles;
       chart.remove();
     };
-  }, [ticker, range, kind, updateAttributes, isEditable, useScreenshot, imgFailed]);
+  }, [ticker, range, kind, chartHeight, updateAttributes, isEditable, useScreenshot, imgFailed]);
 
   useEffect(() => {
     const chart = containerRef.current?.__lwChart;
@@ -359,6 +385,31 @@ export function ChartNodeView({
     );
     setTrendDraft(null);
   }, [annotations, status]);
+
+  // Re-apply SMA/RSI overlays when indicator attrs change.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el?.__lwChart || !el.__indicatorHandles || !el.__candles?.length || status !== "ready") {
+      return;
+    }
+    applyChartIndicators(el.__lwChart, el.__candles, indicators, el.__indicatorHandles);
+  }, [indicators, status]);
+
+  function indicatorKey(ind: ChartIndicator): string {
+    return ind.type === "sma" ? `sma-${ind.period}` : `rsi-${ind.period}`;
+  }
+
+  function hasIndicator(ind: ChartIndicator): boolean {
+    return indicators.some((i) => indicatorKey(i) === indicatorKey(ind));
+  }
+
+  function toggleIndicator(ind: ChartIndicator) {
+    const key = indicatorKey(ind);
+    const next = hasIndicator(ind)
+      ? indicators.filter((i) => indicatorKey(i) !== key)
+      : [...indicators, ind];
+    updateAttributes({ indicators: next });
+  }
 
   function commitTicker() {
     const t = draftTicker.trim().toUpperCase();
@@ -485,6 +536,24 @@ export function ChartNodeView({
           onChange={(k) => updateAttributes({ kind: k })}
         />
 
+        {INDICATOR_PRESETS.map((preset) => (
+          <button
+            key={preset.label}
+            type="button"
+            title={preset.label}
+            onMouseDown={stopEditorCapture}
+            onClick={() => toggleIndicator(preset.indicator)}
+            className={cn(
+              "rounded-[var(--radius-btn)] px-2 py-0.5 text-[10px] font-medium transition-colors focus-ring",
+              hasIndicator(preset.indicator)
+                ? "bg-accent-weak text-accent"
+                : "text-text-faint hover:bg-surface-2 hover:text-text",
+            )}
+          >
+            {preset.label}
+          </button>
+        ))}
+
         <div className="hidden h-4 w-px bg-border sm:block" />
 
         <div className="flex items-center gap-0.5">
@@ -571,9 +640,10 @@ export function ChartNodeView({
           ref={containerRef}
           aria-hidden="true"
           className={cn(
-            "h-[260px] w-full",
+            "w-full",
             isEditable && drawMode !== "pan" && status === "ready" && "cursor-crosshair",
           )}
+          style={{ height: chartHeight }}
           onPointerDown={isEditable ? handleChartPointerDown : undefined}
         />
         {status !== "ready" &&
@@ -590,6 +660,13 @@ export function ChartNodeView({
             </div>
           ))}
       </div>
+
+      {sourceText && (
+        <p className="border-t border-border px-3 py-2 text-[11px] leading-relaxed text-text-faint">
+          <span className="t-eyebrow text-[10px] text-text-mute">From selection · </span>
+          {sourceText.length > 220 ? `${sourceText.slice(0, 220)}…` : sourceText}
+        </p>
+      )}
     </NodeViewWrapper>
   );
 }

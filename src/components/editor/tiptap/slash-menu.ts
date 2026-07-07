@@ -22,7 +22,6 @@ import {
   Calculator,
   BarChart2,
   Film,
-  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -187,20 +186,6 @@ export const SLASH_ITEMS: SlashItem[] = [
       editor.chain().focus().deleteRange(range).insertContent({ type: "imageNode" }).run(),
   },
   {
-    title: "Napkin visual",
-    subtitle: "AI diagram from your text (Napkin)",
-    icon: Wand2,
-    keywords: ["napkin", "visual", "diagram", "illustration", "flowchart", "mindmap", "ai", "spark"],
-    group: "Data",
-    run: (editor, range) =>
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .insertContent({ type: "napkinNode", attrs: { sourceText: "" } })
-        .run(),
-  },
-  {
     title: "Valuation (DCF)",
     subtitle: "Fair value, upside, and a sensitivity grid",
     icon: Calculator,
@@ -294,7 +279,7 @@ const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
       popup.setAttribute("role", "listbox");
       popup.setAttribute("aria-label", "Insert block");
       popup.style.position = "fixed";
-      popup.style.zIndex = "200";
+      popup.style.zIndex = "250";
       popup.appendChild(component.element);
       document.body.appendChild(popup);
       positionPopup(popup, caretRect(props.editor, props.clientRect));

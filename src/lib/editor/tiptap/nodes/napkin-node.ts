@@ -24,6 +24,12 @@ export const NapkinNode = Node.create({
       widthPct: { default: 100 },
       /** Alternate variation URLs when the analyst generated multiple options. */
       variationUrls: { default: [] as string[] },
+      /** When true, generate immediately from sourceText on insert (selection flow). */
+      autoGenerate: { default: false },
+      /** Chart annotation flow — uses colorful styles and 4 variations. */
+      chartMode: { default: false },
+      /** Ticker parsed from selection for chart annotation caption. */
+      chartTicker: { default: "" },
     };
   },
 
