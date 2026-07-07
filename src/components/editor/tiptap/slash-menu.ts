@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
+import { getEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
 
 export interface SlashItem {
   title: string;
@@ -100,17 +101,44 @@ export const SLASH_ITEMS: SlashItem[] = [
     run: (editor, range) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
   },
   {
-    title: "Chart",
-    subtitle: "Live price chart",
+    title: "TradingView chart",
+    subtitle: "Full charting library — indicators, drawings, ranges",
     icon: ChartCandlestick,
-    keywords: ["chart", "price", "candles", "graph", "ohlc"],
+    keywords: ["chart", "tradingview", "price", "candles", "graph", "ohlc", "tv", "technical"],
+    group: "Data",
+    run: (editor, range) => {
+      const ticker = getEditorReportTicker() ?? "";
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({
+          type: "chartNode",
+          attrs: {
+            ticker,
+            range: "3M",
+            kind: "candles",
+            engine: "tradingview",
+          },
+        })
+        .run();
+    },
+  },
+  {
+    title: "Chart",
+    subtitle: "Lightweight price chart (Stoa data feed)",
+    icon: LineChart,
+    keywords: ["chart", "price", "lightweight", "levels", "annotations"],
     group: "Data",
     run: (editor, range) =>
       editor
         .chain()
         .focus()
         .deleteRange(range)
-        .insertContent({ type: "chartNode", attrs: { ticker: "", range: "3M", kind: "area" } })
+        .insertContent({
+          type: "chartNode",
+          attrs: { ticker: getEditorReportTicker() ?? "", range: "3M", kind: "area", engine: "lightweight" },
+        })
         .run(),
   },
   {

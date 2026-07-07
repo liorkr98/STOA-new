@@ -37,6 +37,7 @@ import {
   type IndicatorHandles,
 } from "@/lib/market/chart-indicator-render";
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
+import { TradingViewChartPanel } from "@/components/editor/tiptap/nodes/trading-view-chart-panel";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -143,12 +144,20 @@ function applyAnnotations(
 }
 
 /**
- * A live price chart as a real document node (chartNode). Lightweight Charts
- * (TradingView, open source) rendered client-side, fed by /api/market/candles
- * so the provider key stays server-side. Analysts can pan/zoom and add
- * horizontal levels or trend segments; overlays persist in node attrs.
+ * Routes chartNode to TradingView Advanced Chart or Lightweight Charts.
  */
-export function ChartNodeView({
+export function ChartNodeView(props: NodeViewProps) {
+  const engine = String(props.node.attrs.engine ?? "lightweight");
+  if (engine === "tradingview") {
+    return <TradingViewChartPanel {...props} />;
+  }
+  return <LightweightChartNodeView {...props} />;
+}
+
+/**
+ * Lightweight Charts (TradingView open source) — Stoa candle feed, annotations, indicators.
+ */
+function LightweightChartNodeView({
   node,
   updateAttributes,
   deleteNode,

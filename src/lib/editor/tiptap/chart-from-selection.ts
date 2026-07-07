@@ -199,6 +199,7 @@ export function insertVisualizedChartFromSelection(
         ticker: intent.ticker,
         range: intent.range,
         kind: intent.kind,
+        engine: "tradingview",
         indicators: intent.indicators,
         annotations: intent.annotations,
         sourceText: intent.sourceText,
