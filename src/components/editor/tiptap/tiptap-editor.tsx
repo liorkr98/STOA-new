@@ -1,7 +1,7 @@
 "use client";
 
 import "katex/dist/katex.min.css";
-import { useMemo } from "react";
+import { memo, useMemo, useRef } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
@@ -21,7 +21,7 @@ export interface EditorChange {
  * with no change here. Parent keeps the latest {json,text} via onChange and
  * gets the editor instance via onReady for AI-insert (Layer 4) and publish.
  */
-export function TiptapEditor({
+export const TiptapEditor = memo(function TiptapEditor({
   initialContent,
   onChange,
   onReady,
@@ -30,10 +30,11 @@ export function TiptapEditor({
   onChange: (change: EditorChange) => void;
   onReady?: (editor: Editor) => void;
 }) {
-  // Stable identity across renders. Every parent onChange re-renders this
-  // component; a fresh extensions array makes newer @tiptap/react reconfigure
-  // the editor, destroying plugin views mid-keystroke -- which killed the
-  // slash-menu popup the instant it opened.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+
   const extensions = useMemo(
     () => [...buildExtensions({ editable: true }), SlashMenu, BlockActionsShortcut],
     [],
@@ -41,7 +42,6 @@ export function TiptapEditor({
 
   const editor = useEditor(
     {
-      // Required for Next.js SSR: render on the client to avoid hydration drift.
       immediatelyRender: false,
       shouldRerenderOnTransaction: false,
       extensions,
@@ -51,9 +51,6 @@ export function TiptapEditor({
           class: "stoa-prose focus:outline-none",
           spellcheck: "true",
         },
-        // Drag-to-insert for the AI ask-panel (Layer 4): a card sets a Tiptap
-        // node JSON on the "application/stoa-node" transfer; here it lands as a
-        // real node at the drop position.
         handleDrop(view, event) {
           const raw = (event as DragEvent).dataTransfer?.getData("application/stoa-node");
           if (!raw) return false;
@@ -72,8 +69,9 @@ export function TiptapEditor({
           }
         },
       },
-      onCreate: ({ editor: e }) => onReady?.(e),
-      onUpdate: ({ editor: e }) => onChange({ json: e.getJSON(), text: e.getText() }),
+      onCreate: ({ editor: e }) => onReadyRef.current?.(e),
+      onUpdate: ({ editor: e }) =>
+        onChangeRef.current({ json: e.getJSON(), text: e.getText() }),
     },
     [],
   );
@@ -87,4 +85,4 @@ export function TiptapEditor({
       <EditorContent editor={editor} />
     </div>
   );
-}
+});

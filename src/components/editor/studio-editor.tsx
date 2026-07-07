@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, MagicWand } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
@@ -16,7 +17,7 @@ import {
   tiptapPlainText,
 } from "@/lib/editor/tiptap/serialize";
 import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
-import { TiptapEditor, type EditorChange } from "@/components/editor/tiptap/tiptap-editor";
+import { TiptapEditor } from "@/components/editor/tiptap/tiptap-editor";
 import { captureChartScreenshots } from "@/lib/editor/tiptap/nodes/chart-capture";
 import {
   LockPublishPanel,
@@ -26,6 +27,7 @@ import {
 import { AskPanel } from "@/components/editor/tiptap/ask-panel";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
+import { insertNapkinFromEditorSelection } from "@/lib/editor/tiptap/napkin-insert";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -101,14 +103,32 @@ export function StudioEditor({
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
   const editorRef = useRef<Editor | null>(null);
+  const latestChangeRef = useRef<{ json: JSONContent; text: string }>({
+    json: initialDoc,
+    text: tiptapPlainText(initialDoc),
+  });
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasCard = type !== "short_post";
   const bodyJson = useMemo(() => JSON.stringify(docJson), [docJson]);
 
-  const onEditorChange = useCallback((change: EditorChange) => {
-    setDocJson(change.json);
-    setPlainText(change.text);
+  const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
+    latestChangeRef.current = change;
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    // Debounce parent state so keystrokes don't re-render the editor tree and
+    // kill the slash-menu popup mid-open.
+    syncTimerRef.current = setTimeout(() => {
+      setDocJson(change.json);
+      setPlainText(change.text);
+    }, 300);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    },
+    [],
+  );
 
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
@@ -117,15 +137,8 @@ export function StudioEditor({
   const insertNapkinFromSelection = useCallback(() => {
     const ed = editorRef.current;
     if (!ed) return;
-    const { from, to } = ed.state.selection;
-    const selected = from !== to ? ed.state.doc.textBetween(from, to, "\n") : "";
-    ed.chain()
-      .focus()
-      .insertContent({
-        type: "napkinNode",
-        attrs: { sourceText: selected },
-      })
-      .run();
+    const err = insertNapkinFromEditorSelection(ed);
+    if (err) toast.error(err);
   }, []);
 
   const persistDraft = useCallback(async () => {
@@ -136,7 +149,7 @@ export function StudioEditor({
         type,
         title: type === "short_post" ? undefined : title,
         summary: summary || plainText.slice(0, 280),
-        body: type === "short_post" ? undefined : bodyJson,
+        body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
         access,
         price: access === "paid" ? Number(price) : null,
         ticker: hasCard ? ticker : null,

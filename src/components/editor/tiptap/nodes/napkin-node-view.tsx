@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Loader2, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -31,10 +31,12 @@ export function NapkinNodeView({
   const visualQuery = String(node.attrs.visualQuery ?? "");
   const widthPct = Number(node.attrs.widthPct ?? 100);
   const variationUrls = (node.attrs.variationUrls as string[]) ?? [];
+  const autoGenerate = Boolean(node.attrs.autoGenerate);
 
   const [text, setText] = useState(sourceText);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const autoStarted = useRef(false);
 
   const generate = useCallback(async () => {
     const content = text.trim();
@@ -73,13 +75,21 @@ export function NapkinNodeView({
         url: urls[0],
         sourceText: content,
         variationUrls: urls,
+        autoGenerate: false,
       });
     } catch {
-      setError("Generation failed");
+      setError("Generation failed — check your connection and try again.");
     } finally {
       setGenerating(false);
     }
   }, [text, styleId, visualQuery, updateAttributes]);
+
+  useEffect(() => {
+    if (!autoGenerate || autoStarted.current || url) return;
+    if (!sourceText.trim()) return;
+    autoStarted.current = true;
+    void generate();
+  }, [autoGenerate, sourceText, url, generate]);
 
   if (!isEditable) {
     if (!url) return <NodeViewWrapper contentEditable={false} className="hidden" />;
@@ -144,7 +154,13 @@ export function NapkinNodeView({
       </div>
 
       <div className="space-y-3 p-3">
-        {!url ? (
+        {generating && !url ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <Loader2 size={28} className="animate-spin text-accent" />
+            <p className="text-sm font-medium text-text">Napkin is visualizing your selection…</p>
+            <p className="max-w-sm text-xs text-text-mute line-clamp-3">{sourceText}</p>
+          </div>
+        ) : !url ? (
           <>
             <label className="block">
               <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>

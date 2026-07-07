@@ -15,7 +15,10 @@ export async function POST(req: Request) {
   const token = process.env.NAPKIN_API_KEY?.trim();
   if (!token) {
     return NextResponse.json(
-      { error: "Napkin is not configured. Set NAPKIN_API_KEY on the server." },
+      {
+        error:
+          "Napkin is not configured on this deployment. In Vercel, add NAPKIN_API_KEY to the stoa-new project (link the team variable to the project if using shared env), then redeploy.",
+      },
       { status: 503 },
     );
   }

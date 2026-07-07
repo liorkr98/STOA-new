@@ -22,6 +22,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { insertNapkinFromEditorSelection } from "@/lib/editor/tiptap/napkin-insert";
+import { toast } from "sonner";
 
 // Three highlight tints, six-token only, all at 15% (Phase 1.2).
 const TINTS: { key: string; label: string; color: string }[] = [
@@ -66,16 +68,11 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       <Divider />
       <Btn
         icon={Wand2}
-        label="Napkin visual"
+        label="Visualize selection with Napkin"
         active={false}
         onClick={() => {
-          const { from, to } = editor.state.selection;
-          const selected = editor.state.doc.textBetween(from, to, "\n");
-          editor
-            .chain()
-            .focus()
-            .insertContent({ type: "napkinNode", attrs: { sourceText: selected } })
-            .run();
+          const err = insertNapkinFromEditorSelection(editor);
+          if (err) toast.error(err);
         }}
       />
       <Divider />

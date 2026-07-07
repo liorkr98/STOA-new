@@ -294,7 +294,7 @@ const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
       popup.setAttribute("role", "listbox");
       popup.setAttribute("aria-label", "Insert block");
       popup.style.position = "fixed";
-      popup.style.zIndex = "200";
+      popup.style.zIndex = "250";
       popup.appendChild(component.element);
       document.body.appendChild(popup);
       positionPopup(popup, caretRect(props.editor, props.clientRect));

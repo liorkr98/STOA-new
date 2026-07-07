@@ -24,6 +24,8 @@ export const NapkinNode = Node.create({
       widthPct: { default: 100 },
       /** Alternate variation URLs when the analyst generated multiple options. */
       variationUrls: { default: [] as string[] },
+      /** When true, generate immediately from sourceText on insert (selection flow). */
+      autoGenerate: { default: false },
     };
   },
 
