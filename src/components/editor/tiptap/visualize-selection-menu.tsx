@@ -3,6 +3,7 @@
 import * as Popover from "@radix-ui/react-popover";
 import type { Editor } from "@tiptap/react";
 import { ChartCandlestick, Layers, Sparkles, Wand2 } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/design/cn";
 import { insertChartFromEditorSelection, insertVisualBundleFromSelection } from "@/lib/editor/tiptap/chart-from-selection";
 import { getEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
@@ -22,12 +23,14 @@ export function VisualizeSelectionMenu({
   reportTicker?: string;
   variant?: "icon" | "button";
 }) {
+  const [open, setOpen] = useState(false);
   const ticker = reportTicker ?? getEditorReportTicker();
 
   function run(fn: () => string | null, success?: string) {
     const err = fn();
     if (err) toast.error(err);
     else if (success) toast.success(success);
+    setOpen(false);
   }
 
   const trigger =
@@ -55,7 +58,7 @@ export function VisualizeSelectionMenu({
     );
 
   return (
-    <Popover.Root>
+    <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>{trigger}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
