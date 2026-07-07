@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { Extension } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
@@ -120,15 +120,19 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
     };
   }, [kbd]);
 
+  // Must be referentially stable: @tiptap/extension-drag-handle-react keys its
+  // plugin-registration effect on onNodeChange, so a fresh function each render
+  // makes it unregister/re-register the drag-handle plugin. That reconfigures the
+  // editor's plugin set on every keystroke, which destroys all plugin views --
+  // including the slash-menu suggestion popup the instant it opens.
+  const onNodeChange = useCallback(({ node, pos }: { node: PMNode | null; pos: number }) => {
+    if (node && pos >= 0) setHoverTarget({ node, pos });
+    setMenuOpen(false);
+  }, []);
+
   return (
     <>
-      <DragHandle
-        editor={editor}
-        onNodeChange={({ node, pos }) => {
-          if (node && pos >= 0) setHoverTarget({ node, pos });
-          setMenuOpen(false);
-        }}
-      >
+      <DragHandle editor={editor} onNodeChange={onNodeChange}>
         <div className="relative flex items-center gap-0.5">
           <button
             type="button"

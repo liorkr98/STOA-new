@@ -243,14 +243,22 @@ function filterItems(query: string): SlashItem[] {
 function positionPopup(el: HTMLElement | null, rect: DOMRect | null) {
   if (!el || !rect) return;
   const margin = 8;
-  el.style.left = `${rect.left}px`;
-  const below = rect.bottom + margin;
-  const wouldOverflow = below + el.offsetHeight > window.innerHeight;
-  if (wouldOverflow) {
-    el.style.top = `${rect.top - el.offsetHeight - margin}px`;
-  } else {
-    el.style.top = `${below}px`;
+  const h = el.offsetHeight;
+  const w = el.offsetWidth;
+
+  // Prefer below the caret; flip above when there isn't room. Either way, clamp
+  // into the viewport so a caret near the top or bottom edge can't push the
+  // popup off-screen (a fixed element is viewport-relative).
+  let top = rect.bottom + margin;
+  if (top + h > window.innerHeight - margin) {
+    const above = rect.top - h - margin;
+    top = above >= margin ? above : window.innerHeight - h - margin;
   }
+  let left = rect.left;
+  if (left + w > window.innerWidth - margin) left = window.innerWidth - w - margin;
+
+  el.style.top = `${Math.max(margin, top)}px`;
+  el.style.left = `${Math.max(margin, left)}px`;
 }
 
 const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
