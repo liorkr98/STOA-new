@@ -3,7 +3,13 @@ import type { Editor } from "@tiptap/react";
 import type { ChartRange } from "@/lib/market/candle-types";
 import type { ChartAnnotation } from "@/lib/market/chart-annotations";
 import type { ChartIndicator } from "@/lib/market/chart-indicators";
+import { NAPKIN_CHART_STYLE_ID } from "@/lib/napkin/styles";
 import { detectTicker } from "@/lib/editor/tiptap/ticker-detect";
+
+export interface EditorRange {
+  from: number;
+  to: number;
+}
 
 export interface ParsedChartIntent {
   ticker: string;
@@ -12,6 +18,14 @@ export interface ParsedChartIntent {
   indicators: ChartIndicator[];
   annotations: ChartAnnotation[];
   sourceText: string;
+}
+
+export interface VisualizeResult {
+  error?: string;
+  warning?: string;
+  ticker?: string;
+  insertedChart: boolean;
+  insertedNapkin: boolean;
 }
 
 function parseRange(text: string): ChartRange {
@@ -59,7 +73,7 @@ function parsePriceLevels(text: string): ChartAnnotation[] {
 
   const labeled = [
     ...text.matchAll(
-      /(support|resistance|target|entry|stop|breakout|floor|ceiling)\s+(?:at|near|around|of|@)?\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)/gi,
+      /(support|resistance|target|entry|stop|breakout|floor|ceiling)\s+(?:at|near|around|of|@|is|was)?\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)/gi,
     ),
   ];
   for (const m of labeled) {
@@ -82,7 +96,16 @@ function parsePriceLevels(text: string): ChartAnnotation[] {
     levels.push({ id: nanoid(8), kind: "hline", price });
   }
 
-  return levels.slice(0, 6);
+  return levels.slice(0, 8);
+}
+
+/** Resolve selected prose from an explicit range snapshot or the live editor selection. */
+export function resolveSelectionText(editor: Editor, range?: EditorRange | null): string | null {
+  const from = range?.from ?? editor.state.selection.from;
+  const to = range?.to ?? editor.state.selection.to;
+  if (from === to) return null;
+  const text = editor.state.doc.textBetween(from, to, "\n").trim();
+  return text || null;
 }
 
 /** Parse analyst prose into a chart configuration (TradingView-style intent). */
@@ -102,70 +125,134 @@ export function parseChartFromText(text: string, reportTicker?: string): ParsedC
   };
 }
 
+/** Napkin prompt that asks for a labeled stock chart with explicit price numbers. */
+export function buildNapkinChartPrompt(intent: ParsedChartIntent, originalText: string): string {
+  const hlines = intent.annotations.filter((a) => a.kind === "hline");
+  const levelLines = hlines.map((a) => {
+    const label = a.title ? `${a.title} at ` : "Level at ";
+    return `- ${label}$${a.price.toFixed(a.price % 1 ? 2 : 0)}`;
+  });
+
+  const indicatorLines = intent.indicators.map((i) =>
+    i.type === "rsi" ? `- RSI (${i.period})` : `- SMA ${i.period}`,
+  );
+
+  return [
+    `Stock price chart for ${intent.ticker} (${intent.range} timeframe).`,
+    "",
+    "Draw a professional stock chart diagram with:",
+    `- Ticker symbol "${intent.ticker}" shown prominently`,
+    "- Candlestick or line price action over time",
+    levelLines.length
+      ? `- Horizontal lines for each key level with the exact dollar price labeled clearly:\n${levelLines.join("\n")}`
+      : "- Key support and resistance levels from the analyst note, each labeled with exact dollar prices",
+    indicatorLines.length ? `- Technical overlays:\n${indicatorLines.join("\n")}` : "",
+    "",
+    "Every price level must show its number (e.g. $140, $120). Use color to distinguish resistance vs support.",
+    "",
+    "Analyst note:",
+    originalText,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function insertAt(editor: Editor, pos: number, nodes: Record<string, unknown>[]): boolean {
+  return editor.chain().focus().setTextSelection(pos).insertContent(nodes).run();
+}
+
+/**
+ * Unified visualize: TradingView chart (live data + drawn levels) plus Napkin
+ * chart diagram with labeled price lines — from highlighted prose.
+ */
+export function insertVisualizedChartFromSelection(
+  editor: Editor,
+  reportTicker?: string,
+  range?: EditorRange | null,
+): VisualizeResult {
+  const selected = resolveSelectionText(editor, range);
+  if (!selected) {
+    return {
+      error: "Select text first — mention the stock and key levels (e.g. resistance at $140).",
+      insertedChart: false,
+      insertedNapkin: false,
+    };
+  }
+
+  const intent = parseChartFromText(selected, reportTicker);
+  if (!intent) {
+    return {
+      error:
+        "Couldn't find a stock symbol. Mention a ticker like $NVDA or AAPL, or set the report ticker in the publish panel.",
+      insertedChart: false,
+      insertedNapkin: false,
+    };
+  }
+
+  const insertPos = range?.to ?? editor.state.selection.to;
+  const napkinPrompt = buildNapkinChartPrompt(intent, selected);
+
+  const nodes: Record<string, unknown>[] = [
+    {
+      type: "chartNode",
+      attrs: {
+        ticker: intent.ticker,
+        range: intent.range,
+        kind: intent.kind,
+        indicators: intent.indicators,
+        annotations: intent.annotations,
+        sourceText: intent.sourceText,
+      },
+    },
+    {
+      type: "napkinNode",
+      attrs: {
+        sourceText: napkinPrompt,
+        chartTicker: intent.ticker,
+        chartMode: true,
+        styleId: NAPKIN_CHART_STYLE_ID,
+        visualQuery: "",
+        autoGenerate: true,
+      },
+    },
+  ];
+
+  const ok = insertAt(editor, insertPos, nodes);
+  if (!ok) {
+    return {
+      error: "Couldn't insert the chart blocks here. Try placing your cursor after a paragraph.",
+      insertedChart: false,
+      insertedNapkin: false,
+    };
+  }
+
+  return {
+    ticker: intent.ticker,
+    insertedChart: true,
+    insertedNapkin: true,
+    warning:
+      intent.annotations.length === 0
+        ? "Chart added — no price levels detected. Mention levels like resistance at $140."
+        : undefined,
+  };
+}
+
+/** @deprecated Use insertVisualizedChartFromSelection */
 export function insertChartFromEditorSelection(
   editor: Editor,
   reportTicker?: string,
+  range?: EditorRange | null,
 ): string | null {
-  const { from, to } = editor.state.selection;
-  if (from === to) return "Select text first — we'll detect the ticker, levels, and indicators.";
-  const selected = editor.state.doc.textBetween(from, to, "\n").trim();
-  const intent = parseChartFromText(selected, reportTicker);
-  if (!intent) {
-    return "Couldn't find a ticker in your selection. Mention a symbol like AAPL or \$NVDA.";
-  }
-
-  editor
-    .chain()
-    .focus()
-    .setTextSelection(to)
-    .insertContent({
-      type: "chartNode",
-      attrs: {
-        ticker: intent.ticker,
-        range: intent.range,
-        kind: intent.kind,
-        indicators: intent.indicators,
-        annotations: intent.annotations,
-        sourceText: intent.sourceText,
-      },
-    })
-    .run();
-
-  return null;
+  const result = insertVisualizedChartFromSelection(editor, reportTicker, range);
+  return result.error ?? result.warning ?? null;
 }
 
-/** Insert both a chart and Napkin visual from the same selection. */
+/** @deprecated Use insertVisualizedChartFromSelection */
 export function insertVisualBundleFromSelection(
   editor: Editor,
   reportTicker?: string,
+  range?: EditorRange | null,
 ): string | null {
-  const { from, to } = editor.state.selection;
-  if (from === to) return "Select text first to visualize as a chart and a diagram.";
-  const selected = editor.state.doc.textBetween(from, to, "\n").trim();
-  if (!selected) return "Select text first to visualize as a chart and a diagram.";
-
-  const intent = parseChartFromText(selected, reportTicker);
-  const nodes: Record<string, unknown>[] = [];
-
-  if (intent) {
-    nodes.push({
-      type: "chartNode",
-      attrs: {
-        ticker: intent.ticker,
-        range: intent.range,
-        kind: intent.kind,
-        indicators: intent.indicators,
-        annotations: intent.annotations,
-        sourceText: intent.sourceText,
-      },
-    });
-  }
-
-  nodes.push({
-    type: "napkinNode",
-    attrs: { sourceText: selected, autoGenerate: true },
-  });
-
-  editor.chain().focus().setTextSelection(to).insertContent(nodes).run();
-  return intent ? null : "No ticker detected — added Napkin diagram only. Add a symbol for the chart.";
+  const result = insertVisualizedChartFromSelection(editor, reportTicker, range);
+  return result.error ?? result.warning ?? null;
 }

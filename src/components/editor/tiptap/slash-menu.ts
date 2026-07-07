@@ -22,15 +22,9 @@ import {
   Calculator,
   BarChart2,
   Film,
-  Wand2,
-  Layers,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
-import { insertChartFromEditorSelection, insertVisualBundleFromSelection } from "@/lib/editor/tiptap/chart-from-selection";
-import { getEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
-import { insertNapkinFromEditorSelection } from "@/lib/editor/tiptap/napkin-insert";
-import { toast } from "sonner";
 
 export interface SlashItem {
   title: string;
@@ -190,59 +184,6 @@ export const SLASH_ITEMS: SlashItem[] = [
     group: "Data",
     run: (editor, range) =>
       editor.chain().focus().deleteRange(range).insertContent({ type: "imageNode" }).run(),
-  },
-  {
-    title: "Napkin visual",
-    subtitle: "AI diagram from your text (Napkin)",
-    icon: Wand2,
-    keywords: ["napkin", "visual", "diagram", "illustration", "flowchart", "mindmap", "ai", "spark"],
-    group: "Data",
-    run: (editor, range) =>
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .insertContent({ type: "napkinNode", attrs: { sourceText: "" } })
-        .run(),
-  },
-  {
-    title: "Chart from selection",
-    subtitle: "Price chart parsed from highlighted text",
-    icon: ChartCandlestick,
-    keywords: ["visualize", "selection", "chart", "ticker", "tradingview", "parse"],
-    group: "Data",
-    run: (editor, range) => {
-      editor.chain().focus().deleteRange(range).run();
-      const err = insertChartFromEditorSelection(editor, getEditorReportTicker());
-      if (err) toast.error(err);
-      else toast.success("Chart inserted from your selection");
-    },
-  },
-  {
-    title: "Napkin from selection",
-    subtitle: "Diagram from highlighted text",
-    icon: Wand2,
-    keywords: ["napkin", "selection", "visualize", "highlight"],
-    group: "Data",
-    run: (editor, range) => {
-      editor.chain().focus().deleteRange(range).run();
-      const err = insertNapkinFromEditorSelection(editor);
-      if (err) toast.error(err);
-      else toast.success("Generating Napkin visual…");
-    },
-  },
-  {
-    title: "Visualize selection",
-    subtitle: "Chart + Napkin from highlighted text",
-    icon: Layers,
-    keywords: ["visualize", "both", "chart", "napkin", "bundle", "selection"],
-    group: "Data",
-    run: (editor, range) => {
-      editor.chain().focus().deleteRange(range).run();
-      const err = insertVisualBundleFromSelection(editor, getEditorReportTicker());
-      if (err) toast.error(err);
-      else toast.success("Chart and Napkin blocks inserted");
-    },
   },
   {
     title: "Valuation (DCF)",

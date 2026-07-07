@@ -5,8 +5,10 @@ import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Loader2, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import {
+  NAPKIN_CHART_STYLE_ID,
   NAPKIN_DEFAULT_STYLE_ID,
   NAPKIN_STYLES,
+  NAPKIN_VARIATION_COUNT,
   NAPKIN_VISUAL_TYPES,
 } from "@/lib/napkin/styles";
 
@@ -27,7 +29,11 @@ export function NapkinNodeView({
   const url = String(node.attrs.url ?? "");
   const sourceText = String(node.attrs.sourceText ?? "");
   const caption = String(node.attrs.caption ?? "");
-  const styleId = String(node.attrs.styleId ?? NAPKIN_DEFAULT_STYLE_ID);
+  const chartMode = Boolean(node.attrs.chartMode);
+  const chartTicker = String(node.attrs.chartTicker ?? "");
+  const styleId = String(
+    node.attrs.styleId ?? (chartMode ? NAPKIN_CHART_STYLE_ID : NAPKIN_DEFAULT_STYLE_ID),
+  );
   const visualQuery = String(node.attrs.visualQuery ?? "");
   const widthPct = Number(node.attrs.widthPct ?? 100);
   const variationUrls = (node.attrs.variationUrls as string[]) ?? [];
@@ -37,6 +43,8 @@ export function NapkinNodeView({
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const autoStarted = useRef(false);
+
+  const variationCount = chartMode ? NAPKIN_VARIATION_COUNT : 2;
 
   const generate = useCallback(async () => {
     const content = text.trim();
@@ -52,10 +60,17 @@ export function NapkinNodeView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content,
-          style_id: styleId || NAPKIN_DEFAULT_STYLE_ID,
-          visual_query: visualQuery || undefined,
+          style_id: styleId || (chartMode ? NAPKIN_CHART_STYLE_ID : NAPKIN_DEFAULT_STYLE_ID),
+          // Napkin API: visual_query cannot combine with number_of_visuals > 1
+          visual_query: chartMode || variationCount > 1 ? undefined : visualQuery || undefined,
           format: "png",
-          number_of_visuals: 2,
+          number_of_visuals: variationCount,
+          context_before: chartMode
+            ? `Annotated stock chart for ${chartTicker || "equity"}:`
+            : undefined,
+          context_after: chartMode
+            ? "Show every price level as a labeled number on the chart."
+            : undefined,
         }),
       });
       const data = (await res.json()) as {
@@ -82,7 +97,7 @@ export function NapkinNodeView({
     } finally {
       setGenerating(false);
     }
-  }, [text, styleId, visualQuery, updateAttributes]);
+  }, [text, styleId, visualQuery, chartMode, chartTicker, variationCount, updateAttributes]);
 
   useEffect(() => {
     if (!autoGenerate || autoStarted.current || url) return;
@@ -90,6 +105,8 @@ export function NapkinNodeView({
     autoStarted.current = true;
     void generate();
   }, [autoGenerate, sourceText, url, generate]);
+
+  const styleGroups = [...new Set(NAPKIN_STYLES.map((s) => s.group))];
 
   if (!isEditable) {
     if (!url) return <NodeViewWrapper contentEditable={false} className="hidden" />;
@@ -121,7 +138,9 @@ export function NapkinNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <Wand2 size={14} className="text-accent" />
-        <span className="t-eyebrow flex-1">Napkin visual</span>
+        <span className="t-eyebrow flex-1">
+          {chartMode ? `Chart annotation${chartTicker ? ` · ${chartTicker}` : ""}` : "Napkin visual"}
+        </span>
         {url ? (
           <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
             {WIDTHS.map((w) => (
@@ -157,22 +176,28 @@ export function NapkinNodeView({
         {generating && !url ? (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <Loader2 size={28} className="animate-spin text-accent" />
-            <p className="text-sm font-medium text-text">Napkin is visualizing your selection…</p>
-            <p className="max-w-sm text-xs text-text-mute line-clamp-3">{sourceText}</p>
+            <p className="text-sm font-medium text-text">
+              {chartMode
+                ? "Napkin is drawing labeled price levels on your chart…"
+                : "Napkin is visualizing your selection…"}
+            </p>
+            <p className="max-w-sm text-xs text-text-mute line-clamp-4">{sourceText}</p>
           </div>
         ) : !url ? (
           <>
-            <label className="block">
-              <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onMouseDown={stop}
-                rows={4}
-                placeholder="Paste a thesis, process, or bullet list — Napkin turns it into a diagram."
-                className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
-              />
-            </label>
+            {!chartMode ? (
+              <label className="block">
+                <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onMouseDown={stop}
+                  rows={4}
+                  placeholder="Paste a thesis, process, or bullet list — Napkin turns it into a diagram."
+                  className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
+                />
+              </label>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="t-meta mb-1 block text-[11px]">Style</span>
@@ -182,28 +207,40 @@ export function NapkinNodeView({
                   onMouseDown={stop}
                   className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
                 >
-                  {NAPKIN_STYLES.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
+                  {styleGroups.map((group) => (
+                    <optgroup key={group} label={group}>
+                      {NAPKIN_STYLES.filter((s) => s.group === group).map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </label>
-              <label className="block">
-                <span className="t-meta mb-1 block text-[11px]">Visual type</span>
-                <select
-                  value={visualQuery}
-                  onChange={(e) => updateAttributes({ visualQuery: e.target.value })}
-                  onMouseDown={stop}
-                  className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
-                >
-                  {NAPKIN_VISUAL_TYPES.map((t) => (
-                    <option key={t.value || "auto"} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {!chartMode ? (
+                <label className="block">
+                  <span className="t-meta mb-1 block text-[11px]">Visual type</span>
+                  <select
+                    value={visualQuery}
+                    onChange={(e) => updateAttributes({ visualQuery: e.target.value })}
+                    onMouseDown={stop}
+                    className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                  >
+                    {NAPKIN_VISUAL_TYPES.map((t) => (
+                      <option key={t.value || "auto"} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <div className="flex items-end">
+                  <p className="t-meta text-[11px] text-text-mute">
+                    Generating {NAPKIN_VARIATION_COUNT} chart styles — pick the one with the clearest price labels.
+                  </p>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -236,22 +273,30 @@ export function NapkinNodeView({
               />
             </div>
             {variationUrls.length > 1 ? (
-              <div className="flex flex-wrap justify-center gap-2">
-                {variationUrls.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onMouseDown={stop}
-                    onClick={() => updateAttributes({ url: v })}
-                    className={cn(
-                      "overflow-hidden rounded-[var(--radius-btn)] border-2 transition-colors",
-                      v === url ? "border-accent" : "border-border hover:border-border-strong",
-                    )}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={v} alt="" className="h-16 w-24 object-cover" />
-                  </button>
-                ))}
+              <div>
+                <p className="t-meta mb-2 text-center text-[11px] text-text-mute">
+                  Choose a diagram — prices should be clearly labeled
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {variationUrls.map((v, i) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onMouseDown={stop}
+                      onClick={() => updateAttributes({ url: v })}
+                      className={cn(
+                        "relative overflow-hidden rounded-[var(--radius-btn)] border-2 transition-colors focus-ring",
+                        v === url ? "border-accent ring-2 ring-accent/20" : "border-border hover:border-accent/50",
+                      )}
+                    >
+                      <span className="num absolute left-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--ink)] text-[10px] font-semibold text-[var(--paper)]">
+                        {i + 1}
+                      </span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={v} alt={`Variation ${i + 1}`} className="aspect-[4/3] w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : null}
             <input
@@ -269,7 +314,7 @@ export function NapkinNodeView({
               className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
             >
               {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              Regenerate
+              Regenerate {variationCount} variations
             </button>
           </>
         )}
