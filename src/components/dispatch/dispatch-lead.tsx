@@ -11,19 +11,35 @@ function formatTarget(p: DispatchStory["prediction"]) {
   return `$${p.target_price.toFixed(2)}`;
 }
 
-export function DispatchLead({ story }: { story: DispatchStory }) {
+export function DispatchLead({
+  story,
+  align = "center",
+}: {
+  story: DispatchStory;
+  align?: "center" | "start";
+}) {
   const { report, author, prediction, headline, dek } = story;
   const ticker = (report.ticker ?? prediction?.ticker ?? "").toUpperCase();
   const target = formatTarget(prediction);
+  const centered = align === "center";
 
   return (
     <FadeIn className="dispatch-lead">
       <article>
         <Link href={`/report/${report.id}`} className="group block focus-ring rounded-[var(--r-btn)]">
-          <h2 className="dispatch-lead-headline group-hover:text-accent transition-colors duration-[var(--dur-2)]">
+          <h2
+            className={cn(
+              "dispatch-lead-headline group-hover:text-accent transition-colors duration-[var(--dur-2)]",
+              !centered && "dispatch-lead-headline--start text-left",
+            )}
+          >
             {headline}
           </h2>
-          {dek && <p className="dispatch-lead-dek mt-4">{dek}</p>}
+          {dek && (
+            <p className={cn("dispatch-lead-dek mt-4", !centered && "dispatch-lead-dek--start text-left mx-0")}>
+              {dek}
+            </p>
+          )}
         </Link>
 
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-border pt-5">

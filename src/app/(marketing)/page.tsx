@@ -1,10 +1,12 @@
+import { redirect } from "next/navigation";
 import { DispatchView } from "@/components/dispatch/dispatch-view";
 import { getSessionUserId } from "@/lib/db/auth";
 import { buildDispatch } from "@/lib/dispatch/build-dispatch";
 
-export default async function DispatchHomePage() {
+export default async function PublicDispatchPage() {
   const userId = await getSessionUserId();
-  const dispatch = await buildDispatch(Boolean(userId));
+  if (userId) redirect("/home");
 
-  return <DispatchView dispatch={dispatch} />;
+  const dispatch = await buildDispatch(false);
+  return <DispatchView dispatch={dispatch} mode="public" />;
 }

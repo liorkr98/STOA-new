@@ -145,7 +145,7 @@ export default async function DiscoverPage({
             />
           )
         ) : reports && reports.length > 0 ? (
-          <div className="flex flex-col gap-5">
+          <div className="grid gap-5 sm:grid-cols-2">
             {reports.map((r) => (
               <ReportCard key={r.id} report={r} promoted={promotedReportIds.has(r.id)} />
             ))}

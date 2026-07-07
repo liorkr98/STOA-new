@@ -148,6 +148,7 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
   try {
     const { id } = await validateAndPublishReport(supabase, userId, input);
     revalidatePath("/");
+    revalidatePath("/home");
     revalidatePath("/discover");
     revalidatePath("/studio");
     redirect(`/report/${id}`);
@@ -225,6 +226,7 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
   }
 
   revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath("/discover");
   return { ok: true };
 }

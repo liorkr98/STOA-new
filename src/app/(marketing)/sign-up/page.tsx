@@ -11,7 +11,7 @@ export default async function SignUpPage({
   searchParams: Promise<{ ref?: string }>;
 }) {
   const userId = await getSessionUserId();
-  if (userId) redirect("/");
+  if (userId) redirect("/home");
 
   const { ref } = await searchParams;
   const refHandle = ref?.trim().toLowerCase().replace(/^@/, "") || undefined;
