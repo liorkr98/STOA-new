@@ -15,11 +15,17 @@ import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { signOut } from "@/app/actions/auth";
 
 const links = [
+  { href: "/", label: "Today" },
   { href: "/discover", label: "Discover" },
   { href: "/markets", label: "Markets" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/search", label: "Search" },
 ];
+
+/** "/" must match exactly or Today would stay lit on every route. */
+function isActive(pathname: string, href: string) {
+  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
 
 export function TopNav({
   profile,
@@ -53,7 +59,7 @@ export function TopNav({
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((l) => {
-              const active = pathname.startsWith(l.href);
+              const active = isActive(pathname, l.href);
               return (
                 <Link
                   key={l.href}

@@ -8,8 +8,10 @@ export function DispatchLeaderboard({ entries }: { entries: DispatchLeaderboardE
 
   return (
     <section className="dispatch-section">
-      <h2 className="dispatch-section-label">Top creators this week</h2>
-      <ol className="space-y-0 divide-y divide-border">
+      <h2 className="dispatch-kicker">
+        <span>Standings</span>
+      </h2>
+      <ol className="mt-4 space-y-0 divide-y divide-border">
         {entries.map((entry, index) => (
           <li
             key={entry.analyst.id}
