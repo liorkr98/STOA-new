@@ -39,40 +39,44 @@ export function TiptapEditor({
     [],
   );
 
-  const editor = useEditor({
-    // Required for Next.js SSR: render on the client to avoid hydration drift.
-    immediatelyRender: false,
-    extensions,
-    content: initialContent,
-    editorProps: {
-      attributes: {
-        class: "stoa-prose focus:outline-none",
-        spellcheck: "true",
+  const editor = useEditor(
+    {
+      // Required for Next.js SSR: render on the client to avoid hydration drift.
+      immediatelyRender: false,
+      shouldRerenderOnTransaction: false,
+      extensions,
+      content: initialContent,
+      editorProps: {
+        attributes: {
+          class: "stoa-prose focus:outline-none",
+          spellcheck: "true",
+        },
+        // Drag-to-insert for the AI ask-panel (Layer 4): a card sets a Tiptap
+        // node JSON on the "application/stoa-node" transfer; here it lands as a
+        // real node at the drop position.
+        handleDrop(view, event) {
+          const raw = (event as DragEvent).dataTransfer?.getData("application/stoa-node");
+          if (!raw) return false;
+          event.preventDefault();
+          try {
+            const node = view.state.schema.nodeFromJSON(JSON.parse(raw));
+            const coords = view.posAtCoords({
+              left: (event as DragEvent).clientX,
+              top: (event as DragEvent).clientY,
+            });
+            const pos = coords ? coords.pos : view.state.selection.from;
+            view.dispatch(view.state.tr.insert(pos, node));
+            return true;
+          } catch {
+            return false;
+          }
+        },
       },
-      // Drag-to-insert for the AI ask-panel (Layer 4): a card sets a Tiptap
-      // node JSON on the "application/stoa-node" transfer; here it lands as a
-      // real node at the drop position.
-      handleDrop(view, event) {
-        const raw = (event as DragEvent).dataTransfer?.getData("application/stoa-node");
-        if (!raw) return false;
-        event.preventDefault();
-        try {
-          const node = view.state.schema.nodeFromJSON(JSON.parse(raw));
-          const coords = view.posAtCoords({
-            left: (event as DragEvent).clientX,
-            top: (event as DragEvent).clientY,
-          });
-          const pos = coords ? coords.pos : view.state.selection.from;
-          view.dispatch(view.state.tr.insert(pos, node));
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      onCreate: ({ editor: e }) => onReady?.(e),
+      onUpdate: ({ editor: e }) => onChange({ json: e.getJSON(), text: e.getText() }),
     },
-    onCreate: ({ editor: e }) => onReady?.(e),
-    onUpdate: ({ editor: e }) => onChange({ json: e.getJSON(), text: e.getText() }),
-  });
+    [],
+  );
 
   if (!editor) return null;
 
