@@ -2,18 +2,19 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Compass } from "@phosphor-icons/react/dist/ssr";
 import { TabBar } from "@/components/feed/tab-bar";
-import { ReportCard } from "@/components/report-card";
 import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
+import { FilterBar } from "@/components/discover/filter-bar";
+import { ReportBlock } from "@/components/discover/report-block";
 import { listFeed, listFeedFromAnalysts, getReportsByIds } from "@/lib/db/reports";
 import { listTopAnalysts, getProfilesByIds } from "@/lib/db/profiles";
 import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
-import { sampleAnalysts } from "@/lib/sample";
 import { QuickPost } from "@/components/feed/quick-post";
+import type { ContentType, Report } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Discover" };
 
@@ -25,16 +26,56 @@ const TABS = [
   { key: "subscriptions", label: "Subscriptions" },
 ];
 
+const CONTENT_TYPES: ContentType[] = ["research", "call", "short_post"];
+
+interface DiscoverParams {
+  tab?: string;
+  type?: string;
+  access?: string;
+  moat?: string;
+  ticker?: string;
+}
+
+/** Post-fetch filters (access/score/ticker act on the fetched page of results). */
+function applyFilters(reports: Report[], params: DiscoverParams): Report[] {
+  let out = reports;
+  if (params.type && CONTENT_TYPES.includes(params.type as ContentType)) {
+    out = out.filter((r) => r.type === params.type);
+  }
+  if (params.access === "free" || params.access === "paid" || params.access === "subscribers") {
+    out = out.filter((r) => r.access === params.access);
+  }
+  const minMoat = Number(params.moat);
+  if (minMoat > 0) {
+    out = out.filter((r) => (r.author?.score ?? 0) >= minMoat);
+  }
+  if (params.ticker) {
+    const t = params.ticker.toUpperCase();
+    out = out.filter(
+      (r) => (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase() === t,
+    );
+  }
+  return out;
+}
+
+/** Mosaic span classes: first block leads wide, second stacks beside it, rest tile 3-up. */
+function blockSpan(index: number): string {
+  if (index === 0) return "lg:col-span-4";
+  if (index === 1) return "lg:col-span-2";
+  return "lg:col-span-2";
+}
+
 export default async function DiscoverPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<DiscoverParams>;
 }) {
-  const { tab = "trending" } = await searchParams;
+  const params = await searchParams;
+  const tab = params.tab ?? "trending";
   const profile = await getSessionProfile();
   const userId = profile?.id ?? null;
 
-  let reports;
+  let reports: Report[] | undefined;
   let researchers: Awaited<ReturnType<typeof listTopAnalysts>> = [];
   let researcherCounts: Record<string, number> = {};
   let needsAuth = false;
@@ -66,7 +107,7 @@ export default async function DiscoverPage({
     else reports = await listFeedFromAnalysts(await subscribedAnalystIds(userId));
   } else {
     const sort = tab === "recent" ? "recent" : "trending";
-    reports = await listFeed({ sort });
+    reports = await listFeed({ sort, limit: 36 });
     if (sort === "trending") {
       try {
         const boostedIds = await listBoostedReportIds("feed_trending", 2);
@@ -80,111 +121,87 @@ export default async function DiscoverPage({
     }
   }
 
-  let top;
-  try {
-    const sidebarBoosted = await listBoostedProfileIds("discover_sidebar", 2);
-    promotedAnalystIds = new Set([...promotedAnalystIds, ...sidebarBoosted]);
-    const boostedTop = await getProfilesByIds(sidebarBoosted);
-    const topRaw = await listTopAnalysts(5);
-    const seen = new Set(sidebarBoosted);
-    const merged = [...boostedTop, ...topRaw.filter((a) => !seen.has(a.id))].slice(0, 5);
-    top =
-      merged.length > 0
-        ? await Promise.all(
-            merged.map(async (a) => ({ analyst: a, resolved: await resolvedCountByAuthor(a.id) })),
-          )
-        : null;
-  } catch {
-    const topRaw = await listTopAnalysts(5);
-    top =
-      topRaw.length > 0
-        ? await Promise.all(
-            topRaw.map(async (a) => ({ analyst: a, resolved: await resolvedCountByAuthor(a.id) })),
-          )
-        : null;
-  }
+  const filtered = reports ? applyFilters(reports, params) : undefined;
+  const filtersActive = Boolean(params.type || params.access || params.moat || params.ticker);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-      <div className="flex flex-col gap-5">
-        <div>
-          <h1 className="t-h1">Discover</h1>
-          <p className="t-body mt-1">Research and calls from independent analysts.</p>
-        </div>
-        {profile && <QuickPost profile={profile} />}
+    <div className="flex flex-col gap-5">
+      <div>
+        <h1 className="t-h1">Discover</h1>
+        <p className="t-body mt-1">
+          Browse every published call and report. Today&apos;s ranked issue lives on{" "}
+          <Link href="/" className="text-accent hover:underline">
+            the dispatch
+          </Link>
+          .
+        </p>
+      </div>
 
-        <TabBar tabs={TABS} active={tab} />
+      {profile && <QuickPost profile={profile} />}
 
-        {needsAuth ? (
-          <EmptyState
-            icon={<Compass size={32} />}
-            title="Sign in to see your feed"
-            body="Follow analysts and subscribe to build a personalized feed of research and calls."
-            action={
-              <Link href="/sign-in" className={buttonClass("primary", "md")}>
-                Sign in
-              </Link>
-            }
-          />
-        ) : tab === "researchers" ? (
-          researchers.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {researchers.map((a) => (
-                <AnalystCard
-                  key={a.id}
-                  analyst={a}
-                  resolvedCalls={researcherCounts[a.id] ?? 0}
-                  promoted={promotedAnalystIds.has(a.id)}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No analysts yet"
-              body="Once analysts publish and build track records, they will appear here."
-            />
-          )
-        ) : reports && reports.length > 0 ? (
-          <div className="flex flex-col gap-5">
-            {reports.map((r) => (
-              <ReportCard key={r.id} report={r} promoted={promotedReportIds.has(r.id)} />
+      <TabBar tabs={TABS} active={tab} />
+
+      {tab !== "researchers" && <FilterBar />}
+
+      {needsAuth ? (
+        <EmptyState
+          icon={<Compass size={32} />}
+          title="Sign in to see your feed"
+          body="Follow analysts and subscribe to build a personalized view of research and calls."
+          action={
+            <Link href="/sign-in" className={buttonClass("primary", "md")}>
+              Sign in
+            </Link>
+          }
+        />
+      ) : tab === "researchers" ? (
+        researchers.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {researchers.map((a) => (
+              <AnalystCard
+                key={a.id}
+                analyst={a}
+                resolvedCalls={researcherCounts[a.id] ?? 0}
+                promoted={promotedAnalystIds.has(a.id)}
+              />
             ))}
           </div>
         ) : (
           <EmptyState
-            icon={<Compass size={32} />}
-            title="Nothing here yet"
-            body={
-              tab === "following" || tab === "subscriptions"
+            title="No analysts yet"
+            body="Once analysts publish and build track records, they will appear here."
+          />
+        )
+      ) : filtered && filtered.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {filtered.map((r, i) => (
+            <div key={r.id} className={`${blockSpan(i)} h-full`}>
+              <ReportBlock
+                report={r}
+                size={i === 0 ? "lead" : "std"}
+                promoted={promotedReportIds.has(r.id)}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Compass size={32} />}
+          title={filtersActive ? "Nothing matches these filters" : "Nothing here yet"}
+          body={
+            filtersActive
+              ? "Loosen a filter or clear them to see everything in this tab."
+              : tab === "following" || tab === "subscriptions"
                 ? "Follow or subscribe to analysts and their work will show up here."
                 : "Once analysts publish, their research will appear here."
-            }
-            action={
-              <Link href="/discover?tab=trending" className={buttonClass("secondary", "md")}>
-                Browse trending
-              </Link>
-            }
-          />
-        )}
-      </div>
-
-      <aside className="hidden flex-col gap-4 lg:flex">
-        <h2 className="t-eyebrow">Top analysts</h2>
-        <div className="flex flex-col gap-4">
-          {(top
-            ? top.map(({ analyst, resolved }) => (
-                <AnalystCard
-                  key={analyst.id}
-                  analyst={analyst}
-                  resolvedCalls={resolved}
-                  promoted={promotedAnalystIds.has(analyst.id)}
-                />
-              ))
-            : sampleAnalysts.slice(0, 3).map((a) => (
-                <AnalystCard key={a.id} analyst={a} spark={a.spark} resolvedCalls={a.resolved} />
-              )))}
-        </div>
-      </aside>
+          }
+          action={
+            <Link href="/discover?tab=trending" className={buttonClass("secondary", "md")}>
+              Browse trending
+            </Link>
+          }
+        />
+      )}
     </div>
   );
 }
