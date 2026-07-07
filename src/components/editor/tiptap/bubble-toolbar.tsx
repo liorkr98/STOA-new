@@ -18,6 +18,7 @@ import {
   PilcrowRight,
   PilcrowLeft,
   MessageCircle,
+  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -62,6 +63,21 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       <Btn icon={Heading2} label="Heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
       <Btn icon={Heading3} label="Subheading" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
       <Btn icon={Quote} label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+      <Divider />
+      <Btn
+        icon={Wand2}
+        label="Napkin visual"
+        active={false}
+        onClick={() => {
+          const { from, to } = editor.state.selection;
+          const selected = editor.state.doc.textBetween(from, to, "\n");
+          editor
+            .chain()
+            .focus()
+            .insertContent({ type: "napkinNode", attrs: { sourceText: selected } })
+            .run();
+        }}
+      />
       <Divider />
       <Btn icon={Bold} label="Bold (Cmd+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
       <Btn icon={Italic} label="Italic (Cmd+I)" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
