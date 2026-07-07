@@ -32,7 +32,21 @@ Publish validates every `screenshotUrl` in the body starts with:
 | `DELETE /api/reports/[id]` | Signed in | Delete draft + remove chart PNGs |
 | `GET /api/market/candles` | Signed in | OHLC for chartNode (`symbol` + `range`), 60 req/min/user |
 
-## §10 — Environment variables
+## Dispatch API
+
+Daily editorial digest for the homepage (`/`). Server-assembled ranking — clients should not rebuild the feed from raw reports.
+
+| Route | Auth | Purpose |
+|-------|------|---------|
+| `GET /api/dispatch` | Optional | Public dispatch issue |
+| `GET /api/dispatch?personalized=true` | Signed in | Lead/secondary/ledger scoped to followed + subscribed creators |
+
+**Response shape** (`DispatchPayload`): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (Today's Record — empty array omits UI), `leaderboard[]` (personalized only).
+
+**Ranking** (`src/lib/dispatch/ranking.ts`): conviction + recency + moat score. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
+
+**Issue counter:** migration `0026_dispatch_meta.sql` — `dispatch_meta` singleton + `bump_dispatch_issue()` RPC increments once per NY calendar day.
+
 
 | Variable | Required | Description |
 |----------|----------|-------------|

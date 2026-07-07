@@ -342,75 +342,50 @@ Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
 
 ## PART 3 — PUBLIC PAGES (logged out)
 
-### 3.1 Homepage — `/`
+### 3.1 Homepage — `/` (Stoa Dispatch)
 
-**Layout, top to bottom:**
+The homepage **is** the Dispatch: a daily editorial digest, not a marketing hero. Logged-out
+visitors see the public issue; signed-in investors see the same layout with personalized lead,
+secondary list, and Today's Record scoped to followed/subscribed creators.
 
-**Header** — `<TopNav>` in its logged-out state.
+**Layout, top to bottom** (centered column, max-width ~672px, `--paper` background):
 
-**Hero section** (full-bleed `--paper` background, ~640px min-height desktop):
+**Masthead**
 
-- Eyebrow label, `--text-sm`, `--ink` at 60% opacity, uppercase tracking: `VERIFIED FINANCIAL
-  RESEARCH`
-- Headline, Fraunces `--text-4xl`: **"Financial research you can actually verify."**
-- Subhead, Plex Sans `--text-lg`, max-width 560px: "Analysts publish. AI fact-checks every claim.
-  Every price target gets locked and tracked — forever."
-- Two buttons side by side: **"Explore research"** (secondary style) → `/explore`, **"Start
-  publishing"** (primary style) → `/signup?role=creator`
-- To the right of the text block (desktop) / below it (mobile): a live, animated instance of the
-  seal graphic mid-stamp, static/looping subtly (respecting reduced-motion) — this is the hero's
-  single characteristic image, doing the job of showing rather than telling what the product's
-  core mechanic is.
+- Wordmark: spaced serif **S T O A** (Fraunces, wide letter-spacing)
+- Hairline rule
+- Dateline row (Plex Mono, uppercase): `Issue №{N} · {WEEKDAY, MONTH DAY, YEAR} · {N} min read`
+- Signed-in variant prepends "Your dispatch," to the dateline
+- If the cycle falls back to a prior 24h window due to low volume, a quiet mono note:
+  `Low volume — showing recent highlights`
 
-**Trust bar** (immediately below hero, `--ink` background, `--paper` text — the one section of
-the homepage that inverts the palette, to visually separate "claim" from "proof"):
+**Lead story**
 
-- Three stats in Plex Mono, large numerals: `[N] reports fact-checked` · `[N] locked calls
-  tracked` · `[N]% of claims independently verified`
-- These pull from a real aggregate query (backend: `count(claims)`, `count(reports where
-  locked_at is not null)`, `count(claims where verdict != 'unproven') / count(claims)`) — never
-  hardcoded placeholder numbers once live, but the layout should degrade gracefully pre-launch
-  (see empty state below)
-- **Empty state (pre-launch, near-zero data):** replace the stat block with the same three labels
-  but render "—" instead of a number, and change the section copy to "This is how every report on
-  Stoa gets checked" — never show "0 reports fact-checked," which reads as failure rather than
-  newness
+- Fraunces headline (centered), optional dek, author row with avatar + `<MoatBadge>`, ticker,
+  target, "Read" link → report detail
 
-**"How it works"** — three steps, horizontal on desktop / stacked on mobile, each: a small
-line-icon (not a stock illustration), a one-line title, one sentence of body:
+**Secondary list** — "Also in this issue"
 
-1. *Icon: pen* — "Creator publishes & locks a call" — "Price target, ticker, and horizon date,
-   locked the moment it's published."
-2. *Icon: magnifying glass* — "AI fact-checks every claim" — "Every factual statement gets
-   verified, flagged, or marked as opinion."
-3. *Icon: the seal* — "Track record builds the MOAT score" — "Hits and misses stay on the record
-   permanently."
+- Dense wire format (not cards): `TICKER · Author · MoatBadge · headline` per row, dividers only
 
-**Featured creators carousel:**
+**Today's Record** (ledger)
 
-- Section header: "Top creators this month"
-- Horizontally scrollable row of 6 creator cards (desktop shows ~4 at once with scroll affordance
-  arrows; mobile is a native swipe carousel)
-- Each card: avatar, display name, `<MoatBadge size="md">`, one most-recent locked call as a
-  mini-preview (ticker + target + upside %), "View profile" as the whole card's click target
-- **Empty state (fewer than 6 creators exist yet):** section header changes to "Recently
-  published" and shows whatever exists, sorted by recency instead of score — never show empty
-  placeholder cards
+- Table: Analyst, Ticker, Call summary, Outcome (`SealStamp` for hit/miss; text for near/partial)
+- **Hidden entirely when empty** — no placeholder section
 
-**For creators** section (`--paper` background, contained width):
+**Logged-in only** (below ledger)
 
-- Headline: "Your page. Your price. Your record."
-- Three short value props as a simple list (not numbered — this isn't a sequence, so no 01/02/03
-  markers): branding control, pricing control ("subscription, per-report, or both"), AI writing +
-  fact-check tools
-- Repeat CTA: **"Start publishing"** → `/signup?role=creator`
+- "Top creators this week" mini-leaderboard (rank, avatar, name, MoatBadge, resolved count)
+- Ghost CTA: "Explore all analysts →" → `/discover`
 
-**Footer** (`--ink` background):
+**How it works** — three short paragraphs (editorial copy, not icon steps)
 
-- Four columns: Product (Explore, How It Works, Pricing), Trust (Trust & Methodology, Legal &
-  Disclosures), Company (About, Contact), Legal fine print line: "Stoa is a publishing platform,
-  not an investment adviser. Nothing here is personalized investment advice." — this line appears
-  in the footer of *every* page in the site, not just here.
+**For creators** — value prop + secondary CTA → `/become-analyst`
+
+**Header / footer** — unchanged `<TopNav>` + site `<Footer>` via marketing layout.
+
+**Backend:** `GET /api/dispatch` (optional `?personalized=true` when signed in). Homepage
+server-renders via `buildDispatch()` — same ranking logic as the API.
 
 ---
 
@@ -662,23 +637,16 @@ report" remains unchecked and the checklist persists until it's genuinely done.
 
 ## PART 5 — INVESTOR APP
 
-### 5.1 Feed — `/feed` (home for logged-in investors)
+### 5.1 Feed — `/` (Dispatch for investors) and `/discover` (browse)
 
-**Layout:**
+**Home (`/`):** Same Stoa Dispatch layout as §3.1, but server-assembled with
+`personalized=true` when signed in — lead/secondary/ledger scoped to followed and subscribed
+creators; includes the weekly leaderboard rail and link to full browse.
 
-- `<TopNav>` (logged-in, role = Investor)
-- **Filter row**, sticky beneath nav: "Following" / "Discover" toggle (segmented control,
-  defaults to "Following" if the investor follows anyone, otherwise defaults to "Discover"),
-  sector chips, MOAT score minimum slider, Free/Paid toggle — identical component to Explore's
-  filter row (§3.2), just logged-in context
-- **Main column** (≈70% width desktop, full width mobile): vertical stack of feed cards
-- **Right rail** (≈30% width desktop, moves below the feed on mobile as a horizontally-scrolling
-  strip): **"Top creators this week"** leaderboard — ranked list, rank number in Plex Mono,
-  avatar, name, `<MoatBadge size="sm">`, follow button inline. This is a real, load-bearing
-  discovery surface, not a decorative widget — it's the platform's main organic growth loop, so
-  it should be genuinely prominent, not shrunk into a sidebar afterthought.
+**Discover (`/discover`):** The full investor browse surface (filter row, feed cards, tabs).
+Role switcher returns investors to `/` (Dispatch), not a separate `/feed` route.
 
-**Feed card component** (reused in Explore, Following, Watchlist-ticker-view):
+**Feed card component** (reused in Discover, Following, Watchlist-ticker-view):
 
 ```
 ┌──────────────────────────────────────────────┐

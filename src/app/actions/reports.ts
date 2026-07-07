@@ -147,6 +147,7 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
 
   try {
     const { id } = await validateAndPublishReport(supabase, userId, input);
+    revalidatePath("/");
     revalidatePath("/discover");
     revalidatePath("/studio");
     redirect(`/report/${id}`);
