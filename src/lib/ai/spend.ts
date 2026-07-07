@@ -13,8 +13,9 @@ export interface SpendCreditsResult {
 export async function spendAiCredits(
   action: AiAction,
   memo?: string,
+  creditOverride?: number,
 ): Promise<SpendCreditsResult> {
-  const credits = AI_COST[action];
+  const credits = creditOverride ?? AI_COST[action];
   if (credits === 0) return { ok: true, remaining: undefined };
 
   const supabase = await createClient();

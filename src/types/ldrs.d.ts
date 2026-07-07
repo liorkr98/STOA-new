@@ -5,7 +5,21 @@
  * setup, so we declare the single element we render -- matching the automatic
  * JSX runtime Next uses.
  */
+import "react";
 import "react/jsx-runtime";
+
+declare module "react" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "l-hatch": {
+        size?: number | string;
+        stroke?: number | string;
+        speed?: number | string;
+        color?: number | string;
+      };
+    }
+  }
+}
 
 declare module "react/jsx-runtime" {
   namespace JSX {

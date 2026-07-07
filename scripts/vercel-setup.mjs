@@ -119,14 +119,14 @@ const ENV_SPECS = [
         : randomBytes(32).toString("hex"),
   },
   {
-    key: "OPENAI_MODEL",
+    key: "DEEPSEEK_MODEL",
     required: false,
     targets: ["production", "preview", "development"],
     sensitive: false,
-    defaultValue: "gpt-4o-mini",
+    defaultValue: "deepseek-v4-pro",
   },
   {
-    key: "OPENAI_API_KEY",
+    key: "DEEPSEEK_API_KEY",
     required: false,
     targets: ["production", "preview"],
     sensitive: true,

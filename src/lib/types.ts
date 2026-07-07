@@ -66,6 +66,10 @@ export interface Report {
   status: ReportStatus;
   access: AccessType;
   price: number | null;
+  /** Minimum subscription plan rank required when access is subscribers. */
+  min_plan_rank?: number;
+  /** Perk slugs required on the subscriber's plan (see plans.perks). */
+  required_perks?: string[];
   ticker: string | null;
   likes: number;
   views: number;
@@ -191,6 +195,10 @@ export interface ComposeInput {
   body?: string;
   access: AccessType;
   price?: number | null;
+  /** Minimum plan rank when access is subscribers (0 = any subscriber). */
+  min_plan_rank?: number;
+  /** Required perk slugs when access is subscribers. */
+  required_perks?: string[];
   ticker?: string | null;
   direction?: Direction;
   target_price?: number | null;

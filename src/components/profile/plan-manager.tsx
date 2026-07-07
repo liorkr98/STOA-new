@@ -297,6 +297,20 @@ function PlanRow({
             Add
           </Button>
         </div>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {["Full reports", "Deep dives", "Video access", "Live calls", "Model downloads"].map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                if (!perks.includes(s)) setPerks((prev) => [...prev, s]);
+              }}
+              className="rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] text-text-mute hover:border-accent hover:text-text"
+            >
+              + {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-3 flex items-center gap-3">

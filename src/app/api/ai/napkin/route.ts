@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePromptInput } from "@/lib/ai/prompt-safety";
+import { graphifyText } from "@/lib/ai/graphify";
 import { NapkinApiError, napkinGenerateAndDownload } from "@/lib/napkin/client";
 import { NAPKIN_DEFAULT_STYLE_ID } from "@/lib/napkin/styles";
 
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Napkin is not configured on this deployment. In Vercel, add NAPKIN_API_KEY to the stoa-new project (link the team variable to the project if using shared env), then redeploy.",
+          "Diagram generation is not configured. Add NAPKIN_API_KEY on Vercel (or a future self-hosted visual provider), then redeploy.",
       },
       { status: 503 },
     );
@@ -39,10 +40,13 @@ export async function POST(req: Request) {
     number_of_visuals?: number;
   };
 
-  const content = normalizePromptInput(body.content ?? "", 4_000);
-  if (!content.trim()) {
+  const raw = normalizePromptInput(body.content ?? "", 8_000);
+  if (!raw.trim()) {
     return NextResponse.json({ error: "Content is required to generate a visual" }, { status: 400 });
   }
+
+  const graphified = graphifyText(raw, "napkin", 500);
+  const content = graphified.text;
 
   const format = body.format === "png" ? "png" : "svg";
   const numberOfVisuals = Math.min(4, Math.max(1, body.number_of_visuals ?? 2));
@@ -86,6 +90,11 @@ export async function POST(req: Request) {
     return NextResponse.json({
       request_id: requestId,
       visuals: hosted,
+      graphify: {
+        tokens_before: graphified.tokensBefore,
+        tokens_after: graphified.tokensAfter,
+        tokens_saved: graphified.tokensSaved,
+      },
     });
   } catch (e) {
     if (e instanceof NapkinApiError) {

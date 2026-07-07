@@ -1,8 +1,30 @@
 import { NextResponse } from "next/server";
+import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { spendAiCredits } from "@/lib/ai/spend";
+import { hasLlmApiKey, llmModel } from "@/lib/ai/llm";
+import { BRAND_SYSTEM_PROMPT } from "@/lib/ai/graphify";
+import { estimateTokens, quoteCredits, TOKEN_BUDGETS } from "@/lib/ai/token-economy";
+import { normalizePromptInput } from "@/lib/ai/prompt-safety";
 import type { BrandAnalyzeResult } from "@/lib/profile/brand-analyze";
+
+const brandResultSchema = z.object({
+  scores: z.object({
+    clarity: z.number(),
+    credibility: z.number(),
+    discoverability: z.number(),
+    cta_strength: z.number(),
+  }),
+  suggestions: z.array(
+    z.object({
+      field: z.enum(["headline", "bio", "specialties", "social"]),
+      proposed: z.union([z.string(), z.array(z.string())]),
+      reason: z.string(),
+    }),
+  ),
+  warnings: z.array(z.string()),
+});
 
 const inputSchema = z.object({
   display_name: z.string(),
@@ -11,6 +33,20 @@ const inputSchema = z.object({
   specialties: z.array(z.string()),
   social: z.array(z.object({ label: z.string(), url: z.string() })),
 });
+
+function compactBrandPayload(input: z.infer<typeof inputSchema>): string {
+  const payload = {
+    name: normalizePromptInput(input.display_name, 80),
+    headline: input.headline ? normalizePromptInput(input.headline, 120) : null,
+    bio: input.bio ? normalizePromptInput(input.bio, 320) : null,
+    specialties: input.specialties.slice(0, 8).map((s) => normalizePromptInput(s, 40)),
+    social: input.social.slice(0, 6).map((s) => ({
+      label: normalizePromptInput(s.label, 40),
+      url: normalizePromptInput(s.url, 200),
+    })),
+  };
+  return JSON.stringify(payload);
+}
 
 function mockAnalyze(input: z.infer<typeof inputSchema>): BrandAnalyzeResult {
   const warnings: string[] = [];
@@ -70,7 +106,12 @@ export async function POST(req: Request) {
   const parsed = inputSchema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
-  const spend = await spendAiCredits("brandAnalyze", "Brand analyzer");
+  const input = parsed.data;
+  const userPayload = compactBrandPayload(input);
+  const inputTokens = estimateTokens(userPayload);
+  const quote = quoteCredits("brandAnalyze", inputTokens);
+
+  const spend = await spendAiCredits("brandAnalyze", "Brand analyzer", quote.totalCredits);
   if (spend.error) {
     return NextResponse.json(
       { error: spend.error, have: spend.have, need: spend.need },
@@ -78,41 +119,19 @@ export async function POST(req: Request) {
     );
   }
 
-  const input = parsed.data;
-  const apiKey = process.env.OPENAI_API_KEY;
   let result: BrandAnalyzeResult;
 
-  if (apiKey) {
+  if (hasLlmApiKey()) {
     try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-          temperature: 0.4,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content: `You are a branding coach for financial analysts on Stoa. Return JSON only:
-{ "scores": { "clarity": 0-100, "credibility": 0-100, "discoverability": 0-100, "cta_strength": 0-100 },
-  "suggestions": [{ "field": "headline"|"bio"|"specialties"|"social", "proposed": string|string[], "reason": string }],
-  "warnings": string[] }
-Be direct. No hype. Proposed bio max 280 chars.`,
-            },
-            { role: "user", content: JSON.stringify(input) },
-          ],
-        }),
+      const { object } = await generateObject({
+        model: llmModel(),
+        system: BRAND_SYSTEM_PROMPT,
+        schema: brandResultSchema,
+        temperature: 0.35,
+        prompt: userPayload,
+        maxOutputTokens: TOKEN_BUDGETS.brandAnalyze.maxOutput,
       });
-      const json = (await res.json()) as {
-        choices?: { message?: { content?: string } }[];
-      };
-      const raw = json.choices?.[0]?.message?.content;
-      if (!raw) throw new Error("empty response");
-      result = JSON.parse(raw) as BrandAnalyzeResult;
+      result = object as BrandAnalyzeResult;
     } catch {
       result = mockAnalyze(input);
     }
@@ -120,5 +139,9 @@ Be direct. No hype. Proposed bio max 280 chars.`,
     result = mockAnalyze(input);
   }
 
-  return NextResponse.json({ ...result, credits_remaining: spend.remaining });
+  return NextResponse.json({
+    ...result,
+    credits_remaining: spend.remaining,
+    credits_charged: quote.totalCredits,
+  });
 }

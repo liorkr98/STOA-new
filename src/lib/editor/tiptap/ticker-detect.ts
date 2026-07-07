@@ -21,21 +21,41 @@ function isTicker(symbol: string): boolean {
   return t.length >= 1 && t.length <= 5 && !NOT_TICKERS.has(t);
 }
 
-/** Best ticker in prose — prefers $-prefixed, then last bare symbol, then report ticker. */
-export function detectTicker(text: string, fallback?: string): string {
-  const upper = text.toUpperCase();
+function dollarTickers(text: string): string[] {
+  return [...text.toUpperCase().matchAll(/\$([A-Z]{1,5})\b/g)]
+    .map((m) => m[1])
+    .filter((t) => isTicker(t))
+    .map(cleanTicker);
+}
 
-  const dollar = [...upper.matchAll(/\$([A-Z]{1,5})\b/g)].map((m) => m[1]);
-  for (const sym of dollar) {
-    if (isTicker(sym)) return cleanTicker(sym);
+function bareTickers(text: string): string[] {
+  return [...text.toUpperCase().matchAll(TICKER_SINGLE)]
+    .map((m) => m[1])
+    .filter((t) => isTicker(t))
+    .map(cleanTicker);
+}
+
+/**
+ * Best ticker in prose — $-prefixed symbols win; else report ticker when set;
+ * else last bare symbol in text.
+ */
+export function detectTicker(text: string, fallback?: string): string {
+  const dollar = dollarTickers(text);
+  if (dollar.length > 0) return dollar[0];
+
+  const bare = bareTickers(text);
+  const report = fallback && isTicker(fallback) ? cleanTicker(fallback) : "";
+
+  if (report) {
+    if (bare.length === 0) return report;
+    if (bare.length === 1 && bare[0] === report) return report;
+    // Text names a different symbol than the report ticker — trust explicit mention.
+    if (bare.length >= 1) return bare[bare.length - 1];
+    return report;
   }
 
-  const bare = [...upper.matchAll(TICKER_SINGLE)]
-    .map((m) => m[1])
-    .filter((t) => isTicker(t));
-  if (bare.length > 0) return cleanTicker(bare[bare.length - 1]);
-
-  return fallback && isTicker(fallback) ? cleanTicker(fallback) : "";
+  if (bare.length > 0) return bare[bare.length - 1];
+  return "";
 }
 
 /** All plausible tickers in the text (max 8). */

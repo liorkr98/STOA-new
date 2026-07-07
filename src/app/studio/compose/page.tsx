@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { getDraftForAuthor } from "@/lib/db/reports";
+import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
 import { listEntries, listNotebooks } from "@/lib/db/notebooks";
 import { notebookToDoc } from "@/lib/editor/notebook-seed";
@@ -19,9 +20,10 @@ export default async function ComposePage({
 }) {
   const profile = (await getSessionProfile())!;
   const { id, onboarding, notebook } = await searchParams;
-  const [draft, wallet] = await Promise.all([
+  const [draft, wallet, plans] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),
+    listActivePlans(profile.id),
   ]);
   if (id && !draft) notFound();
 
@@ -51,6 +53,7 @@ export default async function ComposePage({
         analystReportPrice={profile.report_price}
         initialDraft={draft ?? seeded}
         aiCredits={wallet?.ai_credits ?? 0}
+        plans={plans}
       />
       {draft?.id && <VersionHistory reportId={draft.id} />}
     </div>

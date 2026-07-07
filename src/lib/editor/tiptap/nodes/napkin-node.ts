@@ -30,6 +30,12 @@ export const NapkinNode = Node.create({
       chartMode: { default: false },
       /** Ticker parsed from selection for chart annotation caption. */
       chartTicker: { default: "" },
+      /** open = built-in RoughJS templates; cloud = optional remote image API */
+      provider: { default: "open" },
+      bulletPoints: { default: [] as { title: string; content: string }[] },
+      diagramId: { default: "stacked" },
+      diagramTheme: { default: "default" },
+      isRough: { default: true },
     };
   },
 

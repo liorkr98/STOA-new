@@ -10,5 +10,5 @@ export function normalizePromptInput(input: string, maxChars: number): string {
  * pseudo-XML markers for instruction/data separation.
  */
 export function escapePromptTagContent(input: string): string {
-  return input.replace(/<\/(report_text|user_message|context_json)>/gi, "<\\/$1>");
+  return input.replace(/<\/(report_text|user_message|context_json|document|selection)>/gi, "<\\/$1>");
 }

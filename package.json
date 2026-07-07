@@ -17,6 +17,7 @@
     "vercel:setup": "node scripts/vercel-setup.mjs"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.8",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -35,6 +36,7 @@
     "@tiptap/react": "3.27.1",
     "@tiptap/starter-kit": "3.27.1",
     "@tiptap/suggestion": "3.27.1",
+    "ai": "^7.0.16",
     "clsx": "^2.1.1",
     "culori": "^4.0.1",
     "date-fns": "^4.1.0",
@@ -51,6 +53,7 @@
     "react-dom": "^19.0.0",
     "react-easy-crop": "^6.1.0",
     "recharts": "^2.15.0",
+    "roughjs": "^4.6.6",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.4",

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { deleteChartSnapshotsForReport } from "@/lib/reports/chart-storage";
 import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
-import type { ComposeInput } from "@/lib/types";
+import type { ComposeInput, AccessType } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -26,6 +26,9 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     summary: input.summary ?? null,
     access: input.access,
     price: input.access === "paid" ? (input.price ?? null) : null,
+    min_plan_rank:
+      input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
+    required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
     status: "draft" as const,
   };
@@ -170,6 +173,41 @@ export async function recordView(reportId: string) {
   } catch {
     // non-critical
   }
+}
+
+/** Update access mode and tier for a draft report (author only). */
+export async function updateReportAccess(input: {
+  id: string;
+  access: AccessType;
+  price?: number | null;
+  min_plan_rank?: number;
+  required_perks?: string[];
+}): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status, locked_at")
+    .eq("id", input.id)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!report) return { ok: false, error: "Report not found" };
+
+  const { error } = await supabase
+    .from("reports")
+    .update({
+      access: input.access,
+      price: input.access === "paid" ? (input.price ?? null) : null,
+      min_plan_rank: input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
+      required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
+    })
+    .eq("id", input.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/studio");
+  revalidatePath("/studio/compose");
+  revalidatePath("/discover");
+  revalidatePath(`/report/${input.id}`);
+  return { ok: true };
 }
 
 export async function deleteReport(id: string) {
