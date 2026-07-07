@@ -189,6 +189,9 @@ export function insertVisualizedChartFromSelection(
     };
   }
 
+  // Lightweight chart draws parsed support/resistance lines; TradingView widget cannot.
+  const chartEngine = intent.annotations.length > 0 ? "lightweight" : "tradingview";
+
   const insertPos = range?.to ?? editor.state.selection.to;
   const napkinPrompt = buildNapkinChartPrompt(intent, selected);
 
@@ -199,7 +202,7 @@ export function insertVisualizedChartFromSelection(
         ticker: intent.ticker,
         range: intent.range,
         kind: intent.kind,
-        engine: "tradingview",
+        engine: chartEngine,
         indicators: intent.indicators,
         annotations: intent.annotations,
         sourceText: intent.sourceText,

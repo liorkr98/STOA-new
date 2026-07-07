@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import { Loader2, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Loader2, Pencil, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import {
   NAPKIN_CHART_STYLE_ID,
@@ -41,6 +41,7 @@ export function NapkinNodeView({
 
   const [text, setText] = useState(sourceText);
   const [generating, setGenerating] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const autoStarted = useRef(false);
 
@@ -92,6 +93,7 @@ export function NapkinNodeView({
         variationUrls: urls,
         autoGenerate: false,
       });
+      setEditing(false);
     } catch {
       setError("Generation failed — check your connection and try again.");
     } finally {
@@ -183,21 +185,35 @@ export function NapkinNodeView({
             </p>
             <p className="max-w-sm text-xs text-text-mute line-clamp-4">{sourceText}</p>
           </div>
-        ) : !url ? (
+        ) : editing || !url ? (
           <>
-            {!chartMode ? (
-              <label className="block">
-                <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
+            <div className="flex items-center justify-between gap-2">
+              <p className="t-meta text-[11px] text-text-mute">
+                {url ? "Edit the prompt and regenerate" : "Describe what Napkin should draw"}
+              </p>
+              {url && editing ? (
+                <button
+                  type="button"
                   onMouseDown={stop}
-                  rows={4}
-                  placeholder="Paste a thesis, process, or bullet list — Napkin turns it into a diagram."
-                  className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
-                />
-              </label>
-            ) : null}
+                  onClick={() => setEditing(false)}
+                  className="flex h-7 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-xs text-text-mute hover:bg-surface-2"
+                >
+                  <X size={14} />
+                  Cancel
+                </button>
+              ) : null}
+            </div>
+            <label className="block">
+              <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onMouseDown={stop}
+                rows={chartMode ? 6 : 4}
+                placeholder="Edit levels, ticker, or thesis — Napkin redraws the diagram."
+                className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
+              />
+            </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="t-meta mb-1 block text-[11px]">Style</span>
@@ -257,7 +273,7 @@ export function NapkinNodeView({
               ) : (
                 <>
                   <Sparkles size={16} />
-                  Generate with Napkin
+                  {url ? "Regenerate diagram" : "Generate with Napkin"}
                 </>
               )}
             </button>
@@ -306,16 +322,31 @@ export function NapkinNodeView({
               placeholder="Caption (optional)"
               className="w-full bg-transparent text-center text-sm text-text-mute focus:outline-none"
             />
-            <button
-              type="button"
-              disabled={generating}
-              onMouseDown={stop}
-              onClick={() => generate()}
-              className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
-            >
-              {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              Regenerate {variationCount} variations
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={generating}
+                onMouseDown={stop}
+                onClick={() => {
+                  setText(sourceText);
+                  setEditing(true);
+                }}
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+              >
+                <Pencil size={14} />
+                Edit prompt
+              </button>
+              <button
+                type="button"
+                disabled={generating}
+                onMouseDown={stop}
+                onClick={() => generate()}
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+              >
+                {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                Regenerate
+              </button>
+            </div>
           </>
         )}
         {error ? <p className="text-center text-[11px] text-[var(--down)]">{error}</p> : null}

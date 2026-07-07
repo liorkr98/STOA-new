@@ -1,5 +1,4 @@
 import { Extension, type Editor, type Range } from "@tiptap/core";
-import { ReactRenderer } from "@tiptap/react";
 import Suggestion, { type SuggestionOptions } from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import {
@@ -24,7 +23,7 @@ import {
   Film,
   type LucideIcon,
 } from "lucide-react";
-import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
+import { slashMenuBridge } from "@/lib/editor/tiptap/slash-menu-bridge";
 import { getEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
 
 export interface SlashItem {
@@ -264,71 +263,31 @@ function filterItems(query: string): SlashItem[] {
   );
 }
 
-/**
- * Position a floating element at the caret rect, flipping above the line when
- * it would overflow the viewport bottom. Falls back to ProseMirror coords when
- * the suggestion plugin cannot resolve a DOM rect (common in scroll containers).
- */
-function caretRect(
-  editor: Editor,
-  clientRect: (() => DOMRect | null) | null | undefined,
-): DOMRect | null {
-  const rect = clientRect?.() ?? null;
-  if (rect && rect.height > 0) return rect;
-  const { from } = editor.state.selection;
-  const coords = editor.view.coordsAtPos(from);
-  return new DOMRect(coords.left, coords.top, 1, Math.max(coords.bottom - coords.top, 16));
-}
-
-function positionPopup(el: HTMLElement | null, rect: DOMRect | null) {
-  if (!el || !rect) return;
-  const margin = 8;
-  el.style.left = `${Math.max(margin, rect.left)}px`;
-  const below = rect.bottom + margin;
-  const wouldOverflow = below + el.offsetHeight > window.innerHeight - margin;
-  if (wouldOverflow) {
-    el.style.top = `${Math.max(margin, rect.top - el.offsetHeight - margin)}px`;
-  } else {
-    el.style.top = `${below}px`;
-  }
-}
-
 const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
-  let component: ReactRenderer<SlashMenuListRef> | null = null;
-  let popup: HTMLDivElement | null = null;
-
   return {
     onStart: (props) => {
-      component = new ReactRenderer(SlashMenuList, {
-        props: { items: props.items, command: props.command },
-        editor: props.editor,
+      slashMenuBridge.open({
+        items: props.items,
+        command: (item) => props.command(item),
+        clientRect: props.clientRect ?? null,
       });
-      popup = document.createElement("div");
-      popup.setAttribute("role", "listbox");
-      popup.setAttribute("aria-label", "Insert block");
-      popup.style.position = "fixed";
-      popup.style.zIndex = "250";
-      popup.appendChild(component.element);
-      document.body.appendChild(popup);
-      positionPopup(popup, caretRect(props.editor, props.clientRect));
     },
     onUpdate: (props) => {
-      if (!popup) return;
-      component?.updateProps({ items: props.items, command: props.command });
-      positionPopup(popup, caretRect(props.editor, props.clientRect));
+      slashMenuBridge.open({
+        items: props.items,
+        command: (item) => props.command(item),
+        clientRect: props.clientRect ?? null,
+      });
     },
     onKeyDown: (props) => {
       if (props.event.key === "Escape") {
-        popup?.remove();
+        slashMenuBridge.close();
         return true;
       }
-      return component?.ref?.onKeyDown({ event: props.event }) ?? false;
+      return slashMenuBridge.handleKeyDown(props.event);
     },
     onExit: () => {
-      popup?.remove();
-      popup = null;
-      component?.destroy();
-      component = null;
+      slashMenuBridge.scheduleClose();
     },
   };
 };

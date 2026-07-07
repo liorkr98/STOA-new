@@ -6,6 +6,7 @@ import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
 import { SlashMenu } from "./slash-menu";
+import { SlashMenuHost } from "./slash-menu-host";
 import { BubbleToolbar } from "./bubble-toolbar";
 import { BlockDragHandle, BlockActionsShortcut } from "./block-drag-handle";
 
@@ -84,6 +85,7 @@ export const TiptapEditor = memo(function TiptapEditor({
     <div className="relative">
       <BlockDragHandle editor={editor} />
       <BubbleToolbar editor={editor} reportTicker={reportTicker} />
+      <SlashMenuHost editor={editor} />
       <EditorContent editor={editor} />
     </div>
   );

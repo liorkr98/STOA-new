@@ -121,7 +121,7 @@ export function StudioEditor({
     syncTimerRef.current = setTimeout(() => {
       setDocJson(change.json);
       setPlainText(change.text);
-    }, 300);
+    }, 500);
   }, []);
 
   useEffect(
