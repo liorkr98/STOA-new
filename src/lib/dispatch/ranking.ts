@@ -1,7 +1,5 @@
 import type { Prediction, Report } from "@/lib/types";
 
-const MS_DAY = 86_400_000;
-
 export function inCycle(iso: string | null | undefined, start: Date, end: Date): boolean {
   if (!iso) return false;
   const t = new Date(iso).getTime();

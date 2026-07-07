@@ -179,7 +179,7 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
   const issueNumber = await fetchIssueNumber();
 
   let authorIds = new Set<string>();
-  let tickers = new Set<string>();
+  const tickers = new Set<string>();
   if (userId) {
     const [followed, subscribed] = await Promise.all([
       followedAnalystIds(userId),
@@ -192,7 +192,7 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
   let cycleWindow = getCycleWindow();
   let fallbackCycle = false;
 
-  let pool = personalized
+  const pool = personalized
     ? filterPersonalized(allReports, authorIds, tickers)
     : allReports;
 
