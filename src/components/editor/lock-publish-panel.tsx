@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { price as fmtPrice } from "@/lib/format";
 import type { AccessType, Direction } from "@/lib/types";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
+import type { Plan } from "@/lib/db/plans";
+import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
 
@@ -77,6 +79,9 @@ export function LockPublishPanel({
   onAccess,
   price,
   onPrice,
+  minPlanRank,
+  onMinPlanRank,
+  plans,
   plainText,
   credits,
   onCreditsChange,
@@ -103,6 +108,9 @@ export function LockPublishPanel({
   onAccess: (v: AccessType) => void;
   price: number;
   onPrice: (v: number) => void;
+  minPlanRank: number;
+  onMinPlanRank: (v: number) => void;
+  plans: Plan[];
   plainText: string;
   credits: number;
   onCreditsChange: (n: number) => void;
@@ -347,6 +355,9 @@ export function LockPublishPanel({
               />
             </div>
           </label>
+        )}
+        {access === "subscribers" && (
+          <PlanTierSelect plans={plans} value={minPlanRank} onChange={onMinPlanRank} />
         )}
       </section>
 

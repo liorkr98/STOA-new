@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Napkin is not configured on this deployment. In Vercel, add NAPKIN_API_KEY to the stoa-new project (link the team variable to the project if using shared env), then redeploy.",
+          "Diagram generation is not configured. Add NAPKIN_API_KEY on Vercel (or a future self-hosted visual provider), then redeploy.",
       },
       { status: 503 },
     );

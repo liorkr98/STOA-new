@@ -16,6 +16,7 @@ import {
   tiptapPlainText,
 } from "@/lib/editor/tiptap/serialize";
 import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
+import type { Plan } from "@/lib/db/plans";
 import { TiptapEditor } from "@/components/editor/tiptap/tiptap-editor";
 import { captureChartScreenshots } from "@/lib/editor/tiptap/nodes/chart-capture";
 import {
@@ -65,10 +66,12 @@ export function StudioEditor({
   analystReportPrice,
   initialDraft,
   aiCredits = 0,
+  plans = [],
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
   aiCredits?: number;
+  plans?: Plan[];
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
@@ -82,6 +85,7 @@ export function StudioEditor({
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
+  const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +154,7 @@ export function StudioEditor({
         body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
         access,
         price: access === "paid" ? Number(price) : null,
+        min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         ticker: hasCard ? ticker : null,
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
@@ -169,6 +174,7 @@ export function StudioEditor({
     plainText,
     bodyJson,
     access,
+    minPlanRank,
     price,
     ticker,
     direction,
@@ -214,6 +220,7 @@ export function StudioEditor({
             body: JSON.stringify(editor.getJSON()),
             access,
             price: access === "paid" ? Number(price) : null,
+            min_plan_rank: access === "subscribers" ? minPlanRank : 0,
             ticker,
             direction,
             target_price: target ? Number(target) : null,
@@ -238,6 +245,7 @@ export function StudioEditor({
         body: finalBody,
         access,
         price: access === "paid" ? Number(price) : null,
+        min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         ticker: hasCard ? ticker : null,
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
@@ -268,6 +276,7 @@ export function StudioEditor({
     plainText,
     bodyJson,
     access,
+    minPlanRank,
     price,
     hasCard,
     ticker,
@@ -433,6 +442,9 @@ export function StudioEditor({
               onAccess={setAccess}
               price={price}
               onPrice={setPrice}
+              minPlanRank={minPlanRank}
+              onMinPlanRank={setMinPlanRank}
+              plans={plans}
               plainText={plainText}
               credits={credits}
               onCreditsChange={setCredits}

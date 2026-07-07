@@ -20,6 +20,8 @@ export interface ParsedChartIntent {
   sourceText: string;
 }
 
+export type VisualizeMode = "chart" | "diagram" | "both";
+
 export interface VisualizeResult {
   error?: string;
   warning?: string;
@@ -161,14 +163,48 @@ function insertAt(editor: Editor, pos: number, nodes: Record<string, unknown>[])
   return editor.chain().focus().setTextSelection(pos).insertContent(nodes).run();
 }
 
+function buildChartNode(intent: ParsedChartIntent): Record<string, unknown> {
+  const chartEngine = intent.annotations.length > 0 ? "lightweight" : "tradingview";
+  return {
+    type: "chartNode",
+    attrs: {
+      ticker: intent.ticker,
+      range: intent.range,
+      kind: intent.kind,
+      engine: chartEngine,
+      indicators: intent.indicators,
+      annotations: intent.annotations,
+      sourceText: intent.sourceText,
+    },
+  };
+}
+
+function buildDiagramNode(
+  intent: ParsedChartIntent,
+  selected: string,
+  chartMode: boolean,
+): Record<string, unknown> {
+  return {
+    type: "napkinNode",
+    attrs: {
+      sourceText: chartMode ? buildNapkinChartPrompt(intent, selected) : selected,
+      chartTicker: chartMode ? intent.ticker : "",
+      chartMode,
+      styleId: NAPKIN_CHART_STYLE_ID,
+      visualQuery: "",
+      autoGenerate: true,
+    },
+  };
+}
+
 /**
- * Unified visualize: TradingView chart (live data + drawn levels) plus Napkin
- * chart diagram with labeled price lines — from highlighted prose.
+ * Visualize from highlighted prose — chart only, diagram only, or both.
  */
-export function insertVisualizedChartFromSelection(
+export function insertVisualizedFromSelection(
   editor: Editor,
   reportTicker?: string,
   range?: EditorRange | null,
+  mode: VisualizeMode = "both",
 ): VisualizeResult {
   const selected = resolveSelectionText(editor, range);
   if (!selected) {
@@ -179,8 +215,10 @@ export function insertVisualizedChartFromSelection(
     };
   }
 
-  const intent = parseChartFromText(selected, reportTicker);
-  if (!intent) {
+  const needsTicker = mode === "chart" || mode === "both";
+  const intent = needsTicker ? parseChartFromText(selected, reportTicker) : null;
+
+  if (needsTicker && !intent) {
     return {
       error:
         "Couldn't find a stock symbol. Mention a ticker like $NVDA or AAPL, or set the report ticker in the publish panel.",
@@ -189,56 +227,57 @@ export function insertVisualizedChartFromSelection(
     };
   }
 
-  // Lightweight chart draws parsed support/resistance lines; TradingView widget cannot.
-  const chartEngine = intent.annotations.length > 0 ? "lightweight" : "tradingview";
-
   const insertPos = range?.to ?? editor.state.selection.to;
-  const napkinPrompt = buildNapkinChartPrompt(intent, selected);
+  const nodes: Record<string, unknown>[] = [];
 
-  const nodes: Record<string, unknown>[] = [
-    {
-      type: "chartNode",
-      attrs: {
-        ticker: intent.ticker,
-        range: intent.range,
-        kind: intent.kind,
-        engine: chartEngine,
-        indicators: intent.indicators,
-        annotations: intent.annotations,
-        sourceText: intent.sourceText,
+  if ((mode === "chart" || mode === "both") && intent) {
+    nodes.push(buildChartNode(intent));
+  }
+
+  if (mode === "diagram") {
+    nodes.push(buildDiagramNode(
+      intent ?? {
+        ticker: detectTicker(selected, reportTicker),
+        range: "3M",
+        kind: "candles",
+        indicators: [],
+        annotations: [],
+        sourceText: selected,
       },
-    },
-    {
-      type: "napkinNode",
-      attrs: {
-        sourceText: napkinPrompt,
-        chartTicker: intent.ticker,
-        chartMode: true,
-        styleId: NAPKIN_CHART_STYLE_ID,
-        visualQuery: "",
-        autoGenerate: true,
-      },
-    },
-  ];
+      selected,
+      false,
+    ));
+  } else if (mode === "both" && intent) {
+    nodes.push(buildDiagramNode(intent, selected, true));
+  }
 
   const ok = insertAt(editor, insertPos, nodes);
   if (!ok) {
     return {
-      error: "Couldn't insert the chart blocks here. Try placing your cursor after a paragraph.",
+      error: "Couldn't insert blocks here. Try placing your cursor after a paragraph.",
       insertedChart: false,
       insertedNapkin: false,
     };
   }
 
   return {
-    ticker: intent.ticker,
-    insertedChart: true,
-    insertedNapkin: true,
+    ticker: intent?.ticker,
+    insertedChart: mode === "chart" || mode === "both",
+    insertedNapkin: mode === "diagram" || mode === "both",
     warning:
-      intent.annotations.length === 0
+      intent && intent.annotations.length === 0 && (mode === "chart" || mode === "both")
         ? "Chart added — no price levels detected. Mention levels like resistance at $140."
         : undefined,
   };
+}
+
+/** @deprecated Use insertVisualizedFromSelection */
+export function insertVisualizedChartFromSelection(
+  editor: Editor,
+  reportTicker?: string,
+  range?: EditorRange | null,
+): VisualizeResult {
+  return insertVisualizedFromSelection(editor, reportTicker, range, "both");
 }
 
 /** @deprecated Use insertVisualizedChartFromSelection */

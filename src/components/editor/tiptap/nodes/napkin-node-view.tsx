@@ -118,11 +118,11 @@ export function NapkinNodeView({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={url}
-            alt={caption || "Napkin visual"}
+            alt={caption || "Diagram"}
             className="block w-full rounded-[var(--radius-card)] border border-border"
           />
           {caption ? <p className="t-meta mt-1.5 text-center">{caption}</p> : null}
-          <p className="t-meta mt-1 text-center text-[10px] text-text-faint">Visual by Napkin AI</p>
+          <p className="t-meta mt-1 text-center text-[10px] text-text-faint">AI diagram</p>
         </div>
       </NodeViewWrapper>
     );
@@ -141,7 +141,7 @@ export function NapkinNodeView({
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <Wand2 size={14} className="text-accent" />
         <span className="t-eyebrow flex-1">
-          {chartMode ? `Chart annotation${chartTicker ? ` · ${chartTicker}` : ""}` : "Napkin visual"}
+          {chartMode ? `Chart diagram${chartTicker ? ` · ${chartTicker}` : ""}` : "AI diagram"}
         </span>
         {url ? (
           <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
@@ -165,7 +165,7 @@ export function NapkinNodeView({
         ) : null}
         <button
           type="button"
-          aria-label="Delete Napkin block"
+          aria-label="Delete diagram block"
           onMouseDown={stop}
           onClick={() => deleteNode()}
           className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
@@ -180,8 +180,8 @@ export function NapkinNodeView({
             <Loader2 size={28} className="animate-spin text-accent" />
             <p className="text-sm font-medium text-text">
               {chartMode
-                ? "Napkin is drawing labeled price levels on your chart…"
-                : "Napkin is visualizing your selection…"}
+                ? "Drawing labeled price levels on your chart diagram…"
+                : "Generating diagram from your selection…"}
             </p>
             <p className="max-w-sm text-xs text-text-mute line-clamp-4">{sourceText}</p>
           </div>
@@ -189,7 +189,7 @@ export function NapkinNodeView({
           <>
             <div className="flex items-center justify-between gap-2">
               <p className="t-meta text-[11px] text-text-mute">
-                {url ? "Edit the prompt and regenerate" : "Describe what Napkin should draw"}
+                {url ? "Edit the prompt and regenerate" : "Describe what the diagram should show"}
               </p>
               {url && editing ? (
                 <button
@@ -210,7 +210,7 @@ export function NapkinNodeView({
                 onChange={(e) => setText(e.target.value)}
                 onMouseDown={stop}
                 rows={chartMode ? 6 : 4}
-                placeholder="Edit levels, ticker, or thesis — Napkin redraws the diagram."
+                placeholder="Edit levels, ticker, or thesis — the diagram redraws from your text."
                 className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
               />
             </label>
@@ -273,7 +273,7 @@ export function NapkinNodeView({
               ) : (
                 <>
                   <Sparkles size={16} />
-                  {url ? "Regenerate diagram" : "Generate with Napkin"}
+                  {url ? "Regenerate diagram" : "Generate diagram"}
                 </>
               )}
             </button>
@@ -284,7 +284,7 @@ export function NapkinNodeView({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={url}
-                alt={caption || "Napkin visual"}
+                alt={caption || "Diagram"}
                 className="block w-full rounded-[var(--radius-btn)] border border-border"
               />
             </div>
@@ -350,7 +350,7 @@ export function NapkinNodeView({
           </>
         )}
         {error ? <p className="text-center text-[11px] text-[var(--down)]">{error}</p> : null}
-        <p className="t-meta text-center text-[10px]">Powered by Napkin AI · uses your Napkin account credits</p>
+        <p className="t-meta text-center text-[10px]">AI-generated diagram · uses server credits</p>
       </div>
     </NodeViewWrapper>
   );

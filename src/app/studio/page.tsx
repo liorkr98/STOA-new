@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { PencilSimpleLine, PlusCircle } from "@phosphor-icons/react/dist/ssr";
 import { getSessionProfile } from "@/lib/db/auth";
 import { listByAuthor } from "@/lib/db/reports";
+import { listActivePlans } from "@/lib/db/plans";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { getWallet } from "@/lib/db/wallet";
 import { subscriberCount } from "@/lib/db/social";
@@ -14,16 +15,18 @@ import { Stat } from "@/components/ui/stat";
 import { GradeTag } from "@/components/ui/tag";
 import { MoatBadge } from "@/components/ui/moat-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StudioPublishedList } from "@/components/studio/studio-published-list";
 
 export const metadata: Metadata = { title: "Studio" };
 
 export default async function StudioOverview() {
   const profile = (await getSessionProfile())!;
-  const [reports, predictions, wallet, subs] = await Promise.all([
+  const [reports, predictions, wallet, subs, plans] = await Promise.all([
     listByAuthor(profile.id, { limit: 100 }),
     listPredictionsByAuthor(profile.id),
     getWallet(profile.id),
     subscriberCount(profile.id),
+    listActivePlans(profile.id),
   ]);
 
   const stats = analystStats(predictions);
@@ -116,19 +119,7 @@ export default async function StudioOverview() {
       <section>
         <h2 className="t-h3 mb-3">Published ({published.length})</h2>
         {published.length > 0 ? (
-          <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-            {published.map((r) => (
-              <li key={r.id} className="flex items-center justify-between border-b border-border px-5 py-3.5 last:border-0">
-                <Link href={`/report/${r.id}`} className="truncate text-sm font-medium hover:text-accent">
-                  {r.title || r.summary || "Untitled"}
-                </Link>
-                <span className="t-meta flex items-center gap-3">
-                  <span className="num">{compact(r.views)} views</span>
-                  <span className="num">{compact(r.likes)} likes</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <StudioPublishedList reports={published} plans={plans} />
         ) : (
           <EmptyState
             title="Nothing published yet"
