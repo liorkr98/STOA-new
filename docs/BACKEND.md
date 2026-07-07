@@ -47,6 +47,13 @@ Daily editorial digest for the homepage (`/`). Server-assembled ranking — clie
 
 **Issue counter:** migration `0026_dispatch_meta.sql` — `dispatch_meta` singleton + `bump_dispatch_issue()` RPC increments once per NY calendar day.
 
+## Napkin AI (Compose visuals)
+
+| Route | Auth | Purpose |
+|-------|------|---------|
+| `POST /api/ai/napkin` | Signed in | Text → diagram via Napkin API; PNG re-hosted on `report-images` |
+
+Requires `NAPKIN_API_KEY` (server-only). Editor: `napkinNode`, `/napkin` slash command, Compose toolbar, selection bubble.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -58,6 +65,7 @@ Daily editorial digest for the homepage (`/`). Server-assembled ranking — clie
 | `TWELVE_DATA_API_KEY` | No | Live quote fallback |
 | `ALPHA_VANTAGE_API_KEY` | No | Live quote fallback |
 | `OPENAI_API_KEY` | No | Fact-check + compose AI |
+| `NAPKIN_API_KEY` | No | Napkin AI diagrams in Compose (`POST /api/ai/napkin`) |
 
 \*Required once chart screenshots ship; defaults from `NEXT_PUBLIC_SUPABASE_URL` if unset.
 

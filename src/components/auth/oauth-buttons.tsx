@@ -74,7 +74,16 @@ export function OAuthButtons({ next = "/home", refHandle }: { next?: string; ref
       },
     });
     if (err) {
-      setError(err.message);
+      const msg = err.message.toLowerCase();
+      if (msg.includes("invalid_client") || msg.includes("provider is not enabled")) {
+        setError(
+          provider === "google"
+            ? "Google sign-in is misconfigured. In Supabase → Authentication → Providers → Google, paste a valid OAuth Client ID and Secret from Google Cloud Console. The redirect URI in Google must be your Supabase callback URL (…/auth/v1/callback)."
+            : `${PROVIDERS.find((p) => p.key === provider)?.label ?? provider} sign-in is not configured in Supabase yet.`,
+        );
+      } else {
+        setError(err.message);
+      }
       setPending(null);
     }
   }

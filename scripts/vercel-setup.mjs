@@ -131,6 +131,12 @@ const ENV_SPECS = [
     targets: ["production", "preview"],
     sensitive: true,
   },
+  {
+    key: "NAPKIN_API_KEY",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
 ];
 
 async function listEnv(token, projectId, teamId) {

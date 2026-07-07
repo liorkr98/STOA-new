@@ -1,6 +1,7 @@
 import { Extension, type Editor, type Range } from "@tiptap/core";
 import { ReactRenderer } from "@tiptap/react";
 import Suggestion, { type SuggestionOptions } from "@tiptap/suggestion";
+import { PluginKey } from "@tiptap/pm/state";
 import {
   Heading2,
   Heading3,
@@ -21,6 +22,7 @@ import {
   Calculator,
   BarChart2,
   Film,
+  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -185,6 +187,20 @@ export const SLASH_ITEMS: SlashItem[] = [
       editor.chain().focus().deleteRange(range).insertContent({ type: "imageNode" }).run(),
   },
   {
+    title: "Napkin visual",
+    subtitle: "AI diagram from your text (Napkin)",
+    icon: Wand2,
+    keywords: ["napkin", "visual", "diagram", "illustration", "flowchart", "mindmap", "ai", "spark"],
+    group: "Data",
+    run: (editor, range) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({ type: "napkinNode", attrs: { sourceText: "" } })
+        .run(),
+  },
+  {
     title: "Valuation (DCF)",
     subtitle: "Fair value, upside, and a sensitivity grid",
     icon: Calculator,
@@ -237,17 +253,28 @@ function filterItems(query: string): SlashItem[] {
 
 /**
  * Position a floating element at the caret rect, flipping above the line when
- * it would overflow the viewport bottom. Avoids pulling in a positioning
- * library for one popup.
+ * it would overflow the viewport bottom. Falls back to ProseMirror coords when
+ * the suggestion plugin cannot resolve a DOM rect (common in scroll containers).
  */
+function caretRect(
+  editor: Editor,
+  clientRect: (() => DOMRect | null) | null | undefined,
+): DOMRect | null {
+  const rect = clientRect?.() ?? null;
+  if (rect && rect.height > 0) return rect;
+  const { from } = editor.state.selection;
+  const coords = editor.view.coordsAtPos(from);
+  return new DOMRect(coords.left, coords.top, 1, Math.max(coords.bottom - coords.top, 16));
+}
+
 function positionPopup(el: HTMLElement | null, rect: DOMRect | null) {
   if (!el || !rect) return;
   const margin = 8;
-  el.style.left = `${rect.left}px`;
+  el.style.left = `${Math.max(margin, rect.left)}px`;
   const below = rect.bottom + margin;
-  const wouldOverflow = below + el.offsetHeight > window.innerHeight;
+  const wouldOverflow = below + el.offsetHeight > window.innerHeight - margin;
   if (wouldOverflow) {
-    el.style.top = `${rect.top - el.offsetHeight - margin}px`;
+    el.style.top = `${Math.max(margin, rect.top - el.offsetHeight - margin)}px`;
   } else {
     el.style.top = `${below}px`;
   }
@@ -264,16 +291,18 @@ const suggestionRender: SuggestionOptions<SlashItem>["render"] = () => {
         editor: props.editor,
       });
       popup = document.createElement("div");
+      popup.setAttribute("role", "listbox");
+      popup.setAttribute("aria-label", "Insert block");
       popup.style.position = "fixed";
-      popup.style.zIndex = "60";
+      popup.style.zIndex = "200";
       popup.appendChild(component.element);
       document.body.appendChild(popup);
-      positionPopup(popup, props.clientRect?.() ?? null);
+      positionPopup(popup, caretRect(props.editor, props.clientRect));
     },
     onUpdate: (props) => {
       if (!popup) return;
       component?.updateProps({ items: props.items, command: props.command });
-      positionPopup(popup, props.clientRect?.() ?? null);
+      positionPopup(popup, caretRect(props.editor, props.clientRect));
     },
     onKeyDown: (props) => {
       if (props.event.key === "Escape") {
@@ -303,9 +332,11 @@ export const SlashMenu = Extension.create({
     return [
       Suggestion<SlashItem>({
         editor: this.editor,
+        pluginKey: new PluginKey("slashMenu"),
         char: "/",
         allowSpaces: false,
         startOfLine: false,
+        allowedPrefixes: null,
         items: ({ query }) => filterItems(query),
         command: ({ editor, range, props }) => props.run(editor, range),
         render: suggestionRender,
