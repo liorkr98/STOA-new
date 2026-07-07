@@ -143,7 +143,7 @@ function pickStories(
   reports: Report[],
   cycleStart: Date,
   cycleEnd: Date,
-): { lead: DispatchStory | null; secondary: DispatchStory[] } {
+): { lead: DispatchStory | null; secondary: DispatchStory[]; wire: DispatchStory[] } {
   const ranked = [...reports]
     .map((r) => ({ r, score: scoreReportForDispatch(r, cycleStart, cycleEnd) }))
     .sort((a, b) => b.score - a.score);
@@ -151,11 +151,15 @@ function pickStories(
   const leadRow = ranked[0]?.r;
   const lead = leadRow ? toStory(leadRow) : null;
   const secondary = ranked
-    .slice(1, 6)
+    .slice(1, 5)
+    .map(({ r }) => toStory(r))
+    .filter((s): s is DispatchStory => s != null);
+  const wire = ranked
+    .slice(5, 12)
     .map(({ r }) => toStory(r))
     .filter((s): s is DispatchStory => s != null);
 
-  return { lead, secondary };
+  return { lead, secondary, wire };
 }
 
 function normalizeOutcome(outcome: Prediction["outcome"]): DispatchLedgerRow["outcome"] | null {
@@ -195,6 +199,7 @@ function buildLedger(
           authorName: p.author?.display_name ?? "Analyst",
           targetPrice: p.target_price,
           resolvedPrice: p.resolved_price,
+          returnPct: p.return_pct,
           outcome,
           resolvedAt: p.resolves_at,
           reportId: p.report_id,
@@ -255,7 +260,11 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
 
   if (inWindow.length === 0) inWindow = pool.slice(0, 12);
 
-  const { lead, secondary } = pickStories(inWindow.length ? inWindow : pool, cycleWindow.start, cycleWindow.end);
+  const { lead, secondary, wire } = pickStories(
+    inWindow.length ? inWindow : pool,
+    cycleWindow.start,
+    cycleWindow.end,
+  );
 
   const resolvedSince = new Date(cycleWindow.start.getTime() - 7 * 86_400_000);
   const resolvedRaw = await fetchResolvedPredictions(resolvedSince);
@@ -271,7 +280,8 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
   const readTexts = [
     lead?.headline ?? "",
     lead?.dek ?? "",
-    ...secondary.map((s) => s.headline),
+    ...secondary.flatMap((s) => [s.headline, s.dek ?? ""]),
+    ...wire.map((s) => s.headline),
   ];
   const readMinutes = estimateReadMinutes(readTexts);
 
@@ -289,8 +299,10 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
     cycle,
     readMinutes,
     personalized: Boolean(userId && personalized),
+    followedCount: authorIds.size,
     lead,
     secondary,
+    wire,
     resolved,
     leaderboard,
   };

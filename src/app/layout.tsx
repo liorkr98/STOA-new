@@ -16,8 +16,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${plexSans.variable} ${fraunces.variable} ${plexMono.variable}`}>
+    // Font variables must live on <html>: the --font-display/sans/mono tokens
+    // are declared in :root and reference these next/font variables, so if the
+    // variables sit on <body> they are invisible at :root scope and every
+    // font token computes invalid (silent system-font fallback site-wide).
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${plexSans.variable} ${fraunces.variable} ${plexMono.variable}`}
+    >
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

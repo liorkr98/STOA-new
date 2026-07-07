@@ -24,6 +24,8 @@ export interface DispatchLedgerRow {
   authorName: string;
   targetPrice: number | null;
   resolvedPrice: number | null;
+  /** Signed return in percent, direction-aware (prediction.return_pct). */
+  returnPct: number | null;
   outcome: "hit" | "near" | "partial" | "miss";
   resolvedAt: string;
   reportId: string;
@@ -38,8 +40,13 @@ export interface DispatchPayload {
   cycle: DispatchCycle;
   readMinutes: number;
   personalized: boolean;
+  /** How many analysts feed this dispatch (followed + subscribed), when personalized. */
+  followedCount: number;
   lead: DispatchStory | null;
+  /** Featured stories after the lead: two-column editorial treatment with deks. */
   secondary: DispatchStory[];
+  /** Dense one-line stories after the featured block. */
+  wire: DispatchStory[];
   resolved: DispatchLedgerRow[];
   leaderboard: DispatchLeaderboardEntry[];
 }

@@ -582,36 +582,74 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
- * Stoa Dispatch — editorial digest homepage (ref: dailydispatch.app)
- * Centered serif wordmark, mono dateline, hairline rules, dense wire.
+ * Stoa Dispatch — the front page (ref: dailydispatch.app masthead
+ * device: corner blocks flanking a centered wordmark, hairline rules).
+ * Fraunces does the editorial work; Plex Mono runs the datelines and
+ * every numeral; sections separate with rules, never boxes.
  * ------------------------------------------------------------------ */
 
 .dispatch-page {
   animation: fade-up var(--dur-3) var(--ease-out) both;
 }
 
+/* Masthead: [issue block] — STOA — [date block], then an Oxford rule. */
 .dispatch-masthead {
-  margin-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
 }
 
 .dispatch-wordmark {
+  /* Pin to the middle column so hiding the corner blocks on small screens
+   * cannot re-flow the wordmark into column one. */
+  grid-column: 2;
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(2.5rem, 1.8rem + 3vw, 3.75rem);
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  font-size: clamp(2.75rem, 1.9rem + 4vw, 4.5rem);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
   color: var(--text);
   line-height: 1;
+  text-align: center;
 }
 
-.dispatch-edition-label {
-  margin-top: var(--space-3);
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
+.dispatch-corner {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  color: var(--text);
+}
+
+.dispatch-corner-big {
+  display: block;
+  font-size: clamp(1.125rem, 0.9rem + 1vw, 1.625rem);
   font-weight: 600;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.04em;
+}
+
+.dispatch-corner-small {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-mute);
+}
+
+/* Classic Oxford rule: a heavy line over a hairline. */
+.dispatch-oxford {
+  border-top: 3px solid var(--text);
+  margin-top: var(--space-6);
+}
+.dispatch-oxford::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-top: 3px;
+  background: var(--border-strong);
 }
 
 .dispatch-briefing-tagline {
@@ -634,73 +672,145 @@ body {
   padding-top: var(--space-5);
 }
 
-.dispatch-rule {
-  width: min(100%, 11rem);
-  height: 1px;
-  margin: var(--space-5) auto;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--border-strong) 15%,
-    var(--border-strong) 85%,
-    transparent
-  );
-}
-
 .dispatch-dateline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--space-3);
+  row-gap: 0.25rem;
+  padding-block: var(--space-3);
+  border-bottom: 1px dotted var(--border-strong);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-faint);
-  line-height: 1.5;
+  color: var(--text-mute);
 }
 
 .dispatch-dateline-sep {
-  opacity: 0.55;
+  color: var(--text-faint);
+  opacity: 0.7;
+}
+
+/* Kicker: a small label with hairlines running to both edges. */
+.dispatch-kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+/* Dotted rules are the reference's signature section divider. */
+.dispatch-kicker::before,
+.dispatch-kicker::after {
+  content: "";
+  flex: 1;
+  border-top: 1px dotted var(--border-strong);
 }
 
 .dispatch-section {
   margin-top: var(--space-8);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border);
-}
-
-.dispatch-section-label {
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: var(--space-4);
 }
 
 .dispatch-lead-headline {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.875rem, 1.3rem + 2.6vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
   color: var(--text);
-  text-align: center;
+  text-wrap: balance;
 }
 
 .dispatch-lead-dek {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 1.0625rem;
   line-height: 1.65;
   color: var(--text-mute);
-  text-align: center;
-  max-width: 42ch;
-  margin-inline: auto;
+  max-width: 58ch;
 }
 
-.dispatch-secondary {
-  margin-top: var(--space-8);
+/* Featured stories: two columns with a real column rule between them. */
+.dispatch-columns {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 640px) {
+  .dispatch-columns {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
+  }
+  .dispatch-columns > * {
+    padding-inline: var(--space-6);
+  }
+  .dispatch-columns > *:nth-child(odd) {
+    padding-inline-start: 0;
+    border-inline-end: 1px solid var(--border);
+  }
+  .dispatch-columns > *:nth-child(even) {
+    padding-inline-end: 0;
+  }
+  .dispatch-columns > *:nth-child(n + 3) {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-6);
+  }
+}
+
+.dispatch-story-headline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+/* The wire: dense single-line stories, mono ticker gutter. */
+.dispatch-wire-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-block: 0.6875rem;
+}
+
+/* Ledger table: tabular numerals, hairline rows, no card chrome. */
+.dispatch-ledger {
+  font-variant-numeric: tabular-nums;
+}
+.dispatch-ledger th {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* End slug: the issue has a real ending. */
+.dispatch-end {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 3px double var(--border-strong);
+  text-align: center;
+}
+
+.dispatch-end-slug {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
 .dispatch-fallback-note {
-  margin-top: calc(-1 * var(--space-5));
+  margin-top: var(--space-3);
 }
 
 .dispatch-for-creators {
