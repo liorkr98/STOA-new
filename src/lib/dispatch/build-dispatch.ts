@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
+import { listSavedReports } from "@/lib/db/saved";
 import { listTopAnalysts } from "@/lib/db/profiles";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import type { Prediction, Profile, Report } from "@/lib/types";
@@ -90,13 +91,52 @@ function filterPersonalized(
   reports: Report[],
   authorIds: Set<string>,
   tickers: Set<string>,
+  strict = false,
 ): Report[] {
-  if (authorIds.size === 0 && tickers.size === 0) return reports;
+  if (authorIds.size === 0 && tickers.size === 0) return strict ? [] : reports;
   return reports.filter((r) => {
     if (authorIds.has(r.author_id)) return true;
     const t = (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase();
     return t && tickers.has(t);
   });
+}
+
+async function fetchRecentViewedAuthorIds(userId: string, limit = 12): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("report_views")
+    .select("report:reports(author_id)")
+    .eq("viewer_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  const ids = new Set<string>();
+  for (const row of (data as unknown as { report: { author_id: string } | null }[]) ?? []) {
+    if (row.report?.author_id) ids.add(row.report.author_id);
+  }
+  return [...ids];
+}
+
+async function buildPersonalizationSets(userId: string): Promise<{
+  authorIds: Set<string>;
+  tickers: Set<string>;
+}> {
+  const [followed, subscribed, saved, recentAuthors] = await Promise.all([
+    followedAnalystIds(userId),
+    subscribedAnalystIds(userId),
+    listSavedReports(userId, 16),
+    fetchRecentViewedAuthorIds(userId),
+  ]);
+
+  const authorIds = new Set([...followed, ...subscribed, ...recentAuthors]);
+  const tickers = new Set<string>();
+
+  for (const report of saved) {
+    if (report.author_id) authorIds.add(report.author_id);
+    const t = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
+    if (t) tickers.add(t);
+  }
+
+  return { authorIds, tickers };
 }
 
 function pickStories(
@@ -181,11 +221,9 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
   let authorIds = new Set<string>();
   const tickers = new Set<string>();
   if (userId) {
-    const [followed, subscribed] = await Promise.all([
-      followedAnalystIds(userId),
-      subscribedAnalystIds(userId),
-    ]);
-    authorIds = new Set([...followed, ...subscribed]);
+    const signals = await buildPersonalizationSets(userId);
+    authorIds = signals.authorIds;
+    for (const t of signals.tickers) tickers.add(t);
   }
 
   const allReports = await fetchPublishedReports();
@@ -193,7 +231,7 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
   let fallbackCycle = false;
 
   const pool = personalized
-    ? filterPersonalized(allReports, authorIds, tickers)
+    ? filterPersonalized(allReports, authorIds, tickers, true)
     : allReports;
 
   let inWindow = pool.filter((r) =>

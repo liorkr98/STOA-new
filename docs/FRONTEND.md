@@ -342,50 +342,53 @@ Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
 
 ## PART 3 — PUBLIC PAGES (logged out)
 
-### 3.1 Homepage — `/` (Stoa Dispatch)
+### 3.1 Homepage — `/` (public Stoa Dispatch)
 
-The homepage **is** the Dispatch: a daily editorial digest, not a marketing hero. Logged-out
-visitors see the public issue; signed-in investors see the same layout with personalized lead,
-secondary list, and Today's Record scoped to followed/subscribed creators.
+Logged-out visitors land on the **public** daily Dispatch — same editorial design as
+[dailydispatch.app](https://www.dailydispatch.app/). Signed-in users are redirected to `/home`.
 
 **Layout, top to bottom** (centered column, max-width ~672px, `--paper` background):
 
 **Masthead**
 
-- Wordmark: spaced serif **S T O A** (Fraunces, wide letter-spacing)
+- Wordmark: spaced serif **S T O A** + uppercase **Dispatch** label
 - Hairline rule
 - Dateline row (Plex Mono, uppercase): `Issue №{N} · {WEEKDAY, MONTH DAY, YEAR} · {N} min read`
-- Signed-in variant prepends "Your dispatch," to the dateline
-- If the cycle falls back to a prior 24h window due to low volume, a quiet mono note:
-  `Low volume — showing recent highlights`
 
-**Lead story**
+**Lead story** — centered Fraunces headline, optional dek, author row, ticker, target, Read link
 
-- Fraunces headline (centered), optional dek, author row with avatar + `<MoatBadge>`, ticker,
-  target, "Read" link → report detail
+**Secondary list** — "Also in this issue" — dense wire (not cards)
 
-**Secondary list** — "Also in this issue"
+**Today's Record** — ledger table; hidden when empty
 
-- Dense wire format (not cards): `TICKER · Author · MoatBadge · headline` per row, dividers only
+**How it works** + **For creators** (public only)
 
-**Today's Record** (ledger)
+**Backend:** `GET /api/dispatch` (no personalization). Homepage server-renders via `buildDispatch(false)`.
 
-- Table: Analyst, Ticker, Call summary, Outcome (`SealStamp` for hit/miss; text for near/partial)
-- **Hidden entirely when empty** — no placeholder section
+---
 
-**Logged-in only** (below ledger)
+### 3.1b Home — `/home` (personalized Dispatch)
 
-- "Top creators this week" mini-leaderboard (rank, avatar, name, MoatBadge, resolved count)
-- Ghost CTA: "Explore all analysts →" → `/discover`
+The signed-in home for **investors and analysts**. Same Dispatch design as `/`, but content is
+scoped to follows, subscriptions, saved reports, and recently read analysts.
 
-**How it works** — three short paragraphs (editorial copy, not icon steps)
+**Nav:** `Home` appears first in `<TopNav>` when signed in; logo links to `/home`.
 
-**For creators** — value prop + secondary CTA → `/become-analyst`
+**Masthead dateline:** `Your briefing · {DATE} · {N} min read`
 
-**Header / footer** — unchanged `<TopNav>` + site `<Footer>` via marketing layout.
+**Tagline:** "From the analysts you follow and subscribe to…"
 
-**Backend:** `GET /api/dispatch` (optional `?personalized=true` when signed in). Homepage
-server-renders via `buildDispatch()` — same ranking logic as the API.
+**Lead** — left-aligned for reading (briefing style)
+
+**Secondary** — "Also in your briefing"
+
+**Today's Record** + **Top creators this week** leaderboard
+
+**CTA:** "Browse all research in Discover →"
+
+**Empty state** (no signals / no matching content): prompt to follow analysts → `/discover?tab=researchers`
+
+**Backend:** `GET /api/dispatch?personalized=true` — same ranking as `buildDispatch(true)`.
 
 ---
 
@@ -637,16 +640,16 @@ report" remains unchecked and the checklist persists until it's genuinely done.
 
 ## PART 5 — INVESTOR APP
 
-### 5.1 Feed — `/` (Dispatch for investors) and `/discover` (browse)
+### 5.1 Home + Discover
 
-**Home (`/`):** Same Stoa Dispatch layout as §3.1, but server-assembled with
-`personalized=true` when signed in — lead/secondary/ledger scoped to followed and subscribed
-creators; includes the weekly leaderboard rail and link to full browse.
+**Home (`/home`):** Personalized Stoa Dispatch (§3.1b) — follows, subscriptions, saved + recent
+reads. Requires sign-in.
 
-**Discover (`/discover`):** The full investor browse surface (filter row, feed cards, tabs).
-Role switcher returns investors to `/` (Dispatch), not a separate `/feed` route.
+**Discover (`/discover`):** Browse surface — report cards in a responsive **2-column grid**
+(trending, recent, following, subscriptions tabs). Researchers tab stays a card grid. Sidebar:
+top analysts.
 
-**Feed card component** (reused in Discover, Following, Watchlist-ticker-view):
+**Feed card component** (reused in Discover tabs):
 
 ```
 ┌──────────────────────────────────────────────┐

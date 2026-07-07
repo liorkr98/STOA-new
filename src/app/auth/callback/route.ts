@@ -10,9 +10,9 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
+  const next = url.searchParams.get("next") ?? "/home";
   const refHandle = url.searchParams.get("ref")?.trim().toLowerCase().replace(/^@/, "");
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/home";
 
   if (!code) {
     return NextResponse.redirect(new URL("/sign-in", url.origin));

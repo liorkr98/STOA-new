@@ -597,11 +597,41 @@ body {
 .dispatch-wordmark {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
-  letter-spacing: 0.38em;
-  text-indent: 0.38em;
+  font-size: clamp(2.5rem, 1.8rem + 3vw, 3.75rem);
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
   color: var(--text);
   line-height: 1;
+}
+
+.dispatch-edition-label {
+  margin-top: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.dispatch-briefing-tagline {
+  max-width: 36ch;
+  margin-inline: auto;
+}
+
+.dispatch-lead-headline--start,
+.dispatch-lead-dek--start {
+  text-align: left;
+  margin-inline: 0;
+  max-width: none;
+}
+
+.dispatch-page--home .dispatch-secondary ul {
+  border-top: 1px solid var(--border);
+}
+
+.dispatch-page--home .dispatch-secondary li:first-child a {
+  padding-top: var(--space-5);
 }
 
 .dispatch-rule {

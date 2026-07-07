@@ -31,6 +31,7 @@ export async function POST(
   try {
     const result = await validateAndPublishReport(supabase, user.id, { ...body, id: routeId || body.id });
     revalidatePath("/");
+    revalidatePath("/home");
     revalidatePath("/discover");
     revalidatePath("/studio");
     return NextResponse.json({ ok: true, id: result.id });
