@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { spendAiCredits } from "@/lib/ai/spend";
-import { openaiModel } from "@/lib/ai/openai";
+import { llmModel, hasLlmApiKey } from "@/lib/ai/llm";
 import { normalizePromptInput } from "@/lib/ai/prompt-safety";
 import { DIAGRAM_SYSTEM_PROMPT } from "@/lib/diagram/prompt";
 import { BulletPointsResponseSchema } from "@/lib/diagram/schema";
@@ -18,9 +18,9 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.OPENAI_API_KEY) {
+  if (!hasLlmApiKey()) {
     return NextResponse.json(
-      { error: "Set OPENAI_API_KEY on Vercel for built-in diagram generation." },
+      { error: "Set DEEPSEEK_API_KEY on Vercel for built-in diagram generation." },
       { status: 503 },
     );
   }
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   try {
     const { object } = await generateObject({
-      model: openaiModel(),
+        model: llmModel(),
       system: DIAGRAM_SYSTEM_PROMPT,
       prompt: content,
       schema: BulletPointsResponseSchema,

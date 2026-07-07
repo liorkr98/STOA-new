@@ -64,7 +64,7 @@ Requires `NAPKIN_API_KEY` (server-only). Editor: `napkinNode`, `/napkin` slash c
 | `CRON_SECRET` | Prod | Protects `/api/cron/grade` |
 | `TWELVE_DATA_API_KEY` | No | Live quote fallback |
 | `ALPHA_VANTAGE_API_KEY` | No | Live quote fallback |
-| `OPENAI_API_KEY` | No | Fact-check + compose AI |
+| `DEEPSEEK_API_KEY` | No | Fact-check + compose AI + diagrams |
 | `NAPKIN_API_KEY` | No | Napkin AI diagrams in Compose (`POST /api/ai/napkin`) |
 
 \*Required once chart screenshots ship; defaults from `NEXT_PUBLIC_SUPABASE_URL` if unset.

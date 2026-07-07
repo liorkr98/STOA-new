@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateObject, generateText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { spendAiCredits } from "@/lib/ai/spend";
-import { openaiModel } from "@/lib/ai/openai";
+import { llmModel, hasLlmApiKey } from "@/lib/ai/llm";
 import {
   COMPOSE_AGENT_ACTIONS_DOC,
   ComposeAgentResponseSchema,
@@ -123,10 +123,10 @@ ${safeContext.selection ? `<selection>${escapePromptTagContent(safeContext.selec
 
   const lastUser = messages.at(-1)?.content ?? "";
 
-  if (process.env.OPENAI_API_KEY) {
+  if (hasLlmApiKey()) {
     try {
       const { object } = await generateObject({
-        model: openaiModel(),
+        model: llmModel(),
         system,
         messages: messages.map((m) =>
           m.role === "user"
@@ -151,7 +151,7 @@ ${safeContext.selection ? `<selection>${escapePromptTagContent(safeContext.selec
 
     try {
       const { text } = await generateText({
-        model: openaiModel(),
+        model: llmModel(),
         system,
         messages: messages.map((m) =>
           m.role === "user"
@@ -182,9 +182,9 @@ ${safeContext.selection ? `<selection>${escapePromptTagContent(safeContext.selec
   let reply: string;
   if (lower.includes("outline") || lower.includes("structure")) {
     reply =
-      "Suggested outline: heading → metrics → chart → catalysts → risks. Set OPENAI_API_KEY for full agent control.";
+      "Suggested outline: heading → metrics → chart → catalysts → risks. Set DEEPSEEK_API_KEY for full agent control.";
   } else {
-    reply = "Set OPENAI_API_KEY for the compose agent. You can still drag blocks from the panel below.";
+    reply = "Set DEEPSEEK_API_KEY for the compose agent. You can still drag blocks from the panel below.";
   }
 
   return NextResponse.json({

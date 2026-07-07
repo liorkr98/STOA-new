@@ -1,8 +1,27 @@
 import { NextResponse } from "next/server";
+import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { spendAiCredits } from "@/lib/ai/spend";
+import { hasLlmApiKey, llmModel } from "@/lib/ai/llm";
 import type { BrandAnalyzeResult } from "@/lib/profile/brand-analyze";
+
+const brandResultSchema = z.object({
+  scores: z.object({
+    clarity: z.number(),
+    credibility: z.number(),
+    discoverability: z.number(),
+    cta_strength: z.number(),
+  }),
+  suggestions: z.array(
+    z.object({
+      field: z.enum(["headline", "bio", "specialties", "social"]),
+      proposed: z.union([z.string(), z.array(z.string())]),
+      reason: z.string(),
+    }),
+  ),
+  warnings: z.array(z.string()),
+});
 
 const inputSchema = z.object({
   display_name: z.string(),
@@ -79,40 +98,24 @@ export async function POST(req: Request) {
   }
 
   const input = parsed.data;
-  const apiKey = process.env.OPENAI_API_KEY;
   let result: BrandAnalyzeResult;
 
-  if (apiKey) {
+  if (hasLlmApiKey()) {
     try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-          temperature: 0.4,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content: `You are a branding coach for financial analysts on Stoa. Return JSON only:
-{ "scores": { "clarity": 0-100, "credibility": 0-100, "discoverability": 0-100, "cta_strength": 0-100 },
-  "suggestions": [{ "field": "headline"|"bio"|"specialties"|"social", "proposed": string|string[], "reason": string }],
-  "warnings": string[] }
-Be direct. No hype. Proposed bio max 280 chars.`,
-            },
-            { role: "user", content: JSON.stringify(input) },
-          ],
-        }),
+      const { object } = await generateObject({
+        model: llmModel(),
+        schema: brandResultSchema,
+        temperature: 0.4,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a branding coach for financial analysts on Stoa. Be direct. No hype. Proposed bio max 280 chars.",
+          },
+          { role: "user", content: JSON.stringify(input) },
+        ],
       });
-      const json = (await res.json()) as {
-        choices?: { message?: { content?: string } }[];
-      };
-      const raw = json.choices?.[0]?.message?.content;
-      if (!raw) throw new Error("empty response");
-      result = JSON.parse(raw) as BrandAnalyzeResult;
+      result = object as BrandAnalyzeResult;
     } catch {
       result = mockAnalyze(input);
     }

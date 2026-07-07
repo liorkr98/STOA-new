@@ -144,7 +144,7 @@ export function NapkinNodeView({
       }
       const ok = await generateBuiltIn();
       if (!ok && chartMode) {
-        setError("Could not generate diagram. Set OPENAI_API_KEY for built-in, or NAPKIN_API_KEY for chart labels.");
+        setError("Could not generate diagram. Set DEEPSEEK_API_KEY for built-in, or NAPKIN_API_KEY for chart labels.");
       }
     } catch {
       setError("Generation failed — check your connection and try again.");
@@ -465,7 +465,7 @@ export function NapkinNodeView({
         )}
         {error ? <p className="text-center text-[11px] text-[var(--down)]">{error}</p> : null}
         <p className="t-meta text-center text-[10px]">
-          Built-in diagrams use OPENAI_API_KEY · cloud engine uses NAPKIN_API_KEY if set
+          Built-in diagrams use DEEPSEEK_API_KEY · cloud engine uses NAPKIN_API_KEY if set
         </p>
       </div>
     </NodeViewWrapper>
