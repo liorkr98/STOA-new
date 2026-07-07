@@ -26,6 +26,10 @@ export const ChartNode = Node.create({
       annotations: { default: [] },
       visibleRange: { default: null },
       screenshotUrl: { default: null },
+      /** SMA / RSI overlays parsed from selection or chosen in the toolbar. */
+      indicators: { default: [] },
+      /** Original analyst prose when the chart was created from a selection. */
+      sourceText: { default: "" },
     };
   },
 

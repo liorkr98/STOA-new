@@ -25,10 +25,12 @@ export const TiptapEditor = memo(function TiptapEditor({
   initialContent,
   onChange,
   onReady,
+  reportTicker,
 }: {
   initialContent: JSONContent;
   onChange: (change: EditorChange) => void;
   onReady?: (editor: Editor) => void;
+  reportTicker?: string;
 }) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -81,7 +83,7 @@ export const TiptapEditor = memo(function TiptapEditor({
   return (
     <div className="relative">
       <BlockDragHandle editor={editor} />
-      <BubbleToolbar editor={editor} />
+      <BubbleToolbar editor={editor} reportTicker={reportTicker} />
       <EditorContent editor={editor} />
     </div>
   );

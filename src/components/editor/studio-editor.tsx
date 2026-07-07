@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, MagicWand } from "@phosphor-icons/react";
-import { toast } from "sonner";
+import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
@@ -27,7 +26,8 @@ import {
 import { AskPanel } from "@/components/editor/tiptap/ask-panel";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
-import { insertNapkinFromEditorSelection } from "@/lib/editor/tiptap/napkin-insert";
+import { VisualizeSelectionMenu } from "@/components/editor/tiptap/visualize-selection-menu";
+import { setEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -103,6 +103,7 @@ export function StudioEditor({
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
   const editorRef = useRef<Editor | null>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
   const latestChangeRef = useRef<{ json: JSONContent; text: string }>({
     json: initialDoc,
     text: tiptapPlainText(initialDoc),
@@ -130,15 +131,12 @@ export function StudioEditor({
     [],
   );
 
+  useEffect(() => {
+    setEditorReportTicker(hasCard ? ticker : undefined);
+  }, [hasCard, ticker]);
+
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
-  }, []);
-
-  const insertNapkinFromSelection = useCallback(() => {
-    const ed = editorRef.current;
-    if (!ed) return;
-    const err = insertNapkinFromEditorSelection(ed);
-    if (err) toast.error(err);
   }, []);
 
   const persistDraft = useCallback(async () => {
@@ -331,15 +329,13 @@ export function StudioEditor({
         <div className="ml-auto flex items-center gap-2">
           {hasCard && (
             <>
-              <button
-                type="button"
-                aria-label="Napkin visual"
-                onClick={insertNapkinFromSelection}
-                className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
-              >
-                <MagicWand size={15} weight="duotone" />
-                <span className="hidden sm:inline">Napkin</span>
-              </button>
+              {editor && (
+                <VisualizeSelectionMenu
+                  editor={editor}
+                  reportTicker={ticker || undefined}
+                  variant="button"
+                />
+              )}
               <button
                 type="button"
                 aria-label="Ask AI"
@@ -411,8 +407,10 @@ export function StudioEditor({
             <TiptapEditor
               initialContent={initialDoc}
               onChange={onEditorChange}
+              reportTicker={hasCard ? ticker || undefined : undefined}
               onReady={(e) => {
                 editorRef.current = e;
+                setEditor(e);
               }}
             />
           )}

@@ -18,12 +18,10 @@ import {
   PilcrowRight,
   PilcrowLeft,
   MessageCircle,
-  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { insertNapkinFromEditorSelection } from "@/lib/editor/tiptap/napkin-insert";
-import { toast } from "sonner";
+import { VisualizeSelectionMenu } from "@/components/editor/tiptap/visualize-selection-menu";
 
 // Three highlight tints, six-token only, all at 15% (Phase 1.2).
 const TINTS: { key: string; label: string; color: string }[] = [
@@ -39,7 +37,7 @@ const TINTS: { key: string; label: string; color: string }[] = [
  * Shortcuts (B/I/U/Shift+S from StarterKit, Shift+H from Highlight) show in
  * tooltips.
  */
-export function BubbleToolbar({ editor }: { editor: Editor }) {
+export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; reportTicker?: string }) {
   function setLink() {
     const prev = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("Link URL", prev ?? "https://");
@@ -66,15 +64,7 @@ export function BubbleToolbar({ editor }: { editor: Editor }) {
       <Btn icon={Heading3} label="Subheading" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
       <Btn icon={Quote} label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
       <Divider />
-      <Btn
-        icon={Wand2}
-        label="Visualize selection with Napkin"
-        active={false}
-        onClick={() => {
-          const err = insertNapkinFromEditorSelection(editor);
-          if (err) toast.error(err);
-        }}
-      />
+      <VisualizeSelectionMenu editor={editor} reportTicker={reportTicker} />
       <Divider />
       <Btn icon={Bold} label="Bold (Cmd+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
       <Btn icon={Italic} label="Italic (Cmd+I)" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
