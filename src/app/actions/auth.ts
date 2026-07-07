@@ -36,7 +36,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     }
   }
 
-  redirect("/discover");
+  redirect("/");
 }
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -75,7 +75,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       }
     }
 
-    redirect("/discover");
+    redirect("/");
   }
 
   redirect("/sign-in?registered=1");

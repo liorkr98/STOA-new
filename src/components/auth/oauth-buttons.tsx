@@ -57,7 +57,7 @@ const PROVIDERS: { key: Provider; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export function OAuthButtons({ next = "/discover", refHandle }: { next?: string; refHandle?: string }) {
+export function OAuthButtons({ next = "/", refHandle }: { next?: string; refHandle?: string }) {
   const [pending, setPending] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
 
