@@ -224,6 +224,7 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
     // non-critical
   }
 
+  revalidatePath("/");
   revalidatePath("/discover");
   return { ok: true };
 }
