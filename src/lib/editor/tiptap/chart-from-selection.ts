@@ -4,6 +4,7 @@ import type { ChartRange } from "@/lib/market/candle-types";
 import type { ChartAnnotation } from "@/lib/market/chart-annotations";
 import type { ChartIndicator } from "@/lib/market/chart-indicators";
 import { NAPKIN_CHART_STYLE_ID } from "@/lib/napkin/styles";
+import { graphifyChartNote } from "@/lib/ai/graphify";
 import { detectTicker } from "@/lib/editor/tiptap/ticker-detect";
 
 export interface EditorRange {
@@ -139,21 +140,16 @@ export function buildNapkinChartPrompt(intent: ParsedChartIntent, originalText: 
     i.type === "rsi" ? `- RSI (${i.period})` : `- SMA ${i.period}`,
   );
 
+  const note = graphifyChartNote(originalText, 220).text;
+
   return [
-    `Stock price chart for ${intent.ticker} (${intent.range} timeframe).`,
-    "",
-    "Draw a professional stock chart diagram with:",
-    `- Ticker symbol "${intent.ticker}" shown prominently`,
-    "- Candlestick or line price action over time",
+    `Stock chart: ${intent.ticker} (${intent.range}).`,
+    "Candlestick/line price action. Label every level with exact $ price.",
     levelLines.length
-      ? `- Horizontal lines for each key level with the exact dollar price labeled clearly:\n${levelLines.join("\n")}`
-      : "- Key support and resistance levels from the analyst note, each labeled with exact dollar prices",
-    indicatorLines.length ? `- Technical overlays:\n${indicatorLines.join("\n")}` : "",
-    "",
-    "Every price level must show its number (e.g. $140, $120). Use color to distinguish resistance vs support.",
-    "",
-    "Analyst note:",
-    originalText,
+      ? `Levels:\n${levelLines.join("\n")}`
+      : "Support/resistance from note — label each with $ price.",
+    indicatorLines.length ? `Overlays:\n${indicatorLines.join("\n")}` : "",
+    `Note: ${note}`,
   ]
     .filter(Boolean)
     .join("\n");

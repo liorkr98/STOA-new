@@ -4,6 +4,7 @@ import { spendAiCredits } from "@/lib/ai/spend";
 import { persistClaims } from "@/app/actions/claims";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePromptInput } from "@/lib/ai/prompt-safety";
+import { quoteFactCheckInput } from "@/lib/fact-check/claim-extraction";
 
 const FACT_CHECK_LIMIT = 20;
 const FACT_CHECK_WINDOW_SEC = 3600;
@@ -35,7 +36,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const spend = await spendAiCredits("factCheck", "Fact-check report");
+  const prepared = quoteFactCheckInput(normalizedText);
+  const spend = await spendAiCredits(
+    "factCheck",
+    `Fact-check (${prepared.graphify.tokensAfter} tok)`,
+    prepared.quote.totalCredits,
+  );
   if (spend.error) {
     return NextResponse.json(
       { error: spend.error, have: spend.have, need: spend.need },
@@ -59,5 +65,11 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ...result,
     credits_remaining: spend.remaining,
+    credits_charged: prepared.quote.totalCredits,
+    graphify: {
+      tokens_before: prepared.graphify.tokensBefore,
+      tokens_after: prepared.graphify.tokensAfter,
+      tokens_saved: prepared.graphify.tokensSaved,
+    },
   });
 }

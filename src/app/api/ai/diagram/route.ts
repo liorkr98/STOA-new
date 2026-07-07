@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { spendAiCredits } from "@/lib/ai/spend";
 import { llmModel, hasLlmApiKey } from "@/lib/ai/llm";
 import { normalizePromptInput } from "@/lib/ai/prompt-safety";
-import { DIAGRAM_SYSTEM_PROMPT } from "@/lib/diagram/prompt";
+import { DIAGRAM_SYSTEM_PROMPT, preparePromptText } from "@/lib/ai/graphify";
+import { mergeUsage, TOKEN_BUDGETS } from "@/lib/ai/token-economy";
 import { BulletPointsResponseSchema } from "@/lib/diagram/schema";
 
 /**
@@ -26,12 +27,17 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json()) as { content?: string };
-  const content = normalizePromptInput(body.content ?? "", 4_000);
-  if (!content.trim()) {
+  const raw = normalizePromptInput(body.content ?? "", 8_000);
+  if (!raw.trim()) {
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
 
-  const spend = await spendAiCredits("diagram", "Built-in diagram");
+  const prepared = preparePromptText("diagram", raw);
+  const spend = await spendAiCredits(
+    "diagram",
+    `Built-in diagram (${prepared.graphify.tokensAfter} tok)`,
+    prepared.quote.totalCredits,
+  );
   if (spend.error) {
     return NextResponse.json(
       { error: spend.error, have: spend.have, need: spend.need },
@@ -40,18 +46,27 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { object } = await generateObject({
-        model: llmModel(),
+    const { object, usage } = await generateObject({
+      model: llmModel(),
       system: DIAGRAM_SYSTEM_PROMPT,
-      prompt: content,
+      prompt: prepared.text,
       schema: BulletPointsResponseSchema,
-      temperature: 0.5,
+      temperature: 0.4,
+      maxOutputTokens: TOKEN_BUDGETS.diagram.maxOutput,
     });
 
     return NextResponse.json({
       provider: "open",
       bulletPoints: object.bulletPoints,
       credits_remaining: spend.remaining,
+      credits_charged: prepared.quote.totalCredits,
+      graphify: {
+        tokens_before: prepared.graphify.tokensBefore,
+        tokens_after: prepared.graphify.tokensAfter,
+        tokens_saved: prepared.graphify.tokensSaved,
+        excerpts: prepared.graphify.excerptCount,
+      },
+      usage: mergeUsage(prepared.graphify.tokensAfter, usage),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Diagram generation failed";
