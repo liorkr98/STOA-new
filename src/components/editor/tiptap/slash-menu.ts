@@ -21,6 +21,7 @@ import {
   Calculator,
   BarChart2,
   Film,
+  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { SlashMenuList, type SlashMenuListRef } from "./slash-menu-list";
@@ -183,6 +184,20 @@ export const SLASH_ITEMS: SlashItem[] = [
     group: "Data",
     run: (editor, range) =>
       editor.chain().focus().deleteRange(range).insertContent({ type: "imageNode" }).run(),
+  },
+  {
+    title: "Napkin visual",
+    subtitle: "AI diagram from your text (Napkin)",
+    icon: Wand2,
+    keywords: ["napkin", "visual", "diagram", "illustration", "flowchart", "mindmap", "ai", "spark"],
+    group: "Data",
+    run: (editor, range) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({ type: "napkinNode", attrs: { sourceText: "" } })
+        .run(),
   },
   {
     title: "Valuation (DCF)",

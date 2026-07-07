@@ -16,6 +16,7 @@ import { EstimatesNode } from "./nodes/estimates-node";
 import { ComparisonNode } from "./nodes/comparison-node";
 import { EmbedNode } from "./nodes/embed-node";
 import { ImageNode } from "./nodes/image-node";
+import { NapkinNode } from "./nodes/napkin-node";
 import { ValuationNode } from "./nodes/valuation-node";
 import { ScenarioNode } from "./nodes/scenario-node";
 import { VideoNode } from "./nodes/video-node";
@@ -54,6 +55,7 @@ export function buildExtensions({
     ComparisonNode,
     EmbedNode,
     ImageNode,
+    NapkinNode,
     ValuationNode,
     ScenarioNode,
     VideoNode,

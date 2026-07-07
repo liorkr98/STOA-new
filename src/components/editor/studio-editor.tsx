@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
+import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, MagicWand } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
@@ -112,6 +112,20 @@ export function StudioEditor({
 
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
+  }, []);
+
+  const insertNapkinFromSelection = useCallback(() => {
+    const ed = editorRef.current;
+    if (!ed) return;
+    const { from, to } = ed.state.selection;
+    const selected = from !== to ? ed.state.doc.textBetween(from, to, "\n") : "";
+    ed.chain()
+      .focus()
+      .insertContent({
+        type: "napkinNode",
+        attrs: { sourceText: selected },
+      })
+      .run();
   }, []);
 
   const persistDraft = useCallback(async () => {
@@ -303,19 +317,30 @@ export function StudioEditor({
 
         <div className="ml-auto flex items-center gap-2">
           {hasCard && (
-            <button
-              type="button"
-              aria-label="Ask AI"
-              aria-pressed={askOpen}
-              onClick={() => setAskOpen((o) => !o)}
-              className={cn(
-                "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
-                askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
-              )}
-            >
-              <Sparkle size={15} weight="fill" />
-              <span className="hidden sm:inline">Ask AI</span>
-            </button>
+            <>
+              <button
+                type="button"
+                aria-label="Napkin visual"
+                onClick={insertNapkinFromSelection}
+                className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+              >
+                <MagicWand size={15} weight="duotone" />
+                <span className="hidden sm:inline">Napkin</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Ask AI"
+                aria-pressed={askOpen}
+                onClick={() => setAskOpen((o) => !o)}
+                className={cn(
+                  "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
+                  askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
+                )}
+              >
+                <Sparkle size={15} weight="fill" />
+                <span className="hidden sm:inline">Ask AI</span>
+              </button>
+            </>
           )}
           <Button
             variant="secondary"
