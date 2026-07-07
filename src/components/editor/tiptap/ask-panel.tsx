@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import {
   Sparkle,
@@ -16,10 +17,17 @@ import {
   Target,
   LineChart,
   Calculator,
+  Wand2,
+  CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { buttonClass } from "@/components/ui/button";
+import type { ComposeAgentAction } from "@/lib/ai/compose-actions";
+import {
+  executeComposeActions,
+  type ComposeEditorContext,
+} from "@/lib/editor/tiptap/compose-agent";
 import { detectTicker, detectTickers } from "@/lib/editor/tiptap/ticker-detect";
 
 interface ResultCard {
@@ -34,10 +42,10 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   cards?: ResultCard[];
+  applied?: string[];
+  actionErrors?: string[];
 }
 
-/** A neutral summary the analyst absorbs into their own prose -- never a
- * thesis or a call. Lands as a callout so it reads as pulled-in, not written. */
 function textCard(reply: string): ResultCard {
   return {
     kind: "text",
@@ -63,7 +71,7 @@ function statementCard(ticker: string): ResultCard {
     kind: "statement",
     icon: Landmark,
     label: `${ticker} financials`,
-    subtitle: "EDGAR statement, pull inside",
+    subtitle: "EDGAR statement",
     node: { type: "statementNode", attrs: { ticker, kind: "income", years: 5 } },
   };
 }
@@ -82,7 +90,7 @@ function comparisonCard(symbols: string[]): ResultCard {
   return {
     kind: "comparison",
     icon: LineChart,
-    label: `Compare ${symbols.slice(0, 3).join(", ")}${symbols.length > 3 ? "..." : ""}`,
+    label: `Compare ${symbols.slice(0, 3).join(", ")}`,
     subtitle: "Metric over time",
     node: { type: "comparisonNode", attrs: { symbols, metric: "revenue", years: 5, kind: "line" } },
   };
@@ -93,13 +101,11 @@ function valuationCard(ticker: string): ResultCard {
     kind: "valuation",
     icon: Calculator,
     label: `${ticker} valuation`,
-    subtitle: "DCF, fill your assumptions",
+    subtitle: "DCF scaffold",
     node: { type: "valuationNode", attrs: { ticker } },
   };
 }
 
-// Structure scaffolds -- the AI suggests the right node; the analyst fills the
-// numbers with their source. The product never fabricates unsourced figures.
 const SCAFFOLDS: ResultCard[] = [
   {
     kind: "figure",
@@ -183,12 +189,8 @@ function DraggableCard({ card, onInsert }: { card: ResultCard; onInsert: (n: JSO
 }
 
 /**
- * The AI ask-panel (docs Compose-Deep-Dive Part 4). A place the analyst goes
- * to ask, deliberately -- off by default, opened from the top bar. Answers
- * come back as typed, draggable cards that drop into the report as real
- * Layer 3 nodes (drag is the hero; "Insert" is the fallback). Hard limits:
- * it surfaces data and neutral summaries, never the thesis or the call, and
- * every card is assist-marked so the analyst verifies before locking.
+ * Compose agent panel — structured AI actions (AI SDK generateObject) execute
+ * slash-menu blocks, diagrams, and selection edits directly in the report.
  */
 export function AskPanel({
   open,
@@ -197,6 +199,8 @@ export function AskPanel({
   credits,
   onCreditsChange,
   onInsertNode,
+  editor,
+  getEditorContext,
 }: {
   open: boolean;
   onClose: () => void;
@@ -204,6 +208,12 @@ export function AskPanel({
   credits: number;
   onCreditsChange?: (n: number) => void;
   onInsertNode: (node: JSONContent) => void;
+  editor: Editor | null;
+  getEditorContext: () => ComposeEditorContext & {
+    documentExcerpt?: string;
+    title?: string;
+    ticker?: string;
+  };
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -228,16 +238,23 @@ export function AskPanel({
     setInput("");
     start(async () => {
       try {
+        const editorCtx = getEditorContext();
         const res = await fetch("/api/ai/compose", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: history.map(({ role, content }) => ({ role, content })),
-            context: { ticker: context.ticker, title: context.title },
+            context: {
+              ticker: context.ticker ?? editorCtx.reportTicker,
+              title: context.title ?? editorCtx.title,
+              documentExcerpt: editorCtx.documentExcerpt,
+              selection: editorCtx.selection,
+            },
           }),
         });
         const data = (await res.json()) as {
           reply?: string;
+          actions?: ComposeAgentAction[];
           error?: string;
           have?: number;
           need?: number;
@@ -254,27 +271,39 @@ export function AskPanel({
         setError(null);
         if (typeof data.credits_remaining === "number") onCreditsChange?.(data.credits_remaining);
 
+        let applied: string[] = [];
+        let actionErrors: string[] = [];
+        if (editor && data.actions?.length) {
+          const result = executeComposeActions(editor, data.actions, editorCtx);
+          applied = result.applied;
+          actionErrors = result.errors;
+        }
+
         const cards: ResultCard[] = [];
-        if (data.reply) cards.push(textCard(data.reply));
+        if (data.reply && !applied.some((a) => a.toLowerCase().includes("callout"))) {
+          cards.push(textCard(data.reply));
+        }
         const ticker = detectTicker(text, context.ticker);
-        if (/chart|price|graph/i.test(text) && ticker) cards.push(chartCard(ticker));
-        if (/statement|income|balance|cash ?flow|financials|10-?k/i.test(text) && ticker) {
-          cards.push(statementCard(ticker));
+        if (/chart|price|graph/i.test(text) && ticker && !applied.some((a) => a.toLowerCase().includes("chart"))) {
+          cards.push(chartCard(ticker));
         }
-        if (/estimate|consensus|\beps\b|beat|miss|price target/i.test(text) && ticker) {
-          cards.push(estimatesCard(ticker));
-        }
-        if (/compar|versus|\bvs\b|peers?|comps?/i.test(text)) {
+        if (/statement|financials|10-?k/i.test(text) && ticker) cards.push(statementCard(ticker));
+        if (/estimate|consensus|\beps\b/i.test(text) && ticker) cards.push(estimatesCard(ticker));
+        if (/compar|versus|\bvs\b|peers?/i.test(text)) {
           const symbols = detectTickers(text, context.ticker);
           if (symbols.length) cards.push(comparisonCard(symbols));
         }
-        if (/valuation|\bdcf\b|fair value|intrinsic|target price/i.test(text) && ticker) {
-          cards.push(valuationCard(ticker));
-        }
+        if (/valuation|\bdcf\b|fair value/i.test(text) && ticker) cards.push(valuationCard(ticker));
 
         setMessages((m) => [
           ...m,
-          { role: "assistant", content: data.reply ?? "Here's what I found.", cards },
+          {
+            role: "assistant",
+            content: data.reply ?? "Done.",
+            cards: cards.length ? cards : undefined,
+            applied: applied.length ? applied : undefined,
+            actionErrors: actionErrors.length ? actionErrors : undefined,
+          },
         ]);
       } catch {
         setMessages((m) => [
@@ -285,17 +314,20 @@ export function AskPanel({
     });
   }
 
-  const quick = ["Summarize the bull case", "Main risks cited", "Show me a chart"];
+  const quick = [
+    "Add NVDA chart and diagram from my selection",
+    "Insert financials and estimates",
+    "Outline with headings",
+  ];
 
   if (!open) return null;
 
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 right-0 z-40 flex w-[min(380px,100vw)] flex-col border-l border-border bg-surface",
-        "shadow-[var(--shadow-card)] data-[open]:animate-[panel-in-x_var(--dur-3)_var(--ease-out)]",
+        "fixed inset-y-0 right-0 z-40 flex w-[min(400px,100vw)] flex-col border-l border-border bg-surface",
+        "shadow-[var(--shadow-card)]",
       )}
-      data-open
       role="dialog"
       aria-label="Research AI"
     >
@@ -316,8 +348,9 @@ export function AskPanel({
       <div ref={scrollRef} className="scroll-area flex-1 space-y-4 overflow-y-auto p-4">
         {messages.length === 0 && (
           <p className="t-body text-sm">
-            Ask for data, a chart, or a neutral summary. Results come back as cards you drag into
-            the report. The thesis stays yours.
+            Ask me to edit your report, insert blocks (same as the slash menu), build OpenNapkin
+            diagrams, or visualize your selection. Highlight text first for rewrite / visualize
+            commands.
           </p>
         )}
 
@@ -333,23 +366,41 @@ export function AskPanel({
             >
               {m.content}
             </div>
+            {m.applied && m.applied.length > 0 && (
+              <div className="mr-2 rounded-[var(--radius-btn)] border border-accent/30 bg-accent-weak px-3 py-2">
+                <p className="flex items-center gap-1.5 text-[11px] font-medium text-accent">
+                  <CheckCircle2 size={14} />
+                  Applied in your report
+                </p>
+                <ul className="mt-1 space-y-0.5 text-[11px] text-text-mute">
+                  {m.applied.map((a) => (
+                    <li key={a}>· {a}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {m.actionErrors && m.actionErrors.length > 0 && (
+              <p className="mr-2 text-[11px] text-[var(--down)]">{m.actionErrors.join(" · ")}</p>
+            )}
             {m.cards && m.cards.length > 0 && (
               <div className="mr-2 flex flex-col gap-1.5">
+                <p className="t-meta flex items-center gap-1 px-1 text-[10px]">
+                  <Wand2 size={11} /> Or drag these into the report
+                </p>
                 {m.cards.map((c, j) => (
                   <DraggableCard key={j} card={c} onInsert={onInsertNode} />
                 ))}
-                <p className="t-meta px-1 text-[10px]">AI assist. Verify before you lock.</p>
               </div>
             )}
           </div>
         ))}
-        {pending && <p className="t-meta animate-pulse px-1">Thinking...</p>}
+        {pending && <p className="t-meta animate-pulse px-1">Thinking…</p>}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
       </div>
 
       <div className="border-t border-border p-3">
-        <p className="t-eyebrow mb-1.5 text-[10px]">Insert a block</p>
-        <div className="mb-3 flex flex-col gap-1.5">
+        <p className="t-eyebrow mb-1.5 text-[10px]">Insert a block manually</p>
+        <div className="mb-3 max-h-36 overflow-y-auto flex flex-col gap-1.5">
           {SCAFFOLDS.map((c) => (
             <DraggableCard key={c.kind} card={c} onInsert={onInsertNode} />
           ))}
@@ -374,7 +425,7 @@ export function AskPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
-            placeholder="Ask about this ticker..."
+            placeholder="e.g. Add a diagram of my selection…"
             className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-faint"
           />
           <button

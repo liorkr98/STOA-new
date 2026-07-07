@@ -144,6 +144,22 @@ export function StudioEditor({
     editorRef.current?.chain().focus().insertContent(node).run();
   }, []);
 
+  const getComposeContext = useCallback(() => {
+    const e = editorRef.current;
+    const excerpt = latestChangeRef.current.text.slice(0, 6_000);
+    const selection =
+      e && e.state.selection.from !== e.state.selection.to
+        ? e.state.doc.textBetween(e.state.selection.from, e.state.selection.to, "\n").trim()
+        : undefined;
+    return {
+      reportTicker: hasCard ? ticker : undefined,
+      title,
+      ticker: hasCard ? ticker : undefined,
+      documentExcerpt: excerpt || undefined,
+      selection: selection || undefined,
+    };
+  }, [hasCard, ticker, title]);
+
   const persistDraft = useCallback(async () => {
     setSaveStatus("saving");
     try {
@@ -489,6 +505,8 @@ export function StudioEditor({
         credits={credits}
         onCreditsChange={setCredits}
         onInsertNode={insertNode}
+        editor={editor}
+        getEditorContext={getComposeContext}
       />
 
       <LockConfirmModal
