@@ -23,8 +23,6 @@ function Wrapper({
   title?: string;
   children: React.ReactNode;
 }) {
-  // linked=false when an ancestor is already an <a> (e.g. AnalystCard) --
-  // nested anchors are invalid HTML and break hydration.
   if (!linked) {
     return (
       <span className={className} title={title}>
@@ -40,14 +38,10 @@ function Wrapper({
 }
 
 /**
- * Appears everywhere a creator's name does. Links to that creator's MOAT
- * Analytics unless `linked={false}` (use when already nested inside another
- * link, e.g. AnalystCard). sampleSize gates the "provisional" note -- the
- * engine's own sample-ramp confidence weighting already discounts small
- * samples in `score` itself; this just surfaces that honestly rather than
- * presenting a six-call score with the same confidence as a sixty-call one.
+ * Track Score badge — public analyst track-record grade (0–100).
+ * Links to `/analyst/{handle}/score` unless `linked={false}`.
  */
-export function MoatBadge({
+export function TrackScoreBadge({
   handle,
   score,
   hitRate,
@@ -67,7 +61,7 @@ export function MoatBadge({
   const empty = score == null;
   const color = empty ? "var(--text-faint)" : scoreColor(score);
   const provisional = sampleSize != null && sampleSize < 10;
-  const href = `/analyst/${handle}/moat`;
+  const href = `/analyst/${handle}/score`;
 
   if (size === "sm") {
     return (
@@ -78,7 +72,7 @@ export function MoatBadge({
           "inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
           className,
         )}
-        title={empty ? "Not yet scored" : `MOAT ${score}`}
+        title={empty ? "Not yet scored" : `Track Score ${score}`}
       >
         <SealDot color={color} />
         <span className="num text-xs font-semibold" style={{ color }}>
@@ -100,7 +94,7 @@ export function MoatBadge({
       >
         <SealDot color={color} />
         <span className="num text-sm font-semibold" style={{ color }}>
-          {empty ? "— MOAT" : score}
+          {empty ? "—" : score}
         </span>
         {!empty && hitRate != null && (
           <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
@@ -124,7 +118,7 @@ export function MoatBadge({
           <span className="num text-3xl font-semibold leading-none" style={{ color }}>
             {empty ? "—" : score}
           </span>
-          <span className="t-eyebrow">MOAT</span>
+          <span className="t-eyebrow">Track Score</span>
         </div>
         {empty ? (
           <span className="t-meta">Not yet scored</span>
@@ -134,12 +128,15 @@ export function MoatBadge({
             {sampleSize != null && ` over ${sampleSize} resolved call${sampleSize === 1 ? "" : "s"}`}
           </span>
         )}
-        {provisional && <span className="t-meta text-[var(--brass)]">Provisional -- small sample</span>}
+        {provisional && <span className="t-meta text-[var(--brass)]">Provisional — small sample</span>}
         <span className="t-meta underline">View full breakdown</span>
       </div>
     </Wrapper>
   );
 }
+
+/** @deprecated Use TrackScoreBadge */
+export const MoatBadge = TrackScoreBadge;
 
 function SealDot({ color, size = 14 }: { color: string; size?: number }) {
   return (

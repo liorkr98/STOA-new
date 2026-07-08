@@ -2,7 +2,7 @@ import { cn } from "@/lib/design/cn";
 
 /**
  * Wraps the report body only -- never the ticker strip, call block,
- * disclosure block, or MoatBadge, which render outside this component
+ * disclosure block, or TrackScoreBadge, which render outside this component
  * entirely. onUnlock/onSubscribe should both be secondary (outlined)
  * variants, not one primary + one secondary -- unlocking per-report and
  * subscribing are genuinely alternative paths, not a hierarchy.

@@ -121,6 +121,15 @@ export async function validateAndPublishReport(
 
     const { tradingDate } = effectiveResolutionDate(targetHorizonDate, meta.timezone);
     const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
+    if (!quote.available || quote.price == null) {
+      throw new PublishReportError(
+        `Live price for ${ticker} is unavailable. Try again during market hours or check the symbol.`,
+      );
+    }
+    if (!bench.available || bench.price == null) {
+      throw new PublishReportError("Benchmark quote (SPY) is unavailable. Try again shortly.");
+    }
+
     const resolvesAt = marketCloseIso(tradingDate, meta.timezone);
 
     await supabase.from("predictions").insert({

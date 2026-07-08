@@ -7,7 +7,7 @@ import { X, ChatCircle } from "@phosphor-icons/react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { Button } from "@/components/ui/button";
 import type { Comment } from "@/lib/types";
 
@@ -169,7 +169,7 @@ function ThreadBody({
                   <span className="flex flex-wrap items-center gap-1.5 text-sm">
                     <span className="font-semibold">{r.author?.display_name ?? "User"}</span>
                     {r.author?.role === "analyst" && r.author.score != null && (
-                      <MoatBadge handle={r.author.handle} score={r.author.score} size="sm" />
+                      <TrackScoreBadge handle={r.author.handle} score={r.author.score} size="sm" />
                     )}
                     <span className="t-meta">
                       {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}

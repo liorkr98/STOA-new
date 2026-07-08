@@ -1,19 +1,24 @@
-import { mockPrice } from "../mock";
 import type { MarketProvider, Quote, QuoteSource } from "../types";
 import { alphaVantageProvider } from "./alphavantage";
 import { twelveDataProvider } from "./twelvedata";
 import { yahooProvider } from "./yahoo";
 
-/** Primary: Yahoo (no key). Fallbacks: Twelve Data, Alpha Vantage, then mock. */
+/** Primary: Yahoo (no key). Fallbacks: Twelve Data, Alpha Vantage. No mock prices. */
 const PROVIDERS: MarketProvider[] = [
   yahooProvider,
   twelveDataProvider,
   alphaVantageProvider,
 ];
 
-function mockQuote(symbol: string): Quote {
+function unavailableQuote(symbol: string): Quote {
   const sym = symbol.toUpperCase();
-  return { symbol: sym, price: mockPrice(sym), mock: true, source: "mock" };
+  return {
+    symbol: sym,
+    price: null,
+    mock: false,
+    available: false,
+    source: "unavailable",
+  };
 }
 
 export async function fetchQuote(symbol: string): Promise<Quote> {
@@ -21,10 +26,10 @@ export async function fetchQuote(symbol: string): Promise<Quote> {
 
   for (const provider of PROVIDERS) {
     const quote = await provider.fetchQuote(sym);
-    if (quote) return quote;
+    if (quote?.available && quote.price != null) return quote;
   }
 
-  return mockQuote(sym);
+  return unavailableQuote(sym);
 }
 
 export async function fetchQuotesBatch(symbols: string[]): Promise<Map<string, Quote>> {
@@ -33,23 +38,16 @@ export async function fetchQuotesBatch(symbols: string[]): Promise<Map<string, Q
 
   if (unique.length === 0) return map;
 
-  // Yahoo supports multi-symbol quotes in one call — try batch first.
   if (yahooProvider.fetchQuotes) {
     const yahooMap = await yahooProvider.fetchQuotes(unique);
-    for (const [sym, q] of yahooMap) map.set(sym, q);
+    for (const [sym, q] of yahooMap) {
+      if (q.available && q.price != null) map.set(sym, q);
+    }
   }
 
   const missing = unique.filter((s) => !map.has(s));
   for (const sym of missing) {
-    let found: Quote | null = null;
-    for (const provider of PROVIDERS) {
-      const quote = await provider.fetchQuote(sym);
-      if (quote) {
-        found = quote;
-        break;
-      }
-    }
-    map.set(sym, found ?? mockQuote(sym));
+    map.set(sym, await fetchQuote(sym));
   }
 
   return map;

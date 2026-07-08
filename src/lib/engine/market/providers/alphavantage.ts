@@ -26,7 +26,7 @@ export const alphaVantageProvider: MarketProvider = {
       if (json.Note) return null;
       const price = Number(json["Global Quote"]?.["05. price"]);
       if (!price || price <= 0) return null;
-      return { symbol: sym, price, mock: false, source: "alphavantage" };
+      return { symbol: sym, price, mock: false, available: true, source: "alphavantage" };
     } catch {
       return null;
     }

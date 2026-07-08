@@ -12,7 +12,7 @@ import { compact } from "@/lib/format";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { Tag } from "./ui/tag";
-import { MoatBadge } from "./ui/moat-badge";
+import { TrackScoreBadge } from "./ui/track-score-badge";
 import { PredictionCard } from "./prediction-card";
 
 const typeLabel: Record<Report["type"], string> = {
@@ -57,7 +57,7 @@ export function ReportCard({ report, promoted = false }: { report: Report; promo
           </div>
         )}
         <div className="flex items-center gap-2">
-          {author && <MoatBadge handle={author.handle} score={author.score || null} size="sm" />}
+          {author && <TrackScoreBadge handle={author.handle} score={author.score || null} size="sm" />}
           <Tag>{typeLabel[report.type]}</Tag>
         </div>
       </div>
