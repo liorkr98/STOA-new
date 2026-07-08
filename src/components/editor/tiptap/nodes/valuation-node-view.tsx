@@ -43,7 +43,11 @@ export function ValuationNodeView({
 }: NodeViewProps) {
   const isEditable = editor?.isEditable ?? true;
   const ticker = String(node.attrs.ticker ?? "");
-  const fcf: number[] = Array.isArray(node.attrs.fcf) ? node.attrs.fcf : [];
+  const fcfAttr = node.attrs.fcf;
+  const fcf = useMemo(
+    (): number[] => (Array.isArray(fcfAttr) ? fcfAttr : []),
+    [fcfAttr],
+  );
   const wacc = Number(node.attrs.wacc ?? 0.09);
   const terminalMethod = (node.attrs.terminalMethod ?? "gordon") as "gordon" | "exit";
   const growth = Number(node.attrs.growth ?? 0.025);

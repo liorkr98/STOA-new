@@ -69,7 +69,7 @@ export function DiagramRenderer({
         }
       }
     } else {
-      shapes.forEach(({ path, options }: Diagram, index) => {
+      shapes.forEach(({ path, options }: Diagram) => {
         const color = fillColor(theme, options.fill);
         const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
         pathEl.setAttribute("d", path);

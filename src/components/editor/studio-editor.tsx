@@ -190,7 +190,6 @@ export function StudioEditor({
     title,
     summary,
     plainText,
-    bodyJson,
     access,
     minPlanRank,
     requiredPerks,

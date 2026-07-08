@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProfileByHandle } from "@/lib/db/profiles";

@@ -35,7 +35,11 @@ export function ScenarioNodeView({
 }: NodeViewProps) {
   const isEditable = editor?.isEditable ?? true;
   const ticker = String(node.attrs.ticker ?? "");
-  const cases: ScenarioCase[] = Array.isArray(node.attrs.cases) ? node.attrs.cases : [];
+  const casesAttr = node.attrs.cases;
+  const cases = useMemo(
+    (): ScenarioCase[] => (Array.isArray(casesAttr) ? casesAttr : []),
+    [casesAttr],
+  );
   const lastPrice = node.attrs.lastPrice != null ? Number(node.attrs.lastPrice) : null;
   const drivesTarget = node.attrs.drivesTarget === true;
   const cached = (node.attrs.computed as ScenarioResult | null) ?? null;
