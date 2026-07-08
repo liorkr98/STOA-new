@@ -3,7 +3,6 @@
 import { useCallback, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/design/cn";
 
 async function cropImage(imageSrc: string, crop: Area, mime = "image/jpeg"): Promise<Blob> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
