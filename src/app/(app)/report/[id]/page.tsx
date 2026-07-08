@@ -20,6 +20,7 @@ import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
+import { PriceAttestationSection } from "@/components/report/price-attestation-section";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
@@ -116,8 +117,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {report.prediction && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-4">
           <PredictionCard prediction={report.prediction} />
+          {report.ticker && <PriceAttestationSection ticker={report.ticker} />}
         </div>
       )}
 

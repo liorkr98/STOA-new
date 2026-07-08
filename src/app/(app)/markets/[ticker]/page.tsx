@@ -60,27 +60,6 @@ export default async function TickerPage({
             </div>
           </div>
         </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
-            <p className="t-meta">Market cap</p>
-            <p className="num mt-1 text-sm text-text">
-              {fundamentals.marketCap == null ? "-" : Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(fundamentals.marketCap)}
-            </p>
-          </div>
-          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
-            <p className="t-meta">P/E (trailing)</p>
-            <p className="num mt-1 text-sm text-text">
-              {fundamentals.peRatio == null ? "-" : fundamentals.peRatio.toFixed(1)}
-            </p>
-          </div>
-          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
-            <p className="t-meta">Profit margin</p>
-            <p className="num mt-1 text-sm text-text">
-              {fundamentals.profitMargin == null ? "-" : `${(fundamentals.profitMargin * 100).toFixed(1)}%`}
-            </p>
-          </div>
-        </div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">

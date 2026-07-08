@@ -71,7 +71,7 @@ export function TradingViewChart({
     script.src = WIDGET_SCRIPT;
     script.async = true;
     script.textContent = JSON.stringify(config);
-    container.appendChild(script);
+    widgetHost.appendChild(script);
 
     return () => {
       script.remove();

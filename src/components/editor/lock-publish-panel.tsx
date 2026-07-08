@@ -8,10 +8,12 @@ import { price as fmtPrice } from "@/lib/format";
 import type { AccessType, Direction } from "@/lib/types";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import type { Plan } from "@/lib/db/plans";
+import { attestPrice, type AttestedPriceData } from "@/services/price-attestation";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
+import { PriceAttestationCard } from "@/components/ui/price-attestation-card";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-faint";
@@ -130,6 +132,9 @@ export function LockPublishPanel({
   error: string | null;
 }) {
   const [live, setLive] = useState<number | null>(null);
+  const [attestationLoading, setAttestationLoading] = useState(false);
+  const [attestationError, setAttestationError] = useState<string | null>(null);
+  const [attestationData, setAttestationData] = useState<AttestedPriceData | null>(null);
 
   useEffect(() => {
     if (!hasCard || !ticker.trim()) {
@@ -148,6 +153,47 @@ export function LockPublishPanel({
     return () => {
       controller.abort();
       clearTimeout(t);
+    };
+  }, [ticker, hasCard]);
+
+  useEffect(() => {
+    if (!hasCard || !ticker.trim()) {
+      setAttestationLoading(false);
+      setAttestationError(null);
+      setAttestationData(null);
+      return;
+    }
+
+    const market = ticker.trim().toUpperCase().endsWith(".TA") ? "IL" : "US";
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      setAttestationLoading(true);
+      setAttestationError(null);
+      void attestPrice({ ticker: ticker.trim(), market })
+        .then((result) => {
+          if (cancelled) return;
+          if (result.success) {
+            setAttestationData(result.data);
+            setAttestationError(null);
+          } else {
+            setAttestationData(null);
+            setAttestationError(result.error);
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setAttestationData(null);
+          setAttestationError("Unable to lock an attested quote right now.");
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setAttestationLoading(false);
+        });
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
     };
   }, [ticker, hasCard]);
 
@@ -260,6 +306,15 @@ export function LockPublishPanel({
             onResult={onFactCheck}
           />
         </section>
+      )}
+
+      {hasCard && (
+        <PriceAttestationCard
+          title="Attestation protocol"
+          loading={attestationLoading}
+          error={attestationError}
+          data={attestationData}
+        />
       )}
 
       {hasCard && (

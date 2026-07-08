@@ -1,9 +1,13 @@
-import { compact, usd } from "@/lib/format";
+import { compact } from "@/lib/format";
 import type { CompanyFundamentals } from "@/lib/engine/market";
 
 function fmtPct(n: number | null) {
   if (n == null) return "—";
   return `${(n * 100).toFixed(1)}%`;
+}
+
+function compactUsd(n: number) {
+  return `$${compact(n)}`;
 }
 
 export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
@@ -27,7 +31,7 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
           <Stat label="P/E (trailing)" value={data.peRatio.toFixed(1)} />
         )}
         {data.revenue != null && (
-          <Stat label="Revenue (TTM)" value={usd(data.revenue)} />
+          <Stat label="Revenue (TTM)" value={compactUsd(data.revenue)} />
         )}
         {data.eps != null && <Stat label="EPS" value={`$${data.eps.toFixed(2)}`} />}
         {data.profitMargin != null && (
@@ -37,10 +41,10 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
           <>
             <Stat label="Latest SEC filing" value={data.latestFilingPeriod!} />
             {data.latestRevenue != null && (
-              <Stat label="Filing revenue" value={usd(data.latestRevenue)} />
+              <Stat label="Filing revenue" value={compactUsd(data.latestRevenue)} />
             )}
             {data.latestNetIncome != null && (
-              <Stat label="Filing net income" value={usd(data.latestNetIncome)} />
+              <Stat label="Filing net income" value={compactUsd(data.latestNetIncome)} />
             )}
           </>
         )}
