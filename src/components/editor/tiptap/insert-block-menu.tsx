@@ -51,6 +51,7 @@ export function InsertBlockMenu({
   return (
     <div
       ref={ref}
+      data-stoa-pinned-menu
       role="presentation"
       className="fixed z-[250]"
       style={{ top: anchor.top, left: anchor.left }}

@@ -49,7 +49,8 @@ export function SlashMenuHost({ editor }: { editor: Editor }) {
 
   useEffect(() => {
     slashMenuBridge.setKeyHandler((event) => listRef.current?.onKeyDown({ event }) ?? false);
-  });
+    return () => slashMenuBridge.setKeyHandler(null);
+  }, []);
 
   useEffect(() => {
     if (!bridge) return;

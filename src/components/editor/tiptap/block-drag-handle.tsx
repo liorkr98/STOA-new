@@ -104,10 +104,9 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
   useEffect(() => {
     if (!pinned) return;
     function onPointerDown(e: PointerEvent) {
-      const menu = document.getElementById("stoa-pinned-block-menu");
-      if (menu?.contains(e.target as Node)) return;
-      // Ignore clicks on the gutter buttons themselves (they toggle menus).
       const el = e.target as HTMLElement | null;
+      if (el?.closest?.("[data-stoa-pinned-menu]")) return;
+      // Ignore clicks on the gutter buttons themselves (they toggle menus).
       if (el?.closest?.("[data-stoa-gutter]")) return;
       setPinned(null);
     }
@@ -233,6 +232,7 @@ function ActionsMenu({
   return (
     <div
       id={id}
+      data-stoa-pinned-menu
       role="menu"
       className="menu-pop fixed z-[250] w-44 overflow-hidden rounded-[var(--r-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
       style={{ top: anchor.top, left: anchor.left }}

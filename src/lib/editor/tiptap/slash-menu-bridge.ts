@@ -12,6 +12,7 @@ type Listener = () => void;
 let state: SlashMenuBridgeState | null = null;
 const listeners = new Set<Listener>();
 let exitTimer: ReturnType<typeof setTimeout> | null = null;
+let sessionId = 0;
 
 /** React-hosted slash menu state — survives editor transactions without unmounting. */
 export const slashMenuBridge = {
@@ -24,6 +25,7 @@ export const slashMenuBridge = {
       clearTimeout(exitTimer);
       exitTimer = null;
     }
+    sessionId += 1;
     state = {
       ...next,
       onKeyDown: next.onKeyDown ?? state?.onKeyDown ?? null,
@@ -41,8 +43,10 @@ export const slashMenuBridge = {
 
   scheduleClose() {
     if (exitTimer) clearTimeout(exitTimer);
+    const closingSessionId = sessionId;
     exitTimer = setTimeout(() => {
       exitTimer = null;
+      if (closingSessionId !== sessionId) return;
       state = null;
       for (const fn of listeners) fn();
     }, 120);
@@ -53,6 +57,7 @@ export const slashMenuBridge = {
       clearTimeout(exitTimer);
       exitTimer = null;
     }
+    sessionId += 1;
     state = null;
     for (const fn of listeners) fn();
   },
