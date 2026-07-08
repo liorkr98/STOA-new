@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { price } from "@/lib/format";
 import { getQuote, getCompanyFundamentals } from "@/lib/engine/market";
 import { listByTicker } from "@/lib/db/reports";
+import { listFilings } from "@/lib/db/financials";
 import { UNIVERSE } from "@/lib/universe";
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -10,6 +11,8 @@ import { StoaCoverageBadge } from "@/components/markets/coverage-badge";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
 import { CompanyFinancials } from "@/components/markets/company-financials";
 import { WatchlistButton } from "@/components/markets/watchlist-button";
+import { MarketTradingViewChartCard } from "@/components/markets/market-tradingview-chart-card";
+import { CompanyNews } from "@/components/markets/company-news";
 
 export async function generateMetadata({
   params,
@@ -27,36 +30,72 @@ export default async function TickerPage({
 }) {
   const { ticker } = await params;
   const sym = ticker.toUpperCase();
-  const [quote, reports, fundamentals] = await Promise.all([
+  const [quote, reports, fundamentals, filings] = await Promise.all([
     getQuote(sym),
     listByTicker(sym),
     getCompanyFundamentals(sym),
+    listFilings(sym, 4),
   ]);
   const meta = UNIVERSE.find((u) => u.ticker === sym);
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-end justify-between gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <div className="flex items-start gap-2">
-          <div>
-            <h1 className="num t-display text-5xl">{sym}</h1>
-            {meta && <p className="t-meta mt-1">{meta.name} · {meta.sector}</p>}
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5 md:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-2">
+            <div>
+              <h1 className="num t-display text-5xl">{sym}</h1>
+              {meta && <p className="t-meta mt-1">{meta.name} · {meta.sector}</p>}
+            </div>
+            <WatchlistButton ticker={sym} className="mt-1 h-9 w-9" />
           </div>
-          <WatchlistButton ticker={sym} className="mt-1 h-9 w-9" />
+
+          <div className="flex flex-col items-end gap-2">
+            <span className="num text-3xl font-semibold">${price(quote.price)}</span>
+            <div className="flex items-center gap-2">
+              <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+                Quote source: {quote.source}
+              </span>
+              <StoaCoverageBadge count={reports.length} />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className="num text-3xl font-semibold">${price(quote.price)}</span>
-          <StoaCoverageBadge count={reports.length} />
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
+            <p className="t-meta">Market cap</p>
+            <p className="num mt-1 text-sm text-text">
+              {fundamentals.marketCap == null ? "-" : Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(fundamentals.marketCap)}
+            </p>
+          </div>
+          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
+            <p className="t-meta">P/E (trailing)</p>
+            <p className="num mt-1 text-sm text-text">
+              {fundamentals.peRatio == null ? "-" : fundamentals.peRatio.toFixed(1)}
+            </p>
+          </div>
+          <div className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5">
+            <p className="t-meta">Profit margin</p>
+            <p className="num mt-1 text-sm text-text">
+              {fundamentals.profitMargin == null ? "-" : `${(fundamentals.profitMargin * 100).toFixed(1)}%`}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <MarketTradingViewChartCard ticker={sym} />
+        <div className="flex flex-col gap-6">
+          <FundamentalsPanel data={fundamentals} />
+          <CompanyNews ticker={sym} />
         </div>
       </div>
 
-      <FundamentalsPanel data={fundamentals} />
-
       <Suspense fallback={<p className="t-meta">Loading financials...</p>}>
-        <CompanyFinancials ticker={sym} />
+        <CompanyFinancials ticker={sym} filings={filings} />
       </Suspense>
 
-      <div>
+      <section>
         <h2 className="t-h3 mb-4">Stoa coverage</h2>
         {reports.length > 0 ? (
           <div className="grid gap-5">
@@ -70,7 +109,7 @@ export default async function TickerPage({
             body="When an analyst publishes a call or report on this ticker, it will show up here."
           />
         )}
-      </div>
+      </section>
     </div>
   );
 }

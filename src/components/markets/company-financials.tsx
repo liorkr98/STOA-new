@@ -1,5 +1,6 @@
 import { edgar, finnhub } from "@/lib/market";
 import type { Estimate, FinancialStatement } from "@/lib/market/types";
+import type { FilingRow } from "@/lib/db/financials";
 
 /**
  * Company financials for the ticker page (Part G): an EDGAR income statement +
@@ -23,7 +24,17 @@ function surprisePct(est: number | null, act: number | null): number | null {
   return (act - est) / Math.abs(est);
 }
 
-export async function CompanyFinancials({ ticker }: { ticker: string }) {
+function freqLabel(freq: string): string {
+  return freq === "annual" ? "10-K" : "10-Q";
+}
+
+export async function CompanyFinancials({
+  ticker,
+  filings = [],
+}: {
+  ticker: string;
+  filings?: FilingRow[];
+}) {
   let statement: FinancialStatement | null = null;
   let estimates: Estimate[] | null = null;
   try {
@@ -40,10 +51,45 @@ export async function CompanyFinancials({ ticker }: { ticker: string }) {
   if (!statement && (!estimates || estimates.length === 0)) return null;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <div className="mb-5">
+        <h2 className="t-h3">Financials and filings</h2>
+        <p className="t-meta mt-1">Official filing data with consensus earnings context.</p>
+      </div>
+
+      {filings.length > 0 && (
+        <div className="mb-6">
+          <h3 className="t-eyebrow mb-2">Latest filings</h3>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {filings.map((filing) => (
+              <article
+                key={`${filing.symbol}-${filing.period_end}-${filing.frequency}`}
+                className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5"
+              >
+                <p className="num text-xs text-text-faint">{filing.period_end}</p>
+                <p className="mt-0.5 text-sm font-medium text-text">{freqLabel(filing.frequency)}</p>
+                <div className="mt-2 space-y-1 text-xs text-text-mute">
+                  <p className="flex items-center justify-between gap-2">
+                    <span>Revenue</span>
+                    <span className="num text-text">{filing.revenue == null ? "-" : fmtNum(filing.revenue)}</span>
+                  </p>
+                  <p className="flex items-center justify-between gap-2">
+                    <span>Net income</span>
+                    <span className="num text-text">
+                      {filing.net_income == null ? "-" : fmtNum(filing.net_income)}
+                    </span>
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-8 lg:grid-cols-2">
       {statement && statement.periods.length > 0 && (
         <div>
-          <h2 className="t-h3 mb-3">Income statement</h2>
+          <h3 className="t-eyebrow mb-2">Income statement</h3>
           <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
             <table className="w-full border-collapse text-sm">
               <thead className="bg-surface">
@@ -80,14 +126,14 @@ export async function CompanyFinancials({ ticker }: { ticker: string }) {
             </table>
           </div>
           {statement.source?.asOf && (
-            <p className="t-meta mt-1.5 text-[11px]">Source: EDGAR - last filed {statement.source.asOf}</p>
+            <p className="t-meta mt-1.5 text-[11px]">Source: EDGAR, last filed {statement.source.asOf}</p>
           )}
         </div>
       )}
 
       {estimates && estimates.length > 0 && (
         <div>
-          <h2 className="t-h3 mb-3">EPS estimates vs actuals</h2>
+          <h3 className="t-eyebrow mb-2">EPS estimates vs actuals</h3>
           <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
             <table className="w-full border-collapse text-sm">
               <thead className="bg-surface">
@@ -139,6 +185,7 @@ export async function CompanyFinancials({ ticker }: { ticker: string }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </section>
   );
 }
