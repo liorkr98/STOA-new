@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Trash2, Plus, Briefcase } from "lucide-react";
+import { DensityRoot } from "@/components/layout/density-root";
 import { usePortfolio, type Holding } from "@/lib/portfolio";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -116,7 +117,7 @@ export default function PortfolioPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <DensityRoot className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="t-h1">Portfolio</h1>
@@ -147,7 +148,7 @@ export default function PortfolioPage() {
       ) : (
         <DataTable columns={columns} data={rows} rowKey={(r) => r.ticker} csvName="portfolio" />
       )}
-    </div>
+    </DensityRoot>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stamp } from "@phosphor-icons/react";
+import { Lock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { price as fmtPrice } from "@/lib/format";
@@ -215,10 +215,13 @@ export function LockPublishPanel({
           <div className="mb-3 flex items-center justify-between">
             <p className="t-eyebrow">Price target</p>
             <span className="t-meta flex items-center gap-1 text-[11px]">
-              <Stamp size={13} />
-              locks at publish
+              <Lock size={13} aria-hidden />
+              optional
             </span>
           </div>
+          <p className="t-meta mb-3 text-[11px] leading-relaxed">
+            Add a ticker to lock a call at publish. Leave blank for overview research.
+          </p>
 
           <div className="grid grid-cols-2 gap-2.5">
             <label className="text-xs font-medium text-text-mute">
@@ -426,7 +429,7 @@ export function LockPublishPanel({
 
       <div className="flex flex-col gap-2">
         <Button size="lg" disabled={pending || publishDisabledReason != null} onClick={onPublish}>
-          <Stamp size={18} weight="fill" />
+          <Lock size={18} aria-hidden />
           {pending ? "Publishing..." : publishLabel}
         </Button>
         {publishDisabledReason && (

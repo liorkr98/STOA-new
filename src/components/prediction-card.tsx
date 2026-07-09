@@ -10,16 +10,17 @@ import { SealStamp } from "./ui/seal-stamp";
  * target, horizon, and a live/graded outcome. Sentiment color is allowed here
  * on the direction tag, grade tag, and the return number only.
  *
- * This is a trust-critical block (the "receipt"), so it gets ledger-card
- * treatment (double-ruled border) rather than the plain surface used by
- * ordinary content cards. The seal sits beside the target once locked.
+ * hideTarget: for paywalled teasers, keep ticker/direction/seal visible but
+ * do not leak the price target before unlock.
  */
 export function PredictionCard({
   prediction,
   className,
+  hideTarget = false,
 }: {
   prediction: Prediction;
   className?: string;
+  hideTarget?: boolean;
 }) {
   const {
     ticker,
@@ -37,6 +38,8 @@ export function PredictionCard({
   const alpha =
     return_pct != null && benchmark_pct != null ? return_pct - benchmark_pct : null;
   const sealStatus = outcome === "hit" || outcome === "near" ? "hit" : outcome === "miss" ? "miss" : "locked";
+  const showTarget = !hideTarget;
+  const cols = showTarget ? "grid-cols-3" : "grid-cols-2";
 
   return (
     <div className={cn("ledger-card p-4", className)}>
@@ -45,17 +48,24 @@ export function PredictionCard({
           <span className="num text-lg font-semibold tracking-tight">{ticker}</span>
           <DirectionTag direction={direction} />
         </div>
-        {resolved ? <GradeTag outcome={outcome} /> : <GradeTag outcome="open" />}
+        <div className="flex items-center gap-2">
+          {resolved ? <GradeTag outcome={outcome} /> : <GradeTag outcome="open" />}
+          {!showTarget && (
+            <SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />
+          )}
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      <div className={cn("mt-4 grid gap-3", cols)}>
         <Field label="Entry" value={`$${price(lock_price)}`} />
-        <Field
-          label="Target"
-          value={target_price ? `$${price(target_price)}` : "Open"}
-          icon={<Target size={12} strokeWidth={2.5} />}
-          trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />}
-        />
+        {showTarget && (
+          <Field
+            label="Target"
+            value={target_price ? `$${price(target_price)}` : "Open"}
+            icon={<Target size={12} strokeWidth={2.5} />}
+            trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />}
+          />
+        )}
         <Field
           label={resolved ? "Resolved" : "Now"}
           value={resolved_price ? `$${price(resolved_price)}` : "Pending"}
@@ -67,20 +77,22 @@ export function PredictionCard({
           <Clock size={13} strokeWidth={2.5} />
           {prediction.horizon_days}d horizon
         </span>
-        <span
-          className={cn(
-            "num text-sm font-semibold inline-flex items-center gap-0.5",
-            tone === "up" && "text-[var(--up)]",
-            tone === "down" && "text-[var(--down)]",
-            tone === "neutral" && "text-text-mute",
-          )}
-        >
-          {return_pct != null && <ArrowUpRight size={14} strokeWidth={2.5} />}
-          {pct(return_pct)}
-        </span>
+        {!hideTarget && (
+          <span
+            className={cn(
+              "num text-sm font-semibold inline-flex items-center gap-0.5",
+              tone === "up" && "text-[var(--up)]",
+              tone === "down" && "text-[var(--down)]",
+              tone === "neutral" && "text-text-mute",
+            )}
+          >
+            {return_pct != null && <ArrowUpRight size={14} strokeWidth={2.5} />}
+            {pct(return_pct)}
+          </span>
+        )}
       </div>
 
-      {resolved && alpha != null && (
+      {resolved && alpha != null && !hideTarget && (
         <div className="mt-2 flex items-center justify-between text-xs">
           <span className="t-meta">vs S&P {pct(benchmark_pct)}</span>
           <span

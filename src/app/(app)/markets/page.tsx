@@ -41,7 +41,7 @@ export default async function MarketsPage() {
               <div className="flex items-start gap-1">
                 <div className="text-right">
                   <div className="num text-lg font-semibold">
-                    {r.quote.available && r.quote.price != null ? `$${price(r.quote.price)}` : "—"}
+                    {r.quote.available && r.quote.price != null ? `$${price(r.quote.price)}` : "-"}
                   </div>
                   <div className="t-meta">{r.sector}</div>
                 </div>

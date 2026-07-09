@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Compass } from "@phosphor-icons/react/dist/ssr";
+import { Compass } from "lucide-react";
 import { TabBar } from "@/components/feed/tab-bar";
 import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,6 +14,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { QuickPost } from "@/components/feed/quick-post";
+import { tickerMatchesCapBand, type CapBand } from "@/lib/market/cap-bands";
 import type { ContentType, Report } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Discover" };
@@ -27,6 +28,7 @@ const TABS = [
 ];
 
 const CONTENT_TYPES: ContentType[] = ["research", "call", "short_post"];
+const CAP_BANDS: CapBand[] = ["mega", "large", "mid", "small"];
 
 interface DiscoverParams {
   tab?: string;
@@ -36,6 +38,8 @@ interface DiscoverParams {
   /** @deprecated Use `score` */
   moat?: string;
   ticker?: string;
+  status?: string;
+  mcap?: string;
 }
 
 /** Post-fetch filters (access/score/ticker act on the fetched page of results). */
@@ -55,6 +59,17 @@ function applyFilters(reports: Report[], params: DiscoverParams): Report[] {
     const t = params.ticker.toUpperCase();
     out = out.filter(
       (r) => (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase() === t,
+    );
+  }
+  if (params.status === "open") {
+    out = out.filter((r) => r.prediction != null && r.prediction.outcome === "open");
+  } else if (params.status === "resolved") {
+    out = out.filter((r) => r.prediction != null && r.prediction.outcome !== "open");
+  }
+  if (params.mcap && CAP_BANDS.includes(params.mcap as CapBand)) {
+    const band = params.mcap as CapBand;
+    out = out.filter((r) =>
+      tickerMatchesCapBand(r.ticker ?? r.prediction?.ticker ?? null, band),
     );
   }
   return out;
@@ -125,7 +140,13 @@ export default async function DiscoverPage({
 
   const filtered = reports ? applyFilters(reports, params) : undefined;
   const filtersActive = Boolean(
-    params.type || params.access || params.score || params.moat || params.ticker,
+    params.type ||
+      params.access ||
+      params.score ||
+      params.moat ||
+      params.ticker ||
+      params.status ||
+      params.mcap,
   );
 
   return (

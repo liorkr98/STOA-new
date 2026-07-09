@@ -24,6 +24,17 @@ export function DispatchView({
 }) {
   const { personalized, cycle } = dispatch;
   const isHome = mode === "home";
+  const hasStories =
+    Boolean(dispatch.lead) ||
+    dispatch.secondary.length > 0 ||
+    dispatch.wire.length > 0;
+  const thinHome =
+    isHome &&
+    personalized &&
+    Boolean(dispatch.lead) &&
+    dispatch.secondary.length === 0 &&
+    dispatch.wire.length === 0 &&
+    dispatch.resolved.length === 0;
 
   return (
     <article
@@ -49,14 +60,14 @@ export function DispatchView({
       ) : null}
 
       {cycle.fallbackCycle ? (
-        <p className="dispatch-fallback-note text-center font-mono text-[11px] uppercase tracking-widest text-text-faint">
-          Low volume · showing recent highlights
+        <p className="dispatch-fallback-note mb-8 text-center font-mono text-[11px] uppercase tracking-widest text-text-faint">
+          Quiet cycle. Showing recent highlights from your network.
         </p>
       ) : null}
 
       {dispatch.lead ? (
         <DispatchLead story={dispatch.lead} align={isHome ? "start" : "center"} />
-      ) : (
+      ) : hasStories ? null : (
         <p className="dispatch-section text-center text-sm text-text-mute">
           No lead story in this cycle yet. Check back as analysts publish.
         </p>
@@ -75,6 +86,19 @@ export function DispatchView({
 
       {isHome && dispatch.leaderboard.length > 0 ? (
         <DispatchLeaderboard entries={dispatch.leaderboard} />
+      ) : null}
+
+      {thinHome ? (
+        <div className="dispatch-section rounded-[var(--radius-card)] border border-border bg-surface px-5 py-6 text-center">
+          <p className="text-sm text-text-mute">
+            Thin briefing today. Follow more analysts to fill tomorrow&apos;s issue.
+          </p>
+          <div className="mt-4">
+            <Link href="/discover?tab=researchers" className={buttonClass("secondary", "sm")}>
+              Find analysts
+            </Link>
+          </div>
+        </div>
       ) : null}
 
       {isHome ? (

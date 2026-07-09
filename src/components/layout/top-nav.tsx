@@ -139,6 +139,11 @@ export function TopNav({
       {open && (
         <div className="border-t border-border bg-surface px-5 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
+            {showRoleSwitcher && (
+              <div className="px-3 py-2">
+                <RoleSwitcher current={viewingAsCreator ? "creator" : "investor"} />
+              </div>
+            )}
             {links.map((l) => (
               <Link
                 key={l.href}

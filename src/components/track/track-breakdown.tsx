@@ -1,5 +1,3 @@
-import { tierProgress } from "@/lib/engine/score";
-
 interface Breakdown {
   winRate: number;
   profitFactor: number;
@@ -17,7 +15,7 @@ function Bar({ label, value }: { label: string; value: number | null }) {
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-surface-2">
         <div
-          className="h-full rounded-full bg-accent transition-[width]"
+          className="h-full rounded-full bg-[var(--ink)] transition-[width]"
           style={{ width: `${pctVal}%` }}
         />
       </div>
@@ -27,7 +25,7 @@ function Bar({ label, value }: { label: string; value: number | null }) {
 
 /**
  * Surfaces the scoring engine's pillar breakdown and outcome counts.
- * Sample confidence is the honest gate, not a second tier badge.
+ * Sample confidence only - no Legend/Elite tier labels in the UI.
  */
 export function TrackBreakdown({
   score,
@@ -44,10 +42,6 @@ export function TrackBreakdown({
   misses: number;
   total: number;
 }) {
-  const progress = tierProgress(score, total);
-  const sampleMet = progress.requirements.find((r) => r.label.toLowerCase().includes("call"));
-  const scoreMet = progress.requirements.find((r) => r.label.toLowerCase().includes("score"));
-
   return (
     <div className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
       <div className="flex items-center justify-between">
@@ -80,16 +74,6 @@ export function TrackBreakdown({
       {total > 0 && total < 10 ? (
         <p className="t-meta border-t border-border pt-4">
           Provisional · {total} resolved call{total === 1 ? "" : "s"} (10+ for full confidence)
-          {sampleMet && (
-            <span className="num ml-2 text-text">
-              {Math.round(sampleMet.current)} / {sampleMet.required}
-            </span>
-          )}
-          {scoreMet && (
-            <span className="t-meta ml-2">
-              · score path {Math.round(scoreMet.current)} / {scoreMet.required}
-            </span>
-          )}
         </p>
       ) : total >= 10 ? (
         <p className="t-meta border-t border-border pt-4">

@@ -50,7 +50,7 @@ function compactBrandPayload(input: z.infer<typeof inputSchema>): string {
 
 function mockAnalyze(input: z.infer<typeof inputSchema>): BrandAnalyzeResult {
   const warnings: string[] = [];
-  if (!input.bio?.trim()) warnings.push("Bio is empty — investors won't know your angle.");
+  if (!input.bio?.trim()) warnings.push("Bio is empty - investors won't know your angle.");
   if (!input.headline?.trim()) warnings.push("Add a headline that states your edge.");
   if (input.specialties.length < 2) warnings.push("Add at least two specialties for discoverability.");
 
@@ -58,7 +58,7 @@ function mockAnalyze(input: z.infer<typeof inputSchema>): BrandAnalyzeResult {
   if (!input.headline?.trim()) {
     suggestions.push({
       field: "headline",
-      proposed: `${input.display_name} on ${input.specialties[0] ?? "equity"} — data-driven calls`,
+      proposed: `${input.display_name} on ${input.specialties[0] ?? "equity"} - data-driven calls`,
       reason: "A specific headline helps investors understand your niche instantly.",
     });
   }

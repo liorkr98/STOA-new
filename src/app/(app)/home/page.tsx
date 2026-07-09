@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Compass } from "@phosphor-icons/react/dist/ssr";
+import { Compass } from "lucide-react";
 import { DispatchView } from "@/components/dispatch/dispatch-view";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
@@ -19,7 +19,9 @@ export default async function HomePage() {
     dispatch.personalized &&
     !dispatch.lead &&
     dispatch.secondary.length === 0 &&
-    dispatch.resolved.length === 0;
+    dispatch.wire.length === 0 &&
+    dispatch.resolved.length === 0 &&
+    dispatch.leaderboard.length === 0;
 
   if (empty) {
     return (

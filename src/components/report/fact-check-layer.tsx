@@ -200,10 +200,17 @@ export function ClaimMark({
           <button
             type="button"
             data-claim-verdict={verdict}
-            className="cursor-default rounded-sm underline decoration-2 underline-offset-2 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:bg-surface-2 focus-ring"
+            aria-label={`Fact-check: ${label}. Activate for details.`}
+            aria-expanded={open}
+            className="cursor-pointer rounded-sm underline decoration-2 underline-offset-2 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:bg-surface-2 focus-ring"
             style={{ textDecorationColor: color }}
-            onMouseEnter={() => setOpenGrouped(true)}
-            onMouseLeave={() => setOpenGrouped(false)}
+            onClick={() => setOpenGrouped(!open)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && open) {
+                e.preventDefault();
+                setOpenGrouped(false);
+              }
+            }}
           >
             {children}
             {verdict === "opinion" && (
@@ -215,8 +222,8 @@ export function ClaimMark({
           <Popover.Content
             className={`popover-content ledger-card z-40 max-w-xs p-3 text-sm ${instant ? "popover-instant" : ""}`}
             sideOffset={6}
-            onMouseEnter={() => setOpenGrouped(true)}
-            onMouseLeave={() => setOpenGrouped(false)}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onEscapeKeyDown={() => setOpenGrouped(false)}
           >
             <div className="mb-1 flex items-center gap-1.5">
               <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />

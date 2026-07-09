@@ -38,7 +38,7 @@ export function AuthForm({
       <p className="t-body mt-2">
         {mode === "sign-in"
           ? "Sign in to follow analysts and manage your subscriptions."
-          : "Start with 100 demo credits to explore the marketplace."}
+          : "Follow analysts, unlock research, and build your reading list."}
       </p>
 
       <div className="mt-8">

@@ -210,11 +210,16 @@ export function StudioEditor({
 
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.
+  // Research may publish as overview without a ticker/locked call.
+  // Calls still require a ticker so there is something to lock.
+  const lockingCall = hasCard && Boolean(ticker.trim());
   const publishBlockedBy: string | null = (() => {
     if (type === "short_post") {
       return summary.trim() ? null : "Write your post first.";
     }
-    if (!ticker.trim()) return "Add a ticker in the price target module.";
+    if (type === "call" && !ticker.trim()) {
+      return "Add a ticker to lock this call, or switch to Research for an overview.";
+    }
     if (plainText.trim() && !factCheck) return "Run the fact-check on your draft.";
     if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
     return null;
@@ -240,10 +245,10 @@ export function StudioEditor({
             price: access === "paid" ? Number(price) : null,
             min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
-            ticker,
-            direction,
-            target_price: target ? Number(target) : null,
-            horizon_days: horizon,
+            ticker: lockingCall ? ticker : null,
+            direction: lockingCall ? direction : undefined,
+            target_price: lockingCall && target ? Number(target) : null,
+            horizon_days: lockingCall ? horizon : undefined,
           });
           id = res.id;
           setDraftId(id);
@@ -266,10 +271,10 @@ export function StudioEditor({
         price: access === "paid" ? Number(price) : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
-        ticker: hasCard ? ticker : null,
-        direction: hasCard ? direction : undefined,
-        target_price: hasCard && target ? Number(target) : null,
-        horizon_days: hasCard ? horizon : undefined,
+        ticker: lockingCall ? ticker : null,
+        direction: lockingCall ? direction : undefined,
+        target_price: lockingCall && target ? Number(target) : null,
+        horizon_days: lockingCall ? horizon : undefined,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {
@@ -300,6 +305,7 @@ export function StudioEditor({
     requiredPerks,
     price,
     hasCard,
+    lockingCall,
     ticker,
     direction,
     target,
@@ -315,7 +321,7 @@ export function StudioEditor({
       setPanelOpen(true);
       return;
     }
-    if (hasCard) {
+    if (lockingCall) {
       setConfirmOpen(true);
     } else {
       start(async () => {
@@ -392,7 +398,7 @@ export function StudioEditor({
           </Button>
           <Button size="sm" disabled={pending} onClick={onPublishClick}>
             <RocketLaunch size={15} weight="fill" />
-            {pending ? "Publishing..." : hasCard ? "Publish & Lock" : "Publish"}
+            {pending ? "Publishing..." : lockingCall ? "Publish & Lock" : "Publish"}
           </Button>
           <button
             type="button"
@@ -475,7 +481,7 @@ export function StudioEditor({
               onFactCheck={setFactCheck}
               disclosure={disclosure}
               onDisclosure={setDisclosure}
-              publishLabel={hasCard ? "Publish & Lock" : "Publish"}
+              publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
               publishDisabledReason={publishBlockedBy}
               onPublish={onPublishClick}
               pending={pending}

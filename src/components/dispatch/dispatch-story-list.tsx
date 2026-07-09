@@ -25,6 +25,7 @@ export function DispatchStoryList({
       <div className="dispatch-columns mt-6">
         {stories.map((story) => {
           const ticker = (story.report.ticker ?? story.prediction?.ticker ?? "").toUpperCase();
+          const showTarget = story.report.access === "free";
           return (
             <article key={story.report.id} className="flex flex-col gap-2.5">
               <div className="flex items-center gap-2">
@@ -33,7 +34,7 @@ export function DispatchStoryList({
                     {ticker}
                   </span>
                 )}
-                {story.prediction?.target_price != null && (
+                {showTarget && story.prediction?.target_price != null && (
                   <span className="num text-[11px] text-text-faint">
                     Target ${story.prediction.target_price.toFixed(0)}
                   </span>
@@ -64,6 +65,7 @@ export function DispatchStoryList({
                 <TrackScoreBadge
                   handle={story.author.handle}
                   score={story.author.score || null}
+                  sampleSize={story.author.sample_size}
                   size="sm"
                 />
               </div>

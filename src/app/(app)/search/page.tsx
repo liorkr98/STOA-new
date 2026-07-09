@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import { Search } from "lucide-react";
 import { ReportCard } from "@/components/report-card";
 import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -27,6 +27,10 @@ export default async function SearchPage({
       )
     : [];
 
+  const totalHits = results
+    ? analystsWithCounts.length + results.reports.length + results.tickers.length
+    : 0;
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -38,17 +42,18 @@ export default async function SearchPage({
 
       {!q.trim() ? (
         <EmptyState
-          icon={<MagnifyingGlass size={32} />}
+          icon={<Search size={32} />}
           title="Search Stoa"
           body="Try a ticker like NVDA, an analyst name, or a topic in research summaries."
         />
-      ) : results &&
-        analystsWithCounts.length === 0 &&
-        results.reports.length === 0 &&
-        results.tickers.length === 0 ? (
+      ) : results && totalHits === 0 ? (
         <EmptyState title={`No results for "${q}"`} body="Try a different ticker or analyst handle." />
       ) : results ? (
         <div className="flex flex-col gap-10">
+          <p className="t-meta">
+            <span className="num">{totalHits}</span> result{totalHits === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
+          </p>
+
           {results.tickers.length > 0 && (
             <section>
               <h2 className="t-h3 mb-4">Markets</h2>
@@ -60,7 +65,10 @@ export default async function SearchPage({
                     className="rounded-[var(--radius-card)] border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
                   >
                     <div className="num font-semibold">{t.ticker}</div>
-                    <div className="t-meta">{t.name} · {t.sector}</div>
+                    <div className="t-meta">
+                      {t.name}
+                      {t.sector ? ` · ${t.sector}` : ""}
+                    </div>
                   </Link>
                 ))}
               </div>

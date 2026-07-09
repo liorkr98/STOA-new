@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "@phosphor-icons/react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { price } from "@/lib/format";
