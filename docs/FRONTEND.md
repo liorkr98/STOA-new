@@ -92,7 +92,7 @@ and badges use 8–12% tints of the same hues rather than introducing new pastel
 |---|---|---|
 | Display / editorial | **Fraunces** (variable, wght 600–680, high optical size for headlines) | Report titles, creator display names in profile heroes, homepage headline, section headers on marketing pages. This is the "editorial voice" — it should only appear where the product is being *read*, never in UI chrome. |
 | UI / body | **IBM Plex Sans** | All interface chrome — nav labels, buttons, form labels, body copy in settings/dashboards, card metadata. |
-| Numeric / data | **IBM Plex Mono**, tabular figures enabled | Ticker symbols, prices, percentages, dates, MOAT scores, timestamps — anything that needs to be *scanned and compared* rather than read as prose. Plex Sans and Plex Mono are drawn as a coherent system, which is why they're paired rather than mixing a generic sans with a generic mono. |
+| Numeric / data | **IBM Plex Mono**, tabular figures enabled | Ticker symbols, prices, percentages, dates, Track Scores, timestamps — anything that needs to be *scanned and compared* rather than read as prose. Plex Sans and Plex Mono are drawn as a coherent system, which is why they're paired rather than mixing a generic sans with a generic mono. |
 
 Type scale (rem, 16px base):
 
@@ -163,7 +163,7 @@ Three breakpoints, mobile-first:
 ```
 
 General rule used throughout Part 2 instead of repeating it per page: **the ledger-card treatment
-(call block, disclosure block, MOAT badge) never gets simplified or truncated on mobile** — it
+(call block, disclosure block, Track Score badge) never gets simplified or truncated on mobile** — it
 may stack above the reading column instead of sitting beside it, but every disclosure field,
 every score component, is present at every breakpoint. Only the *editorial* column (report body,
 marketing copy) reflows for width; the *trust* surface is breakpoint-invariant by design.
@@ -201,28 +201,29 @@ resolution).
 **Mobile (< 768px):** collapses to logo + hamburger. Hamburger opens a full-height drawer with the
 same items stacked, role switcher pinned at the top of the drawer.
 
-### 2.2 `<MoatBadge>` — appears everywhere a creator's name does
+### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
 
-Three size variants, same component, same visual language at every size:
+Three size variants, same component, same visual language at every size. (`MoatBadge` is a
+deprecated alias that re-exports this component; do not use it in new code.)
 
-- **`size="sm"`** (16px tall) — used inline next to a creator's name in feed cards, comments,
-  debate threads. Renders as: small brass-ring seal icon + score number in Plex Mono, e.g. `🔶
-  78`. Tapping/clicking always opens the same destination: that creator's MOAT Analytics summary
-  (a popover on desktop, a bottom sheet on mobile) — never just decorative.
-- **`size="md"`** (24px tall) — used on the report detail page's creator strip and on creator
-  cards in Explore/leaderboard. Adds hit rate: `🔶 78  ·  64% hit rate`.
-- **`size="lg"`** (48px tall) — used only on the creator's own profile hero. Full treatment:
-  score, hit rate, sample size, and a "View full breakdown" link, laid out as a small ledger-card
-  itself (double-ruled border per §1.4).
+- **`size="sm"`** - used inline next to a creator's name in feed cards, comments, debate
+  threads. Renders as: small ink-ring seal icon + score number in Plex Mono, e.g. `78`.
+  Tapping/clicking always opens that creator's Track Score analytics page - never just decorative.
+- **`size="md"`** - used on the report detail page's trust rail and on creator cards in
+  Discover/leaderboard. Adds hit rate when available.
+- **`size="lg"`** - used on the creator's own profile / score page. Full treatment: score, hit
+  rate, sample size, and a "View full breakdown" link, laid out as a small ledger-card itself
+  (double-ruled border per §1.4).
 
-**Score color mapping** (the number itself, not a background fill — keep it legible, not a
-traffic light): 0–39 renders in `--rust`, 40–69 in `--brass`, 70–100 in `--verdigris`. Always
-paired with the numeral and the word "MOAT" in `--text-xs` beneath it at `lg` size so the score is
-never ambiguous about what it measures.
+**Score color mapping** (the number itself, not a background fill - keep it legible, not a
+traffic light): Track Score is a trust signal, not market sentiment. Use `--ink` for scored
+values and `--brass` when the sample is provisional (under 10 resolved calls). Verdigris/rust
+stay reserved for hit/miss and fact-check verdicts. Always pair the numeral with the word
+"Track" / "Track Score" at `md`/`lg` so the score is never ambiguous about what it measures.
 
-**Empty state (brand-new creator, zero resolved calls):** renders as `— MOAT` in neutral gray
-with a small "Not yet scored" tooltip on hover — never shows a fabricated "0," which would read
-as a failing score rather than an absence of data.
+**Empty state (brand-new creator, zero resolved calls):** renders as `-` in neutral gray with a
+small "Not yet scored" tooltip on hover - never shows a fabricated "0," which would read as a
+failing score rather than an absence of data.
 
 ### 2.3 `<DisclosureBlock>` — identical everywhere, creators cannot restyle this
 
@@ -250,7 +251,7 @@ comments for Claude Code's benefit: **never accept a theme/color prop on this co
 ### 2.4 `<PaywallGate>`
 
 Wraps the report body content only — never the ticker strip, call block, disclosure block, or
-MOAT badge, which render above/outside this component entirely.
+Track Score badge, which render above/outside this component entirely.
 
 - Renders the wrapped content up to a configurable line-clamp (default: first 3 paragraphs), then
   applies a soft gradient scrim (`--paper` fading from 0% to 100% opacity over the final 80px of
@@ -269,7 +270,7 @@ MOAT badge, which render above/outside this component entirely.
 Triggered from the Report Editor's "Publish & Lock" button (Part 3, §3.10).
 
 - Modal copy: *"Once locked, this price target can't be edited or deleted. It'll count toward
-  your MOAT score whether it hits or misses."* Below it, a compact read-only summary: ticker,
+  your Track Score whether it hits or misses."* Below it, a compact read-only summary: ticker,
   target price, horizon date.
 - Two buttons: **"Go back and edit"** (text-style, left, gets default focus) and **"Lock it in"**
   (filled, `--ink` background, right — deliberately not the default-focused element, so a stray
@@ -303,7 +304,7 @@ Not a general comment section. Opens as a side panel (desktop) or bottom sheet (
 to one claim.
 
 - Header: the claim text itself, quoted, with its "Opinion" tag
-- Threaded replies below, standard comment list (author avatar `sm`, `MoatBadge size="sm"` if the
+- Threaded replies below, standard comment list (author avatar `sm`, `TrackScoreBadge size="sm"` if the
   replier is also a creator, timestamp, body text)
 - Input at the bottom: plain textarea + "Reply" button — no rich formatting, this is meant to be
   quick back-and-forth, not another editor
@@ -400,11 +401,11 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
 - Page header: "Explore research" + subtext "Browse locked calls from every creator on Stoa."
 - **Filter row** (sticky beneath header on scroll): sector chips (multi-select: Tech, Biotech,
   Small-Cap, Macro, Crypto, Dividends, Energy, Consumer — scrollable chip row on mobile), a
-  `MOAT score ≥` slider (0–100, default 0), a Free/Paid toggle (All / Free only / Paid only)
+  `Track Score ≥` slider (0–100, default 0), a Free/Paid toggle (All / Free only / Paid only)
 - **Results grid:** same feed-card component used in the logged-in Feed (§4.1), but every card's
   primary CTA reads **"Read preview"** instead of "Read" — leads to the Report Public Preview
   page (§3.4), never the full report
-- Sort control, top-right of the results grid: dropdown "Most recent" / "Highest MOAT score" /
+- Sort control, top-right of the results grid: dropdown "Most recent" / "Highest Track Score" /
   "Highest upside"
 - **Empty state (no results match filters):** "No research matches these filters yet." + a
   **"Clear filters"** text button — never a dead end with no recovery action
@@ -429,14 +430,14 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
   muted, a small verified-identity check icon with tooltip "Identity verified — not a credential
   claim"
 
-**`<MoatBadge size="lg">`** — full ledger-card treatment, placed directly below the header band,
+**`<TrackScoreBadge size="lg">`** — full ledger-card treatment, placed directly below the header band,
 full width on mobile / left-aligned ~40% width on desktop with the pricing card (below) filling
 the remaining space alongside it
 
 **Bio** — one line, Plex Sans `--text-base`, creator-written, max ~140 characters enforced at
 input time (Part 4, Page Branding)
 
-**Pricing card** (ledger-card styling, sits beside the MOAT badge on desktop):
+**Pricing card** (ledger-card styling, sits beside the Track Score badge on desktop):
 
 - Subscription price if enabled: "$[X]/mo" large, Plex Mono, **"Subscribe"** primary button
 - Per-report price if enabled, shown as a secondary line: "or $[X] per report"
@@ -462,7 +463,7 @@ input time (Part 4, Page Branding)
 ### 3.4 Report public preview — `/@handle/[report-slug]`
 
 **Layout:** identical page shell to the full Report Detail Page (§4.3) for everything above the
-fold — ticker strip, creator strip with `<MoatBadge>`, the call block (fully visible, never
+fold — ticker strip, creator strip with `<TrackScoreBadge>`, the call block (fully visible, never
 gated), the `<DisclosureBlock>` (fully visible, never gated), and the fact-check summary strip
 (fully visible, never gated).
 
@@ -481,7 +482,7 @@ Single long-scroll marketing page, contained width (~760px), `--paper` backgroun
 
 - Restates the three-step "how it works" from the homepage in more depth, one section each, each
   with a supporting screenshot-style illustration of the actual component in question (the
-  fact-check layer, the lock/seal moment, the MOAT badge)
+  fact-check layer, the lock/seal moment, the Track Score badge)
 - **For investors** subsection: explains subscription vs. per-report pricing from the reader's
   side, links to §3.2 Explore
 - **For creators** subsection: explicit platform fee statement, large and unambiguous: "Stoa
@@ -498,9 +499,9 @@ This is a real page, not a footer afterthought — it's the single most importan
 the platform has, and it needs to be genuinely legible to a skeptical reader, not legal
 boilerplate.
 
-- **MOAT score section:** plain-language explanation of the three-factor formula (hit rate,
+- **Track Score section:** plain-language explanation of the three-factor formula (hit rate,
   average return, statistical significance/sample-size weighting), including an honest note that
-  scores with small sample sizes are shown with a "provisional" indicator (see MOAT Analytics,
+  scores with small sample sizes are shown with a "provisional" indicator (see Track Score Analytics,
   Part 5) rather than presented with false confidence
 - **Fact-check section:** explains the fact/unproven/opinion/contradicted taxonomy in plain
   terms, with one real (or realistic sample) example of each verdict shown inline
@@ -583,7 +584,7 @@ records, not client-side-only state.
 **Step 1 — `/onboarding/creator/verify`:**
 
 - Headline: "Verify your identity"
-- Body copy, set apart in a quiet callout box (not alarming, just distinct): "Your MOAT score
+- Body copy, set apart in a quiet callout box (not alarming, just distinct): "Your Track Score
   only means something if you're a real, accountable person. We verify identity, not
   credentials — anyone can build a track record here."
 - Embedded PayPal identity/business-verification flow (their hosted onboarding redirect via the
@@ -653,7 +654,7 @@ top analysts.
 
 ```
 ┌──────────────────────────────────────────────┐
-│ [avatar] Creator Name  [MoatBadge sm]         │
+│ [avatar] Creator Name  [TrackScoreBadge sm]         │
 │ TICKER · Company Name                          │
 │ Headline text, one line, truncated              │
 │ Target: $XX.XX  ·  by [date]  ·  ↑12% upside   │
@@ -696,7 +697,7 @@ trust this specific claim, right now."
 │  <TopNav>                                                     │
 ├─────────────────────────────────────┬─────────────────────────┤
 │  TICKER · Company Name · $XX.XX ↑0.4% │  [avatar] Creator Name  │
-│                                        │  [MoatBadge md]         │
+│                                        │  [TrackScoreBadge md]         │
 │  Report Headline (Fraunces, 3xl)       │  [Subscribe/Following]  │
 │                                        │                         │
 │  ┌─ CALL BLOCK (ledger-card) ────┐    │  ┌─ DISCLOSURE BLOCK ─┐ │
@@ -821,7 +822,7 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
   along with the onboarding Verify step (see §4.2) — the checklist is Customize page, Set
   pricing, Publish first report.
 - **Quick stats row**, four cards: Subscribers (count, + or − this week in small text beneath),
-  Earnings this month (Plex Mono, `$X,XXX`), Current MOAT score (`<MoatBadge size="lg">` reused
+  Earnings this month (Plex Mono, `$X,XXX`), Current Track Score (`<TrackScoreBadge size="lg">` reused
   here), Reports awaiting resolution (count, links to the "Open calls" widget below)
 - **Open calls widget:** compact table — ticker, target, days remaining until horizon date (Plex
   Mono countdown), each row linking to that report. This exists so the creator feels the same
@@ -893,14 +894,14 @@ Three tabs: **Drafts** / **Locked (open)** / **Resolved**.
 - Locked (open): title, ticker, target, countdown to horizon date, click-through to the read-only
   report view
 - Resolved: title, ticker, `<StatusChip>` Hit/Miss, actual return %, with a small "Why this
-  scored the way it did" link into that specific entry of MOAT Analytics (§6.4)
+  scored the way it did" link into that specific entry of Track Score Analytics (§6.4)
 - Each tab has its own empty state copy specific to that tab ("No drafts yet." / "No open calls
   right now." / "Nothing resolved yet — your first locked call will show up here once its
   horizon date passes.") rather than one generic empty state reused across all three.
 
-### 6.4 MOAT Analytics — `/dashboard/analytics`
+### 6.4 Track Score Analytics — `/dashboard/analytics`
 
-- **Score header:** large `<MoatBadge size="lg">` plus the raw components broken out explicitly:
+- **Score header:** large `<TrackScoreBadge size="lg">` plus the raw components broken out explicitly:
   hit rate, average return, sample size — never just the final number. If `sample_size` is below
   the platform's shrinkage constant `k` (per the backend spec's formula), show a **"Provisional —
   based on a small number of resolved calls"** note directly beneath the score, in the same
@@ -919,7 +920,7 @@ Three tabs: **Drafts** / **Locked (open)** / **Resolved**.
 
 ### 6.5 Audience — `/dashboard/audience`
 
-- Subscriber count + growth chart (simple line chart, same visual language as the MOAT score
+- Subscriber count + growth chart (simple line chart, same visual language as the Track Score
   history chart for consistency)
 - Churn rate, shown plainly as a percentage with a short explanatory tooltip, not dressed up
 - Subscriber list (paginated table: name/handle, subscribed-since date, tier if multiple exist)
@@ -986,7 +987,7 @@ creator-specific notification types added: new subscriber, new debate reply, rep
   /@[handle]/[slug]       -- report detail / public preview (shared route, entitlement-aware rendering)
 /components
   /ui                    -- Button, Input, Chip, Toast, Modal base primitives
-  /shared                -- TopNav, MoatBadge, DisclosureBlock, PaywallGate, LockConfirmModal,
+  /shared                -- TopNav, TrackScoreBadge, DisclosureBlock, PaywallGate, LockConfirmModal,
                              FactCheckLayer, DebateThread, StatusChip  (Part 2, one file each)
   /feed                  -- FeedCard, CreatorCard, Leaderboard
 /lib

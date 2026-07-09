@@ -1,13 +1,12 @@
-import { Clock, PencilSimple, SealCheck, SealWarning } from "@phosphor-icons/react/dist/ssr";
+import { Clock, Pencil, BadgeCheck, BadgeX } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 export type ReportStatus = "draft" | "open" | "hit" | "miss";
 
 /**
  * Report/call status everywhere: My Reports list, feed cards, report
- * headers. Always icon + label, never color alone -- Hit and Miss reuse
- * the seal-stamp glyph at a tiny size so the same visual language shows
- * up in the compact chip and the full-size stamp.
+ * headers. Always icon + label, never color alone. Hit/Miss use sentiment
+ * tokens (verdigris/rust); draft/open stay neutral ink.
  */
 export function StatusChip({
   status,
@@ -24,7 +23,7 @@ export function StatusChip({
   if (status === "draft") {
     return (
       <span className={cn(base, "border border-dashed border-border-strong text-text-mute", className)}>
-        <PencilSimple size={11} weight="bold" />
+        <Pencil size={11} strokeWidth={2.5} aria-hidden />
         Draft
       </span>
     );
@@ -33,8 +32,10 @@ export function StatusChip({
   if (status === "open") {
     return (
       <span className={cn(base, "border border-border text-text-mute", className)}>
-        <Clock size={11} weight="bold" />
-        {resolvesAt ? `Resolves ${resolvesAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : "Open"}
+        <Clock size={11} strokeWidth={2.5} aria-hidden />
+        {resolvesAt
+          ? `Resolves ${resolvesAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+          : "Open"}
       </span>
     );
   }
@@ -45,9 +46,17 @@ export function StatusChip({
   return (
     <span
       className={cn(base, "border", className)}
-      style={{ color, borderColor: `color-mix(in srgb, ${color} 35%, transparent)`, background: `color-mix(in srgb, ${color} 10%, transparent)` }}
+      style={{
+        color,
+        borderColor: `color-mix(in srgb, ${color} 35%, transparent)`,
+        background: `color-mix(in srgb, ${color} 10%, transparent)`,
+      }}
     >
-      {hit ? <SealCheck size={12} weight="fill" /> : <SealWarning size={12} weight="fill" />}
+      {hit ? (
+        <BadgeCheck size={12} strokeWidth={2.5} aria-hidden />
+      ) : (
+        <BadgeX size={12} strokeWidth={2.5} aria-hidden />
+      )}
       {hit ? "Hit" : "Miss"}
     </span>
   );

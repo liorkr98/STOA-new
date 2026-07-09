@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 const inputClass =
@@ -20,14 +20,16 @@ export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
         router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
       }}
     >
-      <MagnifyingGlass
+      <Search
         size={18}
         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint"
+        aria-hidden
       />
       <input
         name="q"
         defaultValue={initialQuery}
-        placeholder="Search analysts, tickers, research..."
+        placeholder="Search tickers, analysts, or research"
+        aria-label="Search tickers, analysts, or research"
         className={cn(inputClass)}
       />
     </form>

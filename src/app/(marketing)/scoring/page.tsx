@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GradeTag } from "@/components/ui/tag";
-import { TIERS } from "@/lib/engine/score";
 
 export const metadata: Metadata = {
   title: "Scoring methodology",
   description: "How Stoa grades analyst calls and computes the public Track Score.",
 };
+
+const SAMPLE_BANDS = [
+  { calls: "0-9", note: "Provisional. Score shown, but marked as early sample." },
+  { calls: "10-29", note: "Full confidence label unlocks. Edge still forming." },
+  { calls: "30-74", note: "Meaningful sample. Win rate and profit factor stabilize." },
+  { calls: "75+", note: "Large verified sample. Score moves slowly with each new call." },
+];
 
 export default function ScoringPage() {
   return (
@@ -86,13 +92,10 @@ export default function ScoringPage() {
           Score 0-100.
         </p>
         <div className="mt-4 flex flex-col gap-3">
-          {TIERS.map((t) => (
-            <div key={t.key} className="flex items-center justify-between gap-4 text-sm">
-              <span className="font-medium">
-                {t.label}{" "}
-                <span className="text-text-mute">&middot; {t.minCalls}+ resolved calls</span>
-              </span>
-              <span className="num text-text-mute">score {t.minScore}+</span>
+          {SAMPLE_BANDS.map((band) => (
+            <div key={band.calls} className="flex items-start justify-between gap-4 text-sm">
+              <span className="num shrink-0 font-medium">{band.calls} calls</span>
+              <span className="text-text-mute">{band.note}</span>
             </div>
           ))}
         </div>

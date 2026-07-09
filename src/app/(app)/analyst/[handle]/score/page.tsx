@@ -140,7 +140,7 @@ export default async function TrackScoreAnalyticsPage({
                   <tr key={p.id} className="border-b border-border last:border-0">
                     <td className="num px-4 py-3 font-medium">{p.ticker}</td>
                     <td className="num px-4 py-3 text-text-mute">
-                      {p.target_price ? `$${price(p.target_price)}` : "—"}
+                      {p.target_price ? `$${price(p.target_price)}` : "-"}
                     </td>
                     <td className="px-4 py-3">
                       <StatusChip status={p.outcome === "miss" ? "miss" : "hit"} />

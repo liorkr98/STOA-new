@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Drawer } from "vaul";
-import { X, ChatCircle } from "@phosphor-icons/react";
+import { X, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
@@ -138,7 +138,7 @@ function ThreadBody({
       <div className="flex items-start justify-between gap-3 border-b border-border p-4">
         <div>
           <Title className="t-eyebrow flex items-center gap-1.5">
-            <ChatCircle size={13} weight="fill" />
+            <MessageCircle size={13} className="fill-current" />
             Debate
           </Title>
           <Description className="t-body-editorial mt-1 text-sm italic">

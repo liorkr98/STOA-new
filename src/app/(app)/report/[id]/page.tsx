@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Eye } from "lucide-react";
+import { compact } from "@/lib/format";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { getReport } from "@/lib/db/reports";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
@@ -76,11 +77,16 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     <article className="mx-auto max-w-6xl">
       <ViewTracker reportId={id} />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Tag>{report.type === "short_post" ? "Post" : report.type === "call" ? "Call" : "Research"}</Tag>
         {report.ticker && <span className="num text-sm font-semibold text-text-mute">{report.ticker}</span>}
         <span className="t-meta">
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
+        </span>
+        <span className="t-meta inline-flex items-center gap-1.5" title="Views">
+          <Eye size={14} aria-hidden className="text-text-faint" />
+          <span className="num">{compact(report.views)}</span>
+          <span className="text-text-faint">views</span>
         </span>
       </div>
 
@@ -123,8 +129,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       {/* Trust rail stacks above the body on mobile; sticky sidebar on desktop. */}
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
         <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
-          {report.prediction && <PredictionCard prediction={report.prediction} />}
-          {report.prediction && report.ticker && <PriceAttestationSection ticker={report.ticker} />}
+          {report.prediction && (
+            <PredictionCard prediction={report.prediction} hideTarget={!canRead} />
+          )}
+          {report.prediction && report.ticker && canRead && (
+            <PriceAttestationSection ticker={report.ticker} />
+          )}
           <DisclosureBlock
             holdsPosition={report.position_held ?? false}
             compensationTied={report.compensation_tied ?? false}
@@ -134,6 +144,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <TrackScoreBadge
               handle={author.handle}
               score={author.score || null}
+              sampleSize={author.sample_size}
               size="md"
             />
           )}

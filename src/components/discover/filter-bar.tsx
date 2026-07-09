@@ -1,19 +1,21 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 export interface DiscoverFilters {
   type?: "research" | "call" | "short_post";
   access?: "free" | "paid" | "subscribers";
-  score?: "40" | "70";
+  score?: string;
   ticker?: string;
+  status?: "open" | "resolved";
+  mcap?: "mega" | "large" | "mid" | "small";
 }
 
 const TYPE_OPTIONS = [
-  { value: "", label: "All" },
+  { value: "", label: "All types" },
   { value: "research", label: "Research" },
   { value: "call", label: "Calls" },
   { value: "short_post", label: "Posts" },
@@ -26,133 +28,209 @@ const ACCESS_OPTIONS = [
   { value: "subscribers", label: "Subscribers" },
 ] as const;
 
-const SCORE_OPTIONS = [
-  { value: "", label: "Any score" },
-  { value: "40", label: "Score 40+" },
-  { value: "70", label: "Score 70+" },
+const STATUS_OPTIONS = [
+  { value: "", label: "Any status" },
+  { value: "open", label: "Unresolved" },
+  { value: "resolved", label: "Resolved" },
 ] as const;
 
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "h-8 rounded-[var(--radius-btn)] border px-3 text-xs font-medium transition-colors focus-ring",
-        active
-          ? "border-transparent bg-[var(--ink)] text-[var(--paper)]"
-          : "border-border bg-surface text-text-mute hover:border-border-strong hover:text-text",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+const SCORE_OPTIONS = [
+  { value: "", label: "Any Track Score" },
+  { value: "40", label: "40+" },
+  { value: "60", label: "60+" },
+  { value: "70", label: "70+" },
+  { value: "80", label: "80+" },
+] as const;
+
+const MCAP_OPTIONS = [
+  { value: "", label: "Any market cap" },
+  { value: "mega", label: "Mega ($200B+)" },
+  { value: "large", label: "Large ($10B to $200B)" },
+  { value: "mid", label: "Mid ($2B to $10B)" },
+  { value: "small", label: "Small (under $2B)" },
+] as const;
+
+const FILTER_KEYS = ["type", "access", "score", "moat", "ticker", "status", "mcap"] as const;
+
+const selectClass =
+  "h-9 min-w-[8.5rem] rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-xs text-text focus-ring";
 
 /**
- * Discover filters, URL-param driven so results stay server-rendered and
- * shareable. Each group is a pill row; ticker is a small mono input that
- * commits on Enter or blur. Preserves the active tab param.
+ * Discover filters as a compact toolbar of selects + ticker field.
+ * URL-param driven so results stay shareable and server-rendered.
  */
 export function FilterBar() {
   const router = useRouter();
   const params = useSearchParams();
+  const [pending, startTransition] = useTransition();
   const [tickerDraft, setTickerDraft] = useState(params.get("ticker") ?? "");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setTickerDraft(params.get("ticker") ?? "");
   }, [params]);
 
-  function setParam(key: string, value: string) {
+  function replaceParams(mutate: (next: URLSearchParams) => void) {
     const next = new URLSearchParams(params.toString());
-    if (value) next.set(key, value);
-    else next.delete(key);
-    router.replace(`/discover?${next.toString()}`, { scroll: false });
+    mutate(next);
+    startTransition(() => {
+      router.replace(`/discover?${next.toString()}`, { scroll: false });
+    });
+  }
+
+  function setParam(key: string, value: string) {
+    replaceParams((next) => {
+      if (key === "score") next.delete("moat");
+      if (value) next.set(key, value);
+      else next.delete(key);
+    });
   }
 
   function commitTicker() {
     setParam("ticker", tickerDraft.trim().toUpperCase());
   }
 
-  const hasFilters = ["type", "access", "score", "moat", "ticker"].some((k) => params.get(k));
+  const scoreValue = params.get("score") ?? params.get("moat") ?? "";
+  const activeCount = FILTER_KEYS.filter((k) => {
+    if (k === "moat") return false;
+    if (k === "score") return Boolean(scoreValue);
+    return Boolean(params.get(k));
+  }).length;
 
-  function scoreParam() {
-    return params.get("score") ?? params.get("moat") ?? "";
-  }
+  useEffect(() => {
+    if (activeCount > 0) setOpen(true);
+  }, [activeCount]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {TYPE_OPTIONS.map((o) => (
-        <Pill
-          key={o.value || "all-type"}
-          active={(params.get("type") ?? "") === o.value}
-          onClick={() => setParam("type", o.value)}
-        >
-          {o.label}
-        </Pill>
-      ))}
-
-      <span aria-hidden className="h-5 w-px bg-border" />
-
-      {ACCESS_OPTIONS.filter((o) => o.value).map((o) => (
-        <Pill
-          key={o.value}
-          active={params.get("access") === o.value}
-          onClick={() => setParam("access", params.get("access") === o.value ? "" : o.value)}
-        >
-          {o.label}
-        </Pill>
-      ))}
-
-      <span aria-hidden className="h-5 w-px bg-border" />
-
-      {SCORE_OPTIONS.filter((o) => o.value).map((o) => (
-        <Pill
-          key={o.value}
-          active={scoreParam() === o.value}
-          onClick={() => {
-            const next = new URLSearchParams(params.toString());
-            next.delete("moat");
-            if (scoreParam() === o.value) next.delete("score");
-            else next.set("score", o.value);
-            router.replace(`/discover?${next.toString()}`, { scroll: false });
-          }}
-        >
-          {o.label}
-        </Pill>
-      ))}
-
-      <input
-        value={tickerDraft}
-        onChange={(e) => setTickerDraft(e.target.value.toUpperCase())}
-        onKeyDown={(e) => e.key === "Enter" && commitTicker()}
-        onBlur={commitTicker}
-        placeholder="Ticker"
-        aria-label="Filter by ticker"
-        className="num h-8 w-24 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-xs focus-ring placeholder:text-text-faint"
-      />
-
-      {hasFilters && (
+    <div className="rounded-[var(--radius-card)] border border-border bg-surface">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
         <button
           type="button"
-          onClick={() => {
-            const tab = params.get("tab");
-            router.replace(tab ? `/discover?tab=${tab}` : "/discover", { scroll: false });
-          }}
-          className="inline-flex h-8 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-xs text-text-faint transition-colors hover:text-text focus-ring"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className={cn(
+            "inline-flex h-9 items-center gap-2 rounded-[var(--radius-btn)] border px-3 text-xs font-medium transition-colors focus-ring",
+            open || activeCount > 0
+              ? "border-border-strong bg-surface-2 text-text"
+              : "border-border text-text-mute hover:text-text",
+          )}
         >
-          <X size={12} />
-          Clear
+          <SlidersHorizontal size={14} aria-hidden />
+          Filters
+          {activeCount > 0 && (
+            <span className="num rounded-[var(--r-tag)] bg-[var(--ink)] px-1.5 py-px text-[10px] font-semibold text-[var(--paper)]">
+              {activeCount}
+            </span>
+          )}
         </button>
+
+        <input
+          value={tickerDraft}
+          onChange={(e) => setTickerDraft(e.target.value.toUpperCase())}
+          onKeyDown={(e) => e.key === "Enter" && commitTicker()}
+          onBlur={commitTicker}
+          placeholder="Ticker"
+          aria-label="Filter by ticker"
+          className="num h-9 w-28 rounded-[var(--radius-btn)] border border-border bg-paper px-2.5 text-xs focus-ring placeholder:text-text-faint"
+        />
+
+        {activeCount > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const tab = params.get("tab");
+              startTransition(() => {
+                router.replace(tab ? `/discover?tab=${tab}` : "/discover", { scroll: false });
+              });
+              setTickerDraft("");
+            }}
+            className="inline-flex h-9 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-xs text-text-faint transition-colors hover:text-text focus-ring"
+          >
+            <X size={12} aria-hidden />
+            Clear
+          </button>
+        )}
+
+        {pending && <span className="t-meta ml-auto text-[11px]">Updating…</span>}
+      </div>
+
+      {open && (
+        <div className="grid gap-3 border-t border-border px-3 py-3 sm:grid-cols-2 lg:grid-cols-5">
+          <label className="flex flex-col gap-1.5">
+            <span className="t-meta text-[10px] uppercase tracking-wider">Type</span>
+            <select
+              className={selectClass}
+              value={params.get("type") ?? ""}
+              onChange={(e) => setParam("type", e.target.value)}
+            >
+              {TYPE_OPTIONS.map((o) => (
+                <option key={o.value || "all-type"} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="t-meta text-[10px] uppercase tracking-wider">Access</span>
+            <select
+              className={selectClass}
+              value={params.get("access") ?? ""}
+              onChange={(e) => setParam("access", e.target.value)}
+            >
+              {ACCESS_OPTIONS.map((o) => (
+                <option key={o.value || "any-access"} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="t-meta text-[10px] uppercase tracking-wider">Call status</span>
+            <select
+              className={selectClass}
+              value={params.get("status") ?? ""}
+              onChange={(e) => setParam("status", e.target.value)}
+            >
+              {STATUS_OPTIONS.map((o) => (
+                <option key={o.value || "any-status"} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="t-meta text-[10px] uppercase tracking-wider">Track Score</span>
+            <select
+              className={selectClass}
+              value={scoreValue}
+              onChange={(e) => setParam("score", e.target.value)}
+            >
+              {SCORE_OPTIONS.map((o) => (
+                <option key={o.value || "any-score"} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="t-meta text-[10px] uppercase tracking-wider">Market cap</span>
+            <select
+              className={selectClass}
+              value={params.get("mcap") ?? ""}
+              onChange={(e) => setParam("mcap", e.target.value)}
+            >
+              {MCAP_OPTIONS.map((o) => (
+                <option key={o.value || "any-mcap"} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       )}
     </div>
   );

@@ -152,7 +152,7 @@ function RangeRow({
       <div className="mb-2 flex justify-between text-xs text-text-mute">
         <span>{label}</span>
         <span className="num">
-          ${low.toFixed(2)} – ${high.toFixed(2)}
+          ${low.toFixed(2)} to ${high.toFixed(2)}
         </span>
       </div>
       <div className="relative h-2 rounded-full bg-surface-2">

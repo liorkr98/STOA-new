@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Lock, MessageCircle, Heart } from "lucide-react";
+import { Lock, MessageCircle, Heart, Eye } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
 import type { Report } from "@/lib/types";
@@ -52,8 +52,7 @@ export function ReportBlock({
     <article
       className={cn(
         "group relative flex h-full flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-5",
-        "transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)]",
-        "hover:-translate-y-0.5 hover:border-border-strong",
+        "transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
         size === "lead" && "sm:p-7",
       )}
     >
@@ -68,7 +67,7 @@ export function ReportBlock({
           </span>
         )}
         {prediction?.direction && <DirectionTag direction={prediction.direction} />}
-        {prediction?.target_price != null && (
+        {!locked && prediction?.target_price != null && (
           <span className="num text-text-faint">
             Target ${prediction.target_price.toFixed(0)}
           </span>
@@ -144,10 +143,18 @@ export function ReportBlock({
                 {author.display_name}
               </span>
             </Link>
-            <TrackScoreBadge handle={author.handle} score={author.score || null} size="sm" />
+            <TrackScoreBadge
+              handle={author.handle}
+              score={author.score || null}
+              sampleSize={author.sample_size}
+              size="sm"
+            />
           </>
         )}
         <span className="ml-auto flex shrink-0 items-center gap-3 text-[11px] text-text-faint">
+          <span className="num inline-flex items-center gap-1" title="Views">
+            <Eye size={11} aria-hidden /> {compact(report.views)}
+          </span>
           <span className="num inline-flex items-center gap-1">
             <Heart size={11} aria-hidden /> {compact(report.likes)}
           </span>

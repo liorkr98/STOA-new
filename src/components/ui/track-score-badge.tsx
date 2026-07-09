@@ -24,8 +24,6 @@ function Wrapper({
   title?: string;
   children: React.ReactNode;
 }) {
-  // linked=false when an ancestor is already an <a> (e.g. AnalystCard) --
-  // nested anchors are invalid HTML and break hydration.
   if (!linked) {
     return (
       <span className={className} title={title}>
@@ -42,8 +40,7 @@ function Wrapper({
 
 /**
  * Track Score badge. Public analyst track-record grade (0-100).
- * Links to `/analyst/{handle}/score` unless `linked={false}`.
- * sampleSize gates the provisional note.
+ * Sized up so the number reads as a primary trust signal, not a chip.
  */
 export function TrackScoreBadge({
   handle,
@@ -73,13 +70,13 @@ export function TrackScoreBadge({
         linked={linked}
         href={href}
         className={cn(
-          "inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
+          "inline-flex items-center gap-1.5 rounded-[var(--r-tag)] px-1.5 py-0.5 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
           className,
         )}
         title={empty ? "Not yet scored" : `Track Score ${score}`}
       >
-        <SealDot color={color} />
-        <span className="num text-xs font-semibold" style={{ color }}>
+        <SealDot color={color} size={18} />
+        <span className="num text-base font-semibold tabular-nums" style={{ color }}>
           {empty ? "-" : score}
         </span>
       </Wrapper>
@@ -92,16 +89,22 @@ export function TrackScoreBadge({
         linked={linked}
         href={href}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
+          "inline-flex items-center gap-2 rounded-[var(--r-tag)] border border-border bg-surface px-2.5 py-1.5 transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring",
           className,
         )}
+        title={empty ? "Not yet scored" : `Track Score ${score}`}
       >
-        <SealDot color={color} />
-        <span className="num text-sm font-semibold" style={{ color }}>
-          {empty ? "- Track" : score}
+        <SealDot color={color} size={26} />
+        <span className="flex flex-col leading-none">
+          <span className="num text-2xl font-semibold tabular-nums" style={{ color }}>
+            {empty ? "-" : score}
+          </span>
+          <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-faint">
+            Track
+          </span>
         </span>
         {!empty && hitRate != null && (
-          <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
+          <span className="t-meta hidden sm:inline">&middot; {Math.round(hitRate * 100)}% hit</span>
         )}
       </Wrapper>
     );
@@ -112,14 +115,14 @@ export function TrackScoreBadge({
       linked={linked}
       href={href}
       className={cn(
-        "ledger-card flex items-center gap-4 p-4 transition-transform active:scale-[0.99] focus-ring",
+        "ledger-card flex items-center gap-5 p-5 transition-transform active:scale-[0.99] focus-ring",
         className,
       )}
     >
-      <SealDot color={color} size={40} />
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-baseline gap-2">
-          <span className="num text-3xl font-semibold leading-none" style={{ color }}>
+      <SealDot color={color} size={52} />
+      <div className="flex flex-col gap-1">
+        <div className="flex items-baseline gap-2.5">
+          <span className="num text-5xl font-semibold leading-none tabular-nums" style={{ color }}>
             {empty ? "-" : score}
           </span>
           <span className="t-eyebrow">Track Score</span>
@@ -147,7 +150,7 @@ function SealDot({ color, size = 14 }: { color: string; size?: number }) {
     <span
       aria-hidden
       className="inline-block shrink-0 rounded-full"
-      style={{ width: size, height: size, border: `2px solid ${color}` }}
+      style={{ width: size, height: size, border: `2.5px solid ${color}` }}
     />
   );
 }

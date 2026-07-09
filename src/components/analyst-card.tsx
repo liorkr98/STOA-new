@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
 import type { Profile } from "@/lib/types";
@@ -35,7 +35,7 @@ export function AnalystCard({
             <span className="flex items-center gap-1.5 font-semibold leading-tight">
               {analyst.display_name}
               {analyst.verified && (
-                <SealCheck size={15} weight="fill" className="text-accent" />
+                <BadgeCheck size={15} className="text-accent" aria-label="Verified" />
               )}
             </span>
             <span className="t-meta">@{analyst.handle}</span>

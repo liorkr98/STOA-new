@@ -42,6 +42,7 @@ export function DispatchLead({
   const { report, author, prediction, headline, dek } = story;
   const ticker = (report.ticker ?? prediction?.ticker ?? "").toUpperCase();
   const centered = align === "center";
+  const showTarget = report.access === "free";
 
   return (
     <FadeIn>
@@ -57,12 +58,12 @@ export function DispatchLead({
             </span>
           )}
           {prediction && <DirectionTag direction={prediction.direction} />}
-          {prediction?.target_price != null && (
+          {showTarget && prediction?.target_price != null && (
             <span className="num text-xs text-text-mute">
               Target ${prediction.target_price.toFixed(2)}
             </span>
           )}
-          {prediction?.target_horizon_date && (
+          {showTarget && prediction?.target_horizon_date && (
             <span className="num text-xs text-text-faint">
               by{" "}
               {new Date(prediction.target_horizon_date).toLocaleDateString("en-US", {
