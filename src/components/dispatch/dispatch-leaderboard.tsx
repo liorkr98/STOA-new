@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import type { DispatchLeaderboardEntry } from "@/lib/dispatch/types";
 
 export function DispatchLeaderboard({ entries }: { entries: DispatchLeaderboardEntry[] }) {
@@ -30,7 +30,7 @@ export function DispatchLeaderboard({ entries }: { entries: DispatchLeaderboardE
               </Link>
             </div>
             <div className="flex shrink-0 items-center gap-3">
-              <MoatBadge handle={entry.analyst.handle} score={entry.analyst.score || null} size="sm" />
+              <TrackScoreBadge handle={entry.analyst.handle} score={entry.analyst.score || null} size="sm" />
               <span className="num hidden text-text-faint text-xs sm:inline">
                 {entry.resolvedCalls} resolved
               </span>

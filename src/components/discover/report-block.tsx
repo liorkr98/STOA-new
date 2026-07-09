@@ -6,7 +6,7 @@ import { compact } from "@/lib/format";
 import type { Report } from "@/lib/types";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { Avatar } from "@/components/ui/avatar";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { DirectionTag } from "@/components/ui/tag";
 
@@ -144,7 +144,7 @@ export function ReportBlock({
                 {author.display_name}
               </span>
             </Link>
-            <MoatBadge handle={author.handle} score={author.score || null} size="sm" />
+            <TrackScoreBadge handle={author.handle} score={author.score || null} size="sm" />
           </>
         )}
         <span className="ml-auto flex shrink-0 items-center gap-3 text-[11px] text-text-faint">

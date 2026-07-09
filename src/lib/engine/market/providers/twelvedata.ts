@@ -22,7 +22,7 @@ export const twelveDataProvider: MarketProvider = {
       if (json.status === "error") return null;
       const price = Number(json.price);
       if (!price || price <= 0) return null;
-      return { symbol: sym, price, mock: false, source: "twelvedata" };
+      return { symbol: sym, price, mock: false, available: true, source: "twelvedata" };
     } catch {
       return null;
     }

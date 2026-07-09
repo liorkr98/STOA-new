@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
 /**
@@ -61,7 +61,7 @@ export function DispatchStoryList({
                 >
                   {story.author.display_name}
                 </Link>
-                <MoatBadge
+                <TrackScoreBadge
                   handle={story.author.handle}
                   score={story.author.score || null}
                   size="sm"

@@ -13,7 +13,7 @@ import { compact, usd, pct } from "@/lib/format";
 import { buttonClass } from "@/components/ui/button";
 import { Stat } from "@/components/ui/stat";
 import { GradeTag } from "@/components/ui/tag";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StudioPublishedList } from "@/components/studio/studio-published-list";
 
@@ -48,7 +48,7 @@ export default async function StudioOverview() {
       </div>
 
       <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-        <MoatBadge
+        <TrackScoreBadge
           handle={profile.handle}
           score={stats.score || null}
           hitRate={stats.winRate}

@@ -11,8 +11,8 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "The moat moves",
-    body: "Every resolution updates the analyst's MOAT score, a 0 to 100 track-record grade you can check before you trust a word.",
+    title: "The score moves",
+    body: "Every resolution updates the analyst's Track Score, a 0 to 100 track-record grade you can check before you trust a word.",
   },
 ] as const;
 

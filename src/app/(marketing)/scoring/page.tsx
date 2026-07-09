@@ -5,7 +5,7 @@ import { TIERS } from "@/lib/engine/score";
 
 export const metadata: Metadata = {
   title: "Scoring methodology",
-  description: "How Stoa grades analyst calls and computes the public MOAT score.",
+  description: "How Stoa grades analyst calls and computes the public Track Score.",
 };
 
 export default function ScoringPage() {
@@ -26,7 +26,7 @@ export default function ScoringPage() {
           <li>An analyst publishes a call with ticker, direction, optional target, and horizon.</li>
           <li>Stoa locks the entry price from the live feed and captures SPY as the benchmark.</li>
           <li>When the horizon ends, the grading job fetches resolved prices and assigns an outcome.</li>
-          <li>The MOAT score (0-100) updates on the analyst profile.</li>
+          <li>The Track Score (0-100) updates on the analyst profile.</li>
         </ol>
       </section>
 
@@ -50,8 +50,8 @@ export default function ScoringPage() {
         </div>
       </section>
 
-      <section id="moat-score" className="scroll-mt-20 rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">MOAT score (0-100)</h2>
+      <section id="track-score" className="scroll-mt-20 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <h2 className="t-h2">Track Score (0-100)</h2>
         <ul className="mt-4 space-y-3 text-sm text-text-mute">
           <li>
             <strong className="text-text">Win rate</strong>: Wilson lower bound on time-weighted
@@ -82,8 +82,8 @@ export default function ScoringPage() {
         <h2 className="t-h2">Sample confidence bands</h2>
         <p className="t-meta mt-2">
           Not a second badge. These bands explain how many resolved calls the engine needs before a
-          MOAT score is shown with full confidence. The number on every profile is still just MOAT
-          0-100.
+          Track Score is shown with full confidence. The number on every profile is still just Track
+          Score 0-100.
         </p>
         <div className="mt-4 flex flex-col gap-3">
           {TIERS.map((t) => (

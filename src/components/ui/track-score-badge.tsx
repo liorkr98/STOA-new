@@ -4,7 +4,7 @@ import { cn } from "@/lib/design/cn";
 type Size = "sm" | "md" | "lg";
 
 /**
- * MOAT is a trust score, not market sentiment. Always ink (or brass when
+ * Track Score is a trust score, not market sentiment. Always ink (or brass when
  * provisional). Verdigris/rust stay reserved for hit/miss and fact-check.
  */
 function scoreColor(provisional: boolean) {
@@ -41,14 +41,11 @@ function Wrapper({
 }
 
 /**
- * Appears everywhere a creator's name does. Links to that creator's MOAT
- * Analytics unless `linked={false}` (use when already nested inside another
- * link, e.g. AnalystCard). sampleSize gates the "provisional" note -- the
- * engine's own sample-ramp confidence weighting already discounts small
- * samples in `score` itself; this just surfaces that honestly rather than
- * presenting a six-call score with the same confidence as a sixty-call one.
+ * Track Score badge. Public analyst track-record grade (0-100).
+ * Links to `/analyst/{handle}/score` unless `linked={false}`.
+ * sampleSize gates the provisional note.
  */
-export function MoatBadge({
+export function TrackScoreBadge({
   handle,
   score,
   hitRate,
@@ -68,7 +65,7 @@ export function MoatBadge({
   const empty = score == null;
   const provisional = sampleSize != null && sampleSize < 10;
   const color = empty ? "var(--text-faint)" : scoreColor(provisional);
-  const href = `/analyst/${handle}/moat`;
+  const href = `/analyst/${handle}/score`;
 
   if (size === "sm") {
     return (
@@ -79,7 +76,7 @@ export function MoatBadge({
           "inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1 -mx-1 transition-colors hover:bg-surface-2 focus-ring",
           className,
         )}
-        title={empty ? "Not yet scored" : `MOAT ${score}`}
+        title={empty ? "Not yet scored" : `Track Score ${score}`}
       >
         <SealDot color={color} />
         <span className="num text-xs font-semibold" style={{ color }}>
@@ -101,7 +98,7 @@ export function MoatBadge({
       >
         <SealDot color={color} />
         <span className="num text-sm font-semibold" style={{ color }}>
-          {empty ? "- MOAT" : score}
+          {empty ? "- Track" : score}
         </span>
         {!empty && hitRate != null && (
           <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
@@ -125,7 +122,7 @@ export function MoatBadge({
           <span className="num text-3xl font-semibold leading-none" style={{ color }}>
             {empty ? "-" : score}
           </span>
-          <span className="t-eyebrow">MOAT</span>
+          <span className="t-eyebrow">Track Score</span>
         </div>
         {empty ? (
           <span className="t-meta">Not yet scored</span>
@@ -141,6 +138,9 @@ export function MoatBadge({
     </Wrapper>
   );
 }
+
+/** @deprecated Use TrackScoreBadge */
+export const MoatBadge = TrackScoreBadge;
 
 function SealDot({ color, size = 14 }: { color: string; size?: number }) {
   return (

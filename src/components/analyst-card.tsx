@@ -4,7 +4,7 @@ import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
 import type { Profile } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
-import { MoatBadge } from "./ui/moat-badge";
+import { TrackScoreBadge } from "./ui/track-score-badge";
 import { Sparkline } from "./charts/sparkline";
 
 export function AnalystCard({
@@ -47,7 +47,7 @@ export function AnalystCard({
               Promoted
             </span>
           )}
-          <MoatBadge
+          <TrackScoreBadge
           handle={analyst.handle}
           score={analyst.score || null}
           sampleSize={resolvedCalls}

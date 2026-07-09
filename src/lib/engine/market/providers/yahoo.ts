@@ -1,11 +1,20 @@
 import YahooFinance from "yahoo-finance2";
 import type { MarketProvider, Quote } from "../types";
 
-const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
+const yahooFinance = new YahooFinance({
+  suppressNotices: ["yahooSurvey"],
+  queue: { concurrency: 2, interval: 250 },
+});
 
 function toQuote(symbol: string, price: number | null | undefined): Quote | null {
   if (!price || price <= 0) return null;
-  return { symbol: symbol.toUpperCase(), price, mock: false, source: "yahoo" };
+  return {
+    symbol: symbol.toUpperCase(),
+    price,
+    mock: false,
+    available: true,
+    source: "yahoo",
+  };
 }
 
 function extractPrice(result: unknown): Quote | null {

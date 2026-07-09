@@ -32,6 +32,8 @@ interface DiscoverParams {
   tab?: string;
   type?: string;
   access?: string;
+  score?: string;
+  /** @deprecated Use `score` */
   moat?: string;
   ticker?: string;
 }
@@ -45,9 +47,9 @@ function applyFilters(reports: Report[], params: DiscoverParams): Report[] {
   if (params.access === "free" || params.access === "paid" || params.access === "subscribers") {
     out = out.filter((r) => r.access === params.access);
   }
-  const minMoat = Number(params.moat);
-  if (minMoat > 0) {
-    out = out.filter((r) => (r.author?.score ?? 0) >= minMoat);
+  const minScore = Number(params.score ?? params.moat);
+  if (minScore > 0) {
+    out = out.filter((r) => (r.author?.score ?? 0) >= minScore);
   }
   if (params.ticker) {
     const t = params.ticker.toUpperCase();
@@ -122,7 +124,9 @@ export default async function DiscoverPage({
   }
 
   const filtered = reports ? applyFilters(reports, params) : undefined;
-  const filtersActive = Boolean(params.type || params.access || params.moat || params.ticker);
+  const filtersActive = Boolean(
+    params.type || params.access || params.score || params.moat || params.ticker,
+  );
 
   return (
     <div className="flex flex-col gap-5">

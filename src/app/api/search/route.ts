@@ -47,8 +47,16 @@ export async function GET(req: Request) {
     };
 
     return NextResponse.json({
-      creators: (payload.creators ?? []).map(({ sim: _sim, ...rest }) => rest),
-      tickers: (payload.tickers ?? []).map(({ sim: _sim, ...rest }) => rest),
+      creators: (payload.creators ?? []).map((row) => {
+        const rest = { ...row };
+        delete rest.sim;
+        return rest;
+      }),
+      tickers: (payload.tickers ?? []).map((row) => {
+        const rest = { ...row };
+        delete rest.sim;
+        return rest;
+      }),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "search failed";

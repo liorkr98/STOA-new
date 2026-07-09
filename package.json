@@ -9,6 +9,12 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "supabase:start": "pnpm dlx supabase start",
+    "supabase:stop": "pnpm dlx supabase stop",
+    "supabase:status": "pnpm dlx supabase status",
+    "supabase:projects": "pnpm dlx supabase projects list",
+    "supabase:functions:list": "pnpm dlx supabase functions list --project-ref $SUPABASE_PROJECT_REF",
+    "supabase:functions:deploy:attest-price": "pnpm dlx supabase functions deploy attest-price --project-ref $SUPABASE_PROJECT_REF",
     "seed": "tsx scripts/seed.ts",
     "grade": "tsx scripts/grade.ts",
     "import:kaggle": "tsx scripts/import-kaggle.ts",
@@ -72,7 +78,6 @@
     "eslint-config-next": "^15.1.6",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
-    "vercel": "^54.20.1"
+    "typescript": "^5.7.2"
   }
 }

@@ -15,7 +15,7 @@ export default async function MarketsPage() {
     UNIVERSE.map(async (u) => ({ ...u, quote: await getQuote(u.ticker), cover: coverage[u.ticker] ?? 0 })),
   );
   rows.sort((a, b) => b.cover - a.cover);
-  const anyMock = rows.some((r) => r.quote.mock);
+  const anyUnavailable = rows.some((r) => !r.quote.available || r.quote.price == null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,7 +40,9 @@ export default async function MarketsPage() {
               </div>
               <div className="flex items-start gap-1">
                 <div className="text-right">
-                  <div className="num text-lg font-semibold">${price(r.quote.price)}</div>
+                  <div className="num text-lg font-semibold">
+                    {r.quote.available && r.quote.price != null ? `$${price(r.quote.price)}` : "—"}
+                  </div>
                   <div className="t-meta">{r.sector}</div>
                 </div>
                 <WatchlistButton ticker={r.ticker} className="-mr-2 -mt-1" />
@@ -51,10 +53,10 @@ export default async function MarketsPage() {
         ))}
       </div>
 
-      {anyMock && (
+      {anyUnavailable && (
         <p className="t-meta">
-          Some prices could not be fetched live and are simulated. Yahoo Finance is the default
-          feed; optional fallback keys: TWELVE_DATA_API_KEY, ALPHA_VANTAGE_API_KEY.
+          Some live quotes are temporarily unavailable. Yahoo Finance is the default feed; optional
+          fallback keys: TWELVE_DATA_API_KEY, ALPHA_VANTAGE_API_KEY.
         </p>
       )}
     </div>

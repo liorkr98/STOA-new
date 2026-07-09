@@ -5,27 +5,23 @@ import { listTopAnalysts } from "@/lib/db/profiles";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { compact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { sampleAnalysts } from "@/lib/sample";
 
 export const metadata: Metadata = { title: "Leaderboard" };
 
 export default async function LeaderboardPage() {
   const raw = await listTopAnalysts(50);
-  const analysts =
-    raw.length > 0
-      ? await Promise.all(
-          raw.map(async (a) => ({ ...a, resolved: await resolvedCountByAuthor(a.id) })),
-        )
-      : sampleAnalysts.map((a) => ({ ...a, resolved: a.resolved }));
+  const analysts = await Promise.all(
+    raw.map(async (a) => ({ ...a, resolved: await resolvedCountByAuthor(a.id) })),
+  );
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
         <h1 className="t-h1">Leaderboard</h1>
         <p className="t-body mt-1">
-          Ranked by MOAT score (0-100): win rate, profit factor, alpha, and consistency over
+          Ranked by Track Score (0-100): win rate, profit factor, alpha, and consistency over
           resolved calls.
         </p>
       </div>
@@ -53,7 +49,7 @@ export default async function LeaderboardPage() {
                     @{a.handle} · <span className="num">{compact(a.followers_count)}</span> followers
                   </div>
                 </div>
-                <MoatBadge handle={a.handle} score={a.score || null} sampleSize={a.resolved} linked={false} />
+                <TrackScoreBadge handle={a.handle} score={a.score || null} sampleSize={a.resolved} linked={false} />
               </Link>
             </li>
           ))}

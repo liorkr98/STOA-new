@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SealStamp } from "@/components/ui/seal-stamp";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
@@ -44,15 +44,15 @@ export default function ComponentPreviewPage() {
     <div className="min-h-screen bg-paper p-12">
       <p className="t-eyebrow mb-8">Scratch preview -- delete before ship</p>
 
-      <p className="t-eyebrow mb-4">MoatBadge</p>
+      <p className="t-eyebrow mb-4">TrackScoreBadge</p>
       <div className="flex flex-wrap items-center gap-8 mb-12">
-        <MoatBadge handle="maren_vos" score={78} hitRate={0.64} size="sm" />
-        <MoatBadge handle="maren_vos" score={78} hitRate={0.64} size="md" />
-        <MoatBadge handle="maren_vos" score={32} hitRate={0.3} size="md" />
-        <MoatBadge handle="new_analyst" score={null} size="md" />
-        <MoatBadge handle="maren_vos" score={78} hitRate={0.64} sampleSize={14} size="lg" />
-        <MoatBadge handle="new_analyst" score={55} hitRate={0.5} sampleSize={4} size="lg" />
-        <MoatBadge handle="new_analyst" score={null} size="lg" />
+        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} size="sm" />
+        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} size="md" />
+        <TrackScoreBadge handle="maren_vos" score={32} hitRate={0.3} size="md" />
+        <TrackScoreBadge handle="new_analyst" score={null} size="md" />
+        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} sampleSize={14} size="lg" />
+        <TrackScoreBadge handle="new_analyst" score={55} hitRate={0.5} sampleSize={4} size="lg" />
+        <TrackScoreBadge handle="new_analyst" score={null} size="lg" />
       </div>
 
       <p className="t-eyebrow mb-4">StatusChip</p>
