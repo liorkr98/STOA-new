@@ -7,15 +7,20 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FilterBar } from "@/components/discover/filter-bar";
 import { ReportBlock } from "@/components/discover/report-block";
-import { listFeed, listFeedFromAnalysts, getReportsByIds } from "@/lib/db/reports";
+import {
+  listFeed,
+  listFeedFromAnalysts,
+  getReportsByIds,
+  type FeedFilters,
+} from "@/lib/db/reports";
 import { listTopAnalysts, getProfilesByIds } from "@/lib/db/profiles";
 import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { QuickPost } from "@/components/feed/quick-post";
-import { tickerMatchesCapBand, type CapBand } from "@/lib/market/cap-bands";
-import type { ContentType, Report } from "@/lib/types";
+import type { CapBand } from "@/lib/market/cap-bands";
+import type { AccessType, ContentType, Report } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Discover" };
 
@@ -29,6 +34,7 @@ const TABS = [
 
 const CONTENT_TYPES: ContentType[] = ["research", "call", "short_post"];
 const CAP_BANDS: CapBand[] = ["mega", "large", "mid", "small"];
+const ACCESS_TYPES: AccessType[] = ["free", "paid", "subscribers"];
 
 interface DiscoverParams {
   tab?: string;
@@ -42,37 +48,24 @@ interface DiscoverParams {
   mcap?: string;
 }
 
-/** Post-fetch filters (access/score/ticker act on the fetched page of results). */
-function applyFilters(reports: Report[], params: DiscoverParams): Report[] {
-  let out = reports;
+function parseFeedFilters(params: DiscoverParams): FeedFilters {
+  const filters: FeedFilters = {};
   if (params.type && CONTENT_TYPES.includes(params.type as ContentType)) {
-    out = out.filter((r) => r.type === params.type);
+    filters.type = params.type as ContentType;
   }
-  if (params.access === "free" || params.access === "paid" || params.access === "subscribers") {
-    out = out.filter((r) => r.access === params.access);
+  if (params.access && ACCESS_TYPES.includes(params.access as AccessType)) {
+    filters.access = params.access as AccessType;
   }
   const minScore = Number(params.score ?? params.moat);
-  if (minScore > 0) {
-    out = out.filter((r) => (r.author?.score ?? 0) >= minScore);
-  }
-  if (params.ticker) {
-    const t = params.ticker.toUpperCase();
-    out = out.filter(
-      (r) => (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase() === t,
-    );
-  }
-  if (params.status === "open") {
-    out = out.filter((r) => r.prediction != null && r.prediction.outcome === "open");
-  } else if (params.status === "resolved") {
-    out = out.filter((r) => r.prediction != null && r.prediction.outcome !== "open");
+  if (minScore > 0) filters.minScore = minScore;
+  if (params.ticker?.trim()) filters.ticker = params.ticker.trim().toUpperCase();
+  if (params.status === "open" || params.status === "resolved") {
+    filters.status = params.status;
   }
   if (params.mcap && CAP_BANDS.includes(params.mcap as CapBand)) {
-    const band = params.mcap as CapBand;
-    out = out.filter((r) =>
-      tickerMatchesCapBand(r.ticker ?? r.prediction?.ticker ?? null, band),
-    );
+    filters.mcap = params.mcap as CapBand;
   }
-  return out;
+  return filters;
 }
 
 /** Mosaic span classes: first block leads wide, second stacks beside it, rest tile 3-up. */
@@ -91,6 +84,8 @@ export default async function DiscoverPage({
   const tab = params.tab ?? "trending";
   const profile = await getSessionProfile();
   const userId = profile?.id ?? null;
+  const filters = parseFeedFilters(params);
+  const filtersActive = Object.keys(filters).length > 0;
 
   let reports: Report[] | undefined;
   let researchers: Awaited<ReturnType<typeof listTopAnalysts>> = [];
@@ -118,14 +113,14 @@ export default async function DiscoverPage({
     );
   } else if (tab === "following") {
     if (!userId) needsAuth = true;
-    else reports = await listFeedFromAnalysts(await followedAnalystIds(userId));
+    else reports = await listFeedFromAnalysts(await followedAnalystIds(userId), 36, filters);
   } else if (tab === "subscriptions") {
     if (!userId) needsAuth = true;
-    else reports = await listFeedFromAnalysts(await subscribedAnalystIds(userId));
+    else reports = await listFeedFromAnalysts(await subscribedAnalystIds(userId), 36, filters);
   } else {
     const sort = tab === "recent" ? "recent" : "trending";
-    reports = await listFeed({ sort, limit: 36 });
-    if (sort === "trending") {
+    reports = await listFeed({ sort, limit: 36, filters });
+    if (sort === "trending" && !filtersActive) {
       try {
         const boostedIds = await listBoostedReportIds("feed_trending", 2);
         promotedReportIds = new Set(boostedIds);
@@ -137,17 +132,6 @@ export default async function DiscoverPage({
       }
     }
   }
-
-  const filtered = reports ? applyFilters(reports, params) : undefined;
-  const filtersActive = Boolean(
-    params.type ||
-      params.access ||
-      params.score ||
-      params.moat ||
-      params.ticker ||
-      params.status ||
-      params.mcap,
-  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -197,9 +181,9 @@ export default async function DiscoverPage({
             body="Once analysts publish and build track records, they will appear here."
           />
         )
-      ) : filtered && filtered.length > 0 ? (
+      ) : reports && reports.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          {filtered.map((r, i) => (
+          {reports.map((r, i) => (
             <div key={r.id} className={`${blockSpan(i)} h-full`}>
               <ReportBlock
                 report={r}
@@ -215,7 +199,7 @@ export default async function DiscoverPage({
           title={filtersActive ? "Nothing matches these filters" : "Nothing here yet"}
           body={
             filtersActive
-              ? "Loosen a filter or clear them to see everything in this tab."
+              ? "Filters search published research across the catalog. Loosen a filter or clear them to see more."
               : tab === "following" || tab === "subscriptions"
                 ? "Follow or subscribe to analysts and their work will show up here."
                 : "Once analysts publish, their research will appear here."

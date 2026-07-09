@@ -2,11 +2,8 @@
 
 import { useMemo, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { MessageCircle } from "lucide-react";
 import type { ClaimType, FactClaim } from "@/lib/ai/fact-check";
-import { DebateThread } from "@/components/report/debate-thread";
 import { ClaimVoteBar } from "@/components/report/claim-vote-bar";
-import type { Comment } from "@/lib/types";
 
 export type Verdict = "fact" | "unproven" | "opinion" | "contradicted";
 
@@ -161,8 +158,6 @@ export function ClaimMark({
 }) {
   const [open, setOpen] = useState(false);
   const [instant, setInstant] = useState(false);
-  const [debateOpen, setDebateOpen] = useState(false);
-  const [replies, setReplies] = useState<Comment[]>([]);
   const verdict = verdictOf(claim);
   const { color, label } = VERDICT_STYLE[verdict];
 
@@ -176,98 +171,52 @@ export function ClaimMark({
     setOpen(next);
   }
 
-  function addLocalReply(body: string) {
-    // Not persisted -- debate_threads/debate_replies don't exist yet (see
-    // BACKEND_DATA_CONTRACTS.md). Optimistic local append proves the UI;
-    // swap for a server action once that table lands.
-    setReplies((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        report_id: "",
-        author_id: "",
-        body,
-        likes: 0,
-        created_at: new Date().toISOString(),
-      },
-    ]);
-  }
-
   return (
-    <>
-      <Popover.Root open={open} onOpenChange={setOpenGrouped}>
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            data-claim-verdict={verdict}
-            aria-label={`Fact-check: ${label}. Activate for details.`}
-            aria-expanded={open}
-            className="cursor-pointer rounded-sm underline decoration-2 underline-offset-2 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:bg-surface-2 focus-ring"
-            style={{ textDecorationColor: color }}
-            onClick={() => setOpenGrouped(!open)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape" && open) {
-                e.preventDefault();
-                setOpenGrouped(false);
-              }
-            }}
-          >
-            {children}
-            {verdict === "opinion" && (
-              <MessageCircle size={12} className="ml-0.5 inline align-super fill-current" style={{ color }} />
-            )}
-          </button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            className={`popover-content ledger-card z-40 max-w-xs p-3 text-sm ${instant ? "popover-instant" : ""}`}
-            sideOffset={6}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onEscapeKeyDown={() => setOpenGrouped(false)}
-          >
-            <div className="mb-1 flex items-center gap-1.5">
-              <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
-              <span className="t-eyebrow" style={{ color }}>
-                {label}
-              </span>
-              {claim.confidence && <span className="t-meta">&middot; {claim.confidence} confidence</span>}
-            </div>
-            {claim.note && <p className="t-body">{claim.note}</p>}
-            {claim.yahooCheck && (
-              <p className="t-meta mt-1" style={{ color: claim.yahooCheck.match ? "var(--verdigris)" : "var(--rust)" }}>
-                Yahoo: {claim.yahooCheck.detail}
-              </p>
-            )}
-            {verdict === "opinion" && (
-              <button
-                type="button"
-                className="t-meta mt-2 inline-flex items-center gap-1 underline hover:no-underline"
-                onClick={() => {
-                  setOpen(false);
-                  setDebateOpen(true);
-                }}
-              >
-                <MessageCircle size={12} className="fill-current" />
-                Debate this claim
-              </button>
-            )}
-            {reportId && open && (
-              <ClaimVoteBar reportId={reportId} claimText={claim.text} isAuthed={isAuthed} />
-            )}
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
-
-      {verdict === "opinion" && (
-        <DebateThread
-          open={debateOpen}
-          onOpenChange={setDebateOpen}
-          claimText={claim.text}
-          replies={replies}
-          onReply={addLocalReply}
-          isAuthed={isAuthed}
-        />
-      )}
-    </>
+    <Popover.Root open={open} onOpenChange={setOpenGrouped}>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          data-claim-verdict={verdict}
+          aria-label={`Fact-check: ${label}. Activate for details.`}
+          aria-expanded={open}
+          className="cursor-pointer rounded-sm underline decoration-2 underline-offset-2 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:bg-surface-2 focus-ring"
+          style={{ textDecorationColor: color }}
+          onClick={() => setOpenGrouped(!open)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && open) {
+              e.preventDefault();
+              setOpenGrouped(false);
+            }
+          }}
+        >
+          {children}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          className={`popover-content ledger-card z-40 max-w-xs p-3 text-sm ${instant ? "popover-instant" : ""}`}
+          sideOffset={6}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onEscapeKeyDown={() => setOpenGrouped(false)}
+        >
+          <div className="mb-1 flex items-center gap-1.5">
+            <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
+            <span className="t-eyebrow" style={{ color }}>
+              {label}
+            </span>
+            {claim.confidence && <span className="t-meta">&middot; {claim.confidence} confidence</span>}
+          </div>
+          {claim.note && <p className="t-body">{claim.note}</p>}
+          {claim.yahooCheck && (
+            <p className="t-meta mt-1" style={{ color: claim.yahooCheck.match ? "var(--verdigris)" : "var(--rust)" }}>
+              Yahoo: {claim.yahooCheck.detail}
+            </p>
+          )}
+          {reportId && open && (
+            <ClaimVoteBar reportId={reportId} claimText={claim.text} isAuthed={isAuthed} />
+          )}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

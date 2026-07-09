@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LockSimpleOpen } from "@phosphor-icons/react";
+import { LockOpen } from "lucide-react";
 import { usePurchaseReport } from "@/hooks/use-spend";
 import { Button, buttonClass } from "@/components/ui/button";
 import { usd } from "@/lib/format";
@@ -26,7 +26,7 @@ export function BuyReportButton({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("primary", "lg")}>
+      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
         Sign in to unlock
       </Link>
     );
@@ -34,8 +34,8 @@ export function BuyReportButton({
 
   return (
     <>
-      <Button size="lg" onClick={() => setOpen(true)}>
-        <LockSimpleOpen size={18} weight="bold" />
+      <Button variant="secondary" size="lg" className="w-full" onClick={() => setOpen(true)}>
+        <LockOpen size={18} aria-hidden />
         Unlock for {usd(price)}
       </Button>
       <ConfirmSpendDialog

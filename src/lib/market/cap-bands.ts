@@ -33,3 +33,10 @@ export function tickerMatchesCapBand(
 ): boolean {
   return capBandForTicker(ticker) === band;
 }
+
+/** Tickers known to fall in a band (for server-side Discover filtering). */
+export function tickersInCapBand(band: CapBand): string[] {
+  return Object.entries(BAND_BY_TICKER)
+    .filter(([, b]) => b === band)
+    .map(([ticker]) => ticker);
+}

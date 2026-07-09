@@ -35,7 +35,7 @@ export function PlanPicker({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("primary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
         Sign in to subscribe
       </Link>
     );
@@ -80,7 +80,7 @@ export function PlanPicker({
               disabled={mutation.isPending}
               onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
               className={cn(
-                buttonClass(free ? "secondary" : "primary", "sm", "mt-2 w-full"),
+                buttonClass("secondary", "sm", "mt-2 w-full"),
               )}
             >
               {free ? "Join free" : `Subscribe - ${usd(price(plan))}`}

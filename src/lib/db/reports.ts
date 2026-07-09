@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
-import type { ContentType, Prediction, Report } from "@/lib/types";
+import { tickersInCapBand, type CapBand } from "@/lib/market/cap-bands";
+import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
 
 const SELECT =
   "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
@@ -14,32 +15,109 @@ function normalize(row: Record<string, unknown>): Report {
 
 export type FeedSort = "trending" | "recent";
 
+export type CallStatusFilter = "open" | "resolved";
+
+/** Filters applied in the query (and a light post-pass for joined prediction/score). */
+export interface FeedFilters {
+  type?: ContentType;
+  access?: AccessType;
+  ticker?: string;
+  /** Minimum author Track Score (0-100). */
+  minScore?: number;
+  status?: CallStatusFilter;
+  mcap?: CapBand;
+}
+
+function applyJoinedFilters(reports: Report[], filters: FeedFilters): Report[] {
+  let out = reports;
+  if (filters.minScore != null && filters.minScore > 0) {
+    out = out.filter((r) => (r.author?.score ?? 0) >= filters.minScore!);
+  }
+  // Status is preferably applied via !inner join; keep a safety pass for embeds.
+  if (filters.status === "open") {
+    out = out.filter((r) => r.prediction != null && r.prediction.outcome === "open");
+  } else if (filters.status === "resolved") {
+    out = out.filter((r) => r.prediction != null && r.prediction.outcome !== "open");
+  }
+  if (filters.ticker) {
+    const t = filters.ticker.toUpperCase();
+    out = out.filter(
+      (r) => (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase() === t,
+    );
+  }
+  return out;
+}
+
+function selectClause(filters: FeedFilters): string {
+  if (filters.status) {
+    return "*, author:profiles!reports_author_id_fkey(*), prediction:predictions!inner(*)";
+  }
+  return SELECT;
+}
+
+/** Apply column filters that PostgREST can express on `reports` (and nested prediction). */
+function applyReportColumnFilters(
+  // Supabase query builders are chainable but awkward to type here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  q: any,
+  filters: FeedFilters,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (filters.type) q = q.eq("type", filters.type);
+  if (filters.access) q = q.eq("access", filters.access);
+  if (filters.mcap) {
+    const tickers = tickersInCapBand(filters.mcap);
+    if (tickers.length === 0) {
+      q = q.eq("id", "00000000-0000-0000-0000-000000000000");
+    } else {
+      q = q.in("ticker", tickers);
+    }
+  }
+  if (filters.status === "open") {
+    q = q.eq("prediction.outcome", "open");
+  } else if (filters.status === "resolved") {
+    q = q.neq("prediction.outcome", "open");
+  }
+  // Ticker is applied in applyJoinedFilters so prediction.ticker also matches.
+  return q;
+}
+
 export async function listFeed({
   sort = "trending",
   type,
   limit = 30,
+  filters = {},
 }: {
   sort?: FeedSort;
   type?: ContentType;
   limit?: number;
+  filters?: FeedFilters;
 } = {}): Promise<Report[]> {
   try {
     const supabase = await createClient();
     const userId = await getSessionUserId();
     const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
-    const fetchLimit = dismissed.size > 0 ? limit + dismissed.size : limit;
+    const merged: FeedFilters = { ...filters, type: filters.type ?? type };
+    const needsOverfetch =
+      dismissed.size > 0 ||
+      (merged.minScore != null && merged.minScore > 0) ||
+      Boolean(merged.ticker) ||
+      merged.status != null;
+    const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
-    let q = supabase.from("reports").select(SELECT).eq("status", "published");
-    if (type) q = q.eq("type", type);
+    let q = supabase.from("reports").select(selectClause(merged)).eq("status", "published");
+    q = applyReportColumnFilters(q, merged);
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
         : q.order("published_at", { ascending: false });
     const { data } = await q.limit(fetchLimit);
-    return ((data as Record<string, unknown>[]) ?? [])
-      .map(normalize)
-      .filter((r) => !dismissed.has(r.id))
-      .slice(0, limit);
+    return applyJoinedFilters(
+      ((data as Record<string, unknown>[]) ?? [])
+        .map(normalize)
+        .filter((r) => !dismissed.has(r.id)),
+      merged,
+    ).slice(0, limit);
   } catch {
     return [];
   }
@@ -48,24 +126,32 @@ export async function listFeed({
 export async function listFeedFromAnalysts(
   analystIds: string[],
   limit = 30,
+  filters: FeedFilters = {},
 ): Promise<Report[]> {
   if (analystIds.length === 0) return [];
   const supabase = await createClient();
   const userId = await getSessionUserId();
   const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
-  const fetchLimit = dismissed.size > 0 ? limit + dismissed.size : limit;
+  const needsOverfetch =
+    dismissed.size > 0 ||
+    (filters.minScore != null && filters.minScore > 0) ||
+    Boolean(filters.ticker) ||
+    filters.status != null;
+  const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
-  const { data } = await supabase
+  let q = supabase
     .from("reports")
-    .select(SELECT)
+    .select(selectClause(filters))
     .eq("status", "published")
-    .in("author_id", analystIds)
-    .order("published_at", { ascending: false })
-    .limit(fetchLimit);
-  return ((data as Record<string, unknown>[]) ?? [])
-    .map(normalize)
-    .filter((r) => !dismissed.has(r.id))
-    .slice(0, limit);
+    .in("author_id", analystIds);
+  q = applyReportColumnFilters(q, filters);
+  const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
+  return applyJoinedFilters(
+    ((data as Record<string, unknown>[]) ?? [])
+      .map(normalize)
+      .filter((r) => !dismissed.has(r.id)),
+    filters,
+  ).slice(0, limit);
 }
 
 export async function getReport(id: string): Promise<Report | null> {
