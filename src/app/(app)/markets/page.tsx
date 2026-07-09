@@ -31,7 +31,7 @@ export default async function MarketsPage() {
           <Link
             key={r.ticker}
             href={`/markets/${r.ticker}`}
-            className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[transform,border-color] hover:-translate-y-0.5 hover:border-border-strong"
+            className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors hover:border-border-strong"
           >
             <div className="flex items-start justify-between">
               <div>

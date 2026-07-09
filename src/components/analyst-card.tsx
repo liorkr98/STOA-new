@@ -24,7 +24,7 @@ export function AnalystCard({
     <Link
       href={`/analyst/${analyst.handle}`}
       className={cn(
-        "group flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-[transform,border-color] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong",
+        "group flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
         className,
       )}
     >

@@ -22,9 +22,10 @@
   --border: color-mix(in srgb, var(--ink) 14%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
 
-  --accent: var(--verdigris);
-  --accent-ink: #f4f6f2;
-  --accent-weak: color-mix(in srgb, var(--verdigris) 12%, transparent);
+  /* Chrome accent is ink (ledger), not verdigris. Verdigris stays on --up / sentiment only. */
+  --accent: var(--ink);
+  --accent-ink: var(--paper);
+  --accent-weak: color-mix(in srgb, var(--ink) 10%, transparent);
 
   --up: var(--verdigris);
   --down: var(--rust);
@@ -76,9 +77,9 @@
   --border: color-mix(in srgb, var(--ink) 16%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 30%, transparent);
 
-  --accent: var(--verdigris);
-  --accent-ink: #0e1712;
-  --accent-weak: color-mix(in srgb, var(--verdigris) 16%, transparent);
+  --accent: var(--ink);
+  --accent-ink: var(--paper);
+  --accent-weak: color-mix(in srgb, var(--ink) 12%, transparent);
 
   --up: var(--verdigris);
   --down: var(--rust);

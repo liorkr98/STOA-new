@@ -23,12 +23,12 @@ export function TabBar({
             key={t.key}
             href={`${pathname}?${param}=${t.key}`}
             className={cn(
-              "relative whitespace-nowrap px-3 py-3 text-sm transition-colors",
+              "focus-ring relative whitespace-nowrap rounded-[var(--radius-btn)] px-3 py-3 text-sm transition-colors",
               isActive ? "text-text" : "text-text-mute hover:text-text",
             )}
           >
             {t.label}
-            {isActive && <span className="absolute inset-x-3 -bottom-px h-0.5 bg-accent" />}
+            {isActive && <span className="absolute inset-x-3 -bottom-px h-0.5 bg-border-strong" />}
           </Link>
         );
       })}

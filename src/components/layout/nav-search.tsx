@@ -71,7 +71,7 @@ export function NavSearch() {
   const hasHits = creators.length > 0 || tickers.length > 0;
 
   return (
-    <div ref={rootRef} className="relative w-full max-w-[320px]">
+    <div ref={rootRef} className="relative w-full max-w-[200px] sm:max-w-[280px] md:max-w-[320px]">
       <form
         role="search"
         onSubmit={(e) => {
@@ -95,7 +95,7 @@ export function NavSearch() {
           onKeyDown={(e) => {
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Search tickers or analysts"
+          placeholder="Search"
           aria-label="Search tickers or analysts"
           aria-autocomplete="list"
           aria-controls={listId}
