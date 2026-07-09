@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { BadgeCheck } from "lucide-react";
 import { listTopAnalysts } from "@/lib/db/profiles";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { compact } from "@/lib/format";
@@ -34,7 +34,7 @@ export default async function LeaderboardPage() {
             <li key={a.id} className="border-b border-border last:border-0">
               <Link
                 href={`/analyst/${a.handle}`}
-                className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2"
+                className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2 focus-ring"
               >
                 <span className="num w-6 text-center text-sm font-semibold text-text-faint">
                   {i + 1}
@@ -43,13 +43,20 @@ export default async function LeaderboardPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate font-semibold">{a.display_name}</span>
-                    {a.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
+                    {a.verified && (
+                      <BadgeCheck size={13} className="text-text" aria-label="Verified" />
+                    )}
                   </div>
                   <div className="t-meta truncate">
                     @{a.handle} · <span className="num">{compact(a.followers_count)}</span> followers
                   </div>
                 </div>
-                <TrackScoreBadge handle={a.handle} score={a.score || null} sampleSize={a.resolved} linked={false} />
+                <TrackScoreBadge
+                  handle={a.handle}
+                  score={a.score || null}
+                  sampleSize={a.resolved}
+                  linked={false}
+                />
               </Link>
             </li>
           ))}

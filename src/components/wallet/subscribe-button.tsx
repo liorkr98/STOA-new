@@ -27,7 +27,7 @@ export function SubscribeButton({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("primary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
         Sign in to subscribe
       </Link>
     );
@@ -49,7 +49,7 @@ export function SubscribeButton({
 
   return (
     <>
-      <Button size="lg" className="w-full" onClick={() => setOpen(true)}>
+      <Button variant="secondary" size="lg" className="w-full" onClick={() => setOpen(true)}>
         Subscribe · {usd(price)}/mo
       </Button>
       <ConfirmSpendDialog

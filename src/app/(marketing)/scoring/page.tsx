@@ -113,11 +113,11 @@ export default function ScoringPage() {
       </section>
 
       <p className="t-meta">
-        Also see{" "}
-        <Link href="/how-it-works" className="text-accent hover:underline">
-          How it works
-        </Link>{" "}
-        for the investor-facing overview.
+        Also see the investor overview on this page above, or browse{" "}
+        <Link href="/discover" className="text-text underline hover:no-underline">
+          Discover
+        </Link>
+        .
       </p>
     </article>
   );

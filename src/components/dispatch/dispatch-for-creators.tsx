@@ -9,7 +9,7 @@ export function DispatchForCreators() {
   return (
     <section className="dispatch-section dispatch-for-creators">
       <div className="border-y border-border bg-surface/50 px-6 py-8 text-center sm:px-10">
-        <p className="t-eyebrow" style={{ color: "var(--accent)" }}>
+        <p className="t-eyebrow text-text-mute">
           For analysts
         </p>
         <h2 className="mt-3 font-display text-xl font-semibold text-text">

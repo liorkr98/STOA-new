@@ -29,6 +29,7 @@ export function NavSearch() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [creators, setCreators] = useState<CreatorHit[]>([]);
   const [tickers, setTickers] = useState<TickerHit[]>([]);
 
@@ -37,9 +38,11 @@ export function NavSearch() {
     if (trimmed.length < 2) {
       setCreators([]);
       setTickers([]);
+      setLoading(false);
       return;
     }
     const controller = new AbortController();
+    setLoading(true);
     const timer = setTimeout(() => {
       void fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=5`, {
         signal: controller.signal,
@@ -49,9 +52,14 @@ export function NavSearch() {
           setCreators(data.creators ?? []);
           setTickers(data.tickers ?? []);
           setOpen(true);
+          setLoading(false);
         })
-        .catch(() => {
-          /* aborted or network */
+        .catch((err: unknown) => {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          setCreators([]);
+          setTickers([]);
+          setLoading(false);
+          setOpen(true);
         });
     }, 220);
     return () => {
@@ -69,9 +77,10 @@ export function NavSearch() {
   }, []);
 
   const hasHits = creators.length > 0 || tickers.length > 0;
+  const showPanel = open && q.trim().length >= 2;
 
   return (
-    <div ref={rootRef} className="relative w-full max-w-[320px]">
+    <div ref={rootRef} className="relative w-full max-w-[200px] sm:max-w-[280px] md:max-w-[320px]">
       <form
         role="search"
         onSubmit={(e) => {
@@ -91,76 +100,99 @@ export function NavSearch() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          onFocus={() => hasHits && setOpen(true)}
+          onFocus={() => q.trim().length >= 2 && setOpen(true)}
           onKeyDown={(e) => {
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Search tickers or analysts"
+          placeholder="Search"
           aria-label="Search tickers or analysts"
           aria-autocomplete="list"
           aria-controls={listId}
-          aria-expanded={open && hasHits}
+          aria-expanded={showPanel}
+          aria-busy={loading}
           className="w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1.5 pl-9 pr-3 text-sm text-text placeholder:text-text-faint focus-ring"
           autoComplete="off"
         />
       </form>
 
-      {open && hasHits && (
+      {showPanel && (
         <div
           id={listId}
           role="listbox"
           className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)]"
         >
-          {tickers.length > 0 && (
-            <div className="border-b border-border px-2 py-2">
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
-                Markets
-              </p>
-              {tickers.map((t) => (
-                <Link
-                  key={t.symbol}
-                  href={`/markets/${t.symbol}`}
-                  role="option"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1.5 text-sm hover:bg-surface-2 focus-ring"
-                >
-                  <span className="num font-semibold">{t.symbol}</span>
-                  <span className="truncate pl-3 text-xs text-text-mute">{t.company_name}</span>
-                </Link>
-              ))}
+          {loading && !hasHits ? (
+            <p className="px-3 py-3 text-xs text-text-faint" role="status">
+              Searching…
+            </p>
+          ) : !loading && !hasHits ? (
+            <div className="px-3 py-3">
+              <p className="text-xs text-text-mute">No quick matches for &ldquo;{q.trim()}&rdquo;</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+                }}
+                className="mt-2 text-xs font-medium text-text underline hover:no-underline focus-ring rounded-[var(--radius-btn)]"
+              >
+                Search all results
+              </button>
             </div>
+          ) : (
+            <>
+              {tickers.length > 0 && (
+                <div className="border-b border-border px-2 py-2">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
+                    Markets
+                  </p>
+                  {tickers.map((t) => (
+                    <Link
+                      key={t.symbol}
+                      href={`/markets/${t.symbol}`}
+                      role="option"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1.5 text-sm hover:bg-surface-2 focus-ring"
+                    >
+                      <span className="num font-semibold">{t.symbol}</span>
+                      <span className="truncate pl-3 text-xs text-text-mute">{t.company_name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {creators.length > 0 && (
+                <div className="px-2 py-2">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
+                    Analysts
+                  </p>
+                  {creators.map((c) => (
+                    <Link
+                      key={c.id}
+                      href={`/analyst/${c.handle}`}
+                      role="option"
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1.5 text-sm hover:bg-surface-2 focus-ring",
+                      )}
+                    >
+                      <span className="truncate font-medium">{c.display_name}</span>
+                      <span className="num shrink-0 pl-3 text-xs text-text-faint">@{c.handle}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+                }}
+                className="w-full border-t border-border px-3 py-2 text-left text-xs font-medium text-text-mute hover:bg-surface-2 hover:text-text focus-ring"
+              >
+                View all results
+              </button>
+            </>
           )}
-          {creators.length > 0 && (
-            <div className="px-2 py-2">
-              <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
-                Analysts
-              </p>
-              {creators.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/analyst/${c.handle}`}
-                  role="option"
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1.5 text-sm hover:bg-surface-2 focus-ring",
-                  )}
-                >
-                  <span className="truncate font-medium">{c.display_name}</span>
-                  <span className="num shrink-0 pl-3 text-xs text-text-faint">@{c.handle}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              router.push(`/search?q=${encodeURIComponent(q.trim())}`);
-            }}
-            className="w-full border-t border-border px-3 py-2 text-left text-xs font-medium text-text-mute hover:bg-surface-2 hover:text-text focus-ring"
-          >
-            View all results
-          </button>
         </div>
       )}
     </div>

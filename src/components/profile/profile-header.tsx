@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SealCheck, Users } from "@phosphor-icons/react/dist/ssr";
+import { BadgeCheck, Users } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
 import type { Profile } from "@/lib/types";
@@ -63,14 +63,14 @@ export function ProfileHeader({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className={isCompact ? "t-h3" : "t-h2"}>{profile.display_name || "Your name"}</h1>
-              {profile.verified && <SealCheck size={20} weight="fill" className="text-accent" />}
+              {profile.verified && <BadgeCheck size={20} className="text-text" aria-label="Verified" />}
             </div>
             <p className="t-meta mt-1">
               @{profile.handle || "handle"}
               {!isCompact && (
                 <>
                   {" "}
-                  · <Users size={13} className="inline" />{" "}
+                  · <Users size={13} className="inline" aria-hidden />{" "}
                   <span className="num">{compact(profile.followers_count ?? 0)}</span> followers
                 </>
               )}

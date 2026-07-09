@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
-export type ViewRole = "investor" | "creator";
+export type ViewRole = "investor" | "analyst";
 
 /**
- * Only rendered when an account holds both investor and creator
- * capabilities (see BACKEND_DATA_CONTRACTS.md -- role is a single
- * exclusive enum today, so this never actually mounts yet). This is the
- * one component that makes the two-sided product legible, so it lives in
- * the nav bar itself rather than being buried in settings.
+ * Analysts can view as Investor (Discover/Home) or Analyst (Studio).
+ * Full dual-role accounts land with BACKEND_DATA_CONTRACTS.md; until then
+ * analysts get the switcher so the two-sided product stays legible.
  */
 export function RoleSwitcher({ current }: { current: ViewRole }) {
   const router = useRouter();
@@ -28,24 +26,27 @@ export function RoleSwitcher({ current }: { current: ViewRole }) {
           type="button"
           className="focus-ring inline-flex items-center gap-1.5 rounded-[var(--r-tag)] border border-border bg-surface-2 px-3 py-1 text-sm text-text-mute transition-colors hover:text-text"
         >
-          Viewing as: <span className="font-medium text-text">{current === "investor" ? "Investor" : "Creator"}</span>
+          Viewing as:{" "}
+          <span className="font-medium text-text">
+            {current === "investor" ? "Investor" : "Analyst"}
+          </span>
           <ChevronDown size={12} strokeWidth={2.5} />
         </button>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="popover-content ledger-card z-40 min-w-[10rem] p-1" sideOffset={6} align="start">
-          {(["investor", "creator"] as ViewRole[]).map((role) => (
+          {(["investor", "analyst"] as ViewRole[]).map((role) => (
             <button
               key={role}
               type="button"
               onClick={() => switchTo(role)}
               className={cn(
-                "flex w-full items-center justify-between gap-2 rounded-[var(--r-tag)] px-2.5 py-2 text-sm transition-colors hover:bg-surface-2",
-                role === current ? "text-text font-medium" : "text-text-mute",
+                "flex w-full items-center justify-between gap-2 rounded-[var(--r-tag)] px-2.5 py-2 text-sm transition-colors hover:bg-surface-2 focus-ring",
+                role === current ? "font-medium text-text" : "text-text-mute",
               )}
             >
-              {role === "investor" ? "Investor" : "Creator"}
-              {role === current && <Check size={14} strokeWidth={2.5} className="text-accent" />}
+              {role === "investor" ? "Investor" : "Analyst"}
+              {role === current && <Check size={14} strokeWidth={2.5} className="text-text" />}
             </button>
           ))}
         </Popover.Content>

@@ -58,7 +58,7 @@ export function ReportBlock({
     >
       <div className="flex flex-wrap items-center gap-2 text-[11px]">
         {promoted && (
-          <span className="font-medium uppercase tracking-wide text-accent">Promoted</span>
+          <span className="font-medium uppercase tracking-wide text-text-mute">Promoted</span>
         )}
         <span className="t-eyebrow">{typeLabel[report.type]}</span>
         {ticker && (
@@ -92,7 +92,7 @@ export function ReportBlock({
         <span aria-hidden className="absolute inset-0" />
         <h3
           className={cn(
-            "font-display font-semibold text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent",
+            "font-display font-semibold text-text transition-colors duration-[var(--dur-2)] group-hover:text-text-mute",
             size === "lead"
               ? "text-2xl leading-tight sm:text-[1.75rem]"
               : "text-lg leading-snug",

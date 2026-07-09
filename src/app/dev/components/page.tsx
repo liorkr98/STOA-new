@@ -89,7 +89,7 @@ export default function ComponentPreviewPage() {
       <p className="t-eyebrow mb-4">RoleSwitcher (gated off in real nav today, see docs)</p>
       <div className="flex gap-4 mb-12">
         <RoleSwitcher current="investor" />
-        <RoleSwitcher current="creator" />
+        <RoleSwitcher current="analyst" />
       </div>
 
       <p className="t-eyebrow mb-4">PaywallGate (single CTA, real-world case)</p>

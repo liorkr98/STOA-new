@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { CheckCircle, X } from "@phosphor-icons/react";
+import { CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { usd } from "@/lib/format";
 import type { SpendResult } from "@/lib/types";
@@ -73,7 +73,7 @@ export function ConfirmSpendDialog({
 
           {done ? (
             <div className="mt-6 flex flex-col items-center gap-2 py-4 text-center">
-              <CheckCircle size={40} weight="fill" className="text-[var(--up)]" />
+              <CheckCircle2 size={40} className="text-[var(--up)]" aria-hidden />
               <p className="font-semibold">You are all set</p>
               <p className="t-meta">New balance {usd(result!.new_balance ?? newBalance, { cents: true })}</p>
               <Dialog.Close asChild>

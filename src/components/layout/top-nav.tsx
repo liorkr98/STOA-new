@@ -22,7 +22,7 @@ const publicLinks = [
 ];
 
 const appLinks = [
-  { href: "/home", label: "Home" },
+  { href: "/home", label: "Today" },
   { href: "/discover", label: "Discover" },
   { href: "/markets", label: "Markets" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -48,11 +48,11 @@ export function TopNav({
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   const links = profile ? appLinks : publicLinks;
   const logoHref = profile ? "/home" : "/";
-  // Analysts can view as Investor (Discover/Home) or Creator (Studio).
+  // Analysts can view as Investor (Discover/Home) or Analyst (Studio).
   // Full dual-role accounts land with BACKEND_DATA_CONTRACTS.md; until then
   // analysts get the switcher so the two-sided product stays legible.
   const showRoleSwitcher = isAnalyst;
-  const viewingAsCreator = pathname.startsWith("/studio") || pathname.startsWith("/dashboard");
+  const viewingAsAnalyst = pathname.startsWith("/studio") || pathname.startsWith("/dashboard");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-paper">
@@ -62,7 +62,11 @@ export function TopNav({
             <Link href={logoHref} className="focus-ring rounded-[var(--radius-btn)]">
               <StoaLogo />
             </Link>
-            {showRoleSwitcher && <RoleSwitcher current={viewingAsCreator ? "creator" : "investor"} />}
+            {showRoleSwitcher && (
+              <div className="hidden sm:block">
+                <RoleSwitcher current={viewingAsAnalyst ? "analyst" : "investor"} />
+              </div>
+            )}
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((l) => {
@@ -78,7 +82,7 @@ export function TopNav({
                 >
                   {l.label}
                   {active && (
-                    <span className="absolute inset-x-3 -bottom-px h-px bg-accent" />
+                    <span className="absolute inset-x-3 -bottom-px h-px bg-border-strong" />
                   )}
                 </Link>
               );
@@ -86,7 +90,7 @@ export function TopNav({
           </nav>
         </div>
 
-        <div className="hidden flex-1 justify-center px-2 md:flex">
+        <div className="min-w-0 flex-1 px-1 sm:px-2 md:flex md:justify-center">
           <NavSearch />
         </div>
 
@@ -140,8 +144,8 @@ export function TopNav({
         <div className="border-t border-border bg-surface px-5 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
             {showRoleSwitcher && (
-              <div className="px-3 py-2">
-                <RoleSwitcher current={viewingAsCreator ? "creator" : "investor"} />
+              <div className="px-3 py-2 sm:hidden">
+                <RoleSwitcher current={viewingAsAnalyst ? "analyst" : "investor"} />
               </div>
             )}
             {links.map((l) => (
@@ -154,13 +158,6 @@ export function TopNav({
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/search"
-              onClick={() => setOpen(false)}
-              className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
-            >
-              Search
-            </Link>
             <div className="my-2 h-px bg-border" />
             {profile ? (
               <>
@@ -175,7 +172,7 @@ export function TopNav({
                 <Link
                   href={`/analyst/${profile.handle}`}
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Your profile
                 </Link>
@@ -183,7 +180,7 @@ export function TopNav({
                   <Link
                     href="/studio"
                     onClick={() => setOpen(false)}
-                    className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                    className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                   >
                     Studio dashboard
                   </Link>
@@ -191,54 +188,59 @@ export function TopNav({
                 <Link
                   href="/inbox"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </Link>
                 <Link
                   href="/wallet"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Wallet & credits
                 </Link>
                 <Link
                   href="/saved"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Saved
                 </Link>
                 <Link
                   href="/watchlist"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Watchlist
                 </Link>
                 <Link
                   href="/subscriptions"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Subscriptions
                 </Link>
                 <Link
                   href="/settings"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Settings
                 </Link>
                 <Link
                   href="/studio/branding"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Profile & branding
                 </Link>
                 <form action={signOut}>
-                  <button className="px-3 py-2 text-sm text-text-faint">Sign out</button>
+                  <button
+                    type="submit"
+                    className="focus-ring w-full rounded-[var(--radius-btn)] px-3 py-2 text-left text-sm text-text-faint hover:bg-surface-2 hover:text-text"
+                  >
+                    Sign out
+                  </button>
                 </form>
               </>
             ) : (

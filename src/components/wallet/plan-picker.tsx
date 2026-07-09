@@ -35,7 +35,7 @@ export function PlanPicker({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("primary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
         Sign in to subscribe
       </Link>
     );
@@ -66,7 +66,7 @@ export function PlanPicker({
               <ul className="mt-1.5 flex flex-col gap-0.5">
                 {plan.perks.slice(0, 4).map((perk) => (
                   <li key={perk} className="flex items-center gap-1.5 text-[11px] text-text-mute">
-                    <Check size={11} className="shrink-0 text-[var(--accent)]" />
+                    <Check size={11} className="shrink-0 text-text-mute" aria-hidden />
                     {perk}
                   </li>
                 ))}
@@ -80,7 +80,7 @@ export function PlanPicker({
               disabled={mutation.isPending}
               onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
               className={cn(
-                buttonClass(free ? "secondary" : "primary", "sm", "mt-2 w-full"),
+                buttonClass("secondary", "sm", "mt-2 w-full"),
               )}
             >
               {free ? "Join free" : `Subscribe - ${usd(price(plan))}`}
