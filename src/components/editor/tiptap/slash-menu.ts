@@ -101,7 +101,7 @@ export const SLASH_ITEMS: SlashItem[] = [
   },
   {
     title: "TradingView chart",
-    subtitle: "Full charting library — indicators, drawings, ranges",
+    subtitle: "Full charting library: indicators, drawings, ranges",
     icon: ChartCandlestick,
     keywords: ["chart", "tradingview", "price", "candles", "graph", "ohlc", "tv", "technical"],
     group: "Data",

@@ -44,7 +44,7 @@ export default async function StudioAudiencePage() {
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
         <h2 className="t-h3">Referral link</h2>
         <p className="t-meta mt-1">
-          Share this link — signups attributed to you are counted above.
+          Share this link. Signups attributed to you are counted above.
         </p>
         <code className="num mt-3 block overflow-x-auto rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm">
           {referralLink}

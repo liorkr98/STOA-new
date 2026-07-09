@@ -327,7 +327,7 @@ export function StudioEditor({
   return (
     <div className="flex min-h-[calc(100dvh-1px)] flex-col">
       {/* Top bar: back, type, save status, Save draft, Publish. Nothing else. */}
-      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-2.5 backdrop-blur-sm md:px-6">
+      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-paper px-4 py-2.5 md:px-6">
         <Link
           href="/studio"
           className="flex items-center gap-1.5 text-sm text-text-mute transition-colors hover:text-text focus-ring rounded-[var(--radius-btn)]"

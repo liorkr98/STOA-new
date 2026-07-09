@@ -2,7 +2,7 @@
 
 import * as Popover from "@radix-ui/react-popover";
 import { useRouter } from "next/navigation";
-import { CaretDown, Check } from "@phosphor-icons/react";
+import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 export type ViewRole = "investor" | "creator";
@@ -18,7 +18,7 @@ export function RoleSwitcher({ current }: { current: ViewRole }) {
   const router = useRouter();
 
   function switchTo(role: ViewRole) {
-    router.push(role === "investor" ? "/home" : "/dashboard");
+    router.push(role === "investor" ? "/home" : "/studio");
   }
 
   return (
@@ -26,10 +26,10 @@ export function RoleSwitcher({ current }: { current: ViewRole }) {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1 text-sm text-text-mute transition-colors hover:text-text"
+          className="focus-ring inline-flex items-center gap-1.5 rounded-[var(--r-tag)] border border-border bg-surface-2 px-3 py-1 text-sm text-text-mute transition-colors hover:text-text"
         >
           Viewing as: <span className="font-medium text-text">{current === "investor" ? "Investor" : "Creator"}</span>
-          <CaretDown size={12} weight="bold" />
+          <ChevronDown size={12} strokeWidth={2.5} />
         </button>
       </Popover.Trigger>
       <Popover.Portal>
@@ -45,7 +45,7 @@ export function RoleSwitcher({ current }: { current: ViewRole }) {
               )}
             >
               {role === "investor" ? "Investor" : "Creator"}
-              {role === current && <Check size={14} weight="bold" className="text-accent" />}
+              {role === current && <Check size={14} strokeWidth={2.5} className="text-accent" />}
             </button>
           ))}
         </Popover.Content>

@@ -6,15 +6,9 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { cn } from "@/lib/design/cn";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
-function scoreColor(score: number) {
-  if (score >= 70) return "var(--verdigris)";
-  if (score >= 40) return "var(--brass)";
-  return "var(--rust)";
-}
-
 /** Large inline Track Score display for the lead byline: the score is the point. */
 function LeadScore({ handle, score }: { handle: string; score: number | null }) {
-  const color = score == null ? "var(--text-faint)" : scoreColor(score);
+  const color = score == null ? "var(--text-faint)" : "var(--ink)";
   return (
     <Link
       href={`/analyst/${handle}/score`}
@@ -28,7 +22,7 @@ function LeadScore({ handle, score }: { handle: string; score: number | null }) 
       />
       <span className="flex flex-col leading-none">
         <span className="num text-2xl font-semibold tabular-nums" style={{ color }}>
-          {score ?? "—"}
+          {score ?? "-"}
         </span>
         <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-faint transition-colors group-hover/score:text-text-mute">
           Track Score

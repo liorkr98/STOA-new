@@ -9,6 +9,7 @@ import { useWatchlist } from "@/lib/watchlist";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Sparkline } from "@/components/charts/sparkline";
 import { DataTable, type Column } from "@/components/ui/data-table";
+import { DensityRoot } from "@/components/layout/density-root";
 import type { ScreenerRow } from "@/app/api/market/screener/route";
 
 /**
@@ -156,7 +157,7 @@ export default function WatchlistPage() {
       : [];
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6">
+    <DensityRoot className="mx-auto flex max-w-4xl flex-col gap-6">
       <div>
         <h1 className="t-h1">Watchlist</h1>
         <p className="t-body mt-1">Tickers you are tracking, with Stoa coverage one tap away.</p>
@@ -209,6 +210,6 @@ export default function WatchlistPage() {
           body="Search for a ticker above, or add one from any Markets page."
         />
       )}
-    </div>
+    </DensityRoot>
   );
 }

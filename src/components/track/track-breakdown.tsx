@@ -13,7 +13,7 @@ function Bar({ label, value }: { label: string; value: number | null }) {
     <div>
       <div className="mb-1 flex items-center justify-between">
         <span className="t-meta">{label}</span>
-        <span className="num text-sm font-medium">{value == null ? "—" : `${Math.round(value)}`}</span>
+        <span className="num text-sm font-medium">{value == null ? "-" : `${Math.round(value)}`}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-surface-2">
         <div
@@ -26,8 +26,8 @@ function Bar({ label, value }: { label: string; value: number | null }) {
 }
 
 /**
- * Surfaces the scoring engine's pillar breakdown, outcome counts, and progress
- * toward the next tier. Mirrors the public methodology so the score is legible.
+ * Surfaces the scoring engine's pillar breakdown and outcome counts.
+ * Sample confidence is the honest gate, not a second tier badge.
  */
 export function TrackBreakdown({
   score,
@@ -45,6 +45,8 @@ export function TrackBreakdown({
   total: number;
 }) {
   const progress = tierProgress(score, total);
+  const sampleMet = progress.requirements.find((r) => r.label.toLowerCase().includes("call"));
+  const scoreMet = progress.requirements.find((r) => r.label.toLowerCase().includes("score"));
 
   return (
     <div className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
@@ -75,25 +77,24 @@ export function TrackBreakdown({
         </div>
       </div>
 
-      {progress.next ? (
-        <div className="border-t border-border pt-4">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="t-meta">Progress to next tier</span>
-            <span className="text-sm font-medium">{progress.next.label}</span>
-          </div>
-          <ul className="flex flex-col gap-2">
-            {progress.requirements.map((r) => (
-              <li key={r.label} className="flex items-center justify-between text-sm">
-                <span className="text-text-mute">{r.label}</span>
-                <span className={r.met ? "num text-[var(--up)]" : "num text-text"}>
-                  {Math.round(r.current)} / {r.required}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : total > 0 ? (
-        <p className="t-meta border-t border-border pt-4">Top tier reached. Keep it up.</p>
+      {total > 0 && total < 10 ? (
+        <p className="t-meta border-t border-border pt-4">
+          Provisional · {total} resolved call{total === 1 ? "" : "s"} (10+ for full confidence)
+          {sampleMet && (
+            <span className="num ml-2 text-text">
+              {Math.round(sampleMet.current)} / {sampleMet.required}
+            </span>
+          )}
+          {scoreMet && (
+            <span className="t-meta ml-2">
+              · score path {Math.round(scoreMet.current)} / {scoreMet.required}
+            </span>
+          )}
+        </p>
+      ) : total >= 10 ? (
+        <p className="t-meta border-t border-border pt-4">
+          Full sample confidence · {total} resolved calls
+        </p>
       ) : null}
     </div>
   );

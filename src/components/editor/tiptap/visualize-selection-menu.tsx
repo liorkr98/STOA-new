@@ -89,7 +89,7 @@ export function VisualizeSelectionMenu({
       toast.success("Generating diagram from your selection…");
     } else {
       toast.success(
-        `${result.ticker} chart loading — diagram drawing labeled levels (pick from 4 styles)…`,
+        `${result.ticker} chart loading. Diagram drawing labeled levels (pick from 4 styles)…`,
       );
     }
   }

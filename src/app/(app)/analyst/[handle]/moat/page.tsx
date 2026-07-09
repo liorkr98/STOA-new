@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Legacy URL — Track Score analytics lives at `/score`. */
+/** Legacy URL. Track Score analytics lives at `/score`. */
 export default async function MoatRedirectPage({
   params,
 }: {

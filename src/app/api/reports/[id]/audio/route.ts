@@ -55,7 +55,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   return NextResponse.json(
     {
       error:
-        "Audio brief generation is temporarily unavailable. DeepSeek provides text models only — speech synthesis requires a separate TTS provider.",
+        "Audio brief generation is temporarily unavailable. DeepSeek provides text models only. Speech synthesis requires a separate TTS provider.",
     },
     { status: 503 },
   );

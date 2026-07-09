@@ -3,11 +3,12 @@ import { cn } from "@/lib/design/cn";
 
 type Size = "sm" | "md" | "lg";
 
-/** score is the engine's 0-100 composite (see src/lib/engine/score.ts). */
-function scoreColor(score: number) {
-  if (score >= 70) return "var(--verdigris)";
-  if (score >= 40) return "var(--brass)";
-  return "var(--rust)";
+/**
+ * Track Score is a trust score, not market sentiment. Always ink (or brass when
+ * provisional). Verdigris/rust stay reserved for hit/miss and fact-check.
+ */
+function scoreColor(provisional: boolean) {
+  return provisional ? "var(--brass)" : "var(--ink)";
 }
 
 function Wrapper({
@@ -23,6 +24,8 @@ function Wrapper({
   title?: string;
   children: React.ReactNode;
 }) {
+  // linked=false when an ancestor is already an <a> (e.g. AnalystCard) --
+  // nested anchors are invalid HTML and break hydration.
   if (!linked) {
     return (
       <span className={className} title={title}>
@@ -38,8 +41,9 @@ function Wrapper({
 }
 
 /**
- * Track Score badge — public analyst track-record grade (0–100).
+ * Track Score badge. Public analyst track-record grade (0-100).
  * Links to `/analyst/{handle}/score` unless `linked={false}`.
+ * sampleSize gates the provisional note.
  */
 export function TrackScoreBadge({
   handle,
@@ -59,8 +63,8 @@ export function TrackScoreBadge({
   className?: string;
 }) {
   const empty = score == null;
-  const color = empty ? "var(--text-faint)" : scoreColor(score);
   const provisional = sampleSize != null && sampleSize < 10;
+  const color = empty ? "var(--text-faint)" : scoreColor(provisional);
   const href = `/analyst/${handle}/score`;
 
   if (size === "sm") {
@@ -76,7 +80,7 @@ export function TrackScoreBadge({
       >
         <SealDot color={color} />
         <span className="num text-xs font-semibold" style={{ color }}>
-          {empty ? "—" : score}
+          {empty ? "-" : score}
         </span>
       </Wrapper>
     );
@@ -94,7 +98,7 @@ export function TrackScoreBadge({
       >
         <SealDot color={color} />
         <span className="num text-sm font-semibold" style={{ color }}>
-          {empty ? "—" : score}
+          {empty ? "- Track" : score}
         </span>
         {!empty && hitRate != null && (
           <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
@@ -116,7 +120,7 @@ export function TrackScoreBadge({
       <div className="flex flex-col gap-0.5">
         <div className="flex items-baseline gap-2">
           <span className="num text-3xl font-semibold leading-none" style={{ color }}>
-            {empty ? "—" : score}
+            {empty ? "-" : score}
           </span>
           <span className="t-eyebrow">Track Score</span>
         </div>
@@ -128,7 +132,7 @@ export function TrackScoreBadge({
             {sampleSize != null && ` over ${sampleSize} resolved call${sampleSize === 1 ? "" : "s"}`}
           </span>
         )}
-        {provisional && <span className="t-meta text-[var(--brass)]">Provisional — small sample</span>}
+        {provisional && <span className="t-meta text-[var(--brass)]">Provisional · small sample</span>}
         <span className="t-meta underline">View full breakdown</span>
       </div>
     </Wrapper>

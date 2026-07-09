@@ -19,13 +19,17 @@ export function ReportBody({
 }) {
   if (!body?.trim()) return null;
 
-  // New reports are Tiptap JSON. Inline fact-check highlighting over Tiptap
-  // content lands with the Layer 4 fact-check pass; the summary strip above
-  // the body carries the verdict counts in the meantime.
+  // New reports are Tiptap JSON. Interactive claim popovers mount via
+  // TiptapClaimHighlighter until char-offset TipTap marks land.
   if (isTiptapDoc(body)) {
     return (
       <div className="mt-8">
-        <TiptapReportRenderer json={parseTiptapDoc(body)} />
+        <TiptapReportRenderer
+          json={parseTiptapDoc(body)}
+          claims={claims}
+          isAuthed={isAuthed}
+          reportId={reportId}
+        />
       </div>
     );
   }

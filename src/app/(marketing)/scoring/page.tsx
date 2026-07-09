@@ -79,17 +79,18 @@ export default function ScoringPage() {
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">Tiers</h2>
+        <h2 className="t-h2">Sample confidence bands</h2>
         <p className="t-meta mt-2">
-          Not shown as a separate badge anywhere in the product — the Track Score is the one
-          number. Tier names are just shorthand for score ranges, used in copy like &ldquo;reached
-          Elite&rdquo; rather than as a competing signal on a profile.
+          Not a second badge. These bands explain how many resolved calls the engine needs before a
+          Track Score is shown with full confidence. The number on every profile is still just Track
+          Score 0-100.
         </p>
         <div className="mt-4 flex flex-col gap-3">
           {TIERS.map((t) => (
             <div key={t.key} className="flex items-center justify-between gap-4 text-sm">
               <span className="font-medium">
-                {t.label} <span className="text-text-mute">&middot; {t.minCalls}+ resolved calls</span>
+                {t.label}{" "}
+                <span className="text-text-mute">&middot; {t.minCalls}+ resolved calls</span>
               </span>
               <span className="num text-text-mute">score {t.minScore}+</span>
             </div>

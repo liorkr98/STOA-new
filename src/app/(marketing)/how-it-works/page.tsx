@@ -25,9 +25,9 @@ export default function HowItWorksPage() {
           profit factor, alpha versus the S&amp;P 500, and a consistency check for losing
           streaks. Recent calls count more than old ones.
         </Section>
-        <Section title="4. Tiers reward proven edge">
-          Tiers from Building to Legend require both a minimum score and a minimum number of
-          resolved calls, so a tiny lucky streak cannot fake a reputation.
+        <Section title="4. Sample size keeps scores honest">
+          The MOAT score discounts small samples, so a tiny lucky streak cannot fake a
+          reputation. Under 10 resolved calls the score is marked provisional wherever it appears.
         </Section>
       </div>
     </div>

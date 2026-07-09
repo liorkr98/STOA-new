@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
+import { DensityToggle } from "@/components/settings/density-toggle";
 import { buttonClass } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -29,6 +30,8 @@ export default async function SettingsPage() {
           </Link>
         </div>
       </div>
+
+      <DensityToggle />
 
       <ProfileSettingsForm profile={profile} />
 

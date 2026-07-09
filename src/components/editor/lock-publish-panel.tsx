@@ -271,7 +271,7 @@ export function LockPublishPanel({
               <div className="flex items-baseline justify-between">
                 <span className="t-meta">Current</span>
                 <span className="num text-lg font-semibold">
-                  {live != null ? `$${fmtPrice(live)}` : "—"}
+                  {live != null ? `$${fmtPrice(live)}` : "-"}
                 </span>
               </div>
               {move != null && (
