@@ -1,40 +1,27 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import type { FactClaim } from "@/lib/ai/fact-check";
-import type { ClaimType } from "@/lib/fact-check/claim-extraction";
-
-type Verdict = "fact" | "unproven" | "opinion" | "contradicted";
-
-const VERDICT_MAP: Record<ClaimType, Verdict> = {
-  Fact: "fact",
-  "Yahoo-Verified": "fact",
-  Unverified: "unproven",
-  Opinion: "opinion",
-  Misleading: "contradicted",
-  "Yahoo-Disputed": "contradicted",
-};
-
-const VERDICT_COLOR: Record<Verdict, string> = {
-  fact: "var(--verdigris)",
-  unproven: "var(--brass)",
-  opinion: "var(--plum)",
-  contradicted: "var(--rust)",
-};
+import { ClaimMark } from "@/components/report/fact-check-layer";
 
 /**
- * Best-effort inline claim underlines for Tiptap SSR/CSR HTML. Walks text
- * nodes under the prose root and wraps the first substring match per claim.
- * Full TipTap mark integration (with offsets) is the durable fix; this
- * restores the trust signal on the reader surface today.
+ * Mounts interactive ClaimMark popovers into TipTap reader HTML by wrapping
+ * the first substring match per claim. Char-offset TipTap marks are the
+ * durable fix; this restores keyboard-accessible claim popovers today.
  */
 export function TiptapClaimHighlighter({
   claims,
   rootRef,
+  isAuthed = false,
+  reportId,
 }: {
   claims: FactClaim[];
   rootRef: React.RefObject<HTMLElement | null>;
+  isAuthed?: boolean;
+  reportId?: string;
 }) {
+  const rootsRef = useRef<Root[]>([]);
   const done = useRef(false);
 
   useEffect(() => {
@@ -53,33 +40,52 @@ export function TiptapClaimHighlighter({
     for (const claim of claims) {
       const needle = claim.text?.trim();
       if (!needle || used.has(needle)) continue;
+
       for (const textNode of textNodes) {
         const hay = textNode.textContent ?? "";
         const idx = hay.indexOf(needle);
         if (idx === -1) continue;
-        if (textNode.parentElement?.closest("[data-claim-verdict]")) continue;
+        if (textNode.parentElement?.closest("[data-claim-host]")) continue;
 
-        const verdict = VERDICT_MAP[claim.type] ?? "unproven";
         const range = document.createRange();
         range.setStart(textNode, idx);
         range.setEnd(textNode, idx + needle.length);
-        const mark = document.createElement("mark");
-        mark.dataset.claimVerdict = verdict;
-        mark.className =
-          "rounded-sm bg-transparent underline decoration-2 underline-offset-2";
-        mark.style.textDecorationColor = VERDICT_COLOR[verdict];
-        mark.title = claim.type;
+
+        const host = document.createElement("span");
+        host.dataset.claimHost = "true";
+        host.className = "inline";
         try {
-          range.surroundContents(mark);
-          used.add(needle);
+          range.surroundContents(host);
         } catch {
-          // Partial node boundaries (e.g. split across elements) skip quietly.
+          continue;
         }
+
+        const reactRoot = createRoot(host);
+        rootsRef.current.push(reactRoot);
+        reactRoot.render(
+          <ClaimMark claim={claim} isAuthed={isAuthed} reportId={reportId}>
+            {needle}
+          </ClaimMark>,
+        );
+        used.add(needle);
         break;
       }
     }
+
     done.current = true;
-  }, [claims, rootRef]);
+
+    return () => {
+      for (const r of rootsRef.current) {
+        try {
+          r.unmount();
+        } catch {
+          // Host may already be gone on navigation.
+        }
+      }
+      rootsRef.current = [];
+      done.current = false;
+    };
+  }, [claims, rootRef, isAuthed, reportId]);
 
   return null;
 }

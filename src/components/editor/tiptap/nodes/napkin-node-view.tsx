@@ -138,7 +138,7 @@ export function NapkinNodeView({
         const cloudOk = await generateCloud();
         if (cloudOk) return;
         if (provider === "cloud" && !chartMode) {
-          setError("Cloud diagram unavailable — try built-in or set NAPKIN_API_KEY.");
+          setError("Cloud diagram unavailable. Try built-in or set NAPKIN_API_KEY.");
           return;
         }
       }
@@ -147,7 +147,7 @@ export function NapkinNodeView({
         setError("Could not generate diagram. Set DEEPSEEK_API_KEY for built-in, or NAPKIN_API_KEY for chart labels.");
       }
     } catch {
-      setError("Generation failed — check your connection and try again.");
+      setError("Generation failed. Check your connection and try again.");
     } finally {
       setGenerating(false);
     }
@@ -292,7 +292,7 @@ export function NapkinNodeView({
                 onChange={(e) => setText(e.target.value)}
                 onMouseDown={stop}
                 rows={chartMode ? 6 : 4}
-                placeholder="Edit levels, ticker, or thesis — the diagram redraws from your text."
+                placeholder="Edit levels, ticker, or thesis. The diagram redraws from your text."
                 className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
               />
             </label>

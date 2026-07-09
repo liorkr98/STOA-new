@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
-import { PencilSimpleLine, PlusCircle } from "@phosphor-icons/react/dist/ssr";
+import { PenLine, PlusCircle } from "lucide-react";
 import { getSessionProfile } from "@/lib/db/auth";
 import { listByAuthor } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
@@ -42,7 +42,7 @@ export default async function StudioOverview() {
           <p className="t-body mt-1">Welcome back, {profile.display_name}.</p>
         </div>
         <Link href="/studio/compose" className={buttonClass("primary", "lg")}>
-          <PlusCircle size={18} weight="bold" />
+          <PlusCircle size={18} strokeWidth={2.5} />
           New publication
         </Link>
       </div>
@@ -105,7 +105,7 @@ export default async function StudioOverview() {
                 <li key={d.id} className="flex items-center justify-between border-b border-border px-5 py-3 last:border-0">
                   <span className="truncate text-sm">{d.title || "Untitled draft"}</span>
                   <Link href={`/studio/compose?id=${d.id}`} className="text-text-faint hover:text-text">
-                    <PencilSimpleLine size={16} />
+                    <PenLine size={16} />
                   </Link>
                 </li>
               ))}

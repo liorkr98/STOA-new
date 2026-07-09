@@ -194,7 +194,7 @@ function buildLedger(
       if (!outcome) return [];
       return [
         {
-          ticker: (p.ticker ?? p.report?.ticker ?? "—").toUpperCase(),
+          ticker: (p.ticker ?? p.report?.ticker ?? "-").toUpperCase(),
           authorHandle: p.author?.handle ?? "analyst",
           authorName: p.author?.display_name ?? "Analyst",
           targetPrice: p.target_price,

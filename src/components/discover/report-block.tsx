@@ -159,6 +159,15 @@ export function ReportBlock({
           </span>
         </span>
       </div>
+
+      <div className="relative z-10 pt-1">
+        <Link
+          href={`/report/${report.id}`}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 py-1.5 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2"
+        >
+          {accessLabel ? `Unlock · ${accessLabel}` : "Read report"}
+        </Link>
+      </div>
     </article>
   );
 }

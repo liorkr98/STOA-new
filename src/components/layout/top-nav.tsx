@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Bell, PenLine, Search } from "lucide-react";
+import { Menu, X, Bell, PenLine } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 import { StoaLogo } from "@/components/brand/logo";
@@ -48,12 +48,11 @@ export function TopNav({
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   const links = profile ? appLinks : publicLinks;
   const logoHref = profile ? "/home" : "/";
-  // role is a single exclusive enum today (see BACKEND_DATA_CONTRACTS.md),
-  // so no account has both capabilities yet -- this always evaluates false
-  // until that changes, which is the spec's own intended fallback.
-  const hasInvestorRole = false;
-  const hasCreatorRole = isAnalyst;
-  const showRoleSwitcher = hasInvestorRole && hasCreatorRole;
+  // Analysts can view as Investor (Discover/Home) or Creator (Studio).
+  // Full dual-role accounts land with BACKEND_DATA_CONTRACTS.md; until then
+  // analysts get the switcher so the two-sided product stays legible.
+  const showRoleSwitcher = isAnalyst;
+  const viewingAsCreator = pathname.startsWith("/studio") || pathname.startsWith("/dashboard");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-paper">
@@ -63,7 +62,7 @@ export function TopNav({
             <Link href={logoHref} className="focus-ring rounded-[var(--radius-btn)]">
               <StoaLogo />
             </Link>
-            {showRoleSwitcher && <RoleSwitcher current={hasCreatorRole ? "creator" : "investor"} />}
+            {showRoleSwitcher && <RoleSwitcher current={viewingAsCreator ? "creator" : "investor"} />}
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((l) => {
@@ -87,18 +86,11 @@ export function TopNav({
           </nav>
         </div>
 
-        <div className="hidden flex-1 justify-center px-2 lg:flex">
+        <div className="hidden flex-1 justify-center px-2 md:flex">
           <NavSearch />
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link
-            href="/search"
-            className="focus-ring rounded-[var(--radius-btn)] p-2 text-text-mute hover:bg-surface-2 hover:text-text lg:hidden"
-            aria-label="Search"
-          >
-            <Search size={18} />
-          </Link>
           <ThemeToggle />
           {profile ? (
             <>

@@ -39,14 +39,14 @@ export function PlanTierSelect({
           <option key={plan.id} value={plan.rank}>
             {plan.name}
             {plan.price_cents > 0
-              ? ` — $${(plan.price_cents / 100).toFixed(0)}/${plan.interval === "year" ? "yr" : "mo"}`
+              ? ` · $${(plan.price_cents / 100).toFixed(0)}/${plan.interval === "year" ? "yr" : "mo"}`
               : " (free)"}
           </option>
         ))}
       </select>
       {sorted.length === 0 ? (
         <p className="t-meta mt-1.5 text-[11px]">
-          No tiers yet — add subscription tiers in{" "}
+          No tiers yet. Add subscription tiers in{" "}
           <a href="/studio/branding" className="text-accent hover:underline">
             Branding
           </a>

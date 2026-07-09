@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { DensityRoot } from "@/components/layout/density-root";
 import type { ScreenerRow } from "@/app/api/market/screener/route";
 
 /**
@@ -92,7 +93,7 @@ export default function ScreenerPage() {
     "h-9 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-sm focus-ring";
 
   return (
-    <div className="flex flex-col gap-5">
+    <DensityRoot className="flex flex-col gap-5">
       <div>
         <h1 className="t-h1">Screener</h1>
         <p className="t-body mt-1">Filter the covered universe by fundamentals.</p>
@@ -145,6 +146,6 @@ export default function ScreenerPage() {
       ) : (
         <DataTable columns={columns} data={rows} rowKey={(r) => r.ticker} csvName="screener" />
       )}
-    </div>
+    </DensityRoot>
   );
 }

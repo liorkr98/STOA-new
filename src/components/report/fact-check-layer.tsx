@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { ChatCircle } from "@phosphor-icons/react";
+import { MessageCircle } from "lucide-react";
 import type { ClaimType, FactClaim } from "@/lib/ai/fact-check";
 import { DebateThread } from "@/components/report/debate-thread";
 import { ClaimVoteBar } from "@/components/report/claim-vote-bar";
@@ -147,7 +147,8 @@ export function FactCheckedText({
 // instantly. The group goes cold after 1.5s idle.
 let lastClaimCloseAt = 0;
 
-function ClaimMark({
+/** Interactive claim underline + popover. Exported for TipTap reader mounts. */
+export function ClaimMark({
   claim,
   children,
   isAuthed,
@@ -206,7 +207,7 @@ function ClaimMark({
           >
             {children}
             {verdict === "opinion" && (
-              <ChatCircle size={12} weight="fill" className="ml-0.5 inline align-super" style={{ color }} />
+              <MessageCircle size={12} className="ml-0.5 inline align-super fill-current" style={{ color }} />
             )}
           </button>
         </Popover.Trigger>
@@ -239,7 +240,7 @@ function ClaimMark({
                   setDebateOpen(true);
                 }}
               >
-                <ChatCircle size={12} weight="fill" />
+                <MessageCircle size={12} className="fill-current" />
                 Debate this claim
               </button>
             )}

@@ -1,4 +1,4 @@
-import { ArrowUpRight, Target, Clock } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight, Target, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
@@ -53,7 +53,7 @@ export function PredictionCard({
         <Field
           label="Target"
           value={target_price ? `$${price(target_price)}` : "Open"}
-          icon={<Target size={12} weight="bold" />}
+          icon={<Target size={12} strokeWidth={2.5} />}
           trailing={<SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />}
         />
         <Field
@@ -64,7 +64,7 @@ export function PredictionCard({
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <span className="t-meta inline-flex items-center gap-1">
-          <Clock size={13} weight="bold" />
+          <Clock size={13} strokeWidth={2.5} />
           {prediction.horizon_days}d horizon
         </span>
         <span
@@ -75,7 +75,7 @@ export function PredictionCard({
             tone === "neutral" && "text-text-mute",
           )}
         >
-          {return_pct != null && <ArrowUpRight size={14} weight="bold" />}
+          {return_pct != null && <ArrowUpRight size={14} strokeWidth={2.5} />}
           {pct(return_pct)}
         </span>
       </div>

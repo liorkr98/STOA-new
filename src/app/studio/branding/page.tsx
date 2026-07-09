@@ -28,7 +28,7 @@ export default async function StudioBrandingPage() {
       <div>
         <h1 className="t-h1">Branding studio</h1>
         <p className="t-body mt-1">
-          Your public storefront — identity, layout, AI coach, and Discover boosts.
+          Your public storefront: identity, layout, AI coach, and Discover boosts.
         </p>
       </div>
       <BrandingStudio

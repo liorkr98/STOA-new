@@ -2,7 +2,7 @@ import { compact } from "@/lib/format";
 import type { CompanyFundamentals } from "@/lib/engine/market";
 
 function fmtPct(n: number | null) {
-  if (n == null) return "—";
+  if (n == null) return "-";
   return `${(n * 100).toFixed(1)}%`;
 }
 

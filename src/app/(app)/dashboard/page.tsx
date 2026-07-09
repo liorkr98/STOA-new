@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardBoard, SortableWidget } from "@/components/ui/dashboard-widget";
+import { DensityRoot } from "@/components/layout/density-root";
 import { useWatchlist } from "@/lib/watchlist";
 import { usePortfolio } from "@/lib/portfolio";
 import { UNIVERSE } from "@/lib/universe";
@@ -70,7 +71,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <DensityRoot className="flex flex-col gap-5">
       <div>
         <h1 className="t-h1">Dashboard</h1>
         <p className="t-body mt-1">Your board. Drag widgets to arrange it.</p>
@@ -78,7 +79,7 @@ export default function DashboardPage() {
       <DashboardBoard ids={order} onReorder={reorder} className="rounded-[var(--radius-card)] bg-surface-2 p-4">
         {order.map((id) => widgets[id])}
       </DashboardBoard>
-    </div>
+    </DensityRoot>
   );
 }
 

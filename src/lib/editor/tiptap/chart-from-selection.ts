@@ -147,7 +147,7 @@ export function buildNapkinChartPrompt(intent: ParsedChartIntent, originalText: 
     "Candlestick/line price action. Label every level with exact $ price.",
     levelLines.length
       ? `Levels:\n${levelLines.join("\n")}`
-      : "Support/resistance from note — label each with $ price.",
+      : "Support/resistance from note. Label each with $ price.",
     indicatorLines.length ? `Overlays:\n${indicatorLines.join("\n")}` : "",
     `Note: ${note}`,
   ]
@@ -206,7 +206,7 @@ export function insertVisualizedFromSelection(
   const selected = resolveSelectionText(editor, range);
   if (!selected) {
     return {
-      error: "Select text first — mention the stock and key levels (e.g. resistance at $140).",
+      error: "Select text first. Mention the stock and key levels (e.g. resistance at $140).",
       insertedChart: false,
       insertedNapkin: false,
     };
@@ -263,7 +263,7 @@ export function insertVisualizedFromSelection(
     insertedNapkin: mode === "diagram" || mode === "both",
     warning:
       intent && intent.annotations.length === 0 && (mode === "chart" || mode === "both")
-        ? "Chart added — no price levels detected. Mention levels like resistance at $140."
+        ? "Chart added. No price levels detected. Mention levels like resistance at $140."
         : undefined,
   };
 }

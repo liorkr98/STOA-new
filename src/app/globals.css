@@ -816,3 +816,29 @@ body {
 .dispatch-for-creators {
   padding-bottom: var(--space-4);
 }
+
+/* ------------------------------------------------------------------ *
+ * Density (docs/DESIGN_LANGUAGE.md §6). Reader prose is never affected.
+ * ------------------------------------------------------------------ */
+
+[data-density="compact"] {
+  --density-row: 2rem;
+  --density-pad: 0.5rem;
+  --density-gap: 0.5rem;
+}
+
+[data-density="comfortable"] {
+  --density-row: 2.75rem;
+  --density-pad: 0.75rem;
+  --density-gap: 0.75rem;
+}
+
+[data-density="compact"] .data-table th,
+[data-density="compact"] .data-table td {
+  padding-block: 0.375rem;
+}
+
+[data-density="compact"] .surface,
+[data-density="compact"] .ledger-card {
+  padding: var(--density-pad);
+}

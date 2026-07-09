@@ -274,7 +274,7 @@ export function DataTable<T>({
       )}
 
       <div className="scroll-area max-h-[70vh] overflow-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="data-table w-full border-collapse text-sm">
           <thead className="sticky top-0 z-10 bg-surface">
             <tr>
               {visibleColumns.map((col) => {

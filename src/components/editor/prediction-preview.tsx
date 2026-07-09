@@ -30,7 +30,7 @@ export function PredictionCardPreview({
         <DirectionTag direction={direction} />
       </div>
       <p className="num mt-2 text-2xl font-semibold">
-        {live != null ? `$${price(live)}` : "—"}
+        {live != null ? `$${price(live)}` : "-"}
       </p>
       <p className="t-meta mt-1">
         Entry locks at publish{target ? ` · Target $${target}` : ""}

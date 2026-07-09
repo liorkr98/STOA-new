@@ -18,9 +18,13 @@ import type { FactClaim } from "@/lib/ai/fact-check";
 export function TiptapReportRenderer({
   json,
   claims = [],
+  isAuthed = false,
+  reportId,
 }: {
   json: JSONContent;
   claims?: FactClaim[];
+  isAuthed?: boolean;
+  reportId?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const extensions = useMemo(() => buildExtensions({ editable: false }), []);
@@ -39,7 +43,14 @@ export function TiptapReportRenderer({
     <div ref={rootRef}>
       <EditorContent editor={editor} />
       <TickerHoverLayer />
-      {claims.length > 0 && <TiptapClaimHighlighter claims={claims} rootRef={rootRef} />}
+      {claims.length > 0 && (
+        <TiptapClaimHighlighter
+          claims={claims}
+          rootRef={rootRef}
+          isAuthed={isAuthed}
+          reportId={reportId}
+        />
+      )}
     </div>
   );
 }

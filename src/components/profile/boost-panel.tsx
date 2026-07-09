@@ -38,7 +38,7 @@ export function BoostPanel({
         toast.error(res.error ?? "Could not purchase boost");
         return;
       }
-      toast.success("Boost activated — your placement is live in Discover");
+      toast.success("Boost activated. Your placement is live in Discover");
       router.refresh();
     });
   }

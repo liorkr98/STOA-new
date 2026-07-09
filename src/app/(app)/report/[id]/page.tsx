@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { formatDistanceToNow } from "date-fns";
-import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { BadgeCheck } from "lucide-react";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { getReport } from "@/lib/db/reports";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
@@ -95,7 +95,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <div className="leading-tight">
                 <span className="flex items-center gap-1.5 text-sm font-semibold">
                   {author.display_name}
-                  {author.verified && <SealCheck size={13} weight="fill" className="text-accent" />}
+                  {author.verified && <BadgeCheck size={13} className="text-accent" />}
                 </span>
                 <span className="t-meta">@{author.handle}</span>
               </div>
