@@ -67,10 +67,7 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
     return { graded: 0, analystsUpdated: 0, subscriptionsExpired, pendingReview: 0, neutralResolved: 0 };
   }
 
-  const quotes = await getQuotesBatch(
-    due.map((p) => p.ticker),
-    { allowMock: false },
-  );
+  const quotes = await getQuotesBatch(due.map((p) => p.ticker));
   const spy = quotes.get(BENCHMARK);
   const affected = new Set<string>();
   let pendingReview = 0;
@@ -117,7 +114,7 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
       }
 
       const quote = quotes.get(p.ticker.toUpperCase());
-      if (!quote) {
+      if (!quote || quote.price == null) {
         pendingReview++;
         return {
           id: p.id,

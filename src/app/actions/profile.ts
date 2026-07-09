@@ -236,7 +236,7 @@ export async function completeAnalystOnboarding(formData: FormData) {
 
   const { error } = await supabase
     .from("profiles")
-    .update({ role: "analyst", sub_price: subPrice, report_price: reportPrice })
+    .update({ sub_price: subPrice, report_price: reportPrice })
     .eq("id", userId);
   if (error) throw new Error(error.message);
 

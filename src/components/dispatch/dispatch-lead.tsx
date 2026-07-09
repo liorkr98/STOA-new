@@ -12,14 +12,14 @@ function scoreColor(score: number) {
   return "var(--rust)";
 }
 
-/** Large inline MOAT display for the lead byline: the score is the point. */
+/** Large inline Track Score display for the lead byline: the score is the point. */
 function LeadScore({ handle, score }: { handle: string; score: number | null }) {
   const color = score == null ? "var(--text-faint)" : scoreColor(score);
   return (
     <Link
-      href={`/analyst/${handle}/moat`}
+      href={`/analyst/${handle}/score`}
       className="group/score flex items-center gap-2.5 focus-ring rounded-[var(--radius-btn)]"
-      title={score == null ? "Not yet scored" : `MOAT ${score}`}
+      title={score == null ? "Not yet scored" : `Track Score ${score}`}
     >
       <span
         aria-hidden
@@ -31,7 +31,7 @@ function LeadScore({ handle, score }: { handle: string; score: number | null }) 
           {score ?? "—"}
         </span>
         <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-faint transition-colors group-hover/score:text-text-mute">
-          Moat
+          Track Score
         </span>
       </span>
     </Link>

@@ -12,11 +12,11 @@ import {
 export interface TrackPoint {
   /** Resolved call index or label. */
   label: string;
-  /** Running MOAT score (0-100). */
+  /** Running Track Score (0-100). */
   score: number;
 }
 
-/** The analyst's MOAT score over their resolved calls. Accent stroke, no grid noise. */
+/** The analyst's Track Score over their resolved calls. Accent stroke, no grid noise. */
 export function TrackChart({ data }: { data: TrackPoint[] }) {
   return (
     <div className="h-56 w-full">

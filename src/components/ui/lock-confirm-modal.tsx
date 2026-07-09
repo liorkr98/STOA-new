@@ -85,7 +85,7 @@ export function LockConfirmModal({
 
               <Dialog.Description className="t-body mt-2">
                 Once locked, this price target can&apos;t be edited or deleted. It&apos;ll count
-                toward your MOAT score whether it hits or misses.
+                toward your Track Score whether it hits or misses.
               </Dialog.Description>
 
               <dl className="mt-5 flex flex-col gap-2 rounded-[var(--r-card)] bg-surface-2 p-4 text-sm">

@@ -1,16 +1,17 @@
 /**
  * Market data provider. Server-only.
  *
- * Primary: Yahoo Finance via yahoo-finance2 (Node equivalent of Python yfinance).
- * Fallbacks: Twelve Data, Alpha Vantage. Final fallback: deterministic mock prices.
- * Benchmark symbol: SPY (S&P 500 ETF).
+ * Primary: Yahoo Finance via yahoo-finance2.
+ * Fallbacks: Twelve Data, Alpha Vantage. No mock/simulated prices.
  */
 
 import { fetchQuote, fetchQuotesBatch } from "./providers/chain";
 import type { Quote } from "./types";
 
 export type { CompanyFundamentals, Quote, QuoteSource } from "./types";
+export type { StockSnapshot } from "./snapshot";
 export { getCompanyFundamentals } from "./fundamentals";
+export { getStockSnapshot } from "./snapshot";
 
 const BENCHMARK_SYMBOL = "SPY";
 
@@ -18,13 +19,9 @@ export async function getQuote(symbol: string): Promise<Quote> {
   return fetchQuote(symbol);
 }
 
-/**
- * Fetches many symbols. Uses Yahoo batch quotes when possible; always includes SPY
- * when fetchBenchmark is true.
- */
 export async function getQuotesBatch(
   symbols: string[],
-  opts: { fetchBenchmark?: boolean; concurrency?: number; delayMs?: number; allowMock?: boolean } = {},
+  opts: { fetchBenchmark?: boolean } = {},
 ): Promise<Map<string, Quote>> {
   const unique = [...new Set(symbols.map((s) => s.toUpperCase()))];
   if (opts.fetchBenchmark !== false && !unique.includes(BENCHMARK_SYMBOL)) {
@@ -34,10 +31,8 @@ export async function getQuotesBatch(
   const map = await fetchQuotesBatch(unique);
 
   for (const sym of unique) {
-    if (!map.has(sym)) {
-      if (opts.allowMock === false) continue;
-      map.set(sym, await fetchQuote(sym));
-    } else if (opts.allowMock === false && map.get(sym)?.mock) {
+    const q = map.get(sym);
+    if (!q?.available || q.price == null) {
       map.delete(sym);
     }
   }
@@ -49,18 +44,17 @@ export async function getBenchmarkQuote(): Promise<Quote> {
   return getQuote(BENCHMARK_SYMBOL);
 }
 
-/** Percent return of SPY between a captured baseline and a resolved price. */
 export function benchmarkReturn(
   lockPrice: number | null,
-  resolvedPrice: number,
+  resolvedPrice: number | null,
 ): number | null {
-  if (!lockPrice || lockPrice <= 0) return null;
+  if (!lockPrice || lockPrice <= 0 || resolvedPrice == null) return null;
   return ((resolvedPrice - lockPrice) / lockPrice) * 100;
 }
 
-/** Percent return of SPY between a captured baseline and now (live quote). */
 export async function benchmarkReturnSince(lockPrice: number | null): Promise<number | null> {
   if (!lockPrice || lockPrice <= 0) return null;
   const now = await getBenchmarkQuote();
+  if (!now.available || now.price == null) return null;
   return benchmarkReturn(lockPrice, now.price);
 }

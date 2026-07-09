@@ -21,7 +21,7 @@ export function FirstReportBanner() {
         <div>
           <p className="t-h3">Your first report</p>
           <p className="t-body mt-1 text-sm">
-            This is the real editor. Publishing locks in your first call for the MOAT score, just
+            This is the real editor. Publishing locks in your first call for the Track Score, just
             like every report after it.
           </p>
         </div>

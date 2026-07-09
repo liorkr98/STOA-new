@@ -8,7 +8,7 @@ import { cn } from "@/lib/design/cn";
 export interface DiscoverFilters {
   type?: "research" | "call" | "short_post";
   access?: "free" | "paid" | "subscribers";
-  moat?: "40" | "70";
+  score?: "40" | "70";
   ticker?: string;
 }
 
@@ -26,10 +26,10 @@ const ACCESS_OPTIONS = [
   { value: "subscribers", label: "Subscribers" },
 ] as const;
 
-const MOAT_OPTIONS = [
-  { value: "", label: "Any MOAT" },
-  { value: "40", label: "MOAT 40+" },
-  { value: "70", label: "MOAT 70+" },
+const SCORE_OPTIONS = [
+  { value: "", label: "Any score" },
+  { value: "40", label: "Score 40+" },
+  { value: "70", label: "Score 70+" },
 ] as const;
 
 function Pill({
@@ -83,7 +83,11 @@ export function FilterBar() {
     setParam("ticker", tickerDraft.trim().toUpperCase());
   }
 
-  const hasFilters = ["type", "access", "moat", "ticker"].some((k) => params.get(k));
+  const hasFilters = ["type", "access", "score", "moat", "ticker"].some((k) => params.get(k));
+
+  function scoreParam() {
+    return params.get("score") ?? params.get("moat") ?? "";
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -111,11 +115,17 @@ export function FilterBar() {
 
       <span aria-hidden className="h-5 w-px bg-border" />
 
-      {MOAT_OPTIONS.filter((o) => o.value).map((o) => (
+      {SCORE_OPTIONS.filter((o) => o.value).map((o) => (
         <Pill
           key={o.value}
-          active={params.get("moat") === o.value}
-          onClick={() => setParam("moat", params.get("moat") === o.value ? "" : o.value)}
+          active={scoreParam() === o.value}
+          onClick={() => {
+            const next = new URLSearchParams(params.toString());
+            next.delete("moat");
+            if (scoreParam() === o.value) next.delete("score");
+            else next.set("score", o.value);
+            router.replace(`/discover?${next.toString()}`, { scroll: false });
+          }}
         >
           {o.label}
         </Pill>

@@ -19,7 +19,7 @@ import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { Stat } from "@/components/ui/stat";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { TrackChart } from "@/components/charts/track-chart";
 import { TabBar } from "@/components/feed/tab-bar";
 import { ReportCard } from "@/components/report-card";
@@ -128,7 +128,7 @@ export default async function AnalystProfilePage({
         showEditLink={isSelf}
         aside={
           <>
-            <MoatBadge
+            <TrackScoreBadge
               handle={profile.handle}
               score={profile.score || stats.score || null}
               hitRate={stats.winRate}

@@ -11,7 +11,7 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { Avatar } from "@/components/ui/avatar";
-import { MoatBadge } from "@/components/ui/moat-badge";
+import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { ReportActions } from "@/components/report/report-actions";
@@ -97,7 +97,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 <span className="t-meta">@{author.handle}</span>
               </div>
             </Link>
-            <MoatBadge handle={author.handle} score={author.score || null} size="md" />
+            <TrackScoreBadge handle={author.handle} score={author.score || null} size="md" />
           </div>
           <ReportActions
             reportId={id}
