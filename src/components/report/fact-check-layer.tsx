@@ -35,7 +35,13 @@ function verdictOf(claim: FactClaim): Verdict {
  * fact-check signal even if they never hover a single inline claim. Each
  * segment jump-scrolls to the first claim of that type.
  */
-export function FactCheckLayer({ claims }: { claims: FactClaim[] }) {
+export function FactCheckLayer({
+  claims,
+  className,
+}: {
+  claims: FactClaim[];
+  className?: string;
+}) {
   const counts = useMemo(() => {
     const c: Record<Verdict, number> = { fact: 0, unproven: 0, opinion: 0, contradicted: 0 };
     for (const claim of claims) c[verdictOf(claim)]++;
@@ -50,7 +56,12 @@ export function FactCheckLayer({ claims }: { claims: FactClaim[] }) {
   }
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-y border-border py-3 t-meta">
+    <div
+      className={
+        className ??
+        "mt-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-y border-border py-3 t-meta"
+      }
+    >
       <span className="font-medium text-text">{claims.length} claims checked</span>
       {(Object.keys(counts) as Verdict[])
         .filter((v) => counts[v] > 0)

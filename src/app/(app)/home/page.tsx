@@ -27,7 +27,7 @@ export default async function HomePage() {
         <EmptyState
           icon={<Compass size={32} />}
           title="Your dispatch is empty"
-          body="Follow analysts or subscribe to their research. Their best calls will land here each morning — ranked by conviction and track record."
+          body="Follow analysts or subscribe to their research. Their best calls will land here each morning, ranked by conviction and track record."
           action={
             <Link href="/discover?tab=researchers" className={buttonClass("primary", "md")}>
               Find analysts to follow

@@ -13,7 +13,7 @@ function Bar({ label, value }: { label: string; value: number | null }) {
     <div>
       <div className="mb-1 flex items-center justify-between">
         <span className="t-meta">{label}</span>
-        <span className="num text-sm font-medium">{value == null ? "—" : `${Math.round(value)}`}</span>
+        <span className="num text-sm font-medium">{value == null ? "-" : `${Math.round(value)}`}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-surface-2">
         <div

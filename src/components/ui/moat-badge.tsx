@@ -3,11 +3,12 @@ import { cn } from "@/lib/design/cn";
 
 type Size = "sm" | "md" | "lg";
 
-/** score is the engine's 0-100 composite (see src/lib/engine/score.ts). */
-function scoreColor(score: number) {
-  if (score >= 70) return "var(--verdigris)";
-  if (score >= 40) return "var(--brass)";
-  return "var(--rust)";
+/**
+ * MOAT is a trust score, not market sentiment. Always ink (or brass when
+ * provisional). Verdigris/rust stay reserved for hit/miss and fact-check.
+ */
+function scoreColor(provisional: boolean) {
+  return provisional ? "var(--brass)" : "var(--ink)";
 }
 
 function Wrapper({
@@ -65,8 +66,8 @@ export function MoatBadge({
   className?: string;
 }) {
   const empty = score == null;
-  const color = empty ? "var(--text-faint)" : scoreColor(score);
   const provisional = sampleSize != null && sampleSize < 10;
+  const color = empty ? "var(--text-faint)" : scoreColor(provisional);
   const href = `/analyst/${handle}/moat`;
 
   if (size === "sm") {
@@ -82,7 +83,7 @@ export function MoatBadge({
       >
         <SealDot color={color} />
         <span className="num text-xs font-semibold" style={{ color }}>
-          {empty ? "—" : score}
+          {empty ? "-" : score}
         </span>
       </Wrapper>
     );
@@ -100,7 +101,7 @@ export function MoatBadge({
       >
         <SealDot color={color} />
         <span className="num text-sm font-semibold" style={{ color }}>
-          {empty ? "— MOAT" : score}
+          {empty ? "- MOAT" : score}
         </span>
         {!empty && hitRate != null && (
           <span className="t-meta">&middot; {Math.round(hitRate * 100)}% hit rate</span>
@@ -122,7 +123,7 @@ export function MoatBadge({
       <div className="flex flex-col gap-0.5">
         <div className="flex items-baseline gap-2">
           <span className="num text-3xl font-semibold leading-none" style={{ color }}>
-            {empty ? "—" : score}
+            {empty ? "-" : score}
           </span>
           <span className="t-eyebrow">MOAT</span>
         </div>
@@ -134,7 +135,7 @@ export function MoatBadge({
             {sampleSize != null && ` over ${sampleSize} resolved call${sampleSize === 1 ? "" : "s"}`}
           </span>
         )}
-        {provisional && <span className="t-meta text-[var(--brass)]">Provisional -- small sample</span>}
+        {provisional && <span className="t-meta text-[var(--brass)]">Provisional · small sample</span>}
         <span className="t-meta underline">View full breakdown</span>
       </div>
     </Wrapper>

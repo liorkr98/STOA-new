@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { BookmarkSimple, Heart } from "@phosphor-icons/react";
+import { Bookmark, Heart } from "lucide-react";
 import { toggleLike, toggleSave } from "@/app/actions/social";
 import { cn } from "@/lib/design/cn";
 
@@ -48,23 +48,28 @@ export function ReportActions({
     <div className="flex items-center gap-2">
       <button
         onClick={onLike}
+        type="button"
+        aria-label={liked ? "Unlike" : "Like"}
+        aria-pressed={liked}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
-          liked && "text-[var(--down)]",
+          "focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
+          liked && "text-accent",
         )}
       >
-        <Heart size={16} weight={liked ? "fill" : "regular"} />
+        <Heart size={16} className={liked ? "fill-current" : undefined} />
         <span className="num">{likes}</span>
       </button>
       <button
         onClick={onSave}
-        aria-label="Save"
+        type="button"
+        aria-label={saved ? "Unsave" : "Save"}
+        aria-pressed={saved}
         className={cn(
-          "inline-flex items-center rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
+          "focus-ring inline-flex items-center rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
           saved && "text-accent",
         )}
       >
-        <BookmarkSimple size={16} weight={saved ? "fill" : "regular"} />
+        <Bookmark size={16} className={saved ? "fill-current" : undefined} />
       </button>
     </div>
   );

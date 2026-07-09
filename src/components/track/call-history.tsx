@@ -78,7 +78,7 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
                             : "var(--down)",
                     }}
                   >
-                    {p.return_pct == null ? "—" : pct(p.return_pct)}
+                    {p.return_pct == null ? "-" : pct(p.return_pct)}
                   </td>
                   <td
                     className="num px-3 py-3 text-right"
@@ -91,7 +91,7 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
                             : "var(--down)",
                     }}
                   >
-                    {alpha == null ? "—" : pct(alpha)}
+                    {alpha == null ? "-" : pct(alpha)}
                   </td>
                   <td className="px-6 py-3 text-right">
                     <GradeTag outcome={open ? "open" : p.outcome} />

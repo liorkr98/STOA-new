@@ -69,7 +69,7 @@ export default async function WalletPage() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-text-mute">Platform fee (10%)</span>
-              <span className="num text-[var(--rust)]">-{usd(platformFee, { cents: true })}</span>
+              <span className="num text-text-mute">-{usd(platformFee, { cents: true })}</span>
             </div>
             <div className="my-1 h-px bg-border" />
             <div className="flex items-center justify-between font-semibold">

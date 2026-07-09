@@ -14,6 +14,7 @@
     "import:kaggle": "tsx scripts/import-kaggle.ts",
     "test:engine": "node --import tsx --test src/lib/engine/score.test.ts",
     "test:valuation": "node --import tsx --test src/lib/valuation/model.test.ts",
+    "test:users": "npx tsx scripts/simulate-users.ts",
     "vercel:setup": "node scripts/vercel-setup.mjs"
   },
   "dependencies": {

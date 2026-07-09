@@ -14,6 +14,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { MoatBadge } from "@/components/ui/moat-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
+import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
@@ -68,9 +69,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const canRead =
     report.access === "free" || isAuthor || unlocked || subscribed;
   const reportPrice = report.price ?? author?.report_price ?? 0;
+  const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
+  const claims = factCheck?.claims ?? [];
 
   return (
-    <article className="mx-auto max-w-3xl">
+    <article className="mx-auto max-w-6xl">
       <ViewTracker reportId={id} />
 
       <div className="flex items-center gap-3">
@@ -85,9 +88,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       {report.summary && <p className="t-body mt-3 text-lg">{report.summary}</p>}
 
       {author && (
-        <div className="mt-5 flex items-center justify-between border-y border-border py-4">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
           <div className="flex items-center gap-3">
-            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3">
+            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3 focus-ring rounded-[var(--radius-btn)]">
               <Avatar src={author.avatar_url} name={author.display_name} size="md" />
               <div className="leading-tight">
                 <span className="flex items-center gap-1.5 text-sm font-semibold">
@@ -97,39 +100,54 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 <span className="t-meta">@{author.handle}</span>
               </div>
             </Link>
-            <MoatBadge handle={author.handle} score={author.score || null} size="md" />
           </div>
-          <ReportActions
-            reportId={id}
-            initialLikes={report.likes}
-            initialLiked={liked}
-            initialSaved={saved}
-            isAuthed={Boolean(userId)}
-          />
-          <ShareMenu
-            target={{
-              url: `/report/${id}`,
-              title: report.title ?? "Research on Stoa",
-              ticker: report.ticker ?? undefined,
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <ReportActions
+              reportId={id}
+              initialLikes={report.likes}
+              initialLiked={liked}
+              initialSaved={saved}
+              isAuthed={Boolean(userId)}
+            />
+            <ShareMenu
+              target={{
+                url: `/report/${id}`,
+                title: report.title ?? "Research on Stoa",
+                ticker: report.ticker ?? undefined,
+              }}
+            />
+          </div>
         </div>
       )}
 
-      {report.prediction && (
-        <div className="mt-6 space-y-4">
-          <PredictionCard prediction={report.prediction} />
-          {report.ticker && <PriceAttestationSection ticker={report.ticker} />}
-        </div>
-      )}
+      {/* Trust rail stacks above the body on mobile; sticky sidebar on desktop. */}
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
+        <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
+          {report.prediction && <PredictionCard prediction={report.prediction} />}
+          {report.prediction && report.ticker && <PriceAttestationSection ticker={report.ticker} />}
+          <DisclosureBlock
+            holdsPosition={report.position_held ?? false}
+            compensationTied={report.compensation_tied ?? false}
+            compensationDetail={report.compensation_detail ?? undefined}
+          />
+          {author && (
+            <MoatBadge
+              handle={author.handle}
+              score={author.score || null}
+              size="md"
+            />
+          )}
+          {claims.length > 0 && (
+            <FactCheckLayer
+              claims={claims}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--radius-card)] border border-border bg-surface px-3 py-3 t-meta"
+            />
+          )}
+        </aside>
 
-      {canRead ? (
-        (() => {
-          const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
-          const claims = factCheck?.claims ?? [];
-          return (
+        <div className="order-2 min-w-0 lg:order-1">
+          {canRead ? (
             <>
-              <FactCheckLayer claims={claims} />
               <AudioBrief reportId={id} isAuthor={isAuthor} />
               <ReportBody
                 body={report.body}
@@ -138,23 +156,24 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 reportId={id}
               />
             </>
-          );
-        })()
-      ) : (
-        <Paywall
-          access={report.access}
-          reportId={id}
-          price={reportPrice}
-          authorHandle={author?.handle ?? ""}
-          authorId={report.author_id}
-          subPrice={author?.sub_price ?? null}
-          balance={wallet?.balance ?? 0}
-          isAuthed={Boolean(userId)}
-          subscribed={subscribed}
-        />
-      )}
+          ) : (
+            <Paywall
+              access={report.access}
+              reportId={id}
+              price={reportPrice}
+              authorHandle={author?.handle ?? ""}
+              authorId={report.author_id}
+              subPrice={author?.sub_price ?? null}
+              balance={wallet?.balance ?? 0}
+              isAuthed={Boolean(userId)}
+              subscribed={subscribed}
+              previewText={report.summary ?? undefined}
+            />
+          )}
 
-      <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+          <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+        </div>
+      </div>
     </article>
   );
 }
@@ -169,6 +188,7 @@ function Paywall({
   balance,
   isAuthed,
   subscribed,
+  previewText,
 }: {
   access: "subscribers" | "paid" | "free";
   reportId: string;
@@ -179,6 +199,7 @@ function Paywall({
   balance: number;
   isAuthed: boolean;
   subscribed: boolean;
+  previewText?: string;
 }) {
   // access is a single exclusive mode today (see BACKEND_DATA_CONTRACTS.md) --
   // showing both CTAs would offer a subscribe path that wouldn't actually
@@ -208,6 +229,7 @@ function Paywall({
 
   return (
     <PaywallGate
+      previewText={previewText}
       onUnlock={unlockButton}
       onSubscribe={subscribeButton}
       isAuthed={isAuthed}

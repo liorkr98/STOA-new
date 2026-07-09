@@ -11,7 +11,7 @@ import { DispatchWire } from "@/components/dispatch/dispatch-wire";
 import type { DispatchPayload, DispatchViewMode } from "@/lib/dispatch/types";
 
 /**
- * The front page. Numbered, dated, with a top and a bottom — the homepage
+ * The front page. Numbered, dated, with a top and a bottom: the homepage
  * adopting the same trust logic as the seal. Editorial content runs from the
  * masthead to the end slug; recruitment and the explainer sit after the close.
  */
@@ -44,7 +44,7 @@ export function DispatchView({
 
       {isHome ? (
         <p className="dispatch-briefing-tagline mb-10 text-center text-sm text-text-mute leading-relaxed">
-          From the analysts you follow and subscribe to — ranked by signal, not noise.
+          From the analysts you follow and subscribe to, ranked by signal, not noise.
         </p>
       ) : null}
 

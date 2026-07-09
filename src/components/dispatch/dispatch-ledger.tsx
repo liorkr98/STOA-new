@@ -20,7 +20,7 @@ function OutcomeBadge({
 }
 
 function money(v: number | null) {
-  return v == null ? "—" : `$${v.toFixed(2)}`;
+  return v == null ? "-" : `$${v.toFixed(2)}`;
 }
 
 /**
@@ -71,7 +71,7 @@ export function DispatchLedger({ items }: { items: DispatchLedgerRow[] }) {
                 </td>
                 <td className="num py-3 pr-4 text-right text-xs font-semibold">
                   {item.returnPct == null ? (
-                    <span className="text-text-faint">—</span>
+                    <span className="text-text-faint">-</span>
                   ) : (
                     <span
                       style={{ color: item.returnPct >= 0 ? "var(--up)" : "var(--down)" }}

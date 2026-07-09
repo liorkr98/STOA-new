@@ -4,8 +4,11 @@ import { Lock, MessageCircle, Heart } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
 import type { Report } from "@/lib/types";
+import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { Avatar } from "@/components/ui/avatar";
 import { MoatBadge } from "@/components/ui/moat-badge";
+import { SealStamp } from "@/components/ui/seal-stamp";
+import { DirectionTag } from "@/components/ui/tag";
 
 const typeLabel: Record<Report["type"], string> = {
   research: "Research",
@@ -33,6 +36,17 @@ export function ReportBlock({
   const ticker = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
   const dek = report.title && report.summary ? report.summary : null;
+  const prediction = report.prediction;
+  const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
+  const claimCount = factCheck?.claims?.length ?? 0;
+  const accessLabel =
+    report.access === "paid"
+      ? report.price != null
+        ? `$${report.price}`
+        : "Paid"
+      : report.access === "subscribers"
+        ? "Subscribers"
+        : null;
 
   return (
     <article
@@ -53,12 +67,26 @@ export function ReportBlock({
             {ticker}
           </span>
         )}
-        {report.prediction?.target_price != null && (
+        {prediction?.direction && <DirectionTag direction={prediction.direction} />}
+        {prediction?.target_price != null && (
           <span className="num text-text-faint">
-            Target ${report.prediction.target_price.toFixed(0)}
+            Target ${prediction.target_price.toFixed(0)}
           </span>
         )}
-        {locked && <Lock size={11} className="text-text-faint" aria-label="Locked content" />}
+        {claimCount > 0 && (
+          <span className="rounded-[var(--r-tag)] border border-border px-1.5 py-px text-text-mute">
+            {claimCount} checked
+          </span>
+        )}
+        {accessLabel && (
+          <span className="inline-flex items-center gap-1 rounded-[var(--r-tag)] border border-border px-1.5 py-px text-text-mute">
+            <Lock size={10} aria-hidden />
+            {accessLabel}
+          </span>
+        )}
+        {locked && !accessLabel && (
+          <Lock size={11} className="text-text-faint" aria-label="Locked content" />
+        )}
       </div>
 
       <Link href={`/report/${report.id}`} className="focus-ring rounded-[var(--radius-btn)]">
@@ -84,6 +112,25 @@ export function ReportBlock({
           </p>
         )}
       </Link>
+
+      {prediction && (
+        <div className="relative z-10 flex items-center gap-2">
+          <SealStamp
+            status={
+              prediction.outcome === "hit" || prediction.outcome === "near"
+                ? "hit"
+                : prediction.outcome === "miss"
+                  ? "miss"
+                  : "locked"
+            }
+            date={new Date(report.locked_at ?? prediction.created_at)}
+            size="sm"
+          />
+          <span className="t-meta">
+            {prediction.outcome === "open" ? "Locked call" : `Resolved ${prediction.outcome}`}
+          </span>
+        </div>
+      )}
 
       <div className="relative z-10 mt-auto flex items-center gap-2.5 pt-1">
         {author && (

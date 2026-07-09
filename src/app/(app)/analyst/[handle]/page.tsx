@@ -41,7 +41,7 @@ export async function generateMetadata({
 
   const title = `${profile.display_name} (@${profile.handle})`;
   const description =
-    profile.headline || profile.bio?.slice(0, 160) || `Independent analyst on Stoa — @${profile.handle}`;
+    profile.headline || profile.bio?.slice(0, 160) || `Independent analyst on Stoa · @${profile.handle}`;
   const image = profile.cover_url || profile.avatar_url;
 
   return {
