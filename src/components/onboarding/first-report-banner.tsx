@@ -21,8 +21,9 @@ export function FirstReportBanner() {
         <div>
           <p className="t-h3">Your first report</p>
           <p className="t-body mt-1 text-sm">
-            This is the real editor. Publishing locks in your first call for the Track Score, just
-            like every report after it.
+            Write in the center. Use Lock &amp; Publish on the right (or the panel button on
+            mobile) for ticker, target, access, and disclosures. Publishing locks your call for
+            the Track Score.
           </p>
         </div>
         <button

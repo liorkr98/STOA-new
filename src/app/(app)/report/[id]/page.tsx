@@ -178,7 +178,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               balance={wallet?.balance ?? 0}
               isAuthed={Boolean(userId)}
               subscribed={subscribed}
-              previewText={report.summary ?? undefined}
             />
           )}
 
@@ -199,7 +198,6 @@ function Paywall({
   balance,
   isAuthed,
   subscribed,
-  previewText,
 }: {
   access: "subscribers" | "paid" | "free";
   reportId: string;
@@ -210,7 +208,6 @@ function Paywall({
   balance: number;
   isAuthed: boolean;
   subscribed: boolean;
-  previewText?: string;
 }) {
   // access is a single exclusive mode today (see BACKEND_DATA_CONTRACTS.md) --
   // showing both CTAs would offer a subscribe path that wouldn't actually
@@ -240,7 +237,6 @@ function Paywall({
 
   return (
     <PaywallGate
-      previewText={previewText}
       onUnlock={unlockButton}
       onSubscribe={subscribeButton}
       isAuthed={isAuthed}

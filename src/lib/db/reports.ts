@@ -13,6 +13,16 @@ function normalize(row: Record<string, unknown>): Report {
   return { ...(row as unknown as Report), prediction };
 }
 
+/** Supabase dynamic selects (e.g. !inner joins) widen inferred types; normalize via unknown. */
+function asReportRows(data: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(data)) return [];
+  return data as unknown as Record<string, unknown>[];
+}
+
+function asReportRow(data: unknown): Record<string, unknown> {
+  return data as unknown as Record<string, unknown>;
+}
+
 export type FeedSort = "trending" | "recent";
 
 export type CallStatusFilter = "open" | "resolved";
@@ -113,7 +123,7 @@ export async function listFeed({
         : q.order("published_at", { ascending: false });
     const { data } = await q.limit(fetchLimit);
     return applyJoinedFilters(
-      ((data as Record<string, unknown>[]) ?? [])
+      asReportRows(data)
         .map(normalize)
         .filter((r) => !dismissed.has(r.id)),
       merged,
@@ -147,7 +157,7 @@ export async function listFeedFromAnalysts(
   q = applyReportColumnFilters(q, filters);
   const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
   return applyJoinedFilters(
-    ((data as Record<string, unknown>[]) ?? [])
+    asReportRows(data)
       .map(normalize)
       .filter((r) => !dismissed.has(r.id)),
     filters,
@@ -159,7 +169,7 @@ export async function getReport(id: string): Promise<Report | null> {
     const supabase = await createClient();
     const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
     if (!data) return null;
-    const report = normalize(data as Record<string, unknown>);
+    const report = normalize(asReportRow(data));
     const { data: bodyRow } = await supabase
       .from("report_bodies")
       .select("body")
@@ -186,7 +196,7 @@ export async function getDraftForAuthor(
     .eq("status", "draft")
     .maybeSingle();
   if (!data) return null;
-  const report = normalize(data as Record<string, unknown>);
+  const report = normalize(asReportRow(data));
   const { data: bodyRow } = await supabase
     .from("report_bodies")
     .select("body")
@@ -209,7 +219,7 @@ export async function listByAuthor(
   let q = supabase.from("reports").select(SELECT).eq("author_id", authorId);
   if (opts.status) q = q.eq("status", opts.status);
   const { data } = await q.order("created_at", { ascending: false }).limit(opts.limit ?? 50);
-  return ((data as Record<string, unknown>[]) ?? []).map(normalize);
+  return asReportRows(data).map(normalize);
 }
 
 /** Map of ticker -> count of published reports covering it. */
@@ -241,5 +251,5 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
     .eq("ticker", ticker.toUpperCase())
     .order("published_at", { ascending: false })
     .limit(limit);
-  return ((data as Record<string, unknown>[]) ?? []).map(normalize);
+  return asReportRows(data).map(normalize);
 }

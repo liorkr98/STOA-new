@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
@@ -180,9 +181,13 @@ export function StudioEditor({
       });
       setDraftId(res.id);
       setSaveStatus("saved");
+      setError(null);
       setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch {
+    } catch (e) {
       setSaveStatus("idle");
+      const msg = e instanceof Error ? e.message : "Could not save draft. Try again.";
+      setError(msg);
+      toast.error(msg);
     }
   }, [
     draftId,
@@ -288,6 +293,7 @@ export function StudioEditor({
     } catch (e) {
       if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
         setError(e.message);
+        toast.error(e.message);
         setConfirmOpen(false);
         setCaptureStatus(null);
         throw e;
@@ -319,13 +325,20 @@ export function StudioEditor({
     // open the panel so the author sees exactly what is left.
     if (publishBlockedBy) {
       setPanelOpen(true);
+      toast.message(publishBlockedBy);
       return;
     }
     if (lockingCall) {
       setConfirmOpen(true);
     } else {
       start(async () => {
-        await doPublish().catch(() => {});
+        try {
+          await doPublish();
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : "Publish failed. Try again.";
+          setError(msg);
+          toast.error(msg);
+        }
       });
     }
   }
@@ -342,14 +355,20 @@ export function StudioEditor({
           <span className="hidden sm:inline">Studio</span>
         </Link>
 
-        <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-surface p-0.5">
+        <div
+          role="radiogroup"
+          aria-label="Report type"
+          className="inline-flex rounded-[var(--radius-btn)] border border-border bg-surface p-0.5"
+        >
           {types.map((t) => (
             <button
               key={t.key}
               type="button"
+              role="radio"
+              aria-checked={type === t.key}
               onClick={() => setType(t.key)}
               className={cn(
-                "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors focus-ring",
                 type === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
               )}
             >
@@ -361,6 +380,11 @@ export function StudioEditor({
         <span className="t-meta min-w-14 text-[11px]" aria-live="polite">
           {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Draft"}
         </span>
+        {error && (
+          <span className="t-meta max-w-[14rem] truncate text-[11px] text-[var(--down)]" role="alert">
+            {error}
+          </span>
+        )}
 
         <div className="ml-auto flex items-center gap-2">
           {hasCard && (
@@ -406,8 +430,8 @@ export function StudioEditor({
             aria-pressed={panelOpen}
             onClick={() => setPanelOpen((o) => !o)}
             className={cn(
-              "hidden h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] border transition-colors focus-ring lg:flex",
-              panelOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
+              "flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] border transition-colors focus-ring",
+              panelOpen ? "border-border-strong bg-surface-2 text-text" : "border-border text-text-mute hover:text-text",
             )}
           >
             <SidebarSimple size={16} />
@@ -424,15 +448,25 @@ export function StudioEditor({
         {/* Editor column */}
         <div className="min-w-0">
           {type !== "short_post" && (
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Report title"
-              className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-faint focus:outline-none"
-              style={{ fontFamily: "var(--font-display)" }}
-            />
+            <>
+              <label htmlFor="report-title" className="sr-only">
+                Report title
+              </label>
+              <input
+                id="report-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Report title"
+                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-faint focus:outline-none"
+                style={{ fontFamily: "var(--font-display)" }}
+              />
+            </>
           )}
+          <label htmlFor="report-summary" className="sr-only">
+            {type === "short_post" ? "Post text" : "Summary"}
+          </label>
           <input
+            id="report-summary"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             placeholder={type === "short_post" ? "What's on your mind?" : "One-line summary shown in feeds"}
