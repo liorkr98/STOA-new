@@ -172,7 +172,7 @@ export function TopNav({
                 <Link
                   href={`/analyst/${profile.handle}`}
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Your profile
                 </Link>
@@ -180,7 +180,7 @@ export function TopNav({
                   <Link
                     href="/studio"
                     onClick={() => setOpen(false)}
-                    className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                    className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                   >
                     Studio dashboard
                   </Link>
@@ -188,54 +188,59 @@ export function TopNav({
                 <Link
                   href="/inbox"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </Link>
                 <Link
                   href="/wallet"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Wallet & credits
                 </Link>
                 <Link
                   href="/saved"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Saved
                 </Link>
                 <Link
                   href="/watchlist"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Watchlist
                 </Link>
                 <Link
                   href="/subscriptions"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Subscriptions
                 </Link>
                 <Link
                   href="/settings"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Settings
                 </Link>
                 <Link
                   href="/studio/branding"
                   onClick={() => setOpen(false)}
-                  className="rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute"
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
                 >
                   Profile & branding
                 </Link>
                 <form action={signOut}>
-                  <button className="px-3 py-2 text-sm text-text-faint">Sign out</button>
+                  <button
+                    type="submit"
+                    className="focus-ring w-full rounded-[var(--radius-btn)] px-3 py-2 text-left text-sm text-text-faint hover:bg-surface-2 hover:text-text"
+                  >
+                    Sign out
+                  </button>
                 </form>
               </>
             ) : (
