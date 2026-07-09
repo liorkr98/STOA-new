@@ -43,7 +43,10 @@ export function AuthForm({
 
       <div className="mt-8">
         {oauthError === "oauth" && (
-          <p className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+          <p
+            role="alert"
+            className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+          >
             Sign-in was cancelled or failed. If Google showed &ldquo;invalid_client&rdquo;, fix the
             Client ID and Secret under Supabase → Authentication → Providers → Google.
           </p>
@@ -96,7 +99,10 @@ export function AuthForm({
         </div>
 
         {state?.error && (
-          <p className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+          <p
+            role="alert"
+            className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+          >
             {state.error}
           </p>
         )}

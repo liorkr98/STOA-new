@@ -148,7 +148,15 @@ export default async function DiscoverPage({
 
       {profile && <QuickPost profile={profile} />}
 
-      <TabBar tabs={TABS} active={tab} />
+      <TabBar
+        tabs={TABS}
+        active={tab}
+        query={new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v != null && v !== "")
+            .map(([k, v]) => [k, String(v)]),
+        ).toString()}
+      />
 
       {tab !== "researchers" && <FilterBar />}
 

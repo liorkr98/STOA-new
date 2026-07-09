@@ -1,4 +1,5 @@
 import { cn } from "@/lib/design/cn";
+import type { ReactNode } from "react";
 
 /**
  * Wraps the report body only -- never the ticker strip, call block,
@@ -9,22 +10,25 @@ import { cn } from "@/lib/design/cn";
  *
  * previewText is optional -- report_bodies is RLS-gated so a non-entitled
  * reader currently gets no body text at all (see BACKEND_DATA_CONTRACTS.md).
- * Without it this renders the CTA card alone rather than a scrim over
- * nothing. Never render this while entitlement is still resolving -- decide
- * canRead server-side before choosing between this and the real body.
+ * Prefer a short body tease, not a duplicate of the summary already shown
+ * above the gate. Never render this while entitlement is still resolving.
  */
 export function PaywallGate({
   previewText,
+  headline = "Unlock the full report",
+  body = "The locked call, disclosures, and Track Score stay visible. The research body unlocks with purchase or subscription.",
   onUnlock,
   onSubscribe,
   isAuthed,
   loginHref,
 }: {
   previewText?: string;
+  headline?: string;
+  body?: string;
   /** Pass the real BuyReportButton (with its own spend/entitlement logic). */
-  onUnlock: React.ReactNode;
+  onUnlock: ReactNode;
   /** Pass the real SubscribeButton (with its own spend/entitlement logic). */
-  onSubscribe: React.ReactNode;
+  onSubscribe: ReactNode;
   isAuthed: boolean;
   loginHref: string;
 }) {
@@ -42,14 +46,23 @@ export function PaywallGate({
       )}
 
       <div className={cn("ledger-card p-6 text-center", previewText && "-mt-2")}>
-        <div className={cn("flex flex-col gap-3", onUnlock && onSubscribe && "sm:flex-row")}>
-          {onUnlock && <div className="flex-1 max-w-xs mx-auto sm:mx-0 w-full">{onUnlock}</div>}
-          {onSubscribe && <div className="flex-1 max-w-xs mx-auto sm:mx-0 w-full">{onSubscribe}</div>}
+        <h2 className="t-h3">{headline}</h2>
+        <p className="t-body mx-auto mt-2 max-w-md text-sm">{body}</p>
+        <ul className="t-meta mx-auto mt-4 max-w-sm space-y-1.5 text-left">
+          <li>Fact-checked claims stay on the record</li>
+          <li>Platform fee is shown as its own line at checkout (10%)</li>
+          <li>Call block and disclosures remain free to read</li>
+        </ul>
+        <div className={cn("mt-5 flex flex-col gap-3", onUnlock && onSubscribe && "sm:flex-row")}>
+          {onUnlock && <div className="mx-auto w-full max-w-xs flex-1 sm:mx-0">{onUnlock}</div>}
+          {onSubscribe && (
+            <div className="mx-auto w-full max-w-xs flex-1 sm:mx-0">{onSubscribe}</div>
+          )}
         </div>
         {!isAuthed && (
           <p className="t-meta mt-3">
             Already subscribed?{" "}
-            <a href={loginHref} className="underline hover:no-underline">
+            <a href={loginHref} className="underline hover:no-underline focus-ring rounded-[var(--r-tag)]">
               Log in
             </a>
           </p>

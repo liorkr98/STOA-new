@@ -9,8 +9,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const unreadCount = profile ? await unreadNotificationCount(profile.id) : 0;
   return (
     <div className="flex min-h-[100dvh] flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
+      >
+        Skip to content
+      </a>
       <TopNav profile={profile} unreadCount={unreadCount} />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-5 py-8">{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-[1200px] flex-1 px-5 py-8 outline-none"
+      >
+        {children}
+      </main>
     </div>
   );
 }

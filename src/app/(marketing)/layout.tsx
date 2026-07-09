@@ -10,8 +10,16 @@ export default async function MarketingLayout({
   const profile = await getSessionProfile();
   return (
     <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
+      >
+        Skip to content
+      </a>
       <TopNav profile={profile} />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+        {children}
+      </main>
       <Footer />
     </div>
   );

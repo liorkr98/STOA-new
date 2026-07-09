@@ -3,6 +3,24 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
+import type { ProfileConfig } from "@/lib/editor/types";
+
+/** New investors without interests go to onboarding; everyone else to Today. */
+async function postAuthPath(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<string> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("role, profile_config")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!data) return "/home";
+  if (data.role === "analyst" || data.role === "admin") return "/home";
+  const interests = (data.profile_config as ProfileConfig | null)?.interests;
+  if (!interests || interests.length === 0) return "/onboarding/investor";
+  return "/home";
+}
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "");
@@ -16,27 +34,27 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   if (error) return { error: error.message };
   await supabase.rpc("ensure_user_profile");
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in");
+
   if (refHandle) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: referrer } = await supabase
+    const { data: referrer } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("handle", refHandle)
+      .maybeSingle();
+    if (referrer?.id && referrer.id !== user.id) {
+      await supabase
         .from("profiles")
-        .select("id")
-        .eq("handle", refHandle)
-        .maybeSingle();
-      if (referrer?.id && referrer.id !== user.id) {
-        await supabase
-          .from("profiles")
-          .update({ referred_by: referrer.id })
-          .eq("id", user.id)
-          .is("referred_by", null);
-      }
+        .update({ referred_by: referrer.id })
+        .eq("id", user.id)
+        .is("referred_by", null);
     }
   }
 
-  redirect("/home");
+  redirect(await postAuthPath(supabase, user.id));
 }
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -57,10 +75,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
   // Session is set on the server when email confirmation is off. If confirmation is
   // required, data.session is null — profile bootstrap runs on first sign-in instead.
-  if (data.session) {
+  if (data.session && data.user) {
     await supabase.rpc("ensure_user_profile");
 
-    if (refHandle && data.user?.id) {
+    if (refHandle) {
       const { data: referrer } = await supabase
         .from("profiles")
         .select("id")
@@ -75,7 +93,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       }
     }
 
-    redirect("/home");
+    redirect(await postAuthPath(supabase, data.user.id));
   }
 
   redirect("/sign-in?registered=1");

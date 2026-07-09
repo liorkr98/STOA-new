@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Bookmark, Heart } from "lucide-react";
+import { toast } from "sonner";
 import { toggleLike, toggleSave } from "@/app/actions/social";
 import { cn } from "@/lib/design/cn";
 
@@ -27,20 +28,35 @@ export function ReportActions({
 
   function onLike() {
     if (!isAuthed) return router.push("/sign-in");
-    setLiked((v) => !v);
-    setLikes((n) => n + (liked ? -1 : 1));
+    const prevLiked = liked;
+    const prevLikes = likes;
+    setLiked(!prevLiked);
+    setLikes(prevLikes + (prevLiked ? -1 : 1));
     start(async () => {
-      const res = await toggleLike(reportId);
-      setLiked(res.liked);
+      try {
+        const res = await toggleLike(reportId);
+        setLiked(res.liked);
+        setLikes(prevLikes + (res.liked ? 1 : -1));
+      } catch {
+        setLiked(prevLiked);
+        setLikes(prevLikes);
+        toast.error("Could not update like. Try again.");
+      }
     });
   }
 
   function onSave() {
     if (!isAuthed) return router.push("/sign-in");
-    setSaved((v) => !v);
+    const prevSaved = saved;
+    setSaved(!prevSaved);
     start(async () => {
-      const res = await toggleSave(reportId);
-      setSaved(res.saved);
+      try {
+        const res = await toggleSave(reportId);
+        setSaved(res.saved);
+      } catch {
+        setSaved(prevSaved);
+        toast.error("Could not update save. Try again.");
+      }
     });
   }
 
