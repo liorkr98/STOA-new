@@ -201,7 +201,12 @@ export async function updateReportAccess(input: {
       required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     })
     .eq("id", input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if (error.code === "42501") {
+      return { ok: false, error: "Only approved analysts can manage published reports." };
+    }
+    return { ok: false, error: error.message };
+  }
 
   revalidatePath("/studio");
   revalidatePath("/studio/compose");

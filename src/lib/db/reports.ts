@@ -66,22 +66,28 @@ function selectClause(filters: FeedFilters): string {
   return SELECT;
 }
 
-/** Apply column filters that PostgREST can express on `reports` (and nested prediction). */
-async function applyReportColumnFilters(
+/**
+ * Apply column filters that PostgREST can express on `reports` (and nested prediction).
+ * Deliberately synchronous: Supabase query builders are thenables, and an async
+ * function that returns one gets its return value silently unwrapped by the
+ * runtime (the query executes early and the caller receives `{data, error}`
+ * instead of the builder). Callers resolve `mcapTickers` before calling this.
+ */
+function applyReportColumnFilters(
   // Supabase query builders are chainable but awkward to type here.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   q: any,
   filters: FeedFilters,
+  mcapTickers?: string[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
+): any {
   if (filters.type) q = q.eq("type", filters.type);
   if (filters.access) q = q.eq("access", filters.access);
   if (filters.mcap) {
-    const tickers = await tickersInCapBand(filters.mcap);
-    if (tickers.length === 0) {
+    if (!mcapTickers || mcapTickers.length === 0) {
       q = q.eq("id", "00000000-0000-0000-0000-000000000000");
     } else {
-      q = q.in("ticker", tickers);
+      q = q.in("ticker", mcapTickers);
     }
   }
   if (filters.status === "open") {
@@ -116,8 +122,9 @@ export async function listFeed({
       merged.status != null;
     const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
+    const mcapTickers = merged.mcap ? await tickersInCapBand(merged.mcap) : undefined;
     let q = supabase.from("reports").select(selectClause(merged)).eq("status", "published");
-    q = await applyReportColumnFilters(q, merged);
+    q = applyReportColumnFilters(q, merged, mcapTickers);
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
@@ -150,12 +157,13 @@ export async function listFeedFromAnalysts(
     filters.status != null;
   const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
+  const mcapTickers = filters.mcap ? await tickersInCapBand(filters.mcap) : undefined;
   let q = supabase
     .from("reports")
     .select(selectClause(filters))
     .eq("status", "published")
     .in("author_id", analystIds);
-  q = await applyReportColumnFilters(q, filters);
+  q = applyReportColumnFilters(q, filters, mcapTickers);
   const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
   return applyJoinedFilters(
     asReportRows(data)
