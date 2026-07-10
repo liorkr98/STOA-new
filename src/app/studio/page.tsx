@@ -30,7 +30,12 @@ export default async function StudioOverview() {
   ]);
 
   const stats = analystStats(predictions);
-  const published = reports.filter((r) => r.status === "published");
+  // resolution_pending_review is still a published piece, just waiting on
+  // market data to grade one of its calls -- it belongs in this list, not
+  // silently missing from it (see PendingReviewTag in StudioPublishedList).
+  const published = reports.filter(
+    (r) => r.status === "published" || r.status === "resolution_pending_review",
+  );
   const drafts = reports.filter((r) => r.status === "draft");
   const openCalls = predictions.filter((p) => p.outcome === "open");
 

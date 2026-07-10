@@ -5,6 +5,7 @@ import { compact } from "@/lib/format";
 import type { Plan } from "@/lib/db/plans";
 import type { Report } from "@/lib/types";
 import { ReportAccessEditor } from "@/components/studio/report-access-editor";
+import { PendingReviewTag } from "@/components/ui/tag";
 
 export function StudioPublishedList({
   reports,
@@ -24,6 +25,7 @@ export function StudioPublishedList({
             {r.title || r.summary || "Untitled"}
           </Link>
           <span className="flex shrink-0 items-center gap-2">
+            {r.status === "resolution_pending_review" && <PendingReviewTag />}
             <ReportAccessEditor report={r} plans={plans} />
             <span className="t-meta num hidden sm:inline">{compact(r.views)} views</span>
             <span className="t-meta num hidden sm:inline">{compact(r.likes)} likes</span>

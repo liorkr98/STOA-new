@@ -79,3 +79,24 @@ export function GradeTag({ outcome }: { outcome: Outcome }) {
     </span>
   );
 }
+
+/**
+ * A call's resolution is stuck waiting on market data for its horizon date
+ * (grade.ts sets reports.status = 'resolution_pending_review' rather than
+ * grading blind). Distinct from GradeTag/Outcome on purpose: this describes
+ * the report's resolution process, not the call's grade -- the call hasn't
+ * been decided "open", "hit", or "miss", it's waiting on data to decide it.
+ */
+export function PendingReviewTag() {
+  return (
+    <span
+      className={cn(tagBase, "border bg-surface-2")}
+      style={{
+        color: "var(--brass)",
+        borderColor: "color-mix(in srgb, var(--brass) 35%, transparent)",
+      }}
+    >
+      Pending review
+    </span>
+  );
+}

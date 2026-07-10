@@ -2,7 +2,7 @@ import { ArrowUpRight, Target, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
-import { DirectionTag, GradeTag } from "./ui/tag";
+import { DirectionTag, GradeTag, PendingReviewTag } from "./ui/tag";
 import { SealStamp } from "./ui/seal-stamp";
 
 /**
@@ -17,10 +17,16 @@ export function PredictionCard({
   prediction,
   className,
   hideTarget = false,
+  pendingReview = false,
 }: {
   prediction: Prediction;
   className?: string;
   hideTarget?: boolean;
+  /** True when the report itself is resolution_pending_review: the horizon
+   * passed but the market-data provider had no price to grade against.
+   * Overrides the outcome-derived tag/seal -- the call isn't "open" (its
+   * horizon has passed), it's waiting on data, and it isn't graded either. */
+  pendingReview?: boolean;
 }) {
   const {
     ticker,
@@ -33,7 +39,7 @@ export function PredictionCard({
     benchmark_pct,
     created_at,
   } = prediction;
-  const resolved = outcome !== "open";
+  const resolved = outcome !== "open" && !pendingReview;
   const tone = return_pct == null ? "neutral" : return_pct >= 0 ? "up" : "down";
   const alpha =
     return_pct != null && benchmark_pct != null ? return_pct - benchmark_pct : null;
@@ -49,7 +55,13 @@ export function PredictionCard({
           <DirectionTag direction={direction} />
         </div>
         <div className="flex items-center gap-2">
-          {resolved ? <GradeTag outcome={outcome} /> : <GradeTag outcome="open" />}
+          {pendingReview ? (
+            <PendingReviewTag />
+          ) : resolved ? (
+            <GradeTag outcome={outcome} />
+          ) : (
+            <GradeTag outcome="open" />
+          )}
           {!showTarget && (
             <SealStamp status={sealStatus} date={new Date(created_at)} size="sm" animateOnView={resolved} />
           )}
@@ -67,8 +79,8 @@ export function PredictionCard({
           />
         )}
         <Field
-          label={resolved ? "Resolved" : "Now"}
-          value={resolved_price ? `$${price(resolved_price)}` : "Pending"}
+          label={pendingReview ? "Status" : resolved ? "Resolved" : "Now"}
+          value={resolved_price ? `$${price(resolved_price)}` : pendingReview ? "Under review" : "Pending"}
         />
       </div>
 

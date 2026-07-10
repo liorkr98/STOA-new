@@ -131,7 +131,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
         <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
           {report.prediction && (
-            <PredictionCard prediction={report.prediction} hideTarget={!canRead} />
+            <PredictionCard
+              prediction={report.prediction}
+              hideTarget={!canRead}
+              pendingReview={report.status === "resolution_pending_review"}
+            />
           )}
           {report.prediction && report.ticker && canRead && (
             <PriceAttestationSection ticker={report.ticker} />
