@@ -4,12 +4,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
+import { getConsentRedirectPath, recordSignupCompliance } from "@/app/actions/consent";
 
 /** New investors without interests go to onboarding; everyone else to Today. */
 async function postAuthPath(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
 ): Promise<string> {
+  const consentPath = await getConsentRedirectPath(userId);
+  if (consentPath) return consentPath;
+
   const { data } = await supabase
     .from("profiles")
     .select("role, profile_config")
@@ -65,6 +69,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     .trim()
     .toLowerCase()
     .replace(/^@/, "");
+
+  if (formData.get("legal_consent") !== "on") {
+    return { error: "You must agree to the Terms of Service and Privacy Policy." };
+  }
+  if (formData.get("age_attestation") !== "on") {
+    return { error: "You must confirm you are 18 years of age or older." };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -77,6 +89,9 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   // required, data.session is null — profile bootstrap runs on first sign-in instead.
   if (data.session && data.user) {
     await supabase.rpc("ensure_user_profile");
+
+    const complianceError = await recordSignupCompliance(data.user.id);
+    if (complianceError?.error) return complianceError;
 
     if (refHandle) {
       const { data: referrer } = await supabase

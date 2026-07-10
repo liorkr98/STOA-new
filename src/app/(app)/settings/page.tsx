@@ -35,6 +35,20 @@ export default async function SettingsPage() {
 
       <ProfileSettingsForm profile={profile} />
 
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+        <h2 className="t-h3">Your data</h2>
+        <p className="t-body mt-1 text-text-mute">
+          Download a JSON copy of your profile, consents, subscriptions, and authored reports.
+        </p>
+        <a
+          href="/api/account/export"
+          className={buttonClass("secondary", "sm", "mt-4 inline-flex")}
+          download
+        >
+          Export my data
+        </a>
+      </section>
+
       {!isAnalyst && (
         <div className="rounded-[var(--radius-card)] border border-accent/30 bg-accent-weak/40 p-5">
           <h2 className="t-h3">Become an analyst</h2>

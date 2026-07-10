@@ -101,10 +101,46 @@ export function AuthForm({
         {state?.error && (
           <p
             role="alert"
+            id="auth-error"
+            aria-live="polite"
             className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
           >
             {state.error}
           </p>
+        )}
+
+        {mode === "sign-up" && (
+          <div className="flex flex-col gap-3 border-t border-border pt-4">
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                name="legal_consent"
+                required
+                className="mt-0.5 h-4 w-4 rounded border-border focus-ring"
+                aria-describedby="legal-consent-signup"
+              />
+              <span id="legal-consent-signup">
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                name="age_attestation"
+                required
+                className="mt-0.5 h-4 w-4 rounded border-border focus-ring"
+                aria-describedby="age-signup"
+              />
+              <span id="age-signup">I am 18 years of age or older</span>
+            </label>
+          </div>
         )}
 
         <SubmitButton label={mode === "sign-in" ? "Sign in" : "Create account"} />
