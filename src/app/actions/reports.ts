@@ -284,7 +284,16 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
     .select("id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    // RLS (reports_insert, supabase/migrations/0034) rejects a published row
+    // from an account an admin hasn't approved as an analyst -- surfaces as a
+    // generic policy-violation error, so translate it to something a reader
+    // of this error message can actually act on.
+    if (error.code === "42501") {
+      return { error: "Only approved analysts can publish. Apply to become an analyst first." };
+    }
+    return { error: error.message };
+  }
 
   const noteId = (data as { id: string }).id;
   try {
