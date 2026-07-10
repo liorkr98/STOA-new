@@ -114,6 +114,7 @@ export function StudioEditor({
     json: initialDoc,
     text: tiptapPlainText(initialDoc),
   });
+  const dirtyRef = useRef(false);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasCard = type !== "short_post";
@@ -121,6 +122,7 @@ export function StudioEditor({
 
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
     latestChangeRef.current = change;
+    dirtyRef.current = true;
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     // Debounce parent state so keystrokes don't re-render the editor tree and
     // kill the slash-menu popup mid-open.
@@ -182,6 +184,7 @@ export function StudioEditor({
       setDraftId(res.id);
       setSaveStatus("saved");
       setError(null);
+      dirtyRef.current = false;
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e) {
       setSaveStatus("idle");
@@ -208,10 +211,16 @@ export function StudioEditor({
 
   useEffect(() => {
     const t = setInterval(() => {
-      if (summary.trim() || plainText.trim()) void persistDraft();
+      if (!dirtyRef.current) return;
+      const json = JSON.stringify(latestChangeRef.current.json);
+      const hasBlocks =
+        json.includes('"chartNode"') ||
+        json.includes('"napkinNode"') ||
+        json.includes('"dataFigureNode"');
+      if (draftId || summary.trim() || plainText.trim() || hasBlocks) void persistDraft();
     }, 30_000);
     return () => clearInterval(t);
-  }, [persistDraft, summary, plainText]);
+  }, [persistDraft, summary, plainText, draftId]);
 
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.

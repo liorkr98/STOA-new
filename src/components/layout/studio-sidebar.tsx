@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
 import { StoaLogo } from "@/components/brand/logo";
+import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import type { Profile } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
@@ -35,7 +36,10 @@ export function StudioSidebar({ profile }: { profile: Profile }) {
       <Link href="/" className="px-2">
         <StoaLogo />
       </Link>
-      <span className="t-eyebrow mt-1 px-2">Studio</span>
+      <div className="mt-3 px-2">
+        <RoleSwitcher current="analyst" />
+      </div>
+      <span className="t-eyebrow mt-2 px-2">Studio</span>
 
       <nav className="mt-6 flex flex-1 flex-col gap-1">
         {items.map((it) => {

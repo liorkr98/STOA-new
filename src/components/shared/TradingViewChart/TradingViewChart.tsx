@@ -10,6 +10,8 @@ const WIDGET_SCRIPT = "https://s3.tradingview.com/external-embedding/embed-widge
 export interface TradingViewChartProps {
   ticker: string;
   range?: ChartRange;
+  /** TradingView study ids, e.g. ["STD;RSI"]. Persisted on chartNode attrs. */
+  studies?: string[];
   className?: string;
   height?: number;
 }
@@ -21,6 +23,7 @@ export interface TradingViewChartProps {
 export function TradingViewChart({
   ticker,
   range = "3M",
+  studies = [],
   className = "",
   height = 480,
 }: TradingViewChartProps) {
@@ -29,6 +32,8 @@ export function TradingViewChart({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  const studiesKey = studies.join("|");
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined" || !containerRef.current) return;
@@ -43,7 +48,7 @@ export function TradingViewChart({
     const symbol = toTradingViewSymbol(ticker);
     const interval = chartRangeToTvInterval(range);
 
-    const config = {
+    const config: Record<string, unknown> = {
       autosize: true,
       symbol,
       interval,
@@ -51,7 +56,7 @@ export function TradingViewChart({
       theme,
       style: "1",
       locale: "en",
-      allow_symbol_change: true,
+      allow_symbol_change: false,
       calendar: false,
       support_host: "https://www.tradingview.com",
       withdateranges: true,
@@ -61,10 +66,12 @@ export function TradingViewChart({
       save_image: true,
       details: true,
       hotlist: false,
-      studies: ["STD;RSI", "STD;MACD", "STD;Volume"],
       backgroundColor: theme === "light" ? "rgba(255, 255, 255, 1)" : "rgba(15, 15, 18, 1)",
       gridColor: theme === "light" ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.06)",
     };
+    if (studies.length > 0) {
+      config.studies = studies;
+    }
 
     const script = document.createElement("script");
     script.type = "text/javascript";
@@ -77,7 +84,7 @@ export function TradingViewChart({
       script.remove();
       widgetHost.innerHTML = "";
     };
-  }, [mounted, ticker, range, resolvedTheme]);
+  }, [mounted, ticker, range, resolvedTheme, studiesKey]);
 
   if (!mounted) {
     return (

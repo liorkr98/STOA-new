@@ -30,6 +30,8 @@ export const ChartNode = Node.create({
       indicators: { default: [] },
       /** Original analyst prose when the chart was created from a selection. */
       sourceText: { default: "" },
+      /** TradingView study ids persisted from the toolbar (e.g. STD;RSI). */
+      studies: { default: [] },
       /** lightweight = Lightweight Charts; tradingview = full TradingView Advanced Chart widget. */
       engine: { default: "lightweight" },
     };

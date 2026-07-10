@@ -12,6 +12,12 @@ function stopEditorCapture(e: React.SyntheticEvent) {
   e.stopPropagation();
 }
 
+const TV_STUDIES = [
+  { id: "STD;RSI", label: "RSI" },
+  { id: "STD;MACD", label: "MACD" },
+  { id: "STD;Volume", label: "Volume" },
+] as const;
+
 /**
  * chartNode in TradingView Advanced Chart mode — full TV library in compose.
  * Reading view uses a captured screenshot when available, otherwise live embed.
@@ -28,10 +34,18 @@ export function TradingViewChartPanel({
   const range = (node.attrs.range ?? "3M") as ChartRange;
   const nodeId = String(node.attrs.nodeId ?? "");
   const screenshotUrl = node.attrs.screenshotUrl ? String(node.attrs.screenshotUrl) : null;
+  const studies = (node.attrs.studies as string[]) ?? [];
 
   useEffect(() => {
     if (isEditable && !nodeId) updateAttributes({ nodeId: nanoid(10) });
   }, [isEditable, nodeId, updateAttributes]);
+
+  function toggleStudy(studyId: string) {
+    const next = studies.includes(studyId)
+      ? studies.filter((s) => s !== studyId)
+      : [...studies, studyId];
+    updateAttributes({ studies: next });
+  }
 
   if (!isEditable && screenshotUrl) {
     return (
@@ -45,7 +59,7 @@ export function TradingViewChartPanel({
   if (!isEditable && ticker) {
     return (
       <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-        <TradingViewChart ticker={ticker} range={range} height={480} />
+        <TradingViewChart ticker={ticker} range={range} studies={studies} height={480} />
       </NodeViewWrapper>
     );
   }
@@ -95,9 +109,24 @@ export function TradingViewChartPanel({
               </button>
             ))}
           </div>
-          <span className="t-meta hidden text-[10px] text-text-faint sm:inline">
-            Indicators · drawings · ranges
-          </span>
+          <div className="inline-flex flex-wrap gap-1">
+            {TV_STUDIES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onMouseDown={stopEditorCapture}
+                onClick={() => toggleStudy(s.id)}
+                className={cn(
+                  "rounded-[var(--radius-btn)] border px-2 py-0.5 text-[10px] font-medium transition-colors",
+                  studies.includes(s.id)
+                    ? "border-accent bg-accent-weak text-accent"
+                    : "border-border text-text-mute hover:text-text",
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             aria-label="Delete chart"
@@ -112,12 +141,17 @@ export function TradingViewChartPanel({
 
       <div className="px-1 pb-1">
         {ticker ? (
-          <TradingViewChart ticker={ticker} range={range} height={isEditable ? 520 : 480} />
+          <TradingViewChart ticker={ticker} range={range} studies={studies} height={isEditable ? 520 : 480} />
         ) : (
           <div className="flex h-[320px] items-center justify-center">
             <p className="t-meta text-sm text-text-mute">Enter a ticker to load TradingView</p>
           </div>
         )}
+        {isEditable ? (
+          <p className="t-meta px-2 py-1.5 text-center text-[10px] text-text-faint">
+            Toggle RSI / Volume / MACD above — saved with your draft. Freehand drawings inside TradingView reset on reload.
+          </p>
+        ) : null}
       </div>
     </NodeViewWrapper>
   );
