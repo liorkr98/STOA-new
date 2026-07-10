@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { listByTicker } from "@/lib/db/reports";
 import { listFilings } from "@/lib/db/financials";
-import { UNIVERSE } from "@/lib/universe";
+import { getTickerRow } from "@/lib/db/tickers";
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ ticker: string }>;
 }): Promise<Metadata> {
   const { ticker } = await params;
-  const meta = UNIVERSE.find((u) => u.ticker === ticker.toUpperCase());
+  const meta = await getTickerRow(ticker.toUpperCase());
   return {
     title: meta ? `${meta.name} (${ticker.toUpperCase()})` : `${ticker.toUpperCase()} research`,
   };
@@ -36,21 +36,22 @@ export default async function TickerPage({
 }) {
   const { ticker } = await params;
   const sym = ticker.toUpperCase();
-  const [snapshot, reports, filings] = await Promise.all([
+  const [snapshot, reports, filings, meta] = await Promise.all([
     getStockSnapshot(sym),
     listByTicker(sym),
     listFilings(sym, 6),
+    getTickerRow(sym),
   ]);
-  const meta = UNIVERSE.find((u) => u.ticker === sym);
 
   return (
     <div className="flex flex-col gap-8">
       <StockQuoteHeader
         ticker={sym}
         name={meta?.name}
-        sector={meta?.sector}
+        sector={meta?.sector ?? undefined}
         snapshot={snapshot}
         reportCount={reports.length}
+        metricsUpdatedAt={meta?.metrics_updated_at}
       />
 
       <StockKeyStats snapshot={snapshot} />
@@ -61,7 +62,7 @@ export default async function TickerPage({
         <div className="flex flex-col gap-6">
           <FundamentalsPanel data={snapshot.fundamentals} />
           <CompanyNews ticker={sym} />
-          <SectorPeers ticker={sym} sector={meta?.sector} />
+          <SectorPeers ticker={sym} sector={meta?.sector ?? undefined} />
         </div>
       </div>
 

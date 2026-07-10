@@ -69,7 +69,10 @@ export async function approveAnalystApplication(applicationId: string, note?: st
     p_note: note ?? null,
   });
   if (error) throw new Error(error.message);
+
   revalidatePath("/admin/applications");
+  revalidatePath("/become-analyst");
+  revalidatePath("/studio");
 }
 
 /** Admin: reject an application. */
@@ -80,7 +83,10 @@ export async function rejectAnalystApplication(applicationId: string, note?: str
     p_note: note ?? null,
   });
   if (error) throw new Error(error.message);
+
   revalidatePath("/admin/applications");
+  revalidatePath("/become-analyst");
+  revalidatePath("/studio");
 }
 
 // ── Analyst onboarding wizard (post-approval) ─────────────────────────────

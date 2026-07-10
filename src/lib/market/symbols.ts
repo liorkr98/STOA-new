@@ -22,6 +22,22 @@ export function toFmp(symbol: string): string {
   return normalizeSymbol(symbol).replace(/\./g, "-");
 }
 
+/** Yahoo uses a dash for class shares (BRK-B). Preserves `.TA` Israeli suffix. */
+export function toYahoo(symbol: string): string {
+  const sym = normalizeSymbol(symbol);
+  if (sym.endsWith(".TA")) {
+    const base = sym.slice(0, -3).replace(/[./]/g, "-");
+    return `${base}.TA`;
+  }
+  return sym.replace(/[./]/g, "-");
+}
+
+/** Maya / TASE trading code → Yahoo symbol (e.g. ABOU.B1 → ABOU-B1.TA). */
+export function toTaseYahooSymbol(smb: string): string {
+  const base = smb.trim().toUpperCase().replace(/[./]/g, "-");
+  return base.endsWith(".TA") ? base : `${base}.TA`;
+}
+
 /** Basic shape guard so we don't send junk to a provider. */
 export function isValidSymbol(raw: string): boolean {
   const s = normalizeSymbol(raw);

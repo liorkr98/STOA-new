@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/design/cn";
 import { compact, pct, price } from "@/lib/format";
 import type { StockSnapshot } from "@/lib/engine/market";
-import { UNIVERSE } from "@/lib/universe";
+import { listSectorPeers } from "@/lib/db/tickers";
 import { WatchlistButton } from "@/components/markets/watchlist-button";
 
 export function StockQuoteHeader({
@@ -11,12 +12,14 @@ export function StockQuoteHeader({
   sector,
   snapshot,
   reportCount,
+  metricsUpdatedAt,
 }: {
   ticker: string;
   name?: string;
   sector?: string;
   snapshot: StockSnapshot;
   reportCount: number;
+  metricsUpdatedAt?: string | null;
 }) {
   const { quote, change, changePercent } = snapshot;
   const up = (changePercent ?? 0) >= 0;
@@ -63,6 +66,11 @@ export function StockQuoteHeader({
             {reportCount > 0 && (
               <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
                 {reportCount} Stoa report{reportCount === 1 ? "" : "s"}
+              </span>
+            )}
+            {metricsUpdatedAt && (
+              <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+                Mkt cap cached {formatDistanceToNow(new Date(metricsUpdatedAt), { addSuffix: true })}
               </span>
             )}
           </div>
@@ -165,15 +173,16 @@ function RangeRow({
   );
 }
 
-export function SectorPeers({
+export async function SectorPeers({
   ticker,
   sector,
 }: {
   ticker: string;
   sector?: string;
 }) {
-  const peers = UNIVERSE.filter((u) => u.sector === sector && u.ticker !== ticker).slice(0, 6);
-  if (!sector || peers.length === 0) return null;
+  if (!sector) return null;
+  const peers = await listSectorPeers(sector, ticker, 6);
+  if (peers.length === 0) return null;
 
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
@@ -181,11 +190,11 @@ export function SectorPeers({
       <div className="flex flex-wrap gap-2">
         {peers.map((p) => (
           <Link
-            key={p.ticker}
-            href={`/markets/${p.ticker}`}
+            key={p.symbol}
+            href={`/markets/${p.symbol}`}
             className="rounded-[var(--radius-tag)] border border-border bg-surface-2 px-3 py-1.5 text-sm transition-colors hover:border-border-strong hover:bg-accent/10"
           >
-            <span className="num font-semibold">{p.ticker}</span>
+            <span className="num font-semibold">{p.symbol}</span>
             <span className="t-meta ml-2">{p.name}</span>
           </Link>
         ))}
