@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { fraunces, plexSans, plexMono } from "./fonts";
 import { Providers } from "./providers";
+import { SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Stoa - Think clearly. Invest better.",
     template: "%s · Stoa",
