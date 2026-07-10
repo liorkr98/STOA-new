@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
@@ -101,9 +102,10 @@ export async function validateAndPublishReport(
   const urlError = validateChartScreenshotUrls(chartStats.screenshotUrls, userId, reportId);
   if (urlError) throw new PublishReportError(urlError);
 
+  const lockedAtIso = new Date().toISOString();
   const publishPayload: Record<string, unknown> = {
     status: "published",
-    published_at: new Date().toISOString(),
+    published_at: lockedAtIso,
   };
   if (input.fact_check_results) {
     publishPayload.fact_check_results = input.fact_check_results;
@@ -125,6 +127,8 @@ export async function validateAndPublishReport(
   if (pubErr) throw new PublishReportError(pubErr.message, 400);
 
   const wantsPrediction = input.type !== "short_post" && input.ticker && input.direction;
+  let hashTargetPrice: number | null = null;
+  let hashHorizonDate: string | null = null;
 
   if (wantsPrediction) {
     const ticker = input.ticker!.toUpperCase();
@@ -166,6 +170,35 @@ export async function validateAndPublishReport(
       bench_lock_price: bench.price,
       outcome: "open",
     });
+
+    hashTargetPrice = input.target_price ?? null;
+    hashHorizonDate = targetHorizonDate;
+  }
+
+  // Structured-data content hash (docs: institutional SEO infra). Covers every
+  // field a reader could dispute was changed after the fact -- ticker, the
+  // locked call terms, the body, and the lock timestamp itself. Best-effort:
+  // a failure here must never roll back or block an already-published report,
+  // and a missing hash is simply omitted from ReportSchema rather than faked.
+  try {
+    const contentHash = createHash("sha256")
+      .update(
+        [
+          input.ticker ? input.ticker.toUpperCase() : "",
+          hashTargetPrice != null ? String(hashTargetPrice) : "",
+          hashHorizonDate ?? "",
+          input.body ?? "",
+          lockedAtIso,
+        ].join("|"),
+      )
+      .digest("hex");
+    await supabase
+      .from("reports")
+      .update({ content_hash: contentHash })
+      .eq("id", reportId)
+      .eq("author_id", userId);
+  } catch {
+    // non-critical -- ReportSchema omits identifier when content_hash is null
   }
 
   try {

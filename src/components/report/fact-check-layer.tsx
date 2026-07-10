@@ -2,19 +2,11 @@
 
 import { useMemo, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import type { ClaimType, FactClaim } from "@/lib/ai/fact-check";
+import type { FactClaim } from "@/lib/ai/fact-check";
+import { verdictOf, type Verdict } from "@/lib/fact-check/verdict";
 import { ClaimVoteBar } from "@/components/report/claim-vote-bar";
 
-export type Verdict = "fact" | "unproven" | "opinion" | "contradicted";
-
-const VERDICT_MAP: Record<ClaimType, Verdict> = {
-  Fact: "fact",
-  "Yahoo-Verified": "fact",
-  Unverified: "unproven",
-  Opinion: "opinion",
-  Misleading: "contradicted",
-  "Yahoo-Disputed": "contradicted",
-};
+export type { Verdict };
 
 const VERDICT_STYLE: Record<Verdict, { color: string; label: string }> = {
   fact: { color: "var(--verdigris)", label: "Fact" },
@@ -22,10 +14,6 @@ const VERDICT_STYLE: Record<Verdict, { color: string; label: string }> = {
   opinion: { color: "var(--plum)", label: "Opinion" },
   contradicted: { color: "var(--rust)", label: "Contradicted" },
 };
-
-function verdictOf(claim: FactClaim): Verdict {
-  return VERDICT_MAP[claim.type] ?? "unproven";
-}
 
 /**
  * Summary strip above the report body. Exists so a skimming reader gets the

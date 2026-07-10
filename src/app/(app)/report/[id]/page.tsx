@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { BadgeCheck, Eye } from "lucide-react";
 import { compact } from "@/lib/format";
 import { PaywallGate } from "@/components/ui/paywall-gate";
+import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
@@ -40,6 +41,7 @@ export async function generateMetadata({
   const firstChartUrl = analyzeChartBody(report?.body).screenshotUrls[0];
   return {
     title: report?.title ?? "Report",
+    alternates: { canonical: `/report/${id}` },
     openGraph: {
       title: report?.title ?? "Report",
       description: report?.summary ?? undefined,
@@ -76,6 +78,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   return (
     <article className="mx-auto max-w-6xl">
+      <ReportSchema report={report} />
       <ViewTracker reportId={id} />
 
       <div className="flex flex-wrap items-center gap-3">

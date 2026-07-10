@@ -87,6 +87,8 @@ export interface Report {
   compensation_detail: string | null;
   /** "These are my own views" cert, Reg-AC-style. */
   views_certified: boolean;
+  /** sha256 hex digest computed at publish; see ReportSchema. Null pre-migration or if hashing failed. */
+  content_hash?: string | null;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
