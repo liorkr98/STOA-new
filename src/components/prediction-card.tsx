@@ -43,7 +43,12 @@ export function PredictionCard({
   const tone = return_pct == null ? "neutral" : return_pct >= 0 ? "up" : "down";
   const alpha =
     return_pct != null && benchmark_pct != null ? return_pct - benchmark_pct : null;
-  const sealStatus = outcome === "hit" || outcome === "near" ? "hit" : outcome === "miss" ? "miss" : "locked";
+  const sealStatus =
+    !pendingReview && (outcome === "hit" || outcome === "near")
+      ? "hit"
+      : !pendingReview && outcome === "miss"
+        ? "miss"
+        : "locked";
   const showTarget = !hideTarget;
   const cols = showTarget ? "grid-cols-3" : "grid-cols-2";
 

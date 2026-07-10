@@ -44,7 +44,7 @@ export async function searchAll(query: string, limit = 12): Promise<SearchResult
     supabase
       .from("reports")
       .select(REPORT_SELECT)
-      .eq("status", "published")
+      .in("status", ["published", "resolution_pending_review"])
       .or(`title.ilike.%${q}%,summary.ilike.%${q}%,ticker.ilike.%${upper}%`)
       .order("published_at", { ascending: false })
       .limit(fetchLimit),

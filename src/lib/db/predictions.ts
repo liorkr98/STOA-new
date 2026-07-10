@@ -8,11 +8,13 @@ export async function listPredictionsByAuthor(
   const supabase = await createClient();
   const { data } = await supabase
     .from("predictions")
-    .select("*")
+    .select("*, reports(status)")
     .eq("author_id", authorId)
     .order("created_at", { ascending: false })
     .limit(limit);
-  return (data as Prediction[]) ?? [];
+  return ((data ?? []) as unknown as (Prediction & { reports: { status: string } | null })[]).map(
+    ({ reports, ...p }) => ({ ...p, report_status: reports?.status as Prediction["report_status"] }),
+  );
 }
 
 export async function resolvedCountByAuthor(authorId: string): Promise<number> {

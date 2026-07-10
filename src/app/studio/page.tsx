@@ -37,7 +37,14 @@ export default async function StudioOverview() {
     (r) => r.status === "published" || r.status === "resolution_pending_review",
   );
   const drafts = reports.filter((r) => r.status === "draft");
-  const openCalls = predictions.filter((p) => p.outcome === "open");
+  // A call whose report flipped to resolution_pending_review still has
+  // outcome "open" (grade.ts never grades it blind), but it isn't really
+  // open anymore -- it's surfaced with its own PendingReviewTag in the
+  // Published section below, so exclude it here to avoid the same call
+  // showing "Open" in one widget and "Pending review" in another.
+  const openCalls = predictions.filter(
+    (p) => p.outcome === "open" && p.report_status !== "resolution_pending_review",
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">

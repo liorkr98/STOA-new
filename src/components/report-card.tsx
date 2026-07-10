@@ -19,6 +19,7 @@ export function ReportCard({ report, promoted = false }: { report: Report; promo
   const author = report.author;
   const when = report.published_at ?? report.created_at;
   const locked = report.access !== "free";
+  const pendingReview = report.status === "resolution_pending_review";
 
   return (
     <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
@@ -74,7 +75,7 @@ export function ReportCard({ report, promoted = false }: { report: Report; promo
 
       {report.prediction && (
         <Link href={`/report/${report.id}`} className="mt-4 block">
-          <PredictionCard prediction={report.prediction} hideTarget={locked} />
+          <PredictionCard prediction={report.prediction} hideTarget={locked} pendingReview={pendingReview} />
         </Link>
       )}
 
