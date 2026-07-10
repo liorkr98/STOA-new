@@ -12,6 +12,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { sanitizeEnvValue } from "./sanitize-env-value.mjs";
 
 const PROJECT_ID = "prj_S05cHjfIQVLDIygss1VM6CZuNIC0";
 const GITHUB_REPO = "liorkr98/STOA-new";
@@ -36,7 +37,7 @@ function parseEnvFile(path) {
     ) {
       value = value.slice(1, -1);
     }
-    out[key] = value;
+    out[key] = sanitizeEnvValue(value);
   }
   return out;
 }
@@ -113,10 +114,13 @@ const ENV_SPECS = [
     required: true,
     targets: ["production"],
     sensitive: true,
-    derive: (env) =>
-      env.CRON_SECRET && env.CRON_SECRET !== "change-me-to-a-long-random-string"
-        ? env.CRON_SECRET
-        : randomBytes(32).toString("hex"),
+    derive: (env) => {
+      const raw =
+        env.CRON_SECRET && env.CRON_SECRET !== "change-me-to-a-long-random-string"
+          ? env.CRON_SECRET
+          : randomBytes(32).toString("hex");
+      return sanitizeEnvValue(raw);
+    },
   },
   {
     key: "DEEPSEEK_MODEL",
@@ -232,6 +236,7 @@ async function main() {
       console.error(`Missing required value for ${spec.key} in .env.local`);
       process.exit(1);
     }
+    value = sanitizeEnvValue(value);
     if (!value) {
       console.log(`Skip ${spec.key} (optional, empty)`);
       continue;
