@@ -51,6 +51,14 @@ export default async function WalletPage() {
         <TopUpButton />
       </div>
 
+      <p
+        className="rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2 text-sm text-text-mute"
+        role="status"
+      >
+        Balances are simulated until PayPal checkout is connected. Activity may show sandbox
+        deposits.
+      </p>
+
       <div className="grid gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Balance" value={usd(wallet?.balance ?? 0, { cents: true })} />
         <Stat label="AI credits" value={String(wallet?.ai_credits ?? 0)} />

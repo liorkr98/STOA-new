@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Plus } from "@phosphor-icons/react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { topUp } from "@/app/actions/wallet";
 import { Button } from "@/components/ui/button";
 
@@ -12,10 +13,18 @@ export function TopUpButton() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function add(amount: number) {
+    setError(null);
     start(async () => {
-      await topUp(amount);
+      const res = await topUp(amount);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+        return;
+      }
+      toast.success(`Added $${amount} to your balance`);
       setOpen(false);
       router.refresh();
     });
@@ -23,23 +32,30 @@ export function TopUpButton() {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)}>
-        <Plus size={16} weight="bold" />
-        Add credits
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        <Plus size={16} aria-hidden />
+        Add funds
       </Button>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
-      {AMOUNTS.map((a) => (
-        <Button key={a} variant="secondary" disabled={pending} onClick={() => add(a)}>
-          +${a}
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex items-center gap-2">
+        {AMOUNTS.map((a) => (
+          <Button key={a} variant="secondary" disabled={pending} onClick={() => add(a)}>
+            +${a}
+          </Button>
+        ))}
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
         </Button>
-      ))}
-      <Button variant="ghost" onClick={() => setOpen(false)}>
-        Cancel
-      </Button>
+      </div>
+      {error && (
+        <p className="text-xs text-[var(--down)]" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

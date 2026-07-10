@@ -14,6 +14,9 @@ export async function purchaseReport(reportId: string): Promise<SpendResult> {
 }
 
 export async function topUp(amount: number): Promise<SpendResult> {
+  if (![25, 50, 100].includes(amount)) {
+    return { error: "Choose $25, $50, or $100." };
+  }
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("top_up", { p_amount: amount });
   if (error) return { error: error.message };

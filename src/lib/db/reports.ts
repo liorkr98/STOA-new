@@ -14,8 +14,10 @@ function normalize(row: Record<string, unknown>): Report {
   return { ...(row as unknown as Report), prediction };
 }
 
+/** Supabase dynamic selects (e.g. !inner joins) widen inferred types; normalize via unknown. */
 function asReportRows(data: unknown): Record<string, unknown>[] {
-  return (data as unknown as Record<string, unknown>[]) ?? [];
+  if (!Array.isArray(data)) return [];
+  return data as unknown as Record<string, unknown>[];
 }
 
 function asReportRow(data: unknown): Record<string, unknown> {
