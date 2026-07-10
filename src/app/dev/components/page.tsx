@@ -5,6 +5,7 @@ import { SealStamp } from "@/components/ui/seal-stamp";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
+import { DyorBar } from "@/components/ui/dyor-bar";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { FactCheckLayer, FactCheckedText } from "@/components/report/fact-check-layer";
@@ -71,6 +72,11 @@ export default function ComponentPreviewPage() {
           compensationTied
           compensationDetail="Sponsored coverage as part of an ongoing IR agreement."
         />
+      </div>
+
+      <p className="t-eyebrow mb-4">DyorBar</p>
+      <div className="max-w-md mb-12">
+        <DyorBar />
       </div>
 
       <p className="t-eyebrow mb-4">LockConfirmModal</p>

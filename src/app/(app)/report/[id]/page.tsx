@@ -16,6 +16,7 @@ import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
+import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
@@ -140,6 +141,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             compensationTied={report.compensation_tied ?? false}
             compensationDetail={report.compensation_detail ?? undefined}
           />
+          <DyorBar />
           {author && (
             <TrackScoreBadge
               handle={author.handle}
