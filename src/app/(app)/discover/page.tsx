@@ -146,7 +146,9 @@ export default async function DiscoverPage({
         </p>
       </div>
 
-      {profile && <QuickPost profile={profile} />}
+      {profile && (profile.role === "analyst" || profile.role === "admin") && (
+        <QuickPost profile={profile} />
+      )}
 
       <TabBar
         tabs={TABS}

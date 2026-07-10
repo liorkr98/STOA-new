@@ -70,6 +70,26 @@ export async function validateAndPublishReport(
   userId: string,
   input: ComposeInput,
 ): Promise<{ id: string }> {
+  // The only real eligibility gate in this stack: an admin approved this
+  // account as an analyst (approve_analyst_application sets profiles.role).
+  // Previously enforced only by the studio compose page's client-side
+  // redirect (src/app/studio/layout.tsx) -- calling this action or the
+  // /api/reports/[id]/publish route directly bypassed it entirely, since
+  // neither RLS (reports_insert/update only check author_id) nor this
+  // function checked role at all. A rejected or never-applied account could
+  // publish exactly like an approved one.
+  const { data: publisher } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  if (publisher?.role !== "analyst" && publisher?.role !== "admin") {
+    throw new PublishReportError(
+      "Only approved analysts can publish. Apply to become an analyst first.",
+      403,
+    );
+  }
+
   const disclosureProvided = input.views_certified !== undefined;
   if (disclosureProvided && !input.views_certified) {
     throw new PublishReportError("You must certify these are your own views before publishing.");
