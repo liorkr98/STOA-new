@@ -8,7 +8,7 @@ export type UniverseEntry = {
   capBand: CapBand;
 };
 
-/** Curated US equities universe for Markets browse, Discover cap filters, and grading metadata. */
+/** Featured curated tickers (legacy cap bands / sectors). Full browse uses the `tickers` table (~7k+). */
 export const UNIVERSE: UniverseEntry[] = [
   { ticker: "NVDA", name: "NVIDIA", sector: "Semiconductors", exchange: "NASDAQ", capBand: "mega" },
   { ticker: "AAPL", name: "Apple", sector: "Hardware", exchange: "NASDAQ", capBand: "mega" },

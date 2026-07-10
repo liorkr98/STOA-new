@@ -22,6 +22,11 @@ export function toFmp(symbol: string): string {
   return normalizeSymbol(symbol).replace(/\./g, "-");
 }
 
+/** Yahoo uses a dash for class shares (BRK-B). */
+export function toYahoo(symbol: string): string {
+  return normalizeSymbol(symbol).replace(/[./]/g, "-");
+}
+
 /** Basic shape guard so we don't send junk to a provider. */
 export function isValidSymbol(raw: string): boolean {
   const s = normalizeSymbol(raw);

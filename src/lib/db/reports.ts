@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
-import { tickersInCapBand, type CapBand } from "@/lib/market/cap-bands";
+import { tickersInCapBand } from "@/lib/db/tickers";
+import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
 
 const SELECT =
@@ -64,17 +65,17 @@ function selectClause(filters: FeedFilters): string {
 }
 
 /** Apply column filters that PostgREST can express on `reports` (and nested prediction). */
-function applyReportColumnFilters(
+async function applyReportColumnFilters(
   // Supabase query builders are chainable but awkward to type here.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   q: any,
   filters: FeedFilters,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+): Promise<any> {
   if (filters.type) q = q.eq("type", filters.type);
   if (filters.access) q = q.eq("access", filters.access);
   if (filters.mcap) {
-    const tickers = tickersInCapBand(filters.mcap);
+    const tickers = await tickersInCapBand(filters.mcap);
     if (tickers.length === 0) {
       q = q.eq("id", "00000000-0000-0000-0000-000000000000");
     } else {
@@ -114,7 +115,7 @@ export async function listFeed({
     const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
     let q = supabase.from("reports").select(selectClause(merged)).eq("status", "published");
-    q = applyReportColumnFilters(q, merged);
+    q = await applyReportColumnFilters(q, merged);
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
@@ -152,7 +153,7 @@ export async function listFeedFromAnalysts(
     .select(selectClause(filters))
     .eq("status", "published")
     .in("author_id", analystIds);
-  q = applyReportColumnFilters(q, filters);
+  q = await applyReportColumnFilters(q, filters);
   const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
   return applyJoinedFilters(
     asReportRows(data)
