@@ -141,7 +141,7 @@ export default function ScreenerPage() {
 
       {isLoading ? (
         <p className="t-meta">Loading fundamentals...</p>
-      ) : error ? (
+      ) : error || !data ? (
         <EmptyState title="Screener unavailable" body="Sign in and make sure market data is configured." />
       ) : (
         <DataTable columns={columns} data={rows} rowKey={(r) => r.ticker} csvName="screener" />
