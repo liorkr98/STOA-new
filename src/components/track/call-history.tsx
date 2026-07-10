@@ -2,7 +2,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
-import { DirectionTag, GradeTag } from "@/components/ui/tag";
+import { DirectionTag, GradeTag, PendingReviewTag } from "@/components/ui/tag";
 
 /**
  * The full, auditable call ledger: every prediction with entry, resolution,
@@ -42,7 +42,8 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
                 p.return_pct != null && p.benchmark_pct != null
                   ? p.return_pct - p.benchmark_pct
                   : null;
-              const open = p.outcome === "open";
+              const pendingReview = p.report_status === "resolution_pending_review";
+              const open = p.outcome === "open" && !pendingReview;
               return (
                 <tr
                   key={p.id}
@@ -94,7 +95,11 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
                     {alpha == null ? "-" : pct(alpha)}
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <GradeTag outcome={open ? "open" : p.outcome} />
+                    {pendingReview ? (
+                      <PendingReviewTag />
+                    ) : (
+                      <GradeTag outcome={open ? "open" : p.outcome} />
+                    )}
                   </td>
                 </tr>
               );

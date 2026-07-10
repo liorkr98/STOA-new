@@ -146,6 +146,8 @@ export interface Prediction {
   /** Signed return in percent, direction-aware. Null until resolved. */
   return_pct: number | null;
   created_at: string;
+  /** Parent report's status, joined in for callers that render a pendingReview state. */
+  report_status?: ReportStatus;
 }
 
 export interface Wallet {

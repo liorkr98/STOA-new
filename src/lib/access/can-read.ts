@@ -24,7 +24,7 @@ export async function canReadReport(reportId: string): Promise<boolean> {
   if (!report) return false;
 
   if (user && report.author_id === user.id) return true;
-  if (report.status !== "published") return false;
+  if (report.status !== "published" && report.status !== "resolution_pending_review") return false;
   if (report.access === "free") return true;
   if (!user) return false;
 

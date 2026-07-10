@@ -122,9 +122,17 @@ export async function listFeed({
       merged.status != null;
     const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
+<<<<<<< HEAD
     const mcapTickers = merged.mcap ? await tickersInCapBand(merged.mcap) : undefined;
     let q = supabase.from("reports").select(selectClause(merged)).eq("status", "published");
     q = applyReportColumnFilters(q, merged, mcapTickers);
+=======
+    let q = supabase
+      .from("reports")
+      .select(selectClause(merged))
+      .in("status", ["published", "resolution_pending_review"]);
+    q = applyReportColumnFilters(q, merged);
+>>>>>>> 5a64de7 (fix: resolution_pending_review still leaks through 8 code-review findings)
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
@@ -161,7 +169,7 @@ export async function listFeedFromAnalysts(
   let q = supabase
     .from("reports")
     .select(selectClause(filters))
-    .eq("status", "published")
+    .in("status", ["published", "resolution_pending_review"])
     .in("author_id", analystIds);
   q = applyReportColumnFilters(q, filters, mcapTickers);
   const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
@@ -226,19 +234,26 @@ export async function listByAuthor(
 ): Promise<Report[]> {
   const supabase = await createClient();
   let q = supabase.from("reports").select(SELECT).eq("author_id", authorId);
-  if (opts.status) q = q.eq("status", opts.status);
+  // "published" means "publicly visible": a report awaiting resolution review
+  // is still live at its permalink (see resolution_pending_review RLS policies),
+  // so it belongs alongside published reports here, not silently excluded.
+  if (opts.status === "published") {
+    q = q.in("status", ["published", "resolution_pending_review"]);
+  } else if (opts.status) {
+    q = q.eq("status", opts.status);
+  }
   const { data } = await q.order("created_at", { ascending: false }).limit(opts.limit ?? 50);
   return asReportRows(data).map(normalize);
 }
 
-/** Map of ticker -> count of published reports covering it. */
+/** Map of ticker -> count of publicly visible reports covering it. */
 export async function tickerCoverage(): Promise<Record<string, number>> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
       .from("reports")
       .select("ticker")
-      .eq("status", "published")
+      .in("status", ["published", "resolution_pending_review"])
       .not("ticker", "is", null)
       .limit(2000);
     const counts: Record<string, number> = {};
@@ -256,7 +271,7 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
-    .eq("status", "published")
+    .in("status", ["published", "resolution_pending_review"])
     .eq("ticker", ticker.toUpperCase())
     .order("published_at", { ascending: false })
     .limit(limit);
