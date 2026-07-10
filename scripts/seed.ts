@@ -98,7 +98,7 @@ async function main() {
       .eq("id", id);
 
     // Clear prior demo content for a clean reseed.
-    await db.from("reports").delete().eq("author_id", id);
+    await db.rpc("purge_demo_author", { p_author_id: id });
 
     const totalCalls = Math.floor(rand(16, 30));
     const allPreds: {
@@ -151,6 +151,7 @@ async function main() {
           price: a.report,
           ticker,
           published_at: daysAgo(ageDays),
+          locked_at: daysAgo(ageDays),
           created_at: daysAgo(ageDays),
           likes: Math.floor(rand(2, 320)),
           views: Math.floor(rand(40, 5000)),
@@ -207,6 +208,7 @@ async function main() {
       status: "published",
       access: "free",
       published_at: daysAgo(Math.floor(rand(1, 10))),
+      locked_at: daysAgo(Math.floor(rand(1, 10))),
       created_at: daysAgo(Math.floor(rand(1, 10))),
       likes: Math.floor(rand(1, 90)),
       views: Math.floor(rand(20, 800)),

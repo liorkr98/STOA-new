@@ -224,9 +224,39 @@ export async function deleteReport(id: string) {
     throw new Error("Only unlocked drafts can be deleted.");
   }
 
-  await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
+  const { error } = await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
+  if (error) throw new Error(error.message);
+
   await deleteChartSnapshotsForReport(supabase, userId, id);
   revalidatePath("/studio");
+}
+
+/** Hides a published report from feeds. Track record (prediction) is preserved. */
+export async function archiveReport(id: string) {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("status, locked_at")
+    .eq("id", id)
+    .eq("author_id", userId)
+    .maybeSingle();
+
+  if (!report || report.status !== "published") {
+    throw new Error("Only published reports can be archived.");
+  }
+
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: "archived" })
+    .eq("id", id)
+    .eq("author_id", userId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/studio");
+  revalidatePath("/discover");
+  revalidatePath(`/report/${id}`);
 }
 
 /**
