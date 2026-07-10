@@ -243,7 +243,7 @@ body {
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--verdigris);
   outline-offset: 2px;
 }
 

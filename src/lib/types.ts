@@ -52,6 +52,8 @@ export interface Profile {
   created_at: string;
   /** Analyst who referred this user (?ref=handle at signup). */
   referred_by?: string | null;
+  /** When the user attested they are 18+ at signup. */
+  age_attested_at?: string | null;
   profile_config?: ProfileConfig | null;
 }
 

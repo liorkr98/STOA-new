@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { LegalPageShell, PlaceholderSection } from "@/components/legal/legal-page-shell";
 import { PLACEHOLDER_SECTIONS } from "@/lib/legal/constants";
 
-export const metadata: Metadata = { title: "Terms of Service" };
+export const metadata: Metadata = { title: "Cookie Policy" };
 
-export default function TermsPage() {
+export default function CookiesPage() {
   return (
-    <LegalPageShell title="Terms of Service">
-      {PLACEHOLDER_SECTIONS.terms.map((section) => (
+    <LegalPageShell title="Cookie Policy">
+      {PLACEHOLDER_SECTIONS.cookies.map((section) => (
         <PlaceholderSection key={section} title={section} />
       ))}
     </LegalPageShell>

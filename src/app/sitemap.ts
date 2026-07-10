@@ -71,7 +71,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pricing`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/terms/creators`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/cookies`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/subprocessors`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/not-advice`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/accessibility`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
   const [tickers, reports] = await Promise.all([tickerRoutes(), reportRoutes()]);
