@@ -227,3 +227,41 @@ Never trust client-supplied prices.
   copy.
 - Running any design-system generator that persists output into this repo (e.g. UI/UX Pro Max
   `--design-system --persist`) — it overwrites the ledger-and-seal system with a generic one.
+
+## Cursor Cloud specific instructions
+
+Durable notes for running Stoa in a Cursor Cloud VM. Standard commands live in `package.json`
+scripts and `README.md`; this section only records the non-obvious parts.
+
+### Stack and package manager
+
+- Package manager is **npm** (`package-lock.json` is the only lockfile). The `supabase:*` scripts
+  shell out to `pnpm dlx supabase` only as a way to invoke the Supabase CLI; that is not the
+  project package manager. Node 20+ (22 works). The update script installs deps (`npm install`).
+
+### Backend (Supabase) is remote, not local
+
+- There is **no local database and Docker is not installed**, so `npm run supabase:start` does not
+  work here. The app points at the hosted Supabase project **STOA**
+  (`https://cqhenicrfdkbsshyszex.supabase.co`), which is already migrated and seeded.
+- The app reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key)
+  from the environment (`src/lib/supabase/{client,server}.ts`). Next.js picks these up from either
+  a gitignored `.env.local` (see `.env.example`) or from injected VM env vars, so no `.env.local`
+  is required when those are provided as Cursor secrets. Without them, only the `(marketing)`
+  pages render; auth, Discover, profiles, Studio, and wallet stay blank/error.
+- `SUPABASE_SERVICE_ROLE_KEY` is the service-role secret used only by the admin client
+  (`src/lib/supabase/admin.ts`), i.e. `npm run seed` and `npm run grade`. It is **not** needed to
+  run or browse the app, and it is not retrievable via the Supabase MCP; it must be supplied as a
+  secret before running seed/grade.
+
+### Running and testing
+
+- Dev server: `npm run dev` (port 3000). The demo backend is already seeded, so sign in works out
+  of the box: investor `investor@stoa.demo` / `stoademo123`, analysts `*@stoa.demo` (same
+  password), e.g. `marcus_webb`, `priya_raman`.
+- Auth route is **`/sign-in`** (and `/sign-up`); there is no `/login`.
+- Market data uses Yahoo Finance with no key and falls back to deterministic mock prices; AI
+  features (fact-check, compose assist) mock-fall back without `DEEPSEEK_API_KEY`. Neither blocks
+  local dev.
+- Lint/typecheck/tests/build: see the `lint`, `typecheck`, `test:engine`, `test:valuation`, and
+  `build` scripts in `package.json`. There is no single aggregate `test` script.
