@@ -122,17 +122,12 @@ export async function listFeed({
       merged.status != null;
     const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
 
-<<<<<<< HEAD
     const mcapTickers = merged.mcap ? await tickersInCapBand(merged.mcap) : undefined;
-    let q = supabase.from("reports").select(selectClause(merged)).eq("status", "published");
-    q = applyReportColumnFilters(q, merged, mcapTickers);
-=======
     let q = supabase
       .from("reports")
       .select(selectClause(merged))
       .in("status", ["published", "resolution_pending_review"]);
-    q = applyReportColumnFilters(q, merged);
->>>>>>> 5a64de7 (fix: resolution_pending_review still leaks through 8 code-review findings)
+    q = applyReportColumnFilters(q, merged, mcapTickers);
     q =
       sort === "trending"
         ? q.order("likes", { ascending: false })
