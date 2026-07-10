@@ -7,7 +7,9 @@ const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
 export const DEFAULT_LLM_MODEL = "deepseek-v4-pro";
 
 export function llmApiKey(): string | undefined {
-  return process.env.DEEPSEEK_API_KEY?.trim() || undefined;
+  const raw = process.env.DEEPSEEK_API_KEY;
+  if (!raw) return undefined;
+  return raw.replace(/[\x00-\x1f\x7f]/g, "").trim() || undefined;
 }
 
 export function hasLlmApiKey(): boolean {
@@ -15,7 +17,9 @@ export function hasLlmApiKey(): boolean {
 }
 
 export function llmModelId(): string {
-  return process.env.DEEPSEEK_MODEL?.trim() || DEFAULT_LLM_MODEL;
+  const raw = process.env.DEEPSEEK_MODEL;
+  if (!raw) return DEFAULT_LLM_MODEL;
+  return raw.replace(/[\x00-\x1f\x7f]/g, "").trim() || DEFAULT_LLM_MODEL;
 }
 
 const deepseek = createOpenAI({
