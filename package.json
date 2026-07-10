@@ -18,6 +18,7 @@
     "seed": "tsx scripts/seed.ts",
     "grade": "tsx scripts/grade.ts",
     "import:kaggle": "tsx scripts/import-kaggle.ts",
+    "seed:financials": "tsx scripts/seed-universe-financials.ts",
     "test:engine": "node --import tsx --test src/lib/engine/score.test.ts",
     "test:valuation": "node --import tsx --test src/lib/valuation/model.test.ts",
     "test:users": "npx tsx scripts/simulate-users.ts",

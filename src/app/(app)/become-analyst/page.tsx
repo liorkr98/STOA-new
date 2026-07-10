@@ -196,6 +196,9 @@ function ApplicationStatus({
         <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
           Set up your profile
         </a>
+        <a href="/studio/compose" className="text-sm text-accent underline hover:no-underline">
+          Go to Studio
+        </a>
       </div>
     );
   }

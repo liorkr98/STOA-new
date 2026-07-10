@@ -1,26 +1,10 @@
-import { UNIVERSE } from "@/lib/universe";
+import { UNIVERSE, type CapBand, type UniverseEntry } from "@/lib/universe";
 
-/** Approximate market-cap bands for Discover filtering (static, not live quotes). */
-export type CapBand = "mega" | "large" | "mid" | "small";
+export type { CapBand };
 
-const BAND_BY_TICKER: Record<string, CapBand> = {
-  NVDA: "mega",
-  AAPL: "mega",
-  MSFT: "mega",
-  GOOGL: "mega",
-  AMZN: "mega",
-  META: "mega",
-  TSLA: "mega",
-  AMD: "large",
-  JPM: "large",
-  XOM: "large",
-  PLTR: "mid",
-  COIN: "mid",
-};
-
-for (const u of UNIVERSE) {
-  if (!BAND_BY_TICKER[u.ticker]) BAND_BY_TICKER[u.ticker] = "large";
-}
+const BAND_BY_TICKER: Record<string, CapBand> = Object.fromEntries(
+  UNIVERSE.map((u) => [u.ticker, u.capBand]),
+) as Record<string, CapBand>;
 
 export function capBandForTicker(ticker: string | null | undefined): CapBand | null {
   if (!ticker) return null;
@@ -36,7 +20,9 @@ export function tickerMatchesCapBand(
 
 /** Tickers known to fall in a band (for server-side Discover filtering). */
 export function tickersInCapBand(band: CapBand): string[] {
-  return Object.entries(BAND_BY_TICKER)
-    .filter(([, b]) => b === band)
-    .map(([ticker]) => ticker);
+  return UNIVERSE.filter((u) => u.capBand === band).map((u) => u.ticker);
+}
+
+export function universeEntry(ticker: string): UniverseEntry | undefined {
+  return UNIVERSE.find((u) => u.ticker === ticker.toUpperCase());
 }
