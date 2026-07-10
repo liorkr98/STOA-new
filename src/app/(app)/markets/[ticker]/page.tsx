@@ -3,12 +3,8 @@ import { Suspense } from "react";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { listByTicker } from "@/lib/db/reports";
 import { listFilings } from "@/lib/db/financials";
-<<<<<<< HEAD
 import { getTickerRow } from "@/lib/db/tickers";
-=======
-import { UNIVERSE } from "@/lib/universe";
 import { publishedReportCount, hasResolvedHistory } from "@/lib/seo/ticker-coverage";
->>>>>>> 37099d0 (feat(seo): institutional SEO infrastructure for stock pages and reports)
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
@@ -28,11 +24,8 @@ export async function generateMetadata({
   params: Promise<{ ticker: string }>;
 }): Promise<Metadata> {
   const { ticker } = await params;
-<<<<<<< HEAD
-  const meta = await getTickerRow(ticker.toUpperCase());
-=======
   const sym = ticker.toUpperCase();
-  const meta = UNIVERSE.find((u) => u.ticker === sym);
+  const meta = await getTickerRow(sym);
   const name = meta?.name ?? sym;
 
   // Same guard the sitemap uses (src/lib/seo/ticker-coverage.ts) so a page's
@@ -54,7 +47,6 @@ export async function generateMetadata({
 
   const ogImage = `/api/og/stock?ticker=${sym}`;
 
->>>>>>> 37099d0 (feat(seo): institutional SEO infrastructure for stock pages and reports)
   return {
     // The root layout's title.template already appends " · Stoa" (layout.tsx).
     title: `${name} (${sym}) · Analyst Ledger & Track Scores`,
@@ -65,9 +57,10 @@ export async function generateMetadata({
     robots: hasCoverage ? undefined : { index: false, follow: true },
     alternates: {
       // One canonical URL per ticker on this exchange. Cross-listed symbols
-      // (e.g. a TASE-listed twin of a US ticker) aren't in UNIVERSE today, so
-      // there's no live duplicate-content pair to disambiguate yet -- this
-      // still pins a stable canonical per page rather than leaving it unset.
+      // (e.g. a TASE-listed twin of a US ticker) aren't disambiguated by a
+      // separate exchange suffix today, so there's no live duplicate-content
+      // pair to worry about yet -- this still pins a stable canonical per
+      // page rather than leaving it unset.
       canonical: `/markets/${sym}`,
     },
     openGraph: {
