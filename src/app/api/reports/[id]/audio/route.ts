@@ -3,68 +3,38 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canReadReport } from "@/lib/access/can-read";
 import { spendAiCredits } from "@/lib/ai/spend";
-import { AI_COST } from "@/lib/ai/credits";
-import { buildAudioBriefScript } from "@/lib/ai/audio-brief-script";
-import { hasTtsProvider, synthesizeSpeech } from "@/lib/ai/tts";
+import { buildAudioBriefScript, bodyPlainText } from "@/lib/ai/audio-brief-script";
+import type { AudioBriefMode } from "@/lib/ai/audio/pricing";
+import {
+  creditsForScriptChars,
+  estimateMinutes,
+  quoteAudioBrief,
+} from "@/lib/ai/audio/pricing";
+import { DEFAULT_AUDIO_VOICE_ID, getAudioVoice, isValidAudioVoiceId } from "@/lib/ai/audio/voices";
+import { activeTtsProvider, hasTtsProvider, synthesizeSpeech } from "@/lib/ai/tts";
+import {
+  audioStoragePath,
+  getCachedAudioBrief,
+  listCachedAudioBriefs,
+  mintAudioSignedUrl,
+  saveCachedAudioBrief,
+} from "@/lib/db/report-audio";
 
 const BUCKET = "report-audio";
 const SIGNED_TTL_S = 60 * 60;
 
-function audioPath(reportId: string): string {
-  return `${reportId}/brief.mp3`;
+function parseMode(raw: string | null | undefined): AudioBriefMode {
+  if (raw === "extended" || raw === "full") return raw;
+  return "brief";
 }
 
-/**
- * GET: gated playback (H4). Runs canReadReport, then mints a short-lived signed
- * URL from the PRIVATE report-audio bucket -- a premium brief is never a public
- * file. 404 when no brief has been generated yet.
- */
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-  const allowed = await canReadReport(id);
-  if (!allowed) return NextResponse.json({ error: "locked" }, { status: 403 });
-
-  const admin = createAdminClient();
-  const { data, error } = await admin.storage
-    .from(BUCKET)
-    .createSignedUrl(audioPath(id), SIGNED_TTL_S);
-  if (error || !data?.signedUrl) {
-    return NextResponse.json({ error: "no audio brief" }, { status: 404 });
-  }
-  return NextResponse.json({ url: data.signedUrl });
-}
-
-/**
- * POST: author-only generation. Script via DeepSeek (optional); speech via OpenAI TTS.
- * Platform cost ~$0.01–0.02 per brief (tts-1). User charged 3 AI credits.
- */
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const { id } = await ctx.params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "sign in required" }, { status: 401 });
-
-  if (!hasTtsProvider()) {
-    return NextResponse.json(
-      {
-        error:
-          "Audio brief needs OPENAI_API_KEY on Vercel (OpenAI TTS, ~$0.02/brief). DeepSeek handles text only.",
-      },
-      { status: 503 },
-    );
-  }
-
+async function loadReportContext(supabase: Awaited<ReturnType<typeof createClient>>, id: string) {
   const { data: report } = await supabase
     .from("reports")
-    .select("id, author_id, title, summary, ticker")
+    .select("id, author_id, title, summary, ticker, content_hash")
     .eq("id", id)
     .maybeSingle();
-  if (!report) return NextResponse.json({ error: "not found" }, { status: 404 });
-  if (report.author_id !== user.id) {
-    return NextResponse.json({ error: "authors only" }, { status: 403 });
-  }
+  if (!report) return null;
 
   const { data: bodyRow } = await supabase
     .from("report_bodies")
@@ -78,40 +48,203 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     .eq("report_id", id)
     .maybeSingle();
 
-  const spend = await spendAiCredits("audioBrief", `Audio brief for ${report.title ?? id}`);
-  if (spend.error) {
+  return {
+    report,
+    body: (bodyRow as { body: string | null } | null)?.body ?? null,
+    prediction: prediction as {
+      direction: string;
+      target_price: number | null;
+      horizon_date?: string | null;
+    } | null,
+  };
+}
+
+/**
+ * GET ?voice=pro — signed playback URL for a cached brief.
+ * GET (no voice) — list cached voice ids for this report.
+ */
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  const allowed = await canReadReport(id);
+  if (!allowed) return NextResponse.json({ error: "locked" }, { status: 403 });
+
+  const url = new URL(req.url);
+  const voiceParam = url.searchParams.get("voice");
+
+  if (!voiceParam) {
+    const cached = await listCachedAudioBriefs(id);
+    return NextResponse.json({
+      voices: cached.map((c) => ({
+        voice_id: c.voice_id,
+        mode: c.mode,
+        script_chars: c.script_chars,
+        duration_estimate_sec: c.duration_estimate_sec,
+        credits_charged: c.credits_charged,
+      })),
+      tts_provider: activeTtsProvider(),
+    });
+  }
+
+  const voiceId = isValidAudioVoiceId(voiceParam) ? voiceParam : DEFAULT_AUDIO_VOICE_ID;
+  const cached = await getCachedAudioBrief(id, voiceId);
+  if (!cached) {
+    return NextResponse.json({ error: "no audio brief" }, { status: 404 });
+  }
+
+  const signedUrl = await mintAudioSignedUrl(cached.storage_path, SIGNED_TTL_S);
+  if (!signedUrl) {
+    return NextResponse.json({ error: "no audio brief" }, { status: 404 });
+  }
+
+  return NextResponse.json({
+    url: signedUrl,
+    voice_id: cached.voice_id,
+    mode: cached.mode,
+    script_chars: cached.script_chars,
+    duration_estimate_sec: cached.duration_estimate_sec,
+    cached: true,
+  });
+}
+
+/**
+ * POST { voice?, mode?, force? }
+ * Generates once per report+voice; cached replays are free for all readers.
+ * Script via DeepSeek; speech via Voicebox (preferred) or OpenAI TTS fallback.
+ */
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "sign in required" }, { status: 401 });
+
+  const allowed = await canReadReport(id);
+  if (!allowed) return NextResponse.json({ error: "locked" }, { status: 403 });
+
+  if (!hasTtsProvider()) {
     return NextResponse.json(
-      { error: spend.error, have: spend.have, need: spend.need },
-      { status: spend.error === "insufficient_credits" ? 402 : 400 },
+      {
+        error:
+          "Audio brief needs VOICEBOX_API_URL (self-hosted Voicebox) or OPENAI_API_KEY. DeepSeek writes the script only.",
+      },
+      { status: 503 },
     );
   }
 
+  let bodyJson: { voice?: string; mode?: string; force?: boolean } = {};
   try {
-    const script = await buildAudioBriefScript({
-      title: report.title,
-      summary: report.summary,
-      ticker: report.ticker,
-      body: (bodyRow as { body: string | null } | null)?.body ?? null,
-      prediction: prediction as {
-        direction: string;
-        target_price: number | null;
-        horizon_date?: string | null;
-      } | null,
-    });
+    bodyJson = (await req.json()) as typeof bodyJson;
+  } catch {
+    bodyJson = {};
+  }
 
-    const mp3 = await synthesizeSpeech(script);
+  const voiceId =
+    bodyJson.voice && isValidAudioVoiceId(bodyJson.voice)
+      ? bodyJson.voice
+      : DEFAULT_AUDIO_VOICE_ID;
+  const mode = parseMode(bodyJson.mode);
+  const force = Boolean(bodyJson.force);
+
+  const ctxData = await loadReportContext(supabase, id);
+  if (!ctxData) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  const { report, body, prediction } = ctxData;
+  const isAuthor = report.author_id === user.id;
+  const persona = getAudioVoice(voiceId);
+  const contentHash = (report as { content_hash?: string | null }).content_hash ?? null;
+
+  const existing = await getCachedAudioBrief(id, voiceId);
+  if (existing && !force) {
+    const hashMatch = !contentHash || existing.content_hash === contentHash;
+    if (hashMatch) {
+      const signedUrl = await mintAudioSignedUrl(existing.storage_path, SIGNED_TTL_S);
+      if (signedUrl) {
+        return NextResponse.json({
+          ok: true,
+          cached: true,
+          url: signedUrl,
+          voice_id: voiceId,
+          credits_charged: 0,
+          script_chars: existing.script_chars,
+          duration_estimate_sec: existing.duration_estimate_sec,
+        });
+      }
+    }
+  }
+
+  if (existing && force && !isAuthor) {
+    return NextResponse.json({ error: "Only the author can force-regenerate" }, { status: 403 });
+  }
+
+  const bodyChars = bodyPlainText(body).length;
+  const preQuote = quoteAudioBrief({ bodyPlainChars: bodyChars, mode, cached: false });
+
+  try {
+    const script = await buildAudioBriefScript(
+      {
+        title: report.title,
+        summary: report.summary,
+        ticker: report.ticker,
+        body,
+        prediction,
+      },
+      mode,
+    );
+
+    const scriptChars = script.length;
+    const credits = creditsForScriptChars(scriptChars);
+
+    const spend = await spendAiCredits(
+      "audioBrief",
+      `Audio brief (${persona.label}, ${mode}) for ${report.title ?? id}`,
+      credits,
+    );
+    if (spend.error) {
+      return NextResponse.json(
+        { error: spend.error, have: spend.have, need: spend.need, quote: preQuote },
+        { status: spend.error === "insufficient_credits" ? 402 : 400 },
+      );
+    }
+
+    const { buffer, provider } = await synthesizeSpeech(script, persona);
+    const path = audioStoragePath(id, voiceId);
     const admin = createAdminClient();
     const { error: uploadError } = await admin.storage
       .from(BUCKET)
-      .upload(audioPath(id), mp3, { contentType: "audio/mpeg", upsert: true });
+      .upload(path, buffer, { contentType: "audio/mpeg", upsert: true });
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
+    const durationSec = estimateMinutes(scriptChars) * 60;
+    await saveCachedAudioBrief({
+      reportId: id,
+      voiceId,
+      mode,
+      storagePath: path,
+      scriptText: script,
+      scriptChars,
+      contentHash,
+      creditsCharged: credits,
+      generatedBy: user.id,
+      durationEstimateSec: durationSec,
+    });
+
+    const signedUrl = await mintAudioSignedUrl(path, SIGNED_TTL_S);
+
     return NextResponse.json({
       ok: true,
+      cached: false,
+      url: signedUrl,
+      voice_id: voiceId,
+      mode,
+      provider,
+      credits_charged: credits,
       credits_remaining: spend.remaining,
-      credits_charged: AI_COST.audioBrief,
+      script_chars: scriptChars,
+      duration_estimate_sec: durationSec,
+      quote: quoteAudioBrief({ bodyPlainChars: bodyChars, mode, cached: false }),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Generation failed";

@@ -14,6 +14,18 @@ Every paid/freemium service this project integrates with, and where to manage it
 | [Napkin AI](https://www.napkin.ai) | Compose editor — text-to-diagram visuals (`/napkin`, toolbar) | https://app.napkin.ai (Developers tab) | No — block hidden until `NAPKIN_API_KEY` is set |
 | [PayPal](https://paypal.com) — Partner Referrals / Commerce Platform for Marketplaces | Real creator payouts + onboarding KYC (handled by PayPal itself during signup) | https://developer.paypal.com/dashboard/applications | No — internal wallet is the default economy until configured |
 | [Vercel](https://vercel.com) | Hosting, edge middleware, cron jobs | https://vercel.com/liorkr98s-projects/stoa-new | Yes |
+| [Voicebox](https://github.com/jamiepine/voicebox) | Self-hosted TTS with clone/persona voices for audio briefs | https://voicebox.sh | No — `OPENAI_API_KEY` fallback |
+
+## Audio briefs (DeepSeek script + Voicebox/OpenAI TTS)
+
+- **Script:** DeepSeek (`DEEPSEEK_API_KEY`) — brief (~60s), extended (3–5 min), or full narration.
+- **Speech:** [Voicebox](https://github.com/jamiepine/voicebox) via `VOICEBOX_API_URL` (self-hosted REST API on port 17493), or OpenAI `tts-1` fallback.
+- **Voices:** Stylized finance personas (The Bull, The Oracle, Market Host, etc.) — fun delivery styles, not impersonations.
+- **Cache:** One generation per report + voice in `report_audio_briefs` + `report-audio` storage; replays are free for all readers.
+- **Pricing (user credits):** 3 credits base (~900 chars / ~60s) + 2 credits per extra 500 chars (cap 25). Example: 5,000-char narration ≈ 20 credits (~$0.20).
+- **Platform cost:** Voicebox self-hosted ≈ $0 marginal; OpenAI TTS ≈ $0.015 per 1,000 chars.
+
+Setup Voicebox on a GPU server, create named profiles matching `src/lib/ai/audio/voices.ts`, set `VOICEBOX_API_URL=https://your-voicebox-host:17493` on Vercel.
 
 ## Vercel deploys
 
