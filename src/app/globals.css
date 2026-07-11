@@ -417,6 +417,25 @@ body {
   }
 }
 
+/* Landing sections ink in as the reader scrolls them into view -- scrubbed by
+ * their own scroll position (view timeline), never fired by it, so scrolling
+ * back re-inks in reverse like moving a physical page. Fully visible without
+ * scroll-timeline support and under reduced motion. */
+@keyframes scrub-ink-in {
+  from { opacity: 0.2; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scrub-in {
+      animation: scrub-ink-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+  }
+}
+
 /* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
  * never under reading text. Default off; the storefront opts in per-analyst.
  * Removed entirely under reduced motion (it is decoration, not content). */
