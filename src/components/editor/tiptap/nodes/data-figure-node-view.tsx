@@ -206,7 +206,7 @@ export function DataFigureNodeView({
         onChange={(e) => updateAttributes({ label: e.target.value })}
         onMouseDown={stop}
         placeholder="Metric"
-        className="t-eyebrow w-full bg-transparent uppercase focus:outline-none placeholder:text-text-faint placeholder:normal-case"
+        className="t-eyebrow w-full bg-transparent uppercase focus:outline-none placeholder:text-text-mute placeholder:normal-case"
       />
       <div className="mt-1 flex items-baseline gap-2">
         <input
@@ -214,14 +214,14 @@ export function DataFigureNodeView({
           onChange={(e) => updateAttributes({ value: e.target.value })}
           onMouseDown={stop}
           placeholder="Value"
-          className="num w-full max-w-[9ch] bg-transparent text-2xl font-semibold focus:outline-none placeholder:text-text-faint"
+          className="num w-full max-w-[9ch] bg-transparent text-2xl font-semibold focus:outline-none placeholder:text-text-mute"
         />
         <input
           value={note}
           onChange={(e) => updateAttributes({ note: e.target.value })}
           onMouseDown={stop}
           placeholder="context"
-          className="num flex-1 bg-transparent text-sm text-[var(--up)] focus:outline-none placeholder:text-text-faint"
+          className="num flex-1 bg-transparent text-sm text-[var(--up)] focus:outline-none placeholder:text-text-mute"
         />
       </div>
 
@@ -261,7 +261,7 @@ export function DataFigureNodeView({
             onChange={(e) => updateAttributes({ source: e.target.value })}
             onMouseDown={stop}
             placeholder="Source URL"
-            className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-faint"
+            className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-mute"
           />
           {source && (
             <a

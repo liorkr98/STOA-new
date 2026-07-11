@@ -78,7 +78,7 @@ that makes a product describable in one sentence.
 | `--ink` | `#14171F` | Primary text, dark UI surfaces. A near-black navy, not pure black — pure black against the paper tone below reads harsh under long reading sessions. |
 | `--paper` | `#EFF1ED` | Primary background. A cool, slightly sage-gray neutral — deliberately *not* the warm cream (`#F4F1EA`-family) that's become an AI-design default. Reads like aged ledger paper, not stationery. |
 | `--verdigris` | `#2F6E5D` | Primary brand accent. Deep patinated-bronze green — the color of old bank stamps and aged copper. Doubles as the semantic color for **Fact** claims and **Hit** outcomes. |
-| `--brass` | `#B8863B` | Certification accent — used for the seal graphic itself and for **Unproven** claims (things pending verification, same visual family as "not yet certified"). |
+| `--brass` | `#855F22` | Certification accent — deep antique brass, used for the seal graphic itself and for **Unproven** claims (things pending verification, same visual family as "not yet certified"). Darkened from `#B8863B` (2.84:1, failed C.2 rule 8) to clear 4.5:1 on paper and surface-2 as meaning-bearing text. |
 | `--plum` | `#5B4B6B` | Semantic color for **Opinion** claims — a claim that's debatable belongs in a different hue family entirely from fact/unproven, not a lighter or darker version of them. |
 | `--rust` | `#A6483C` | Semantic color for **Contradicted** claims and **Miss** outcomes. Muted brick, not alarm-red — this should read as "this didn't hold up," not "danger." |
 
@@ -1009,7 +1009,7 @@ values:
   --ink: #14171F;
   --paper: #EFF1ED;
   --verdigris: #2F6E5D;
-  --brass: #B8863B;
+  --brass: #855F22;
   --plum: #5B4B6B;
   --rust: #A6483C;
   --font-display: 'Fraunces', serif;

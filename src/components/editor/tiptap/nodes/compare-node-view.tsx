@@ -90,7 +90,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                   value={t}
                   onChange={(e) => setTicker(i, e.target.value)}
                   placeholder="TICK"
-                  className="num w-16 bg-transparent text-right font-semibold focus:outline-none placeholder:text-text-faint"
+                  className="num w-16 bg-transparent text-right font-semibold focus:outline-none placeholder:text-text-mute"
                 />
                 {tickers.length > 2 && (
                   <button
@@ -126,7 +126,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                   value={row.label}
                   onChange={(e) => setRowLabel(ri, e.target.value)}
                   placeholder="Metric"
-                  className="w-full bg-transparent text-text-mute focus:outline-none placeholder:text-text-faint"
+                  className="w-full bg-transparent text-text-mute focus:outline-none placeholder:text-text-mute"
                 />
               </td>
               {row.values.map((val, vi) => (
@@ -135,7 +135,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                     value={val}
                     onChange={(e) => setRowValue(ri, vi, e.target.value)}
                     placeholder="-"
-                    className="num w-full bg-transparent text-right focus:outline-none placeholder:text-text-faint"
+                    className="num w-full bg-transparent text-right focus:outline-none placeholder:text-text-mute"
                   />
                 </td>
               ))}

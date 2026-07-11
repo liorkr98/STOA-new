@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/design/cn";
+import { ScoreOdometer } from "@/components/motion/score-odometer";
 
 type Size = "sm" | "md" | "lg";
 
@@ -123,7 +124,7 @@ export function TrackScoreBadge({
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2.5">
           <span className="num text-5xl font-semibold leading-none tabular-nums" style={{ color }}>
-            {empty ? "-" : score}
+            {empty ? "-" : <ScoreOdometer value={score} storageKey={handle} />}
           </span>
           <span className="t-eyebrow">Track Score</span>
         </div>

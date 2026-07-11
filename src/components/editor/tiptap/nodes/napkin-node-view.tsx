@@ -293,7 +293,7 @@ export function NapkinNodeView({
                 onMouseDown={stop}
                 rows={chartMode ? 6 : 4}
                 placeholder="Edit levels, ticker, or thesis. The diagram redraws from your text."
-                className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
+                className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-mute focus:border-accent focus:outline-none"
               />
             </label>
             {provider === "open" ? (

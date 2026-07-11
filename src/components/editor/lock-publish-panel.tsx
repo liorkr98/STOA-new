@@ -16,7 +16,7 @@ import { HorizonPicker } from "@/components/editor/horizon-picker";
 import { PriceAttestationCard } from "@/components/ui/price-attestation-card";
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-faint";
+  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
 
 export interface DisclosureState {
   positionHeld: boolean | null;
