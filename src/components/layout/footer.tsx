@@ -29,6 +29,7 @@ const groups = [
       { href: "/subprocessors", label: "Subprocessors" },
       { href: "/not-advice", label: "Not advice" },
       { href: "/accessibility", label: "Accessibility" },
+      { href: "/compliance-brief", label: "Compliance brief" },
     ],
   },
 ];

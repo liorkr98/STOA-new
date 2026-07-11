@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { LegalPageShell, PlaceholderSection } from "@/components/legal/legal-page-shell";
-import { PLACEHOLDER_SECTIONS } from "@/lib/legal/constants";
+import { LegalPageShell, LegalSection } from "@/components/legal/legal-page-shell";
+import { NOT_ADVICE_CONTENT } from "@/lib/legal/content";
 
 export const metadata: Metadata = { title: "Not Investment Advice" };
 
@@ -11,8 +11,8 @@ export default function NotAdvicePage() {
         Stoa is a research marketplace. Nothing on this platform is investment, tax, or legal
         advice.
       </p>
-      {PLACEHOLDER_SECTIONS.not_advice.map((section) => (
-        <PlaceholderSection key={section} title={section} />
+      {NOT_ADVICE_CONTENT.map((section) => (
+        <LegalSection key={section.title} {...section} />
       ))}
     </LegalPageShell>
   );
