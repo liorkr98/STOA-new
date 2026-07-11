@@ -50,7 +50,7 @@ export function QuickPost({ profile }: { profile: Profile }) {
             onFocus={() => setFocused(true)}
             placeholder="Share a quick take, a note, or what you're watching…"
             rows={focused || body ? 3 : 1}
-            className="w-full resize-none bg-transparent text-sm text-text placeholder:text-text-faint focus:outline-none"
+            className="w-full resize-none bg-transparent text-sm text-text placeholder:text-text-mute focus:outline-none"
           />
           {(focused || body) && (
             <div className="mt-2 flex items-center justify-between">

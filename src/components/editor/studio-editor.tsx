@@ -466,7 +466,7 @@ export function StudioEditor({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Report title"
-                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-faint focus:outline-none"
+                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
                 style={{ fontFamily: "var(--font-display)" }}
               />
             </>

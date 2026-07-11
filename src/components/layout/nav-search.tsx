@@ -110,7 +110,7 @@ export function NavSearch() {
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1.5 pl-9 pr-3 text-sm text-text placeholder:text-text-faint focus-ring"
+          className="w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1.5 pl-9 pr-3 text-sm text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
         />
       </form>

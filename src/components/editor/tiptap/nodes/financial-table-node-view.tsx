@@ -80,7 +80,7 @@ export function FinancialTableNodeView({
                     onChange={(e) => setColumn(i, e.target.value)}
                     placeholder="Column"
                     className={cn(
-                      "w-full bg-transparent text-xs font-semibold uppercase tracking-wide text-text-mute focus:outline-none placeholder:text-text-faint",
+                      "w-full bg-transparent text-xs font-semibold uppercase tracking-wide text-text-mute focus:outline-none placeholder:text-text-mute",
                       i === 0 ? "text-left" : "text-right",
                     )}
                   />
@@ -99,7 +99,7 @@ export function FinancialTableNodeView({
                       onChange={(e) => setCell(ri, ci, e.target.value)}
                       placeholder={ci === 0 ? "Label" : "-"}
                       className={cn(
-                        "w-full bg-transparent focus:outline-none placeholder:text-text-faint",
+                        "w-full bg-transparent focus:outline-none placeholder:text-text-mute",
                         ci === 0 ? "text-left text-text-mute" : "num text-right",
                       )}
                     />
@@ -136,7 +136,7 @@ export function FinancialTableNodeView({
           value={source}
           onChange={(e) => updateAttributes({ source: e.target.value })}
           placeholder="Optional source"
-          className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-faint"
+          className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-mute"
         />
       </div>
     </NodeViewWrapper>

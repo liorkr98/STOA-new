@@ -18,7 +18,7 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 const inputClass =
-  "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm text-text placeholder:text-text-faint focus-ring";
+  "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm text-text placeholder:text-text-mute focus-ring";
 
 export function AuthForm({
   mode,
