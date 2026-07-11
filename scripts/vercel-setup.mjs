@@ -12,7 +12,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sanitizeEnvValue } from "./sanitize-env-value.mjs";
+import { hasInvalidHeaderChars, sanitizeEnvValue } from "./sanitize-env-value.mjs";
 
 const PROJECT_ID = "prj_S05cHjfIQVLDIygss1VM6CZuNIC0";
 const GITHUB_REPO = "liorkr98/STOA-new";
@@ -161,6 +161,26 @@ async function createEnv(token, projectId, teamId, spec, value) {
   });
 }
 
+async function replaceEnv(token, projectId, teamId, existing, value) {
+  const team = teamId ? `?teamId=${teamId}` : "";
+  await api(token, `/v9/projects/${projectId}/env/${existing.id}${team}`, { method: "DELETE" });
+  await api(token, `/v10/projects/${projectId}/env${team}`, {
+    method: "POST",
+    body: JSON.stringify({
+      key: existing.key,
+      value,
+      type: existing.type ?? "sensitive",
+      target: existing.target ?? ["production"],
+    }),
+  });
+}
+
+async function getEnvValue(token, projectId, teamId, envId) {
+  const team = teamId ? `?teamId=${teamId}` : "";
+  const decrypted = await api(token, `/v9/projects/${projectId}/env/${envId}${team}`);
+  return decrypted.value ?? "";
+}
+
 async function linkGitHub(token, projectId, teamId) {
   const team = teamId ? `?teamId=${teamId}` : "";
   return api(token, `/v9/projects/${projectId}${team}`, {
@@ -221,9 +241,8 @@ async function main() {
   }
 
   const existing = await listEnv(token, PROJECT_ID, teamId);
-  const existingKeys = new Set(
-    (existing?.envs ?? existing ?? []).map((e) => e.key),
-  );
+  const existingList = existing?.envs ?? existing ?? [];
+  const existingByKey = new Map(existingList.map((e) => [e.key, e]));
 
   for (const spec of ENV_SPECS) {
     let value =
@@ -241,7 +260,22 @@ async function main() {
       console.log(`Skip ${spec.key} (optional, empty)`);
       continue;
     }
-    if (existingKeys.has(spec.key)) {
+
+    const onVercel = existingByKey.get(spec.key);
+    if (onVercel) {
+      if (spec.key === "CRON_SECRET") {
+        const remote = await getEnvValue(token, PROJECT_ID, teamId, onVercel.id);
+        if (hasInvalidHeaderChars(remote)) {
+          const clean = sanitizeEnvValue(remote);
+          if (!clean) {
+            console.error("CRON_SECRET on Vercel is empty after sanitize. Run: npm run vercel:fix-cron-secret -- --rotate");
+            process.exit(1);
+          }
+          await replaceEnv(token, PROJECT_ID, teamId, onVercel, clean);
+          console.log(`Fixed ${spec.key} (removed invalid control characters)`);
+          continue;
+        }
+      }
       console.log(`Keep ${spec.key} (already set on Vercel)`);
       continue;
     }

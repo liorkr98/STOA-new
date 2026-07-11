@@ -29,6 +29,13 @@ Also verify in Vercel **Settings → Git**: Production Branch = `main`, deployme
 
 Setup script (requires `VERCEL_TOKEN` + `.env.local`): `npm run vercel:setup -- --deploy --ref=main`
 
+**Build fails: `CRON_SECRET` contains control character (0x0a)?** The secret was pasted with a trailing newline. Vercel rejects that before the build starts.
+
+Fix (pick one):
+
+1. **Dashboard:** Settings → Environment Variables → `CRON_SECRET` → Edit → re-paste the value with **no newline at the end** (or generate a new hex string) → Save → Redeploy
+2. **CLI:** `VERCEL_TOKEN=xxx npm run vercel:fix-cron-secret` (trims invalid chars) or add `--rotate` for a fresh secret
+
 ## Notes
 
 - **Market data provider is abstracted** behind `MarketProvider` (`src/lib/engine/market/types.ts`), with Yahoo Finance as the primary implementation (`providers/yahoo.ts`) and Twelve Data / Alpha Vantage as optional fallbacks in `providers/chain.ts`. No code outside `src/lib/engine/market/` calls a vendor directly — swap or add a provider there only.
