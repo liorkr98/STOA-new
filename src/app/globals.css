@@ -139,6 +139,14 @@ html {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Anchor targets land clear of the sticky top nav (h-16 + breathing room). */
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -347,10 +355,66 @@ body {
   }
 }
 
-/* Thin scrollbars inside scroll regions */
+/* Thin scrollbars inside scroll regions. Contained so a wheel that hits the
+ * end of a panel, sheet, or dropdown never chains into scrolling the page. */
 .scroll-area {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+  overscroll-behavior: contain;
+}
+
+/* ------------------------------------------------------------------ *
+ * Scroll-driven state (progressive enhancement -- browsers without
+ * animation-timeline simply never show these; nothing breaks).
+ * Scrub-driven, not time-driven, so the frequency rule does not apply:
+ * like a scrollbar, they display the reader's own position.
+ * ------------------------------------------------------------------ */
+
+/* Reading progress: hairline under the sticky nav on long editorial reads.
+ * scaleX only -- never width -- per MOTION.md A.2 law 2. */
+@keyframes reading-progress-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.reading-progress {
+  display: none;
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  z-index: 50;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    display: block;
+    animation: reading-progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* Sticky header separation: the nav sits flush with the page at rest and
+ * earns its border + shadow only once content actually scrolls under it. */
+@keyframes header-elevate {
+  from { border-color: transparent; box-shadow: none; }
+  to {
+    border-color: var(--border);
+    box-shadow: 0 1px 8px color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .header-elevate {
+    border-color: transparent;
+    animation: header-elevate linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 6rem;
+  }
 }
 
 /* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
