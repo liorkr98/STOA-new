@@ -272,3 +272,56 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
     .limit(limit);
   return asReportRows(data).map(normalize);
 }
+
+/**
+ * Single guard for "does this ticker have any real, locked content" -- used by
+ * both the /markets/[ticker] noindex decision and sitemap.ts's inclusion
+ * filter. One query shape in one place so the two can't drift out of sync (a
+ * ticker page and its sitemap entry disagreeing on indexability is its own
+ * SEO bug). Locked (not just published) means genuinely immutable content;
+ * resolution_pending_review is included since the report itself never
+ * unpublished, only one call's grading is waiting on market data.
+ */
+export async function publishedReportCount(ticker: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("reports")
+    .select("id", { count: "exact", head: true })
+    .eq("ticker", ticker.toUpperCase())
+    .in("status", ["published", "resolution_pending_review"])
+    .not("locked_at", "is", null);
+  return count ?? 0;
+}
+
+/** Coverage counts for every ticker with at least one locked report --
+ * powers the sitemap's tickers list and its priority tiering. */
+export async function allTickerCoverage(): Promise<Record<string, number>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("ticker")
+    .in("status", ["published", "resolution_pending_review"])
+    .not("locked_at", "is", null)
+    .not("ticker", "is", null)
+    .limit(5000);
+  const counts: Record<string, number> = {};
+  for (const row of (data as { ticker: string | null }[]) ?? []) {
+    if (row.ticker) counts[row.ticker] = (counts[row.ticker] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/** Locked report ids + lock timestamps for the sitemap's report entries. */
+export async function listLockedReportRoutes(
+  limit = 5000,
+): Promise<{ id: string; locked_at: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("id, locked_at")
+    .in("status", ["published", "resolution_pending_review"])
+    .not("locked_at", "is", null)
+    .order("locked_at", { ascending: false })
+    .limit(limit);
+  return (data as { id: string; locked_at: string }[]) ?? [];
+}

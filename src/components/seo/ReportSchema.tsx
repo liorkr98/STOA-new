@@ -15,14 +15,19 @@ import type { Report } from "@/lib/types";
 // Google's ClaimReview rich result only supports one claim per page; this
 // picks the report's headline claim -- verified/disputed first (an actual
 // checked claim is more representative of the report than an aside), else
-// the first claim of any kind.
+// the first non-opinion claim. Never falls back to an "opinion" claim: that
+// verdict marks the analyst's own call, and stamping a numeric ClaimReview
+// rating on it would present the AI's classification of an opinion as if it
+// were an externally fact-checked, rated claim -- the AI must never grade
+// the analyst's thesis.
 function pickPrimaryClaim(claims: FactCheckResult["claims"] | undefined) {
   if (!claims || claims.length === 0) return null;
   const checked = claims.find((c) => {
     const v = verdictOf(c);
     return v === "fact" || v === "contradicted";
   });
-  return checked ?? claims[0];
+  if (checked) return checked;
+  return claims.find((c) => verdictOf(c) !== "opinion") ?? null;
 }
 
 const RATING_BY_VERDICT: Record<Verdict, number> = {
@@ -41,7 +46,17 @@ const ALT_NAME_BY_VERDICT: Record<Verdict, string> = {
 
 export function ReportSchema({ report }: { report: Report }) {
   const author = report.author;
-  if (!author || !report.published_at) return null;
+  // published_at survives a resolution_pending_review flip (the report never
+  // actually unpublished), but a draft/archived report can carry a stale
+  // published_at from a prior cycle -- gate on status too so schema markup
+  // never outlives what's actually indexable.
+  if (
+    !author ||
+    !report.published_at ||
+    (report.status !== "published" && report.status !== "resolution_pending_review")
+  ) {
+    return null;
+  }
 
   const url = absoluteUrl(`/report/${report.id}`);
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";

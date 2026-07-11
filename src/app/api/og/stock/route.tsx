@@ -152,6 +152,17 @@ export async function GET(req: Request) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630, fonts },
+    {
+      width: 1200,
+      height: 630,
+      fonts,
+      // Without an explicit Cache-Control, ImageResponse defaults to
+      // immutable/max-age=31536000 -- since this route bakes in a live quote
+      // fetched per request, that default would freeze the first price it
+      // ever rendered into the CDN cache for a year. Revalidate hourly.
+      headers: {
+        "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    },
   );
 }
