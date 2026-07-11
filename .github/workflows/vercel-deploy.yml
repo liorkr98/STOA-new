@@ -1,17 +1,16 @@
 name: Vercel Production Deploy
 
-# Manual deploy only. Production deploys on push should come from Vercel's GitHub
-# integration (Project → Settings → Git). To use this workflow instead, add secrets:
-#   VERCEL_TOKEN, VERCEL_ORG_ID  (+ optional VERCEL_PROJECT_ID)
-# then run from Actions → "Vercel Production Deploy" → Run workflow.
+# Triggers a Vercel production build on every push to main.
+# Git integration alone often fails silently — use a Deploy Hook (recommended).
+#
+# One-time setup:
+#   1. Vercel → Project → Settings → Git → Deploy Hooks → Create (branch: main)
+#   2. GitHub → repo Settings → Secrets → Actions → VERCEL_DEPLOY_HOOK = hook URL
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      ref:
-        description: Git ref to deploy
-        required: false
-        default: main
 
 concurrency:
   group: vercel-production
@@ -20,37 +19,71 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
+      DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: prj_S05cHjfIQVLDIygss1VM6CZuNIC0
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Require Vercel secrets
+      - name: Decide deploy method
+        id: plan
         run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ]; then
-            echo "::error::Missing VERCEL_TOKEN or VERCEL_ORG_ID in GitHub repo secrets."
-            echo "Add them at Settings → Secrets and variables → Actions"
-            echo "Or connect the repo in the Vercel dashboard for automatic deploys on push."
-            exit 1
+          if [ -n "$DEPLOY_HOOK" ]; then
+            echo "method=hook" >> "$GITHUB_OUTPUT"
+          elif [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ]; then
+            echo "method=cli" >> "$GITHUB_OUTPUT"
+          else
+            echo "method=none" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Trigger Vercel deploy hook
+        if: steps.plan.outputs.method == 'hook'
+        run: |
+          echo "Triggering Vercel deploy hook..."
+          curl -fsS -X POST "$DEPLOY_HOOK"
+          echo "Production deploy triggered."
+
+      - uses: actions/checkout@v4
+        if: steps.plan.outputs.method == 'cli'
+
       - uses: actions/setup-node@v4
+        if: steps.plan.outputs.method == 'cli'
         with:
           node-version: "22"
           cache: npm
 
       - name: Install dependencies
+        if: steps.plan.outputs.method == 'cli'
         run: npm ci
 
       - name: Pull Vercel env
+        if: steps.plan.outputs.method == 'cli'
         run: npx vercel@55 pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       - name: Build
+        if: steps.plan.outputs.method == 'cli'
         run: npx vercel@55 build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy prebuilt
+        if: steps.plan.outputs.method == 'cli'
         run: npx vercel@55 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Setup instructions
+        if: steps.plan.outputs.method == 'none'
+        run: |
+          echo "::error::No Vercel deploy credentials configured."
+          echo ""
+          echo "Recommended (works when Git webhooks don't):"
+          echo "  1. Vercel → stoa-new → Settings → Git → Deploy Hooks"
+          echo "  2. Create hook named 'github-main' for branch 'main'"
+          echo "  3. GitHub → liorkr98/STOA-new → Settings → Secrets → Actions"
+          echo "  4. Add secret VERCEL_DEPLOY_HOOK = the hook URL"
+          echo ""
+          echo "Alternative: add VERCEL_TOKEN + VERCEL_ORG_ID for CLI deploy."
+          echo ""
+          echo "If Git integration should work but doesn't, check Vercel:"
+          echo "  • Production branch = main"
+          echo "  • Deployments not paused"
+          echo "  • GitHub app has access to liorkr98/STOA-new"
+          exit 1

@@ -13,6 +13,21 @@ Every paid/freemium service this project integrates with, and where to manage it
 | [OpenAI](https://platform.openai.com) | Audio brief TTS (`tts-1`, ~$15/1M chars ≈ **$0.01–0.02 per 60s brief**) | https://platform.openai.com/api-keys | No — audio brief button disabled until `OPENAI_API_KEY` is set |
 | [Napkin AI](https://www.napkin.ai) | Compose editor — text-to-diagram visuals (`/napkin`, toolbar) | https://app.napkin.ai (Developers tab) | No — block hidden until `NAPKIN_API_KEY` is set |
 | [PayPal](https://paypal.com) — Partner Referrals / Commerce Platform for Marketplaces | Real creator payouts + onboarding KYC (handled by PayPal itself during signup) | https://developer.paypal.com/dashboard/applications | No — internal wallet is the default economy until configured |
+| [Vercel](https://vercel.com) | Hosting, edge middleware, cron jobs | https://vercel.com/liorkr98s-projects/stoa-new | Yes |
+
+## Vercel deploys
+
+Project ID: `prj_S05cHjfIQVLDIygss1VM6CZuNIC0` · Dashboard: https://vercel.com/liorkr98s-projects/stoa-new
+
+**Git connected but no deploy on push?** Vercel's GitHub webhook often fails silently. Use a Deploy Hook instead:
+
+1. Vercel → **Settings → Git → Deploy Hooks** → Create hook named `github-main`, branch **`main`**
+2. GitHub → **Settings → Secrets and variables → Actions** → New secret **`VERCEL_DEPLOY_HOOK`** = the hook URL
+3. Push to `main` — the `Vercel Production Deploy` workflow POSTs the hook and Vercel rebuilds
+
+Also verify in Vercel **Settings → Git**: Production Branch = `main`, deployments not paused, and the GitHub app has access to `liorkr98/STOA-new`.
+
+Setup script (requires `VERCEL_TOKEN` + `.env.local`): `npm run vercel:setup -- --deploy --ref=main`
 
 ## Notes
 
