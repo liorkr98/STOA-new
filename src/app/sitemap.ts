@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/seo/site";
 import { UNIVERSE } from "@/lib/universe";
-import { allTickerCoverage } from "@/lib/seo/ticker-coverage";
+import { allTickerCoverage, listLockedReportRoutes } from "@/lib/db/reports";
 
 export const revalidate = 3600;
 
@@ -20,15 +19,8 @@ function priorityForCoverage(count: number): number {
 
 async function reportRoutes(): Promise<MetadataRoute.Sitemap> {
   try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("reports")
-      .select("id, locked_at")
-      .eq("status", "published")
-      .not("locked_at", "is", null)
-      .order("locked_at", { ascending: false })
-      .limit(5000);
-    return ((data as { id: string; locked_at: string }[]) ?? []).map((r) => ({
+    const rows = await listLockedReportRoutes();
+    return rows.map((r) => ({
       url: `${SITE_URL}/report/${r.id}`,
       lastModified: r.locked_at,
       // A locked report is immutable by design (trust_compliance trigger) --

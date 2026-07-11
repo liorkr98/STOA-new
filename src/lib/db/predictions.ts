@@ -26,3 +26,15 @@ export async function resolvedCountByAuthor(authorId: string): Promise<number> {
     .neq("outcome", "open");
   return count ?? 0;
 }
+
+/** Whether any resolved (non-open) call exists for this ticker -- the line
+ * between "locked, fact-checked research" and "verified track record" copy. */
+export async function hasResolvedHistory(ticker: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("predictions")
+    .select("id", { count: "exact", head: true })
+    .eq("ticker", ticker.toUpperCase())
+    .neq("outcome", "open");
+  return (count ?? 0) > 0;
+}

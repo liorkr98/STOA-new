@@ -116,6 +116,10 @@ export function StudioEditor({
   });
   const dirtyRef = useRef(false);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Guards the 30s autosave from firing while doPublish is in flight -- without
+  // this, a tick landing mid-publish can write status:"draft" and a stale body
+  // over a row publishReport just (or is concurrently) flipping to "published".
+  const isPublishingRef = useRef(false);
 
   const hasCard = type !== "short_post";
   const bodyJson = useMemo(() => JSON.stringify(docJson), [docJson]);
@@ -164,6 +168,7 @@ export function StudioEditor({
   }, [hasCard, ticker, title]);
 
   const persistDraft = useCallback(async () => {
+    if (isPublishingRef.current) return;
     setSaveStatus("saving");
     try {
       const res = await saveDraft({
@@ -241,6 +246,7 @@ export function StudioEditor({
 
   const doPublish = useCallback(async () => {
     setError(null);
+    isPublishingRef.current = true;
     const editor = editorRef.current;
     try {
       let id = draftId;
@@ -305,6 +311,7 @@ export function StudioEditor({
         toast.error(e.message);
         setConfirmOpen(false);
         setCaptureStatus(null);
+        isPublishingRef.current = false;
         throw e;
       }
     }

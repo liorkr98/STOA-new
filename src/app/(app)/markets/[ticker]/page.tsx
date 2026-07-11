@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getStockSnapshot } from "@/lib/engine/market";
-import { listByTicker } from "@/lib/db/reports";
+import { listByTicker, publishedReportCount } from "@/lib/db/reports";
 import { listFilings } from "@/lib/db/financials";
 import { getTickerRow } from "@/lib/db/tickers";
-import { publishedReportCount, hasResolvedHistory } from "@/lib/seo/ticker-coverage";
+import { hasResolvedHistory } from "@/lib/db/predictions";
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
@@ -28,8 +28,9 @@ export async function generateMetadata({
   const meta = await getTickerRow(sym);
   const name = meta?.name ?? sym;
 
-  // Same guard the sitemap uses (src/lib/seo/ticker-coverage.ts) so a page's
-  // indexability and its sitemap presence can never disagree.
+  // Same guard the sitemap uses (src/lib/db/reports.ts: publishedReportCount /
+  // allTickerCoverage) so a page's indexability and its sitemap presence can
+  // never disagree.
   const [reportCount, resolvedHistory] = await Promise.all([
     publishedReportCount(sym),
     hasResolvedHistory(sym),
