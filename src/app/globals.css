@@ -445,6 +445,19 @@ body {
   }
 }
 
+/* Landing hero only: the scattered ledger slips breathe. Ambient, marketing
+ * register, +/-5px over 8s -- nothing in the app chrome may use this. */
+@keyframes ledger-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ledger-float {
+    animation: ledger-drift 8s var(--ease-in-out) infinite alternate;
+  }
+}
+
 /* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
  * never under reading text. Default off; the storefront opts in per-analyst.
  * Removed entirely under reduced motion (it is decoration, not content). */

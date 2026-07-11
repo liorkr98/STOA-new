@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
+import { DirectionTag } from "@/components/ui/tag";
+import type { DispatchPayload } from "@/lib/dispatch/types";
 
 /**
- * Bridge to the signed-in product: the dispatch is the morning briefing built
- * from the analysts you follow and subscribe to. Set like a folded newspaper
- * masthead -- the same visual language the real dispatch uses at /home.
+ * Bridge to the signed-in product, shown as the thing itself: a folded
+ * miniature of today's actual issue -- real headlines, real analysts --
+ * set in the same masthead language the dispatch uses at /home.
  */
-export function LandingDispatchTeaser() {
+export function LandingDispatchTeaser({ dispatch }: { dispatch: DispatchPayload | null }) {
+  const lead = dispatch?.lead ?? null;
+  const secondary = dispatch?.secondary.slice(0, 2) ?? [];
+
   return (
-    <section className="border-t border-border bg-surface/50">
+    <section className="border-t border-border">
       <div className="mx-auto max-w-6xl px-5 py-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.1fr]">
-          <div>
+          <div className="scrub-in">
             <p className="t-eyebrow text-text-mute">Once you are in</p>
             <h2 className="font-display mt-3 text-2xl font-semibold tracking-tight text-text sm:text-3xl" style={{ textWrap: "balance" }}>
               Your dispatch, every morning
@@ -26,34 +31,52 @@ export function LandingDispatchTeaser() {
             </Link>
           </div>
 
-          <div className="scrub-in select-none border border-border bg-paper p-6 sm:p-8" aria-hidden>
+          <div className="scrub-in select-none border border-border bg-paper p-6 shadow-[var(--shadow-card)] sm:p-8">
             <div className="flex items-baseline justify-between border-b-2 border-ink pb-3">
               <span className="font-display text-lg font-semibold tracking-[0.28em]">STOA</span>
-              <span className="num text-[10px] tracking-[0.14em] text-text-faint">
-                YOUR BRIEFING
-              </span>
+              <span className="num text-[10px] tracking-[0.14em] text-text-mute">YOUR BRIEFING</span>
             </div>
-            <div className="num mt-2 flex items-center gap-2 text-[10px] tracking-[0.14em] text-text-faint">
-              <span>ISSUE No142</span>
-              <span>&middot;</span>
-              <span>8 ANALYSTS YOU FOLLOW</span>
+            <div className="num mt-2 flex items-center gap-2 text-[10px] tracking-[0.14em] text-text-mute">
+              <span>ISSUE No{dispatch?.cycle.issueNumber ?? 1}</span>
+              <span aria-hidden>&middot;</span>
+              <span>FROM THE ANALYSTS YOU FOLLOW</span>
             </div>
-            <div className="mt-5 space-y-1.5">
-              <div className="h-3.5 w-11/12 rounded-sm bg-surface-2" />
-              <div className="h-3.5 w-3/4 rounded-sm bg-surface-2" />
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <div className="h-2 w-full rounded-sm bg-surface-2" />
-                <div className="h-2 w-5/6 rounded-sm bg-surface-2" />
-                <div className="h-2 w-4/6 rounded-sm bg-surface-2" />
+
+            {lead ? (
+              <div className="mt-5">
+                <div className="flex items-center gap-2">
+                  {lead.report.ticker && (
+                    <span className="num text-xs font-semibold">{lead.report.ticker}</span>
+                  )}
+                  {lead.prediction && <DirectionTag direction={lead.prediction.direction} />}
+                </div>
+                <p className="font-display mt-2 text-xl font-semibold leading-snug text-text" style={{ textWrap: "balance" }}>
+                  {lead.headline}
+                </p>
+                {lead.dek && (
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-mute">{lead.dek}</p>
+                )}
+                <p className="t-meta mt-2">@{lead.author.handle}</p>
               </div>
-              <div className="space-y-1.5">
-                <div className="h-2 w-full rounded-sm bg-surface-2" />
-                <div className="h-2 w-5/6 rounded-sm bg-surface-2" />
-                <div className="h-2 w-3/6 rounded-sm bg-surface-2" />
+            ) : (
+              <div className="mt-5 space-y-1.5" aria-hidden>
+                <div className="h-3.5 w-11/12 rounded-sm bg-surface-2" />
+                <div className="h-3.5 w-3/4 rounded-sm bg-surface-2" />
               </div>
-            </div>
+            )}
+
+            {secondary.length > 0 && (
+              <div className="mt-5 grid gap-5 border-t border-border pt-4 sm:grid-cols-2">
+                {secondary.map((story) => (
+                  <div key={story.report.id}>
+                    <p className="font-display text-sm font-semibold leading-snug text-text">
+                      {story.headline}
+                    </p>
+                    <p className="t-meta mt-1">@{story.author.handle}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

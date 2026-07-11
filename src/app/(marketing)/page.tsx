@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUserId } from "@/lib/db/auth";
+import { listRecentResolved } from "@/lib/db/predictions";
+import { buildDispatch } from "@/lib/dispatch/build-dispatch";
 import { LandingHero } from "@/components/landing/landing-hero";
+import { LandingLedgerProof } from "@/components/landing/landing-ledger-proof";
 import { LandingHow } from "@/components/landing/landing-how";
 import { LandingDispatchTeaser } from "@/components/landing/landing-dispatch-teaser";
 import { LandingForAnalysts } from "@/components/landing/landing-for-analysts";
+import type { DispatchPayload } from "@/lib/dispatch/types";
 
 export const metadata: Metadata = {
   title: "Stoa - the analyst ledger",
@@ -13,19 +17,28 @@ export const metadata: Metadata = {
 };
 
 /**
- * Signed-out landing. Signed-in readers skip straight to their dispatch at
- * /home -- the personalized morning briefing built from follows and
- * subscriptions.
+ * Signed-out landing, built from the live ledger: real graded calls in the
+ * hero and proof strip, today's actual issue in the dispatch teaser. Signed-in
+ * readers skip straight to their own dispatch at /home.
  */
 export default async function LandingPage() {
   const userId = await getSessionUserId();
   if (userId) redirect("/home");
 
+  let calls: Awaited<ReturnType<typeof listRecentResolved>> = [];
+  let dispatch: DispatchPayload | null = null;
+  try {
+    [calls, dispatch] = await Promise.all([listRecentResolved(10), buildDispatch(false)]);
+  } catch {
+    // The landing renders fully without data; sections with nothing to show collapse.
+  }
+
   return (
     <main>
-      <LandingHero />
+      <LandingHero calls={calls} />
+      <LandingLedgerProof calls={calls.slice(3)} />
       <LandingHow />
-      <LandingDispatchTeaser />
+      <LandingDispatchTeaser dispatch={dispatch} />
       <LandingForAnalysts />
     </main>
   );
