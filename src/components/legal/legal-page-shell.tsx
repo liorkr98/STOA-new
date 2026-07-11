@@ -43,3 +43,32 @@ export function PlaceholderSection({ title }: { title: string }) {
     </section>
   );
 }
+
+interface LegalSectionProps {
+  title: string;
+  paragraphs?: string[];
+  bullets?: string[];
+}
+
+export function LegalSection({ title, paragraphs, bullets }: LegalSectionProps) {
+  const id = `section-${title.replace(/\s+/g, "-").toLowerCase()}`;
+  return (
+    <section aria-labelledby={id}>
+      <h2 id={id} className="t-h3 text-text">
+        {title}
+      </h2>
+      {paragraphs?.map((p) => (
+        <p key={p.slice(0, 40)} className="t-body mt-2 text-text-mute">
+          {p}
+        </p>
+      ))}
+      {bullets && bullets.length > 0 && (
+        <ul className="t-body mt-2 list-disc space-y-2 pl-5 text-text-mute">
+          {bullets.map((b) => (
+            <li key={b.slice(0, 40)}>{b}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}

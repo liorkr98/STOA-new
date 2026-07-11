@@ -13,7 +13,7 @@ Locked calls are graded automatically (Hit/Miss) against real market prices on t
 date, feeding a public "MOAT score" per analyst. An AI system fact-checks factual claims in each
 report before publication is allowed (classifying claims as fact/unproven/opinion/contradicted)
 but never writes or edits the analyst's thesis or price target — that's always the human
-analyst's own view. The platform takes a 10% fee on analyst earnings via Stripe Connect.
+analyst's own view. The platform takes a 10% fee on analyst earnings via PayPal.
 
 ---
 
@@ -114,16 +114,18 @@ survives; the link to the real-world identity does not.
 - Does this analysis differ for an EU-based analyst (whose own published track record is the
   product) versus an EU-based investor (a subscriber with no public-facing content)? These are
   likely different answers.
-- What retention period, if any, applies to identity-verification data (Stripe Identity
-  results) collected during analyst onboarding?
+- What retention period, if any, applies to identity-verification data collected during
+  analyst onboarding (PayPal performs KYC during seller onboarding — there is no separate
+  identity product like Stripe Identity)?
 
 ---
 
 ## 5. Marketplace/payments structure
 
-- Stripe Connect Express accounts handle analyst KYC and payouts; Stripe Identity handles
-  separate identity verification for the "real accountable person" trust requirement.
-  `application_fee_amount` on each charge implements the 10% platform fee.
+- PayPal Partner Referrals / Commerce Platform handles analyst KYC and payouts during
+  seller onboarding; PayPal's own verification satisfies the "real accountable person"
+  trust requirement. Platform fee splits use PayPal's marketplace fee mechanisms where
+  approved.
 - **Tax questions for counsel/accountant (not purely legal, but adjacent):** 1099 or local
   equivalent reporting obligations for analyst payouts, VAT/sales tax treatment of subscription
   revenue across jurisdictions, and whether the Israel-based operating entity creates any
@@ -142,12 +144,12 @@ survives; the link to the real-world identity does not.
   terms given the payment/marketplace relationship, the disclosure certifications analysts make,
   and the licensing of their content to the platform)
 - [ ] Privacy Policy (must address: what's collected at signup, identity verification data
-  retention, Stripe/Supabase/Anthropic/market-data-provider as subprocessors, cookie usage,
+  retention, PayPal/Supabase/DeepSeek/OpenAI/market-data-provider as subprocessors, cookie usage,
   cross-border data transfer given Israel + global users, the erasure-request mechanism from
   Section 4)
 - [ ] "Not Investment Advice" disclosure (sitewide footer + a dedicated page)
 - [ ] Cookie Policy
-- [ ] Subprocessor list/Data Processing Agreement page (Stripe, Supabase, Anthropic, market data
+- [ ] Subprocessor list/Data Processing Agreement page (PayPal, Supabase, DeepSeek, OpenAI, market data
   provider — required disclosure under GDPR Article 28 if processing EU personal data)
 - [ ] Acceptable Use Policy for analysts (what content/conduct gets a report or account removed —
   distinct from the disclosure/fact-check mechanics, this is a moderation/ToS enforcement question)

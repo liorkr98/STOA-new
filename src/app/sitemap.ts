@@ -77,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/subprocessors`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/not-advice`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/accessibility`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/compliance-brief`, changeFrequency: "yearly", priority: 0.1 },
   ];
 
   const [tickers, reports] = await Promise.all([tickerRoutes(), reportRoutes()]);
