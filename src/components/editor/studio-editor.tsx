@@ -114,13 +114,19 @@ export function StudioEditor({
     json: initialDoc,
     text: tiptapPlainText(initialDoc),
   });
+  const dirtyRef = useRef(false);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Guards the 30s autosave from firing while doPublish is in flight -- without
+  // this, a tick landing mid-publish can write status:"draft" and a stale body
+  // over a row publishReport just (or is concurrently) flipping to "published".
+  const isPublishingRef = useRef(false);
 
   const hasCard = type !== "short_post";
   const bodyJson = useMemo(() => JSON.stringify(docJson), [docJson]);
 
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
     latestChangeRef.current = change;
+    dirtyRef.current = true;
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     // Debounce parent state so keystrokes don't re-render the editor tree and
     // kill the slash-menu popup mid-open.
@@ -162,6 +168,7 @@ export function StudioEditor({
   }, [hasCard, ticker, title]);
 
   const persistDraft = useCallback(async () => {
+    if (isPublishingRef.current) return;
     setSaveStatus("saving");
     try {
       const res = await saveDraft({
@@ -182,6 +189,7 @@ export function StudioEditor({
       setDraftId(res.id);
       setSaveStatus("saved");
       setError(null);
+      dirtyRef.current = false;
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e) {
       setSaveStatus("idle");
@@ -208,10 +216,16 @@ export function StudioEditor({
 
   useEffect(() => {
     const t = setInterval(() => {
-      if (summary.trim() || plainText.trim()) void persistDraft();
+      if (!dirtyRef.current) return;
+      const json = JSON.stringify(latestChangeRef.current.json);
+      const hasBlocks =
+        json.includes('"chartNode"') ||
+        json.includes('"napkinNode"') ||
+        json.includes('"dataFigureNode"');
+      if (draftId || summary.trim() || plainText.trim() || hasBlocks) void persistDraft();
     }, 30_000);
     return () => clearInterval(t);
-  }, [persistDraft, summary, plainText]);
+  }, [persistDraft, summary, plainText, draftId]);
 
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.
@@ -232,6 +246,7 @@ export function StudioEditor({
 
   const doPublish = useCallback(async () => {
     setError(null);
+    isPublishingRef.current = true;
     const editor = editorRef.current;
     try {
       let id = draftId;
@@ -296,6 +311,7 @@ export function StudioEditor({
         toast.error(e.message);
         setConfirmOpen(false);
         setCaptureStatus(null);
+        isPublishingRef.current = false;
         throw e;
       }
     }
@@ -457,7 +473,7 @@ export function StudioEditor({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Report title"
-                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-faint focus:outline-none"
+                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
                 style={{ fontFamily: "var(--font-display)" }}
               />
             </>

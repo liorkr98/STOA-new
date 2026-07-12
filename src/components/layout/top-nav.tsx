@@ -55,7 +55,7 @@ export function TopNav({
   const viewingAsAnalyst = pathname.startsWith("/studio") || pathname.startsWith("/dashboard");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-paper">
+    <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-5 lg:gap-6">
         <div className="flex min-w-0 items-center gap-4 lg:gap-8">
           <div className="flex shrink-0 items-center gap-3">

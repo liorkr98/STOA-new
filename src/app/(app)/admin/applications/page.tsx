@@ -45,7 +45,10 @@ export default async function AdminApplicationsPage() {
     <div className="mx-auto max-w-3xl py-8">
       <h1 className="t-h1">Analyst Applications</h1>
       <p className="t-body mt-1 text-text-mute">
-        {pending.length} pending · {reviewed.length} reviewed
+        {pending.length} pending · {reviewed.length} reviewed · applicants apply at{" "}
+        <a href="/become-analyst" className="text-accent underline hover:no-underline">
+          /become-analyst
+        </a>
       </p>
 
       {apps.length === 0 && (

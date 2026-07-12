@@ -1,8 +1,17 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/grade",
       "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-ticker-metrics",
+      "schedule": "0 * * * *"
     }
   ]
 }

@@ -1,11 +1,17 @@
 import { getSessionProfile } from "@/lib/db/auth";
 import { unreadNotificationCount } from "@/lib/db/notifications";
 import { TopNav } from "@/components/layout/top-nav";
+import { redirect } from "next/navigation";
+import { getConsentRedirectPath } from "@/app/actions/consent";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getSessionProfile();
+  if (profile) {
+    const consentPath = await getConsentRedirectPath(profile.id);
+    if (consentPath) redirect(consentPath);
+  }
   const unreadCount = profile ? await unreadNotificationCount(profile.id) : 0;
   return (
     <div className="flex min-h-[100dvh] flex-col">

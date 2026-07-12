@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ProfileConfig } from "@/lib/editor/types";
+import { getConsentRedirectPath } from "@/app/actions/consent";
 
 /**
  * OAuth callback. Supabase redirects here with a PKCE code after Google /
@@ -48,14 +49,19 @@ export async function GET(req: Request) {
 
   let dest = explicitNext ?? "/home";
   if (!explicitNext && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, profile_config")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (profile && profile.role !== "analyst" && profile.role !== "admin") {
-      const interests = (profile.profile_config as ProfileConfig | null)?.interests;
-      if (!interests || interests.length === 0) dest = "/onboarding/investor";
+    const consentPath = await getConsentRedirectPath(user.id);
+    if (consentPath) {
+      dest = consentPath;
+    } else {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, profile_config")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile && profile.role !== "analyst" && profile.role !== "admin") {
+        const interests = (profile.profile_config as ProfileConfig | null)?.interests;
+        if (!interests || interests.length === 0) dest = "/onboarding/investor";
+      }
     }
   }
 

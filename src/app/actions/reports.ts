@@ -201,7 +201,12 @@ export async function updateReportAccess(input: {
       required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     })
     .eq("id", input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if (error.code === "42501") {
+      return { ok: false, error: "Only approved analysts can manage published reports." };
+    }
+    return { ok: false, error: error.message };
+  }
 
   revalidatePath("/studio");
   revalidatePath("/studio/compose");
@@ -224,9 +229,39 @@ export async function deleteReport(id: string) {
     throw new Error("Only unlocked drafts can be deleted.");
   }
 
-  await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
+  const { error } = await supabase.from("reports").delete().eq("id", id).eq("author_id", userId);
+  if (error) throw new Error(error.message);
+
   await deleteChartSnapshotsForReport(supabase, userId, id);
   revalidatePath("/studio");
+}
+
+/** Hides a published report from feeds. Track record (prediction) is preserved. */
+export async function archiveReport(id: string) {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("status, locked_at")
+    .eq("id", id)
+    .eq("author_id", userId)
+    .maybeSingle();
+
+  if (!report || report.status !== "published") {
+    throw new Error("Only published reports can be archived.");
+  }
+
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: "archived" })
+    .eq("id", id)
+    .eq("author_id", userId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/studio");
+  revalidatePath("/discover");
+  revalidatePath(`/report/${id}`);
 }
 
 /**
@@ -254,7 +289,16 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
     .select("id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    // RLS (reports_insert, supabase/migrations/0034) rejects a published row
+    // from an account an admin hasn't approved as an analyst -- surfaces as a
+    // generic policy-violation error, so translate it to something a reader
+    // of this error message can actually act on.
+    if (error.code === "42501") {
+      return { error: "Only approved analysts can publish. Apply to become an analyst first." };
+    }
+    return { error: error.message };
+  }
 
   const noteId = (data as { id: string }).id;
   try {

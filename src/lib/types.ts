@@ -52,6 +52,8 @@ export interface Profile {
   created_at: string;
   /** Analyst who referred this user (?ref=handle at signup). */
   referred_by?: string | null;
+  /** When the user attested they are 18+ at signup. */
+  age_attested_at?: string | null;
   profile_config?: ProfileConfig | null;
 }
 
@@ -87,6 +89,8 @@ export interface Report {
   compensation_detail: string | null;
   /** "These are my own views" cert, Reg-AC-style. */
   views_certified: boolean;
+  /** sha256 hex digest computed at publish; see ReportSchema. Null pre-migration or if hashing failed. */
+  content_hash?: string | null;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
@@ -146,6 +150,8 @@ export interface Prediction {
   /** Signed return in percent, direction-aware. Null until resolved. */
   return_pct: number | null;
   created_at: string;
+  /** Parent report's status, joined in for callers that render a pendingReview state. */
+  report_status?: ReportStatus;
 }
 
 export interface Wallet {

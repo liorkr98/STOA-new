@@ -33,7 +33,7 @@ export function BlockEditor({
         value={String(c.text ?? "")}
         onChange={(e) => onChange({ ...c, text: e.target.value })}
         placeholder="Section heading"
-        className="t-h2 w-full bg-transparent font-semibold placeholder:text-text-faint focus:outline-none"
+        className="t-h2 w-full bg-transparent font-semibold placeholder:text-text-mute focus:outline-none"
       />
     );
   }

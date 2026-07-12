@@ -163,7 +163,12 @@ Deno.serve(async (req: Request) => {
 
     return jsonResponse(response);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to attest price";
-    return jsonResponse({ success: false, error: message }, 502);
+    // Never surface the raw error to the client -- it can be a third-party
+    // library's internal exception text (e.g. yahoo-finance2 failing to
+    // JSON.parse an upstream rate-limit response like "Too Many Requests",
+    // producing "Unexpected token 'T'... is not valid JSON"), which is
+    // meaningless and unpolished in the reading view's trust rail.
+    console.error("attest-price failed", error);
+    return jsonResponse({ success: false, error: "Unable to attest price right now." }, 502);
   }
 });

@@ -463,13 +463,20 @@ Tiers: Building (<5 calls) → Rising → Strong → Expert → Elite → Legend
 
 Grading outcomes: Hit (reached target), Near (right direction, short of target), Partial (flat ±1.5%), Miss (wrong direction).
 
-### Demo accounts (after `npm run seed`)
+### Demo accounts (after `pnpm seed`)
 
-| Account | Password | Role |
-|---|---|---|
-| `investor@stoa.demo` | `stoademo123` | investor |
-| `maren_vos@stoa.demo` | `stoademo123` | analyst |
-| `liorkr98@gmail.com` | (your password) | analyst (after migration 0017) |
+| Account | Password | Role | Notes |
+|---|---|---|---|
+| `investor@stoa.demo` | `stoademo123` | investor | $500 demo wallet |
+| `marcus_webb@stoa.demo` | `stoademo123` | analyst | Legend-tier track record (~75+ calls) |
+| `maren_vos@stoa.demo` | `stoademo123` | analyst | Elite semis |
+| `fatima_alhariri@stoa.demo` | `stoademo123` | analyst | Elite healthcare |
+| `elena_petrova@stoa.demo` | `stoademo123` | analyst | Volatile / low win-rate |
+| `carlos_mendez@stoa.demo` | `stoademo123` | analyst | Building (few calls) |
+| `*@stoa.demo` | `stoademo123` | analyst | 14 personas total — see `scripts/seed.ts` |
+| `liorkr98@gmail.com` | (your password) | analyst | Real account (untouched by seed) |
+
+Seed uses `@stoa.demo` emails only — safe to re-run; it purges prior demo content via `purge_demo_author`.
 
 ### End of agent handoff section
 

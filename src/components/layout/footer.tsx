@@ -23,7 +23,13 @@ const groups = [
     title: "Legal",
     links: [
       { href: "/terms", label: "Terms" },
+      { href: "/terms/creators", label: "Creator terms" },
       { href: "/privacy", label: "Privacy" },
+      { href: "/cookies", label: "Cookies" },
+      { href: "/subprocessors", label: "Subprocessors" },
+      { href: "/not-advice", label: "Not advice" },
+      { href: "/accessibility", label: "Accessibility" },
+      { href: "/compliance-brief", label: "Compliance brief" },
     ],
   },
 ];

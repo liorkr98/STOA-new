@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { useState, type ReactNode } from "react";
+import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -23,8 +24,10 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <QueryClientProvider client={client}>
         {children}
+        <CookieConsentBanner />
         <Toaster
           position="bottom-center"
+          aria-live="polite"
           toastOptions={{
             style: {
               background: "var(--surface)",

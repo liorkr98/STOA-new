@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { BadgeCheck, Eye } from "lucide-react";
 import { compact } from "@/lib/format";
 import { PaywallGate } from "@/components/ui/paywall-gate";
+import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
@@ -16,6 +17,7 @@ import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
+import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
@@ -39,6 +41,7 @@ export async function generateMetadata({
   const firstChartUrl = analyzeChartBody(report?.body).screenshotUrls[0];
   return {
     title: report?.title ?? "Report",
+    alternates: { canonical: `/report/${id}` },
     openGraph: {
       title: report?.title ?? "Report",
       description: report?.summary ?? undefined,
@@ -75,6 +78,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   return (
     <article className="mx-auto max-w-6xl">
+      {/* Scroll-scrubbed, like a scrollbar -- reading position, not animation,
+        * so the frequency rule does not apply. Hidden without scroll-timeline
+        * support and under reduced motion it still just mirrors scroll. */}
+      <div className="reading-progress" aria-hidden />
+      <ReportSchema report={report} />
       <ViewTracker reportId={id} />
 
       <div className="flex flex-wrap items-center gap-3">
@@ -130,7 +138,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
         <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
           {report.prediction && (
-            <PredictionCard prediction={report.prediction} hideTarget={!canRead} />
+            <PredictionCard
+              prediction={report.prediction}
+              hideTarget={!canRead}
+              pendingReview={report.status === "resolution_pending_review"}
+            />
           )}
           {report.prediction && report.ticker && canRead && (
             <PriceAttestationSection ticker={report.ticker} />
@@ -140,6 +152,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             compensationTied={report.compensation_tied ?? false}
             compensationDetail={report.compensation_detail ?? undefined}
           />
+          <DyorBar />
           {author && (
             <TrackScoreBadge
               handle={author.handle}

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
@@ -70,6 +71,26 @@ export async function validateAndPublishReport(
   userId: string,
   input: ComposeInput,
 ): Promise<{ id: string }> {
+  // The only real eligibility gate in this stack: an admin approved this
+  // account as an analyst (approve_analyst_application sets profiles.role).
+  // Previously enforced only by the studio compose page's client-side
+  // redirect (src/app/studio/layout.tsx) -- calling this action or the
+  // /api/reports/[id]/publish route directly bypassed it entirely, since
+  // neither RLS (reports_insert/update only check author_id) nor this
+  // function checked role at all. A rejected or never-applied account could
+  // publish exactly like an approved one.
+  const { data: publisher } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  if (publisher?.role !== "analyst" && publisher?.role !== "admin") {
+    throw new PublishReportError(
+      "Only approved analysts can publish. Apply to become an analyst first.",
+      403,
+    );
+  }
+
   const disclosureProvided = input.views_certified !== undefined;
   if (disclosureProvided && !input.views_certified) {
     throw new PublishReportError("You must certify these are your own views before publishing.");
@@ -81,9 +102,10 @@ export async function validateAndPublishReport(
   const urlError = validateChartScreenshotUrls(chartStats.screenshotUrls, userId, reportId);
   if (urlError) throw new PublishReportError(urlError);
 
+  const lockedAtIso = new Date().toISOString();
   const publishPayload: Record<string, unknown> = {
     status: "published",
-    published_at: new Date().toISOString(),
+    published_at: lockedAtIso,
   };
   if (input.fact_check_results) {
     publishPayload.fact_check_results = input.fact_check_results;
@@ -105,6 +127,8 @@ export async function validateAndPublishReport(
   if (pubErr) throw new PublishReportError(pubErr.message, 400);
 
   const wantsPrediction = input.type !== "short_post" && input.ticker && input.direction;
+  let hashTargetPrice: number | null = null;
+  let hashHorizonDate: string | null = null;
 
   if (wantsPrediction) {
     const ticker = input.ticker!.toUpperCase();
@@ -146,6 +170,35 @@ export async function validateAndPublishReport(
       bench_lock_price: bench.price,
       outcome: "open",
     });
+
+    hashTargetPrice = input.target_price ?? null;
+    hashHorizonDate = targetHorizonDate;
+  }
+
+  // Structured-data content hash (docs: institutional SEO infra). Covers every
+  // field a reader could dispute was changed after the fact -- ticker, the
+  // locked call terms, the body, and the lock timestamp itself. Best-effort:
+  // a failure here must never roll back or block an already-published report,
+  // and a missing hash is simply omitted from ReportSchema rather than faked.
+  try {
+    const contentHash = createHash("sha256")
+      .update(
+        [
+          input.ticker ? input.ticker.toUpperCase() : "",
+          hashTargetPrice != null ? String(hashTargetPrice) : "",
+          hashHorizonDate ?? "",
+          input.body ?? "",
+          lockedAtIso,
+        ].join("|"),
+      )
+      .digest("hex");
+    await supabase
+      .from("reports")
+      .update({ content_hash: contentHash })
+      .eq("id", reportId)
+      .eq("author_id", userId);
+  } catch {
+    // non-critical -- ReportSchema omits identifier when content_hash is null
   }
 
   try {

@@ -10,7 +10,11 @@
   --ink: #14171f;
   --paper: #eff1ed;
   --verdigris: #2f6e5d;
-  --brass: #b8863b;
+  /* Deep antique brass: #b8863b read at 2.84:1 on paper -- an accessibility
+   * fail everywhere brass carries meaning (PendingReviewTag, provisional
+   * scores, Unproven claims). #855f22 keeps the ochre identity at 5.05:1 on
+   * paper and 4.65:1 on surface-2 (C.2 rule 8). */
+  --brass: #855f22;
   --plum: #5b4b6b;
   --rust: #a6483c;
 
@@ -18,6 +22,9 @@
   --surface-2: #e6e8e2;
   --text: var(--ink);
   --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
+  /* Decorative only (2.65:1): dividers, disabled glyphs, ornamental dashes.
+   * Any text that carries meaning -- including placeholders -- uses
+   * --text-mute or darker (C.2 rule 8). */
   --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
   --border: color-mix(in srgb, var(--ink) 14%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
@@ -66,7 +73,9 @@
   --paper: #14171f;
   --verdigris: #4f9c86;
   --brass: #d1a35f;
-  --plum: #8672a0;
+  /* #8672a0 read 4.20:1 on dark paper; lightened to clear 4.5:1 for the
+   * Opinion claim labels while staying the same muted plum. */
+  --plum: #9683b3;
   --rust: #d17868;
 
   --surface: #1a1d26;
@@ -139,6 +148,14 @@ html {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Anchor targets land clear of the sticky top nav (h-16 + breathing room). */
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -243,7 +260,7 @@ body {
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--verdigris);
   outline-offset: 2px;
 }
 
@@ -347,10 +364,98 @@ body {
   }
 }
 
-/* Thin scrollbars inside scroll regions */
+/* Thin scrollbars inside scroll regions. Contained so a wheel that hits the
+ * end of a panel, sheet, or dropdown never chains into scrolling the page. */
 .scroll-area {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+  overscroll-behavior: contain;
+}
+
+/* ------------------------------------------------------------------ *
+ * Scroll-driven state (progressive enhancement -- browsers without
+ * animation-timeline simply never show these; nothing breaks).
+ * Scrub-driven, not time-driven, so the frequency rule does not apply:
+ * like a scrollbar, they display the reader's own position.
+ * ------------------------------------------------------------------ */
+
+/* Reading progress: hairline under the sticky nav on long editorial reads.
+ * scaleX only -- never width -- per MOTION.md A.2 law 2. */
+@keyframes reading-progress-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.reading-progress {
+  display: none;
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  z-index: 50;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    display: block;
+    animation: reading-progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* Sticky header separation: the nav sits flush with the page at rest and
+ * earns its border + shadow only once content actually scrolls under it. */
+@keyframes header-elevate {
+  from { border-color: transparent; box-shadow: none; }
+  to {
+    border-color: var(--border);
+    box-shadow: 0 1px 8px color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .header-elevate {
+    border-color: transparent;
+    animation: header-elevate linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 6rem;
+  }
+}
+
+/* Landing sections ink in as the reader scrolls them into view -- scrubbed by
+ * their own scroll position (view timeline), never fired by it, so scrolling
+ * back re-inks in reverse like moving a physical page. Fully visible without
+ * scroll-timeline support and under reduced motion. */
+@keyframes scrub-ink-in {
+  from { opacity: 0.2; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scrub-in {
+      animation: scrub-ink-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+  }
+}
+
+/* Landing hero only: the scattered ledger slips breathe. Ambient, marketing
+ * register, +/-5px over 8s -- nothing in the app chrome may use this. */
+@keyframes ledger-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ledger-float {
+    animation: ledger-drift 8s var(--ease-in-out) infinite alternate;
+  }
 }
 
 /* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,

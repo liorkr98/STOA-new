@@ -131,7 +131,7 @@ export function FilterBar() {
           onBlur={commitTicker}
           placeholder="Ticker"
           aria-label="Filter by ticker"
-          className="num h-9 w-28 rounded-[var(--radius-btn)] border border-border bg-paper px-2.5 text-xs focus-ring placeholder:text-text-faint"
+          className="num h-9 w-28 rounded-[var(--radius-btn)] border border-border bg-paper px-2.5 text-xs focus-ring placeholder:text-text-mute"
         />
 
         {activeCount > 0 && (

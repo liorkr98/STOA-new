@@ -1,15 +1,76 @@
-/** A small curated ticker universe for the Markets browser. */
-export const UNIVERSE: { ticker: string; name: string; sector: string }[] = [
-  { ticker: "NVDA", name: "NVIDIA", sector: "Semiconductors" },
-  { ticker: "AAPL", name: "Apple", sector: "Hardware" },
-  { ticker: "MSFT", name: "Microsoft", sector: "Software" },
-  { ticker: "TSLA", name: "Tesla", sector: "Autos" },
-  { ticker: "AMZN", name: "Amazon", sector: "Consumer" },
-  { ticker: "GOOGL", name: "Alphabet", sector: "Internet" },
-  { ticker: "META", name: "Meta Platforms", sector: "Internet" },
-  { ticker: "AMD", name: "Advanced Micro Devices", sector: "Semiconductors" },
-  { ticker: "JPM", name: "JPMorgan Chase", sector: "Financials" },
-  { ticker: "XOM", name: "Exxon Mobil", sector: "Energy" },
-  { ticker: "PLTR", name: "Palantir", sector: "Software" },
-  { ticker: "COIN", name: "Coinbase", sector: "Financials" },
+export type CapBand = "mega" | "large" | "mid" | "small";
+
+export type UniverseEntry = {
+  ticker: string;
+  name: string;
+  sector: string;
+  exchange: "NASDAQ" | "NYSE";
+  capBand: CapBand;
+};
+
+/** Featured curated tickers (legacy cap bands / sectors). Full browse uses the `tickers` table (~7k+). */
+export const UNIVERSE: UniverseEntry[] = [
+  { ticker: "NVDA", name: "NVIDIA", sector: "Semiconductors", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "AAPL", name: "Apple", sector: "Hardware", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "MSFT", name: "Microsoft", sector: "Software", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "GOOGL", name: "Alphabet", sector: "Internet", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "AMZN", name: "Amazon", sector: "Consumer", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "META", name: "Meta Platforms", sector: "Internet", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "TSLA", name: "Tesla", sector: "Autos", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "BRK-B", name: "Berkshire Hathaway", sector: "Financials", exchange: "NYSE", capBand: "mega" },
+  { ticker: "LLY", name: "Eli Lilly", sector: "Healthcare", exchange: "NYSE", capBand: "mega" },
+  { ticker: "AVGO", name: "Broadcom", sector: "Semiconductors", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "JPM", name: "JPMorgan Chase", sector: "Financials", exchange: "NYSE", capBand: "mega" },
+  { ticker: "V", name: "Visa", sector: "Financials", exchange: "NYSE", capBand: "mega" },
+  { ticker: "UNH", name: "UnitedHealth", sector: "Healthcare", exchange: "NYSE", capBand: "mega" },
+  { ticker: "XOM", name: "Exxon Mobil", sector: "Energy", exchange: "NYSE", capBand: "mega" },
+  { ticker: "MA", name: "Mastercard", sector: "Financials", exchange: "NYSE", capBand: "mega" },
+  { ticker: "COST", name: "Costco", sector: "Consumer", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "HD", name: "Home Depot", sector: "Consumer", exchange: "NYSE", capBand: "mega" },
+  { ticker: "PG", name: "Procter & Gamble", sector: "Consumer", exchange: "NYSE", capBand: "mega" },
+  { ticker: "JNJ", name: "Johnson & Johnson", sector: "Healthcare", exchange: "NYSE", capBand: "mega" },
+  { ticker: "NFLX", name: "Netflix", sector: "Internet", exchange: "NASDAQ", capBand: "mega" },
+  { ticker: "AMD", name: "Advanced Micro Devices", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "CRM", name: "Salesforce", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "ORCL", name: "Oracle", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "BAC", name: "Bank of America", sector: "Financials", exchange: "NYSE", capBand: "large" },
+  { ticker: "KO", name: "Coca-Cola", sector: "Consumer", exchange: "NYSE", capBand: "large" },
+  { ticker: "MRK", name: "Merck", sector: "Healthcare", exchange: "NYSE", capBand: "large" },
+  { ticker: "CVX", name: "Chevron", sector: "Energy", exchange: "NYSE", capBand: "large" },
+  { ticker: "PEP", name: "PepsiCo", sector: "Consumer", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "TMO", name: "Thermo Fisher", sector: "Healthcare", exchange: "NYSE", capBand: "large" },
+  { ticker: "LIN", name: "Linde", sector: "Materials", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "ACN", name: "Accenture", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "MCD", name: "McDonald's", sector: "Consumer", exchange: "NYSE", capBand: "large" },
+  { ticker: "CSCO", name: "Cisco", sector: "Hardware", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "ADBE", name: "Adobe", sector: "Software", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "DIS", name: "Disney", sector: "Media", exchange: "NYSE", capBand: "large" },
+  { ticker: "INTU", name: "Intuit", sector: "Software", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "QCOM", name: "Qualcomm", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "TXN", name: "Texas Instruments", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "AMAT", name: "Applied Materials", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "GE", name: "GE Aerospace", sector: "Industrials", exchange: "NYSE", capBand: "large" },
+  { ticker: "IBM", name: "IBM", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "NOW", name: "ServiceNow", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "CAT", name: "Caterpillar", sector: "Industrials", exchange: "NYSE", capBand: "large" },
+  { ticker: "UBER", name: "Uber", sector: "Internet", exchange: "NYSE", capBand: "large" },
+  { ticker: "PFE", name: "Pfizer", sector: "Healthcare", exchange: "NYSE", capBand: "large" },
+  { ticker: "AMGN", name: "Amgen", sector: "Healthcare", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "HON", name: "Honeywell", sector: "Industrials", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "BKNG", name: "Booking Holdings", sector: "Internet", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "BLK", name: "BlackRock", sector: "Financials", exchange: "NYSE", capBand: "large" },
+  { ticker: "GS", name: "Goldman Sachs", sector: "Financials", exchange: "NYSE", capBand: "large" },
+  { ticker: "MU", name: "Micron", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "LRCX", name: "Lam Research", sector: "Semiconductors", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "PANW", name: "Palo Alto Networks", sector: "Software", exchange: "NASDAQ", capBand: "large" },
+  { ticker: "SNOW", name: "Snowflake", sector: "Software", exchange: "NYSE", capBand: "large" },
+  { ticker: "NET", name: "Cloudflare", sector: "Software", exchange: "NYSE", capBand: "mid" },
+  { ticker: "PLTR", name: "Palantir", sector: "Software", exchange: "NYSE", capBand: "mid" },
+  { ticker: "COIN", name: "Coinbase", sector: "Financials", exchange: "NASDAQ", capBand: "mid" },
+  { ticker: "SOFI", name: "SoFi", sector: "Financials", exchange: "NASDAQ", capBand: "mid" },
+  { ticker: "RIVN", name: "Rivian", sector: "Autos", exchange: "NASDAQ", capBand: "mid" },
+  { ticker: "BA", name: "Boeing", sector: "Industrials", exchange: "NYSE", capBand: "large" },
+  { ticker: "WMT", name: "Walmart", sector: "Consumer", exchange: "NYSE", capBand: "mega" },
 ];
+
+export const UNIVERSE_TICKERS = UNIVERSE.map((u) => u.ticker);
