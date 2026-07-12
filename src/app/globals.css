@@ -593,6 +593,22 @@ body {
   animation: fade-up var(--dur-3) var(--ease-out) both;
 }
 
+.dispatch-intro .font-display {
+  letter-spacing: -0.01em;
+}
+
+.dispatch-issue-board {
+  margin-top: var(--space-10, 2.5rem);
+}
+
+.dispatch-issue-card {
+  box-shadow: none;
+}
+
+.dispatch-issue-title {
+  font-optical-sizing: auto;
+}
+
 /* Masthead: [issue block] — STOA — [date block], then an Oxford rule. */
 .dispatch-masthead {
   display: grid;

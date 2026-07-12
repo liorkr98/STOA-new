@@ -1,19 +1,37 @@
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
+import { FadeIn } from "@/components/motion/fade-in";
 import { DispatchForCreators } from "@/components/dispatch/dispatch-for-creators";
 import { DispatchHowItWorks } from "@/components/dispatch/dispatch-how-it-works";
+import { DispatchIssueColumns } from "@/components/dispatch/dispatch-issue-columns";
 import { DispatchLead } from "@/components/dispatch/dispatch-lead";
 import { DispatchLeaderboard } from "@/components/dispatch/dispatch-leaderboard";
 import { DispatchLedger } from "@/components/dispatch/dispatch-ledger";
 import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
-import { DispatchStoryList } from "@/components/dispatch/dispatch-story-list";
-import { DispatchWire } from "@/components/dispatch/dispatch-wire";
-import type { DispatchPayload, DispatchViewMode } from "@/lib/dispatch/types";
+import type { DispatchPayload, DispatchStory, DispatchViewMode } from "@/lib/dispatch/types";
+
+function splitColumns(dispatch: DispatchPayload): {
+  research: DispatchStory[];
+  calls: DispatchStory[];
+  wire: DispatchStory[];
+} {
+  const research: DispatchStory[] = [];
+  const calls: DispatchStory[] = [];
+  const wire: DispatchStory[] = [...dispatch.wire];
+
+  for (const s of dispatch.secondary) {
+    if (s.report.type === "call") calls.push(s);
+    else if (s.report.type === "short_post") wire.push(s);
+    else research.push(s);
+  }
+
+  return { research, calls, wire };
+}
 
 /**
- * The front page. Numbered, dated, with a top and a bottom: the homepage
- * adopting the same trust logic as the seal. Editorial content runs from the
- * masthead to the end slug; recruitment and the explainer sit after the close.
+ * Editorial front page (ref: dailydispatch.app). Wider board + issue columns
+ * under the lead. Marketing `/` is a separate SaaS landing; this view is
+ * `/home` and `/dispatch`.
  */
 export function DispatchView({
   dispatch,
@@ -36,12 +54,14 @@ export function DispatchView({
     dispatch.wire.length === 0 &&
     dispatch.resolved.length === 0;
 
+  const columns = splitColumns(dispatch);
+
   return (
     <article
       className={
         isHome
-          ? "dispatch-page dispatch-page--home mx-auto w-full max-w-3xl px-5 py-10 sm:py-14"
-          : "dispatch-page dispatch-page--public mx-auto w-full max-w-3xl px-5 py-10 sm:py-14"
+          ? "dispatch-page dispatch-page--home mx-auto w-full max-w-6xl px-5 py-10 sm:py-14"
+          : "dispatch-page dispatch-page--public mx-auto w-full max-w-6xl px-5 py-10 sm:py-14"
       }
     >
       <DispatchMasthead
@@ -54,33 +74,66 @@ export function DispatchView({
       />
 
       {isHome ? (
-        <p className="dispatch-briefing-tagline mb-10 text-center text-sm text-text-mute leading-relaxed">
-          From the analysts you follow and subscribe to, ranked by signal, not noise.
-        </p>
-      ) : null}
+        <FadeIn>
+          <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
+            <div>
+              <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
+                Personalized research, ranked by signal.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-text-mute">
+                From the analysts you follow and subscribe to. Not a social feed.
+              </p>
+            </div>
+            <div className="flex flex-col justify-between gap-4 sm:items-end sm:text-right">
+              <p className="text-sm leading-relaxed text-text-mute">
+                Locked targets stay on the record. Track Scores update when horizons close. Browse
+                the full catalog anytime in Discover.
+              </p>
+              <Link href="/discover" className={buttonClass("secondary", "sm")}>
+                Open Discover
+              </Link>
+            </div>
+          </div>
+        </FadeIn>
+      ) : (
+        <FadeIn>
+          <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
+            <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
+              Today&apos;s locked calls and graded research.
+            </p>
+            <p className="text-sm leading-relaxed text-text-mute sm:pt-1">
+              A numbered daily issue. Follow analysts to get a briefing that matches what you
+              read.{" "}
+              <Link href="/sign-up" className="underline hover:no-underline">
+                Create a free account
+              </Link>{" "}
+              to personalize it.
+            </p>
+          </div>
+        </FadeIn>
+      )}
 
       {cycle.fallbackCycle ? (
-        <p className="dispatch-fallback-note mb-8 text-center font-mono text-[11px] uppercase tracking-widest text-text-faint">
+        <p className="dispatch-fallback-note mb-8 mt-6 text-center font-mono text-[11px] uppercase tracking-widest text-text-faint">
           Quiet cycle. Showing recent highlights from your network.
         </p>
       ) : null}
 
       {dispatch.lead ? (
-        <DispatchLead story={dispatch.lead} align={isHome ? "start" : "center"} />
+        <div className="mt-10">
+          <DispatchLead story={dispatch.lead} align="start" />
+        </div>
       ) : hasStories ? null : (
         <p className="dispatch-section text-center text-sm text-text-mute">
           No lead story in this cycle yet. Check back as analysts publish.
         </p>
       )}
 
-      {dispatch.secondary.length > 0 ? (
-        <DispatchStoryList
-          stories={dispatch.secondary}
-          title={isHome ? "Also in your briefing" : "In this issue"}
-        />
-      ) : null}
-
-      {dispatch.wire.length > 0 ? <DispatchWire stories={dispatch.wire} /> : null}
+      <DispatchIssueColumns
+        research={columns.research}
+        calls={columns.calls}
+        wire={columns.wire}
+      />
 
       <DispatchLedger items={dispatch.resolved} />
 
@@ -117,8 +170,8 @@ export function DispatchView({
             <Link href="/discover" className={buttonClass("secondary", "sm")}>
               Browse all research
             </Link>
-            <Link href="/markets" className={buttonClass("ghost", "sm")}>
-              Markets →
+            <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+              Get your briefing
             </Link>
           </div>
         </footer>

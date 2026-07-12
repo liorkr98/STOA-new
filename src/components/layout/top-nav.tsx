@@ -15,7 +15,7 @@ import { NavSearch } from "@/components/layout/nav-search";
 import { signOut } from "@/app/actions/auth";
 
 const publicLinks = [
-  { href: "/", label: "Today" },
+  { href: "/dispatch", label: "Dispatch" },
   { href: "/discover", label: "Discover" },
   { href: "/markets", label: "Markets" },
   { href: "/leaderboard", label: "Leaderboard" },
