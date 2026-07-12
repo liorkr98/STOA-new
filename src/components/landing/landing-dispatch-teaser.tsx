@@ -29,6 +29,12 @@ export function LandingDispatchTeaser({ dispatch }: { dispatch: DispatchPayload 
             <Link href="/sign-up" className={`${buttonClass("secondary", "md")} mt-6`}>
               Build your briefing
             </Link>
+            <Link
+              href="/dispatch"
+              className={`${buttonClass("ghost", "md")} mt-3 sm:mt-6 sm:ml-2`}
+            >
+              Read the public issue
+            </Link>
           </div>
 
           <div className="scrub-in select-none border border-border bg-paper p-6 shadow-[var(--shadow-card)] sm:p-8">

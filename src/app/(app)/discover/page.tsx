@@ -138,9 +138,13 @@ export default async function DiscoverPage({
       <div>
         <h1 className="t-h1">Discover</h1>
         <p className="t-body mt-1">
-          Browse every published call and report. Today&apos;s ranked issue lives on{" "}
-          <Link href="/" className="text-accent hover:underline">
-            the dispatch
+          Browse every published call and report. Your ranked briefing lives on{" "}
+          <Link href="/home" className="text-accent hover:underline">
+            Today
+          </Link>
+          . Guests can read the public{" "}
+          <Link href="/dispatch" className="text-accent hover:underline">
+            dispatch
           </Link>
           .
         </p>

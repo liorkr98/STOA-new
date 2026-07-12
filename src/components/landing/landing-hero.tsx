@@ -59,12 +59,16 @@ export function LandingHero({ calls }: { calls: ResolvedCall[] }) {
             <Link href="/sign-up" className={buttonClass("primary", "lg")}>
               Join Stoa
             </Link>
-            <Link href="/discover" className={buttonClass("secondary", "lg")}>
-              Browse the research
+            <Link href="/dispatch" className={buttonClass("secondary", "lg")}>
+              Read today&apos;s dispatch
             </Link>
           </div>
           <p className="t-meta mt-6">
-            Free to read. Analysts set their own prices; the ledger is public either way.
+            Free to read. Analysts set their own prices; the ledger is public either way. Or{" "}
+            <Link href="/discover" className="underline hover:no-underline">
+              browse the research
+            </Link>
+            .
           </p>
         </div>
 
