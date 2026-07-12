@@ -8,9 +8,6 @@ import {
   X,
   ArrowRight,
   ChartCandlestick,
-  Sigma,
-  Columns3,
-  Table,
   Quote,
   GripVertical,
   Landmark,
@@ -20,7 +17,6 @@ import {
   Wand2,
   CheckCircle2,
   Plus,
-  Network,
   FileText,
   type LucideIcon,
 } from "lucide-react";
@@ -114,89 +110,6 @@ function valuationCard(ticker: string): ResultCard {
     subtitle: "DCF scaffold",
     node: { type: "valuationNode", attrs: { ticker } },
   };
-}
-
-function scaffoldsForTicker(ticker?: string): ResultCard[] {
-  const t = ticker?.toUpperCase() || "";
-  return [
-    {
-      kind: "chart",
-      icon: ChartCandlestick,
-      label: t ? `${t} chart` : "Price chart",
-      subtitle: "Live Stoa chart",
-      node: {
-        type: "chartNode",
-        attrs: { ticker: t, range: "3M", kind: "area", engine: "lightweight" },
-      },
-    },
-    {
-      kind: "diagram",
-      icon: Network,
-      label: "Diagram",
-      subtitle: "AI sketch from a prompt",
-      node: {
-        type: "napkinNode",
-        attrs: {
-          sourceText: t ? `${t} business model` : "Key points from the report",
-          provider: "open",
-          autoGenerate: false,
-          chartMode: false,
-        },
-      },
-    },
-    {
-      kind: "statement",
-      icon: Landmark,
-      label: "Financials",
-      subtitle: "Income / balance / cash",
-      node: { type: "statementNode", attrs: { ticker: t, kind: "income", years: 5 } },
-    },
-    {
-      kind: "estimates",
-      icon: Target,
-      label: "Estimates",
-      subtitle: "Consensus EPS",
-      node: { type: "estimatesNode", attrs: { ticker: t } },
-    },
-    {
-      kind: "valuation",
-      icon: Calculator,
-      label: "Valuation",
-      subtitle: "DCF + sensitivity",
-      node: { type: "valuationNode", attrs: { ticker: t } },
-    },
-    {
-      kind: "comparison",
-      icon: LineChart,
-      label: "Peer metrics",
-      subtitle: "Compare tickers",
-      node: {
-        type: "comparisonNode",
-        attrs: { symbols: t ? [t] : [], metric: "revenue", years: 5, kind: "line" },
-      },
-    },
-    {
-      kind: "figure",
-      icon: Sigma,
-      label: "Data figure",
-      subtitle: "One sourced number",
-      node: { type: "dataFigureNode", attrs: {} },
-    },
-    {
-      kind: "compare",
-      icon: Columns3,
-      label: "Peer table",
-      subtitle: "Side-by-side comps",
-      node: { type: "compareNode", attrs: {} },
-    },
-    {
-      kind: "table",
-      icon: Table,
-      label: "Data table",
-      subtitle: "Custom rows",
-      node: { type: "financialTableNode", attrs: {} },
-    },
-  ];
 }
 
 function DraggableCard({
@@ -408,7 +321,11 @@ export function AskPanel({
           ...m,
           {
             role: "assistant",
-            content: data.reply ?? "Done.",
+            content: (data.reply ?? "Done.")
+              .replace(/```[\s\S]*?```/g, "")
+              .replace(/\bOpenNapkin\b/gi, "diagram")
+              .replace(/\bnapkin\b/gi, "diagram")
+              .trim() || "Done.",
             cards: cards.length ? cards : undefined,
             applied: applied.length ? applied : undefined,
             actionErrors: actionErrors.length ? actionErrors : undefined,
@@ -426,10 +343,8 @@ export function AskPanel({
   const quick = [
     "Apply initiating coverage template",
     "Insert financials and peer comparison",
-    "Draft catalysts from recent headlines",
+    "Add a diagram of revenue trend",
   ];
-
-  const scaffolds = scaffoldsForTicker(context.ticker);
 
   if (!open) return null;
 
@@ -460,8 +375,8 @@ export function AskPanel({
         {messages.length === 0 && (
           <div className="space-y-3">
             <p className="text-sm text-text-mute">
-              Draft sections, insert live data blocks, or load an equity research scaffold. Set the
-              ticker in the call panel so blocks wire correctly.
+            Ask me to draft sections, insert live data blocks, or build a diagram. Highlight text
+            first for rewrite / visualize. Set the ticker in the call panel so blocks wire correctly.
             </p>
             <div>
               <p className="t-eyebrow mb-1.5 flex items-center gap-1 text-[10px]">
@@ -528,13 +443,6 @@ export function AskPanel({
       </div>
 
       <div className="border-t border-border p-3">
-        <p className="t-eyebrow mb-1.5 text-[10px]">Blocks · drag or insert</p>
-        <div className="mb-2.5 grid max-h-40 grid-cols-1 gap-1.5 overflow-y-auto">
-          {scaffolds.map((c) => (
-            <DraggableCard key={c.kind} card={c} onInsert={onInsertNode} compact />
-          ))}
-        </div>
-
         <div className="mb-2 flex flex-wrap gap-1">
           {quick.map((q) => (
             <button

@@ -109,7 +109,7 @@ export function NavSearch() {
   const showPanel = open && q.trim().length >= 1;
 
   return (
-    <div ref={rootRef} className="relative w-full max-w-[11.5rem] sm:max-w-[13rem] md:mx-auto">
+    <div ref={rootRef} className="relative w-[9.5rem] sm:w-[11.5rem] md:mx-auto md:w-[13rem]">
       <form
         role="search"
         onSubmit={(e) => {
@@ -121,14 +121,16 @@ export function NavSearch() {
       >
         <Search
           size={13}
-          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-text-faint"
+          className="pointer-events-none absolute left-2.5 top-1/2 z-[1] -translate-y-1/2 text-text-faint"
           aria-hidden
         />
         <input
           ref={inputRef}
           name="q"
-          type="search"
+          type="text"
+          inputMode="search"
           role="combobox"
+          dir="ltr"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => q.trim().length >= 1 && setOpen(true)}
@@ -144,8 +146,10 @@ export function NavSearch() {
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="h-8 w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-xs text-text placeholder:text-text-mute focus-ring"
+          className="h-8 w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
         {q ? (
           <button
@@ -156,7 +160,7 @@ export function NavSearch() {
               setOpen(false);
               inputRef.current?.focus();
             }}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-[var(--radius-btn)] p-0.5 text-text-faint hover:text-text focus-ring"
+            className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-[var(--radius-btn)] p-0.5 text-text-faint hover:text-text focus-ring"
           >
             <X size={12} aria-hidden />
           </button>

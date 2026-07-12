@@ -87,20 +87,36 @@ function heuristicActions(
     });
   }
 
-  if (/visuali[sz]e|diagram|sketch/i.test(lower)) {
-    if (/chart|price|candle/i.test(lower)) {
+  const wantsDiagram = /visuali[sz]e|diagram|sketch|napkin/i.test(lower);
+  const wantsRevenue = /revenue|financials|quarters?|10-?k|statement/i.test(lower);
+
+  if (wantsDiagram) {
+    if (wantsRevenue && t) {
+      actions.push({ action: "insert_statement", ticker: t });
+      const filingHint =
+        "Use latest available quarterly/annual revenue from the statement block; label periods clearly.";
+      actions.push({
+        action: "insert_diagram",
+        text: `${t} last four revenue periods as a simple bar comparison. ${filingHint}`,
+        ticker: t,
+      });
+    } else if (/chart|price|candle/i.test(lower)) {
       actions.push({ action: "visualize_selection", visualizeMode: "both" });
     } else {
-      actions.push({ action: "insert_diagram", text: userText });
+      actions.push({
+        action: "insert_diagram",
+        text: userText.replace(/\bnapkin\b/gi, "diagram").slice(0, 500),
+        ticker: t,
+      });
     }
   }
-  if (/chart|tradingview|price graph/i.test(lower) && t) {
+  if (/chart|tradingview|price graph/i.test(lower) && t && !wantsDiagram) {
     actions.push({
       action: /tradingview|full chart/i.test(lower) ? "insert_tradingview_chart" : "insert_chart",
       ticker: t,
     });
   }
-  if (/statement|financials|income/i.test(lower) && t) {
+  if (/statement|financials|income/i.test(lower) && t && !actions.some((a) => a.action === "insert_statement")) {
     actions.push({ action: "insert_statement", ticker: t });
   }
   if (/estimate|consensus|\beps\b/i.test(lower) && t) {
@@ -126,6 +142,33 @@ function heuristicActions(
   }
 
   return actions.slice(0, 10);
+}
+
+function scrubReply(reply: string): string {
+  let text = reply.replace(/```[\s\S]*?```/g, "").trim();
+  text = text.replace(/\bOpenNapkin\b/gi, "diagram").replace(/\bnapkin\b/gi, "diagram");
+  text = text.replace(/\s{2,}/g, " ").trim();
+  if (!text) return "Inserted into your report.";
+  return text.slice(0, 600);
+}
+
+function ensureEditorActions(
+  userText: string,
+  ticker: string | undefined,
+  peers: string[],
+  actions: ComposeAgentAction[],
+  reply?: string,
+): ComposeAgentAction[] {
+  const lower = userText.toLowerCase();
+  const wantsDiagram = /visuali[sz]e|diagram|sketch|napkin/i.test(lower);
+  const hasDiagram = actions.some((a) => a.action === "insert_diagram" || a.action === "visualize_selection");
+  const replyLooksLikeCode = /```|mermaid|xychart/i.test(reply ?? "");
+  if ((wantsDiagram && !hasDiagram) || replyLooksLikeCode) {
+    return [...actions, ...heuristicActions(userText, ticker, peers)]
+      .filter((a, i, arr) => arr.findIndex((b) => b.action === a.action && b.text === a.text) === i)
+      .slice(0, 10);
+  }
+  return actions;
 }
 
 export async function POST(req: Request) {
@@ -221,8 +264,14 @@ ${preparedContext.selection ? `<selection>${escapePromptTagContent(preparedConte
       });
 
       return NextResponse.json({
-        reply: object.reply,
-        actions: object.actions,
+        reply: scrubReply(object.reply),
+        actions: ensureEditorActions(
+          lastUser,
+          preparedContext.meta.ticker,
+          peers,
+          object.actions ?? [],
+          object.reply,
+        ),
         credits_remaining: spend.remaining,
         credits_charged: quote.totalCredits,
         market: market
@@ -270,8 +319,14 @@ ${preparedContext.selection ? `<selection>${escapePromptTagContent(preparedConte
         maxOutputTokens: Math.min(outputBudget, 800),
       });
       return NextResponse.json({
-        reply: text || "No response.",
-        actions: heuristicActions(lastUser, preparedContext.meta.ticker, peers),
+        reply: scrubReply(text || "Inserted into your report."),
+        actions: ensureEditorActions(
+          lastUser,
+          preparedContext.meta.ticker,
+          peers,
+          heuristicActions(lastUser, preparedContext.meta.ticker, peers),
+          text,
+        ),
         credits_remaining: spend.remaining,
         credits_charged: quote.totalCredits,
         usage: mergeUsage(inputTokens, usage),
