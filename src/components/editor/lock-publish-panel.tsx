@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
@@ -135,6 +135,10 @@ export function LockPublishPanel({
   const [attestationLoading, setAttestationLoading] = useState(false);
   const [attestationError, setAttestationError] = useState<string | null>(null);
   const [attestationData, setAttestationData] = useState<AttestedPriceData | null>(null);
+  const lastAttestedRef = useRef<{ ticker: string; data: AttestedPriceData | null }>({
+    ticker: "",
+    data: null,
+  });
 
   useEffect(() => {
     if (!hasCard || !ticker.trim()) {
@@ -146,10 +150,17 @@ export function LockPublishPanel({
       fetch(`/api/market/quote?ticker=${encodeURIComponent(ticker.trim())}`, {
         signal: controller.signal,
       })
-        .then((r) => r.json())
-        .then((j: { price?: number }) => setLive(j.price ?? null))
+        .then(async (r) => {
+          if (!r.ok) return null;
+          try {
+            return (await r.json()) as { price?: number };
+          } catch {
+            return null;
+          }
+        })
+        .then((j) => setLive(j?.price ?? null))
         .catch(() => setLive(null));
-    }, 400);
+    }, 600);
     return () => {
       controller.abort();
       clearTimeout(t);
@@ -161,27 +172,46 @@ export function LockPublishPanel({
       setAttestationLoading(false);
       setAttestationError(null);
       setAttestationData(null);
+      lastAttestedRef.current = { ticker: "", data: null };
       return;
     }
 
-    const market = ticker.trim().toUpperCase().endsWith(".TA") ? "IL" : "US";
+    const normalized = ticker.trim().toUpperCase();
+    if (!/^[A-Z]{1,5}(\.TA)?$/.test(normalized)) {
+      setAttestationLoading(false);
+      setAttestationError(null);
+      setAttestationData(null);
+      return;
+    }
+
+    if (lastAttestedRef.current.ticker === normalized && lastAttestedRef.current.data) {
+      setAttestationData(lastAttestedRef.current.data);
+      setAttestationLoading(false);
+      setAttestationError(null);
+      return;
+    }
+
+    const market = normalized.endsWith(".TA") ? "IL" : "US";
     let cancelled = false;
     const timer = setTimeout(() => {
       setAttestationLoading(true);
       setAttestationError(null);
-      void attestPrice({ ticker: ticker.trim(), market })
+      void attestPrice({ ticker: normalized, market })
         .then((result) => {
           if (cancelled) return;
           if (result.success) {
+            lastAttestedRef.current = { ticker: normalized, data: result.data };
             setAttestationData(result.data);
             setAttestationError(null);
           } else {
+            lastAttestedRef.current = { ticker: normalized, data: null };
             setAttestationData(null);
             setAttestationError(result.error);
           }
         })
         .catch(() => {
           if (cancelled) return;
+          lastAttestedRef.current = { ticker: normalized, data: null };
           setAttestationData(null);
           setAttestationError("Unable to lock an attested quote right now.");
         })
@@ -189,7 +219,7 @@ export function LockPublishPanel({
           if (cancelled) return;
           setAttestationLoading(false);
         });
-    }, 450);
+    }, 1400);
 
     return () => {
       cancelled = true;

@@ -79,7 +79,33 @@ export async function attestPrice(input: AttestationPayload): Promise<AttestPric
       cache: "no-store",
     });
 
-    const json = (await response.json()) as EdgeAttestedPriceResponse;
+    const raw = await response.text();
+    let json: EdgeAttestedPriceResponse;
+    try {
+      json = JSON.parse(raw) as EdgeAttestedPriceResponse;
+    } catch {
+      if (response.status === 429) {
+        return {
+          success: false,
+          error: "Quote service is busy. Wait a moment, then change the ticker to retry.",
+        };
+      }
+      return {
+        success: false,
+        error: "Unable to attest price right now. Try again in a few seconds.",
+      };
+    }
+
+    if (!response.ok && json.success !== false) {
+      return {
+        success: false,
+        error:
+          response.status === 429
+            ? "Quote service is busy. Wait a moment, then change the ticker to retry."
+            : "Unable to attest price right now.",
+      };
+    }
+
     return parseEdgeResponse(json);
   } catch {
     return { success: false, error: "Unable to reach the attestation service." };
