@@ -6,6 +6,7 @@ import {
   insertVisualizedFromSelection,
   type VisualizeMode,
 } from "@/lib/editor/tiptap/chart-from-selection";
+import { applyTiptapTemplate } from "@/lib/editor/tiptap/templates";
 
 export interface ComposeEditorContext {
   reportTicker?: string;
@@ -217,6 +218,21 @@ function runAction(
         .run();
       return "Formula";
 
+    case "apply_template": {
+      const id = action.templateId ?? "initiating-coverage";
+      const doc = applyTiptapTemplate(id, ticker || undefined);
+      if (!doc?.content?.length) return null;
+      const isEmpty =
+        editor.state.doc.textContent.trim().length === 0 ||
+        (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
+      if (isEmpty) {
+        editor.chain().focus().setContent(doc).run();
+      } else {
+        insertAtCursor(editor, doc.content as JSONContent[]);
+      }
+      return `Template: ${id}`;
+    }
+
     default:
       return null;
   }
@@ -256,6 +272,8 @@ export function actionsToPreviewLabels(actions: ComposeAgentAction[]): string[] 
         return `Visualize (${a.visualizeMode ?? "both"})`;
       case "replace_selection":
         return "Replace selection";
+      case "apply_template":
+        return `Template (${a.templateId ?? "initiating-coverage"})`;
       default:
         return a.action.replace(/^insert_/, "").replace(/_/g, " ");
     }
