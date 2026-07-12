@@ -7,6 +7,7 @@ import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingLedgerProof } from "@/components/landing/landing-ledger-proof";
 import { LandingHow } from "@/components/landing/landing-how";
 import { LandingDispatchTeaser } from "@/components/landing/landing-dispatch-teaser";
+import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingForAnalysts } from "@/components/landing/landing-for-analysts";
 import type { DispatchPayload } from "@/lib/dispatch/types";
 
@@ -39,6 +40,7 @@ export default async function LandingPage() {
       <LandingLedgerProof calls={calls.slice(3)} />
       <LandingHow />
       <LandingDispatchTeaser dispatch={dispatch} />
+      <LandingFaq />
       <LandingForAnalysts />
     </main>
   );
