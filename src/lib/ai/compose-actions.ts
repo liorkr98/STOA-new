@@ -73,4 +73,5 @@ export const COMPOSE_AGENT_ACTIONS_DOC = `Available editor actions (return in "a
 - visualize_selection — chart/diagram from highlighted text (visualizeMode: chart|diagram|both)
 - insert_figure, insert_compare, insert_table, insert_statement, insert_estimates, insert_comparison, insert_valuation, insert_scenario, insert_embed, insert_image, insert_video, insert_formula
 - replace_selection — rewrite highlighted text (text required; needs selection)
-Use ticker from context when omitted. Prefer live data blocks over invented numbers.`;
+Use ticker from context when omitted. For peers, pass tickers: [subject, ...peers] (max 4) on insert_comparison / insert_compare / apply_template.
+Prefer live data blocks over invented numbers.`;

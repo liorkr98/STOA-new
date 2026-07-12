@@ -4,8 +4,8 @@ export interface TiptapReportTemplate {
   id: string;
   name: string;
   description: string;
-  /** Build a full TipTap doc (or fragment content array) for the ticker. */
-  build: (ticker?: string) => JSONContent;
+  /** Build a full TipTap doc for the ticker (optional peer symbols for comps). */
+  build: (ticker?: string, peers?: string[]) => JSONContent;
 }
 
 function h2(text: string): JSONContent {
@@ -36,8 +36,12 @@ function divider(): JSONContent {
  * structure (company → industry → financials → valuation → risks → catalysts).
  * Analyst fills the blanks; live blocks are pre-wired to the ticker.
  */
-function initiatingCoverage(ticker?: string): JSONContent {
+function initiatingCoverage(ticker?: string, peers: string[] = []): JSONContent {
   const t = (ticker ?? "").toUpperCase() || "TICKER";
+  const symbols =
+    t === "TICKER"
+      ? []
+      : [t, ...peers.map((p) => p.toUpperCase()).filter((p) => p && p !== t)].slice(0, 4);
   return {
     type: "doc",
     content: [
@@ -59,8 +63,23 @@ function initiatingCoverage(ticker?: string): JSONContent {
       p(""),
       {
         type: "comparisonNode",
-        attrs: { symbols: t === "TICKER" ? [] : [t], metric: "revenue", years: 5, kind: "line" },
+        attrs: { symbols, metric: "revenue", years: 5, kind: "line" },
       },
+      ...(symbols.length >= 2
+        ? [
+            {
+              type: "compareNode",
+              attrs: {
+                tickers: symbols,
+                rows: [
+                  { label: "P/E", values: symbols.map(() => "") },
+                  { label: "Rev growth", values: symbols.map(() => "") },
+                  { label: "Gross margin", values: symbols.map(() => "") },
+                ],
+              },
+            } as JSONContent,
+          ]
+        : []),
       divider(),
       h2("3. Financials"),
       p("Revenue quality, margins, cash conversion, and balance-sheet flexibility."),
@@ -189,7 +208,11 @@ export function getTiptapTemplate(id: string): TiptapReportTemplate | undefined 
   return TIPTAP_REPORT_TEMPLATES.find((t) => t.id === id);
 }
 
-export function applyTiptapTemplate(id: string, ticker?: string): JSONContent | null {
+export function applyTiptapTemplate(
+  id: string,
+  ticker?: string,
+  peers?: string[],
+): JSONContent | null {
   const tpl = getTiptapTemplate(id);
-  return tpl ? tpl.build(ticker) : null;
+  return tpl ? tpl.build(ticker, peers) : null;
 }

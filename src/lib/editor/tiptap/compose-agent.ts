@@ -11,6 +11,7 @@ import { applyTiptapTemplate } from "@/lib/editor/tiptap/templates";
 export interface ComposeEditorContext {
   reportTicker?: string;
   selection?: string;
+  peers?: string[];
 }
 
 function textNode(text: string) {
@@ -153,9 +154,26 @@ function runAction(
       insertAtCursor(editor, { type: "dataFigureNode" });
       return "Data figure";
 
-    case "insert_compare":
-      insertAtCursor(editor, { type: "compareNode" });
-      return "Peer comparison";
+    case "insert_compare": {
+      const symbols = action.tickers?.length
+        ? action.tickers.map((x) => x.toUpperCase()).slice(0, 4)
+        : ticker
+          ? [ticker]
+          : ["NVDA", "AMD"];
+      while (symbols.length < 2) symbols.push("PEER");
+      insertAtCursor(editor, {
+        type: "compareNode",
+        attrs: {
+          tickers: symbols.slice(0, 4),
+          rows: [
+            { label: "P/E", values: symbols.map(() => "") },
+            { label: "Rev growth", values: symbols.map(() => "") },
+            { label: "Gross margin", values: symbols.map(() => "") },
+          ],
+        },
+      });
+      return `Peer table (${symbols.slice(0, 4).join(", ")})`;
+    }
 
     case "insert_table":
       insertAtCursor(editor, { type: "financialTableNode" });
@@ -220,7 +238,11 @@ function runAction(
 
     case "apply_template": {
       const id = action.templateId ?? "initiating-coverage";
-      const doc = applyTiptapTemplate(id, ticker || undefined);
+      const peers =
+        action.tickers?.map((x) => x.toUpperCase()).filter((x) => x && x !== ticker) ??
+        ctx.peers ??
+        [];
+      const doc = applyTiptapTemplate(id, ticker || undefined, peers);
       if (!doc?.content?.length) return null;
       const isEmpty =
         editor.state.doc.textContent.trim().length === 0 ||

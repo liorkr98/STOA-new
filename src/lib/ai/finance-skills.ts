@@ -26,15 +26,19 @@ Skills you can run when the analyst asks (map to editor actions + draft prose):
    Use market_context.news headlines when provided. Draft a catalysts section; do not claim calendar certainty without a cited headline.
 
 6) peer-compare
-   insert_comparison / insert_compare with peer tickers from the user or sector peers they name.
+   Use market_context.peers when present. insert_comparison and insert_compare with [ticker, ...peers] (max 4).
+
+7) filings-deep-dive
+   Use market_context.fundamentals + recent_filings. Prefer insert_statement / insert_estimates over inventing line items.
 
 Data rules:
-- Prefer Stoa live blocks (chart, statement, estimates, valuation) over pasting stale numbers.
-- When <market_context> is present, cite those figures and news headlines; say if data is missing.
+- Prefer Stoa live blocks (chart, statement, estimates, valuation, comparison) over pasting stale numbers.
+- When <market_context> is present, cite those figures, filings, peers, and news headlines; say if data is missing.
+- For peer work, always pass tickers: [subject, ...peers] on insert_comparison / insert_compare.
 - Public dataset ideas (FRED, SEC EDGAR, World Bank, etc.) are research pointers — insert blocks and draft where to look; do not fabricate series.
 - You may draft section prose the analyst will edit. Label uncertain claims clearly.
 - Do NOT set or invent the locked price target / long-short call. Those live in the publish panel.
-- Never claim you have real-time news if market_context.news is empty — say so and scaffold a checklist instead.
+- Never claim you have real-time news if market_context news is empty — say so and scaffold a checklist instead.
 `.trim();
 
 export type ComposeSkillId =
@@ -44,7 +48,8 @@ export type ComposeSkillId =
   | "company-valuation"
   | "estimate-analysis"
   | "catalyst-scan"
-  | "peer-compare";
+  | "peer-compare"
+  | "filings-deep-dive";
 
 export function detectComposeSkill(userText: string): ComposeSkillId | null {
   const t = userText.toLowerCase();
@@ -54,6 +59,7 @@ export function detectComposeSkill(userText: string): ComposeSkillId | null {
   if (/earnings\s+recap|post[- ]earnings|after\s+earnings/i.test(t)) return "earnings-recap";
   if (/earnings\s+preview|pre[- ]earnings|before\s+earnings/i.test(t)) return "earnings-preview";
   if (/valuat|dcf|fair\s+value|wacc/i.test(t)) return "company-valuation";
+  if (/filing|10-?k|10-?q|edgar|fundamentals/i.test(t)) return "filings-deep-dive";
   if (/estimate|consensus|\beps\b|revision/i.test(t)) return "estimate-analysis";
   if (/catalyst|what'?s\s+next|upcoming\s+event/i.test(t)) return "catalyst-scan";
   if (/peer|compar|versus|\bvs\b/i.test(t)) return "peer-compare";

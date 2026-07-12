@@ -293,21 +293,38 @@ export function AskPanel({
 
   function applyTemplate(id: string) {
     if (!editor) return;
-    const doc = applyTiptapTemplate(id, context.ticker);
-    if (!doc) return;
-    const empty =
-      editor.state.doc.textContent.trim().length === 0 ||
-      (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
-    if (empty) editor.chain().focus().setContent(doc).run();
-    else if (doc.content) editor.chain().focus().insertContent(doc.content).run();
-    setMessages((m) => [
-      ...m,
-      {
-        role: "assistant",
-        content: `Applied “${TIPTAP_REPORT_TEMPLATES.find((t) => t.id === id)?.name ?? id}” scaffold. Fill the placeholders with your analysis.`,
-        applied: [`Template: ${id}`],
-      },
-    ]);
+    void (async () => {
+      let peers: string[] = [];
+      const t = context.ticker?.trim().toUpperCase();
+      if (t) {
+        try {
+          const res = await fetch(`/api/market/peers?ticker=${encodeURIComponent(t)}`);
+          if (res.ok) {
+            const data = (await res.json()) as { peers?: string[] };
+            peers = data.peers ?? [];
+          }
+        } catch {
+          peers = [];
+        }
+      }
+      const doc = applyTiptapTemplate(id, context.ticker, peers);
+      if (!doc) return;
+      const empty =
+        editor.state.doc.textContent.trim().length === 0 ||
+        (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
+      if (empty) editor.chain().focus().setContent(doc).run();
+      else if (doc.content) editor.chain().focus().insertContent(doc.content).run();
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `Applied “${TIPTAP_REPORT_TEMPLATES.find((x) => x.id === id)?.name ?? id}” scaffold${
+            peers.length ? ` with peers ${peers.slice(0, 3).join(", ")}` : ""
+          }. Fill the placeholders with your analysis.`,
+          applied: [`Template: ${id}`],
+        },
+      ]);
+    })();
   }
 
   function send(preset?: string) {
@@ -339,6 +356,7 @@ export function AskPanel({
           have?: number;
           need?: number;
           credits_remaining?: number;
+          market?: { peers?: string[]; ticker?: string } | null;
         };
         if (!res.ok) {
           setError(
@@ -354,7 +372,10 @@ export function AskPanel({
         let applied: string[] = [];
         let actionErrors: string[] = [];
         if (editor && data.actions?.length) {
-          const result = executeComposeActions(editor, data.actions, editorCtx);
+          const result = executeComposeActions(editor, data.actions, {
+            ...editorCtx,
+            peers: data.market?.peers,
+          });
           applied = result.applied;
           actionErrors = result.errors;
         }
@@ -363,7 +384,8 @@ export function AskPanel({
         if (data.reply && !applied.some((a) => a.toLowerCase().includes("callout"))) {
           cards.push(textCard(data.reply));
         }
-        const ticker = detectTicker(text, context.ticker);
+        const ticker = detectTicker(text, context.ticker ?? data.market?.ticker);
+        const peers = data.market?.peers ?? [];
         if (
           /chart|price|graph/i.test(text) &&
           ticker &&
@@ -371,10 +393,13 @@ export function AskPanel({
         ) {
           cards.push(chartCard(ticker));
         }
-        if (/statement|financials|10-?k/i.test(text) && ticker) cards.push(statementCard(ticker));
+        if (/statement|financials|10-?k|filing/i.test(text) && ticker) cards.push(statementCard(ticker));
         if (/estimate|consensus|\beps\b/i.test(text) && ticker) cards.push(estimatesCard(ticker));
         if (/compar|versus|\bvs\b|peers?/i.test(text)) {
-          const symbols = detectTickers(text, context.ticker);
+          const symbols =
+            peers.length && ticker
+              ? [ticker, ...peers].slice(0, 4)
+              : detectTickers(text, context.ticker);
           if (symbols.length) cards.push(comparisonCard(symbols));
         }
         if (/valuation|\bdcf\b|fair value/i.test(text) && ticker) cards.push(valuationCard(ticker));
@@ -400,8 +425,8 @@ export function AskPanel({
 
   const quick = [
     "Apply initiating coverage template",
-    "Insert financials, estimates, and chart",
-    "Draft catalysts and risks sections",
+    "Insert financials and peer comparison",
+    "Draft catalysts from recent headlines",
   ];
 
   const scaffolds = scaffoldsForTicker(context.ticker);
