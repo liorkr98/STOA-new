@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
@@ -132,9 +132,76 @@ export function LockPublishPanel({
   error: string | null;
 }) {
   const [live, setLive] = useState<number | null>(null);
+  const [committedTicker, setCommittedTicker] = useState("");
   const [attestationLoading, setAttestationLoading] = useState(false);
   const [attestationError, setAttestationError] = useState<string | null>(null);
   const [attestationData, setAttestationData] = useState<AttestedPriceData | null>(null);
+  const lastAttestedRef = useRef<{ ticker: string; data: AttestedPriceData | null }>({
+    ticker: "",
+    data: null,
+  });
+
+  function resetAttestation() {
+    setCommittedTicker("");
+    setAttestationLoading(false);
+    setAttestationError(null);
+    setAttestationData(null);
+    lastAttestedRef.current = { ticker: "", data: null };
+  }
+
+  async function attestLockedTicker(raw: string) {
+    const normalized = raw.trim().toUpperCase();
+    if (!normalized || !/^[A-Z]{1,5}(\.TA)?$/.test(normalized)) {
+      resetAttestation();
+      return;
+    }
+
+    if (lastAttestedRef.current.ticker === normalized && lastAttestedRef.current.data) {
+      setCommittedTicker(normalized);
+      setAttestationData(lastAttestedRef.current.data);
+      setAttestationError(null);
+      setAttestationLoading(false);
+      return;
+    }
+
+    setCommittedTicker(normalized);
+    setAttestationLoading(true);
+    setAttestationError(null);
+    setAttestationData(null);
+
+    const market = normalized.endsWith(".TA") ? "IL" : "US";
+    const result = await attestPrice({ ticker: normalized, market });
+    if (result.success) {
+      lastAttestedRef.current = { ticker: normalized, data: result.data };
+      setAttestationData(result.data);
+      setAttestationError(null);
+    } else {
+      lastAttestedRef.current = { ticker: normalized, data: null };
+      setAttestationData(null);
+      setAttestationError(result.error);
+    }
+    setAttestationLoading(false);
+  }
+
+  function onTickerInputChange(value: string) {
+    const next = value.toUpperCase();
+    onTicker(next);
+    const normalized = next.trim().toUpperCase();
+    if (!normalized) {
+      resetAttestation();
+      return;
+    }
+    if (committedTicker && normalized !== committedTicker) {
+      setCommittedTicker("");
+      setAttestationData(null);
+      setAttestationError(null);
+      lastAttestedRef.current = { ticker: "", data: null };
+    }
+  }
+
+  function commitTickerFromField() {
+    void attestLockedTicker(ticker);
+  }
 
   useEffect(() => {
     if (!hasCard || !ticker.trim()) {
@@ -146,54 +213,20 @@ export function LockPublishPanel({
       fetch(`/api/market/quote?ticker=${encodeURIComponent(ticker.trim())}`, {
         signal: controller.signal,
       })
-        .then((r) => r.json())
-        .then((j: { price?: number }) => setLive(j.price ?? null))
+        .then(async (r) => {
+          if (!r.ok) return null;
+          try {
+            return (await r.json()) as { price?: number };
+          } catch {
+            return null;
+          }
+        })
+        .then((j) => setLive(j?.price ?? null))
         .catch(() => setLive(null));
-    }, 400);
+    }, 600);
     return () => {
       controller.abort();
       clearTimeout(t);
-    };
-  }, [ticker, hasCard]);
-
-  useEffect(() => {
-    if (!hasCard || !ticker.trim()) {
-      setAttestationLoading(false);
-      setAttestationError(null);
-      setAttestationData(null);
-      return;
-    }
-
-    const market = ticker.trim().toUpperCase().endsWith(".TA") ? "IL" : "US";
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      setAttestationLoading(true);
-      setAttestationError(null);
-      void attestPrice({ ticker: ticker.trim(), market })
-        .then((result) => {
-          if (cancelled) return;
-          if (result.success) {
-            setAttestationData(result.data);
-            setAttestationError(null);
-          } else {
-            setAttestationData(null);
-            setAttestationError(result.error);
-          }
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setAttestationData(null);
-          setAttestationError("Unable to lock an attested quote right now.");
-        })
-        .finally(() => {
-          if (cancelled) return;
-          setAttestationLoading(false);
-        });
-    }, 450);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
     };
   }, [ticker, hasCard]);
 
@@ -220,7 +253,8 @@ export function LockPublishPanel({
             </span>
           </div>
           <p className="t-meta mb-3 text-[11px] leading-relaxed">
-            Add a ticker to lock a call at publish. Leave blank for overview research.
+            Add a ticker to lock a call at publish. Leave blank for overview research. Press Enter or
+            leave the ticker field to run attestation.
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -228,7 +262,15 @@ export function LockPublishPanel({
               Ticker
               <input
                 value={ticker}
-                onChange={(e) => onTicker(e.target.value.toUpperCase())}
+                onChange={(e) => onTickerInputChange(e.target.value)}
+                onBlur={commitTickerFromField}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitTickerFromField();
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
                 className={cn(inputClass, "num mt-1")}
                 placeholder="NVDA"
               />
@@ -296,6 +338,17 @@ export function LockPublishPanel({
               )}
             </div>
           )}
+
+          {committedTicker && (
+            <div className="mt-3 border-t border-dashed border-border pt-3">
+              <PriceAttestationCard
+                title="Attestation protocol"
+                loading={attestationLoading}
+                error={attestationError}
+                data={attestationData}
+              />
+            </div>
+          )}
         </section>
       )}
 
@@ -309,15 +362,6 @@ export function LockPublishPanel({
             onResult={onFactCheck}
           />
         </section>
-      )}
-
-      {hasCard && (
-        <PriceAttestationCard
-          title="Attestation protocol"
-          loading={attestationLoading}
-          error={attestationError}
-          data={attestationData}
-        />
       )}
 
       {hasCard && (

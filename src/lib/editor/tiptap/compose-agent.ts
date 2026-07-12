@@ -6,7 +6,7 @@ import {
   insertVisualizedFromSelection,
   type VisualizeMode,
 } from "@/lib/editor/tiptap/chart-from-selection";
-import { applyTiptapTemplate } from "@/lib/editor/tiptap/templates";
+import { applyReportTemplateToEditor } from "@/lib/editor/tiptap/apply-report-template";
 
 export interface ComposeEditorContext {
   reportTicker?: string;
@@ -242,17 +242,11 @@ function runAction(
         action.tickers?.map((x) => x.toUpperCase()).filter((x) => x && x !== ticker) ??
         ctx.peers ??
         [];
-      const doc = applyTiptapTemplate(id, ticker || undefined, peers);
-      if (!doc?.content?.length) return null;
-      const isEmpty =
-        editor.state.doc.textContent.trim().length === 0 ||
-        (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
-      if (isEmpty) {
-        editor.chain().focus().setContent(doc).run();
-      } else {
-        insertAtCursor(editor, doc.content as JSONContent[]);
-      }
-      return `Template: ${id}`;
+      const ok = applyReportTemplateToEditor(editor, id, {
+        ticker: ticker || undefined,
+        peers,
+      });
+      return ok ? `Template: ${id}` : null;
     }
 
     default:

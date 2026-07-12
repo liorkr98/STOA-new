@@ -58,6 +58,26 @@ export function detectTicker(text: string, fallback?: string): string {
   return "";
 }
 
+/** Best ticker for Research AI: panel ticker unless the user names another symbol in chat. */
+export function resolveComposeTicker(
+  messages: { role: string; content: string }[],
+  panelTicker?: string,
+): string | undefined {
+  const panel = panelTicker?.trim().toUpperCase();
+  const lastUser = messages.at(-1)?.content ?? "";
+  const fromLast = detectTicker(lastUser, panel);
+  if (fromLast) return fromLast;
+
+  for (let i = messages.length - 2; i >= 0; i--) {
+    const m = messages[i];
+    if (m.role !== "user") continue;
+    const t = detectTicker(m.content, panel);
+    if (t) return t;
+  }
+
+  return panel || undefined;
+}
+
 /** All plausible tickers in the text (max 8). */
 export function detectTickers(text: string, fallback?: string): string[] {
   const found = [...text.toUpperCase().matchAll(TICKER_RE)]

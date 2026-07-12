@@ -43,7 +43,19 @@ export const ComposeAgentActionSchema = z.object({
   visualizeMode: z.enum(["chart", "diagram", "both"]).optional(),
   url: z.string().max(500).optional().describe("For embed blocks"),
   templateId: z
-    .enum(["initiating-coverage", "earnings-recap", "quick-call"])
+    .enum([
+      "initiating-coverage",
+      "investment-memo",
+      "deep-dive",
+      "comp-analysis",
+      "equity-factsheet",
+      "company-dashboard",
+      "sector-update",
+      "earnings-preview",
+      "earnings-recap",
+      "catalyst-note",
+      "quick-call",
+    ])
     .optional()
     .describe("For apply_template"),
 });
@@ -60,7 +72,7 @@ export type ComposeAgentAction = z.infer<typeof ComposeAgentActionSchema>;
 export type ComposeAgentResponse = z.infer<typeof ComposeAgentResponseSchema>;
 
 export const COMPOSE_AGENT_ACTIONS_DOC = `Available editor actions (return in "actions" array):
-- apply_template — load a full report scaffold (templateId: initiating-coverage|earnings-recap|quick-call)
+- apply_template — load a full report scaffold (initiating-coverage, investment-memo, deep-dive, comp-analysis, equity-factsheet, company-dashboard, sector-update, earnings-preview, earnings-recap, catalyst-note, quick-call)
 - insert_heading / insert_subheading — section titles (optional text)
 - insert_paragraph — plain prose (text required) — draft sections freely
 - insert_callout — highlighted note (text required)
