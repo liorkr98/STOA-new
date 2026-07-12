@@ -98,6 +98,7 @@ export function NavSearch() {
         <input
           name="q"
           type="search"
+          role="combobox"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => q.trim().length >= 2 && setOpen(true)}
