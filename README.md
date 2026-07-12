@@ -344,7 +344,7 @@ CRON_SECRET=<any long random string>
 Optional:
 ```
 DEEPSEEK_API_KEY=              # fact-check + compose AI + diagrams (mock fallback without)
-DEEPSEEK_MODEL=deepseek-v4-pro
+DEEPSEEK_MODEL=deepseek-v4-flash
 TWELVE_DATA_API_KEY=         # market data fallback
 ALPHA_VANTAGE_API_KEY=       # market data last resort
 PAYPAL_MODE=sandbox          # real payments (not needed yet)

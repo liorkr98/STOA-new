@@ -281,7 +281,7 @@ export function NapkinNodeView({
                 onMouseDown={stop}
                 className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
               >
-                <option value="open">Built-in (OpenNapkin-style)</option>
+                <option value="open">Built-in diagram</option>
                 <option value="cloud">Cloud image (optional API key)</option>
               </select>
             </label>

@@ -8,9 +8,6 @@ import {
   X,
   ArrowRight,
   ChartCandlestick,
-  Sigma,
-  Columns3,
-  Table,
   Quote,
   GripVertical,
   Landmark,
@@ -19,6 +16,8 @@ import {
   Calculator,
   Wand2,
   CheckCircle2,
+  Plus,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -29,6 +28,10 @@ import {
   type ComposeEditorContext,
 } from "@/lib/editor/tiptap/compose-agent";
 import { detectTicker, detectTickers } from "@/lib/editor/tiptap/ticker-detect";
+import {
+  applyTiptapTemplate,
+  TIPTAP_REPORT_TEMPLATES,
+} from "@/lib/editor/tiptap/templates";
 
 interface ResultCard {
   kind: string;
@@ -50,8 +53,8 @@ function textCard(reply: string): ResultCard {
   return {
     kind: "text",
     icon: Quote,
-    label: "Summary",
-    subtitle: "Drops in as a callout you can edit",
+    label: "Summary callout",
+    subtitle: "Drop into the report",
     node: { type: "callout", content: [{ type: "text", text: reply.slice(0, 600) }] },
   };
 }
@@ -61,7 +64,7 @@ function chartCard(ticker: string): ResultCard {
     kind: "chart",
     icon: ChartCandlestick,
     label: `${ticker} chart`,
-    subtitle: "Live price, pre-configured",
+    subtitle: "Live price block",
     node: { type: "chartNode", attrs: { ticker, range: "3M", kind: "area" } },
   };
 }
@@ -92,7 +95,10 @@ function comparisonCard(symbols: string[]): ResultCard {
     icon: LineChart,
     label: `Compare ${symbols.slice(0, 3).join(", ")}`,
     subtitle: "Metric over time",
-    node: { type: "comparisonNode", attrs: { symbols, metric: "revenue", years: 5, kind: "line" } },
+    node: {
+      type: "comparisonNode",
+      attrs: { symbols, metric: "revenue", years: 5, kind: "line" },
+    },
   };
 }
 
@@ -106,59 +112,15 @@ function valuationCard(ticker: string): ResultCard {
   };
 }
 
-const SCAFFOLDS: ResultCard[] = [
-  {
-    kind: "figure",
-    icon: Sigma,
-    label: "Data figure",
-    subtitle: "One sourced number",
-    node: { type: "dataFigureNode", attrs: {} },
-  },
-  {
-    kind: "compare",
-    icon: Columns3,
-    label: "Peer comparison",
-    subtitle: "2-4 tickers",
-    node: { type: "compareNode", attrs: {} },
-  },
-  {
-    kind: "table",
-    icon: Table,
-    label: "Data table",
-    subtitle: "Rows and columns",
-    node: { type: "financialTableNode", attrs: {} },
-  },
-  {
-    kind: "statement",
-    icon: Landmark,
-    label: "Financial statement",
-    subtitle: "EDGAR income / balance / cash flow",
-    node: { type: "statementNode", attrs: { kind: "income", years: 5 } },
-  },
-  {
-    kind: "estimates",
-    icon: Target,
-    label: "Estimates",
-    subtitle: "Consensus EPS vs actuals",
-    node: { type: "estimatesNode", attrs: {} },
-  },
-  {
-    kind: "comparison",
-    icon: LineChart,
-    label: "Metric comparison",
-    subtitle: "A metric across tickers",
-    node: { type: "comparisonNode", attrs: {} },
-  },
-  {
-    kind: "valuation",
-    icon: Calculator,
-    label: "Valuation (DCF)",
-    subtitle: "Fair value + sensitivity",
-    node: { type: "valuationNode", attrs: {} },
-  },
-];
-
-function DraggableCard({ card, onInsert }: { card: ResultCard; onInsert: (n: JSONContent) => void }) {
+function DraggableCard({
+  card,
+  onInsert,
+  compact,
+}: {
+  card: ResultCard;
+  onInsert: (n: JSONContent) => void;
+  compact?: boolean;
+}) {
   const Icon = card.icon;
   return (
     <div
@@ -167,21 +129,33 @@ function DraggableCard({ card, onInsert }: { card: ResultCard; onInsert: (n: JSO
         e.dataTransfer.setData("application/stoa-node", JSON.stringify(card.node));
         e.dataTransfer.effectAllowed = "copy";
       }}
-      className="group flex cursor-grab items-center gap-2.5 rounded-[var(--radius-btn)] border border-border bg-bg p-2.5 transition-colors hover:border-accent/40 active:cursor-grabbing"
+      className={cn(
+        "group flex cursor-grab items-center gap-2 rounded-[var(--radius-btn)] border border-border bg-paper transition-colors",
+        "hover:border-border-strong hover:bg-surface-2 active:cursor-grabbing",
+        compact ? "p-2" : "p-2.5",
+      )}
     >
-      <GripVertical size={13} className="shrink-0 text-text-faint" />
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-btn)] border border-border text-accent">
-        <Icon size={15} />
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-surface-2 text-text">
+        <Icon size={14} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium text-text">{card.label}</span>
-        <span className="block truncate text-[11px] text-text-faint">{card.subtitle}</span>
+        <span className="block text-[12px] font-medium leading-tight text-text">{card.label}</span>
+        <span className="block truncate text-[10px] text-text-faint">{card.subtitle}</span>
+      </span>
+      <span className="hidden items-center gap-0.5 text-[9px] uppercase tracking-wide text-text-faint group-hover:flex">
+        <GripVertical size={11} />
+        Drag
       </span>
       <button
         type="button"
         onClick={() => onInsert(card.node)}
-        className="shrink-0 rounded-[var(--radius-btn)] px-2 py-1 text-[11px] font-medium text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1 rounded-[6px] px-2 py-1 text-[11px] font-medium focus-ring",
+          "bg-[var(--ink)] text-[var(--paper)] hover:opacity-90",
+        )}
+        aria-label={`Insert ${card.label}`}
       >
+        <Plus size={12} />
         Insert
       </button>
     </div>
@@ -189,8 +163,8 @@ function DraggableCard({ card, onInsert }: { card: ResultCard; onInsert: (n: JSO
 }
 
 /**
- * Compose agent panel — structured AI actions (AI SDK generateObject) execute
- * slash-menu blocks, diagrams, and selection edits directly in the report.
+ * Compose agent panel — structured AI actions execute slash-menu blocks,
+ * templates, diagrams, and selection edits directly in the report.
  */
 export function AskPanel({
   open,
@@ -230,6 +204,42 @@ export function AskPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
 
+  function applyTemplate(id: string) {
+    if (!editor) return;
+    void (async () => {
+      let peers: string[] = [];
+      const t = context.ticker?.trim().toUpperCase();
+      if (t) {
+        try {
+          const res = await fetch(`/api/market/peers?ticker=${encodeURIComponent(t)}`);
+          if (res.ok) {
+            const data = (await res.json()) as { peers?: string[] };
+            peers = data.peers ?? [];
+          }
+        } catch {
+          peers = [];
+        }
+      }
+      const doc = applyTiptapTemplate(id, context.ticker, peers);
+      if (!doc) return;
+      const empty =
+        editor.state.doc.textContent.trim().length === 0 ||
+        (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
+      if (empty) editor.chain().focus().setContent(doc).run();
+      else if (doc.content) editor.chain().focus().insertContent(doc.content).run();
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `Applied “${TIPTAP_REPORT_TEMPLATES.find((x) => x.id === id)?.name ?? id}” scaffold${
+            peers.length ? ` with peers ${peers.slice(0, 3).join(", ")}` : ""
+          }. Fill the placeholders with your analysis.`,
+          applied: [`Template: ${id}`],
+        },
+      ]);
+    })();
+  }
+
   function send(preset?: string) {
     const text = (preset ?? input).trim();
     if (!text || pending) return;
@@ -259,6 +269,7 @@ export function AskPanel({
           have?: number;
           need?: number;
           credits_remaining?: number;
+          market?: { peers?: string[]; ticker?: string } | null;
         };
         if (!res.ok) {
           setError(
@@ -274,7 +285,10 @@ export function AskPanel({
         let applied: string[] = [];
         let actionErrors: string[] = [];
         if (editor && data.actions?.length) {
-          const result = executeComposeActions(editor, data.actions, editorCtx);
+          const result = executeComposeActions(editor, data.actions, {
+            ...editorCtx,
+            peers: data.market?.peers,
+          });
           applied = result.applied;
           actionErrors = result.errors;
         }
@@ -283,14 +297,22 @@ export function AskPanel({
         if (data.reply && !applied.some((a) => a.toLowerCase().includes("callout"))) {
           cards.push(textCard(data.reply));
         }
-        const ticker = detectTicker(text, context.ticker);
-        if (/chart|price|graph/i.test(text) && ticker && !applied.some((a) => a.toLowerCase().includes("chart"))) {
+        const ticker = detectTicker(text, context.ticker ?? data.market?.ticker);
+        const peers = data.market?.peers ?? [];
+        if (
+          /chart|price|graph/i.test(text) &&
+          ticker &&
+          !applied.some((a) => a.toLowerCase().includes("chart"))
+        ) {
           cards.push(chartCard(ticker));
         }
-        if (/statement|financials|10-?k/i.test(text) && ticker) cards.push(statementCard(ticker));
+        if (/statement|financials|10-?k|filing/i.test(text) && ticker) cards.push(statementCard(ticker));
         if (/estimate|consensus|\beps\b/i.test(text) && ticker) cards.push(estimatesCard(ticker));
         if (/compar|versus|\bvs\b|peers?/i.test(text)) {
-          const symbols = detectTickers(text, context.ticker);
+          const symbols =
+            peers.length && ticker
+              ? [ticker, ...peers].slice(0, 4)
+              : detectTickers(text, context.ticker);
           if (symbols.length) cards.push(comparisonCard(symbols));
         }
         if (/valuation|\bdcf\b|fair value/i.test(text) && ticker) cards.push(valuationCard(ticker));
@@ -299,7 +321,11 @@ export function AskPanel({
           ...m,
           {
             role: "assistant",
-            content: data.reply ?? "Done.",
+            content: (data.reply ?? "Done.")
+              .replace(/```[\s\S]*?```/g, "")
+              .replace(/\bOpenNapkin\b/gi, "diagram")
+              .replace(/\bnapkin\b/gi, "diagram")
+              .trim() || "Done.",
             cards: cards.length ? cards : undefined,
             applied: applied.length ? applied : undefined,
             actionErrors: actionErrors.length ? actionErrors : undefined,
@@ -315,9 +341,9 @@ export function AskPanel({
   }
 
   const quick = [
-    "Add NVDA chart and diagram from my selection",
-    "Insert financials and estimates",
-    "Outline with headings",
+    "Apply initiating coverage template",
+    "Insert financials and peer comparison",
+    "Add a diagram of revenue trend",
   ];
 
   if (!open) return null;
@@ -325,14 +351,14 @@ export function AskPanel({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 right-0 z-40 flex w-[min(400px,100vw)] flex-col border-l border-border bg-surface",
+        "fixed inset-y-0 right-0 z-40 flex w-[min(380px,100vw)] flex-col border-l border-border bg-surface",
         "shadow-[var(--shadow-card)]",
       )}
       role="dialog"
       aria-label="Research AI"
     >
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <Sparkle size={16} className="text-accent" />
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
+        <Sparkle size={15} className="text-accent" />
         <p className="text-sm font-semibold">Research AI</p>
         <span className="t-meta text-[11px]">{credits} credits</span>
         <button
@@ -345,31 +371,50 @@ export function AskPanel({
         </button>
       </div>
 
-      <div ref={scrollRef} className="scroll-area flex-1 space-y-4 overflow-y-auto p-4">
+      <div ref={scrollRef} className="scroll-area flex-1 space-y-3 overflow-y-auto p-3">
         {messages.length === 0 && (
-          <p className="t-body text-sm">
-            Ask me to edit your report, insert blocks (same as the slash menu), build OpenNapkin
-            diagrams, or visualize your selection. Highlight text first for rewrite / visualize
-            commands.
-          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-text-mute">
+            Ask me to draft sections, insert live data blocks, or build a diagram. Highlight text
+            first for rewrite / visualize. Set the ticker in the call panel so blocks wire correctly.
+            </p>
+            <div>
+              <p className="t-eyebrow mb-1.5 flex items-center gap-1 text-[10px]">
+                <FileText size={11} /> Report templates
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {TIPTAP_REPORT_TEMPLATES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => applyTemplate(t.id)}
+                    className="rounded-[var(--radius-btn)] border border-border bg-paper px-3 py-2 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
+                  >
+                    <span className="block text-[12px] font-medium text-text">{t.name}</span>
+                    <span className="block text-[10px] text-text-faint">{t.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
         {messages.map((m, i) => (
           <div key={i} className="flex flex-col gap-2">
             <div
               className={cn(
-                "rounded-[var(--radius-btn)] px-3 py-2.5 text-sm leading-relaxed",
+                "rounded-[var(--radius-btn)] px-3 py-2 text-sm leading-relaxed",
                 m.role === "user"
-                  ? "ml-8 bg-[var(--ink)] text-[var(--paper)]"
-                  : "mr-2 border border-border bg-bg text-text",
+                  ? "ml-6 bg-[var(--ink)] text-[var(--paper)]"
+                  : "mr-1 border border-border bg-bg text-text",
               )}
             >
               {m.content}
             </div>
             {m.applied && m.applied.length > 0 && (
-              <div className="mr-2 rounded-[var(--radius-btn)] border border-accent/30 bg-accent-weak px-3 py-2">
-                <p className="flex items-center gap-1.5 text-[11px] font-medium text-accent">
-                  <CheckCircle2 size={14} />
+              <div className="mr-1 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2">
+                <p className="flex items-center gap-1.5 text-[11px] font-medium text-text">
+                  <CheckCircle2 size={13} />
                   Applied in your report
                 </p>
                 <ul className="mt-1 space-y-0.5 text-[11px] text-text-mute">
@@ -380,53 +425,53 @@ export function AskPanel({
               </div>
             )}
             {m.actionErrors && m.actionErrors.length > 0 && (
-              <p className="mr-2 text-[11px] text-[var(--down)]">{m.actionErrors.join(" · ")}</p>
+              <p className="mr-1 text-[11px] text-[var(--rust)]">{m.actionErrors.join(" · ")}</p>
             )}
             {m.cards && m.cards.length > 0 && (
-              <div className="mr-2 flex flex-col gap-1.5">
+              <div className="mr-1 flex flex-col gap-1.5">
                 <p className="t-meta flex items-center gap-1 px-1 text-[10px]">
-                  <Wand2 size={11} /> Or drag these into the report
+                  <Wand2 size={11} /> Drag or insert
                 </p>
                 {m.cards.map((c, j) => (
-                  <DraggableCard key={j} card={c} onInsert={onInsertNode} />
+                  <DraggableCard key={j} card={c} onInsert={onInsertNode} compact />
                 ))}
               </div>
             )}
           </div>
         ))}
         {pending && <p className="t-meta animate-pulse px-1">Thinking…</p>}
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
       </div>
 
       <div className="border-t border-border p-3">
-        <p className="t-eyebrow mb-1.5 text-[10px]">Insert a block manually</p>
-        <div className="mb-3 max-h-36 overflow-y-auto flex flex-col gap-1.5">
-          {SCAFFOLDS.map((c) => (
-            <DraggableCard key={c.kind} card={c} onInsert={onInsertNode} />
-          ))}
-        </div>
-
-        <div className="mb-2 flex flex-wrap gap-1.5">
+        <div className="mb-2 flex flex-wrap gap-1">
           {quick.map((q) => (
             <button
               key={q}
               type="button"
               onClick={() => send(q)}
               disabled={pending}
-              className="rounded-[var(--radius-btn)] border border-border px-2.5 py-1 text-[11px] text-text-mute transition-colors hover:border-accent/40 hover:text-accent focus-ring"
+              className="rounded-[6px] border border-border bg-bg px-2 py-1 text-[10px] text-text-mute transition-colors hover:border-border-strong hover:text-text focus-ring disabled:opacity-50"
             >
               {q}
             </button>
           ))}
         </div>
-        <div className="flex gap-2">
+        {error && (
+          <p
+            className="mb-2 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-2.5 py-2 text-[11px] text-text-mute"
+            role="alert"
+          >
+            {error}
+          </p>
+        )}
+        <div className="flex gap-1.5">
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
-            placeholder="e.g. Add a diagram of my selection…"
-            className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute"
+            placeholder="Ask Research AI…"
+            className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-sm focus-ring placeholder:text-text-mute"
           />
           <button
             type="button"
@@ -435,7 +480,7 @@ export function AskPanel({
             className={buttonClass("primary", "sm")}
             aria-label="Send"
           >
-            <ArrowRight size={16} />
+            <ArrowRight size={15} />
           </button>
         </div>
       </div>

@@ -90,7 +90,7 @@ export function TopNav({
           </nav>
         </div>
 
-        <div className="min-w-0 flex-1 px-1 sm:px-2 md:flex md:justify-center">
+        <div className="flex shrink-0 justify-end px-1 sm:px-2 md:justify-center">
           <NavSearch />
         </div>
 
