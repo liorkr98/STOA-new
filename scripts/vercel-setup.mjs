@@ -127,7 +127,7 @@ const ENV_SPECS = [
     required: false,
     targets: ["production", "preview", "development"],
     sensitive: false,
-    defaultValue: "deepseek-v4-pro",
+    defaultValue: "deepseek-v4-flash",
   },
   {
     key: "DEEPSEEK_API_KEY",
