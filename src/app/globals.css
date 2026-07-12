@@ -516,6 +516,60 @@ body {
   }
 }
 
+/* Landing seal stage (21st sketch, Stoa tokens). Seal is the only circle. */
+.landing-hero-seal {
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      var(--surface) 0%,
+      var(--paper) 70%,
+      var(--surface-2) 100%
+    );
+}
+
+.landing-tilt-1 { transform: rotate(-5deg) translateY(-4px); }
+.landing-tilt-2 { transform: rotate(4deg) translateY(2px); }
+.landing-tilt-3 { transform: rotate(-2deg); }
+.landing-tilt-4 { transform: rotate(6deg) translateY(-2px); }
+.landing-tilt-5 { transform: rotate(-3deg) translateY(6px); }
+
+@keyframes landing-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+@keyframes landing-seal-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-float-a {
+    animation: landing-float 7s var(--ease-in-out) infinite alternate;
+  }
+  .landing-float-b {
+    animation: landing-float 9s var(--ease-in-out) infinite alternate;
+    animation-delay: 0.5s;
+  }
+  .landing-float-c {
+    animation: landing-float 8s var(--ease-in-out) infinite alternate;
+    animation-delay: 1s;
+  }
+  .landing-seal-spin {
+    animation: landing-seal-spin 60s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-float-a,
+  .landing-float-b,
+  .landing-float-c,
+  .landing-seal-spin {
+    animation: none;
+  }
+}
+
 /* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
  * never under reading text. Default off; the storefront opts in per-analyst.
  * Removed entirely under reduced motion (it is decoration, not content). */
