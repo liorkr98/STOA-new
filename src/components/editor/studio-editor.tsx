@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle } from "@phosphor-icons/react";
+import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, SquaresFour } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -30,6 +30,16 @@ import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { VisualizeSelectionMenu } from "@/components/editor/tiptap/visualize-selection-menu";
 import { setEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
+import {
+  ReportTemplatePicker,
+  ReportTemplateStrip,
+} from "@/components/editor/tiptap/report-template-picker";
+import {
+  applyReportTemplateToEditor,
+  fetchTemplatePeers,
+  isDocMostlyEmpty,
+} from "@/lib/editor/tiptap/apply-report-template";
+import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -104,6 +114,10 @@ export function StudioEditor({
   });
   const [panelOpen, setPanelOpen] = useState(true);
   const [askOpen, setAskOpen] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [showTemplateStrip, setShowTemplateStrip] = useState(() =>
+    isDocMostlyEmpty(null, initialDoc),
+  );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [captureStatus, setCaptureStatus] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -127,6 +141,7 @@ export function StudioEditor({
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
     latestChangeRef.current = change;
     dirtyRef.current = true;
+    if (change.text.trim().length > 40) setShowTemplateStrip(false);
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     // Debounce parent state so keystrokes don't re-render the editor tree and
     // kill the slash-menu popup mid-open.
@@ -150,6 +165,40 @@ export function StudioEditor({
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
   }, []);
+
+  const applyTemplate = useCallback(
+    async (templateId: string) => {
+      const e = editorRef.current;
+      if (!e) return;
+      const tpl = getTiptapTemplate(templateId);
+      if (!tpl) return;
+
+      const hasContent = !isDocMostlyEmpty(e);
+      if (hasContent) {
+        const ok = window.confirm(
+          `Apply “${tpl.name}”? Your current draft will be kept and the template sections will be appended below.`,
+        );
+        if (!ok) return;
+      }
+
+      const peers = await fetchTemplatePeers(ticker);
+      const applied = applyReportTemplateToEditor(e, templateId, {
+        ticker,
+        peers,
+        mode: hasContent ? "append" : "replace",
+      });
+      if (applied) {
+        setShowTemplateStrip(false);
+        dirtyRef.current = true;
+        const json = e.getJSON();
+        latestChangeRef.current = { json, text: tiptapPlainText(json) };
+        setDocJson(json);
+        setPlainText(latestChangeRef.current.text);
+        toast.success(`${tpl.name} applied`);
+      }
+    },
+    [ticker],
+  );
 
   const getComposeContext = useCallback(() => {
     const e = editorRef.current;
@@ -414,6 +463,15 @@ export function StudioEditor({
               )}
               <button
                 type="button"
+                aria-label="Report templates"
+                onClick={() => setTemplateOpen(true)}
+                className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+              >
+                <SquaresFour size={15} />
+                <span className="hidden sm:inline">Templates</span>
+              </button>
+              <button
+                type="button"
                 aria-label="Ask AI"
                 aria-pressed={askOpen}
                 onClick={() => setAskOpen((o) => !o)}
@@ -489,6 +547,10 @@ export function StudioEditor({
             className="mb-6 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
           />
 
+          {type !== "short_post" && showTemplateStrip && (
+            <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+          )}
+
           {type !== "short_post" && (
             <TiptapEditor
               initialContent={initialDoc}
@@ -562,6 +624,15 @@ export function StudioEditor({
         onInsertNode={insertNode}
         editor={editor}
         getEditorContext={getComposeContext}
+        onApplyTemplate={applyTemplate}
+      />
+
+      <ReportTemplatePicker
+        open={templateOpen}
+        onClose={() => setTemplateOpen(false)}
+        ticker={ticker || undefined}
+        onApply={applyTemplate}
+        anchor="compose"
       />
 
       <LockConfirmModal

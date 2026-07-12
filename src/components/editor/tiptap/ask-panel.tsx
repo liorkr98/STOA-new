@@ -28,10 +28,8 @@ import {
   type ComposeEditorContext,
 } from "@/lib/editor/tiptap/compose-agent";
 import { detectTicker, detectTickers } from "@/lib/editor/tiptap/ticker-detect";
-import {
-  applyTiptapTemplate,
-  TIPTAP_REPORT_TEMPLATES,
-} from "@/lib/editor/tiptap/templates";
+import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
+import { ReportTemplatePicker } from "@/components/editor/tiptap/report-template-picker";
 
 interface ResultCard {
   kind: string;
@@ -175,6 +173,7 @@ export function AskPanel({
   onInsertNode,
   editor,
   getEditorContext,
+  onApplyTemplate,
 }: {
   open: boolean;
   onClose: () => void;
@@ -188,10 +187,12 @@ export function AskPanel({
     title?: string;
     ticker?: string;
   };
+  onApplyTemplate?: (templateId: string) => void | Promise<void>;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [templateOpen, setTemplateOpen] = useState(false);
   const [pending, start] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -204,40 +205,20 @@ export function AskPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
 
-  function applyTemplate(id: string) {
-    if (!editor) return;
-    void (async () => {
-      let peers: string[] = [];
-      const t = context.ticker?.trim().toUpperCase();
-      if (t) {
-        try {
-          const res = await fetch(`/api/market/peers?ticker=${encodeURIComponent(t)}`);
-          if (res.ok) {
-            const data = (await res.json()) as { peers?: string[] };
-            peers = data.peers ?? [];
-          }
-        } catch {
-          peers = [];
-        }
-      }
-      const doc = applyTiptapTemplate(id, context.ticker, peers);
-      if (!doc) return;
-      const empty =
-        editor.state.doc.textContent.trim().length === 0 ||
-        (editor.state.doc.childCount <= 2 && editor.state.doc.textContent.trim().length < 40);
-      if (empty) editor.chain().focus().setContent(doc).run();
-      else if (doc.content) editor.chain().focus().insertContent(doc.content).run();
+  async function applyTemplate(id: string) {
+    if (onApplyTemplate) {
+      await onApplyTemplate(id);
+      const tpl = getTiptapTemplate(id);
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: `Applied “${TIPTAP_REPORT_TEMPLATES.find((x) => x.id === id)?.name ?? id}” scaffold${
-            peers.length ? ` with peers ${peers.slice(0, 3).join(", ")}` : ""
-          }. Fill the placeholders with your analysis.`,
+          content: `Applied “${tpl?.name ?? id}” scaffold. Fill the placeholders with your analysis.`,
           applied: [`Template: ${id}`],
         },
       ]);
-    })();
+      return;
+    }
   }
 
   function send(preset?: string) {
@@ -341,7 +322,7 @@ export function AskPanel({
   }
 
   const quick = [
-    "Apply initiating coverage template",
+    "Apply equity factsheet template",
     "Insert financials and peer comparison",
     "Add a diagram of revenue trend",
   ];
@@ -382,19 +363,19 @@ export function AskPanel({
               <p className="t-eyebrow mb-1.5 flex items-center gap-1 text-[10px]">
                 <FileText size={11} /> Report templates
               </p>
-              <div className="flex flex-col gap-1.5">
-                {TIPTAP_REPORT_TEMPLATES.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => applyTemplate(t.id)}
-                    className="rounded-[var(--radius-btn)] border border-border bg-paper px-3 py-2 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
-                  >
-                    <span className="block text-[12px] font-medium text-text">{t.name}</span>
-                    <span className="block text-[10px] text-text-faint">{t.description}</span>
-                  </button>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setTemplateOpen(true)}
+                className="flex w-full items-center justify-between rounded-[var(--radius-btn)] border border-border bg-paper px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
+              >
+                <span>
+                  <span className="block text-[12px] font-medium text-text">Browse templates</span>
+                  <span className="block text-[10px] text-text-faint">
+                    11 layouts: coverage, factsheet, comps, earnings, and more
+                  </span>
+                </span>
+                <ArrowRight size={14} className="shrink-0 text-text-faint" />
+              </button>
             </div>
           </div>
         )}
@@ -484,6 +465,14 @@ export function AskPanel({
           </button>
         </div>
       </div>
+
+      <ReportTemplatePicker
+        open={templateOpen}
+        onClose={() => setTemplateOpen(false)}
+        ticker={context.ticker}
+        onApply={applyTemplate}
+        anchor="ai"
+      />
     </aside>
   );
 }

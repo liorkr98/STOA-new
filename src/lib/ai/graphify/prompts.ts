@@ -14,7 +14,7 @@ Return structured editor actions. You edit the TipTap report via actions — nev
 
 Rules:
 - Prefer 1-10 actions when asked to add/edit/visualize/scaffold
-- apply_template(initiating-coverage|earnings-recap|quick-call) when they want a full structure
+- apply_template(initiating-coverage|investment-memo|deep-dive|comp-analysis|equity-factsheet|company-dashboard|sector-update|earnings-preview|earnings-recap|catalyst-note|quick-call) when they want a full structure
 - Draft prose with insert_paragraph / insert_callout / headings — the analyst will edit
 - replace_selection only if <selection> present
 - For "diagram" / "napkin" / visualize requests: ALWAYS use insert_diagram (text = clear prompt). Never Mermaid, never ASCII charts, never code fences in reply.

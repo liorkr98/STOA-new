@@ -23,6 +23,10 @@ import {
   loadComposeMarketContext,
   peerSymbolsForBlocks,
 } from "@/lib/ai/compose-market-context";
+import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
+import type { ComposeSkillId } from "@/lib/ai/finance-skills";
+
+type ReportTemplateId = NonNullable<ComposeAgentAction["templateId"]>;
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -40,6 +44,40 @@ function sanitizeHistory(messages: ChatMessage[]): ChatMessage[] {
     .filter((m) => m.content.length > 0);
 }
 
+function resolveTemplateId(userText: string, skill: ComposeSkillId | null): ReportTemplateId | null {
+  const lower = userText.toLowerCase();
+  const explicit = userText.match(/(?:apply|use|load)\s+(?:the\s+)?([a-z-]+)\s+template/i);
+  if (explicit?.[1] && getTiptapTemplate(explicit[1])) return explicit[1] as ReportTemplateId;
+
+  if (/investment\s+memo|deal\s+memo/i.test(lower)) return "investment-memo";
+  if (/deep\s*dive|company\s+profile/i.test(lower)) return "deep-dive";
+  if (/comp\s|comparable|peer\s+multiples/i.test(lower)) return "comp-analysis";
+  if (/factsheet|one[- ]pager|key\s+facts/i.test(lower)) return "equity-factsheet";
+  if (/dashboard|stock\s+report|detailed\s+stock/i.test(lower)) return "company-dashboard";
+  if (/sector\s+update|industry\s+report|sector\s+note/i.test(lower)) return "sector-update";
+  if (/quick\s+call|short\s+note/i.test(lower)) return "quick-call";
+
+  switch (skill) {
+    case "initiating-coverage":
+      return "initiating-coverage";
+    case "earnings-recap":
+      return "earnings-recap";
+    case "earnings-preview":
+      return "earnings-preview";
+    case "catalyst-scan":
+      return "catalyst-note";
+    case "peer-compare":
+      return "comp-analysis";
+    case "company-valuation":
+      return "deep-dive";
+    default:
+      break;
+  }
+
+  if (/template|scaffold|full report|structure my report/i.test(lower)) return "initiating-coverage";
+  return null;
+}
+
 function heuristicActions(
   userText: string,
   ticker?: string,
@@ -51,21 +89,14 @@ function heuristicActions(
   const skill = detectComposeSkill(userText);
   const peerSet = t ? [t, ...peers.filter((p) => p !== t)].slice(0, 4) : peers.slice(0, 4);
 
-  if (skill === "initiating-coverage" || /template|scaffold|full report|structure my report/i.test(lower)) {
+  const templateId = resolveTemplateId(userText, skill);
+  if (templateId) {
     actions.push({
       action: "apply_template",
-      templateId: "initiating-coverage",
+      templateId,
       ticker: t,
       tickers: peerSet.length ? peerSet : undefined,
     });
-    return actions;
-  }
-  if (skill === "earnings-recap") {
-    actions.push({ action: "apply_template", templateId: "earnings-recap", ticker: t });
-    return actions;
-  }
-  if (/quick call|short note/i.test(lower)) {
-    actions.push({ action: "apply_template", templateId: "quick-call", ticker: t });
     return actions;
   }
 
