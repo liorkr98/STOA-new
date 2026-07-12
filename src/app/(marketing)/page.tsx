@@ -29,7 +29,7 @@ export default async function LandingPage() {
   let calls: Awaited<ReturnType<typeof listRecentResolved>> = [];
   let dispatch: DispatchPayload | null = null;
   try {
-    [calls, dispatch] = await Promise.all([listRecentResolved(10), buildDispatch(false)]);
+    [calls, dispatch] = await Promise.all([listRecentResolved(16), buildDispatch(false)]);
   } catch {
     // The landing renders fully without data; sections with nothing to show collapse.
   }
