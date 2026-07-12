@@ -191,9 +191,11 @@ ${preparedContext.selection ? `<selection>${escapePromptTagContent(preparedConte
         usage: mergeUsage(inputTokens, usage),
       });
     } catch (e) {
+      const detail = e instanceof Error ? e.message : "unknown error";
+      console.error("[ai/compose] DeepSeek failed:", detail);
       return NextResponse.json({
-        reply: e instanceof Error ? `AI unavailable: ${e.message}` : "AI unavailable.",
-        actions: [],
+        reply: `AI unavailable: ${detail}. Check DEEPSEEK_API_KEY and DEEPSEEK_MODEL (try deepseek-v4-flash) on Vercel, then redeploy.`,
+        actions: heuristicActions(lastUser, preparedContext.meta.ticker),
         credits_remaining: spend.remaining,
       });
     }

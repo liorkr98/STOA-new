@@ -21,8 +21,46 @@ export interface SearchTicker {
   sim?: number;
 }
 
+async function fallbackSearch(
+  q: string,
+  limit: number,
+): Promise<{ creators: SearchCreator[]; tickers: SearchTicker[] }> {
+  const supabase = await createClient();
+  const safe = q.replace(/[%_,]/g, "").slice(0, 64);
+  if (!safe) return { creators: [], tickers: [] };
+  const like = `%${safe}%`;
+
+  const [{ data: creators }, { data: tickers }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, handle, display_name, avatar_url, score, followers_count")
+      .in("role", ["analyst", "admin"])
+      .or(`handle.ilike.${like},display_name.ilike.${like}`)
+      .order("score", { ascending: false })
+      .limit(limit),
+    supabase
+      .from("tickers")
+      .select("symbol, name, sector")
+      .eq("status", "active")
+      .or(`symbol.ilike.${like},name.ilike.${like}`)
+      .limit(limit),
+  ]);
+
+  return {
+    creators: (creators as SearchCreator[] | null) ?? [],
+    tickers: ((tickers as { symbol: string; name: string; sector: string | null }[] | null) ?? []).map(
+      (t) => ({
+        symbol: t.symbol,
+        company_name: t.name,
+        sector: t.sector,
+        report_count: 0,
+      }),
+    ),
+  };
+}
+
 /**
- * Typeahead search across creators and tickers (pg_trgm). Limit ~5 each.
+ * Typeahead search across creators and tickers (pg_trgm RPC, with ILIKE fallback).
  */
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams.get("q")?.trim() ?? "";
@@ -58,8 +96,13 @@ export async function GET(req: Request) {
         return rest;
       }),
     });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "search failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    try {
+      const fallback = await fallbackSearch(q, limit);
+      return NextResponse.json(fallback);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "search failed";
+      return NextResponse.json({ error: message, creators: [], tickers: [] }, { status: 500 });
+    }
   }
 }

@@ -395,7 +395,6 @@ export function AskPanel({
           </div>
         ))}
         {pending && <p className="t-meta animate-pulse px-1">Thinking…</p>}
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
       </div>
 
       <div className="border-t border-border p-3">
@@ -413,19 +412,27 @@ export function AskPanel({
               type="button"
               onClick={() => send(q)}
               disabled={pending}
-              className="rounded-[var(--radius-btn)] border border-border px-2.5 py-1 text-[11px] text-text-mute transition-colors hover:border-accent/40 hover:text-accent focus-ring"
+              className="rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-[11px] text-text-mute transition-colors hover:border-border-strong hover:text-text focus-ring disabled:opacity-50"
             >
               {q}
             </button>
           ))}
         </div>
+        {error && (
+          <p
+            className="mb-2 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-2.5 py-2 text-[11px] text-text-mute"
+            role="alert"
+          >
+            {error}
+          </p>
+        )}
         <div className="flex gap-2">
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
-            placeholder="e.g. Add a diagram of my selection…"
+            placeholder="Ask Research AI…"
             className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute"
           />
           <button

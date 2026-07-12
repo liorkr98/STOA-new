@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 type CreatorHit = {
@@ -20,13 +20,14 @@ type TickerHit = {
 };
 
 /**
- * Compact center-nav search with typeahead into /api/search.
- * Enter still opens the full /search page.
+ * Center-nav search with typeahead. Always shows a real input (never a
+ * collapsed icon chip) so suggestions and typing stay discoverable.
  */
 export function NavSearch() {
   const router = useRouter();
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,11 +45,18 @@ export function NavSearch() {
     const controller = new AbortController();
     setLoading(true);
     const timer = setTimeout(() => {
-      void fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=5`, {
+      void fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=6`, {
         signal: controller.signal,
       })
-        .then((r) => r.json())
-        .then((data: { creators?: CreatorHit[]; tickers?: TickerHit[] }) => {
+        .then(async (r) => {
+          const data = (await r.json()) as {
+            creators?: CreatorHit[];
+            tickers?: TickerHit[];
+            error?: string;
+          };
+          if (!r.ok && !data.creators && !data.tickers) {
+            throw new Error(data.error ?? "search failed");
+          }
           setCreators(data.creators ?? []);
           setTickers(data.tickers ?? []);
           setOpen(true);
@@ -61,7 +69,7 @@ export function NavSearch() {
           setLoading(false);
           setOpen(true);
         });
-    }, 220);
+    }, 200);
     return () => {
       controller.abort();
       clearTimeout(timer);
@@ -70,17 +78,34 @@ export function NavSearch() {
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        if (q.trim().length >= 2) setOpen(true);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [q]);
+
   const hasHits = creators.length > 0 || tickers.length > 0;
   const showPanel = open && q.trim().length >= 2;
 
   return (
-    <div ref={rootRef} className="relative w-full max-w-[200px] sm:max-w-[280px] md:max-w-[320px]">
+    <div
+      ref={rootRef}
+      className="relative w-full min-w-[10rem] max-w-[22rem] sm:min-w-[14rem] md:mx-auto"
+    >
       <form
         role="search"
         onSubmit={(e) => {
@@ -96,6 +121,7 @@ export function NavSearch() {
           aria-hidden
         />
         <input
+          ref={inputRef}
           name="q"
           type="search"
           role="combobox"
@@ -103,17 +129,37 @@ export function NavSearch() {
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => q.trim().length >= 2 && setOpen(true)}
           onKeyDown={(e) => {
-            if (e.key === "Escape") setOpen(false);
+            if (e.key === "Escape") {
+              setOpen(false);
+              inputRef.current?.blur();
+            }
           }}
-          placeholder="Search"
+          placeholder="Search analysts or tickers"
           aria-label="Search tickers or analysts"
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1.5 pl-9 pr-3 text-sm text-text placeholder:text-text-mute focus-ring"
+          className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-surface py-1.5 pl-9 pr-16 text-sm text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
         />
+        <kbd className="num pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-[var(--r-tag)] border border-border px-1.5 py-0.5 text-[10px] text-text-faint sm:inline">
+          ⌘K
+        </kbd>
+        {q && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setQ("");
+              setOpen(false);
+              inputRef.current?.focus();
+            }}
+            className="absolute right-10 top-1/2 -translate-y-1/2 rounded-[var(--radius-btn)] p-1 text-text-faint hover:text-text focus-ring sm:right-12"
+          >
+            <X size={14} aria-hidden />
+          </button>
+        )}
       </form>
 
       {showPanel && (
@@ -199,3 +245,4 @@ export function NavSearch() {
     </div>
   );
 }
+
