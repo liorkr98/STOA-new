@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DispatchView } from "@/components/dispatch/dispatch-view";
 import { getSessionUserId } from "@/lib/db/auth";
 import { buildDispatch } from "@/lib/dispatch/build-dispatch";
+import { getDispatchVideos } from "@/lib/video/dispatch-videos";
 
 export const metadata: Metadata = {
   title: "Today's Dispatch",
@@ -14,6 +15,14 @@ export default async function PublicDispatchPage() {
   const userId = await getSessionUserId();
   if (userId) redirect("/home");
 
-  const dispatch = await buildDispatch(false);
-  return <DispatchView dispatch={dispatch} mode="public" />;
+  const [dispatch, videos] = await Promise.all([buildDispatch(false), getDispatchVideos()]);
+  return (
+    <DispatchView
+      dispatch={dispatch}
+      mode="public"
+      videoFirst={videos.enabled}
+      videoLead={videos.lead}
+      videoSecondary={videos.secondary}
+    />
+  );
 }

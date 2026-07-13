@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FilterBar } from "@/components/discover/filter-bar";
 import { ReportBlock } from "@/components/discover/report-block";
+import { VideoGrid } from "@/components/video/video-grid";
+import { DiscoverLayoutToggle } from "@/components/discover/layout-toggle";
 import {
   listFeed,
   listFeedFromAnalysts,
@@ -18,6 +20,9 @@ import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { listVideoClipCards, type VideoClipCard } from "@/lib/db/video-clips";
+import { toVideoCardData } from "@/lib/video/card";
+import { isVideoFirstDiscover } from "@/lib/db/feature-flags";
 import { QuickPost } from "@/components/feed/quick-post";
 import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Report } from "@/lib/types";
@@ -46,6 +51,8 @@ interface DiscoverParams {
   ticker?: string;
   status?: string;
   mcap?: string;
+  /** "video" | "text" -- force a layout regardless of the flag. */
+  layout?: string;
 }
 
 function parseFeedFilters(params: DiscoverParams): FeedFilters {
@@ -68,6 +75,26 @@ function parseFeedFilters(params: DiscoverParams): FeedFilters {
   return filters;
 }
 
+/** In-memory filter for the video grid: the same trust-surface filters, applied
+ * to the joined report (market-cap filtering stays text-only). */
+function videoCardMatches(card: VideoClipCard, filters: FeedFilters): boolean {
+  const report = card.report;
+  if (!report) return false;
+  if (filters.type && report.type !== filters.type) return false;
+  if (filters.access && report.access !== filters.access) return false;
+  if (filters.ticker) {
+    const t = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
+    if (t !== filters.ticker) return false;
+  }
+  if (filters.minScore && (report.author?.score ?? 0) < filters.minScore) return false;
+  if (filters.status) {
+    const outcome = report.prediction?.outcome;
+    if (filters.status === "open" && outcome !== "open") return false;
+    if (filters.status === "resolved" && (!outcome || outcome === "open")) return false;
+  }
+  return true;
+}
+
 /** Mosaic span classes: first block leads wide, second stacks beside it, rest tile 3-up. */
 function blockSpan(index: number): string {
   if (index === 0) return "lg:col-span-4";
@@ -87,7 +114,15 @@ export default async function DiscoverPage({
   const filters = parseFeedFilters(params);
   const filtersActive = Object.keys(filters).length > 0;
 
+  // Part 1: video-first layout is flag-gated and reversible. `?layout=video|text`
+  // forces either layout so the legacy feed stays reachable at all times.
+  const flagOn = await isVideoFirstDiscover();
+  const videoFirst =
+    tab !== "researchers" &&
+    (params.layout === "video" || (flagOn && params.layout !== "text"));
+
   let reports: Report[] | undefined;
+  let videos: VideoClipCard[] | undefined;
   let researchers: Awaited<ReturnType<typeof listTopAnalysts>> = [];
   let researcherCounts: Record<string, number> = {};
   let needsAuth = false;
@@ -111,6 +146,24 @@ export default async function DiscoverPage({
         researchers.map(async (a) => [a.id, await resolvedCountByAuthor(a.id)] as const),
       ),
     );
+  } else if (videoFirst) {
+    // Video-led grid. The clip is the anchor; the linked report is the depth.
+    const allCards = await listVideoClipCards(72);
+    let scoped = allCards;
+    if (tab === "following") {
+      if (!userId) needsAuth = true;
+      else {
+        const ids = new Set(await followedAnalystIds(userId));
+        scoped = allCards.filter((c) => c.report && ids.has(c.report.author_id));
+      }
+    } else if (tab === "subscriptions") {
+      if (!userId) needsAuth = true;
+      else {
+        const ids = new Set(await subscribedAnalystIds(userId));
+        scoped = allCards.filter((c) => c.report && ids.has(c.report.author_id));
+      }
+    }
+    videos = needsAuth ? [] : scoped.filter((c) => videoCardMatches(c, filters));
   } else if (tab === "following") {
     if (!userId) needsAuth = true;
     else reports = await listFeedFromAnalysts(await followedAnalystIds(userId), 36, filters);
@@ -133,21 +186,30 @@ export default async function DiscoverPage({
     }
   }
 
+  const videoCards = (videos ?? [])
+    .map(toVideoCardData)
+    .filter((v): v is NonNullable<typeof v> => v != null);
+
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="t-h1">Discover</h1>
-        <p className="t-body mt-1">
-          Browse every published call and report. Your ranked briefing lives on{" "}
-          <Link href="/home" className="text-accent hover:underline">
-            Today
-          </Link>
-          . Guests can read the public{" "}
-          <Link href="/dispatch" className="text-accent hover:underline">
-            dispatch
-          </Link>
-          .
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="t-h1">Discover</h1>
+          <p className="t-body mt-1">
+            Browse every published call and report. Your ranked briefing lives on{" "}
+            <Link href="/home" className="text-accent hover:underline">
+              Today
+            </Link>
+            . Guests can read the public{" "}
+            <Link href="/dispatch" className="text-accent hover:underline">
+              dispatch
+            </Link>
+            .
+          </p>
+        </div>
+        {tab !== "researchers" && (
+          <DiscoverLayoutToggle current={videoFirst ? "video" : "text"} />
+        )}
       </div>
 
       {profile && (profile.role === "analyst" || profile.role === "admin") && (
@@ -193,6 +255,28 @@ export default async function DiscoverPage({
           <EmptyState
             title="No analysts yet"
             body="Once analysts publish and build track records, they will appear here."
+          />
+        )
+      ) : videoFirst ? (
+        videoCards.length > 0 ? (
+          <VideoGrid videos={videoCards} />
+        ) : (
+          <EmptyState
+            icon={<Compass size={32} />}
+            title={filtersActive ? "No videos match these filters" : "No videos yet"}
+            body={
+              filtersActive
+                ? "Loosen a filter, or switch to the text layout to see every report."
+                : "Analysts are still recording. Switch to the text layout to browse every report."
+            }
+            action={
+              <Link
+                href={`/discover?tab=${tab}&layout=text`}
+                className={buttonClass("secondary", "md")}
+              >
+                Switch to text layout
+              </Link>
+            }
           />
         )
       ) : reports && reports.length > 0 ? (

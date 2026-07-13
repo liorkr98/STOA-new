@@ -6,6 +6,7 @@ import type { Plan } from "@/lib/db/plans";
 import type { Report } from "@/lib/types";
 import { ReportAccessEditor } from "@/components/studio/report-access-editor";
 import { PendingReviewTag } from "@/components/ui/tag";
+import { AddVideoButton } from "@/components/video/add-video-button";
 
 export function StudioPublishedList({
   reports,
@@ -26,6 +27,11 @@ export function StudioPublishedList({
           </Link>
           <span className="flex shrink-0 items-center gap-2">
             {r.status === "resolution_pending_review" && <PendingReviewTag />}
+            <AddVideoButton
+              reportId={r.id}
+              reportTitle={r.title || r.summary || "Untitled"}
+              disclosure={{ positionHeld: r.position_held, compensationTied: r.compensation_tied }}
+            />
             <ReportAccessEditor report={r} plans={plans} />
             <span className="t-meta num hidden sm:inline">{compact(r.views)} views</span>
             <span className="t-meta num hidden sm:inline">{compact(r.likes)} likes</span>
