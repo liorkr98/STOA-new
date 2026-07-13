@@ -480,6 +480,9 @@ export function LockPublishPanel({
           <p className="t-meta text-center text-[11px]">{publishDisabledReason}</p>
         )}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+        <p className="t-meta text-center text-[11px] text-text-faint">
+          Once this report is locked, add a short video teaser from your reports in Studio.
+        </p>
       </div>
     </div>
   );

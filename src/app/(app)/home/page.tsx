@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { getSessionUserId } from "@/lib/db/auth";
 import { buildDispatch } from "@/lib/dispatch/build-dispatch";
+import { getDispatchVideos } from "@/lib/video/dispatch-videos";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -14,7 +15,7 @@ export default async function HomePage() {
   const userId = await getSessionUserId();
   if (!userId) redirect("/sign-in?next=/home");
 
-  const dispatch = await buildDispatch(true);
+  const [dispatch, videos] = await Promise.all([buildDispatch(true), getDispatchVideos()]);
   const empty =
     dispatch.personalized &&
     !dispatch.lead &&
@@ -40,5 +41,13 @@ export default async function HomePage() {
     );
   }
 
-  return <DispatchView dispatch={dispatch} mode="home" />;
+  return (
+    <DispatchView
+      dispatch={dispatch}
+      mode="home"
+      videoFirst={videos.enabled}
+      videoLead={videos.lead}
+      videoSecondary={videos.secondary}
+    />
+  );
 }

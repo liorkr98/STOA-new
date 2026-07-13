@@ -8,7 +8,10 @@ import { DispatchLead } from "@/components/dispatch/dispatch-lead";
 import { DispatchLeaderboard } from "@/components/dispatch/dispatch-leaderboard";
 import { DispatchLedger } from "@/components/dispatch/dispatch-ledger";
 import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
+import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
+import { VideoGrid } from "@/components/video/video-grid";
 import type { DispatchPayload, DispatchStory, DispatchViewMode } from "@/lib/dispatch/types";
+import type { VideoCardData } from "@/lib/video/card-data";
 
 function splitColumns(dispatch: DispatchPayload): {
   research: DispatchStory[];
@@ -36,12 +39,19 @@ function splitColumns(dispatch: DispatchPayload): {
 export function DispatchView({
   dispatch,
   mode,
+  videoFirst = false,
+  videoLead = null,
+  videoSecondary = [],
 }: {
   dispatch: DispatchPayload;
   mode: DispatchViewMode;
+  videoFirst?: boolean;
+  videoLead?: VideoCardData | null;
+  videoSecondary?: VideoCardData[];
 }) {
   const { personalized, cycle } = dispatch;
   const isHome = mode === "home";
+  const useVideoLead = videoFirst && Boolean(videoLead);
   const hasStories =
     Boolean(dispatch.lead) ||
     dispatch.secondary.length > 0 ||
@@ -119,7 +129,11 @@ export function DispatchView({
         </p>
       ) : null}
 
-      {dispatch.lead ? (
+      {useVideoLead && videoLead ? (
+        <div className="mt-10">
+          <DispatchVideoLead data={videoLead} />
+        </div>
+      ) : dispatch.lead ? (
         <div className="mt-10">
           <DispatchLead story={dispatch.lead} align="start" />
         </div>
@@ -128,6 +142,15 @@ export function DispatchView({
           No lead story in this cycle yet. Check back as analysts publish.
         </p>
       )}
+
+      {videoFirst && videoSecondary.length > 0 ? (
+        <section className="dispatch-section" aria-label="More on video">
+          <div className="dispatch-kicker mb-6">
+            <span>On video</span>
+          </div>
+          <VideoGrid videos={videoSecondary} />
+        </section>
+      ) : null}
 
       <DispatchIssueColumns
         research={columns.research}
