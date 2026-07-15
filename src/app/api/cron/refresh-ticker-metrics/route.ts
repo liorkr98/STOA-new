@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { refreshTickerMetrics } from "@/lib/engine/refresh-ticker-metrics";
 import { isAuthorizedCron } from "@/lib/cron/auth";
+import { alertCronResult } from "@/lib/slack/alerts";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -26,6 +27,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     const message = e instanceof Error ? e.message : "metrics refresh failed";
+
+    await alertCronResult({ job: "refresh-ticker-metrics", ok: false, error: message });
+
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

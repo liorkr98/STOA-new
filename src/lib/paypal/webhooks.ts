@@ -10,6 +10,7 @@
 
 import { paypalFetch } from "./client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { alertCreatorPaypalOnboarded, alertReportPurchase } from "@/lib/slack/alerts";
 
 export interface PayPalHeaders {
   transmissionId: string;
@@ -89,6 +90,21 @@ export async function handlePayPalEvent(event: PayPalEvent): Promise<void> {
         p_payments_receivable: resource.payments_receivable ?? false,
         p_primary_email_confirmed: resource.primary_email_confirmed ?? false,
       });
+
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("display_name, handle")
+        .eq("id", account.user_id)
+        .single();
+
+      if (profile) {
+        await alertCreatorPaypalOnboarded({
+          displayName: profile.display_name,
+          handle: profile.handle,
+          paymentsReceivable: resource.payments_receivable ?? false,
+          emailConfirmed: resource.primary_email_confirmed ?? false,
+        });
+      }
       break;
     }
 
@@ -107,8 +123,14 @@ export async function handlePayPalEvent(event: PayPalEvent): Promise<void> {
         Number.parseFloat(resource.seller_receivable_breakdown?.platform_fees?.[0]?.amount.value ?? "0") * 100,
       );
 
-      const { data: report } = await admin.from("reports").select("author_id").eq("id", reportId).single();
+      const { data: report } = await admin
+        .from("reports")
+        .select("author_id, title")
+        .eq("id", reportId)
+        .single();
       if (!report) break;
+
+      const netAmountCents = grossAmountCents - platformFeeCents;
 
       await admin.from("platform_transfers").insert({
         creator_id: report.author_id,
@@ -116,10 +138,29 @@ export async function handlePayPalEvent(event: PayPalEvent): Promise<void> {
         source_id: reportId,
         gross_amount_cents: grossAmountCents,
         platform_fee_cents: platformFeeCents,
-        net_amount_cents: grossAmountCents - platformFeeCents,
+        net_amount_cents: netAmountCents,
         provider: "paypal",
         provider_transfer_id: resource.id,
       });
+
+      const { data: author } = await admin
+        .from("profiles")
+        .select("display_name, handle")
+        .eq("id", report.author_id)
+        .single();
+
+      if (author) {
+        await alertReportPurchase({
+          reportId,
+          reportTitle: report.title,
+          analystName: author.display_name,
+          analystHandle: author.handle,
+          grossCents: grossAmountCents,
+          platformFeeCents,
+          netCents: netAmountCents,
+          providerTransferId: resource.id,
+        });
+      }
       break;
     }
 

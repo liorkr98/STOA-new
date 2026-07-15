@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature, handlePayPalEvent, type PayPalEvent } from "@/lib/paypal/webhooks";
+import { alertPaypalWebhookError } from "@/lib/slack/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,15 @@ export async function POST(request: Request) {
     await handlePayPalEvent(event);
     return NextResponse.json({ received: true });
   } catch (e) {
-    // PayPal retries on non-2xx, so log and 500 rather than swallowing failures.
+    const message = e instanceof Error ? e.message : "Handler failed";
     console.error("paypal webhook handler failed", event.event_type, e);
+
+    await alertPaypalWebhookError({
+      eventType: event.event_type,
+      eventId: event.id,
+      error: message,
+    });
+
     return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
 }

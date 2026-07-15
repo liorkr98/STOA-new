@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { alertAnalystApplication } from "@/lib/slack/alerts";
 
 import type { ProfileConfig } from "@/lib/editor/types";
 import { checkAccent } from "@/lib/profile/accent";
@@ -48,14 +49,31 @@ export async function submitAnalystApplication(formData: FormData) {
     throw new Error("Please fill in all required fields");
   }
 
-  const { error } = await supabase
+  const { data: application, error } = await supabase
     .from("analyst_applications")
     .upsert(
       { user_id: userId, why_analyst, background, coverage_areas, sample_thesis, linkedin_url, status: "pending", submitted_at: new Date().toISOString() },
       { onConflict: "user_id" }
-    );
+    )
+    .select("id")
+    .single();
 
   if (error) throw new Error(error.message);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, handle")
+    .eq("id", userId)
+    .single();
+
+  if (application && profile) {
+    await alertAnalystApplication({
+      applicationId: application.id,
+      displayName: profile.display_name,
+      handle: profile.handle,
+      coverageAreas: coverage_areas,
+    });
+  }
 
   revalidatePath("/become-analyst");
   redirect("/become-analyst?submitted=1");
