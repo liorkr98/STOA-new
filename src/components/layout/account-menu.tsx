@@ -11,6 +11,7 @@ import {
   User,
   Wallet,
   LineChart,
+  Mail,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -56,7 +57,10 @@ export function AccountMenu({ profile }: { profile: Profile }) {
         ]
       : [{ href: "/become-analyst", label: "Apply to publish", icon: LineChart }]),
     ...(isAdmin
-      ? [{ href: "/admin/applications", label: "Review applications", icon: Users }]
+      ? [
+          { href: "/admin/applications", label: "Review applications", icon: Users },
+          { href: "/admin/contact", label: "Customer contact", icon: Mail },
+        ]
       : []),
     { href: "/wallet", label: "Wallet & credits", icon: Wallet },
     { href: "/saved", label: "Saved", icon: Bookmark },
