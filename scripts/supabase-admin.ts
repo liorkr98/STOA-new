@@ -10,7 +10,7 @@ if (!url || !key) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SER
 const db = createClient(url, key, { auth: { persistSession: false } });
 
 async function checkTables() {
-  const tables = ["tickers", "processed_webhook_events", "api_rate_limits", "analyst_applications"];
+  const tables = ["tickers", "processed_webhook_events", "api_rate_limits", "analyst_applications", "contact_messages"];
   for (const t of tables) {
     const { error } = await db.from(t).select("*").limit(1);
     console.log(`${t}: ${error ? `MISSING — ${error.message}` : "OK"}`);

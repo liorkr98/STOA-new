@@ -40,7 +40,11 @@ export default function AccessibilityPage() {
       <section>
         <h2 className="t-h3">Report an issue</h2>
         <p className="t-body mt-2 text-text-mute">
-          If you encounter a barrier on Stoa, contact us at{" "}
+          If you encounter a barrier on Stoa, use our{" "}
+          <Link href="/contact?topic=accessibility" className="text-accent underline">
+            contact form
+          </Link>{" "}
+          or email{" "}
           <a href="mailto:accessibility@stoa.app" className="text-accent underline">
             accessibility@stoa.app
           </a>{" "}
