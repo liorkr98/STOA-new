@@ -15,6 +15,7 @@ import {
   analyzeChartBody,
   validateChartScreenshotUrls,
 } from "@/lib/reports/chart-screenshots";
+import { alertReportPublished } from "@/lib/slack/alerts";
 import type { ComposeInput } from "@/lib/types";
 
 export class PublishReportError extends Error {
@@ -97,6 +98,15 @@ export async function validateAndPublishReport(
   }
 
   const reportId = await saveDraftBody(supabase, userId, input);
+
+  const [{ count: priorPublishCount }, { data: authorProfile }] = await Promise.all([
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", userId)
+      .in("status", ["published", "resolution_pending_review"]),
+    supabase.from("profiles").select("display_name, handle").eq("id", userId).maybeSingle(),
+  ]);
 
   const chartStats = analyzeChartBody(input.body);
   const urlError = validateChartScreenshotUrls(chartStats.screenshotUrls, userId, reportId);
@@ -224,6 +234,22 @@ export async function validateAndPublishReport(
     await supabase.rpc("notify_publication", { p_report_id: reportId });
   } catch {
     // non-critical
+  }
+
+  if (authorProfile) {
+    try {
+      await alertReportPublished({
+        reportId,
+        title: input.title ?? "Untitled",
+        type: input.type,
+        ticker: input.ticker ? input.ticker.toUpperCase() : null,
+        analystName: authorProfile.display_name,
+        analystHandle: authorProfile.handle,
+        isFirstPublish: (priorPublishCount ?? 0) === 0,
+      });
+    } catch {
+      // non-critical
+    }
   }
 
   return { id: reportId };

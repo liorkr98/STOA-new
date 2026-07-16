@@ -1,7 +1,6 @@
 import {
   adminUrl,
   formatUsd,
-  notifySlack,
   slackActions,
   slackButton,
   slackContext,
@@ -10,19 +9,28 @@ import {
   slackText,
   truncate,
 } from "./notify";
+import { dispatchAlert } from "./dispatch";
 
-export async function alertCustomerContact(payload: {
-  id: string;
-  name: string;
-  email: string;
-  topic: string;
-  subject: string;
-  message: string;
-  submittedAt: string;
-}) {
-  await notifySlack({
-    channel: "support",
+type AlertOpts = { forceImmediate?: boolean };
+
+export async function alertCustomerContact(
+  payload: {
+    id: string;
+    name: string;
+    email: string;
+    topic: string;
+    subject: string;
+    message: string;
+    submittedAt: string;
+  },
+  opts?: AlertOpts,
+) {
+  await dispatchAlert(
+    {
+    alertKey: "customer_contact",
     text: `New customer contact from ${payload.name}`,
+    digestSummary: `${payload.name} (${payload.topic})`,
+    digestDetail: payload,
     blocks: [
       slackHeader("New customer contact"),
       slackFields([
@@ -37,18 +45,26 @@ export async function alertCustomerContact(payload: {
       ),
       slackActions([slackButton("Open in Stoa", adminUrl(`/admin/contact?id=${payload.id}`))]),
     ],
-  });
+    },
+    opts,
+  );
 }
 
-export async function alertAnalystApplication(payload: {
-  applicationId: string;
-  displayName: string;
-  handle: string;
-  coverageAreas: string;
-}) {
-  await notifySlack({
-    channel: "customers-ops",
+export async function alertAnalystApplication(
+  payload: {
+    applicationId: string;
+    displayName: string;
+    handle: string;
+    coverageAreas: string;
+  },
+  opts?: AlertOpts,
+) {
+  await dispatchAlert(
+    {
+      alertKey: "analyst_application",
     text: `New analyst application from ${payload.displayName}`,
+    digestSummary: `${payload.displayName} (@${payload.handle})`,
+    digestDetail: payload,
     blocks: [
       slackHeader("New analyst application"),
       slackFields([
@@ -58,22 +74,30 @@ export async function alertAnalystApplication(payload: {
       ]),
       slackActions([slackButton("Review application", adminUrl("/admin/applications"))]),
     ],
-  });
+    },
+    opts,
+  );
 }
 
-export async function alertReportPurchase(payload: {
-  reportId: string;
-  reportTitle: string;
-  analystName: string;
-  analystHandle: string;
-  grossCents: number;
-  platformFeeCents: number;
-  netCents: number;
-  providerTransferId: string;
-}) {
-  await notifySlack({
-    channel: "revenue",
+export async function alertReportPurchase(
+  payload: {
+    reportId: string;
+    reportTitle: string;
+    analystName: string;
+    analystHandle: string;
+    grossCents: number;
+    platformFeeCents: number;
+    netCents: number;
+    providerTransferId: string;
+  },
+  opts?: AlertOpts,
+) {
+  await dispatchAlert(
+    {
+      alertKey: "report_purchase",
     text: `Report purchase: ${formatUsd(payload.grossCents)} from ${payload.analystName}`,
+    digestSummary: `${formatUsd(payload.grossCents)} — ${payload.analystName}: ${truncate(payload.reportTitle, 80)}`,
+    digestDetail: payload,
     blocks: [
       slackHeader("Report purchased"),
       slackFields([
@@ -86,18 +110,26 @@ export async function alertReportPurchase(payload: {
       slackContext(`PayPal capture ${payload.providerTransferId}`),
       slackActions([slackButton("View report", adminUrl(`/report/${payload.reportId}`))]),
     ],
-  });
+    },
+    opts,
+  );
 }
 
-export async function alertCreatorPaypalOnboarded(payload: {
-  displayName: string;
-  handle: string;
-  paymentsReceivable: boolean;
-  emailConfirmed: boolean;
-}) {
-  await notifySlack({
-    channel: "revenue",
+export async function alertCreatorPaypalOnboarded(
+  payload: {
+    displayName: string;
+    handle: string;
+    paymentsReceivable: boolean;
+    emailConfirmed: boolean;
+  },
+  opts?: AlertOpts,
+) {
+  await dispatchAlert(
+    {
+      alertKey: "creator_paypal_onboarded",
     text: `Creator PayPal connected: ${payload.displayName}`,
+    digestSummary: `${payload.displayName} (@${payload.handle}) connected PayPal`,
+    digestDetail: payload,
     blocks: [
       slackHeader("Creator PayPal connected"),
       slackFields([
@@ -107,7 +139,9 @@ export async function alertCreatorPaypalOnboarded(payload: {
       ]),
       slackActions([slackButton("View profile", adminUrl(`/analyst/${payload.handle}`))]),
     ],
-  });
+    },
+    opts,
+  );
 }
 
 export async function alertCronResult(payload: {
@@ -116,7 +150,7 @@ export async function alertCronResult(payload: {
   summary?: Record<string, unknown> | object;
   error?: string;
 }) {
-  const channel = payload.ok ? "ops" : "bugs";
+  const alertKey = payload.ok ? "cron_success" : "cron_failure";
   const title = payload.ok ? `${payload.job} succeeded` : `${payload.job} failed`;
   const blocks = [
     slackHeader(title),
@@ -127,9 +161,11 @@ export async function alertCronResult(payload: {
     slackContext(new Date().toISOString()),
   ];
 
-  await notifySlack({
-    channel,
+  await dispatchAlert({
+    alertKey,
     text: title,
+    digestSummary: title,
+    digestDetail: payload,
     blocks,
   });
 }
@@ -139,9 +175,11 @@ export async function alertPaypalWebhookError(payload: {
   eventId: string;
   error: string;
 }) {
-  await notifySlack({
-    channel: "bugs",
+  await dispatchAlert({
+    alertKey: "paypal_webhook_error",
     text: `PayPal webhook failed: ${payload.eventType}`,
+    digestSummary: `${payload.eventType}: ${truncate(payload.error, 120)}`,
+    digestDetail: payload,
     blocks: [
       slackHeader("PayPal webhook error"),
       slackFields([
@@ -151,4 +189,70 @@ export async function alertPaypalWebhookError(payload: {
       slackText(`*Error:*\n${truncate(payload.error, 1200)}`),
     ],
   });
+}
+
+export async function alertNewSignup(
+  payload: {
+    userId: string;
+    email: string;
+    displayName: string;
+    handle: string;
+  },
+  opts?: AlertOpts,
+) {
+  await dispatchAlert(
+    {
+      alertKey: "new_signup",
+    text: `New signup: ${payload.displayName}`,
+    digestSummary: `${payload.displayName} (@${payload.handle})`,
+    digestDetail: payload,
+    blocks: [
+      slackHeader("New signup"),
+      slackFields([
+        { label: "Name", value: payload.displayName },
+        { label: "Handle", value: `@${payload.handle}` },
+        { label: "Email", value: payload.email },
+      ]),
+      slackActions([slackButton("View profile", adminUrl(`/analyst/${payload.handle}`))]),
+    ],
+    },
+    opts,
+  );
+}
+
+export async function alertReportPublished(
+  payload: {
+    reportId: string;
+    title: string;
+    type: string;
+    ticker: string | null;
+    analystName: string;
+    analystHandle: string;
+    isFirstPublish: boolean;
+  },
+  opts?: AlertOpts,
+) {
+  const headline = payload.isFirstPublish ? "Analyst first publish" : "New publish";
+  await dispatchAlert(
+    {
+      alertKey: "report_published",
+    text: `${headline}: ${payload.analystName}`,
+    digestSummary: `${payload.analystName}: ${truncate(payload.title || "Untitled", 80)}`,
+    digestDetail: payload,
+    blocks: [
+      slackHeader(headline),
+      slackFields([
+        { label: "Analyst", value: `${payload.analystName} (@${payload.analystHandle})` },
+        { label: "Type", value: payload.type },
+        ...(payload.ticker ? [{ label: "Ticker", value: payload.ticker }] : []),
+      ]),
+      slackText(`*Title:* ${truncate(payload.title || "Untitled", 200)}`),
+      slackActions([
+        slackButton("View report", adminUrl(`/report/${payload.reportId}`)),
+        slackButton("Analyst profile", adminUrl(`/analyst/${payload.analystHandle}`)),
+      ]),
+    ],
+    },
+    opts,
+  );
 }

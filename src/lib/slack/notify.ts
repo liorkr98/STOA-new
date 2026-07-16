@@ -9,7 +9,7 @@ export type SlackNotifyInput = {
 };
 
 export function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://stoa.app";
+  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://www.stoamarket.ai";
 }
 
 export function adminUrl(path: string): string {

@@ -4,7 +4,24 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { notifySlack, type SlackBlock } from "@/lib/slack/notify";
 import { webhookUrlForChannel, type SlackChannel } from "@/lib/slack/channels";
+import { runAllAlertTests, type AlertTestResult } from "@/lib/slack/alert-tests";
+import { sendDailyDigests, sendDigestPreview } from "@/lib/slack/digest";
+import {
+  ALERT_DEFINITIONS,
+  type AlertDelivery,
+  type AlertKey,
+  definitionForKey,
+} from "@/lib/slack/settings";
+import { listAlertSettings, updateAlertSetting } from "@/lib/db/slack-alerts";
 import * as Sentry from "@sentry/nextjs";
+
+export type AlertSettingView = {
+  alertKey: AlertKey;
+  label: string;
+  description: string;
+  channel: SlackChannel;
+  delivery: AlertDelivery;
+};
 
 const CHANNELS: SlackChannel[] = [
   "support",
@@ -40,8 +57,12 @@ export type IntegrationChannelStatus = {
 export async function getIntegrationStatus(): Promise<{
   sentry: { dsnConfigured: boolean };
   slack: IntegrationChannelStatus[];
+  alertSettings: AlertSettingView[];
 }> {
   await requireAdmin();
+
+  const settings = await listAlertSettings();
+  const deliveryByKey = new Map(settings.map((s) => [s.alertKey, s.delivery]));
 
   return {
     sentry: {
@@ -54,7 +75,35 @@ export async function getIntegrationStatus(): Promise<{
       configured: Boolean(webhookUrlForChannel(channel)),
       ok: false,
     })),
+    alertSettings: ALERT_DEFINITIONS.map((def) => ({
+      alertKey: def.key,
+      label: def.label,
+      description: def.description,
+      channel: def.channel,
+      delivery: deliveryByKey.get(def.key) ?? def.defaultDelivery,
+    })),
   };
+}
+
+export async function updateAlertDeliverySetting(
+  alertKey: AlertKey,
+  delivery: AlertDelivery,
+): Promise<void> {
+  await requireAdmin();
+  definitionForKey(alertKey);
+  await updateAlertSetting(alertKey, delivery);
+  revalidatePath("/admin/integrations");
+}
+
+export async function testDigestPreview(channel: SlackChannel): Promise<{ count: number }> {
+  await requireAdmin();
+  return sendDigestPreview(channel);
+}
+
+export async function sendDigestNow(): Promise<void> {
+  await requireAdmin();
+  await sendDailyDigests();
+  revalidatePath("/admin/integrations");
 }
 
 export async function testSlackChannel(channel: SlackChannel): Promise<{ ok: boolean }> {
@@ -119,4 +168,25 @@ export async function testSentry(): Promise<{ ok: boolean }> {
 
   await Sentry.flush(2000);
   return { ok: true };
+}
+
+export async function testSentryError(): Promise<{ ok: boolean }> {
+  await requireAdmin();
+
+  const dsn = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN;
+  if (!dsn?.trim()) throw new Error("Sentry DSN is not configured");
+
+  Sentry.captureException(new Error("Stoa admin Sentry error test from /admin/integrations"), {
+    tags: { source: "admin-integrations", test: "true" },
+  });
+
+  await Sentry.flush(2000);
+  return { ok: true };
+}
+
+export async function testAllAlerts(): Promise<AlertTestResult[]> {
+  await requireAdmin();
+  const results = await runAllAlertTests();
+  revalidatePath("/admin/integrations");
+  return results;
 }

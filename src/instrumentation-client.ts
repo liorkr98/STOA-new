@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { sentryBeforeSend } from "@/lib/sentry/before-send";
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN;
 
@@ -9,6 +10,7 @@ Sentry.init({
   integrations: [Sentry.replayIntegration()],
   replaysSessionSampleRate: 0.05,
   replaysOnErrorSampleRate: 1.0,
+  beforeSend: sentryBeforeSend,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

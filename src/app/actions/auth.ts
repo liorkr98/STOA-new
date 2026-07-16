@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
 import { getConsentRedirectPath, recordSignupCompliance } from "@/app/actions/consent";
+import { alertNewSignup } from "@/lib/slack/alerts";
 
 /** New investors without interests go to onboarding; everyone else to Today. */
 async function postAuthPath(
@@ -106,6 +107,21 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
           .eq("id", data.user.id)
           .is("referred_by", null);
       }
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, handle")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (profile) {
+      await alertNewSignup({
+        userId: data.user.id,
+        email,
+        displayName: profile.display_name,
+        handle: profile.handle,
+      });
     }
 
     redirect(await postAuthPath(supabase, data.user.id));
