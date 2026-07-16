@@ -32,6 +32,7 @@ export default async function AdminIntegrationsPage() {
           initialSlack={status.slack}
           initialAlertSettings={status.alertSettings}
           sentryConfigured={status.sentry.dsnConfigured}
+          slackBot={status.slackBot}
         />
       </div>
     </div>
