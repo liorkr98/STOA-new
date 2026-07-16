@@ -19,20 +19,7 @@ type SlackEnvelope = {
 };
 
 export async function POST(request: Request) {
-  const signingSecret = process.env.SLACK_SIGNING_SECRET?.trim();
   const rawBody = await request.text();
-
-  if (signingSecret) {
-    const ok = verifySlackRequestSignature(
-      signingSecret,
-      rawBody,
-      request.headers.get("x-slack-request-timestamp"),
-      request.headers.get("x-slack-signature"),
-    );
-    if (!ok) {
-      return NextResponse.json({ error: "invalid signature" }, { status: 401 });
-    }
-  }
 
   let body: SlackEnvelope;
   try {
@@ -43,6 +30,19 @@ export async function POST(request: Request) {
 
   if (body.type === "url_verification" && body.challenge) {
     return NextResponse.json({ challenge: body.challenge });
+  }
+
+  const signingSecret = process.env.SLACK_SIGNING_SECRET?.trim();
+  if (signingSecret) {
+    const ok = verifySlackRequestSignature(
+      signingSecret,
+      rawBody,
+      request.headers.get("x-slack-request-timestamp"),
+      request.headers.get("x-slack-signature"),
+    );
+    if (!ok) {
+      return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+    }
   }
 
   if (body.type === "event_callback" && body.event) {
