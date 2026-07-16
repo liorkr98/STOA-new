@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { handleBugsChannelMessage } from "@/lib/slack/bug-handler";
-import { postSlackChannelMessage, slackBugsChannelId, slackBotToken } from "@/lib/slack/bot-reply";
+import { postSlackChannelMessage, slackBugsChannelId } from "@/lib/slack/bot-reply";
+import { diagnoseSlackBot, ensureBotInBugsChannel, type SlackBotDiagnostics } from "@/lib/slack/diagnostics";
 import { notifySlack, type SlackBlock } from "@/lib/slack/notify";
 import { webhookUrlForChannel, type SlackChannel } from "@/lib/slack/channels";
 import { runAllAlertTests, type AlertTestResult } from "@/lib/slack/alert-tests";
@@ -56,13 +57,11 @@ export type IntegrationChannelStatus = {
   ok: boolean;
 };
 
+export type { SlackBotDiagnostics };
+
 export async function getIntegrationStatus(): Promise<{
   sentry: { dsnConfigured: boolean };
-  slackBot: {
-    tokenConfigured: boolean;
-    signingSecretConfigured: boolean;
-    bugsChannelId: string;
-  };
+  slackBot: SlackBotDiagnostics;
   slack: IntegrationChannelStatus[];
   alertSettings: AlertSettingView[];
 }> {
@@ -70,6 +69,7 @@ export async function getIntegrationStatus(): Promise<{
 
   const settings = await listAlertSettings();
   const deliveryByKey = new Map(settings.map((s) => [s.alertKey, s.delivery]));
+  const slackBot = await diagnoseSlackBot();
 
   return {
     sentry: {
@@ -77,11 +77,7 @@ export async function getIntegrationStatus(): Promise<{
         process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || process.env.SENTRY_DSN?.trim(),
       ),
     },
-    slackBot: {
-      tokenConfigured: Boolean(slackBotToken()),
-      signingSecretConfigured: Boolean(process.env.SLACK_SIGNING_SECRET?.trim()),
-      bugsChannelId: slackBugsChannelId(),
-    },
+    slackBot,
     slack: CHANNELS.map((channel) => ({
       channel,
       configured: Boolean(webhookUrlForChannel(channel)),
@@ -170,8 +166,9 @@ export async function testAllSlackChannels(): Promise<IntegrationChannelStatus[]
 export async function testSlackBot(): Promise<{ ok: boolean }> {
   await requireAdmin();
 
-  if (!slackBotToken()) {
-    throw new Error("SLACK_BOT_TOKEN is not configured in Vercel");
+  const joined = await ensureBotInBugsChannel();
+  if (!joined.ok) {
+    throw new Error(joined.error ?? "STOA bot is not in #bugs");
   }
 
   const channelId = slackBugsChannelId();
@@ -180,7 +177,11 @@ export async function testSlackBot(): Promise<{ ok: boolean }> {
 
   const posted = await postSlackChannelMessage({ channelId, text: alertText });
   if (!posted.ok) {
-    throw new Error(posted.error ?? "STOA bot could not post to #bugs");
+    throw new Error(
+      posted.error === "not_in_channel"
+        ? "STOA bot is not in #bugs. Run /invite @STOA in the channel, then retry."
+        : (posted.error ?? "STOA bot could not post to #bugs"),
+    );
   }
 
   await handleBugsChannelMessage({

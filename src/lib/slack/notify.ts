@@ -1,4 +1,6 @@
 import { webhookUrlForChannel, type SlackChannel } from "./channels";
+import { handleBugsChannelMessage } from "./bug-handler";
+import { postSlackChannelMessage, slackBotToken, slackBugsChannelId } from "./bot-reply";
 
 export type SlackBlock = Record<string, unknown>;
 
@@ -79,6 +81,26 @@ export function slackActions(buttons: SlackBlock[]): SlackBlock {
 }
 
 export async function notifySlack(input: SlackNotifyInput): Promise<boolean> {
+  if (input.channel === "bugs" && slackBotToken()) {
+    const channelId = slackBugsChannelId();
+    const posted = await postSlackChannelMessage({
+      channelId,
+      text: input.text,
+      blocks: input.blocks,
+    });
+
+    if (posted.ok) {
+      void handleBugsChannelMessage({
+        type: "message",
+        subtype: "bot_message",
+        channel: channelId,
+        text: input.text,
+        ts: posted.ts,
+      }).catch(() => null);
+      return true;
+    }
+  }
+
   const webhookUrl = webhookUrlForChannel(input.channel);
   if (!webhookUrl) return false;
 

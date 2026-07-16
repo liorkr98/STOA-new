@@ -12,7 +12,7 @@ import {
   testSlackChannel,
   updateAlertDeliverySetting,
 } from "@/app/actions/integrations";
-import type { AlertSettingView, IntegrationChannelStatus } from "@/app/actions/integrations";
+import type { AlertSettingView, IntegrationChannelStatus, SlackBotDiagnostics } from "@/app/actions/integrations";
 import type { SlackChannel } from "@/lib/slack/channels";
 import type { AlertDelivery } from "@/lib/slack/settings";
 import type { AlertTestResult } from "@/lib/slack/alert-tests";
@@ -27,11 +27,7 @@ export function IntegrationsPanel({
   initialSlack: IntegrationChannelStatus[];
   initialAlertSettings: AlertSettingView[];
   sentryConfigured: boolean;
-  slackBot: {
-    tokenConfigured: boolean;
-    signingSecretConfigured: boolean;
-    bugsChannelId: string;
-  };
+  slackBot: SlackBotDiagnostics;
 }) {
   const [slack, setSlack] = useState(initialSlack);
   const [alertSettings, setAlertSettings] = useState(initialAlertSettings);
@@ -202,10 +198,16 @@ export function IntegrationsPanel({
             Bot token:{" "}
             <span
               className={
-                slackBot.tokenConfigured ? "text-[var(--verdigris)]" : "text-[var(--rust)]"
+                slackBot.tokenConfigured && slackBot.authOk
+                  ? "text-[var(--verdigris)]"
+                  : "text-[var(--rust)]"
               }
             >
-              {slackBot.tokenConfigured ? "configured" : "missing"}
+              {slackBot.tokenConfigured
+                ? slackBot.authOk
+                  ? `valid (${slackBot.botName ?? "bot"})`
+                  : "invalid"
+                : "missing"}
             </span>
           </li>
           <li>
@@ -221,14 +223,27 @@ export function IntegrationsPanel({
             </span>
           </li>
           <li>
+            In #bugs:{" "}
+            <span
+              className={
+                slackBot.inBugsChannel ? "text-[var(--verdigris)]" : "text-[var(--rust)]"
+              }
+            >
+              {slackBot.inBugsChannel ? "yes" : "no — run /invite @STOA"}
+            </span>
+          </li>
+          <li>
             Bugs channel ID: <code className="font-mono text-xs">{slackBot.bugsChannelId}</code>
           </li>
+          {slackBot.error && (
+            <li className="text-[var(--rust)]">Slack API: {slackBot.error}</li>
+          )}
         </ul>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
             variant="secondary"
-            disabled={!slackBot.tokenConfigured || pending}
+            disabled={!slackBot.tokenConfigured || !slackBot.authOk || pending}
             onClick={() =>
               run(
                 () => testSlackBot(),
