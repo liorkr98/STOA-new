@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { handleBugsChannelMessage } from "@/lib/slack/bug-handler";
 import { verifySlackRequestSignature } from "@/lib/slack/verify-signature";
 
@@ -46,7 +47,16 @@ export async function POST(request: Request) {
   }
 
   if (body.type === "event_callback" && body.event) {
-    void handleBugsChannelMessage(body.event).catch(() => null);
+    void handleBugsChannelMessage(body.event).catch((error) => {
+      Sentry.captureException(error, {
+        tags: { source: "slack-events-webhook" },
+        extra: {
+          eventType: body.event?.type,
+          channel: body.event?.channel,
+          subtype: body.event?.subtype,
+        },
+      });
+    });
   }
 
   return NextResponse.json({ ok: true });

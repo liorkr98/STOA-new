@@ -1,5 +1,6 @@
 import "server-only";
 
+import * as Sentry from "@sentry/nextjs";
 import { findBugThread, insertBugThread, markBugThreadFixed } from "@/lib/db/slack-bugs";
 import { replyInSlackThread, slackBugsChannelId } from "./bot-reply";
 
@@ -42,21 +43,31 @@ export async function handleBugsChannelMessage(event: SlackMessageEvent): Promis
 
   const sentryUrl = extractSentryIssueUrl(event.text ?? "");
 
-  const existing = await findBugThread(event.channel, event.ts);
+  const existing = await findBugThread(event.channel, event.ts).catch((error) => {
+    Sentry.captureException(error, { tags: { source: "slack-bug-handler", step: "find" } });
+    return null;
+  });
   if (existing) return;
 
-  await insertBugThread({
-    channelId: event.channel,
-    messageTs: event.ts,
-    sentryIssueUrl: sentryUrl,
-    messagePreview: (event.text ?? "").slice(0, 500),
-  });
+  try {
+    await insertBugThread({
+      channelId: event.channel,
+      messageTs: event.ts,
+      sentryIssueUrl: sentryUrl,
+      messagePreview: (event.text ?? "").slice(0, 500),
+    });
+  } catch (error) {
+    Sentry.captureException(error, { tags: { source: "slack-bug-handler", step: "insert" } });
+  }
 
-  await replyInSlackThread({
+  const reply = await replyInSlackThread({
     channelId: event.channel,
     threadTs: event.ts,
     text: "Logged for triage. A Cursor agent will investigate and reply here when fixed.",
   });
+  if (!reply.ok) {
+    throw new Error(reply.error ?? "STOA bot could not reply in thread");
+  }
 
   const hook = process.env.CURSOR_BUG_AGENT_WEBHOOK_URL?.trim();
   if (hook) {
@@ -78,12 +89,12 @@ export async function postBugFixReply(input: {
   threadTs: string;
   message: string;
 }): Promise<boolean> {
-  const ok = await replyInSlackThread({
+  const reply = await replyInSlackThread({
     channelId: input.channelId,
     threadTs: input.threadTs,
     text: input.message,
   });
-  if (!ok) return false;
+  if (!reply.ok) return false;
 
   await markBugThreadFixed({
     channelId: input.channelId,

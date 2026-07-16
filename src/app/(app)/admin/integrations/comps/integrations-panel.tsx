@@ -174,9 +174,29 @@ export function IntegrationsPanel({
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
         <h2 className="t-h3">STOA bot (#bugs)</h2>
         <p className="t-body mt-1 text-text-mute">
-          The bot posts thread replies on error alerts in #bugs. This test posts a simulated failure
-          and checks that the bot can reply in the thread.
+          The bot posts thread replies on error alerts in #bugs. Manual posts in Slack only work after
+          Event Subscriptions are configured on the same Slack app as the bot token.
         </p>
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-text-mute">
+          <li>
+            <a
+              href="https://api.slack.com/apps"
+              className="text-text underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              api.slack.com/apps
+            </a>{" "}
+            → open your STOA app → Event Subscriptions → On
+          </li>
+          <li>
+            Request URL:{" "}
+            <code className="font-mono text-xs">https://www.stoamarket.ai/api/webhooks/slack/events</code>
+          </li>
+          <li>Subscribe to bot events: <code className="font-mono text-xs">message.channels</code></li>
+          <li>Reinstall the app to the workspace after changing scopes</li>
+          <li>Invite the bot to #bugs with <code className="font-mono text-xs">/invite @STOA</code></li>
+        </ol>
         <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-mute">
           <li>
             Bot token:{" "}
