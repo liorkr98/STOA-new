@@ -5,7 +5,23 @@ import { createClient } from "@/lib/supabase/server";
 import { notifySlack, type SlackBlock } from "@/lib/slack/notify";
 import { webhookUrlForChannel, type SlackChannel } from "@/lib/slack/channels";
 import { runAllAlertTests, type AlertTestResult } from "@/lib/slack/alert-tests";
+import { sendDailyDigests, sendDigestPreview } from "@/lib/slack/digest";
+import {
+  ALERT_DEFINITIONS,
+  type AlertDelivery,
+  type AlertKey,
+  definitionForKey,
+} from "@/lib/slack/settings";
+import { listAlertSettings, updateAlertSetting } from "@/lib/db/slack-alerts";
 import * as Sentry from "@sentry/nextjs";
+
+export type AlertSettingView = {
+  alertKey: AlertKey;
+  label: string;
+  description: string;
+  channel: SlackChannel;
+  delivery: AlertDelivery;
+};
 
 const CHANNELS: SlackChannel[] = [
   "support",
@@ -41,8 +57,12 @@ export type IntegrationChannelStatus = {
 export async function getIntegrationStatus(): Promise<{
   sentry: { dsnConfigured: boolean };
   slack: IntegrationChannelStatus[];
+  alertSettings: AlertSettingView[];
 }> {
   await requireAdmin();
+
+  const settings = await listAlertSettings();
+  const deliveryByKey = new Map(settings.map((s) => [s.alertKey, s.delivery]));
 
   return {
     sentry: {
@@ -55,7 +75,35 @@ export async function getIntegrationStatus(): Promise<{
       configured: Boolean(webhookUrlForChannel(channel)),
       ok: false,
     })),
+    alertSettings: ALERT_DEFINITIONS.map((def) => ({
+      alertKey: def.key,
+      label: def.label,
+      description: def.description,
+      channel: def.channel,
+      delivery: deliveryByKey.get(def.key) ?? def.defaultDelivery,
+    })),
   };
+}
+
+export async function updateAlertDeliverySetting(
+  alertKey: AlertKey,
+  delivery: AlertDelivery,
+): Promise<void> {
+  await requireAdmin();
+  definitionForKey(alertKey);
+  await updateAlertSetting(alertKey, delivery);
+  revalidatePath("/admin/integrations");
+}
+
+export async function testDigestPreview(channel: SlackChannel): Promise<{ count: number }> {
+  await requireAdmin();
+  return sendDigestPreview(channel);
+}
+
+export async function sendDigestNow(): Promise<void> {
+  await requireAdmin();
+  await sendDailyDigests();
+  revalidatePath("/admin/integrations");
 }
 
 export async function testSlackChannel(channel: SlackChannel): Promise<{ ok: boolean }> {

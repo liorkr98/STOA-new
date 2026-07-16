@@ -1,6 +1,5 @@
 import {
   alertAnalystApplication,
-  alertAnalystApproved,
   alertCreatorPaypalOnboarded,
   alertCronResult,
   alertCustomerContact,
@@ -19,6 +18,7 @@ export type AlertTestResult = {
 };
 
 const TEST_PREFIX = "[TEST] ";
+const force = { forceImmediate: true as const };
 
 async function runTest(
   id: string,
@@ -39,80 +39,80 @@ export async function runAllAlertTests(): Promise<AlertTestResult[]> {
 
   return Promise.all([
     runTest("contact", "Customer contact", "support", () =>
-      alertCustomerContact({
-        id: "test-contact-id",
-        name: `${TEST_PREFIX}Jane Investor`,
-        email: "test@stoamarket.ai",
-        topic: "general",
-        subject: `${TEST_PREFIX}Integration smoke test`,
-        message: "This is a test contact alert from /admin/integrations.",
-        submittedAt: now,
-      }),
+      alertCustomerContact(
+        {
+          id: "test-contact-id",
+          name: `${TEST_PREFIX}Jane Investor`,
+          email: "test@stoamarket.ai",
+          topic: "general",
+          subject: `${TEST_PREFIX}Integration smoke test`,
+          message: "This is a test contact alert from /admin/integrations.",
+          submittedAt: now,
+        },
+        force,
+      ),
     ),
     runTest("analyst-application", "Analyst application", "customers-ops", () =>
-      alertAnalystApplication({
-        applicationId: "test-app-id",
-        displayName: `${TEST_PREFIX}Demo Analyst`,
-        handle: "demo_analyst_test",
-        coverageAreas: "Semiconductors, AI infrastructure",
-      }),
-    ),
-    runTest("analyst-approved", "Analyst approved", "customers-ops", () =>
-      alertAnalystApproved({
-        displayName: `${TEST_PREFIX}Demo Analyst`,
-        handle: "demo_analyst_test",
-        applicationId: "test-app-id",
-      }),
+      alertAnalystApplication(
+        {
+          applicationId: "test-app-id",
+          displayName: `${TEST_PREFIX}Demo Analyst`,
+          handle: "demo_analyst_test",
+          coverageAreas: "Semiconductors, AI infrastructure",
+        },
+        force,
+      ),
     ),
     runTest("report-purchase", "Report purchase", "revenue", () =>
-      alertReportPurchase({
-        reportId: "test-report-id",
-        reportTitle: `${TEST_PREFIX}Sample research report`,
-        analystName: "Marcus Webb",
-        analystHandle: "marcus_webb",
-        grossCents: 2500,
-        platformFeeCents: 250,
-        netCents: 2250,
-        providerTransferId: "TEST-PAYPAL-CAPTURE",
-      }),
+      alertReportPurchase(
+        {
+          reportId: "test-report-id",
+          reportTitle: `${TEST_PREFIX}Sample research report`,
+          analystName: "Marcus Webb",
+          analystHandle: "marcus_webb",
+          grossCents: 2500,
+          platformFeeCents: 250,
+          netCents: 2250,
+          providerTransferId: "TEST-PAYPAL-CAPTURE",
+        },
+        force,
+      ),
     ),
     runTest("paypal-onboarded", "Creator PayPal connected", "revenue", () =>
-      alertCreatorPaypalOnboarded({
-        displayName: `${TEST_PREFIX}Demo Analyst`,
-        handle: "demo_analyst_test",
-        paymentsReceivable: true,
-        emailConfirmed: true,
-      }),
+      alertCreatorPaypalOnboarded(
+        {
+          displayName: `${TEST_PREFIX}Demo Analyst`,
+          handle: "demo_analyst_test",
+          paymentsReceivable: true,
+          emailConfirmed: true,
+        },
+        force,
+      ),
     ),
     runTest("signup", "New signup", "marketing", () =>
-      alertNewSignup({
-        userId: "test-user-id",
-        email: "newuser@stoamarket.ai",
-        displayName: `${TEST_PREFIX}New Investor`,
-        handle: "new_investor_test",
-      }),
-    ),
-    runTest("first-publish", "First publish", "marketing", () =>
-      alertReportPublished({
-        reportId: "test-report-id",
-        title: `${TEST_PREFIX}First locked call on NVDA`,
-        type: "research",
-        ticker: "NVDA",
-        analystName: "Priya Raman",
-        analystHandle: "priya_raman",
-        isFirstPublish: true,
-      }),
+      alertNewSignup(
+        {
+          userId: "test-user-id",
+          email: "newuser@stoamarket.ai",
+          displayName: `${TEST_PREFIX}New Investor`,
+          handle: "new_investor_test",
+        },
+        force,
+      ),
     ),
     runTest("publish", "Report published", "marketing", () =>
-      alertReportPublished({
-        reportId: "test-report-id-2",
-        title: `${TEST_PREFIX}Weekly market note`,
-        type: "short_post",
-        ticker: null,
-        analystName: "Marcus Webb",
-        analystHandle: "marcus_webb",
-        isFirstPublish: false,
-      }),
+      alertReportPublished(
+        {
+          reportId: "test-report-id",
+          title: `${TEST_PREFIX}First locked call on NVDA`,
+          type: "research",
+          ticker: "NVDA",
+          analystName: "Priya Raman",
+          analystHandle: "priya_raman",
+          isFirstPublish: true,
+        },
+        force,
+      ),
     ),
     runTest("cron-failure", "Cron failure", "bugs", () =>
       alertCronResult({
