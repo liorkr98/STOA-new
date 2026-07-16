@@ -10,7 +10,7 @@ import {
   updateContactMessageStatus,
   type ContactStatus,
 } from "@/lib/db/contact";
-import { sendContactSlackAlert } from "@/lib/slack/contact-alert";
+import { alertCustomerContact } from "@/lib/slack/alerts";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -67,7 +67,7 @@ export async function submitContactMessage(formData: FormData) {
     userId: user?.id ?? null,
   });
 
-  await sendContactSlackAlert({
+  await alertCustomerContact({
     id: row.id,
     name: row.name,
     email: row.email,

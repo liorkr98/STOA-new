@@ -11,6 +11,7 @@ import {
   User,
   Wallet,
   LineChart,
+  Plug,
   Mail,
   Users,
 } from "lucide-react";
@@ -60,6 +61,7 @@ export function AccountMenu({ profile }: { profile: Profile }) {
       ? [
           { href: "/admin/applications", label: "Review applications", icon: Users },
           { href: "/admin/contact", label: "Customer contact", icon: Mail },
+          { href: "/admin/integrations", label: "Integrations", icon: Plug },
         ]
       : []),
     { href: "/wallet", label: "Wallet & credits", icon: Wallet },

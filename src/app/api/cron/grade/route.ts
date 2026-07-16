@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeDuePredictions } from "@/lib/engine/grade";
 import { isAuthorizedCron } from "@/lib/cron/auth";
+import { alertCronResult } from "@/lib/slack/alerts";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -24,26 +25,13 @@ export async function GET(request: NextRequest) {
       // platform_stats MV lands in migration 0019
     }
 
-    if (process.env.CRON_ALERT_WEBHOOK_URL) {
-      // Fire-and-forget success ping (optional monitoring §8).
-      fetch(process.env.CRON_ALERT_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event: "grade.ok", summary, at: new Date().toISOString() }),
-      }).catch(() => {});
-    }
+    await alertCronResult({ job: "grade", ok: true, summary });
 
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
     const message = e instanceof Error ? e.message : "grading failed";
 
-    if (process.env.CRON_ALERT_WEBHOOK_URL) {
-      fetch(process.env.CRON_ALERT_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event: "grade.failed", error: message, at: new Date().toISOString() }),
-      }).catch(() => {});
-    }
+    await alertCronResult({ job: "grade", ok: false, error: message });
 
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
