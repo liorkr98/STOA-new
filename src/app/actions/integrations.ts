@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { handleBugsChannelMessage } from "@/lib/slack/bug-handler";
+import { postSlackChannelMessage, slackBugsChannelId, slackBotToken } from "@/lib/slack/bot-reply";
 import { notifySlack, type SlackBlock } from "@/lib/slack/notify";
 import { webhookUrlForChannel, type SlackChannel } from "@/lib/slack/channels";
 import { runAllAlertTests, type AlertTestResult } from "@/lib/slack/alert-tests";
@@ -56,6 +58,11 @@ export type IntegrationChannelStatus = {
 
 export async function getIntegrationStatus(): Promise<{
   sentry: { dsnConfigured: boolean };
+  slackBot: {
+    tokenConfigured: boolean;
+    signingSecretConfigured: boolean;
+    bugsChannelId: string;
+  };
   slack: IntegrationChannelStatus[];
   alertSettings: AlertSettingView[];
 }> {
@@ -69,6 +76,11 @@ export async function getIntegrationStatus(): Promise<{
       dsnConfigured: Boolean(
         process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || process.env.SENTRY_DSN?.trim(),
       ),
+    },
+    slackBot: {
+      tokenConfigured: Boolean(slackBotToken()),
+      signingSecretConfigured: Boolean(process.env.SLACK_SIGNING_SECRET?.trim()),
+      bugsChannelId: slackBugsChannelId(),
     },
     slack: CHANNELS.map((channel) => ({
       channel,
@@ -153,6 +165,34 @@ export async function testAllSlackChannels(): Promise<IntegrationChannelStatus[]
   }
   revalidatePath("/admin/integrations");
   return results;
+}
+
+export async function testSlackBot(): Promise<{ ok: boolean }> {
+  await requireAdmin();
+
+  if (!slackBotToken()) {
+    throw new Error("SLACK_BOT_TOKEN is not configured in Vercel");
+  }
+
+  const channelId = slackBugsChannelId();
+  const alertText =
+    "[TEST] STOA bot pipeline check — simulated cron job failed (admin /admin/integrations)";
+
+  const posted = await postSlackChannelMessage({ channelId, text: alertText });
+  if (!posted.ok) {
+    throw new Error(posted.error ?? "STOA bot could not post to #bugs");
+  }
+
+  await handleBugsChannelMessage({
+    type: "message",
+    subtype: "bot_message",
+    channel: channelId,
+    text: alertText,
+    ts: posted.ts,
+  });
+
+  revalidatePath("/admin/integrations");
+  return { ok: true };
 }
 
 export async function testSentry(): Promise<{ ok: boolean }> {

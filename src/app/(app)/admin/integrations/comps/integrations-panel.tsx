@@ -6,6 +6,7 @@ import {
   testAllAlerts,
   testAllSlackChannels,
   testDigestPreview,
+  testSlackBot,
   testSentry,
   testSentryError,
   testSlackChannel,
@@ -21,10 +22,16 @@ export function IntegrationsPanel({
   initialSlack,
   initialAlertSettings,
   sentryConfigured,
+  slackBot,
 }: {
   initialSlack: IntegrationChannelStatus[];
   initialAlertSettings: AlertSettingView[];
   sentryConfigured: boolean;
+  slackBot: {
+    tokenConfigured: boolean;
+    signingSecretConfigured: boolean;
+    bugsChannelId: string;
+  };
 }) {
   const [slack, setSlack] = useState(initialSlack);
   const [alertSettings, setAlertSettings] = useState(initialAlertSettings);
@@ -139,7 +146,12 @@ export function IntegrationsPanel({
             type="button"
             variant="secondary"
             disabled={!sentryConfigured || pending}
-            onClick={() => run(() => testSentry(), "Info test event sent to Sentry.")}
+            onClick={() =>
+              run(
+                () => testSentry(),
+                "Info test sent to Sentry only (intentionally not posted to Slack).",
+              )
+            }
           >
             Send info test
           </Button>
@@ -147,9 +159,64 @@ export function IntegrationsPanel({
             type="button"
             variant="secondary"
             disabled={!sentryConfigured || pending}
-            onClick={() => run(() => testSentryError(), "Error test event sent to Sentry.")}
+            onClick={() =>
+              run(
+                () => testSentryError(),
+                "Error test sent to Sentry only (intentionally not posted to Slack).",
+              )
+            }
           >
             Send error test
+          </Button>
+        </div>
+      </section>
+
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+        <h2 className="t-h3">STOA bot (#bugs)</h2>
+        <p className="t-body mt-1 text-text-mute">
+          The bot posts thread replies on error alerts in #bugs. This test posts a simulated failure
+          and checks that the bot can reply in the thread.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-mute">
+          <li>
+            Bot token:{" "}
+            <span
+              className={
+                slackBot.tokenConfigured ? "text-[var(--verdigris)]" : "text-[var(--rust)]"
+              }
+            >
+              {slackBot.tokenConfigured ? "configured" : "missing"}
+            </span>
+          </li>
+          <li>
+            Signing secret:{" "}
+            <span
+              className={
+                slackBot.signingSecretConfigured
+                  ? "text-[var(--verdigris)]"
+                  : "text-[var(--rust)]"
+              }
+            >
+              {slackBot.signingSecretConfigured ? "configured" : "missing"}
+            </span>
+          </li>
+          <li>
+            Bugs channel ID: <code className="font-mono text-xs">{slackBot.bugsChannelId}</code>
+          </li>
+        </ul>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!slackBot.tokenConfigured || pending}
+            onClick={() =>
+              run(
+                () => testSlackBot(),
+                "STOA bot test posted to #bugs. Check for a thread reply from STOA APP.",
+              )
+            }
+          >
+            Test STOA bot
           </Button>
         </div>
       </section>
