@@ -27,7 +27,8 @@
     "test:valuation": "node --import tsx --test src/lib/valuation/model.test.ts",
     "test:users": "npx tsx scripts/simulate-users.ts",
     "vercel:setup": "node scripts/vercel-setup.mjs",
-    "vercel:fix-cron-secret": "node scripts/fix-vercel-cron-secret.mjs"
+    "vercel:fix-cron-secret": "node scripts/fix-vercel-cron-secret.mjs",
+    "integrations:verify": "node scripts/verify-integrations.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.8",

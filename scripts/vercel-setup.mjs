@@ -141,6 +141,86 @@ const ENV_SPECS = [
     targets: ["production", "preview"],
     sensitive: true,
   },
+  {
+    key: "NEXT_PUBLIC_SENTRY_DSN",
+    required: false,
+    targets: ["production", "preview", "development"],
+    sensitive: false,
+  },
+  {
+    key: "SENTRY_DSN",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: false,
+  },
+  {
+    key: "SENTRY_ORG",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: false,
+    defaultValue: "stoa-m1",
+  },
+  {
+    key: "SENTRY_PROJECT",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: false,
+    defaultValue: "javascript-nextjs",
+  },
+  {
+    key: "SENTRY_AUTH_TOKEN",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_SUPPORT",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_CUSTOMERS_OPS",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_REVENUE",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_MARKETING",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_BUGS",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_WEBHOOK_OPS",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "SLACK_CONTACT_WEBHOOK_URL",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
+  {
+    key: "CRON_ALERT_WEBHOOK_URL",
+    required: false,
+    targets: ["production", "preview"],
+    sensitive: true,
+  },
 ];
 
 async function listEnv(token, projectId, teamId) {
