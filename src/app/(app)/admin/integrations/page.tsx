@@ -22,8 +22,8 @@ export default async function AdminIntegrationsPage() {
         <div>
           <h1 className="t-h1">Integrations</h1>
           <p className="t-body mt-1 text-text-mute">
-            Verify Sentry and Slack webhooks after setting env vars in Vercel. Redeploy production
-            after any change.
+            Verify Sentry and Slack webhooks after setting env vars in Vercel. Test channel webhooks,
+            alert smoke tests, and Sentry events from here after each deploy.
           </p>
         </div>
       </div>

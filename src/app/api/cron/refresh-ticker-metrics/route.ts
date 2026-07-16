@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { refreshTickerMetrics } from "@/lib/engine/refresh-ticker-metrics";
 import { isAuthorizedCron } from "@/lib/cron/auth";
+import { withCronMonitor } from "@/lib/cron/sentry-monitor";
 import { alertCronResult } from "@/lib/slack/alerts";
 
 export const dynamic = "force-dynamic";
@@ -17,11 +18,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const db = createAdminClient();
-    const offset = Number(request.nextUrl.searchParams.get("offset") ?? "0");
-    const result = await refreshTickerMetrics(db, {
-      offset: Number.isFinite(offset) ? offset : 0,
-      maxBatches: 120,
+    const result = await withCronMonitor("refresh-ticker-metrics-cron", async () => {
+      const db = createAdminClient();
+      const offset = Number(request.nextUrl.searchParams.get("offset") ?? "0");
+      return refreshTickerMetrics(db, {
+        offset: Number.isFinite(offset) ? offset : 0,
+        maxBatches: 120,
+      });
     });
 
     return NextResponse.json({ ok: true, ...result });

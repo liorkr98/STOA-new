@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { alertAnalystApplication } from "@/lib/slack/alerts";
+import { alertAnalystApplication, alertAnalystApproved } from "@/lib/slack/alerts";
 
 import type { ProfileConfig } from "@/lib/editor/types";
 import { checkAccent } from "@/lib/profile/accent";
@@ -82,11 +82,33 @@ export async function submitAnalystApplication(formData: FormData) {
 /** Admin: approve an application. */
 export async function approveAnalystApplication(applicationId: string, note?: string) {
   const { supabase } = await requireUser();
+  const { data: application } = await supabase
+    .from("analyst_applications")
+    .select("user_id")
+    .eq("id", applicationId)
+    .maybeSingle();
+
   const { error } = await supabase.rpc("approve_analyst_application", {
     p_application_id: applicationId,
     p_note: note ?? null,
   });
   if (error) throw new Error(error.message);
+
+  if (application?.user_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, handle")
+      .eq("id", application.user_id)
+      .maybeSingle();
+
+    if (profile) {
+      await alertAnalystApproved({
+        displayName: profile.display_name,
+        handle: profile.handle,
+        applicationId,
+      });
+    }
+  }
 
   revalidatePath("/admin/applications");
   revalidatePath("/become-analyst");

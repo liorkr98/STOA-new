@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeDuePredictions } from "@/lib/engine/grade";
 import { isAuthorizedCron } from "@/lib/cron/auth";
+import { withCronMonitor } from "@/lib/cron/sentry-monitor";
 import { alertCronResult } from "@/lib/slack/alerts";
 
 export const dynamic = "force-dynamic";
@@ -17,13 +18,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const db = createAdminClient();
-    const summary = await gradeDuePredictions(db);
-    try {
-      await db.rpc("refresh_platform_stats");
-    } catch {
-      // platform_stats MV lands in migration 0019
-    }
+    const summary = await withCronMonitor("grade-cron", async () => {
+      const db = createAdminClient();
+      const result = await gradeDuePredictions(db);
+      try {
+        await db.rpc("refresh_platform_stats");
+      } catch {
+        // platform_stats MV lands in migration 0019
+      }
+      return result;
+    });
 
     await alertCronResult({ job: "grade", ok: true, summary });
 

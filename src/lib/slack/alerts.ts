@@ -152,3 +152,75 @@ export async function alertPaypalWebhookError(payload: {
     ],
   });
 }
+
+export async function alertNewSignup(payload: {
+  userId: string;
+  email: string;
+  displayName: string;
+  handle: string;
+}) {
+  await notifySlack({
+    channel: "marketing",
+    text: `New signup: ${payload.displayName}`,
+    blocks: [
+      slackHeader("New signup"),
+      slackFields([
+        { label: "Name", value: payload.displayName },
+        { label: "Handle", value: `@${payload.handle}` },
+        { label: "Email", value: payload.email },
+      ]),
+      slackActions([slackButton("View profile", adminUrl(`/analyst/${payload.handle}`))]),
+    ],
+  });
+}
+
+export async function alertReportPublished(payload: {
+  reportId: string;
+  title: string;
+  type: string;
+  ticker: string | null;
+  analystName: string;
+  analystHandle: string;
+  isFirstPublish: boolean;
+}) {
+  const headline = payload.isFirstPublish ? "Analyst first publish" : "New publish";
+  await notifySlack({
+    channel: "marketing",
+    text: `${headline}: ${payload.analystName}`,
+    blocks: [
+      slackHeader(headline),
+      slackFields([
+        { label: "Analyst", value: `${payload.analystName} (@${payload.analystHandle})` },
+        { label: "Type", value: payload.type },
+        ...(payload.ticker ? [{ label: "Ticker", value: payload.ticker }] : []),
+      ]),
+      slackText(`*Title:* ${truncate(payload.title || "Untitled", 200)}`),
+      slackActions([
+        slackButton("View report", adminUrl(`/report/${payload.reportId}`)),
+        slackButton("Analyst profile", adminUrl(`/analyst/${payload.analystHandle}`)),
+      ]),
+    ],
+  });
+}
+
+export async function alertAnalystApproved(payload: {
+  displayName: string;
+  handle: string;
+  applicationId: string;
+}) {
+  await notifySlack({
+    channel: "customers-ops",
+    text: `Analyst approved: ${payload.displayName}`,
+    blocks: [
+      slackHeader("Analyst application approved"),
+      slackFields([
+        { label: "Analyst", value: `${payload.displayName} (@${payload.handle})` },
+        { label: "Application", value: payload.applicationId },
+      ]),
+      slackActions([
+        slackButton("View profile", adminUrl(`/analyst/${payload.handle}`)),
+        slackButton("Applications queue", adminUrl("/admin/applications")),
+      ]),
+    ],
+  });
+}

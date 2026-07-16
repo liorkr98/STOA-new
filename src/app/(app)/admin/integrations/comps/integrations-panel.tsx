@@ -1,9 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { testAllSlackChannels, testSentry, testSlackChannel } from "@/app/actions/integrations";
+import {
+  testAllAlerts,
+  testAllSlackChannels,
+  testSentry,
+  testSentryError,
+  testSlackChannel,
+} from "@/app/actions/integrations";
 import type { IntegrationChannelStatus } from "@/app/actions/integrations";
 import type { SlackChannel } from "@/lib/slack/channels";
+import type { AlertTestResult } from "@/lib/slack/alert-tests";
 import { Button } from "@/components/ui/button";
 
 export function IntegrationsPanel({
@@ -14,6 +21,7 @@ export function IntegrationsPanel({
   sentryConfigured: boolean;
 }) {
   const [slack, setSlack] = useState(initialSlack);
+  const [alertTests, setAlertTests] = useState<AlertTestResult[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -34,8 +42,8 @@ export function IntegrationsPanel({
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
         <h2 className="t-h3">Sentry</h2>
         <p className="t-body mt-1 text-text-mute">
-          Error monitoring. Connect Sentry to Slack separately in the Sentry dashboard (Integrations
-          → Slack → #bugs).
+          Error monitoring. Connect Sentry to Slack in the Sentry dashboard (Integrations → Slack →
+          #bugs).
         </p>
         <p className="t-meta mt-3">
           DSN configured:{" "}
@@ -43,15 +51,24 @@ export function IntegrationsPanel({
             {sentryConfigured ? "Yes" : "No"}
           </span>
         </p>
-        <Button
-          type="button"
-          className="mt-4"
-          variant="secondary"
-          disabled={!sentryConfigured || pending}
-          onClick={() => run(() => testSentry(), "Test event sent to Sentry.")}
-        >
-          Send Sentry test event
-        </Button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!sentryConfigured || pending}
+            onClick={() => run(() => testSentry(), "Info test event sent to Sentry.")}
+          >
+            Send info test
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!sentryConfigured || pending}
+            onClick={() => run(() => testSentryError(), "Error test event sent to Sentry.")}
+          >
+            Send error test
+          </Button>
+        </div>
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
@@ -107,6 +124,49 @@ export function IntegrationsPanel({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="t-h3">Production alert smoke tests</h2>
+            <p className="t-body mt-1 text-text-mute">
+              Sends a labeled [TEST] sample of every real alert type to the correct Slack channel.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            onClick={() =>
+              run(async () => {
+                const results = await testAllAlerts();
+                setAlertTests(results);
+              }, "Finished sending all alert smoke tests.")
+            }
+          >
+            Test all alerts
+          </Button>
+        </div>
+
+        {alertTests && (
+          <ul className="mt-4 flex flex-col gap-2">
+            {alertTests.map((row) => (
+              <li
+                key={row.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-bg px-4 py-2.5 text-sm"
+              >
+                <span>{row.label}</span>
+                <span className="t-meta">
+                  #{row.channel} ·{" "}
+                  <span className={row.ok ? "text-[var(--verdigris)]" : "text-[var(--rust)]"}>
+                    {row.ok ? "ok" : "failed"}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {message && (

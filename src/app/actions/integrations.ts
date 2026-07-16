@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { notifySlack, type SlackBlock } from "@/lib/slack/notify";
 import { webhookUrlForChannel, type SlackChannel } from "@/lib/slack/channels";
+import { runAllAlertTests, type AlertTestResult } from "@/lib/slack/alert-tests";
 import * as Sentry from "@sentry/nextjs";
 
 const CHANNELS: SlackChannel[] = [
@@ -119,4 +120,25 @@ export async function testSentry(): Promise<{ ok: boolean }> {
 
   await Sentry.flush(2000);
   return { ok: true };
+}
+
+export async function testSentryError(): Promise<{ ok: boolean }> {
+  await requireAdmin();
+
+  const dsn = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN;
+  if (!dsn?.trim()) throw new Error("Sentry DSN is not configured");
+
+  Sentry.captureException(new Error("Stoa admin Sentry error test from /admin/integrations"), {
+    tags: { source: "admin-integrations", test: "true" },
+  });
+
+  await Sentry.flush(2000);
+  return { ok: true };
+}
+
+export async function testAllAlerts(): Promise<AlertTestResult[]> {
+  await requireAdmin();
+  const results = await runAllAlertTests();
+  revalidatePath("/admin/integrations");
+  return results;
 }
