@@ -52,11 +52,10 @@ export async function replyInSlackThread(input: {
   channelId: string;
   threadTs: string;
   text: string;
-}): Promise<boolean> {
-  const result = await postSlackMessage({
+}): Promise<SlackPostResult> {
+  return postSlackMessage({
     channelId: input.channelId,
     threadTs: input.threadTs,
     text: input.text,
   });
-  return result.ok;
 }
