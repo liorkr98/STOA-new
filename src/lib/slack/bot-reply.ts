@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { SlackBlock } from "./notify";
+
 const SLACK_API = "https://slack.com/api/chat.postMessage";
 
 export function slackBotToken(): string | undefined {
@@ -16,6 +18,7 @@ async function postSlackMessage(input: {
   channelId: string;
   text: string;
   threadTs?: string;
+  blocks?: SlackBlock[];
 }): Promise<SlackPostResult> {
   const token = slackBotToken();
   if (!token) return { ok: false, error: "SLACK_BOT_TOKEN is not configured" };
@@ -30,6 +33,7 @@ async function postSlackMessage(input: {
       channel: input.channelId,
       text: input.text,
       ...(input.threadTs ? { thread_ts: input.threadTs } : {}),
+      ...(input.blocks?.length ? { blocks: input.blocks } : {}),
       unfurl_links: false,
     }),
   }).catch(() => null);
@@ -44,6 +48,7 @@ async function postSlackMessage(input: {
 export async function postSlackChannelMessage(input: {
   channelId: string;
   text: string;
+  blocks?: SlackBlock[];
 }): Promise<SlackPostResult> {
   return postSlackMessage(input);
 }
