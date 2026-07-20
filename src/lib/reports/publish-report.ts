@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { enqueueOrRun } from "@/lib/jobs/client";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
 import { getTickerMeta } from "@/lib/engine/tickers";
 import {
@@ -231,7 +232,11 @@ export async function validateAndPublishReport(
   }
 
   try {
-    await supabase.rpc("notify_publication", { p_report_id: reportId });
+    // Fan-out to followers/subscribers via the queue (retries + dead-letter);
+    // runs inline when QStash is not configured.
+    await enqueueOrRun("notify", { reportId }, async () => {
+      await supabase.rpc("notify_publication", { p_report_id: reportId });
+    });
   } catch {
     // non-critical
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getVideoProvider } from "@/lib/video/provider";
+import { claimWebhookEvent } from "@/lib/webhooks/idempotency";
 
 /**
  * Cloudflare Stream webhook (Part D). Signature-verified, idempotent: flips a
@@ -28,6 +29,10 @@ export async function POST(req: Request) {
 
   const state = event.status?.state;
   const status = event.readyToStream || state === "ready" ? "ready" : state === "error" ? "errored" : "processing";
+
+  // Idempotency: dedupe on the resource + terminal status transition.
+  const isNew = await claimWebhookEvent("cloudflare", `${uid}:${status}`).catch(() => true);
+  if (!isNew) return NextResponse.json({ ok: true, duplicate: true });
 
   const aspect =
     event.input?.width && event.input?.height
