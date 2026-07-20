@@ -1,26 +1,37 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { recordVideoViewEvent } from "@/lib/db/video-clips";
+import { withHandler } from "@/lib/http/handler";
 
 /**
  * Video funnel metrics (Part 2.7). Called on view start, completion, and
- * click-through to the linked report. Feeds video_view_events, which feeds the
- * Part 1 decision gate (view -> report open -> conversion). Logged-out views are
- * allowed (viewer_id null); RLS restricts who can read the funnel.
+ * click-through to the linked report. Logged-out views are allowed (viewer_id
+ * null); RLS restricts who can read the funnel. Rate-limited per IP because it
+ * is public and high-frequency - a viral video concentrates events fast.
  */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const body = (await req.json().catch(() => ({}))) as {
-    watchedSeconds?: number;
-    completed?: boolean;
-    clickedThroughToReport?: boolean;
-  };
+export const POST = withHandler<{ id: string }>(
+  {
+    route: "POST /api/videos/[id]/track-view",
+    auth: "optional",
+    rateLimit: { name: "track-view", limit: 120, windowSeconds: 60, by: "ip" },
+  },
+  async ({ req, params }) => {
+    const { id } = params;
+    const body = (await req.json().catch(() => ({}))) as {
+      watchedSeconds?: number;
+      completed?: boolean;
+      clickedThroughToReport?: boolean;
+    };
 
-  const { ok } = await recordVideoViewEvent({
-    videoId: id,
-    watchedSeconds: typeof body.watchedSeconds === "number" ? Math.max(0, Math.round(body.watchedSeconds)) : undefined,
-    completed: body.completed === true,
-    clickedThroughToReport: body.clickedThroughToReport === true,
-  });
+    const { ok } = await recordVideoViewEvent({
+      videoId: id,
+      watchedSeconds:
+        typeof body.watchedSeconds === "number"
+          ? Math.max(0, Math.round(body.watchedSeconds))
+          : undefined,
+      completed: body.completed === true,
+      clickedThroughToReport: body.clickedThroughToReport === true,
+    });
 
-  return NextResponse.json({ ok });
-}
+    return NextResponse.json({ ok });
+  },
+);

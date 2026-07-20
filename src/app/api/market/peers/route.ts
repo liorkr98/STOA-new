@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { fmp, MarketDataError } from "@/lib/market";
+import { withHandler } from "@/lib/http/handler";
 
 /**
  * Peer set for compose templates / comparison blocks (FMP). Fail soft without a key.
  */
-export async function GET(req: Request) {
+async function handlePeers(req: Request) {
   const ticker = new URL(req.url).searchParams.get("ticker")?.trim().toUpperCase();
   if (!ticker) return NextResponse.json({ error: "ticker required" }, { status: 400 });
 
@@ -25,3 +26,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ ticker, peers: [] }, { status: 200 });
   }
 }
+
+export const GET = withHandler(
+  {
+    route: "GET /api/market/peers",
+    auth: "none",
+    rateLimit: { name: "market-peers", limit: 120, windowSeconds: 60, by: "ip" },
+  },
+  ({ req }) => handlePeers(req),
+);

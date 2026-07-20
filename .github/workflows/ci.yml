@@ -30,6 +30,21 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Engine tests
+        run: npm run test:engine
+
+      - name: Valuation tests
+        run: npm run test:valuation
+
+      - name: RLS tests
+        # Skips cleanly when Supabase secrets are absent (see tests/rls).
+        run: npm run test:rls
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          RLS_TEST_PASSWORD: ${{ secrets.RLS_TEST_PASSWORD }}
+
       - name: Build
         run: npm run build
         env:

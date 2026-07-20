@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { finnhub, MarketDataError } from "@/lib/market";
+import { withHandler } from "@/lib/http/handler";
 
 function ymd(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -9,7 +10,7 @@ function ymd(date: Date): string {
  * Public company-news endpoint for the ticker page. Uses a short lookback
  * window and returns a capped list to keep payloads small.
  */
-export async function GET(req: Request) {
+async function handleNews(req: Request) {
   const ticker = new URL(req.url).searchParams.get("ticker")?.trim().toUpperCase();
   if (!ticker) {
     return NextResponse.json({ error: "ticker required" }, { status: 400 });
@@ -31,3 +32,12 @@ export async function GET(req: Request) {
     throw error;
   }
 }
+
+export const GET = withHandler(
+  {
+    route: "GET /api/market/news",
+    auth: "none",
+    rateLimit: { name: "market-news", limit: 120, windowSeconds: 60, by: "ip" },
+  },
+  ({ req }) => handleNews(req),
+);
