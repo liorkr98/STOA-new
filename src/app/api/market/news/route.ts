@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { finnhub, MarketDataError } from "@/lib/market";
 import { withHandler } from "@/lib/http/handler";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 function ymd(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -20,7 +22,9 @@ async function handleNews(req: Request) {
   const from = new Date(Date.now() - 14 * 86_400_000);
 
   try {
-    const items = await finnhub.getCompanyNews(ticker, ymd(from), ymd(to));
+    const items = await withCache(cacheKeys.marketNews(ticker), 300, () =>
+      finnhub.getCompanyNews(ticker, ymd(from), ymd(to)),
+    );
     return NextResponse.json(
       { ticker, items: items.slice(0, 12) },
       { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } },

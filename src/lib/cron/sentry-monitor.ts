@@ -1,6 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 
-type CronMonitorSlug = "grade-cron" | "refresh-ticker-metrics-cron" | "slack-digest-cron";
+type CronMonitorSlug =
+  | "grade-cron"
+  | "refresh-ticker-metrics-cron"
+  | "slack-digest-cron"
+  | "maintenance-cron";
 
 export async function withCronMonitor<T>(
   monitorSlug: CronMonitorSlug,

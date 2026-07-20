@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getQuote } from "@/lib/engine/market";
 import { withHandler } from "@/lib/http/handler";
 import { ApiError } from "@/lib/http/errors";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 export const GET = withHandler(
   {
@@ -12,7 +14,7 @@ export const GET = withHandler(
   async ({ req }) => {
     const ticker = new URL(req.url).searchParams.get("ticker")?.toUpperCase();
     if (!ticker) throw new ApiError("bad_request", "ticker required");
-    const quote = await getQuote(ticker);
+    const quote = await withCache(cacheKeys.marketQuote(ticker), 15, () => getQuote(ticker));
     return NextResponse.json({
       symbol: quote.symbol,
       price: quote.price,

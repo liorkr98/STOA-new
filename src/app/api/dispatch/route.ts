@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { buildDispatch } from "@/lib/dispatch/build-dispatch";
 import { withHandler } from "@/lib/http/handler";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +15,11 @@ async function handleDispatch(req: Request) {
   const personalized = searchParams.get("personalized") === "true";
 
   try {
-    const dispatch = await buildDispatch(personalized);
+    // Public dispatch is identical for everyone, so cache it in Redis. The
+    // personalized variant is user-specific and is not shared-cached.
+    const dispatch = personalized
+      ? await buildDispatch(true)
+      : await withCache(cacheKeys.dispatch(false), 60, () => buildDispatch(false));
     return NextResponse.json(dispatch, {
       headers: { "Cache-Control": "private, max-age=60" },
     });

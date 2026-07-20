@@ -2,6 +2,8 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeDuePredictions } from "@/lib/engine/grade";
+import { cacheDel } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 /**
  * Shared grading run used by both the cron and the QStash consumer, so the two
@@ -17,5 +19,10 @@ export async function runGradeAndRefresh() {
   } catch {
     // platform_stats MV lands in migration 0019; ignore if absent.
   }
+
+  // A resolution can change scores, the leaderboard, and the dispatch. Drop the
+  // shared caches so they recompute on next read (they also expire on TTL).
+  await cacheDel(cacheKeys.platformStats(), cacheKeys.dispatch(false));
+
   return result;
 }

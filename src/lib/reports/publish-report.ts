@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { enqueueOrRun } from "@/lib/jobs/client";
+import { cacheDel } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
 import { getTickerMeta } from "@/lib/engine/tickers";
 import {
@@ -240,6 +242,9 @@ export async function validateAndPublishReport(
   } catch {
     // non-critical
   }
+
+  // A new publish changes the public dispatch and homepage stats.
+  await cacheDel(cacheKeys.dispatch(false), cacheKeys.platformStats()).catch(() => undefined);
 
   if (authorProfile) {
     try {

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPlatformStats } from "@/lib/db/platform-stats";
 import { withHandler } from "@/lib/http/handler";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +11,7 @@ export const dynamic = "force-dynamic";
  * Refreshed nightly by the grading cron — never live count(*) on every hit.
  */
 async function handleStats() {
-  const stats = await getPlatformStats();
+  const stats = await withCache(cacheKeys.platformStats(), 60, () => getPlatformStats());
 
   if (!stats) {
     return NextResponse.json(
