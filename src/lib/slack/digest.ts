@@ -1,6 +1,7 @@
 import { listPendingDigestItems, markDigestItemsSent } from "@/lib/db/slack-alerts";
 import { formatUsd, notifySlack, slackContext, slackHeader, slackText } from "./notify";
 import { DIGEST_CHANNELS } from "./settings";
+import { postSystemHealth } from "./system-health";
 import type { SlackChannel } from "./channels";
 
 function digestTitle(channel: SlackChannel, count: number): string {
@@ -105,6 +106,11 @@ export async function sendDailyDigests(): Promise<
   const results = {} as Record<SlackChannel, { sent: boolean; count: number }>;
   for (const channel of DIGEST_CHANNELS) {
     results[channel] = await sendChannelDigest(channel);
+  }
+  try {
+    await postSystemHealth();
+  } catch {
+    // Health post is best-effort; never fail the digest run over it.
   }
   return results;
 }
