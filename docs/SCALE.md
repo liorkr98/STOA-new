@@ -71,9 +71,11 @@ video transcription/fact-check. Cron still triggers grading (enqueues batches).
 ## Database
 
 - Missing FK/filter indexes added in migration 0047.
-- Append-only hot tables (`video_view_events`, `audit_log`) are partitioned by
-  month; a maintenance job creates next month's partition and archives old ones.
-  Next candidates: `report_views`, `notifications`, `wallet_transactions`.
+- `video_view_events` is partitioned by month (migration 0048); the
+  `/api/cron/maintenance` job (monthly) calls `ensure_video_view_partitions` so
+  there is always a landing zone, plus the TTL cleanups. `audit_log` partitioning
+  is deferred to a staging-first migration because of its append-only triggers.
+  Next candidates after that: `report_views`, `notifications`, `wallet_transactions`.
 - `pg_stat_statements` enabled. **Weekly during growth**: review top queries by
   total time; the query that is fine at 1k rows can fall over at 1M.
 - TTL cleanup: `cleanup_money_idempotency`, `api_rate_limits`, `processed_webhook_events`.
@@ -84,9 +86,11 @@ video transcription/fact-check. Cron still triggers grading (enqueues batches).
 ## Observability
 
 - `withHandler` emits one JSON log line per request (requestId, route, status,
-  latencyMs, userId, idempotencyKey).
-- Sentry captures errors + performance spans (DB, market, LLM).
-- Queue depth + grade success surface in the daily Slack digest.
+  latencyMs, userId, idempotencyKey), and echoes `x-request-id` on the response.
+- Sentry captures errors + performance traces; sample rate is
+  `SENTRY_TRACES_SAMPLE_RATE` (default 0.1 in prod, 1.0 in dev).
+- A daily `#ops` system-health post (`postSystemHealth`) reports cache/queue
+  status, last grade snapshot, and the grading backlog (open calls past due).
 - Trace one full request path (app -> API -> cache -> DB) manually before
   assuming where time goes.
 
@@ -124,13 +128,39 @@ Rotate on suspected exposure and on a routine cadence during growth.
 
 ## Disaster recovery
 
-- PITR is enabled (go-live Must). An untested backup is a hypothesis: run a
-  restore drill once - restore into a scratch project, confirm data integrity,
-  record the RTO here after the first drill.
+PITR is a go-live Must. An untested backup is a hypothesis, not a plan. Run this
+drill once, deliberately, and record the result.
+
+Drill steps:
+
+1. In the Supabase dashboard, note a target timestamp (a few minutes ago).
+2. Create a new scratch project (same region as production).
+3. Restore the production backup / PITR snapshot into the scratch project.
+4. Verify integrity: row counts on `reports`, `predictions`, `wallet_transactions`,
+   `profiles` match expectations; spot-check a locked call and a wallet balance.
+5. Time the whole restore end to end.
+6. Delete the scratch project.
+
 - Recorded RTO: _pending first drill_.
+- Cadence: re-drill after any major schema change or quarterly, whichever first.
 
 ## Region
 
-- Confirm Vercel function region vs Supabase region; keep them co-located.
-- Users span US and Israel. Pick the primary region deliberately (moving a DB
-  region later is a migration, not a config change). Recorded choice: _pending founder decision_.
+Finding (from `get_project`): the Supabase project **STOA** is in
+**`ap-southeast-1` (Singapore)**, while users are in the **US and Israel**. That
+is a cross-hemisphere round-trip on every uncached DB query and is the most
+likely source of avoidable latency today.
+
+Recommended action (founder decision, one-time):
+
+- Choose a primary region close to the user base - `us-east-1` (US East) or
+  `eu-central-1` (Frankfurt, closer to Israel). Frankfurt is the better single
+  compromise for a US+Israel audience.
+- Moving a Supabase region is a migration (new project + data transfer + DNS/env
+  cutover), not a slider - plan it before traffic grows, not after.
+- Co-locate Vercel functions with the chosen DB region (Vercel function region
+  setting) so the API-to-DB hop is in-region.
+- The Redis cache layer added here blunts the impact of the current distance for
+  hot reads, but writes and cache misses still pay the full round-trip.
+
+- Recorded choice: _pending founder decision_ (recommendation: `eu-central-1`).

@@ -56,10 +56,10 @@ function rateLimitIdentifier(by: RateLimitBy, user: User | null, req: NextReques
 export function withHandler<P = Record<string, never>>(
   config: HandlerConfig,
   fn: HandlerFn<P>,
-): (req: NextRequest, ctx?: { params: Promise<P> }) => Promise<Response> {
+): (req: NextRequest, ctx: { params: Promise<P> }) => Promise<Response> {
   const authMode: AuthMode = config.auth ?? "none";
 
-  return async (req: NextRequest, ctx?: { params: Promise<P> }): Promise<Response> => {
+  return async (req: NextRequest, ctx: { params: Promise<P> }): Promise<Response> => {
     const requestId = req.headers.get("x-request-id") ?? newRequestId();
     const start = Date.now();
     let user: User | null = null;
@@ -127,7 +127,7 @@ export function withHandler<P = Record<string, never>>(
             throw new ApiError("conflict", "A request with this Idempotency-Key is in progress");
           }
 
-          const params = ctx ? await ctx.params : ({} as P);
+          const params = ((await ctx?.params) ?? {}) as P;
           try {
             const res = await fn({ req, requestId, user, params });
             if (res.status < 500) {
@@ -147,7 +147,7 @@ export function withHandler<P = Record<string, never>>(
         }
       }
 
-      const params = ctx ? await ctx.params : ({} as P);
+      const params = ((await ctx?.params) ?? {}) as P;
       const res = await fn({ req, requestId, user, params });
       return finish(res);
     } catch (err) {
