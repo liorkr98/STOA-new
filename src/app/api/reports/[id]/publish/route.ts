@@ -1,45 +1,48 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { withHandler } from "@/lib/http/handler";
+import { ApiError } from "@/lib/http/errors";
 import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
 import type { ComposeInput } from "@/lib/types";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id: routeId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "sign in required" }, { status: 401 });
-  }
+export const POST = withHandler<{ id: string }>(
+  {
+    route: "POST /api/reports/[id]/publish",
+    auth: "required",
+    idempotency: { scope: "report-publish" },
+    rateLimit: { name: "report-publish", limit: 30, windowSeconds: 60, by: "user" },
+  },
+  async ({ req, user, params }) => {
+    const routeId = params.id;
+    const supabase = await createClient();
 
-  let body: ComposeInput;
-  try {
-    body = (await request.json()) as ComposeInput;
-  } catch {
-    return NextResponse.json({ error: "invalid json" }, { status: 400 });
-  }
-
-  if (routeId && body.id && routeId !== body.id) {
-    return NextResponse.json({ error: "report id mismatch" }, { status: 400 });
-  }
-
-  try {
-    const result = await validateAndPublishReport(supabase, user.id, { ...body, id: routeId || body.id });
-    revalidatePath("/");
-    revalidatePath("/home");
-    revalidatePath("/discover");
-    revalidatePath("/studio");
-    return NextResponse.json({ ok: true, id: result.id });
-  } catch (e) {
-    if (e instanceof PublishReportError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
+    let body: ComposeInput;
+    try {
+      body = (await req.json()) as ComposeInput;
+    } catch {
+      throw new ApiError("bad_request", "invalid json");
     }
-    const message = e instanceof Error ? e.message : "publish failed";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
+
+    if (routeId && body.id && routeId !== body.id) {
+      throw new ApiError("bad_request", "report id mismatch");
+    }
+
+    try {
+      const result = await validateAndPublishReport(supabase, user!.id, {
+        ...body,
+        id: routeId || body.id,
+      });
+      revalidatePath("/");
+      revalidatePath("/home");
+      revalidatePath("/discover");
+      revalidatePath("/studio");
+      return NextResponse.json({ ok: true, id: result.id });
+    } catch (e) {
+      if (e instanceof PublishReportError) {
+        return NextResponse.json({ error: e.message }, { status: e.status });
+      }
+      throw e;
+    }
+  },
+);
