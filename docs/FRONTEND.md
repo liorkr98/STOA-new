@@ -15,7 +15,7 @@ two disagree, this file wins and `AGENTS.md` should be corrected to match.
   This avoided conflicting with in-flight backend branches. The design system, components, and
   page content below apply within the existing URLs.
 
-Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the MOAT formula, the
+Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the Track Score formula, the
 fact-checker pipeline). Nothing here invents new data — every field referenced below should
 already exist in that schema, or is flagged explicitly where it doesn't yet.
 

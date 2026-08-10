@@ -1,5 +1,7 @@
 # Stoa Backend — Deep Dive
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 Living backend spec for STOA-new. Amended per PM framework review (Edge Cases, Launch Checklist, G/W/T acceptance criteria, MoSCoW).
 
 **Stack:** Next.js 15 App Router · Supabase Postgres + RLS · Yahoo Finance (live quotes) · PayPal (real-money rail, optional)
@@ -37,7 +39,7 @@ Implementation: `src/app/actions/reports.ts` + `src/lib/engine/trading-calendar.
 
 ### Ticker delisting (Should #9)
 
-When `tickers.status` ≠ `active`, the resolution job resolves open calls as **`neutral`** immediately and excludes them from MOAT (`computeScore` filters `neutral`).
+When `tickers.status` ≠ `active`, the resolution job resolves open calls as **`neutral`** immediately and excludes them from the Track Score (`computeScore` filters `neutral`).
 
 ---
 
@@ -61,9 +63,9 @@ If `target_horizon_date` is not a trading day, resolve against the **next tradin
 
 ### No market data (Must #3)
 
-If no live quote is available (`getQuotesBatch({ allowMock: false })`), set `reports.status = resolution_pending_review`. Do **not** grade hit/miss. MOAT unchanged. No false notifications.
+If no live quote is available (`getQuotesBatch({ allowMock: false })`), set `reports.status = resolution_pending_review`. Do **not** grade hit/miss. Track Score unchanged. No false notifications.
 
-**G/W/T:** Given provider returns no price, When job runs, Then status becomes `resolution_pending_review` and MOAT is unaffected.
+**G/W/T:** Given provider returns no price, When job runs, Then status becomes `resolution_pending_review` and the Track Score is unaffected.
 
 ### Manual admin resolve
 
@@ -77,7 +79,7 @@ Set `CRON_ALERT_WEBHOOK_URL` (Slack/email webhook). Cron posts `{ event: "grade.
 
 ---
 
-## §6 — MOAT score engine
+## §6 — Track Score engine
 
 Pure functions in `src/lib/engine/score.ts`. Persisted to `profiles` by grading job.
 
@@ -85,7 +87,7 @@ Pure functions in `src/lib/engine/score.ts`. Persisted to `profiles` by grading 
 - Profit factor
 - Alpha vs SPY (percentile-ranked when ≥5 benchmarked calls platform-wide)
 - Sample shrinkage: `log(1+n) / log(76)` — small samples cannot dominate
-- **`neutral` outcomes excluded** from all MOAT inputs
+- **`neutral` outcomes excluded** from all Track Score inputs
 
 ### Tests (Should #10)
 
@@ -106,7 +108,7 @@ Checklist:
 | `POST /api/webhooks/paypal` | PayPal events — **idempotent** via `processed_webhook_events` |
 | `POST /api/admin/resolve-report` | Manual resolution for pending-review reports |
 | `GET /api/cron/grade` | Hourly grading + platform stats MV refresh |
-| `GET /api/creators/[id]/moat` | **Addendum #2** — `{ current, previous }` MOAT snapshots for odometer animation |
+| `GET /api/creators/[id]/moat` | **Addendum #2** — `{ current, previous }` Track Score snapshots for odometer animation |
 | `GET /api/search?q=` | **Addendum #2** — trigram typeahead: `{ creators, tickers }` (~5 each) |
 | `GET /api/stats/platform` | **Addendum #2** — trust-bar aggregates from `platform_stats` MV (`Cache-Control: max-age=3600`) |
 | `POST /api/feed/dismiss` | **Addendum #2** — persist "Not interested"; excluded in `listFeed()` |
@@ -136,7 +138,7 @@ Implementation: `src/lib/paypal/webhooks.ts` — `isWebhookProcessed` / `markWeb
 
 ```
 src/lib/engine/
-  score.ts              MOAT formula (pure, tested)
+  score.ts              Track Score formula (pure, tested)
   grade.ts              Resolution + score persistence
   trading-calendar.ts   Weekend/holiday rules
   tickers.ts            Per-symbol timezone + status
@@ -160,7 +162,7 @@ src/lib/reports/chart-screenshots.ts
 |------|-------|--------|
 | 1–6 | Schema, RLS, publish/lock, wallet | **Must** |
 | 7 | PayPal payouts | **Must** before real money; separable for local dev |
-| 8 | Resolution + MOAT cron | **Must** for complete trust loop; briefly testable without |
+| 8 | Resolution + Track Score cron | **Must** for complete trust loop; briefly testable without |
 | 9 | Feed / follows / notifications | **Should** |
 
 ---

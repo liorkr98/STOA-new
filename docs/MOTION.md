@@ -1,5 +1,7 @@
 # Stoa — Motion & Polish Spec
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 ### The go-live elevation pass. Extends `docs/FRONTEND.md` §1.5 — where they differ, this doc wins on motion; FRONTEND.md wins on everything else.
 
 Three inputs are encoded here, so Claude Code doesn't need to re-derive them per session:
@@ -64,7 +66,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 | **DebateThread (mobile sheet)** | Use **Vaul** — gesture-driven, spring-based, interruptible, drag-to-dismiss. Desktop side panel: x 8px→0 + opacity. | Vaul defaults / `--dur-3` |
 | **Toasts** | Use **Sonner**. Bottom-center desktop, bottom mobile. The "Locked" toast carries the seal glyph. Default timings — don't restyle motion. | Sonner defaults |
 | **LockConfirmModal** | Overlay opacity 0→1; panel scale 0.98→1 + opacity, `--ease-out`. Exit reverse, faster. | enter `--dur-3`, exit `--dur-2` |
-| **MOAT score odometer** | Tabular-nums count from previous → new value, `--ease-out`, once per *meaningful* change (page load after a resolve; the resolve notification). Never on rerenders, never looping. | 600ms |
+| **Track Score odometer** | Tabular-nums count from previous → new value, `--ease-out`, once per *meaningful* change (page load after a resolve; the resolve notification). Never on rerenders, never looping. | 600ms |
 | **PaywallGate unlock** | The paid moment earns a small lift: scrim gradient fades out while revealed content rises y 8px→0. One-time per unlock. | `--dur-3` `--ease-out` |
 | **FeedCard hover** | Border-color shift + translateY(-1px). **No scale, no shadow-grow** — scale on large surfaces reads cheap and shadows violate the elevation system. | `--dur-1` `--ease-hover` |
 | **Dropdowns / role switcher / bell** | Scale 0.97→1 + opacity, origin at trigger edge. | `--dur-2` / `--dur-1` exit |

@@ -1,6 +1,6 @@
 # STOA Product Roadmap
 
-Stoa is a **two-sided marketplace for independent stock research** where analysts publish calls and investors pay for access. The moat is a **verified, permanent track record**: every scored call locks an entry price server-side and is graded automatically when the horizon ends.
+Stoa is a **marketplace for independent stock research** where analysts publish research and investors pay for access; the platform takes 10%. Publications are **video-first** (a short analyst video, optionally enriched with a locked call, evidence cards, and a written thesis); only publications with a locked call are scored. The moat is a **verified, permanent, non-transferable track record** shown as the **Track Score** (0-100): every scored call locks an attested entry price server-side and is graded by the market when the horizon ends. Full model: `docs/PRODUCT_MODEL.md`.
 
 This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (Base44 + Vite) with the [STOA-new rebuild](https://github.com/liorkr98/STOA-new) (Next.js + Supabase) and tracks what is done vs planned.
 
@@ -18,10 +18,10 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 ## Done (core loop)
 
 - Auth, profiles, roles (user / analyst / admin)
-- Publish research, calls, short posts
+- Publish video-first research (CALL / RESEARCH / NOTE)
 - Server-side price lock + SPY benchmark at publish
 - Hourly grading cron + CLI (`npm run grade`)
-- Composite score, 600-1400 rating, tiers
+- Track Score (0-100) is the only score in the UI; the 600-1400 rating display + tiers are retired. Underlying formula is an open decision (modified Elo vs Wilson/PF/alpha composite) — see `docs/PRODUCT_MODEL.md`
 - Discover feed (trending, recent, following, subscriptions, **researchers**)
 - Analyst profiles, leaderboard, markets browser
 - Wallet (simulated credits), subscribe, unlock, confirm-spend dialog
@@ -43,7 +43,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **PM framework backend (0018)** — horizon validation, trading-calendar resolution, `resolution_pending_review`, webhook idempotency, fact-check rate limits — see `docs/Stoa_Backend_Deep_Dive.md`
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
-- **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
+- **Track Score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
 - **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
 
 ## In progress / next (high priority)
@@ -76,8 +76,9 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 
 ## Migrations to run
 
-Apply every file in `supabase/migrations/` in order (see README.md for the current full list,
-through **`0017_analyst_applications.sql`**) on your Supabase project via the SQL Editor.
+Apply every file in `supabase/migrations/` in order (see the `supabase/migrations/` directory for
+the current full list; it now extends well past `0017_analyst_applications.sql`) on your Supabase
+project via the SQL Editor.
 
 ```bash
 npm run seed          # demo analysts + investor

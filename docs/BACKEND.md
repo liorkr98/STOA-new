@@ -1,5 +1,7 @@
 # Stoa Backend
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 Server contract for schema, RLS, scoring, payments, storage, and API routes. See also `docs/Stoa_Backend_Deep_Dive.md` for PM-framework amendments.
 
 ## Report bodies
@@ -43,7 +45,7 @@ Daily editorial digest for the homepage (`/`). Server-assembled ranking — clie
 
 **Response shape** (`DispatchPayload`): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (Today's Record — empty array omits UI), `leaderboard[]` (personalized only).
 
-**Ranking** (`src/lib/dispatch/ranking.ts`): conviction + recency + moat score. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
+**Ranking** (`src/lib/dispatch/ranking.ts`): conviction + recency + Track Score. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
 
 **Issue counter:** migration `0026_dispatch_meta.sql` — `dispatch_meta` singleton + `bump_dispatch_issue()` RPC increments once per NY calendar day.
 
@@ -109,7 +111,7 @@ Baseline controls:
 
 ## Profile branding & boosts
 
-`profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. MOAT badge and disclosure blocks are **not** brandable.
+`profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. Track Score badge and disclosure blocks are **not** brandable.
 
 | Route | Auth | Purpose |
 |-------|------|---------|

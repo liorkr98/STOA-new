@@ -1,5 +1,7 @@
 # DATA_STACK.md — Stoa market-data & technology stack
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 > Durable reference for the research-platform build (spec v3, Section 1). This is the contract
 > every data feature is built against. If a component needs a number, it comes through the layer
 > described here — never from a provider SDK or a `fetch()` in a component.

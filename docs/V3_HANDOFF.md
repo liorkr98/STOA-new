@@ -1,5 +1,9 @@
 # V3 Research Platform — Handoff & Audit
 
+> **Archived / historical.** This is a point-in-time handoff for the `feat/research-platform-v3`
+> branch, kept for reference only. It predates the current product model
+> (`docs/PRODUCT_MODEL.md`) and is not live guidance.
+
 Branch: `feat/research-platform-v3`. Everything below was built without a local `npm install`
 (network-blocked environment), so **the cloud build is the verification step**. Nothing here has
 run through `tsc` locally. This doc is the single checklist for merging, auditing, and finishing.
