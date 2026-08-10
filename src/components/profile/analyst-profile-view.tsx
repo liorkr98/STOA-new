@@ -34,7 +34,8 @@ export interface ProfilePinned {
   direction: Direction | null;
   badge: string;
   title: string;
-  meta: string;
+  deck: string | null;
+  footer: string;
   duration: string;
 }
 
@@ -125,7 +126,7 @@ const toneColor = (tone: "up" | "down" | "neutral" | "ink" | "mute") =>
 /** A dark-neutral video poster placeholder (no real thumbnails yet). */
 function VideoThumb({ duration, className }: { duration: string; className?: string }) {
   return (
-    <div className={cn("relative overflow-hidden rounded-[10px] bg-surface-2", className)}>
+    <div className={cn("relative overflow-hidden bg-surface-2", className)}>
       <div
         aria-hidden
         className="absolute inset-0 opacity-40"
@@ -247,19 +248,16 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
 
         {/* RIGHT: pinned video */}
         {props.pinned && (
-          <div>
+          <div className="flex flex-col md:h-full">
             <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
               Pinned by {props.firstName}
             </div>
             <Link
               href={props.pinned.href}
-              className="mt-3.5 flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-5 md:flex-row md:items-start"
+              className="mt-3.5 flex flex-1 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface transition-colors hover:border-border-strong"
             >
-              <VideoThumb
-                duration={props.pinned.duration}
-                className="h-52 w-full md:h-[164px] md:w-[112px] md:flex-none"
-              />
-              <div>
+              <VideoThumb duration={props.pinned.duration} className="min-h-[220px] w-full flex-1" />
+              <div className="flex flex-col gap-3 p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   {props.pinned.ticker && <TickerChip ticker={props.pinned.ticker} />}
                   {props.pinned.direction && <DirectionTag direction={props.pinned.direction} />}
@@ -267,11 +265,14 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                     {props.pinned.badge}
                   </span>
                 </div>
-                <h2 className="mt-3 font-display text-2xl font-semibold leading-snug tracking-tight">
+                <h2 className="font-display text-2xl font-semibold leading-snug tracking-tight">
                   {props.pinned.title}
                 </h2>
-                <div className="num mt-3 text-[10.5px] uppercase tracking-[0.14em] text-text-mute">
-                  {props.pinned.meta}
+                {props.pinned.deck && (
+                  <p className="text-[15px] leading-relaxed text-text-mute">{props.pinned.deck}</p>
+                )}
+                <div className="num text-[10.5px] uppercase tracking-[0.14em] text-text-faint">
+                  {props.pinned.footer}
                 </div>
               </div>
             </Link>
@@ -325,7 +326,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <div className="grid grid-cols-1 gap-x-7 gap-y-8 md:grid-cols-3">
             {props.videos.map((v) => (
               <Link key={v.id} href={v.href} className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
-                <VideoThumb duration={v.duration} className="h-44 w-full md:h-[104px] md:w-[72px] md:flex-none" />
+                <VideoThumb duration={v.duration} className="h-44 w-full rounded-[10px] md:h-[104px] md:w-[72px] md:flex-none" />
                 <div>
                   <h3 className="font-display text-lg font-semibold leading-snug tracking-tight">{v.title}</h3>
                   <div className="num mt-2.5 text-[10px] uppercase tracking-[0.14em] text-text-mute">{v.meta}</div>

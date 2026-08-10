@@ -220,7 +220,8 @@ export default async function AnalystProfilePage({
         direction: (predByReport.get(pinnedReport.id)?.direction as Direction) ?? null,
         badge: badgeFor(pinnedReport.type),
         title: pinnedReport.title ?? "Untitled",
-        meta: `${pinnedReport.ticker ? `${pinnedReport.ticker} · ` : ""}${formatDistanceToNowStrict(new Date(pinnedReport.published_at ?? pinnedReport.created_at)).toUpperCase()} AGO · ${compact(pinnedReport.views)} VIEWS`,
+        deck: pinnedReport.summary,
+        footer: `${format(new Date(pinnedReport.published_at ?? pinnedReport.created_at), "MMM d, yyyy").toUpperCase()} · ${compact(pinnedReport.views)} VIEWS`,
         duration: "0:00", // placeholder
       }
     : null;
