@@ -1,33 +1,23 @@
-import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { format, formatDistanceToNowStrict } from "date-fns";
 import { getProfileByHandle } from "@/lib/db/profiles";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
 import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, isSubscribed } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
-import { listPollsByCreator } from "@/lib/db/polls";
 import { listActivePlans } from "@/lib/db/plans";
-import { PollCard } from "@/components/polls/poll-card";
-import { PlanPicker } from "@/components/wallet/plan-picker";
-import { StorefrontSections } from "@/components/profile/storefront-sections";
-import { ShareMenu } from "@/components/share/share-menu";
 import { analystStats } from "@/lib/engine/track";
-import { pct } from "@/lib/format";
-import { accentVars, checkAccent } from "@/lib/profile/accent";
-import { fontPairingVars } from "@/lib/profile/fonts";
-import { ProfileHeader } from "@/components/profile/profile-header";
-import { Stat } from "@/components/ui/stat";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
-import { TrackChart } from "@/components/charts/track-chart";
-import { TabBar } from "@/components/feed/tab-bar";
-import { ReportCard } from "@/components/report-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { FollowButton } from "@/components/follow-button";
-import { SubscribeButton } from "@/components/wallet/subscribe-button";
-import { TrackBreakdown } from "@/components/track/track-breakdown";
-import { CallHistory } from "@/components/track/call-history";
+import { pct, compact, usd } from "@/lib/format";
+import type { Direction, Prediction, Report } from "@/lib/types";
+import {
+  AnalystProfileView,
+  type ProfileVerdict,
+  type ProfileReportRow,
+  type ProfileVideo,
+  type ProfilePinned,
+} from "@/components/profile/analyst-profile-view";
 
 export async function generateMetadata({
   params,
@@ -61,30 +51,42 @@ export async function generateMetadata({
   };
 }
 
-const VIEWS = [
-  { key: "all", label: "All" },
-  { key: "research", label: "Research" },
-  { key: "calls", label: "Calls" },
-  { key: "posts", label: "Posts" },
-];
+function initialsOf(name: string) {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+/** Placeholder content badge until video/cards presence is stored per publication. */
+function badgeFor(type: Report["type"]): string {
+  if (type === "research") return "VIDEO · THESIS";
+  if (type === "short_post") return "VIDEO · NOTE";
+  return "VIDEO · CALL";
+}
+
+function typeLabel(type: Report["type"]): string {
+  if (type === "research") return "RESEARCH";
+  if (type === "short_post") return "NOTE";
+  return "CALL";
+}
 
 export default async function AnalystProfilePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ handle: string }>;
-  searchParams: Promise<{ view?: string }>;
 }) {
   const { handle } = await params;
-  const { view = "all" } = await searchParams;
   const profile = await getProfileByHandle(handle);
   if (!profile) notFound();
 
-  const [predictions, reports, userId, polls, plans] = await Promise.all([
+  const [predictions, reports, userId, plans] = await Promise.all([
     listPredictionsByAuthor(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     getSessionUserId(),
-    listPollsByCreator(profile.id, 3),
     listActivePlans(profile.id),
   ]);
 
@@ -96,168 +98,161 @@ export default async function AnalystProfilePage({
     userId ? getWallet(userId) : Promise.resolve(null),
   ]);
 
-  const filtered = reports.filter((r) =>
-    view === "all"
-      ? true
-      : view === "research"
-        ? r.type === "research"
-        : view === "calls"
-          ? r.type === "call"
-          : r.type === "short_post",
-  );
+  const reportById = new Map<string, Report>(reports.map((r) => [r.id, r]));
+  const predByReport = new Map<string, Prediction>();
+  for (const p of predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
 
-  const config = profile.profile_config ?? {};
-  // Scoped custom accent (B1): overrides --accent for this storefront subtree
-  // only. Re-validated at render so a bad stored value never ships.
-  const accentCheck = config.accent ? checkAccent(config.accent) : null;
-  const storefrontStyle = {
-    ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
-    ...fontPairingVars(config.font_pairing),
-  } as CSSProperties;
+  const score = profile.score || stats.score || null;
+  const provisional = stats.total < 5;
+  const name = profile.display_name;
+  const firstName = name.split(/\s+/)[0] || name;
+  const joinedYear = new Date(profile.created_at).getFullYear();
 
-  const layout = config.layout ?? "list";
+  const recordLine =
+    stats.total === 0
+      ? "Not yet scored"
+      : provisional
+        ? "Provisional · small sample"
+        : `${Math.round((stats.winRate ?? 0) * 100)}% hit rate over ${stats.total} resolved calls`;
+
+  const confidenceLine =
+    stats.total === 0
+      ? "NO RESOLVED CALLS YET"
+      : provisional
+        ? `PARTIAL SAMPLE · ${stats.total} RESOLVED CALL${stats.total === 1 ? "" : "S"}`
+        : `FULL SAMPLE · ${stats.total} RESOLVED CALLS`;
+
+  // Stat tiles (win rate + alpha read "—" for provisional / insufficient data).
+  const tiles: { label: string; value: string; tone: "ink" | "up" }[] = [
+    {
+      label: "WIN RATE",
+      value: provisional || stats.winRate == null ? "—" : pct(stats.winRate * 100, false),
+      tone: "ink",
+    },
+    {
+      label: "AVG RETURN",
+      value: stats.avgReturn == null ? "—" : pct(stats.avgReturn),
+      tone: stats.avgReturn != null && stats.avgReturn > 0 ? "up" : "ink",
+    },
+    {
+      label: "ALPHA VS S&P",
+      value: stats.avgAlpha == null ? "—" : pct(stats.avgAlpha),
+      tone: stats.avgAlpha != null && stats.avgAlpha > 0 ? "up" : "ink",
+    },
+    { label: "RESOLVED", value: String(stats.total), tone: "ink" },
+  ];
+
+  // Verdicts = resolved calls, newest first.
+  const resolved = predictions
+    .filter((p) => ["hit", "near", "miss", "partial"].includes(p.outcome) && p.lock_price && p.resolved_price != null)
+    .sort((a, b) => +new Date(b.resolution_trading_date ?? b.resolves_at) - +new Date(a.resolution_trading_date ?? a.resolves_at));
+
+  const verdicts: ProfileVerdict[] = resolved.map((p) => {
+    const dateISO = p.resolution_trading_date ?? p.resolves_at;
+    return {
+      id: p.id,
+      href: `/report/${p.report_id}`,
+      ticker: p.ticker,
+      direction: p.direction as Direction,
+      title: reportById.get(p.report_id)?.title ?? `${p.ticker} call`,
+      entryExit: `${p.lock_price?.toFixed(2)} → ${p.resolved_price?.toFixed(2)}`,
+      retLabel: p.return_pct == null ? "—" : pct(p.return_pct),
+      retTone: p.return_pct == null ? "neutral" : p.return_pct > 0 ? "up" : p.return_pct < 0 ? "down" : "neutral",
+      dateISO,
+      dateLabel: format(new Date(dateISO), "MMM d, yyyy").toUpperCase(),
+      sealStatus: p.outcome === "hit" ? "hit" : p.outcome === "near" ? "near" : "miss",
+    };
+  });
+
+  // Reports tab = publications with a thesis (call + research); notes live under Videos.
+  const thesisReports = reports.filter((r) => r.type === "research" || r.type === "call");
+  const reportRows: ProfileReportRow[] = thesisReports.map((r) => {
+    const gated = String(r.access).startsWith("sub") ? "subscribers" : r.price && r.price > 0 ? "paid" : "free";
+    const access = gated === "subscribers" ? "SUBSCRIBERS" : gated === "paid" ? `$${r.price}` : "FREE";
+    const locked = gated !== "free" && !subscribed && !isSelf;
+    const when = r.published_at ?? r.created_at;
+    return {
+      id: r.id,
+      href: `/report/${r.id}`,
+      typeLabel: typeLabel(r.type),
+      ticker: r.ticker,
+      badge: badgeFor(r.type),
+      dateLabel: format(new Date(when), "MMM d").toUpperCase(),
+      title: r.title ?? "Untitled",
+      deck: r.summary,
+      access,
+      accessTone: gated === "subscribers" ? "mute" : "ink",
+      locked,
+    };
+  });
+
+  // Videos = every publication (placeholder: no real video model/thumbnails/durations yet).
+  const videos: ProfileVideo[] = reports.map((r) => {
+    const when = r.published_at ?? r.created_at;
+    return {
+      id: r.id,
+      href: `/report/${r.id}`,
+      title: r.title ?? "Untitled",
+      meta: `${r.ticker ? `${r.ticker} · ` : ""}${formatDistanceToNowStrict(new Date(when)).toUpperCase()} AGO · ${compact(r.views)} VIEWS`,
+      duration: "0:00", // placeholder
+    };
+  });
+
+  // Pinned = most recent publication (placeholder: no real "pinned" flag or video yet).
+  const pinnedReport = reports[0];
+  const pinned: ProfilePinned | null = pinnedReport
+    ? {
+        href: `/report/${pinnedReport.id}`,
+        ticker: pinnedReport.ticker,
+        direction: (predByReport.get(pinnedReport.id)?.direction as Direction) ?? null,
+        badge: badgeFor(pinnedReport.type),
+        title: pinnedReport.title ?? "Untitled",
+        meta: `${pinnedReport.ticker ? `${pinnedReport.ticker} · ` : ""}${formatDistanceToNowStrict(new Date(pinnedReport.published_at ?? pinnedReport.created_at)).toUpperCase()} AGO · ${compact(pinnedReport.views)} VIEWS`,
+        duration: "0:00", // placeholder
+      }
+    : null;
+
+  // Subscribe button label: "from $X/mo" using the cheapest paid plan (or legacy price).
+  const paidPrices = plans.filter((p) => p.price_cents > 0).map((p) => p.price_cents / 100);
+  const fromPrice = paidPrices.length ? Math.min(...paidPrices) : profile.sub_price ?? null;
+  const subscribeLabel = fromPrice ? `Subscribe · from ${usd(fromPrice)}/mo` : "Subscribe";
 
   return (
-    <div
-      className={`flex flex-col gap-8 ${config.texture ? "paper-texture" : ""}`}
-      style={storefrontStyle}
-    >
-      <ProfileHeader
-        profile={profile}
-        config={config}
-        showEditLink={isSelf}
-        aside={
-          <>
-            <TrackScoreBadge
-              handle={profile.handle}
-              score={profile.score || stats.score || null}
-              hitRate={stats.winRate}
-              sampleSize={stats.resolved}
-              size="lg"
-            />
-            {!isSelf &&
-              (plans.length > 0 ? (
-                <PlanPicker
-                  plans={plans}
-                  handle={profile.handle}
-                  balance={wallet?.balance ?? 0}
-                  isAuthed={Boolean(userId)}
-                  subscribed={subscribed}
-                />
-              ) : (
-                <SubscribeButton
-                  analystId={profile.id}
-                  handle={profile.handle}
-                  price={profile.sub_price}
-                  balance={wallet?.balance ?? 0}
-                  isAuthed={Boolean(userId)}
-                  subscribed={subscribed}
-                />
-              ))}
-          </>
-        }
-      />
-      <div className="flex items-center gap-3">
-        {!isSelf && (
-          <FollowButton
-            analystId={profile.id}
-            initialFollowing={following}
-            isAuthed={Boolean(userId)}
-          />
-        )}
-        <ShareMenu
-          target={{
-            url: `/analyst/${profile.handle}`,
-            title: `${profile.display_name} on Stoa - verified track record`,
-          }}
-          label="Share profile"
-        />
-      </div>
-
-      {polls.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {polls.map((poll) => (
-            <PollCard key={poll.id} poll={poll} isAuthed={Boolean(userId)} />
-          ))}
-        </section>
-      )}
-
-      <StorefrontSections sections={config.storefront_sections ?? []} reports={reports} />
-
-      {/* Track record */}
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h3">Track record</h2>
-        <div className="mt-4 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          {stats.series.length > 1 ? (
-            <TrackChart data={stats.series} />
-          ) : (
-            <div className="flex h-56 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
-              <p className="t-meta">Track chart appears after resolved calls.</p>
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-5 self-center">
-            <Stat
-              label="Win rate"
-              value={stats.winRate != null ? pct(stats.winRate * 100, false) : "-"}
-            />
-            <Stat
-              label="Profit factor"
-              value={stats.profitFactor != null ? stats.profitFactor.toFixed(2) : "-"}
-            />
-            <Stat
-              label="Avg return"
-              value={pct(stats.avgReturn)}
-              tone={stats.avgReturn == null ? "neutral" : stats.avgReturn >= 0 ? "up" : "down"}
-            />
-            <Stat
-              label="Alpha vs S&P"
-              value={pct(stats.avgAlpha)}
-              tone={stats.avgAlpha == null ? "neutral" : stats.avgAlpha >= 0 ? "up" : "down"}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Score breakdown + tier progress */}
-      {stats.total > 0 && (
-        <TrackBreakdown
-          score={stats.score}
-          breakdown={stats.breakdown}
-          hits={stats.hits}
-          nearHits={stats.nearHits}
-          misses={stats.misses}
-          total={stats.total}
-        />
-      )}
-
-      {/* Full call ledger */}
-      <p className="t-meta">All calls, including missed targets, stay visible permanently.</p>
-      <CallHistory predictions={predictions} />
-
-      {/* Publications */}
-      <section className="flex flex-col gap-5">
-        <TabBar tabs={VIEWS} active={view} param="view" />
-        {filtered.length > 0 ? (
-          layout === "magazine" && filtered.length > 1 ? (
-            <div className="flex flex-col gap-5">
-              <ReportCard report={{ ...filtered[0], author: profile }} />
-              <div className="grid gap-5 sm:grid-cols-2">
-                {filtered.slice(1).map((r) => (
-                  <ReportCard key={r.id} report={{ ...r, author: profile }} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className={layout === "grid" ? "grid gap-5 sm:grid-cols-2" : "grid gap-5"}>
-              {filtered.map((r) => (
-                <ReportCard key={r.id} report={{ ...r, author: profile }} />
-              ))}
-            </div>
-          )
-        ) : (
-          <EmptyState title="Nothing published here yet" />
-        )}
-      </section>
-    </div>
+    <AnalystProfileView
+      handle={profile.handle}
+      name={name}
+      firstName={firstName}
+      initials={initialsOf(name)}
+      avatarUrl={profile.avatar_url}
+      verified={profile.verified}
+      specialty={profile.headline?.trim() || "Independent analyst on Stoa"}
+      bio={profile.bio}
+      handleLine={`@${profile.handle.toUpperCase()} · ${compact(profile.followers_count)} FOLLOWERS · JOINED ${joinedYear}`}
+      isSelf={isSelf}
+      score={score}
+      provisional={provisional}
+      scoreLabel="TRACK SCORE"
+      recordLine={recordLine}
+      confidenceLine={confidenceLine}
+      tiles={tiles}
+      counts={{ videos: videos.length, verdicts: verdicts.length, reports: reportRows.length }}
+      videos={videos}
+      pinned={pinned}
+      verdicts={verdicts}
+      reports={reportRows}
+      predictions={predictions}
+      series={stats.series}
+      breakdown={stats.breakdown}
+      hits={stats.hits}
+      nearHits={stats.nearHits}
+      misses={stats.misses}
+      total={stats.total}
+      analystId={profile.id}
+      initialFollowing={following}
+      isAuthed={Boolean(userId)}
+      subscribeLabel={subscribeLabel}
+      plans={plans}
+      balance={wallet?.balance ?? 0}
+    />
   );
 }
