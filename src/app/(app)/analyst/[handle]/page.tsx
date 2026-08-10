@@ -11,6 +11,9 @@ import { listActivePlans } from "@/lib/db/plans";
 import { analystStats } from "@/lib/engine/track";
 import { pct, compact, usd } from "@/lib/format";
 import type { Direction, Prediction, Report } from "@/lib/types";
+import type { CSSProperties } from "react";
+import { accentVars, checkAccent } from "@/lib/profile/accent";
+import { fontPairingVars } from "@/lib/profile/fonts";
 import {
   AnalystProfileView,
   type ProfileVerdict,
@@ -104,6 +107,16 @@ export default async function AnalystProfilePage({
 
   const score = profile.score || stats.score || null;
   const provisional = stats.total < 5;
+
+  // Per-analyst storefront theming (branding studio Style tab): scoped custom
+  // accent (re-validated so a bad stored value never ships), font pairing, and
+  // the optional paper texture. Applied to the profile subtree only.
+  const config = profile.profile_config ?? {};
+  const accentCheck = config.accent ? checkAccent(config.accent) : null;
+  const storefrontStyle = {
+    ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
+    ...fontPairingVars(config.font_pairing),
+  } as CSSProperties;
   const name = profile.display_name;
   const firstName = name.split(/\s+/)[0] || name;
   const joinedYear = new Date(profile.created_at).getFullYear();
@@ -253,6 +266,8 @@ export default async function AnalystProfilePage({
       subscribeLabel={subscribeLabel}
       plans={plans}
       balance={wallet?.balance ?? 0}
+      storefrontStyle={storefrontStyle}
+      texture={Boolean(config.texture)}
     />
   );
 }

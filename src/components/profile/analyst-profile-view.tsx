@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Play, Lock, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction, Prediction } from "@/lib/types";
@@ -108,6 +108,9 @@ export interface AnalystProfileViewProps {
   subscribeLabel: string;
   plans: Plan[];
   balance: number;
+  /** Per-analyst storefront theming (scoped accent + font pairing vars). */
+  storefrontStyle?: CSSProperties;
+  texture?: boolean;
 }
 
 const toneColor = (tone: "up" | "down" | "neutral" | "ink" | "mute") =>
@@ -163,7 +166,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
   );
 
   return (
-    <div className="pb-24 md:pb-0">
+    <div className={cn("pb-24 md:pb-0", props.texture && "paper-texture")} style={props.storefrontStyle}>
       {/* HERO */}
       <div className="grid gap-8 md:grid-cols-[55fr_45fr] md:gap-16">
         {/* LEFT: identity + score card + actions */}
@@ -229,7 +232,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="flex-1 rounded-[var(--radius-card)] bg-[var(--ink)] px-5 py-3.5 text-[15px] font-medium text-[var(--paper)] transition-opacity hover:opacity-90 focus-ring"
+                className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
               >
                 {props.subscribeLabel}
               </button>
@@ -478,7 +481,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="flex-1 rounded-[var(--radius-card)] bg-[var(--ink)] px-3 py-3.5 text-[15px] font-medium text-[var(--paper)] focus-ring"
+            className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
           >
             {props.subscribeLabel}
           </button>
