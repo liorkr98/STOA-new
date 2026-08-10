@@ -10,7 +10,6 @@ import { StoaLogo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
 import { AccountMenu } from "@/components/layout/account-menu";
-import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { NavSearch } from "@/components/layout/nav-search";
 import { signOut } from "@/app/actions/auth";
 
@@ -48,11 +47,6 @@ export function TopNav({
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   const links = profile ? appLinks : publicLinks;
   const logoHref = profile ? "/home" : "/";
-  // Analysts can view as Investor (Discover/Home) or Analyst (Studio).
-  // Full dual-role accounts land with BACKEND_DATA_CONTRACTS.md; until then
-  // analysts get the switcher so the two-sided product stays legible.
-  const showRoleSwitcher = isAnalyst;
-  const viewingAsAnalyst = pathname.startsWith("/studio") || pathname.startsWith("/dashboard");
 
   return (
     <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper">
@@ -62,11 +56,6 @@ export function TopNav({
             <Link href={logoHref} className="focus-ring rounded-[var(--radius-btn)]">
               <StoaLogo />
             </Link>
-            {showRoleSwitcher && (
-              <div className="hidden sm:block">
-                <RoleSwitcher current={viewingAsAnalyst ? "analyst" : "investor"} />
-              </div>
-            )}
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((l) => {
@@ -143,11 +132,6 @@ export function TopNav({
       {open && (
         <div className="border-t border-border bg-surface px-5 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
-            {showRoleSwitcher && (
-              <div className="px-3 py-2 sm:hidden">
-                <RoleSwitcher current={viewingAsAnalyst ? "analyst" : "investor"} />
-              </div>
-            )}
             {links.map((l) => (
               <Link
                 key={l.href}

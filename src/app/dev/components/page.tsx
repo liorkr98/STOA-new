@@ -9,7 +9,7 @@ import { DyorBar } from "@/components/ui/dyor-bar";
 import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { FactCheckLayer, FactCheckedText } from "@/components/report/fact-check-layer";
-import { RoleSwitcher } from "@/components/layout/role-switcher";
+import { ScoreRing } from "@/components/ui/score-ring";
 import { Button } from "@/components/ui/button";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
@@ -92,10 +92,12 @@ export default function ComponentPreviewPage() {
         />
       </div>
 
-      <p className="t-eyebrow mb-4">RoleSwitcher (gated off in real nav today, see docs)</p>
-      <div className="flex gap-4 mb-12">
-        <RoleSwitcher current="investor" />
-        <RoleSwitcher current="analyst" />
+      <p className="t-eyebrow mb-4">ScoreRing (sm / md / lg, plus provisional)</p>
+      <div className="mb-12 flex items-end gap-6">
+        <ScoreRing score={72} size="sm" />
+        <ScoreRing score={72} size="md" />
+        <ScoreRing score={72} size="lg" />
+        <ScoreRing score={41} size="md" provisional />
       </div>
 
       <p className="t-eyebrow mb-4">PaywallGate (single CTA, real-world case)</p>
