@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Direction } from "@/lib/types";
 import { DirectionTag } from "@/components/ui/tag";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { price } from "@/lib/format";
 
 export function PredictionCardPreview({
@@ -26,7 +27,7 @@ export function PredictionCardPreview({
   return (
     <div className="rounded-[var(--radius-card)] border border-border bg-bg/50 p-4">
       <div className="flex items-center justify-between">
-        <span className="num text-xl font-semibold">{ticker}</span>
+        <TickerChip ticker={ticker} />
         <DirectionTag direction={direction} />
       </div>
       <p className="num mt-2 text-2xl font-semibold">

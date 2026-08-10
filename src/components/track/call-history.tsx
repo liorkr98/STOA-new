@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
 import { DirectionTag, GradeTag, PendingReviewTag } from "@/components/ui/tag";
+import { TickerChip } from "@/components/ui/ticker-chip";
 
 /**
  * The full, auditable call ledger: every prediction with entry, resolution,
@@ -54,7 +55,7 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
                       href={`/report/${p.report_id}`}
                       className="inline-flex items-center gap-2 hover:text-accent"
                     >
-                      <span className="num font-semibold">{p.ticker}</span>
+                      <TickerChip ticker={p.ticker} />
                       <DirectionTag direction={p.direction} />
                     </Link>
                   </td>

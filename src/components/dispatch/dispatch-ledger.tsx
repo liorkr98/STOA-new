@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SealStamp } from "@/components/ui/seal-stamp";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import type { DispatchLedgerRow } from "@/lib/dispatch/types";
 
 function OutcomeBadge({
@@ -62,8 +63,8 @@ export function DispatchLedger({ items }: { items: DispatchLedgerRow[] }) {
                     {item.authorName}
                   </Link>
                 </td>
-                <td className="num py-3 pr-4 text-xs font-semibold uppercase tracking-wide">
-                  {item.ticker}
+                <td className="py-3 pr-4">
+                  <TickerChip ticker={item.ticker} />
                 </td>
                 <td className="num py-3 pr-4 text-xs text-text-mute">{money(item.targetPrice)}</td>
                 <td className="num py-3 pr-4 text-xs text-text-mute">

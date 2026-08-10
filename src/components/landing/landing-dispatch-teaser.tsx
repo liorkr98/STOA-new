@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
 import { DirectionTag } from "@/components/ui/tag";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import type { DispatchPayload } from "@/lib/dispatch/types";
 
 /**
@@ -51,9 +52,7 @@ export function LandingDispatchTeaser({ dispatch }: { dispatch: DispatchPayload 
             {lead ? (
               <div className="mt-5">
                 <div className="flex items-center gap-2">
-                  {lead.report.ticker && (
-                    <span className="num text-xs font-semibold">{lead.report.ticker}</span>
-                  )}
+                  {lead.report.ticker && <TickerChip ticker={lead.report.ticker} />}
                   {lead.prediction && <DirectionTag direction={lead.prediction.direction} />}
                 </div>
                 <p className="font-display mt-2 text-xl font-semibold leading-snug text-text" style={{ textWrap: "balance" }}>

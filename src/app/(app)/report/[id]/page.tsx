@@ -14,6 +14,7 @@ import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { Avatar } from "@/components/ui/avatar";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
@@ -87,7 +88,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
       <div className="flex flex-wrap items-center gap-3">
         <Tag>{report.type === "short_post" ? "Post" : report.type === "call" ? "Call" : "Research"}</Tag>
-        {report.ticker && <span className="num text-sm font-semibold text-text-mute">{report.ticker}</span>}
+        {report.ticker && <TickerChip ticker={report.ticker} />}
         <span className="t-meta">
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
         </span>

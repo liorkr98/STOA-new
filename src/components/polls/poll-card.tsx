@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { BarChart3, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { seriesColor } from "@/lib/design/chart-theme";
 import { votePollAction } from "@/app/actions/polls";
 import type { Poll } from "@/lib/db/polls";
@@ -59,7 +60,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
       <div className="flex items-center gap-2">
         <BarChart3 size={14} className="text-text-faint" />
         <span className="t-eyebrow">{KIND_LABEL[poll.kind]}</span>
-        {poll.ticker && <span className="num text-[11px] font-semibold">{poll.ticker}</span>}
+        {poll.ticker && <TickerChip ticker={poll.ticker} />}
         {poll.closes_at && (
           <span className="t-meta ml-auto flex items-center gap-1 text-[11px]">
             <Clock size={11} />

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Calculator, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { dcf, dcfSensitivity, type DcfResult } from "@/lib/valuation/model";
 import { diverging } from "@/lib/design/chart-theme";
 
@@ -217,7 +218,7 @@ export function ValuationNodeView({
       >
         <div className="mb-2 flex items-center gap-2">
           <Calculator size={14} className="text-text-faint" />
-          {ticker && <span className="num text-sm font-semibold">{ticker}</span>}
+          {ticker && <TickerChip ticker={ticker} />}
           <span className="t-eyebrow">DCF valuation</span>
           {drivesTarget && <span className="t-meta text-[11px]">drives target</span>}
         </div>

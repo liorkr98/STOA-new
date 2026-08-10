@@ -19,6 +19,7 @@ import { Trash2, ChartCandlestick, MousePointer2, Minus, TrendingUp, Eraser } fr
 import { nanoid } from "nanoid";
 import { BarChart2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { CHART_RANGES, type Candle, type ChartRange } from "@/lib/market/candle-types";
 import {
   parseAnnotations,
@@ -618,7 +619,7 @@ function LightweightChartNodeView({
 
       {ticker && (
         <div className="flex flex-wrap items-center gap-3 px-3 pt-2 text-[11px] text-text-mute">
-          <span className="num font-semibold text-text">{ticker}</span>
+          <TickerChip ticker={ticker} />
           {readout ? (
             readout.o != null ? (
               <span className="num flex gap-2">

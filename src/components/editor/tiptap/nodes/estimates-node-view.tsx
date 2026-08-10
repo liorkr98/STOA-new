@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Target, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import type { Estimate, PriceTarget } from "@/lib/market/types";
 
 /**
@@ -164,7 +165,7 @@ export function EstimatesNodeView({
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <Target size={14} className="text-text-faint" />
-          <span className="num text-sm font-semibold">{ticker}</span>
+          <TickerChip ticker={ticker} />
           <span className="t-eyebrow">Estimates</span>
         </div>
         {renderBody(estimates, priceTarget)}

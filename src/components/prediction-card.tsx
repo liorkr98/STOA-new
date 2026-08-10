@@ -1,5 +1,6 @@
 import { ArrowUpRight, Target, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
 import { DirectionTag, GradeTag, PendingReviewTag } from "./ui/tag";
@@ -56,7 +57,7 @@ export function PredictionCard({
     <div className={cn("ledger-card p-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <span className="num text-lg font-semibold tracking-tight">{ticker}</span>
+          <TickerChip ticker={ticker} />
           <DirectionTag direction={direction} />
         </div>
         <div className="flex items-center gap-2">
