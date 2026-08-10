@@ -149,3 +149,48 @@ pick a winner:
 
 These are two different formulas. Reconciling them is open work and needs a decision with Krisi.
 Until then, treat the 0-100 display as settled and the underlying formula as undecided.
+
+### Swapping the formula
+
+The scoring math is isolated so a different formula (for example the modified Elo above) can be
+dropped in later without touching the rest of the app.
+
+**Where it lives.** All scoring math is in one file: `src/lib/engine/scoring/formula.ts`. Nothing
+else in the app does scoring arithmetic of its own. (`src/lib/engine/score.ts` re-exports the
+formula and adds the separate grading step and tier labels; `src/lib/dispatch/ranking.ts` computes
+a distinct editorial ranking that *reads* an analyst's Track Score but is not the Track Score.)
+
+**What the formula receives.** An array of resolved calls (`ScoringCall`), each carrying only the
+facts the score is derived from: direction, locked entry price, resolved (exit) price, the
+benchmark return over the same window, the graded outcome, and the resolution date. It may also
+receive the platform-wide alpha distribution used to rank one analyst against all others.
+
+**What the formula must return.** A `ScoreResult`: the 0-100 `score`, its component `breakdown`
+(win rate, profit factor, alpha, consistency), the supporting numbers, and the `formulaVersion`
+that produced it.
+
+**How to swap it.**
+1. Change `computeScore` in `formula.ts`, keeping the same input and output contract.
+2. Bump `FORMULA_VERSION`.
+3. Recompute all scores together (below).
+
+**Recompute rule: all analysts move together.** A score is only meaningful relative to other
+scores, so when the formula changes every analyst is recomputed in one pass, never a mix of old
+and new versions. Run:
+
+```bash
+npm run recompute:scores              # dry run: prints every analyst's old -> new score
+npm run recompute:scores -- --commit  # rewrite profiles + insert fresh snapshots
+```
+
+It requires `SUPABASE_SERVICE_ROLE_KEY`, reads each analyst's stored call history, and rewrites
+their score and components from it using one shared alpha distribution.
+
+**Stored inputs, and what's missing.** Every fact the formula needs is already persisted per call
+on `predictions`: entry price (`lock_price`), exit price (`resolved_price`), target
+(`target_price`), direction, horizon (`resolves_at` / `target_horizon_date`), actual return
+(`return_pct`), and benchmark return (`benchmark_pct`). Per-call alpha is not stored but is
+derivable (`return_pct - benchmark_pct`). Two things are NOT yet stored and need a schema change
+(for Krisi): a `formula_version` column on `profiles` and on `moat_score_snapshots`, so every
+stored score is traceable to the formula that produced it. Until those columns exist, the
+recompute path carries the version in code and logs it but cannot persist it.
