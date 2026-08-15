@@ -51,6 +51,8 @@ export interface ProfileConfig {
   accent?: string;
   /** Storefront font pairing id (B2). */
   font_pairing?: "ledger" | "modern" | "editorial" | "mono";
+  /** Report pinned to the top of the public profile (set from Studio). */
+  pinned_report_id?: string | null;
   /** Addable storefront content sections (B3), rendered below the hero.
    * Separate key from `sections` (hero layout) so the two never collide. */
   storefront_sections?: ProfileSection[];

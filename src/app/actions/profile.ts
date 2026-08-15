@@ -346,6 +346,24 @@ export async function saveBrandingStudio({
   return { ok: true as const };
 }
 
+/** Set (or clear) the report pinned to the top of the public profile. */
+export async function setPinnedProfileReport(reportId: string | null) {
+  const { supabase, userId } = await requireUser();
+  const { data } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .maybeSingle();
+  const config = (data?.profile_config as Record<string, unknown> | null) ?? {};
+  await supabase
+    .from("profiles")
+    .update({ profile_config: { ...config, pinned_report_id: reportId } })
+    .eq("id", userId);
+  revalidatePath("/studio");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  return { pinned: reportId };
+}
+
 /** Pricing tab in branding studio — subscription + per-report prices. */
 export async function saveBrandingPricing({
   sub_price,

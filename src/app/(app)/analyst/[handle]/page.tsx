@@ -211,8 +211,10 @@ export default async function AnalystProfilePage({
     };
   });
 
-  // Pinned = most recent publication (placeholder: no real "pinned" flag or video yet).
-  const pinnedReport = reports[0];
+  // Pinned = the report the analyst pinned from Studio (config.pinned_report_id),
+  // falling back to the most recent publication.
+  const pinnedReport =
+    (config.pinned_report_id && reports.find((r) => r.id === config.pinned_report_id)) || reports[0];
   const pinned: ProfilePinned | null = pinnedReport
     ? {
         href: `/report/${pinnedReport.id}`,

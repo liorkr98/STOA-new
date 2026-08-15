@@ -1,164 +1,84 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { formatDistanceToNow } from "date-fns";
-import { PenLine, PlusCircle } from "lucide-react";
+import { format, formatDistanceToNowStrict, differenceInCalendarDays } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { listByAuthor } from "@/lib/db/reports";
-import { listActivePlans } from "@/lib/db/plans";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
-import { getWallet } from "@/lib/db/wallet";
-import { subscriberCount } from "@/lib/db/social";
-import { analystStats } from "@/lib/engine/track";
-import { compact, usd, pct } from "@/lib/format";
-import { buttonClass } from "@/components/ui/button";
-import { Stat } from "@/components/ui/stat";
-import { GradeTag } from "@/components/ui/tag";
-import { TickerChip } from "@/components/ui/ticker-chip";
-import { ScoreRing } from "@/components/ui/score-ring";
-import { EmptyState } from "@/components/ui/empty-state";
-import { StudioPublishedList } from "@/components/studio/studio-published-list";
+import { compact, pct } from "@/lib/format";
+import type { Prediction, Report } from "@/lib/types";
+import { PublicationsView, type Publication, type PubState } from "@/components/studio/publications-view";
 
-export const metadata: Metadata = { title: "Studio" };
+export const metadata: Metadata = { title: "Publications" };
 
-export default async function StudioOverview() {
+function typeLabel(type: Report["type"]): string {
+  if (type === "research") return "RESEARCH";
+  if (type === "short_post") return "NOTE";
+  return "CALL";
+}
+function badgeFor(type: Report["type"]): string {
+  if (type === "research") return "VIDEO · THESIS";
+  if (type === "short_post") return "VIDEO · NOTE";
+  return "VIDEO · CALL";
+}
+
+export default async function PublicationsPage() {
   const profile = (await getSessionProfile())!;
-  const [reports, predictions, wallet, subs, plans] = await Promise.all([
+  const [reports, predictions] = await Promise.all([
     listByAuthor(profile.id, { limit: 100 }),
     listPredictionsByAuthor(profile.id),
-    getWallet(profile.id),
-    subscriberCount(profile.id),
-    listActivePlans(profile.id),
   ]);
 
-  const stats = analystStats(predictions);
-  // resolution_pending_review is still a published piece, just waiting on
-  // market data to grade one of its calls -- it belongs in this list, not
-  // silently missing from it (see PendingReviewTag in StudioPublishedList).
-  const published = reports.filter(
-    (r) => r.status === "published" || r.status === "resolution_pending_review",
-  );
-  const drafts = reports.filter((r) => r.status === "draft");
-  // A call whose report flipped to resolution_pending_review still has
-  // outcome "open" (grade.ts never grades it blind), but it isn't really
-  // open anymore -- it's surfaced with its own PendingReviewTag in the
-  // Published section below, so exclude it here to avoid the same call
-  // showing "Open" in one widget and "Pending review" in another.
-  const openCalls = predictions.filter(
-    (p) => p.outcome === "open" && p.report_status !== "resolution_pending_review",
-  );
+  const predByReport = new Map<string, Prediction>();
+  for (const p of predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
+  const pinnedId = profile.profile_config?.pinned_report_id ?? null;
 
-  return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="t-h1">Studio</h1>
-          <p className="t-body mt-1">Welcome back, {profile.display_name}.</p>
-        </div>
-        <Link href="/studio/compose" className={buttonClass("primary", "lg")}>
-          <PlusCircle size={18} strokeWidth={2.5} />
-          New publication
-        </Link>
-      </div>
+  const pubs: Publication[] = reports.map((r): Publication => {
+    const pred = predByReport.get(r.id);
+    let state: PubState = "published";
+    if (r.status === "draft") state = "draft";
+    else if (pred && pred.outcome === "open") state = "open";
+    else if (pred && ["hit", "near", "miss", "partial"].includes(pred.outcome)) state = "resolved";
 
-      <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-        <Link
-          href={`/analyst/${profile.handle}/score`}
-          className="ledger-card focus-ring col-span-2 flex items-center gap-5 p-5 transition-transform active:scale-[0.99]"
-        >
-          <ScoreRing
-            score={stats.score || null}
-            size="lg"
-            provisional={!!stats.score && stats.resolved < 10}
-          />
-          <div className="flex flex-col gap-1">
-            <span className="t-eyebrow">Track Score</span>
-            {stats.score ? (
-              <span className="t-meta">
-                {stats.winRate != null ? `${Math.round(stats.winRate * 100)}% hit rate ` : ""}
-                over {stats.resolved} resolved call{stats.resolved === 1 ? "" : "s"}
-              </span>
-            ) : (
-              <span className="t-meta">Not yet scored</span>
-            )}
-            <span className="t-meta underline">View full breakdown</span>
-          </div>
-        </Link>
-        <div className="col-span-2 grid grid-cols-3 gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-5">
-          <Stat label="Subscribers" value={compact(subs)} />
-          <Stat label="Earnings" value={usd(wallet?.earnings ?? 0)} />
-          <Stat
-            label="Avg return"
-            value={pct(stats.avgReturn)}
-            tone={stats.avgReturn == null ? "neutral" : stats.avgReturn >= 0 ? "up" : "down"}
-          />
-        </div>
-      </div>
+    const base: Publication = {
+      id: r.id,
+      href: `/report/${r.id}`,
+      editHref: `/studio/compose?id=${r.id}`,
+      state,
+      typeLabel: typeLabel(r.type),
+      tag: r.ticker,
+      tagIsTicker: Boolean(r.ticker),
+      badge: badgeFor(r.type),
+      title: r.title ?? "Untitled",
+      duration: "0:00", // placeholder
+      dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),
+      views: compact(r.views),
+      unlocks: "—", // placeholder
+      revenue: "—", // placeholder
+      pinned: r.id === pinnedId,
+      stateLine: null,
+    };
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div>
-          <h2 className="t-h3 mb-3">Open calls</h2>
-          {openCalls.length > 0 ? (
-            <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-              {openCalls.slice(0, 6).map((p) => (
-                <li key={p.id} className="border-b border-border last:border-0">
-                  <Link
-                    href={`/report/${p.report_id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-surface-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <TickerChip ticker={p.ticker} />
-                      <span className="t-meta capitalize">{p.direction}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="t-meta">
-                        resolves {formatDistanceToNow(new Date(p.resolves_at), { addSuffix: true })}
-                      </span>
-                      <GradeTag outcome="open" />
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState title="No open calls" body="Publish a call to start your track record." />
-          )}
-        </div>
+    if (state === "draft") {
+      base.stateLine = `DRAFT · EDITED ${formatDistanceToNowStrict(new Date(r.created_at)).toUpperCase()} AGO`;
+    } else if (state === "open" && pred) {
+      const days = Math.max(0, differenceInCalendarDays(new Date(pred.resolves_at), new Date()));
+      base.warning = days <= 3;
+      base.stateLine = `OPEN · RESOLVES IN ${days} DAY${days === 1 ? "" : "S"}`;
+      base.entry = pred.lock_price?.toFixed(2) ?? "—";
+      base.target = pred.target_price?.toFixed(2) ?? "—";
+      // Placeholder progress: time elapsed toward resolution (true distance-to-target needs a live price).
+      const start = new Date(r.published_at ?? r.created_at).getTime();
+      const end = new Date(pred.resolves_at).getTime();
+      const now = Date.now();
+      base.progressPct = end > start ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
+    } else if (state === "resolved" && pred) {
+      base.entryExit = `${pred.lock_price?.toFixed(2)} → ${pred.resolved_price?.toFixed(2)}`;
+      base.returnPct = pred.return_pct != null ? pct(pred.return_pct) : "—";
+      base.returnTone = (pred.return_pct ?? 0) >= 0 ? "up" : "down";
+      base.sealStatus = pred.outcome === "hit" ? "hit" : pred.outcome === "near" ? "near" : "miss";
+    }
 
-        <div>
-          <h2 className="t-h3 mb-3">Drafts</h2>
-          {drafts.length > 0 ? (
-            <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-              {drafts.slice(0, 6).map((d) => (
-                <li key={d.id} className="flex items-center justify-between border-b border-border px-5 py-3 last:border-0">
-                  <span className="truncate text-sm">{d.title || "Untitled draft"}</span>
-                  <Link href={`/studio/compose?id=${d.id}`} className="text-text-faint hover:text-text">
-                    <PenLine size={16} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState title="No drafts" />
-          )}
-        </div>
-      </section>
+    return base;
+  });
 
-      <section>
-        <h2 className="t-h3 mb-3">Published ({published.length})</h2>
-        {published.length > 0 ? (
-          <StudioPublishedList reports={published} plans={plans} />
-        ) : (
-          <EmptyState
-            title="Nothing published yet"
-            body="Your first report or call will appear here and start feeding your track record."
-            action={
-              <Link href="/studio/compose" className={buttonClass("primary", "md")}>
-                Compose your first publication
-              </Link>
-            }
-          />
-        )}
-      </section>
-    </div>
-  );
+  return <PublicationsView pubs={pubs} />;
 }
