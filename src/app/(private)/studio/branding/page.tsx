@@ -2,23 +2,18 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { getWallet } from "@/lib/db/wallet";
-import { listActiveBoosts } from "@/lib/db/boosts";
 import { listByAuthor } from "@/lib/db/reports";
 import { listPlansForCreator } from "@/lib/db/plans";
 import { BrandingStudio } from "@/components/profile/branding-studio";
-import { PlanManager } from "@/components/profile/plan-manager";
-import { AccentPicker } from "@/components/profile/accent-picker";
-import { StorefrontSectionsEditor } from "@/components/profile/storefront-sections-editor";
 
-export const metadata: Metadata = { title: "Branding studio" };
+export const metadata: Metadata = { title: "Storefront" };
 
-export default async function StudioBrandingPage() {
+export default async function StudioStorefrontPage() {
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
 
-  const [wallet, boosts, reports, plans] = await Promise.all([
+  const [wallet, reports, plans] = await Promise.all([
     getWallet(profile.id),
-    listActiveBoosts(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     listPlansForCreator(profile.id),
   ]);
@@ -26,29 +21,15 @@ export default async function StudioBrandingPage() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div>
-        <h1 className="t-h1">Branding studio</h1>
-        <p className="t-body mt-1">
-          Your public storefront: identity, layout, AI coach, and Discover boosts.
-        </p>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">Storefront</h1>
+        <p className="t-body mt-2">How your public profile looks and what it costs.</p>
       </div>
       <BrandingStudio
         profile={profile}
-        walletBalance={wallet?.balance ?? 0}
         aiCredits={wallet?.ai_credits ?? 0}
-        activeBoosts={boosts}
         publishedReports={reports}
+        plans={plans}
       />
-      <AccentPicker
-        initialAccent={profile.profile_config?.accent ?? null}
-        initialFontPairing={profile.profile_config?.font_pairing ?? null}
-        initialLayout={profile.profile_config?.layout ?? null}
-        initialTexture={profile.profile_config?.texture ?? false}
-      />
-      <StorefrontSectionsEditor
-        initialSections={profile.profile_config?.storefront_sections ?? []}
-        reports={reports.map((r) => ({ id: r.id, title: r.title }))}
-      />
-      <PlanManager initialPlans={plans} handle={profile.handle} />
     </div>
   );
 }

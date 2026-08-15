@@ -327,22 +327,30 @@ export async function saveBrandingStudio({
   profile_config: ProfileConfig;
 }) {
   const { supabase, userId } = await requireUser();
+  // Merge into the existing config so settings owned by other editors (accent,
+  // font pairing, layout, texture, storefront sections, pinned report) are never
+  // wiped when the branding fields are saved.
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+  const merged = { ...(existing?.profile_config ?? {}), ...profile_config };
   const { error } = await supabase
     .from("profiles")
     .update({
       display_name: display_name.trim(),
       headline: headline.trim() || null,
       bio: bio.trim() || null,
-      profile_config,
+      profile_config: merged,
     })
     .eq("id", userId);
   if (error) return { ok: false as const, error: error.message };
 
-  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/studio/branding");
-  revalidatePath("/settings/branding");
+  revalidatePath("/studio");
   revalidatePath("/settings");
-  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
   return { ok: true as const };
 }
 
