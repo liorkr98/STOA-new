@@ -38,7 +38,6 @@ const GROUPS: NavGroup[] = [
       { label: "Earnings", href: "/studio/earnings" },
       { label: "Storefront", href: "/studio/branding" },
       { label: "Boost", href: "/studio/boost" },
-      { label: "Polls", href: "/studio/polls" },
     ],
   },
   {

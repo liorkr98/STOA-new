@@ -35,6 +35,10 @@ export default async function BoostPage() {
         <p className="t-body mt-2">Paid placement, always labelled.</p>
       </div>
 
+      <p className="t-body max-w-2xl text-text-mute">
+        Boost puts your profile or a single publication in front of more investors in Discover for a set
+        window. Pick a package below.
+      </p>
       <p className="num text-[11px] uppercase tracking-[0.14em] text-text-mute">
         Wallet balance · {usd(wallet?.balance ?? 0, { cents: true })}
       </p>
