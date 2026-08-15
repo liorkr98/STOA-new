@@ -1,148 +1,68 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from "date-fns";
-import {
-  Bell,
-  Heart,
-  ChatCircle,
-  UserPlus,
-  Megaphone,
-  Sparkle,
-  CurrencyDollar,
-} from "@phosphor-icons/react/dist/ssr";
-import { EmptyState } from "@/components/ui/empty-state";
-import { buttonClass } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { getSessionUserId } from "@/lib/db/auth";
-import { listNotifications, type Notification } from "@/lib/db/notifications";
-import { markAllNotificationsRead, markNotificationRead } from "@/app/actions/notifications";
+import { formatDistanceToNow } from "date-fns";
+import { getSessionProfile } from "@/lib/db/auth";
+import { listNotifications } from "@/lib/db/notifications";
+import { InboxView, type InboxCategory, type InboxItem } from "@/components/inbox/inbox-view";
 
 export const metadata: Metadata = { title: "Inbox" };
 
-const KIND_ICON: Record<string, typeof Bell> = {
-  like: Heart,
-  comment: ChatCircle,
-  follow: UserPlus,
-  publication: Megaphone,
-  subscribe: Sparkle,
-  sale: CurrencyDollar,
-};
+function categoryFor(kind: string): InboxCategory {
+  if (kind === "follow" || kind === "subscribe") return "audience";
+  if (kind === "publication") return "publications";
+  if (kind === "sale") return "money";
+  return "social"; // like, comment, and anything else
+}
 
-const GROUP_LABELS = ["Today", "Yesterday", "This week", "Earlier"] as const;
-type GroupLabel = (typeof GROUP_LABELS)[number];
-
-function groupByDay(notifications: Notification[]): { label: GroupLabel; items: Notification[] }[] {
-  const groups: Record<GroupLabel, Notification[]> = {
-    Today: [],
-    Yesterday: [],
-    "This week": [],
-    Earlier: [],
-  };
-  for (const n of notifications) {
-    const date = new Date(n.created_at);
-    if (isToday(date)) groups.Today.push(n);
-    else if (isYesterday(date)) groups.Yesterday.push(n);
-    else if (isThisWeek(date)) groups["This week"].push(n);
-    else groups.Earlier.push(n);
-  }
-  return GROUP_LABELS.map((label) => ({ label, items: groups[label] })).filter(
-    (g) => g.items.length > 0,
-  );
+/**
+ * Demo items shown only in local development, so the two-zone design (including
+ * the "Needs you" variants that the backend can't emit yet) is reviewable. They
+ * never render in a deployed build, so no fabricated financial notifications
+ * ever reach a real user.
+ */
+function demoItems(isAnalyst: boolean): InboxItem[] {
+  const base: InboxItem[] = [
+    { id: "ph-call", zone: "needs", category: "calls", title: "A call you follow resolved: Maren Vos on NVDA", entryExit: "ENTRY 331.40 → EXIT 398.20", sealStatus: "hit", timeLabel: "2H AGO", read: false, href: "#", action: "View call", demo: true },
+    { id: "ph-renew", zone: "needs", category: "money", title: "Your subscription to Lena Kowalczyk renews in 3 days", timeLabel: "6H AGO", read: false, href: "#", action: "Manage", demo: true },
+    { id: "ph-pay", zone: "needs", category: "money", danger: true, title: "Your payment method failed — renewals are paused", timeLabel: "1D AGO", read: false, href: "#", action: "Fix payment", demo: true },
+  ];
+  const analyst: InboxItem[] = [
+    { id: "ph-own", zone: "needs", category: "calls", title: "Your MU call resolved · HIT", scoreDelta: "TRACK 72 → 74 ▲2", sealStatus: "hit", timeLabel: "3H AGO", read: false, href: "#", action: "View", demo: true },
+    { id: "ph-payout", zone: "needs", category: "money", title: "Payout ready · $128.40", timeLabel: "1D AGO", read: false, href: "#", action: "View payout", demo: true },
+    { id: "ph-horizon", zone: "needs", category: "calls", title: "Your ASML call reaches its horizon tomorrow", timeLabel: "1D AGO", read: true, href: "#", action: "Review", demo: true },
+  ];
+  const good: InboxItem[] = [
+    { id: "ph-done", zone: "good", category: "money", title: "You reviewed the payment issue", confirmed: true, timeLabel: "JUST NOW", read: true, href: null, action: null, demo: true },
+    { id: "ph-pub", zone: "good", category: "publications", title: "Lena Kowalczyk published: The Blackwell sequel", timeLabel: "5H AGO", read: false, href: "#", action: "View", demo: true },
+    { id: "ph-target", zone: "good", category: "calls", title: "AAPL reached a target on a report you saved", timeLabel: "1D AGO", read: true, href: "#", action: "View", demo: true },
+    { id: "ph-follow", zone: "good", category: "audience", title: "Kenji Ito started following you", timeLabel: "2D AGO", read: true, href: "#", action: "View profile", demo: true },
+  ];
+  const analystGood: InboxItem[] = [
+    { id: "ph-sub", zone: "good", category: "audience", title: "New subscriber · Priya Raman joined Pro", timeLabel: "1D AGO", read: true, href: "#", action: "View", demo: true },
+  ];
+  return [...base, ...(isAnalyst ? analyst : []), ...good, ...(isAnalyst ? analystGood : [])];
 }
 
 export default async function InboxPage() {
-  const userId = await getSessionUserId();
-  if (!userId) redirect("/sign-in");
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
+  const isAnalyst = profile.role === "analyst" || profile.role === "admin";
 
-  const notifications = await listNotifications(userId);
-  const unread = notifications.filter((n) => !n.read).length;
-  const groups = groupByDay(notifications);
+  const notifications = await listNotifications(profile.id);
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="t-h1">Inbox</h1>
-          <p className="t-body mt-1">
-            {unread > 0 ? `${unread} unread notification${unread === 1 ? "" : "s"}` : "You're all caught up."}
-          </p>
-        </div>
-        {unread > 0 && (
-          <form action={markAllNotificationsRead}>
-            <button type="submit" className={buttonClass("secondary", "sm")}>
-              Mark all read
-            </button>
-          </form>
-        )}
-      </div>
+  const real: InboxItem[] = notifications.map((n) => ({
+    id: n.id,
+    zone: "good", // real notification kinds are all "good to know" today
+    category: categoryFor(n.kind),
+    title: `${n.actor ? `${n.actor.display_name} ` : ""}${n.body ?? n.kind}`,
+    timeLabel: formatDistanceToNow(new Date(n.created_at), { addSuffix: true }).toUpperCase(),
+    read: n.read,
+    href: n.link,
+    action: n.link ? "View" : null,
+  }));
 
-      {groups.length > 0 ? (
-        <div className="flex flex-col gap-6">
-          {groups.map(({ label, items }) => (
-            <div key={label}>
-              <p className="t-eyebrow mb-2">{label}</p>
-              <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-                {items.map((n) => {
-                  const Icon = KIND_ICON[n.kind] ?? Bell;
-                  return (
-                    <li
-                      key={n.id}
-                      className={`border-b border-border px-5 py-4 last:border-0 ${n.read ? "" : "bg-accent-weak/30"}`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex min-w-0 flex-1 items-start gap-3">
-                          {n.actor ? (
-                            <Link href={`/analyst/${n.actor.handle}`} className="shrink-0">
-                              <Avatar src={n.actor.avatar_url} name={n.actor.display_name} size="md" />
-                            </Link>
-                          ) : (
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-card)] bg-surface-2 text-text-mute">
-                              <Icon size={18} />
-                            </span>
-                          )}
-                          <div className="min-w-0">
-                            <p className={`text-sm ${n.read ? "text-text-mute" : "font-medium text-text"}`}>
-                              {n.actor && (
-                                <span className="font-semibold text-text">{n.actor.display_name} </span>
-                              )}
-                              {n.body ?? n.kind}
-                            </p>
-                            <p className="t-meta mt-1 flex items-center gap-1.5">
-                              <Icon size={12} />
-                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {n.link && (
-                            <Link href={n.link} className={buttonClass("secondary", "sm")}>
-                              View
-                            </Link>
-                          )}
-                          {!n.read && (
-                            <form action={markNotificationRead.bind(null, n.id)}>
-                              <button type="submit" className="text-xs text-text-faint hover:text-text">
-                                Mark read
-                              </button>
-                            </form>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={<Bell size={32} />}
-          title="No notifications yet"
-          body="Follows, likes, comments, new publications from analysts you follow, and sales all show up here."
-        />
-      )}
-    </div>
-  );
+  const items =
+    process.env.NODE_ENV === "development" ? [...demoItems(isAnalyst), ...real] : real;
+
+  return <InboxView items={items} isAnalyst={isAnalyst} />;
 }

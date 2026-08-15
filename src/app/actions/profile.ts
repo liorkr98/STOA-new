@@ -275,13 +275,14 @@ export async function updateProfile(formData: FormData) {
   const display_name = String(formData.get("display_name") ?? "");
   const bio = String(formData.get("bio") ?? "").slice(0, 500);
   const headline = String(formData.get("headline") ?? "").slice(0, 160);
-  const sub_price = Number(formData.get("sub_price") ?? 0) || null;
-  const report_price = Number(formData.get("report_price") ?? 0) || null;
 
-  await supabase
-    .from("profiles")
-    .update({ display_name, bio, headline, sub_price, report_price })
-    .eq("id", userId);
+  // Pricing lives in Storefront now; only touch it when the form actually sends
+  // it, so saving profile fields from Settings never wipes stored prices.
+  const update: Record<string, unknown> = { display_name, bio, headline };
+  if (formData.has("sub_price")) update.sub_price = Number(formData.get("sub_price") ?? 0) || null;
+  if (formData.has("report_price")) update.report_price = Number(formData.get("report_price") ?? 0) || null;
+
+  await supabase.from("profiles").update(update).eq("id", userId);
   revalidatePath("/studio");
   revalidatePath("/settings");
   return { ok: true };

@@ -3,12 +3,16 @@
 import { useState, useTransition } from "react";
 import { CheckCircle } from "@phosphor-icons/react";
 import { updateProfile } from "@/app/actions/profile";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring";
+
+function initialsOf(name: string) {
+  return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
 
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, start] = useTransition();
@@ -28,14 +32,24 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+      {/* Avatar (upload not wired to storage yet -- placeholder). */}
+      <div className="flex items-center gap-4">
+        <span className="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-lg text-[var(--paper)]">
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
+          ) : (
+            initialsOf(profile.display_name)
+          )}
+        </span>
+        <button type="button" disabled className={buttonClass("secondary", "sm")}>
+          Change photo
+        </button>
+      </div>
+
       <label className="flex flex-col gap-1 text-sm">
         Display name
-        <input
-          name="display_name"
-          defaultValue={profile.display_name}
-          required
-          className={inputClass}
-        />
+        <input name="display_name" defaultValue={profile.display_name} required className={inputClass} />
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
@@ -50,46 +64,30 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         />
       </label>
 
-      {isAnalyst && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            Headline
-            <input
-              name="headline"
-              defaultValue={profile.headline ?? ""}
-              maxLength={160}
-              placeholder="What you cover and how you invest"
-              className={inputClass}
-            />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1 text-sm">
-              Monthly subscription (USD)
-              <input
-                name="sub_price"
-                type="number"
-                min={5}
-                max={200}
-                defaultValue={profile.sub_price ?? ""}
-                className={cn(inputClass, "num")}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              Default report price (USD)
-              <input
-                name="report_price"
-                type="number"
-                min={1}
-                max={50}
-                defaultValue={profile.report_price ?? ""}
-                className={cn(inputClass, "num")}
-              />
-            </label>
-          </div>
-        </>
-      )}
+      <label className="flex flex-col gap-1 text-sm">
+        Headline
+        <input
+          name="headline"
+          defaultValue={profile.headline ?? ""}
+          maxLength={160}
+          placeholder="What you cover and how you invest"
+          className={inputClass}
+        />
+      </label>
 
-      <p className="t-meta">Handle: @{profile.handle}</p>
+      <div className="text-sm">
+        <span className="text-text-mute">Handle: </span>
+        <span className="num">@{profile.handle}</span>
+        <span className="num ml-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          Locked after onboarding
+        </span>
+      </div>
+
+      {isAnalyst && (
+        <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          Pricing and storefront design live in Storefront.
+        </p>
+      )}
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>

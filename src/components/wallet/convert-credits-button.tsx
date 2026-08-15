@@ -22,7 +22,7 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
         <p className="text-sm font-semibold">Buy AI credits</p>
       </div>
       <p className="t-meta mt-1">
-        $1 = {AI_CREDITS_PER_DOLLAR} credits · used for chat, outlines, fact-checks
+        $1 = {AI_CREDITS_PER_DOLLAR} credits · used for premium tools like Devil&apos;s Advocate and fact-checks
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {amounts.map((usd) => (
