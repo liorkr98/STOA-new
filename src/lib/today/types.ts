@@ -31,6 +31,13 @@ export interface TodayItem {
   price: number | null;
   saved: boolean;
   thumb: TodayThumb | null;
+  /**
+   * Theme or sector chip for a publication carrying no ticker. Only surfaces
+   * that know the theme can set it: on a sector page the sector itself is the
+   * tag. Elsewhere it stays null, since the content model has no per-report
+   * theme field to read.
+   */
+  themeTag?: string | null;
 }
 
 /** A resolved call, graded by the market. Never paywalled. */

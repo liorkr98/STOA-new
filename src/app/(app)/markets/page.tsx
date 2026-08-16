@@ -51,7 +51,7 @@ export default async function MarketsPage() {
       <ExploreNewlyCalled rows={explore.newlyCalled} />
       <ExploreMovement />
       <ExploreSectors sectors={explore.sectors} />
-      <ExploreEtfs />
+      <ExploreEtfs rows={explore.etfs} />
       <ExploreUncovered rows={explore.uncovered} />
     </article>
   );

@@ -58,6 +58,12 @@ export interface TapeQuote {
   changePercent: number | null;
 }
 
+export interface EtfBandRow {
+  symbol: string;
+  name: string;
+  publications: number;
+}
+
 export interface ExplorePayload {
   tape: TapeQuote[];
   themes: ThemeCard[];
@@ -65,4 +71,5 @@ export interface ExplorePayload {
   newlyCalled: NewlyCalledRow[];
   sectors: SectorTile[];
   uncovered: MarketRow[];
+  etfs: EtfBandRow[];
 }

@@ -4,8 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { listTickerRows } from "@/lib/db/tickers";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
+import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import type {
   CoveredRow,
+  EtfBandRow,
   ExplorePayload,
   MarketRow,
   NewlyCalledRow,
@@ -287,5 +289,14 @@ export async function buildExplore(): Promise<ExplorePayload> {
     changePercent: null,
   }));
 
-  return { tape, themes, covered, newlyCalled, sectors, uncovered };
+  // Featured funds are curated; their Stoa activity is read from real data.
+  const etfs: EtfBandRow[] = CURATED_ETFS.map((e) => ({
+    symbol: e.symbol,
+    name: e.name,
+    publications: coverageAll.get(e.symbol) ?? 0,
+  }))
+    .sort((a, b) => b.publications - a.publications)
+    .slice(0, ETF_BAND_SIZE);
+
+  return { tape, themes, covered, newlyCalled, sectors, uncovered, etfs };
 }

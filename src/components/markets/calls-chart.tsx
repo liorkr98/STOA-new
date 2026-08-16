@@ -2,11 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { price as fmtPrice } from "@/lib/format";
-import type { Candle, ChartRange } from "@/lib/market/candle-types";
+import type { Candle } from "@/lib/market/candle-types";
 import type { OpenCall, ResolvedCall } from "@/lib/markets/call-types";
-import { MAX_TARGET_LINES, STOCK_RANGES } from "@/lib/markets/call-types";
+import {
+  CUSTOM_RANGE,
+  MAX_TARGET_LINES,
+  STOCK_RANGES,
+  overlayVisible,
+} from "@/lib/markets/call-types";
 
 const W = 880;
 const H = 380;
@@ -41,18 +47,32 @@ export function CallsChart({
   openCalls,
   resolvedCalls,
   range,
+  customFrom,
+  customTo,
+  maxTargetLines = MAX_TARGET_LINES,
+  compact = false,
 }: {
   ticker: string;
   candles: Candle[];
   openCalls: OpenCall[];
   resolvedCalls: ResolvedCall[];
-  range: ChartRange;
+  /** A preset key, or CUSTOM_RANGE when a from/to pair is in play. */
+  range: string;
+  customFrom?: string;
+  customTo?: string;
+  /** The sheet variant draws fewer lines in its smaller frame. */
+  maxTargetLines?: number;
+  compact?: boolean;
 }) {
   const [hover, setHover] = useState<Hover>(null);
+  const showOverlay = overlayVisible(range);
+  const activeRange = range;
 
+  // With the overlay off the price line must scale to the price alone, or a
+  // far-off target would flatten a whole day's movement into a straight line.
   const geo = useMemo(
-    () => buildGeometry(candles, openCalls),
-    [candles, openCalls],
+    () => buildGeometry(candles, showOverlay ? openCalls : []),
+    [candles, openCalls, showOverlay],
   );
 
   if (!geo) {
@@ -67,8 +87,8 @@ export function CallsChart({
 
   const { x, y, linePath, minTime, maxTime } = geo;
 
-  const withTargets = openCalls.filter((c) => c.targetPrice != null);
-  const drawn = withTargets.slice(0, MAX_TARGET_LINES);
+  const withTargets = showOverlay ? openCalls.filter((c) => c.targetPrice != null) : [];
+  const drawn = withTargets.slice(0, maxTargetLines);
   const overflow = withTargets.length - drawn.length;
 
   const bandTargets = withTargets.map((c) => c.targetPrice as number);
@@ -78,43 +98,36 @@ export function CallsChart({
     overflow > 0 ? bandTargets.reduce((a, b) => a + b, 0) / bandTargets.length : null;
 
   // Seals thin out on long views so a busy name does not turn into a wall of
-  // stamps: on 6M and up only the last three months are stamped.
-  const sealCutoff = range === "1M" ? 0 : Date.now() - THREE_MONTHS_MS;
-  const seals = resolvedCalls
-    .filter((c) => new Date(c.resolvedAt).getTime() >= sealCutoff)
-    .filter((c) => {
-      const t = new Date(c.resolvedAt).getTime() / 1000;
-      return t >= minTime && t <= maxTime;
-    })
-    .slice(0, MAX_SEALS);
+  // stamps: from 6M up only the last three months are stamped.
+  const sealCutoff = range === "1M" || range === "1W" ? 0 : Date.now() - THREE_MONTHS_MS;
+  const seals = !showOverlay
+    ? []
+    : resolvedCalls
+        .filter((c) => new Date(c.resolvedAt).getTime() >= sealCutoff)
+        .filter((c) => {
+          const t = new Date(c.resolvedAt).getTime() / 1000;
+          return t >= minTime && t <= maxTime;
+        })
+        .slice(0, MAX_SEALS);
 
-  const entries = resolvedCalls.filter((c) => {
-    const t = new Date(c.lockedAt).getTime() / 1000;
-    return t >= minTime && t <= maxTime;
-  });
+  const entries = !showOverlay
+    ? []
+    : resolvedCalls.filter((c) => {
+        const t = new Date(c.lockedAt).getTime() / 1000;
+        return t >= minTime && t <= maxTime;
+      });
 
   const ticks = dateTicks(minTime, maxTime, 5);
 
   return (
-    <div className="calls-chart">
+    <div className={compact ? "calls-chart calls-chart--compact" : "calls-chart"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-mute">
-          Analyst calls on this name, locked at publication.
+          {showOverlay
+            ? "Analyst calls on this name, locked at publication."
+            : "Intraday price."}
         </p>
-        <div className="calls-tf" role="group" aria-label="Chart timeframe">
-          {STOCK_RANGES.map((r) => (
-            <Link
-              key={r}
-              href={`?range=${r}`}
-              scroll={false}
-              aria-pressed={r === range}
-              role="button"
-              className="focus-ring"
-            >
-              {r}
-            </Link>
-          ))}
-        </div>
+        <TimeframePicker active={activeRange} from={customFrom} to={customTo} />
       </div>
 
       <div className="relative mt-4">
@@ -290,6 +303,13 @@ export function CallsChart({
         )}
       </div>
 
+      {!showOverlay ? (
+        <div className="calls-chart-legend">
+          <span className="calls-chart-legend-key">
+            Analyst calls are shown from 1W and longer.
+          </span>
+        </div>
+      ) : (
       <div className="calls-chart-legend">
         <span className="calls-chart-legend-key">
           <svg width="18" height="6" aria-hidden>
@@ -314,9 +334,99 @@ export function CallsChart({
           Entry
         </span>
         <span className="calls-chart-legend-key">
-          Resolved · {range === "1M" ? "all in view" : "last 3 months"}
+          Resolved · {range === "1M" || range === "1W" ? "all in view" : "last 3 months"}
         </span>
       </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Presets plus a genuine from/to range. The provider takes arbitrary
+ * timestamps, so CUSTOM is the span the reader actually picked; nothing snaps
+ * to a nearby preset.
+ */
+function TimeframePicker({
+  active,
+  from,
+  to,
+}: {
+  active: string;
+  from?: string;
+  to?: string;
+}) {
+  const router = useRouter();
+  const isCustom = active === CUSTOM_RANGE;
+  const [open, setOpen] = useState(isCustom);
+  const today = new Date().toISOString().slice(0, 10);
+  const [fromValue, setFromValue] = useState(from ?? "");
+  const [toValue, setToValue] = useState(to ?? today);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="calls-tf" role="group" aria-label="Chart timeframe">
+        {STOCK_RANGES.map((r) => (
+          <Link
+            key={r}
+            href={`?range=${r}`}
+            scroll={false}
+            aria-pressed={r === active}
+            role="button"
+            className="focus-ring"
+          >
+            {r}
+          </Link>
+        ))}
+        <button
+          type="button"
+          aria-pressed={isCustom}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="focus-ring"
+        >
+          Custom
+        </button>
+      </div>
+
+      {open && (
+        <form
+          className="calls-tf-custom"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!fromValue || !toValue) return;
+            router.push(`?range=${CUSTOM_RANGE}&from=${fromValue}&to=${toValue}`, {
+              scroll: false,
+            });
+          }}
+        >
+          <label>
+            <span className="sr-only">From</span>
+            <input
+              type="date"
+              value={fromValue}
+              max={toValue || today}
+              onChange={(e) => setFromValue(e.target.value)}
+              required
+            />
+          </label>
+          <span aria-hidden>→</span>
+          <label>
+            <span className="sr-only">To</span>
+            <input
+              type="date"
+              value={toValue}
+              min={fromValue || undefined}
+              max={today}
+              onChange={(e) => setToValue(e.target.value)}
+              required
+            />
+          </label>
+          <button type="submit" className="focus-ring">
+            Apply
+          </button>
+        </form>
+      )}
     </div>
   );
 }
@@ -351,15 +461,25 @@ function buildGeometry(candles: Candle[], openCalls: OpenCall[]) {
   return { x, y, linePath, minTime, maxTime };
 }
 
+/**
+ * Tick labels follow the span: clock time inside a day, weekday across a week,
+ * month and year once the view is long enough for the year to matter.
+ */
 function dateTicks(minTime: number, maxTime: number, count: number) {
+  const spanDays = (maxTime - minTime) / 86_400;
+  const fmt: Intl.DateTimeFormatOptions =
+    spanDays <= 2
+      ? { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }
+      : spanDays <= 10
+        ? { weekday: "short", timeZone: "America/New_York" }
+        : { month: "short", year: "numeric", timeZone: "America/New_York" };
+
   const out: { time: number; label: string }[] = [];
   for (let i = 0; i < count; i++) {
     const time = minTime + ((maxTime - minTime) * i) / (count - 1);
     out.push({
       time,
-      label: new Date(time * 1000)
-        .toLocaleDateString("en-US", { month: "short", year: "numeric" })
-        .toUpperCase(),
+      label: new Date(time * 1000).toLocaleString("en-US", fmt).toUpperCase(),
     });
   }
   return out;

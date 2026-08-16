@@ -1,0 +1,243 @@
+import Link from "next/link";
+import { Avatar } from "@/components/ui/avatar";
+import { Band } from "@/components/ui/band";
+import { ScoreRing } from "@/components/ui/score-ring";
+import { TickerChip } from "@/components/ui/ticker-chip";
+import { DayChange } from "@/components/markets/day-change";
+import { FollowSector, FollowTicker } from "@/components/markets/follow-control";
+import { FollowButton } from "@/components/follow-button";
+import { HeadlineRow, RowTag } from "@/components/today/headline-row";
+import { accessLabel } from "@/lib/today/format";
+import { price } from "@/lib/format";
+import type { SectorAnalyst, SectorName, SectorPayload } from "@/lib/markets/build-sector";
+import type { CallLean } from "@/lib/markets/types";
+
+export function SectorHeader({ payload }: { payload: SectorPayload }) {
+  return (
+    <header>
+      <Link href="/markets" className="markets-crumb focus-ring">
+        <span aria-hidden>←</span> Markets
+      </Link>
+
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div className="min-w-0">
+          <h1 className="stock-name">{payload.sector}</h1>
+          <p className="stock-sub">Sector</p>
+        </div>
+
+        <div className="flex items-end gap-4">
+          {/* DAY-CHANGE-PENDING: a sector index level needs constituent day
+              changes to compute, so both the level and its change are reserved
+              rather than invented. */}
+          <span className="stock-price">
+            <span className="markets-pending">No index level</span>
+          </span>
+          <DayChange percent={null} size="lg" />
+          <FollowSector sector={payload.sector} className="mb-1" />
+        </div>
+      </div>
+
+      <div className="stock-meta">
+        <span className="stock-meta-item">
+          <span className="stock-meta-key">Names covered</span>
+          <span className="num">{payload.namesCovered}</span>
+        </span>
+        <span className="stock-meta-item">
+          <span className="stock-meta-key">Analysts active</span>
+          <span className="num">{payload.analystsActive}</span>
+        </span>
+        <span className="stock-meta-item">
+          <span className="stock-meta-key">Publications this week</span>
+          <span className="num">{payload.publicationsThisWeek}</span>
+        </span>
+      </div>
+    </header>
+  );
+}
+
+/**
+ * Performance needs a sector index series and an S&P series to compare it
+ * against. Neither exists: the platform has no sector index, so the section
+ * shows its structure and says what is missing rather than drawing a line that
+ * would look like a measurement.
+ */
+export function SectorPerformance({ sector }: { sector: string }) {
+  return (
+    <Band title="Performance" note={`${sector} against the S&P 500.`}>
+      <div className="sector-perf">
+        <p className="markets-pending">No sector index series available</p>
+      </div>
+      <p className="markets-gap-note">
+        A sector index has to be built from constituent prices and day changes, which the list
+        quote path does not return yet. Nothing is drawn until it does.
+      </p>
+    </Band>
+  );
+}
+
+function LeanChip({ lean }: { lean: CallLean }) {
+  const total = lean.long + lean.short;
+  if (total === 0) return null;
+  const longMajority = lean.long >= lean.short;
+  return (
+    <span className="markets-lean num">
+      <span style={{ color: longMajority ? "var(--up)" : "var(--text-mute)" }}>
+        {lean.long} long
+      </span>
+      <span aria-hidden className="text-text-faint"> · </span>
+      <span style={{ color: longMajority ? "var(--text-mute)" : "var(--down)" }}>
+        {lean.short} short
+      </span>
+    </span>
+  );
+}
+
+export function SectorNames({ names }: { names: SectorName[] }) {
+  if (names.length === 0) return null;
+
+  return (
+    <Band title="The names" note="What sits inside this sector.">
+      <div className="mt-2">
+        {names.map((n) => (
+          <div key={n.symbol} className="markets-row">
+            <Link href={`/markets/${n.symbol}`} className="markets-row-name focus-ring">
+              <TickerChip ticker={n.symbol} />
+              <span className="min-w-0 flex-1 truncate text-sm text-text">{n.company}</span>
+            </Link>
+            <span className="num tabular-nums text-text">
+              {n.price == null ? <span className="markets-pending">No price</span> : price(n.price)}
+            </span>
+            <DayChange percent={n.changePercent} />
+            <span className="markets-row-meta num">
+              {n.publications} {n.publications === 1 ? "publication" : "publications"}
+            </span>
+            <LeanChip lean={n.lean} />
+            <FollowTicker ticker={n.symbol} />
+          </div>
+        ))}
+      </div>
+    </Band>
+  );
+}
+
+export function SectorStoaView({ payload }: { payload: SectorPayload }) {
+  if (payload.openCalls === 0 && payload.resolvedCount === 0) return null;
+
+  return (
+    <Band
+      title={`Stoa's view on ${payload.sector}`}
+      note="Where the analysts covering this sector actually stand."
+    >
+      <div className="stock-consensus">
+        <div>
+          <p className="stock-consensus-figure">{payload.openCalls}</p>
+          <p className="stock-consensus-key">
+            Open {payload.openCalls === 1 ? "call" : "calls"}
+          </p>
+        </div>
+        <div>
+          <p className="stock-consensus-figure">
+            {payload.long}
+            <span aria-hidden className="text-text-faint"> / </span>
+            {payload.short}
+          </p>
+          <p className="stock-consensus-key">Long / short split</p>
+        </div>
+        <div>
+          <p className="stock-consensus-figure">
+            {payload.averageScore == null ? (
+              <span className="markets-pending">Not scored</span>
+            ) : (
+              payload.averageScore
+            )}
+          </p>
+          <p className="stock-consensus-key">Avg Track Score active</p>
+        </div>
+        <div>
+          <p className="stock-consensus-figure">
+            {payload.hitRatePct == null ? (
+              <span className="markets-pending">No history</span>
+            ) : (
+              `${payload.hitRatePct}%`
+            )}
+          </p>
+          <p className="stock-consensus-key">
+            Collective hit rate · {payload.resolvedCount} resolved
+          </p>
+        </div>
+      </div>
+    </Band>
+  );
+}
+
+export function SectorPublications({
+  sector,
+  items,
+}: {
+  sector: string;
+  items: import("@/lib/today/types").TodayItem[];
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <Band
+      title="Publications in this sector"
+      note="Calls on names here, and commentary tagged to the sector itself."
+      seeAllHref="/explore"
+    >
+      <div className="mt-2">
+        {items.map((item) => (
+          <HeadlineRow
+            key={item.reportId}
+            item={item}
+            tag={
+              <RowTag tone={item.access === "free" ? "quiet" : "outline"}>
+                {accessLabel(item.access, item.price)}
+              </RowTag>
+            }
+          />
+        ))}
+      </div>
+      <p className="markets-gap-note">
+        Commentary carrying no ticker is tagged to {sector}; the content model has no per-report
+        theme field yet, so the sector page is the only surface that can tag it.
+      </p>
+    </Band>
+  );
+}
+
+export function SectorTopAnalysts({
+  analysts,
+  isAuthed,
+}: {
+  analysts: SectorAnalyst[];
+  isAuthed: boolean;
+}) {
+  if (analysts.length === 0) return null;
+
+  return (
+    <Band title="Top analysts in this sector" note="Ranked by Track Score among those active here.">
+      <div className="mt-2">
+        {analysts.map((a, i) => (
+          <div key={a.handle} className="markets-row">
+            <span className="today-rank num" aria-hidden>
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <Link href={`/analyst/${a.handle}`} className="markets-row-name focus-ring">
+              <Avatar src={a.avatarUrl} name={a.displayName} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text">
+                {a.displayName}
+              </span>
+            </Link>
+            <ScoreRing score={a.score} size="sm" provisional={a.provisional} />
+            <span className="markets-row-meta num">
+              {a.calls} {a.calls === 1 ? "call" : "calls"}
+              {a.hitRatePct == null ? "" : ` · ${a.hitRatePct}% hit`}
+            </span>
+            <FollowButton analystId={a.id} initialFollowing={a.following} isAuthed={isAuthed} />
+          </div>
+        ))}
+      </div>
+    </Band>
+  );
+}

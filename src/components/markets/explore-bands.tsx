@@ -10,6 +10,7 @@ import { sinceLabel } from "@/lib/today/format";
 import { compact, price } from "@/lib/format";
 import type {
   CallLean,
+  EtfBandRow,
   CoveredRow,
   MarketRow,
   NewlyCalledRow,
@@ -210,10 +211,13 @@ export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
       <div className="markets-sector-grid">
         {sectors.map((s) => (
           <div key={s.name} className="markets-sector">
-            <div className="flex items-baseline justify-between gap-2">
+            <Link
+              href={`/markets/sector/${encodeURIComponent(s.name)}`}
+              className="focus-ring flex items-baseline justify-between gap-2 rounded-[var(--radius-btn)]"
+            >
               <span className="markets-sector-name">{s.name}</span>
               <DayChange percent={s.changePercent} />
-            </div>
+            </Link>
             <div className="mt-2 flex items-center justify-between gap-2">
               <span className="markets-row-meta num">
                 {s.publications} {s.publications === 1 ? "publication" : "publications"}
@@ -230,16 +234,37 @@ export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
 /* ---------------------------------------------------------------- ETFs --- */
 
 /**
- * The instrument table is equities only: it carries no ETFs and has no
- * asset-type column, so there is no fund to rank and no Stoa activity to rank
- * it by. The band keeps its place in the page and says what is missing.
+ * The featured funds are curated in `CURATED_ETFS` rather than read from the
+ * instrument table, which is equities only. Each row's Stoa activity is real;
+ * every other fund the provider recognizes is reachable through search.
  */
-export function ExploreEtfs() {
+export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
+  if (rows.length === 0) return null;
+
   return (
-    <Band title="ETFs by Stoa activity" note="Funds analysts are publishing on.">
-      <p className="markets-empty">
-        Funds are not in the instrument table yet, so there is nothing truthful to rank here. This
-        band fills in once ETFs are listed alongside equities.
+    <Band
+      title="ETFs by Stoa activity"
+      note="Funds analysts are publishing on."
+      seeAllHref="/markets"
+    >
+      <div className="mt-2">
+        {rows.map((e) => (
+          <div key={e.symbol} className="markets-row">
+            <Link href={`/markets/${e.symbol}`} className="markets-row-name focus-ring">
+              <TickerChip ticker={e.symbol} />
+              <span className="min-w-0 flex-1 truncate text-sm text-text">{e.name}</span>
+            </Link>
+            {/* DAY-CHANGE-PENDING: the band uses the list quote path. */}
+            <DayChange percent={null} />
+            <span className="markets-row-meta num">
+              {e.publications} {e.publications === 1 ? "publication" : "publications"}
+            </span>
+            <FollowTicker ticker={e.symbol} />
+          </div>
+        ))}
+      </div>
+      <p className="markets-gap-note">
+        Featured funds are curated. Any other fund is reachable through search.
       </p>
     </Band>
   );

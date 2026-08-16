@@ -1903,6 +1903,9 @@ body {
   overflow: hidden;
 }
 
+/* Presets render as links and Custom as a button; both are segments of the
+ * same control, so the rule has to cover each. */
+.calls-tf a,
 .calls-tf button {
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -1914,9 +1917,15 @@ body {
   border-inline-end: 1px solid var(--border);
   transition: background var(--dur-1) var(--ease-hover);
 }
-.calls-tf button:last-child {
+.calls-tf a:hover,
+.calls-tf button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.calls-tf > :last-child {
   border-inline-end: none;
 }
+.calls-tf a[aria-pressed="true"],
 .calls-tf button[aria-pressed="true"] {
   background: var(--ink);
   color: var(--paper);
@@ -2038,6 +2047,266 @@ body {
   .stock-fundamentals {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
+
+/* Theme chip: the no-ticker cousin of TickerChip, for commentary anchored on
+ * a sector rather than a symbol. */
+.today-theme-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-tag);
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* ---- custom date range on the chart toggle ---- */
+
+.calls-tf-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.25rem var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-mute);
+}
+.calls-tf-custom input {
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  border: none;
+  outline: none;
+}
+.calls-tf-custom button {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: var(--r-tag);
+  padding: 0.1875rem 0.5rem;
+}
+
+.calls-chart--compact {
+  padding: var(--space-4);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin-top: var(--space-4);
+  padding-inline: 0;
+}
+
+/* ---- ETF sector exposure ---- */
+
+.etf-exposure {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.etf-exposure-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.etf-exposure-label {
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.etf-exposure-track {
+  display: block;
+  height: 6px;
+  border-radius: var(--r-tag);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.etf-exposure-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.55;
+}
+
+/* ---- sector performance placeholder ---- */
+
+.sector-perf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-5);
+  min-height: 12rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-card);
+}
+
+/* ------------------------------------------------------------------ *
+ * Instrument sheet — a compact panel for looking at an instrument
+ * without leaving the surface you were reading. Right-anchored on
+ * desktop, a bottom sheet on phones.
+ * ------------------------------------------------------------------ */
+
+.sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
+  animation: fade-in var(--dur-2) var(--ease-out) both;
+}
+
+.sheet-panel {
+  position: relative;
+  width: 480px;
+  max-width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  background: var(--paper);
+  border-inline-start: 1px solid var(--border-strong);
+  animation: sheet-in-x var(--dur-3) var(--ease-drawer) both;
+}
+
+@keyframes sheet-in-x {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (max-width: 639px) {
+  .sheet-root {
+    align-items: flex-end;
+  }
+  .sheet-panel {
+    width: 100%;
+    height: auto;
+    max-height: 88dvh;
+    border-inline-start: none;
+    border-top: 1px solid var(--border-strong);
+    border-start-start-radius: var(--r-card);
+    border-start-end-radius: var(--r-card);
+    animation: sheet-in-y var(--dur-3) var(--ease-drawer) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel,
+  .sheet-scrim {
+    animation: none;
+  }
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.sheet-name {
+  font-family: var(--font-display);
+  font-weight: 640;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.sheet-sub {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: var(--r-btn);
+  color: var(--text-mute);
+}
+.sheet-close:hover {
+  color: var(--text);
+}
+
+.sheet-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.sheet-consensus {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+}
+
+.sheet-calls {
+  margin-top: var(--space-5);
+}
+
+.sheet-call {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-full {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  border-radius: var(--r-btn);
+}
+.sheet-full:hover {
+  text-decoration: underline;
 }
 
 /* ------------------------------------------------------------------ *

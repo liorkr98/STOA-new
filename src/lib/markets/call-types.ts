@@ -12,7 +12,19 @@ import type { Direction, Outcome } from "@/lib/types";
  * value exported from a "use client" module reaches the server as a client
  * reference, not the array itself.
  */
-export const STOCK_RANGES: ChartRange[] = ["1M", "6M", "1Y", "5Y"];
+export const STOCK_RANGES: ChartRange[] = ["1D", "1W", "1M", "6M", "1Y", "5Y"];
+
+/** Sentinel for the custom from/to range, kept out of the preset list. */
+export const CUSTOM_RANGE = "CUSTOM";
+
+/**
+ * Call horizons run weeks to months, so on a single trading day every target
+ * line sits far off-scale and the chart implies a precision the calls do not
+ * have. 1D therefore drops the overlay entirely rather than clipping it.
+ */
+export function overlayVisible(range: string): boolean {
+  return range !== "1D";
+}
 
 export interface StockAnalyst {
   handle: string;

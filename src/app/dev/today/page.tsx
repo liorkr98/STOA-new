@@ -1,4 +1,5 @@
 import { TodayView } from "@/components/today/today-view";
+import { InstrumentSheetProvider } from "@/components/markets/instrument-sheet";
 import type { DispatchPayload, DispatchStory } from "@/lib/dispatch/types";
 import type { TodayAnalyst, TodayItem, TodayPayload } from "@/lib/today/types";
 import type { Prediction, Profile, Report } from "@/lib/types";
@@ -281,5 +282,11 @@ const today: TodayPayload = {
 };
 
 export default function DevTodayPage() {
-  return <TodayView dispatch={dispatch} today={today} />;
+  // The provider normally lives in the (app) layout; the dev harness mounts
+  // its own so the sheet can be opened from a headline row here too.
+  return (
+    <InstrumentSheetProvider>
+      <TodayView dispatch={dispatch} today={today} />
+    </InstrumentSheetProvider>
+  );
 }

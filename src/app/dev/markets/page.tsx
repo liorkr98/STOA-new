@@ -74,7 +74,12 @@ const resolvedCalls: ResolvedCall[] = [
   { reportId: "r4", analyst: PR, direction: "long", entryPrice: 201.7, exitPrice: 206.2, returnPct: 2.2, outcome: "near", lockedAt: iso(140), resolvedAt: iso(65) },
 ];
 
-export default function DevMarketsPage() {
+export default async function DevMarketsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
+  const { range = "1Y" } = await searchParams;
   const calls = {
     openCalls,
     resolvedCalls,
@@ -111,7 +116,7 @@ export default function DevMarketsPage() {
         candles={candles()}
         openCalls={openCalls}
         resolvedCalls={resolvedCalls}
-        range="1Y"
+        range={range}
       />
 
       <StockConsensusBlock ticker="NVDA" consensus={calls.consensus} />

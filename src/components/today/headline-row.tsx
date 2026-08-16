@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { ScoreRing } from "@/components/ui/score-ring";
-import { TickerChip } from "@/components/ui/ticker-chip";
+import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
@@ -35,7 +35,9 @@ export function HeadlineRow({
         <div className="today-meta">
           <span>{typeLabel(item.type)}</span>
           {item.ticker ? (
-            <TickerChip ticker={item.ticker} href={`/markets/${item.ticker}`} />
+            <SheetTickerChip ticker={item.ticker} />
+          ) : item.themeTag ? (
+            <span className="today-theme-chip">{item.themeTag}</span>
           ) : null}
           {item.direction ? <DirectionTag direction={item.direction} /> : null}
           <span className="today-meta-badge">{item.contentBadge.join(" · ")}</span>

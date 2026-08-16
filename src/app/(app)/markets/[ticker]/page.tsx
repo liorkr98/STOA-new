@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getStockSnapshot } from "@/lib/engine/market";
-import { getCandles } from "@/lib/engine/market/candles";
+import { getCandles, getCandlesBetween } from "@/lib/engine/market/candles";
 import { listByTicker, publishedReportCount, tickerCoverage } from "@/lib/db/reports";
 import { getTickerRow, listSectorPeers } from "@/lib/db/tickers";
 import { hasResolvedHistory } from "@/lib/db/predictions";
@@ -16,9 +16,12 @@ import {
   StockResolvedHistory,
 } from "@/components/markets/stock-sections";
 import { buildStockCalls } from "@/lib/markets/build-stock";
+import { buildEtfSnapshot } from "@/lib/markets/build-etf";
+import { curatedEtf } from "@/lib/markets/etfs";
+import { EtfView } from "@/components/markets/etf-view";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import type { ChartRange } from "@/lib/market/candle-types";
-import { STOCK_RANGES } from "@/lib/markets/call-types";
+import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/call-types";
 import type { TodayItem } from "@/lib/today/types";
 import type { Report } from "@/lib/types";
 
@@ -29,8 +32,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { ticker } = await params;
   const sym = ticker.toUpperCase();
+  // The instrument table is equities only, so a fund's name comes from the
+  // curated list rather than falling back to the bare symbol.
   const meta = await getTickerRow(sym);
-  const name = meta?.name ?? sym;
+  const name = meta?.name ?? curatedEtf(sym)?.name ?? sym;
 
   // Same guard the sitemap uses (src/lib/db/reports.ts: publishedReportCount /
   // allTickerCoverage) so a page's indexability and its sitemap presence can
@@ -115,28 +120,55 @@ export default async function TickerPage({
   searchParams,
 }: {
   params: Promise<{ ticker: string }>;
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
 }) {
   const [{ ticker }, query] = await Promise.all([params, searchParams]);
   const sym = ticker.toUpperCase();
-  const range: ChartRange = (STOCK_RANGES as string[]).includes(query.range ?? "")
-    ? (query.range as ChartRange)
-    : "1Y";
 
-  const [snapshot, reports, meta, calls, candles, coverage] = await Promise.all([
-    getStockSnapshot(sym),
+  const custom = query.range === CUSTOM_RANGE && query.from && query.to;
+  const range: string = custom
+    ? CUSTOM_RANGE
+    : (STOCK_RANGES as string[]).includes(query.range ?? "")
+      ? (query.range as ChartRange)
+      : "1Y";
+
+  const candlesFor = () =>
+    custom
+      ? getCandlesBetween(sym, query.from as string, query.to as string)
+      : getCandles(sym, range as ChartRange);
+
+  // Funds resolve live from the provider, so any recognized symbol reaches the
+  // right layout whether or not it is on the curated Explore list.
+  const [etf, reports, calls, candles, coverage] = await Promise.all([
+    buildEtfSnapshot(sym),
     listByTicker(sym),
-    getTickerRow(sym),
     buildStockCalls(sym),
-    getCandles(sym, range),
+    candlesFor(),
     tickerCoverage(),
   ]);
 
-  const peers = meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : [];
   const publications = reports.flatMap((r: Report) => {
     const item = toItem(r);
     return item ? [item] : [];
   });
+
+  if (etf) {
+    return (
+      <EtfView
+        etf={etf}
+        candles={candles}
+        calls={calls}
+        publications={publications}
+        coverage={coverage}
+        range={range}
+        customFrom={query.from}
+        customTo={query.to}
+      />
+    );
+  }
+
+  const [snapshot, meta] = await Promise.all([getStockSnapshot(sym), getTickerRow(sym)]);
+  const peers = meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : [];
 
   return (
     <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
@@ -158,6 +190,8 @@ export default async function TickerPage({
         openCalls={calls.openCalls}
         resolvedCalls={calls.resolvedCalls}
         range={range}
+        customFrom={query.from}
+        customTo={query.to}
       />
 
       <StockConsensusBlock ticker={sym} consensus={calls.consensus} />
