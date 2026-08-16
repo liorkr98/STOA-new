@@ -97,6 +97,8 @@ and badges use 8–12% tints of the same hues rather than introducing new pastel
 Type scale (rem, 16px base):
 
 ```
+--text-micro: 10px              — mono eyebrows / uppercase-tracked labels only (never prose)
+--text-mini:  11px              — mono metadata inside dense data cards only (never prose)
 --text-xs:    0.75rem   (12px)  — timestamps, fine print, disclosure microcopy
 --text-sm:    0.875rem  (14px)  — secondary UI text, card metadata
 --text-base:  1rem      (16px)  — body copy, form inputs
@@ -106,6 +108,10 @@ Type scale (rem, 16px base):
 --text-3xl:   2.75rem   (44px)  — report headlines (Fraunces)
 --text-4xl:   4rem      (64px)  — homepage hero (Fraunces)
 ```
+
+Sub-12px is reserved for **monospace labels and metadata inside dense data widgets** (score
+rings, valuation cards, table eyebrows) — never for prose. Only two micro values are permitted,
+`10px` and `11px`; any other arbitrary sub-12px size is drift and should snap to one of these.
 
 **Spacing scale** (4px base unit, used for all padding/margin/gap — no arbitrary values):
 

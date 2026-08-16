@@ -24,7 +24,7 @@ function LeadScore({ handle, score }: { handle: string; score: number | null }) 
         <span className="num text-2xl font-semibold tabular-nums" style={{ color }}>
           {score ?? "-"}
         </span>
-        <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-faint transition-colors group-hover/score:text-text-mute">
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-faint transition-colors group-hover/score:text-text-mute">
           Track Score
         </span>
       </span>

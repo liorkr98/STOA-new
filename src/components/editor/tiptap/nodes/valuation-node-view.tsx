@@ -177,7 +177,7 @@ export function ValuationNodeView({
                         opacity: 0.85,
                       }}
                     />
-                    <span className="num text-[9px] text-text-faint">{i + 1}</span>
+                    <span className="num text-[10px] text-text-faint">{i + 1}</span>
                   </div>
                 );
               })}
@@ -189,7 +189,7 @@ export function ValuationNodeView({
                     background: "var(--brass)",
                   }}
                 />
-                <span className="num text-[9px] text-text-faint">TV</span>
+                <span className="num text-[10px] text-text-faint">TV</span>
               </div>
             </div>
           </div>
@@ -403,7 +403,7 @@ export function ValuationNodeView({
                         return (
                           <div
                             key={ci}
-                            className="num flex flex-1 items-center justify-center py-1 text-[9px]"
+                            className="num flex flex-1 items-center justify-center py-1 text-[10px]"
                             style={{ background: Number.isFinite(cell) ? diverging(t) : "var(--surface-2)" }}
                             title={`WACC ${(sensitivity.waccSteps[ri] * 100).toFixed(1)}% / g ${(sensitivity.growthSteps[ci] * 100).toFixed(1)}%`}
                           >

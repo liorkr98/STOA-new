@@ -104,7 +104,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
               type="button"
               onClick={() => setFilter(c.key)}
               className={cn(
-                "num shrink-0 rounded-full border px-4 py-1.5 text-[10.5px] uppercase tracking-[0.14em] transition-colors",
+                "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
                 filter === c.key
                   ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                   : "border-border text-text-mute hover:border-border-strong",
@@ -146,7 +146,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                 </h3>
                 {it.deck && <p className="mt-1.5 max-w-[680px] text-[14.5px] text-text-mute">{it.deck}</p>}
                 <div className="mt-3.5 flex items-center gap-2.5">
-                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--ink)] text-[8.5px] text-[var(--paper)]">
+                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--ink)] text-[10px] text-[var(--paper)]">
                     {it.analystInitials}
                   </span>
                   <span className="text-sm">{it.analystName}</span>
@@ -159,7 +159,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                   <Bmk id={it.id} saved={it.saved} />
                   <span
                     className={cn(
-                      "num flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[10.5px] uppercase tracking-[0.14em]",
+                      "num flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] uppercase tracking-[0.14em]",
                       it.chipTone === "ink"
                         ? "bg-[var(--ink)] text-[var(--paper)]"
                         : "border border-border text-text-mute",

@@ -21,11 +21,11 @@
   --surface: #f7f8f5;
   --surface-2: #e6e8e2;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
+  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
   /* Decorative only (2.65:1): dividers, disabled glyphs, ornamental dashes.
    * Any text that carries meaning -- including placeholders -- uses
    * --text-mute or darker (C.2 rule 8). */
-  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
   --border: color-mix(in srgb, var(--ink) 14%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
 
@@ -81,8 +81,8 @@
   --surface: #1a1d26;
   --surface-2: #23262f;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
-  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
   --border: color-mix(in srgb, var(--ink) 16%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 30%, transparent);
 

@@ -53,11 +53,11 @@ export default async function WalletPage() {
       {/* Metric strip */}
       <div className="grid grid-cols-2 gap-2.5 md:gap-3.5">
         <div className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-          <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">Balance</div>
+          <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">Balance</div>
           <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{usd(balance, { cents: true })}</div>
         </div>
         <div className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-          <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">AI credits</div>
+          <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">AI credits</div>
           <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{wallet?.ai_credits ?? 0}</div>
         </div>
       </div>
@@ -89,7 +89,7 @@ export default async function WalletPage() {
           <p className="t-meta mt-3">No activity yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-[9.5px] uppercase tracking-[0.16em] text-text-faint md:grid">
+            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-[10px] uppercase tracking-[0.16em] text-text-faint md:grid">
               <div>Date</div>
               <div>Description</div>
               <div className="text-right">Amount</div>

@@ -109,7 +109,7 @@ export function NavSearch() {
   const showPanel = open && q.trim().length >= 1;
 
   return (
-    <div ref={rootRef} className="relative w-[9.5rem] sm:w-[11.5rem] md:mx-auto md:w-[13rem]">
+    <div ref={rootRef} className="relative w-40 sm:w-52 md:w-[300px]">
       <form
         role="search"
         onSubmit={(e) => {
@@ -140,7 +140,7 @@ export function NavSearch() {
               inputRef.current?.blur();
             }
           }}
-          placeholder="Search"
+          placeholder="Search tickers, analysts"
           aria-label="Search tickers, analysts, or reports"
           aria-autocomplete="list"
           aria-controls={listId}
@@ -171,7 +171,7 @@ export function NavSearch() {
         <div
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 min-w-[16rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)] sm:left-1/2 sm:right-auto sm:w-[18rem] sm:-translate-x-1/2"
+          className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[16rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)] sm:w-[18rem]"
         >
           {loading && !hasHits ? (
             <p className="px-3 py-2.5 text-[11px] text-text-faint" role="status">
@@ -195,7 +195,7 @@ export function NavSearch() {
             <>
               {tickers.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Markets
                   </p>
                   {tickers.map((t) => (
@@ -214,7 +214,7 @@ export function NavSearch() {
               )}
               {creators.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Analysts
                   </p>
                   {creators.map((c) => (
@@ -235,7 +235,7 @@ export function NavSearch() {
               )}
               {reports.length > 0 && (
                 <div className="px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Reports
                   </p>
                   {reports.map((r) => (

@@ -88,7 +88,7 @@ function PrefGroup({ title, rows }: { title: string; rows: string[] }) {
     <div>
       <div className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{title}</div>
       <div className="mt-2 flex flex-col">
-        <div className="num flex items-center justify-end gap-6 pb-1 text-[9px] uppercase tracking-[0.14em] text-text-faint">
+        <div className="num flex items-center justify-end gap-6 pb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">
           <span className="w-9 text-center">In-app</span>
           <span className="w-9 text-center">Email</span>
         </div>
@@ -210,7 +210,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
           <button
             type="button"
             onClick={() => start(async () => { await markAllNotificationsRead(); router.refresh(); })}
-            className="num rounded-full border border-border px-3.5 py-1.5 text-[10.5px] uppercase tracking-[0.14em] text-text-mute hover:border-border-strong"
+            className="num rounded-full border border-border px-3.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text-mute hover:border-border-strong"
           >
             Mark all read
           </button>
@@ -234,7 +234,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
             type="button"
             onClick={() => setFilter(c.key)}
             className={cn(
-              "num shrink-0 rounded-full border px-4 py-1.5 text-[10.5px] uppercase tracking-[0.14em] transition-colors",
+              "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
               filter === c.key
                 ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                 : "border-border text-text-mute hover:border-border-strong",

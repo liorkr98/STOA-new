@@ -213,14 +213,14 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <div className="mt-7 flex items-center gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-5">
             <ScoreRing score={props.score} size="md" provisional={props.provisional} />
             <div className="flex-1">
-              <span className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+              <span className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
                 {props.scoreLabel}
               </span>
               <div className="mt-2 text-[15px]">{props.recordLine}</div>
               <button
                 type="button"
                 onClick={() => setTab("score")}
-                className="num mt-3 text-[10.5px] uppercase tracking-[0.16em] text-text transition-colors hover:text-text-mute focus-ring"
+                className="num mt-3 text-[11px] uppercase tracking-[0.16em] text-text transition-colors hover:text-text-mute focus-ring"
               >
                 View full breakdown →
               </button>
@@ -249,7 +249,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
         {/* RIGHT: pinned video */}
         {props.pinned && (
           <div className="flex flex-col md:h-full">
-            <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
               Pinned by {props.firstName}
             </div>
             <Link
@@ -261,7 +261,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   {props.pinned.ticker && <TickerChip ticker={props.pinned.ticker} />}
                   {props.pinned.direction && <DirectionTag direction={props.pinned.direction} />}
-                  <span className="num text-[10.5px] uppercase tracking-[0.12em] text-text-mute">
+                  <span className="num text-[11px] uppercase tracking-[0.12em] text-text-mute">
                     {props.pinned.badge}
                   </span>
                 </div>
@@ -271,7 +271,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 {props.pinned.deck && (
                   <p className="text-[15px] leading-relaxed text-text-mute">{props.pinned.deck}</p>
                 )}
-                <div className="num text-[10.5px] uppercase tracking-[0.14em] text-text-faint">
+                <div className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">
                   {props.pinned.footer}
                 </div>
               </div>
@@ -284,7 +284,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       <div className="mt-11 grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
         {props.tiles.map((t) => (
           <div key={t.label} className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-            <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">{t.label}</div>
+            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{t.label}</div>
             <div
               className="mt-2.5 text-[28px] font-semibold tracking-tight"
               style={{ color: toneColor(t.tone) }}
@@ -306,7 +306,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 type="button"
                 onClick={() => setTab(t.key)}
                 className={cn(
-                  "num relative whitespace-nowrap pb-3 text-[11.5px] uppercase tracking-[0.18em] transition-colors",
+                  "num relative whitespace-nowrap pb-3 text-[11px] uppercase tracking-[0.18em] transition-colors",
                   active ? "text-text" : "text-text-mute hover:text-text",
                 )}
               >
@@ -392,7 +392,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
               >
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="num text-[10.5px] uppercase tracking-[0.16em] text-text-mute">
+                    <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">
                       {r.typeLabel}
                     </span>
                     {r.ticker && <TickerChip ticker={r.ticker} />}
@@ -407,7 +407,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 <div className="flex items-center gap-2 md:justify-end">
                   {r.locked && <Lock size={12} strokeWidth={1.4} className="text-text-mute" aria-hidden />}
                   <span
-                    className="num rounded-full border px-3 py-1.5 text-[10.5px] uppercase tracking-[0.16em]"
+                    className="num rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.16em]"
                     style={{
                       color: toneColor(r.accessTone),
                       borderColor: r.accessTone === "ink" ? "var(--ink)" : "var(--border)",
@@ -440,11 +440,11 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 ))}
               </div>
             </div>
-            <div className="num text-[10.5px] uppercase tracking-[0.14em] text-text-faint">{props.confidenceLine}</div>
+            <div className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">{props.confidenceLine}</div>
 
             {props.series.length > 1 ? (
               <div className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
-                <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+                <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
                   Equity curve · resolved calls
                 </div>
                 <div className="mt-3.5">

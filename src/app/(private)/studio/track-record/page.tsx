@@ -71,14 +71,14 @@ export default async function TrackRecordPage() {
                 </div>
               ))}
             </div>
-            <div className="num text-[10.5px] uppercase tracking-[0.14em] text-text-faint">
+            <div className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">
               {provisional ? `PARTIAL SAMPLE · ${stats.total} RESOLVED` : `FULL SAMPLE · ${stats.total} RESOLVED`}
             </div>
           </div>
 
           {stats.series.length > 1 ? (
             <div className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
-              <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+              <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
                 Equity curve · resolved calls
               </div>
               <div className="mt-3.5">

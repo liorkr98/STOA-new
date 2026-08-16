@@ -92,11 +92,11 @@ export function TierPickerModal({
                   )}
                 >
                   {popular && (
-                    <span className="num absolute -top-2.5 left-5 rounded-full bg-[var(--ink)] px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-[var(--paper)]">
+                    <span className="num absolute -top-2.5 left-5 rounded-full bg-[var(--ink)] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
                       Most popular
                     </span>
                   )}
-                  <span className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+                  <span className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
                     {plan.name}
                   </span>
                   <div className="mt-3 flex items-baseline gap-1.5">
@@ -121,7 +121,7 @@ export function TierPickerModal({
                     ))}
                   </ul>
                   {!free && (plan.trial_days ?? 0) > 0 && (
-                    <p className="num mt-4 text-[9.5px] uppercase tracking-[0.14em] text-[var(--verdigris)]">
+                    <p className="num mt-4 text-[10px] uppercase tracking-[0.14em] text-[var(--verdigris)]">
                       {plan.trial_days}-day free trial
                     </p>
                   )}

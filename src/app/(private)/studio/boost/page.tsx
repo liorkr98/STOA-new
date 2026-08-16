@@ -47,7 +47,7 @@ export default async function BoostPage() {
       <div className="grid gap-3 sm:grid-cols-2">
         {PACKAGES.map((p) => (
           <div key={p.key} className="flex flex-col rounded-[var(--radius-card)] border border-border bg-surface p-5">
-            <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">
+            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
               {p.kind} · {p.duration}
             </div>
             <div className="mt-2 text-2xl font-semibold tracking-tight">${p.price}</div>
@@ -69,10 +69,10 @@ export default async function BoostPage() {
             {active.map((b) => (
               <div key={b.id} className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
                 <div className="flex items-center justify-between">
-                  <span className="num text-[10.5px] uppercase tracking-[0.16em] text-text-mute">
+                  <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">
                     {b.target_type} · {b.placement}
                   </span>
-                  <span className="num text-[10.5px] uppercase tracking-[0.14em] text-text-faint">
+                  <span className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">
                     {formatDistanceToNowStrict(new Date(b.ends_at))} left
                   </span>
                 </div>

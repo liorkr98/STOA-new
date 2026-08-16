@@ -45,7 +45,7 @@ export default async function EarningsPage() {
           { label: "Pending payout", value: usd(net, { cents: true }) },
         ].map((m) => (
           <div key={m.label} className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-            <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
+            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
             <div className="mt-2.5 text-[26px] font-semibold tracking-tight">{m.value}</div>
           </div>
         ))}

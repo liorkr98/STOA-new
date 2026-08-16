@@ -131,7 +131,7 @@ export default async function SubscriptionsPage() {
           <p className="t-meta mt-3">No report unlocks yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-[9.5px] uppercase tracking-[0.16em] text-text-faint md:grid">
+            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-[10px] uppercase tracking-[0.16em] text-text-faint md:grid">
               <div>Date</div>
               <div>Report</div>
               <div>Analyst</div>

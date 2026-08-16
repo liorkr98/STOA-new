@@ -60,7 +60,7 @@ function Thumb({ duration }: { duration: string }) {
           <Play size={10} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
         </span>
       </div>
-      <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-[8px] text-[var(--paper)]">
+      <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-[10px] text-[var(--paper)]">
         {duration}
       </span>
     </div>
@@ -108,7 +108,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
             type="button"
             onClick={() => setFilter(c.key)}
             className={cn(
-              "num shrink-0 rounded-full border px-4 py-1.5 text-[10.5px] uppercase tracking-[0.14em] transition-colors",
+              "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
               filter === c.key
                 ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                 : "border-border text-text-mute hover:border-border-strong",
@@ -151,14 +151,14 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   </h3>
 
                   {p.stateLine && (
-                    <p className={cn("num mt-2 text-[10.5px] uppercase tracking-[0.14em]", p.warning ? "text-[var(--brass)]" : "text-text-faint")}>
+                    <p className={cn("num mt-2 text-[11px] uppercase tracking-[0.14em]", p.warning ? "text-[var(--brass)]" : "text-text-faint")}>
                       {p.stateLine}
                     </p>
                   )}
 
                   {open && (
                     <>
-                      <p className="num mt-1.5 text-[11.5px] text-text-mute">
+                      <p className="num mt-1.5 text-[11px] text-text-mute">
                         ENTRY {p.entry} · TARGET {p.target} · NOW — · —
                       </p>
                       <div className="mt-2 h-1 max-w-sm overflow-hidden rounded-full bg-surface-2">
@@ -169,10 +169,10 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
 
                   {p.state === "resolved" && (
                     <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <span className="num text-[11.5px]" style={{ color: p.returnTone === "down" ? "var(--down)" : "var(--up)" }}>
+                      <span className="num text-[11px]" style={{ color: p.returnTone === "down" ? "var(--down)" : "var(--up)" }}>
                         {p.entryExit} · {p.returnPct}
                       </span>
-                      <span className="num rounded-full border border-border px-2.5 py-1 text-[9.5px] uppercase tracking-[0.14em] text-text-faint">
+                      <span className="num rounded-full border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">
                         SCORE Δ pending
                       </span>
                     </div>

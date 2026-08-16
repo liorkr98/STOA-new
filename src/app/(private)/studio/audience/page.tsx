@@ -68,7 +68,7 @@ export default async function StudioAudiencePage() {
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
         {metrics.map((m) => (
           <div key={m.label} className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-            <div className="num text-[10.5px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
+            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
             <div className="mt-2.5 text-[24px] font-semibold tracking-tight">{m.value}</div>
           </div>
         ))}
