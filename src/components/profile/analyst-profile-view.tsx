@@ -296,7 +296,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       </div>
 
       {/* TABS */}
-      <div className="sticky top-16 z-20 mt-9 border-b border-border bg-bg">
+      <div className="sticky top-14 z-20 mt-9 border-b border-border bg-bg">
         <div className="flex gap-6 overflow-x-auto md:gap-8">
           {tabs.map((t) => {
             const active = tab === t.key;

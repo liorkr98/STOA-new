@@ -566,7 +566,7 @@ export function StudioEditor({
 
         {/* Lock & Publish panel (collapsible) */}
         {panelOpen && (
-          <aside className="scroll-area self-start lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:pl-1">
+          <aside className="scroll-area self-start lg:sticky lg:top-14 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:pl-1">
             <LockPublishPanel
               hasCard={hasCard}
               ticker={ticker}

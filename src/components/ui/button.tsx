@@ -17,8 +17,11 @@ const variants: Record<ButtonVariant, string> = {
   subtle: "bg-surface-2 text-text hover:opacity-80",
 };
 
+// Heights are arbitrary px, not scale steps: this app's @theme maps the spacing
+// scale onto a non-linear ramp (--space-8 = 64px), so `h-8` would render a 64px
+// "small" button. Explicit px keeps button heights immune to that ramp.
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-[0.8125rem]",
+  sm: "h-[34px] px-3 text-[0.8125rem]",
   md: "h-10 px-4 text-sm",
   lg: "h-12 px-6 text-[0.95rem]",
 };

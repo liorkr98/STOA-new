@@ -36,7 +36,7 @@ function initialsOf(name: string) {
 
 function AvatarCircle({ profile, className }: { profile: Profile; className?: string }) {
   return (
-    <span className={cn("flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] text-[11px] font-medium text-[var(--paper)]", className)}>
+    <span className={cn("flex h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] text-[11px] font-medium text-[var(--paper)]", className)}>
       {profile.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
@@ -60,7 +60,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
 
   return (
     <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper">
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-5 lg:gap-6">
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-5 lg:gap-6">
         {/* Wordmark + nav items */}
         <div className="flex min-w-0 items-center gap-6 lg:gap-8">
           <Link href={logoHref} className="focus-ring shrink-0 rounded-[var(--radius-btn)]">
@@ -115,7 +115,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             </>
           ) : (
             <>
-              <Link href="/sign-in" className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:text-text">
+              <Link href="/sign-in" className="focus-ring rounded-[var(--radius-btn)] px-3 py-1.5 text-sm text-text-mute hover:text-text">
                 Sign in
               </Link>
               <Link href="/sign-up" className={buttonClass("primary", "sm")}>

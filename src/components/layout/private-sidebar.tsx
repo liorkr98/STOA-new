@@ -79,7 +79,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
   const groups = visibleGroups(isAnalyst);
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
+    <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
       <Link
         href={`/analyst/${profile.handle}`}
         className="focus-ring flex items-center gap-2.5 rounded-[var(--radius-btn)] px-2 py-1"
@@ -153,7 +153,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
   }, [pathname]);
 
   return (
-    <div className="sticky top-16 z-30 border-b border-border bg-surface md:hidden">
+    <div className="sticky top-14 z-30 border-b border-border bg-surface md:hidden">
       <div className="flex items-stretch gap-1 px-3">
         {groups.map((g) => {
           const groupActive = g.items.some((it) => it.href === active);

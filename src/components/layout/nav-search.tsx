@@ -146,7 +146,7 @@ export function NavSearch() {
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="h-8 w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
+          className="h-[34px] w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
