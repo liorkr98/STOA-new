@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TickerChip } from "@/components/ui/ticker-chip";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import { useWatchlist } from "@/lib/watchlist";
 import { price as fmtPrice } from "@/lib/format";
 import type { TodayTicker } from "@/lib/today/types";
@@ -48,7 +48,7 @@ export function TodayTickers() {
   if (!ready) return null;
 
   return (
-    <TodayBand title="Your Tickers" note="Names you watch." seeAllHref="/watchlist">
+    <Band title="Your Tickers" note="Names you watch." seeAllHref="/watchlist">
       {watched.length === 0 ? (
         <p className="py-6 text-sm text-text-mute">
           You are not watching any tickers yet.{" "}
@@ -67,7 +67,7 @@ export function TodayTickers() {
           </p>
         </div>
       )}
-    </TodayBand>
+    </Band>
   );
 }
 

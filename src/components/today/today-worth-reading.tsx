@@ -1,5 +1,5 @@
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import { accessLabel } from "@/lib/today/format";
 import type { TodayItem } from "@/lib/today/types";
 
@@ -12,7 +12,7 @@ export function TodayWorthReading({ items }: { items: TodayItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <TodayBand title="Worth Reading" note="Beyond your desk." seeAllHref="/explore">
+    <Band title="Worth Reading" note="Beyond your desk." seeAllHref="/explore">
       <div className="mt-2">
         {items.map((item) => (
           <HeadlineRow
@@ -26,6 +26,6 @@ export function TodayWorthReading({ items }: { items: TodayItem[] }) {
           />
         ))}
       </div>
-    </TodayBand>
+    </Band>
   );
 }

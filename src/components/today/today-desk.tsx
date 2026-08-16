@@ -1,5 +1,5 @@
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
-import { TodayBand, TodayColumnHead } from "@/components/today/today-band";
+import { Band, BandColumnHead } from "@/components/ui/band";
 import type { TodayItem } from "@/lib/today/types";
 
 /**
@@ -17,7 +17,7 @@ export function TodayDesk({
   if (subscriptions.length === 0 && following.length === 0) return null;
 
   return (
-    <TodayBand
+    <Band
       title="Your Desk"
       note="Fresh from the people you pay for and the people you follow."
     >
@@ -39,7 +39,7 @@ export function TodayDesk({
           empty="No new work from the analysts you follow today."
         />
       </div>
-    </TodayBand>
+    </Band>
   );
 }
 
@@ -60,7 +60,7 @@ function DeskColumn({
 }) {
   return (
     <div className="min-w-0">
-      <TodayColumnHead title={title} seeAllHref={seeAllHref} />
+      <BandColumnHead title={title} seeAllHref={seeAllHref} />
       {items.length === 0 ? (
         <p className="py-6 text-sm text-text-mute">{empty}</p>
       ) : (

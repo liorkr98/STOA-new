@@ -3,12 +3,15 @@ import Link from "next/link";
 import { cn } from "@/lib/design/cn";
 
 /**
- * A department of the issue. Bands are peers stacked down the page -- serif
- * section header, a note in the reader's own register, a hairline rule, and a
- * mono SEE ALL link. Nothing here nests inside anything else, and no band
- * shows its whole list; each is a window onto a fuller page.
+ * A full-width department of a page: serif section header, an optional note in
+ * the reader's register, a hairline rule, and a mono SEE ALL link. Bands are
+ * peers stacked down the page, never nested, and each shows only its top few
+ * items while pointing at a fuller page.
+ *
+ * Shared by Today (/home) and Markets, which are the same newspaper applied to
+ * publications and to instruments.
  */
-export function TodayBand({
+export function Band({
   title,
   note,
   seeAllHref,
@@ -28,18 +31,18 @@ export function TodayBand({
   className?: string;
 }) {
   return (
-    <section className={cn("today-band", className)} aria-label={title}>
-      <div className="today-band-head">
+    <section className={cn("band", className)} aria-label={title}>
+      <div className="band-head">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="today-band-title">{title}</h2>
+          <h2 className="band-title">{title}</h2>
           {badge}
-          {note ? <p className="today-band-note">{note}</p> : null}
+          {note ? <p className="band-note">{note}</p> : null}
         </div>
 
         <div className="flex shrink-0 items-center gap-4">
           {controls}
           {seeAllHref ? (
-            <Link href={seeAllHref} className="today-see-all focus-ring">
+            <Link href={seeAllHref} className="band-see-all focus-ring">
               {seeAllLabel}
               <span aria-hidden> →</span>
             </Link>
@@ -53,7 +56,7 @@ export function TodayBand({
 }
 
 /** A column heading inside a band, one weight below the band header itself. */
-export function TodayColumnHead({
+export function BandColumnHead({
   title,
   seeAllHref,
 }: {
@@ -61,10 +64,10 @@ export function TodayColumnHead({
   seeAllHref?: string;
 }) {
   return (
-    <div className="today-col-head">
-      <h3 className="today-col-title">{title}</h3>
+    <div className="band-col-head">
+      <h3 className="band-col-title">{title}</h3>
       {seeAllHref ? (
-        <Link href={seeAllHref} className="today-see-all focus-ring">
+        <Link href={seeAllHref} className="band-see-all focus-ring">
           See all
           <span aria-hidden> →</span>
         </Link>

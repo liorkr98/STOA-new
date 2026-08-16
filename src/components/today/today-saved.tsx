@@ -1,5 +1,5 @@
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import type { TodaySavedItem, TodaySavedReason } from "@/lib/today/types";
 
 const REASON_LABEL: Record<TodaySavedReason, string> = {
@@ -18,7 +18,7 @@ export function TodaySaved({ items }: { items: TodaySavedItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <TodayBand
+    <Band
       title="From Your Saved"
       note="Things you saved, with news."
       seeAllHref="/saved"
@@ -33,6 +33,6 @@ export function TodaySaved({ items }: { items: TodaySavedItem[] }) {
           />
         ))}
       </div>
-    </TodayBand>
+    </Band>
   );
 }

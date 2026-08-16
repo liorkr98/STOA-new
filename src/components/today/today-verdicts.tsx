@@ -4,7 +4,7 @@ import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { SealStamp, type SealStatus } from "@/components/ui/seal-stamp";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import { price } from "@/lib/format";
 import type { TodayVerdict } from "@/lib/today/types";
 
@@ -24,10 +24,10 @@ export function TodayVerdicts({ verdicts }: { verdicts: TodayVerdict[] }) {
   if (verdicts.length === 0) return null;
 
   return (
-    <TodayBand
+    <Band
       title="Verdicts"
       note="Calls the market just graded, from across Stoa."
-      badge={<span className="today-band-badge">Always free</span>}
+      badge={<span className="band-badge">Always free</span>}
       seeAllHref="/leaderboard"
       seeAllLabel="All verdicts"
     >
@@ -48,7 +48,7 @@ export function TodayVerdicts({ verdicts }: { verdicts: TodayVerdict[] }) {
           <span aria-hidden> →</span>
         </Link>
       </p>
-    </TodayBand>
+    </Band>
   );
 }
 

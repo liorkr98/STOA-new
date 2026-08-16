@@ -10,6 +10,7 @@ const RANGE_CFG: Record<ChartRange, { interval: YahooInterval; days: number }> =
   "1W": { interval: "60m", days: 8 },
   "1M": { interval: "1d", days: 32 },
   "3M": { interval: "1d", days: 95 },
+  "6M": { interval: "1d", days: 190 },
   "1Y": { interval: "1d", days: 370 },
   "5Y": { interval: "1wk", days: 1830 },
 };

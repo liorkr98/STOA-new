@@ -4,7 +4,7 @@ import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import { durationLabel } from "@/lib/today/format";
 import { compact } from "@/lib/format";
 import type { TodayVideo } from "@/lib/today/types";
@@ -19,7 +19,7 @@ export function TodayMostWatched({ videos }: { videos: TodayVideo[] }) {
   if (videos.length === 0) return null;
 
   return (
-    <TodayBand
+    <Band
       title="Most Watched"
       note="Today's most-watched analyst videos."
       seeAllHref="/discover"
@@ -33,7 +33,7 @@ export function TodayMostWatched({ videos }: { videos: TodayVideo[] }) {
         Ranked by publication views. Per-video play counts are not yet readable outside the
         analyst&apos;s own studio.
       </p>
-    </TodayBand>
+    </Band>
   );
 }
 

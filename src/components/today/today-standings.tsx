@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { ScoreRing } from "@/components/ui/score-ring";
-import { TodayBand } from "@/components/today/today-band";
+import { Band } from "@/components/ui/band";
 import type { TodayStanding } from "@/lib/today/types";
 
 /**
@@ -17,7 +17,7 @@ export function TodayStandings({ standings }: { standings: TodayStanding[] }) {
   if (standings.length === 0) return null;
 
   return (
-    <TodayBand
+    <Band
       title="The Standings"
       note="Verified Track Scores, all-time."
       seeAllHref="/leaderboard"
@@ -30,7 +30,7 @@ export function TodayStandings({ standings }: { standings: TodayStanding[] }) {
       <p className="today-gap-note">
         Weekly and monthly cycles, and seven-day rank movement, are not computed yet.
       </p>
-    </TodayBand>
+    </Band>
   );
 }
 

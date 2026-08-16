@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { getStockSnapshot } from "@/lib/engine/market";
-import { listByTicker, publishedReportCount } from "@/lib/db/reports";
-import { listFilings } from "@/lib/db/financials";
-import { getTickerRow } from "@/lib/db/tickers";
+import { getCandles } from "@/lib/engine/market/candles";
+import { listByTicker, publishedReportCount, tickerCoverage } from "@/lib/db/reports";
+import { getTickerRow, listSectorPeers } from "@/lib/db/tickers";
 import { hasResolvedHistory } from "@/lib/db/predictions";
-import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FundamentalsPanel } from "@/components/markets/fundamentals-panel";
-import { CompanyFinancials } from "@/components/markets/company-financials";
-import { MarketTradingViewChartCard } from "@/components/markets/market-tradingview-chart-card";
-import { CompanyNews } from "@/components/markets/company-news";
+import { CallsChart } from "@/components/markets/calls-chart";
 import {
-  SectorPeers,
-  StockKeyStats,
-  StockQuoteHeader,
-  StockRangeBar,
-} from "@/components/markets/stock-research-panels";
+  StockConsensusBlock,
+  StockFundamentals,
+  StockHeader,
+  StockOpenCalls,
+  StockPeers,
+  StockPublications,
+  StockResolvedHistory,
+} from "@/components/markets/stock-sections";
+import { buildStockCalls } from "@/lib/markets/build-stock";
+import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
+import type { ChartRange } from "@/lib/market/candle-types";
+import { STOCK_RANGES } from "@/lib/markets/call-types";
+import type { TodayItem } from "@/lib/today/types";
+import type { Report } from "@/lib/types";
 
 export async function generateMetadata({
   params,
@@ -76,62 +80,109 @@ export async function generateMetadata({
   };
 }
 
+function toItem(report: Report): TodayItem | null {
+  if (!report.author) return null;
+  const badge = ["Video"];
+  if (report.prediction || report.type === "call") badge.push("Call");
+  badge.push("Cards");
+  if (report.body) badge.push("Thesis");
+
+  return {
+    reportId: report.id,
+    type: report.type,
+    ticker: report.ticker ?? report.prediction?.ticker ?? null,
+    direction: report.prediction?.direction ?? null,
+    contentBadge: badge,
+    headline: storyHeadline(report),
+    deck: storyDek(report),
+    author: {
+      handle: report.author.handle,
+      displayName: report.author.display_name,
+      avatarUrl: report.author.avatar_url,
+      score: report.author.score || null,
+      provisional: (report.author.sample_size ?? 0) < 10,
+    },
+    publishedAt: report.published_at ?? report.created_at,
+    access: report.access,
+    price: report.price,
+    saved: false,
+    thumb: null,
+  };
+}
+
 export default async function TickerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ ticker: string }>;
+  searchParams: Promise<{ range?: string }>;
 }) {
-  const { ticker } = await params;
+  const [{ ticker }, query] = await Promise.all([params, searchParams]);
   const sym = ticker.toUpperCase();
-  const [snapshot, reports, filings, meta] = await Promise.all([
+  const range: ChartRange = (STOCK_RANGES as string[]).includes(query.range ?? "")
+    ? (query.range as ChartRange)
+    : "1Y";
+
+  const [snapshot, reports, meta, calls, candles, coverage] = await Promise.all([
     getStockSnapshot(sym),
     listByTicker(sym),
-    listFilings(sym, 6),
     getTickerRow(sym),
+    buildStockCalls(sym),
+    getCandles(sym, range),
+    tickerCoverage(),
   ]);
 
+  const peers = meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : [];
+  const publications = reports.flatMap((r: Report) => {
+    const item = toItem(r);
+    return item ? [item] : [];
+  });
+
   return (
-    <div className="flex flex-col gap-8">
-      <StockQuoteHeader
+    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+      <StockHeader
         ticker={sym}
-        name={meta?.name}
-        sector={meta?.sector ?? undefined}
-        snapshot={snapshot}
-        reportCount={reports.length}
-        metricsUpdatedAt={meta?.metrics_updated_at}
+        name={meta?.name ?? sym}
+        exchange={meta?.exchange ?? null}
+        currentPrice={snapshot.quote.price}
+        changePercent={snapshot.changePercent}
+        marketCap={snapshot.fundamentals.marketCap}
+        forwardPe={snapshot.forwardPe}
+        low52={snapshot.fiftyTwoWeekLow}
+        high52={snapshot.fiftyTwoWeekHigh}
       />
 
-      <StockKeyStats snapshot={snapshot} />
-      <StockRangeBar snapshot={snapshot} />
+      <CallsChart
+        ticker={sym}
+        candles={candles}
+        openCalls={calls.openCalls}
+        resolvedCalls={calls.resolvedCalls}
+        range={range}
+      />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
-        <MarketTradingViewChartCard ticker={sym} />
-        <div className="flex flex-col gap-6">
-          <FundamentalsPanel data={snapshot.fundamentals} />
-          <CompanyNews ticker={sym} />
-          <SectorPeers ticker={sym} sector={meta?.sector ?? undefined} />
-        </div>
-      </div>
+      <StockConsensusBlock ticker={sym} consensus={calls.consensus} />
+      <StockOpenCalls calls={calls.openCalls} />
+      <StockPublications items={publications} />
+      <StockResolvedHistory calls={calls.resolvedCalls} />
 
-      <Suspense fallback={<p className="t-meta">Loading financials...</p>}>
-        <CompanyFinancials ticker={sym} filings={filings} />
-      </Suspense>
+      <StockFundamentals
+        peRatio={snapshot.fundamentals.peRatio}
+        marketCap={snapshot.fundamentals.marketCap}
+        revenue={snapshot.fundamentals.revenue}
+        profitMargin={snapshot.fundamentals.profitMargin}
+        eps={snapshot.fundamentals.eps}
+      />
 
-      <section>
-        <h2 className="t-h3 mb-4">Stoa coverage</h2>
-        {reports.length > 0 ? (
-          <div className="grid gap-5 lg:grid-cols-2">
-            {reports.map((r) => (
-              <ReportCard key={r.id} report={r} />
-            ))}
-          </div>
-        ) : (
+      <StockPeers peers={peers} coverage={coverage} />
+
+      {publications.length === 0 && calls.openCalls.length === 0 && (
+        <div className="mt-8">
           <EmptyState
             title={`No Stoa coverage on ${sym} yet`}
             body="When an analyst publishes a call or report on this ticker, it will show up here."
           />
-        )}
-      </section>
-    </div>
+        </div>
+      )}
+    </article>
   );
 }
