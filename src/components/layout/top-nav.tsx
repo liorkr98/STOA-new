@@ -13,19 +13,16 @@ import { NavSearch } from "@/components/layout/nav-search";
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/discover";
 
-type NavItem = { key: string; href: string; label: string; privateArea?: boolean };
+type NavItem = { key: string; href: string; label: string };
+// The profile area is reached only through the avatar, never a nav item.
 const ITEMS: NavItem[] = [
   { key: "today", href: "/home", label: "Today" },
   { key: "feed", href: DEFAULT_HREF, label: "Feed" },
   { key: "explore", href: "/explore", label: "Explore" },
   { key: "markets", href: "/markets", label: "Markets" },
-  { key: "mystoa", href: "/saved", label: "My Stoa", privateArea: true },
 ];
 
-const PRIVATE_PREFIXES = ["/saved", "/studio", "/subscriptions", "/following", "/wallet", "/inbox", "/settings"];
-
 function itemActive(pathname: string, item: NavItem) {
-  if (item.privateArea) return PRIVATE_PREFIXES.some((p) => pathname.startsWith(p));
   if (item.href === DEFAULT_HREF) return pathname === DEFAULT_HREF || pathname === "/";
   return pathname.startsWith(item.href);
 }
@@ -51,11 +48,12 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
-  // Analysts have a public page; accounts that never published do not, so their
-  // avatar falls back to the private area (My Stoa) instead of a public profile.
+  // The avatar is the single entry to the owner's profile area. It opens their
+  // public storefront (/profile); accounts that never published have no public
+  // page, so theirs opens on Library instead.
   const hasPublicProfile = isAnalyst;
-  const avatarHref = hasPublicProfile ? `/analyst/${profile?.handle}` : "/saved";
-  const items = profile ? ITEMS : ITEMS.filter((i) => !i.privateArea);
+  const avatarHref = hasPublicProfile ? "/profile" : "/saved";
+  const items = ITEMS;
   const logoHref = profile ? DEFAULT_HREF : "/";
 
   return (
@@ -107,7 +105,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               </Link>
               <Link
                 href={avatarHref}
-                aria-label={hasPublicProfile ? "Your public profile" : "My Stoa"}
+                aria-label="Your profile"
                 className="focus-ring rounded-full"
               >
                 <AvatarCircle profile={profile} />
@@ -131,7 +129,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             <Search size={18} />
           </Link>
           {profile && (
-            <Link href={avatarHref} aria-label={hasPublicProfile ? "Your public profile" : "My Stoa"}>
+            <Link href={avatarHref} aria-label="Your profile">
               <AvatarCircle profile={profile} />
             </Link>
           )}

@@ -80,14 +80,22 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
 
   return (
     <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
+      {/* Identity header doubles as the way back to the storefront view, which is
+          the profile area's default. Non-publishers have no public page. */}
       <Link
-        href={`/analyst/${profile.handle}`}
-        className="focus-ring flex items-center gap-2.5 rounded-[var(--radius-btn)] px-2 py-1"
+        href={isAnalyst ? "/profile" : "/saved"}
+        aria-current={pathname === "/profile" ? "page" : undefined}
+        className={cn(
+          "focus-ring relative flex items-center gap-2.5 rounded-[var(--radius-btn)] px-2 py-1.5",
+          pathname === "/profile" ? "bg-surface-2" : "hover:bg-surface-2",
+        )}
       >
         <Avatar src={profile.avatar_url} name={profile.display_name} size="sm" />
         <span className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm font-medium text-text">{profile.display_name}</span>
-          <span className="num truncate text-xs text-text-mute">@{profile.handle}</span>
+          <span className="num truncate text-xs text-text-mute">
+            {isAnalyst ? "Your profile" : `@${profile.handle}`}
+          </span>
         </span>
       </Link>
 
