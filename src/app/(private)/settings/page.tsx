@@ -7,7 +7,6 @@ import { DensityToggle } from "@/components/settings/density-toggle";
 import { PrivacyToggle } from "@/components/settings/privacy-toggle";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
-import { signOut } from "@/app/actions/auth";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -64,13 +63,6 @@ export default async function SettingsPage() {
               Managed by your sign-in provider
             </span>
           </div>
-          <div className="h-px bg-border" />
-          <form action={signOut} className="flex items-center justify-between gap-4 text-sm">
-            <span>Sign out</span>
-            <button type="submit" className={buttonClass("secondary", "sm")}>
-              Sign out
-            </button>
-          </form>
         </div>
       </section>
 

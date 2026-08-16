@@ -3,16 +3,13 @@
 import { useState, useTransition } from "react";
 import { CheckCircle } from "@phosphor-icons/react";
 import { updateProfile } from "@/app/actions/profile";
-import { Button, buttonClass } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
+import { AvatarUpload } from "@/components/profile/avatar-upload";
 import type { Profile } from "@/lib/types";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring";
-
-function initialsOf(name: string) {
-  return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-}
 
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, start] = useTransition();
@@ -32,20 +29,12 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
-      {/* Avatar (upload not wired to storage yet -- placeholder). */}
-      <div className="flex items-center gap-4">
-        <span className="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-lg text-[var(--paper)]">
-          {profile.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
-          ) : (
-            initialsOf(profile.display_name)
-          )}
-        </span>
-        <button type="button" disabled className={buttonClass("secondary", "sm")}>
-          Change photo
-        </button>
-      </div>
+      {/* Avatar — Settings is the single place identity (name, bio, headline, photo) is edited. */}
+      <AvatarUpload
+        userId={profile.id}
+        displayName={profile.display_name}
+        currentUrl={profile.avatar_url}
+      />
 
       <label className="flex flex-col gap-1 text-sm">
         Display name

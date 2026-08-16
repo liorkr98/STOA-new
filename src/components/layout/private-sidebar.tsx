@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { signOut } from "@/app/actions/auth";
 import type { Profile } from "@/lib/types";
 
 type NavItem = { label: string; href: string };
@@ -122,8 +123,17 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
         ))}
       </nav>
 
-      <div className="mt-4 border-t border-border pt-4">
+      {/* Sign out is an exit, not a destination: quiet, below everything, hairline-separated. */}
+      <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
         <ThemeToggle />
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="focus-ring rounded-[var(--radius-btn)] px-2 py-1 text-sm text-text-faint transition-colors hover:text-text"
+          >
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );
@@ -186,6 +196,16 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                       {it.label}
                     </Link>
                   ))}
+                  {g.key === "account" && (
+                    <form action={signOut} className="mt-1 border-t border-border pt-1">
+                      <button
+                        type="submit"
+                        className="block w-full rounded-[var(--radius-btn)] px-2.5 py-2 text-left text-sm text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
+                      >
+                        Sign out
+                      </button>
+                    </form>
+                  )}
                 </div>
               )}
             </div>

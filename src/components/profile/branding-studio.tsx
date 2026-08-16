@@ -26,7 +26,7 @@ import type { Plan } from "@/lib/db/plans";
 import { PROFILE_THEMES } from "@/lib/profile/themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
-import { AvatarUpload } from "@/components/profile/avatar-upload";
+import { Avatar } from "@/components/ui/avatar";
 import { CoverUpload } from "@/components/profile/cover-upload";
 import { ProfilePreview } from "@/components/profile/profile-preview";
 import { BrandAnalyzerPanel } from "@/components/profile/brand-analyzer-panel";
@@ -91,10 +91,12 @@ export function BrandingStudio({
   const initial = profile.profile_config ?? {};
   const [tab, setTab] = useState<Tab>("identity");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
-  const [displayName, setDisplayName] = useState(profile.display_name);
-  const [headline, setHeadline] = useState(profile.headline ?? "");
-  const [bio, setBio] = useState(profile.bio ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
+  // Identity is read-only in Storefront (owned by Settings), so these mirror the
+  // saved profile rather than living in editable local state.
+  const displayName = profile.display_name;
+  const headline = profile.headline ?? "";
+  const bio = profile.bio ?? "";
+  const avatarUrl = profile.avatar_url;
   const [coverUrl, setCoverUrl] = useState(profile.cover_url);
   const [themeId, setThemeId] = useState(initial.theme_id ?? "signal");
   const [sections, setSections] = useState<ProfileSection[]>(
@@ -139,7 +141,9 @@ export function BrandingStudio({
   function save() {
     setSaved(false);
     start(async () => {
-      await saveBrandingStudio({ display_name: displayName, headline, bio, profile_config: draftConfig });
+      // Identity (name/headline/bio/avatar) is owned by Settings; Storefront
+      // only ever persists presentation config.
+      await saveBrandingStudio({ profile_config: draftConfig });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     });
@@ -154,8 +158,8 @@ export function BrandingStudio({
   }
 
   function applySuggestion(field: BrandSuggestion["field"], value: string | string[]) {
-    if (field === "headline" && typeof value === "string") setHeadline(value);
-    if (field === "bio" && typeof value === "string") setBio(value.slice(0, 500));
+    // Headline/bio are Settings-owned; the analyzer can only apply the
+    // presentation fields Storefront still writes (specialties, social).
     if (field === "specialties" && Array.isArray(value)) setSpecialties(value.join(", "));
     if (field === "social" && Array.isArray(value)) {
       setSocial(
@@ -197,7 +201,29 @@ export function BrandingStudio({
         {/* IDENTITY */}
         {tab === "identity" && (
           <div className="surface flex flex-col gap-6 p-6">
-            <AvatarUpload userId={profile.id} displayName={displayName} currentUrl={avatarUrl} onUploaded={setAvatarUrl} />
+            {/* Name, photo, headline and bio are account identity — read-only here,
+                edited in Settings — so the two surfaces never fight over the same record. */}
+            <div className="flex flex-col gap-5 rounded-[var(--radius-btn)] border border-dashed border-border bg-surface-2/50 p-5">
+              <div className="flex items-center gap-4">
+                <Avatar src={avatarUrl} name={displayName} size="lg" />
+                <div className="min-w-0">
+                  <p className="text-base font-semibold text-text">{displayName}</p>
+                  <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">@{profile.handle}</p>
+                </div>
+              </div>
+              <div>
+                <span className="t-eyebrow">Headline</span>
+                <p className="mt-1 text-sm text-text">{headline || <span className="text-text-faint">Not set</span>}</p>
+              </div>
+              <div>
+                <span className="t-eyebrow">Bio</span>
+                <p className="mt-1 whitespace-pre-line text-sm text-text-mute">{bio || <span className="text-text-faint">Not set</span>}</p>
+              </div>
+              <Link href="/settings" className="num text-[11px] uppercase tracking-[0.14em] text-accent hover:underline">
+                Edit your name, bio, and photo in Settings →
+              </Link>
+            </div>
+
             <CoverUpload
               userId={profile.id}
               currentUrl={coverUrl}
@@ -205,18 +231,6 @@ export function BrandingStudio({
               onUploaded={setCoverUrl}
               onUseCoverTheme={() => setThemeId("cover")}
             />
-            <label className="text-sm">
-              Display name
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={inputClass} />
-            </label>
-            <label className="text-sm">
-              Headline
-              <input value={headline} onChange={(e) => setHeadline(e.target.value.slice(0, 160))} placeholder="One line on your edge" className={inputClass} />
-            </label>
-            <label className="text-sm">
-              Bio
-              <textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 500))} rows={3} className={cn(inputClass, "resize-y")} />
-            </label>
             <label className="text-sm">
               Specialties (comma-separated)
               <input value={specialties} onChange={(e) => setSpecialties(e.target.value)} className={inputClass} />

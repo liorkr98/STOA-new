@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Menu, X, Bell, PenLine, Search } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 import { StoaLogo } from "@/components/brand/logo";
 import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
-import { signOut } from "@/app/actions/auth";
 
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/discover";
@@ -48,44 +47,14 @@ function AvatarCircle({ profile, className }: { profile: Profile; className?: st
   );
 }
 
-/** Non-analyst avatar: a small menu (Settings, Sign out) since there is no public page. */
-function AvatarMenu({ profile }: { profile: Profile }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-  return (
-    <div ref={ref} className="relative">
-      <button type="button" aria-label="Account" onClick={() => setOpen((v) => !v)} className="focus-ring rounded-full">
-        <AvatarCircle profile={profile} />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-50 min-w-[10rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)]">
-          <Link href="/settings" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm hover:bg-surface-2">
-            Settings
-          </Link>
-          <form action={signOut} className="border-t border-border">
-            <button type="submit" className="w-full px-4 py-2.5 text-left text-sm text-text-mute hover:bg-surface-2 hover:text-text">
-              Sign out
-            </button>
-          </form>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; unreadCount?: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
-  // Analysts have a public page; accounts that never published do not.
+  // Analysts have a public page; accounts that never published do not, so their
+  // avatar falls back to the private area (My Stoa) instead of a public profile.
   const hasPublicProfile = isAnalyst;
+  const avatarHref = hasPublicProfile ? `/analyst/${profile?.handle}` : "/saved";
   const items = profile ? ITEMS : ITEMS.filter((i) => !i.privateArea);
   const logoHref = profile ? DEFAULT_HREF : "/";
 
@@ -136,13 +105,13 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                   <span aria-hidden className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--ink)]" />
                 )}
               </Link>
-              {hasPublicProfile ? (
-                <Link href={`/analyst/${profile.handle}`} aria-label="Your public profile" className="focus-ring rounded-full">
-                  <AvatarCircle profile={profile} />
-                </Link>
-              ) : (
-                <AvatarMenu profile={profile} />
-              )}
+              <Link
+                href={avatarHref}
+                aria-label={hasPublicProfile ? "Your public profile" : "My Stoa"}
+                className="focus-ring rounded-full"
+              >
+                <AvatarCircle profile={profile} />
+              </Link>
             </>
           ) : (
             <>
@@ -161,12 +130,11 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
           <Link href="/search" aria-label="Search" className="focus-ring rounded-[var(--radius-btn)] p-2 text-text-mute">
             <Search size={18} />
           </Link>
-          {profile &&
-            (hasPublicProfile ? (
-              <Link href={`/analyst/${profile.handle}`} aria-label="Your public profile"><AvatarCircle profile={profile} /></Link>
-            ) : (
+          {profile && (
+            <Link href={avatarHref} aria-label={hasPublicProfile ? "Your public profile" : "My Stoa"}>
               <AvatarCircle profile={profile} />
-            ))}
+            </Link>
+          )}
           <button
             className="focus-ring rounded-[var(--radius-btn)] p-2 text-text-mute"
             onClick={() => setOpen((v) => !v)}
@@ -198,22 +166,9 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                   <PenLine size={15} />
                   {isAnalyst ? "Compose" : "Become analyst"}
                 </Link>
-                {hasPublicProfile && (
-                  <Link href={`/analyst/${profile.handle}`} onClick={() => setOpen(false)} className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text">
-                    Your public profile
-                  </Link>
-                )}
                 <Link href="/inbox" onClick={() => setOpen(false)} className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text">
                   Inbox{unreadCount > 0 ? " ·" : ""}
                 </Link>
-                <Link href="/settings" onClick={() => setOpen(false)} className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text">
-                  Settings
-                </Link>
-                <form action={signOut}>
-                  <button type="submit" className="focus-ring w-full rounded-[var(--radius-btn)] px-3 py-2 text-left text-sm text-text-mute hover:bg-surface-2 hover:text-text">
-                    Sign out
-                  </button>
-                </form>
               </>
             ) : (
               <div className="flex items-center gap-2 px-3 py-2">

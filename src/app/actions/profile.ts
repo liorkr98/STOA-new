@@ -283,8 +283,11 @@ export async function updateProfile(formData: FormData) {
   if (formData.has("report_price")) update.report_price = Number(formData.get("report_price") ?? 0) || null;
 
   await supabase.from("profiles").update(update).eq("id", userId);
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/studio");
+  revalidatePath("/studio/branding"); // Storefront reads these for its live preview
   revalidatePath("/settings");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
   return { ok: true };
 }
 
@@ -294,6 +297,7 @@ export async function updateAvatarUrl(url: string) {
   const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/settings");
   revalidatePath("/settings/branding");
+  revalidatePath("/studio/branding"); // Storefront preview shows the avatar
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }
 
@@ -314,22 +318,20 @@ export async function updateProfileConfig(config: ProfileConfig) {
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }
 
-/** Branding studio — identity fields + profile_config in one save. */
+/**
+ * Storefront save — presentation only (profile_config). Identity fields
+ * (display_name, headline, bio, avatar) are owned by Settings and are NOT
+ * written here, so the two surfaces can never disagree about who's authoritative.
+ */
 export async function saveBrandingStudio({
-  display_name,
-  headline,
-  bio,
   profile_config,
 }: {
-  display_name: string;
-  headline: string;
-  bio: string;
   profile_config: ProfileConfig;
 }) {
   const { supabase, userId } = await requireUser();
   // Merge into the existing config so settings owned by other editors (accent,
   // font pairing, layout, texture, storefront sections, pinned report) are never
-  // wiped when the branding fields are saved.
+  // wiped when the storefront fields are saved.
   const { data: existing } = await supabase
     .from("profiles")
     .select("profile_config, handle")
@@ -338,18 +340,12 @@ export async function saveBrandingStudio({
   const merged = { ...(existing?.profile_config ?? {}), ...profile_config };
   const { error } = await supabase
     .from("profiles")
-    .update({
-      display_name: display_name.trim(),
-      headline: headline.trim() || null,
-      bio: bio.trim() || null,
-      profile_config: merged,
-    })
+    .update({ profile_config: merged })
     .eq("id", userId);
   if (error) return { ok: false as const, error: error.message };
 
   revalidatePath("/studio/branding");
   revalidatePath("/studio");
-  revalidatePath("/settings");
   if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
   return { ok: true as const };
 }
