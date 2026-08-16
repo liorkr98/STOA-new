@@ -86,6 +86,42 @@ export async function getTickerRow(symbol: string): Promise<TickerRow | null> {
   };
 }
 
+/** Batch form of getTickerRow, for surfaces that resolve a whole watchlist. */
+export async function listTickerRows(symbols: string[]): Promise<TickerRow[]> {
+  const wanted = [...new Set(symbols.map((s) => s.toUpperCase()))];
+  if (wanted.length === 0) return [];
+
+  let rows: TickerRow[] = [];
+  try {
+    const db = await createClient();
+    const { data } = await db.from("tickers").select("*").in("symbol", wanted);
+    rows = (data as TickerRow[]) ?? [];
+  } catch {
+    // fall through to the static universe
+  }
+
+  const found = new Set(rows.map((r) => r.symbol));
+  for (const sym of wanted) {
+    if (found.has(sym)) continue;
+    const featured = UNIVERSE.find((u) => u.ticker === sym);
+    if (!featured) continue;
+    rows.push({
+      symbol: featured.ticker,
+      name: featured.name,
+      sector: featured.sector,
+      exchange: featured.exchange,
+      timezone: "America/New_York",
+      status: "active",
+      last_price: null,
+      market_cap: null,
+      cap_band: featured.capBand,
+      metrics_updated_at: null,
+    });
+  }
+
+  return wanted.flatMap((sym) => rows.filter((r) => r.symbol === sym));
+}
+
 export async function listMarketTickers(
   options: MarketTickerListOptions = {},
 ): Promise<{ rows: TickerRow[]; total: number; metricsUpdatedAt: string | null }> {

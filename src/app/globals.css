@@ -8,7 +8,7 @@
 
 :root {
   --ink: #14171f;
-  --paper: #eff1ed;
+  --paper: #faf8f4;
   --verdigris: #2f6e5d;
   /* Deep antique brass: #b8863b read at 2.84:1 on paper -- an accessibility
    * fail everywhere brass carries meaning (PendingReviewTag, provisional
@@ -18,8 +18,12 @@
   --plum: #5b4b6b;
   --rust: #a6483c;
 
-  --surface: #f7f8f5;
-  --surface-2: #e6e8e2;
+  /* Warm neutrals, on the same axis as --paper. Literal values, not derived,
+   * so they must move whenever --paper does: the previous cool grey-greens
+   * (#f7f8f5 / #e6e8e2) sat within 0.005 luminance of the warmer paper, which
+   * collapsed the raised-card relationship and read green beside it. */
+  --surface: #fffdf9;
+  --surface-2: #f1ece3;
   --text: var(--ink);
   --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
   /* Decorative only (2.65:1): dividers, disabled glyphs, ornamental dashes.
@@ -1072,6 +1076,412 @@ body {
 
 .dispatch-for-creators {
   padding-bottom: var(--space-4);
+}
+
+/* ------------------------------------------------------------------ *
+ * Today — the daily editorial read (/home). Full-width bands stacked
+ * down the page as peer departments. Serif band header, hairline rule,
+ * mono SEE ALL; inside, headline rows separated by rules. A reading
+ * list, never a card grid: nothing in here gets a box or a shadow.
+ * ------------------------------------------------------------------ */
+
+.today-band {
+  margin-top: var(--space-8);
+}
+
+.today-band-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--ink);
+}
+
+.today-band-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* Deliberately much quieter than the header it sits beside: the note
+ * explains the department, it does not compete to name it. */
+.today-band-note {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-mute);
+}
+
+.today-see-all {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  white-space: nowrap;
+  border-radius: var(--r-btn);
+  transition: color var(--dur-1) var(--ease-hover);
+}
+.today-see-all:hover {
+  color: var(--text);
+}
+
+.today-band-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--verdigris);
+  border: 1px solid color-mix(in srgb, var(--verdigris) 35%, transparent);
+  border-radius: var(--r-tag);
+  padding: 0.125rem 0.5rem;
+}
+
+.today-col-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.today-col-title {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Two equal peer columns with a real column rule, like a broadsheet.
+ * Neither is subordinate: same width, same header weight, no ordering. */
+.today-desk {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 768px) {
+  .today-desk {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
+  }
+  .today-desk > * {
+    padding-inline: var(--space-6);
+  }
+  .today-desk > *:first-child {
+    padding-inline-start: 0;
+    border-inline-end: 1px solid var(--border);
+  }
+  .today-desk > *:last-child {
+    padding-inline-end: 0;
+  }
+}
+
+/* ---- the headline row ---- */
+
+.today-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.today-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.today-meta-badge {
+  letter-spacing: 0.12em;
+}
+
+.today-headline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.3125rem;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  text-wrap: pretty;
+  transition: color var(--dur-1) var(--ease-hover);
+}
+.group:hover .today-headline {
+  color: var(--accent);
+}
+
+.today-deck {
+  margin-top: 0.4375rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text-mute);
+  text-wrap: pretty;
+}
+
+.today-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.today-row-rail {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding-top: 0.125rem;
+}
+
+.today-row-tag {
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--r-tag);
+  padding: 0.1875rem 0.4375rem;
+}
+.today-row-tag--quiet {
+  color: var(--text-mute);
+  border: 1px solid var(--border);
+}
+.today-row-tag--solid {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.today-row-tag--outline {
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+/* ---- video still ---- */
+
+.today-thumb {
+  position: relative;
+  display: block;
+  width: 118px;
+  height: 76px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface-2);
+}
+
+.today-thumb-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.today-thumb-play {
+  position: absolute;
+  bottom: 0.25rem;
+  inset-inline-start: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  color: var(--paper);
+}
+
+.today-thumb-dur {
+  position: absolute;
+  bottom: 0.25rem;
+  inset-inline-end: 0.25rem;
+  font-size: 0.5938rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  border-radius: var(--r-tag);
+  padding: 0.0625rem 0.25rem;
+}
+
+/* ---- verdicts ---- */
+
+.today-verdict {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.today-verdict-prices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.today-verdict-arrow {
+  color: var(--text-faint);
+}
+
+.today-explainer {
+  margin-top: var(--space-5);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  max-width: 62ch;
+}
+
+/* ---- most watched ---- */
+
+.today-watch-strip {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+@media (min-width: 768px) {
+  .today-watch-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .today-watch-strip {
+    grid-auto-flow: column;
+    grid-auto-columns: 68%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-2);
+  }
+  .today-watch-strip > * {
+    scroll-snap-align: start;
+  }
+}
+
+.today-watch-still {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface-2);
+}
+
+/* ---- standings ---- */
+
+/* Column-major so the board reads 01-04 down the left and 05-08 down the
+ * right, the way a printed table would, rather than snaking across. */
+.today-standings {
+  display: grid;
+  gap: 0 var(--space-8);
+  margin-top: var(--space-2);
+}
+@media (min-width: 768px) {
+  .today-standings {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, auto);
+    grid-auto-flow: column;
+  }
+}
+
+.today-standing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.today-rank {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  width: 1.75rem;
+  flex: 0 0 auto;
+}
+
+/* ---- your tickers ---- */
+
+.today-ticker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- placeholders for data the backend does not carry yet ---- */
+
+.today-pending {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.today-gap-note {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- the issue ends ---- */
+
+.today-end {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.today-end-slug {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
 /* ------------------------------------------------------------------ *

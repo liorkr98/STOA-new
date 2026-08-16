@@ -2,27 +2,39 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Compass } from "lucide-react";
-import { DispatchView } from "@/components/dispatch/dispatch-view";
+import { TodayView } from "@/components/today/today-view";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { getSessionUserId } from "@/lib/db/auth";
 import { buildDispatch } from "@/lib/dispatch/build-dispatch";
+import { buildToday } from "@/lib/today/build-today";
 import { getDispatchVideos } from "@/lib/video/dispatch-videos";
 
-export const metadata: Metadata = { title: "Home" };
+export const metadata: Metadata = { title: "Today" };
 
 export default async function HomePage() {
   const userId = await getSessionUserId();
   if (!userId) redirect("/sign-in?next=/home");
 
-  const [dispatch, videos] = await Promise.all([buildDispatch(true), getDispatchVideos()]);
+  const [dispatch, videos, today] = await Promise.all([
+    buildDispatch(true),
+    getDispatchVideos(),
+    buildToday(userId),
+  ]);
+
+  // Only a genuinely empty issue falls back: a reader with no desk of their own
+  // still gets Verdicts, the Standings, and Worth Reading, which need no
+  // follows to be worth reading.
   const empty =
     dispatch.personalized &&
     !dispatch.lead &&
-    dispatch.secondary.length === 0 &&
-    dispatch.wire.length === 0 &&
-    dispatch.resolved.length === 0 &&
-    dispatch.leaderboard.length === 0;
+    today.desk.subscriptions.length === 0 &&
+    today.desk.following.length === 0 &&
+    today.verdicts.length === 0 &&
+    today.saved.length === 0 &&
+    today.mostWatched.length === 0 &&
+    today.standings.length === 0 &&
+    today.worthReading.length === 0;
 
   if (empty) {
     return (
@@ -42,12 +54,10 @@ export default async function HomePage() {
   }
 
   return (
-    <DispatchView
+    <TodayView
       dispatch={dispatch}
-      mode="home"
-      videoFirst={videos.enabled}
-      videoLead={videos.lead}
-      videoSecondary={videos.secondary}
+      today={today}
+      videoLead={videos.enabled ? videos.lead : null}
     />
   );
 }
