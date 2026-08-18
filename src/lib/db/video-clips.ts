@@ -105,6 +105,18 @@ export async function listVideosByReport(reportId: string): Promise<VideoClip[]>
   return data as VideoClip[];
 }
 
+/** Every clip by one creator in any status, newest first (the owner's Studio list). */
+export async function listClipsByCreator(creatorId: string): Promise<VideoClip[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("video_clips")
+    .select(COLUMNS)
+    .eq("creator_id", creatorId)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return data as VideoClip[];
+}
+
 /** Every published, ready clip by one creator, newest first (profile shelves). */
 export async function listReadyClipsByCreator(creatorId: string): Promise<VideoClip[]> {
   const supabase = await createClient();

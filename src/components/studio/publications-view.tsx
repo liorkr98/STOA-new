@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pencil, Eye, Pin, Megaphone } from "lucide-react";
+import { Play, Pencil, Eye, Pin, Megaphone, Loader2, FileText } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
@@ -22,7 +22,10 @@ export interface Publication {
   tagIsTicker: boolean;
   badge: string;
   title: string;
+  /** "3:42" when a ready clip exists; "" when there is no video. */
   duration: string;
+  /** Real clip status; null when no video is attached. */
+  videoStatus: "processing" | "ready" | "failed" | null;
   dateLabel: string;
   views: string;
   unlocks: string;
@@ -52,17 +55,35 @@ const CHIPS: { key: "all" | PubState; label: string }[] = [
   { key: "resolved", label: "RESOLVED" },
 ];
 
-function Thumb({ duration }: { duration: string }) {
+/**
+ * The row's poster. A ready clip shows its duration; a processing clip shows
+ * a quiet spinner and PROCESSING (the video is not playable yet, and says so);
+ * no video shows a written-report glyph, not a fake play button.
+ */
+function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publication["videoStatus"] }) {
   return (
-    <div className="relative h-16 w-11 flex-none overflow-hidden rounded-[8px] bg-surface-2">
+    <div className="relative h-16 w-11 flex-none overflow-hidden rounded-[8px] border border-border bg-surface-2">
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_90%,transparent)]">
-          <Play size={10} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
-        </span>
+        {videoStatus === "ready" ? (
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_90%,transparent)]">
+            <Play size={10} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
+          </span>
+        ) : videoStatus === "processing" ? (
+          <Loader2 size={14} className="animate-spin text-text-mute" aria-label="Video processing" />
+        ) : videoStatus === "failed" ? (
+          <span className="num text-[8px] uppercase tracking-[0.1em] text-[var(--rust)]">Failed</span>
+        ) : (
+          <FileText size={14} className="text-text-faint" aria-label="Written publication" />
+        )}
       </div>
-      <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-[10px] text-[var(--paper)]">
-        {duration}
-      </span>
+      {videoStatus === "ready" && duration ? (
+        <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-[10px] text-[var(--paper)]">
+          {duration}
+        </span>
+      ) : null}
+      {videoStatus === "processing" ? (
+        <span className="num absolute inset-x-0 bottom-1 text-center text-[7px] uppercase tracking-[0.1em] text-text-mute">Processing</span>
+      ) : null}
     </div>
   );
 }
@@ -136,7 +157,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   draft && "opacity-70",
                 )}
               >
-                <Thumb duration={p.duration} />
+                <Thumb duration={p.duration} videoStatus={p.videoStatus} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{p.typeLabel}</span>

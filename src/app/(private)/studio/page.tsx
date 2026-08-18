@@ -3,6 +3,8 @@ import { format, formatDistanceToNowStrict, differenceInCalendarDays } from "dat
 import { getSessionProfile } from "@/lib/db/auth";
 import { listByAuthor } from "@/lib/db/reports";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
+import { listClipsByCreator } from "@/lib/db/video-clips";
+import { formatDuration } from "@/lib/profile/build-profile-view";
 import { compact, pct } from "@/lib/format";
 import type { Prediction, Report } from "@/lib/types";
 import { PublicationsView, type Publication, type PubState } from "@/components/studio/publications-view";
@@ -14,25 +16,31 @@ function typeLabel(type: Report["type"]): string {
   if (type === "short_post") return "NOTE";
   return "CALL";
 }
-function badgeFor(type: Report["type"]): string {
-  if (type === "research") return "VIDEO · THESIS";
-  if (type === "short_post") return "VIDEO · NOTE";
-  return "VIDEO · CALL";
+/** Only what is stored: a ready clip, a locked call, a written thesis. */
+function badgeFor(r: Report, hasVideo: boolean, hasCall: boolean): string {
+  const parts: string[] = [];
+  if (hasVideo) parts.push("VIDEO");
+  if (hasCall) parts.push("CALL");
+  if (r.type === "research" || (r.body?.length ?? 0) > 600) parts.push("THESIS");
+  return parts.length ? parts.join(" · ") : "NOTE";
 }
 
 export default async function PublicationsPage() {
   const profile = (await getSessionProfile())!;
-  const [reports, predictions] = await Promise.all([
+  const [reports, predictions, clips] = await Promise.all([
     listByAuthor(profile.id, { limit: 100 }),
     listPredictionsByAuthor(profile.id),
+    listClipsByCreator(profile.id),
   ]);
 
   const predByReport = new Map<string, Prediction>();
   for (const p of predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
+  const clipByReport = new Map(clips.map((c) => [c.report_id, c] as const));
   const pinnedId = profile.profile_config?.pinned_report_id ?? null;
 
   const pubs: Publication[] = reports.map((r): Publication => {
     const pred = predByReport.get(r.id);
+    const clip = clipByReport.get(r.id);
     let state: PubState = "published";
     if (r.status === "draft") state = "draft";
     else if (pred && pred.outcome === "open") state = "open";
@@ -46,9 +54,10 @@ export default async function PublicationsPage() {
       typeLabel: typeLabel(r.type),
       tag: r.ticker,
       tagIsTicker: Boolean(r.ticker),
-      badge: badgeFor(r.type),
+      badge: badgeFor(r, clip?.status === "ready", Boolean(pred)),
       title: r.title ?? "Untitled",
-      duration: "0:00", // placeholder
+      duration: clip?.status === "ready" ? formatDuration(clip.duration_seconds) : "",
+      videoStatus: clip ? clip.status : null,
       dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),
       views: compact(r.views),
       unlocks: "—", // placeholder
@@ -57,6 +66,9 @@ export default async function PublicationsPage() {
       stateLine: null,
     };
 
+    if (clip?.status === "processing") {
+      base.stateLine = `VIDEO PROCESSING · STARTED ${formatDistanceToNowStrict(new Date(clip.created_at)).toUpperCase()} AGO`;
+    }
     if (state === "draft") {
       base.stateLine = `DRAFT · EDITED ${formatDistanceToNowStrict(new Date(r.created_at)).toUpperCase()} AGO`;
     } else if (state === "open" && pred) {

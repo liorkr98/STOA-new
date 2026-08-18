@@ -40,6 +40,9 @@ import {
   isDocMostlyEmpty,
 } from "@/lib/editor/tiptap/apply-report-template";
 import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
+import { VideoRung } from "@/components/compose/video-rung";
+import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
+import { UNIVERSE } from "@/lib/universe";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -92,6 +95,8 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
+  // TAGS_PLACEHOLDER: held in the editor only; no column stores tags yet.
+  const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
   const [direction, setDirection] = useState<Direction>("long");
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
@@ -521,6 +526,10 @@ export function StudioEditor({
       >
         {/* Editor column */}
         <div className="min-w-0">
+          {/* The video rung: the seed of every publication. Overlays and the
+              thumbnail are held in memory until a burn-in pipeline exists. */}
+          <VideoRung />
+
           {type !== "short_post" && (
             <>
               <label htmlFor="report-title" className="sr-only">
@@ -566,7 +575,13 @@ export function StudioEditor({
 
         {/* Lock & Publish panel (collapsible) */}
         {panelOpen && (
-          <aside className="scroll-area self-start lg:sticky lg:top-14 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:pl-1">
+          <aside className="scroll-area flex flex-col gap-4 self-start lg:sticky lg:top-14 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:pl-1">
+            <TagPicker
+              value={tags}
+              onChange={setTags}
+              hasCall={lockingCall}
+              callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
+            />
             <LockPublishPanel
               hasCard={hasCard}
               ticker={ticker}
