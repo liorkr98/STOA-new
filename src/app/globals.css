@@ -132,15 +132,10 @@
 
   --default-font-family: var(--font-sans);
 
-  --spacing-1: var(--space-1);
-  --spacing-2: var(--space-2);
-  --spacing-3: var(--space-3);
-  --spacing-4: var(--space-4);
-  --spacing-5: var(--space-5);
-  --spacing-6: var(--space-6);
-  --spacing-7: var(--space-7);
-  --spacing-8: var(--space-8);
-  --spacing-9: var(--space-9);
+  /* The --space-N ramp (docs/FRONTEND.md 7.2) is for hand-written CSS only.
+     Mapping it onto Tailwind's --spacing-N made h-9 render 96px instead of
+     36px and skewed every p/m/gap step above 4; utilities use the standard
+     4px-linear scale. */
 }
 
 * {

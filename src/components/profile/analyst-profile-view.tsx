@@ -1,67 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
-import { Play, Lock, BadgeCheck } from "lucide-react";
+import { useMemo, useState, type CSSProperties } from "react";
+import { Play, BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import type { Direction, Prediction } from "@/lib/types";
+import type { Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
-import { TickerChip } from "@/components/ui/ticker-chip";
+import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { SealStamp } from "@/components/ui/seal-stamp";
-import { CallHistory } from "@/components/track/call-history";
 import { FollowButton } from "@/components/follow-button";
 import { ShareMenu } from "@/components/share/share-menu";
 import { TierPickerModal } from "@/components/profile/tier-picker-modal";
 
-type TabKey = "videos" | "verdicts" | "reports" | "calls";
-
-export interface ProfileVideo {
+/** One publication as the storefront renders it: a video tile or a written tile. */
+export interface ProfilePublication {
   id: string;
   href: string;
-  title: string;
-  meta: string;
-  /** Placeholder until a real video model exists. */
-  duration: string;
-}
-
-export interface ProfilePinned {
-  href: string;
+  /** "video" when a ready clip exists; "written" renders as a typographic tile. */
+  kind: "video" | "written";
+  typeLabel: "CALL" | "RESEARCH" | "NOTE";
+  /** Set only when the publication carries a locked call (anchoring rule). */
   ticker: string | null;
   direction: Direction | null;
+  /** Theme or sector tag for callless publications; null when nothing is stored. */
+  themeTag: string | null;
   badge: string;
   title: string;
   deck: string | null;
-  footer: string;
-  duration: string;
-}
-
-export interface ProfileVerdict {
-  id: string;
-  href: string;
-  ticker: string;
-  direction: Direction;
-  title: string;
-  entryExit: string;
-  retLabel: string;
-  retTone: "up" | "down" | "neutral";
+  duration: string | null;
+  thumbnailUrl: string | null;
   dateISO: string;
   dateLabel: string;
-  sealStatus: "hit" | "miss" | "near";
+  views: number;
+  seal: {
+    status: "hit" | "miss" | "near";
+    dateISO: string;
+    entryExit: string;
+    retLabel: string;
+    retTone: "up" | "down" | "neutral";
+  } | null;
+  /** Filter key: the ticker for calls, the theme tag otherwise. */
+  subject: string | null;
 }
 
-export interface ProfileReportRow {
-  id: string;
-  href: string;
-  typeLabel: string;
-  ticker: string | null;
-  badge: string;
-  dateLabel: string;
-  title: string;
-  deck: string | null;
-  access: string;
-  accessTone: "ink" | "mute";
-  locked: boolean;
+export interface ProfileSubject {
+  key: string;
+  count: number;
 }
 
 export interface AnalystProfileViewProps {
@@ -83,14 +68,15 @@ export interface AnalystProfileViewProps {
    */
   audienceLine: string;
 
-  counts: { videos: number; verdicts: number; reports: number; calls: number };
-  videos: ProfileVideo[];
-  pinned: ProfilePinned | null;
-  verdicts: ProfileVerdict[];
-  reports: ProfileReportRow[];
-
-  /** Call History tab: the full ledger, open and resolved, misses included. */
-  predictions: Prediction[];
+  /** Tier 1: the pinned publication, or the newest video. */
+  lead: ProfilePublication | null;
+  leadLabel: "LATEST" | "PINNED";
+  /** Tier 2: three or four most-watched videos, empty when there are too few. */
+  mostWatched: ProfilePublication[];
+  /** Tier 3: the complete archive, empty when the lead is all there is. */
+  everything: ProfilePublication[];
+  /** Tickers and themes this analyst covers, with counts. Empty below two. */
+  subjects: ProfileSubject[];
 
   // Interactivity
   analystId: string;
@@ -104,49 +90,275 @@ export interface AnalystProfileViewProps {
   texture?: boolean;
 }
 
-const toneColor = (tone: "up" | "down" | "neutral" | "ink" | "mute") =>
-  tone === "up"
-    ? "var(--up)"
-    : tone === "down"
-      ? "var(--down)"
-      : tone === "ink"
-        ? "var(--ink)"
-        : "var(--text-mute)";
+const toneColor = (tone: "up" | "down" | "neutral") =>
+  tone === "up" ? "var(--up)" : tone === "down" ? "var(--down)" : "var(--text-mute)";
 
-/** A dark-neutral video poster placeholder (no real thumbnails yet). */
-function VideoThumb({ duration, className }: { duration: string; className?: string }) {
+/**
+ * A video poster: the real thumbnail when one is stored, otherwise a quiet
+ * hatched neutral. Never a stock image, so a missing thumbnail cannot pass
+ * for a real one.
+ */
+function VideoThumb({
+  src,
+  duration,
+  className,
+  glyph = "md",
+}: {
+  src: string | null;
+  duration: string | null;
+  className?: string;
+  glyph?: "md" | "lg";
+}) {
   return (
     <div className={cn("relative overflow-hidden bg-surface-2", className)}>
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-40"
-        style={{
-          background:
-            "repeating-linear-gradient(118deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 7px, transparent 7px 16px)",
-        }}
-      />
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-40"
+          style={{
+            background:
+              "repeating-linear-gradient(118deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 7px, transparent 7px 16px)",
+          }}
+        />
+      )}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]">
-          <Play size={14} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
+        <span
+          className={cn(
+            "flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]",
+            glyph === "lg" ? "h-16 w-16" : "h-10 w-10",
+          )}
+        >
+          <Play size={glyph === "lg" ? 22 : 14} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
         </span>
       </div>
-      <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
-        {duration}
-      </span>
+      {duration && (
+        <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
+          {duration}
+        </span>
+      )}
     </div>
   );
 }
 
-export function AnalystProfileView(props: AnalystProfileViewProps) {
-  const [tab, setTab] = useState<TabKey>("videos");
-  const [modalOpen, setModalOpen] = useState(false);
+/** Type label · ticker + direction, or theme tag · content badge. */
+function MetaRow({ p, className }: { p: ProfilePublication; className?: string }) {
+  return (
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">{p.typeLabel}</span>
+      {p.ticker && <TickerChip ticker={p.ticker} />}
+      {p.direction && <DirectionTag direction={p.direction} />}
+      {!p.ticker && p.themeTag && <ThemeTag label={p.themeTag} />}
+      {p.badge !== p.typeLabel && (
+        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+      )}
+    </div>
+  );
+}
 
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: "videos", label: `VIDEOS · ${props.counts.videos}` },
-    { key: "verdicts", label: `VERDICTS · ${props.counts.verdicts}` },
-    { key: "reports", label: `REPORTS · ${props.counts.reports}` },
-    { key: "calls", label: `CALL HISTORY · ${props.counts.calls}` },
-  ];
+function SectionHead({ label, children }: { label: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-end justify-between gap-4 border-b border-border pb-2.5">
+      <h2 className="num text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</h2>
+      {children}
+    </div>
+  );
+}
+
+function ViewsMeta({ p }: { p: ProfilePublication }) {
+  return (
+    <div className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+      {p.dateLabel}
+      {p.views > 0 ? ` · ${p.views.toLocaleString()} VIEWS` : ""}
+      {p.seal ? ` · ${p.seal.entryExit}` : ""}
+      {p.seal ? (
+        <span style={{ color: toneColor(p.seal.retTone) }}>{` · ${p.seal.retLabel}`}</span>
+      ) : null}
+    </div>
+  );
+}
+
+/** Tier 1: the lead publication at full content width. */
+function LeadTier({ p, label }: { p: ProfilePublication; label: string }) {
+  return (
+    <section aria-label={`${label} publication`}>
+      <div className="num mb-3 text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</div>
+      <Link href={p.href} className="group block focus-ring">
+        {p.kind === "video" ? (
+          <VideoThumb
+            src={p.thumbnailUrl}
+            duration={p.duration}
+            glyph="lg"
+            className="-mx-4 aspect-video sm:mx-0 sm:rounded-[var(--radius-card)]"
+          />
+        ) : (
+          <div className="flex aspect-[21/9] flex-col justify-end border border-border bg-surface p-6 sm:rounded-[var(--radius-card)] md:p-8">
+            <div className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">Written report</div>
+          </div>
+        )}
+        <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+          <div>
+            <MetaRow p={p} />
+            <h2 className="mt-3 font-display text-3xl font-semibold leading-[1.1] tracking-tight md:text-[40px]">
+              {p.title}
+            </h2>
+            {p.deck && (
+              <p className="mt-2.5 max-w-[640px] text-[16px] leading-relaxed text-text-mute line-clamp-2">
+                {p.deck}
+              </p>
+            )}
+            <ViewsMeta p={p} />
+          </div>
+          {p.seal && (
+            <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="lg" className="md:mt-1" />
+          )}
+        </div>
+      </Link>
+    </section>
+  );
+}
+
+/** Tier 2: a row of the analyst's most-watched videos. */
+function MostWatchedTier({ items }: { items: ProfilePublication[] }) {
+  return (
+    <section aria-label="Most watched">
+      <SectionHead label="Most watched" />
+      <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0">
+        {items.map((p) => (
+          <Link key={p.id} href={p.href} className="group w-[68vw] flex-none snap-start focus-ring md:w-auto">
+            <VideoThumb src={p.thumbnailUrl} duration={p.duration} className="aspect-video rounded-[10px]" />
+            <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
+              {p.title}
+            </h3>
+            <ViewsMeta p={p} />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function VideoTile({ p }: { p: ProfilePublication }) {
+  return (
+    <Link href={p.href} className="group flex flex-col focus-ring">
+      <VideoThumb src={p.thumbnailUrl} duration={p.duration} className="aspect-video rounded-[10px]" />
+      <MetaRow p={p} className="mt-3" />
+      <div className="mt-2 flex items-start justify-between gap-3">
+        <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
+        {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
+      </div>
+      <ViewsMeta p={p} />
+    </Link>
+  );
+}
+
+/** A written report with no video: the headline set on paper, so it reads as something to read. */
+function WrittenTile({ p }: { p: ProfilePublication }) {
+  return (
+    <Link href={p.href} className="group flex flex-col focus-ring">
+      <div className="flex aspect-video flex-col justify-between rounded-[10px] border border-border bg-surface p-4 transition-colors group-hover:border-border-strong">
+        <MetaRow p={p} />
+        <div className="flex items-end justify-between gap-3">
+          <h3 className="font-display text-xl font-semibold leading-[1.15] tracking-tight line-clamp-3">{p.title}</h3>
+          {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
+        </div>
+      </div>
+      <ViewsMeta p={p} />
+    </Link>
+  );
+}
+
+/** The quiet mono `SUBJECT: ALL ▾` control above the archive grid. */
+function SubjectFilter({
+  subjects,
+  value,
+  onChange,
+}: {
+  subjects: ProfileSubject[];
+  value: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="num flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text focus-ring"
+      >
+        Subject: {value ?? "All"}
+        <ChevronDown size={12} strokeWidth={1.6} aria-hidden />
+      </button>
+      {open && (
+        <ul
+          role="listbox"
+          className="menu-pop absolute right-0 z-20 mt-2 min-w-[220px] rounded-[var(--radius-btn)] border border-border bg-surface py-1"
+        >
+          <li>
+            <button
+              type="button"
+              role="option"
+              aria-selected={value === null}
+              onClick={() => {
+                onChange(null);
+                setOpen(false);
+              }}
+              className={cn(
+                "num flex w-full items-center justify-between px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2",
+                value === null ? "text-text" : "text-text-mute",
+              )}
+            >
+              All
+            </button>
+          </li>
+          {subjects.map((s) => (
+            <li key={s.key}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={value === s.key}
+                onClick={() => {
+                  onChange(s.key);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "num flex w-full items-center justify-between gap-6 px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2",
+                  value === s.key ? "text-text" : "text-text-mute",
+                )}
+              >
+                <span>{s.key}</span>
+                <span className="text-text-faint">{s.count}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Tier 3: everything, videos and written reports as peers. */
+function EverythingTier({ items, subjects }: { items: ProfilePublication[]; subjects: ProfileSubject[] }) {
+  const [subject, setSubject] = useState<string | null>(null);
+  const shown = useMemo(() => (subject ? items.filter((p) => p.subject === subject) : items), [items, subject]);
+  return (
+    <section aria-label="Everything">
+      <SectionHead label="Everything">
+        {subjects.length > 0 && <SubjectFilter subjects={subjects} value={subject} onChange={setSubject} />}
+      </SectionHead>
+      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-7 md:grid-cols-3 md:gap-x-6 md:gap-y-9">
+        {shown.map((p) => (p.kind === "video" ? <VideoTile key={p.id} p={p} /> : <WrittenTile key={p.id} p={p} />))}
+      </div>
+    </section>
+  );
+}
+
+export function AnalystProfileView(props: AnalystProfileViewProps) {
+  const [modalOpen, setModalOpen] = useState(false);
 
   const followBtn = (
     <FollowButton
@@ -158,246 +370,74 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
 
   return (
     <div className={cn("pb-24 md:pb-0", props.texture && "paper-texture")} style={props.storefrontStyle}>
-      {/* HERO */}
-      <div className="grid gap-8 md:grid-cols-[55fr_45fr] md:gap-16">
-        {/* LEFT: identity + audience + actions */}
-        <div>
-          <div className="flex items-start gap-5">
-            <span className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
-              {props.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
-              ) : (
-                props.initials
+      {/* HERO: identity, audience, actions */}
+      <div className="max-w-[720px]">
+        <div className="flex items-start gap-5">
+          <span className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
+            {props.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
+            ) : (
+              props.initials
+            )}
+          </span>
+          <div className="pt-1">
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-[40px]">
+                {props.name}
+              </h1>
+              {props.verified && (
+                <BadgeCheck size={22} className="flex-none text-[var(--verdigris)]" aria-label="Verified" />
               )}
-            </span>
-            <div className="pt-1">
-              <div className="flex items-center gap-2.5">
-                <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-[40px]">
-                  {props.name}
-                </h1>
-                {props.verified && (
-                  <BadgeCheck size={22} className="flex-none text-[var(--verdigris)]" aria-label="Verified" />
-                )}
-              </div>
-              <div className="num mt-2 text-[11px] uppercase tracking-[0.16em] text-text-mute">
-                {props.handleLine}
-              </div>
-              <div className="num mt-1.5 text-[11px] uppercase tracking-[0.16em] text-text-faint">
-                {props.audienceLine}
-              </div>
+            </div>
+            <div className="num mt-2 text-[11px] uppercase tracking-[0.16em] text-text-mute">
+              {props.handleLine}
+            </div>
+            <div className="num mt-1.5 text-[11px] uppercase tracking-[0.16em] text-text-faint">
+              {props.audienceLine}
             </div>
           </div>
-
-          <div className="mt-6 text-lg font-semibold tracking-tight">{props.specialty}</div>
-          {props.bio && (
-            <p className="mt-2.5 max-w-[520px] text-[15.5px] leading-relaxed text-text-mute">{props.bio}</p>
-          )}
-          {props.isSelf && (
-            <div className="num mt-3.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">
-              This is how visitors see your profile ·{" "}
-              <Link href="/studio/branding" className="text-text-mute underline">
-                Edit in storefront →
-              </Link>
-            </div>
-          )}
-
-          {/* Desktop action row */}
-          {!props.isSelf && (
-            <div className="mt-7 hidden items-stretch gap-2.5 md:flex">
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
-              >
-                {props.subscribeLabel}
-              </button>
-              {followBtn}
-              <ShareMenu
-                target={{ url: `/analyst/${props.handle}`, title: `${props.name} on Stoa - verified track record` }}
-                label="Share profile"
-              />
-            </div>
-          )}
         </div>
 
-        {/* RIGHT: pinned video */}
-        {props.pinned && (
-          <div className="flex flex-col md:h-full">
-            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
-              Pinned by {props.firstName}
-            </div>
-            <Link
-              href={props.pinned.href}
-              className="mt-3.5 flex flex-1 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface transition-colors hover:border-border-strong"
-            >
-              {/* The poster is the card's flexible part: it absorbs whatever
-                  height is left once the card has matched the identity column,
-                  down to a floor that keeps it a still rather than a strip. */}
-              <VideoThumb
-                duration={props.pinned.duration}
-                className="h-52 w-full flex-none md:h-auto md:min-h-[140px] md:flex-1"
-              />
-              <div className="flex flex-none flex-col gap-3 p-5 md:gap-2.5 md:p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  {props.pinned.ticker && <TickerChip ticker={props.pinned.ticker} />}
-                  {props.pinned.direction && <DirectionTag direction={props.pinned.direction} />}
-                  <span className="num text-[11px] uppercase tracking-[0.12em] text-text-mute">
-                    {props.pinned.badge}
-                  </span>
-                </div>
-                <h2 className="font-display text-2xl font-semibold leading-snug tracking-tight">
-                  {props.pinned.title}
-                </h2>
-                {props.pinned.deck && (
-                  <p className="text-[15px] leading-relaxed text-text-mute">{props.pinned.deck}</p>
-                )}
-                <div className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">
-                  {props.pinned.footer}
-                </div>
-              </div>
+        <div className="mt-6 text-lg font-semibold tracking-tight">{props.specialty}</div>
+        {props.bio && (
+          <p className="mt-2.5 max-w-[520px] text-[15.5px] leading-relaxed text-text-mute">{props.bio}</p>
+        )}
+        {props.isSelf && (
+          <div className="num mt-3.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+            This is how visitors see your profile ·{" "}
+            <Link href="/studio/branding" className="text-text-mute underline">
+              Edit in storefront →
             </Link>
           </div>
         )}
+
+        {/* Desktop action row */}
+        {!props.isSelf && (
+          <div className="mt-7 hidden items-center gap-2.5 md:flex">
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
+            >
+              {props.subscribeLabel}
+            </button>
+            {followBtn}
+            <ShareMenu
+              target={{ url: `/analyst/${props.handle}`, title: `${props.name} on Stoa - verified track record` }}
+              label="Share profile"
+            />
+          </div>
+        )}
       </div>
 
-      {/* TABS */}
-      <div className="sticky top-14 z-20 mt-11 border-b border-border bg-bg">
-        <div className="flex gap-6 overflow-x-auto md:gap-8">
-          {tabs.map((t) => {
-            const active = tab === t.key;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setTab(t.key)}
-                className={cn(
-                  "num relative whitespace-nowrap pb-3 text-[11px] uppercase tracking-[0.18em] transition-colors",
-                  active ? "text-text" : "text-text-mute hover:text-text",
-                )}
-              >
-                {t.label}
-                {active && (
-                  <span aria-hidden className="absolute inset-x-0 -bottom-px h-0.5 bg-[var(--ink)]" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* TAB CONTENT */}
-      <div className="mt-8">
-        {tab === "videos" && (
-          <div className="grid grid-cols-1 gap-x-7 gap-y-8 md:grid-cols-3">
-            {props.videos.map((v) => (
-              <Link key={v.id} href={v.href} className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
-                <VideoThumb duration={v.duration} className="h-44 w-full rounded-[10px] md:h-[104px] md:w-[72px] md:flex-none" />
-                <div>
-                  <h3 className="font-display text-lg font-semibold leading-snug tracking-tight">{v.title}</h3>
-                  <div className="num mt-2.5 text-[10px] uppercase tracking-[0.14em] text-text-mute">{v.meta}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {tab === "verdicts" && (
-          <div className="flex flex-col gap-3 md:gap-0">
-            {props.verdicts.map((v) => (
-              <Link
-                key={v.id}
-                href={v.href}
-                className="rounded-[var(--radius-card)] border border-border bg-surface p-5 md:grid md:grid-cols-[1fr_240px_110px] md:items-center md:gap-8 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0 md:py-6"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <TickerChip ticker={v.ticker} />
-                      <DirectionTag direction={v.direction} />
-                      <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
-                        {v.dateLabel}
-                      </span>
-                    </div>
-                    <h3 className="mt-3 font-display text-xl font-semibold leading-snug tracking-tight md:text-2xl">
-                      {v.title}
-                    </h3>
-                  </div>
-                  <div className="md:hidden">
-                    <SealStamp status={v.sealStatus} date={new Date(v.dateISO)} size="md" />
-                  </div>
-                </div>
-
-                <div className="num mt-4 flex items-center justify-between md:mt-0 md:block">
-                  <span className="text-[10px] uppercase tracking-[0.16em] text-text-faint md:hidden">
-                    Entry → Exit
-                  </span>
-                  <div>
-                    <div className="text-text-mute">{v.entryExit}</div>
-                    <div className="mt-1 text-[17px] md:mt-2" style={{ color: toneColor(v.retTone) }}>
-                      {v.retLabel}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="hidden md:flex md:justify-end">
-                  <SealStamp status={v.sealStatus} date={new Date(v.dateISO)} size="lg" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {tab === "reports" && (
-          <div>
-            {props.reports.map((r) => (
-              <Link
-                key={r.id}
-                href={r.href}
-                className="flex flex-col gap-3 border-b border-border py-6 md:grid md:grid-cols-[1fr_150px] md:items-center md:gap-8"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">
-                      {r.typeLabel}
-                    </span>
-                    {r.ticker && <TickerChip ticker={r.ticker} />}
-                    <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{r.badge}</span>
-                    <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{r.dateLabel}</span>
-                  </div>
-                  <h3 className="mt-3 font-display text-xl font-semibold leading-snug tracking-tight md:text-2xl">
-                    {r.title}
-                  </h3>
-                  {r.deck && <div className="mt-1.5 text-[15px] text-text-mute">{r.deck}</div>}
-                </div>
-                <div className="flex items-center gap-2 md:justify-end">
-                  {r.locked && <Lock size={12} strokeWidth={1.4} className="text-text-mute" aria-hidden />}
-                  <span
-                    className="num rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.16em]"
-                    style={{
-                      color: toneColor(r.accessTone),
-                      borderColor: r.accessTone === "ink" ? "var(--ink)" : "var(--border)",
-                    }}
-                  >
-                    {r.access}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {tab === "calls" && (
-          <div className="flex flex-col gap-3">
-            <p className="t-meta">All calls, including missed targets, stay visible permanently.</p>
-            {props.predictions.length > 0 ? (
-              <CallHistory predictions={props.predictions} showHeader={false} />
-            ) : (
-              <div className="flex h-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
-                <p className="t-meta">No calls yet.</p>
-              </div>
-            )}
-          </div>
+      {/* THE WORK: three tiers of decreasing size. A new analyst gets only what exists. */}
+      <div className="mt-12 flex flex-col gap-14 md:mt-16 md:gap-20">
+        {props.lead && <LeadTier p={props.lead} label={props.leadLabel} />}
+        {props.mostWatched.length > 0 && <MostWatchedTier items={props.mostWatched} />}
+        {props.everything.length > 0 && <EverythingTier items={props.everything} subjects={props.subjects} />}
+        {!props.lead && (
+          <p className="t-meta">No publications yet.</p>
         )}
       </div>
 

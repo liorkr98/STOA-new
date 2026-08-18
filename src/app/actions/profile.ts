@@ -311,8 +311,15 @@ export async function updateCoverUrl(url: string) {
 
 export async function updateProfileConfig(config: ProfileConfig) {
   const { supabase, userId } = await requireUser();
-  await supabase.from("profiles").update({ profile_config: config }).eq("id", userId);
-  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  // Merge-safe like every other config writer here: a partial config from one
+  // editor must never erase keys owned by another (accent, pinned report, ...).
+  const { data } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+  const merged: ProfileConfig = { ...(data?.profile_config ?? {}), ...config };
+  await supabase.from("profiles").update({ profile_config: merged }).eq("id", userId);
   revalidatePath("/settings/branding");
   revalidatePath("/studio/branding");
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
