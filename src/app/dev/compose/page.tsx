@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { VideoRung } from "@/components/compose/video-rung";
+import { StudioEditor } from "@/components/editor/studio-editor";
 import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
@@ -78,7 +79,13 @@ export default function DevComposePage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-10">
       <h1 className="font-display text-3xl font-semibold tracking-tight">Compose fixture</h1>
-      <p className="mt-1 text-sm text-text-mute">The video rung, tags, the processing state, and the Publications list row.</p>
+      <p className="mt-1 text-sm text-text-mute">The full compose screen with its fork, then the video rung, tags, the processing state, and the Publications list row.</p>
+
+      <h2 className="t-eyebrow mt-10">The compose screen (as an analyst sees it)</h2>
+      <p className="mb-3 mt-1 text-sm text-text-mute">The real editor, mounted here without a database. Saving and publishing will fail; everything else behaves as on /studio/compose.</p>
+      <div className="overflow-hidden rounded-[var(--radius-card)] border border-border">
+        <StudioEditor analystReportPrice={null} initialDraft={null} aiCredits={0} plans={[]} />
+      </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
