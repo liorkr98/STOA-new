@@ -2,37 +2,46 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GradeTag } from "@/components/ui/tag";
 
+/** URL kept: /how-it-works redirects here, and the footer, landing, and the
+ * Verdicts band all point at it. */
 export const metadata: Metadata = {
-  title: "Scoring methodology",
-  description: "How Stoa grades analyst calls and computes the public Track Score.",
+  title: "How calls are graded",
+  description:
+    "How Stoa locks a call at publication, lets the market grade it at the horizon, and keeps every outcome visible.",
 };
 
-const SAMPLE_BANDS = [
-  { calls: "0-9", note: "Provisional. Score shown, but marked as early sample." },
-  { calls: "10-29", note: "Full confidence label unlocks. Edge still forming." },
-  { calls: "30-74", note: "Meaningful sample. Win rate and profit factor stabilize." },
-  { calls: "75+", note: "Large verified sample. Score moves slowly with each new call." },
-];
-
-export default function ScoringPage() {
+export default function GradingPage() {
   return (
     <article className="mx-auto max-w-3xl flex flex-col gap-10 py-4">
       <header>
         <p className="t-eyebrow">Transparency</p>
-        <h1 className="t-display mt-2 text-4xl">How scoring works</h1>
+        <h1 className="t-display mt-2 text-4xl">How calls are graded</h1>
         <p className="t-body mt-4 text-lg">
-          Every call on Stoa is graded by the market, not by us. The score is math on locked entry
-          prices, resolved outcomes, and benchmark alpha. No manual edits. No reputation votes.
+          Stoa does not rate its analysts. It records what they called, and what the market did
+          about it. A call locks at publication, resolves against real prices at the horizon the
+          analyst set, and stays on the page afterwards whether it hit or missed.
         </p>
       </header>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
         <h2 className="t-h2">The loop</h2>
         <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm text-text-mute">
-          <li>An analyst publishes a call with ticker, direction, optional target, and horizon.</li>
-          <li>Stoa locks the entry price from the live feed and captures SPY as the benchmark.</li>
-          <li>When the horizon ends, the grading job fetches resolved prices and assigns an outcome.</li>
-          <li>The Track Score (0-100) updates on the analyst profile.</li>
+          <li>
+            An analyst publishes a call with a ticker, a direction, an optional target, and a
+            horizon they choose themselves.
+          </li>
+          <li>
+            Stoa locks the entry price from the live feed at the moment of publication and captures
+            SPY alongside it, so the same window can be measured against the market later.
+          </li>
+          <li>
+            The locked call is immutable in the database. A trigger rejects the edit, so neither the
+            analyst nor Stoa can move a target or a date after the fact.
+          </li>
+          <li>
+            When the horizon closes, the grading job fetches the resolved price and assigns an
+            outcome. It joins the analyst&apos;s public call history and stays there.
+          </li>
         </ol>
       </section>
 
@@ -56,64 +65,60 @@ export default function ScoringPage() {
         </div>
       </section>
 
-      <section id="track-score" className="scroll-mt-20 rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">Track Score (0-100)</h2>
+      <section id="record" className="scroll-mt-20 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <h2 className="t-h2">What you see on a resolved call</h2>
         <ul className="mt-4 space-y-3 text-sm text-text-mute">
           <li>
-            <strong className="text-text">Win rate</strong>: Wilson lower bound on time-weighted
-            outcomes (recent calls count more).
+            <strong className="text-text">The entry price</strong>, locked and attested at
+            publication, not recalled afterwards.
           </li>
           <li>
-            <strong className="text-text">Profit factor</strong>: decay-weighted average win divided
-            by average loss.
+            <strong className="text-text">The exit price</strong> the market closed at when the
+            horizon ended.
           </li>
           <li>
-            <strong className="text-text">Alpha</strong>: excess return vs SPY over the same window
-            (needs at least five benchmarked calls).
+            <strong className="text-text">The return</strong>, signed for direction, so a short that
+            worked reads as a gain.
           </li>
           <li>
-            <strong className="text-text">Consistency</strong>: penalties for miss streaks and
-            outcome drawdowns.
+            <strong className="text-text">Alpha</strong>, the same call measured against the S&amp;P
+            over the same window, so a rising tide is not mistaken for a good call.
           </li>
           <li>
-            <strong className="text-text">Sample confidence</strong>: a logarithmic ramp discounts
-            small sample sizes, so a six-call streak and a sixty-call streak are never shown with
-            the same confidence. Under 10 resolved calls, the score is marked provisional
-            wherever it is displayed.
+            <strong className="text-text">The outcome seal</strong>, hit, near, partial, or miss.
           </li>
         </ul>
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">Sample confidence bands</h2>
-        <p className="t-meta mt-2">
-          Not a second badge. These bands explain how many resolved calls the engine needs before a
-          Track Score is shown with full confidence. The number on every profile is still just Track
-          Score 0-100.
+        <h2 className="t-h2">Nothing is quietly removed</h2>
+        <p className="t-body mt-3">
+          A miss sits in the same table as a hit, with the same fields filled in. Analysts cannot
+          delete a call, cannot edit one after publication, and cannot sort their weaker calls out
+          of view. Deleting a record is not a feature we withheld; it is one the database refuses.
         </p>
-        <div className="mt-4 flex flex-col gap-3">
-          {SAMPLE_BANDS.map((band) => (
-            <div key={band.calls} className="flex items-start justify-between gap-4 text-sm">
-              <span className="num shrink-0 font-medium">{band.calls} calls</span>
-              <span className="text-text-mute">{band.note}</span>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
-        <h2 className="t-h2">What we deliberately ignore</h2>
+        <h2 className="t-h2">What we deliberately do not publish</h2>
         <p className="t-body mt-3">
-          Firm prestige, follower count, media appearances, and self-reported win rates. Only verified
-          calls that went through the lock-and-grade pipeline count.
+          A score. A rating. A percentile. A leaderboard of analysts ranked against each other.
+          Compressing someone&apos;s work into a single number invites you to skip the work, and it
+          tells you less than the calls themselves do. We publish the calls and the outcomes, and
+          leave the judgment where it belongs.
+        </p>
+        <p className="t-body mt-4">
+          Firm prestige, follower count, media appearances, and self-reported win rates count for
+          nothing here either. Only calls that went through the lock-and-grade pipeline appear at
+          all.
         </p>
         <p className="t-meta mt-4">
-          Short posts do not feed the track record. Only research and calls do.
+          Commentary and short posts are never graded. Only publications carrying a locked call are.
         </p>
       </section>
 
       <p className="t-meta">
-        Also see the investor overview on this page above, or browse{" "}
+        Read the record for yourself in{" "}
         <Link href="/discover" className="text-text underline hover:no-underline">
           Discover
         </Link>

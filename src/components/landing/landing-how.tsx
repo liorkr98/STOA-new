@@ -13,8 +13,8 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "The score moves",
-    body: "Every resolution updates the analyst's Track Score, a 0 to 100 track-record grade you can check before you trust a word.",
+    title: "The record stands",
+    body: "The outcome joins the analyst's public call history and stays there, so you can read the whole record before you trust a word.",
   },
 ] as const;
 
@@ -49,9 +49,9 @@ export function LandingHow() {
         </ol>
 
         <p className="t-meta mt-10">
-          The full grading math is public.{" "}
+          How a call is graded is public, start to finish.{" "}
           <Link href="/scoring" className="underline transition-colors hover:text-text">
-            Read the scoring methodology
+            Read the grading methodology
           </Link>
         </p>
       </div>

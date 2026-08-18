@@ -93,7 +93,7 @@ export function LandingFloatStage({ calls }: { calls: ResolvedCall[] }) {
             style={{ fontFamily: "var(--font-display)", fontSize: "10.5px", letterSpacing: "5px" }}
           >
             <textPath href="#stoa-seal-ring" startOffset="0">
-              STOA · VERIFIED RESEARCH · LOCKED CALLS · TRACK SCORE ·
+              STOA · VERIFIED RESEARCH · LOCKED AT PUBLISH · GRADED BY THE MARKET ·
             </textPath>
           </text>
         </svg>

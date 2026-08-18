@@ -14,7 +14,7 @@ import type { DispatchPayload } from "@/lib/dispatch/types";
 export const metadata: Metadata = {
   title: "Stoa - the analyst ledger",
   description:
-    "Independent analysts publish price calls that lock at publish, get graded by the market, and build a public Track Score nobody can argue with.",
+    "Independent analysts publish price calls that lock at publish and get graded by the market. Every outcome stays visible, hits and misses both.",
 };
 
 /**

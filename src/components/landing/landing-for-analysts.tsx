@@ -11,7 +11,7 @@ export function LandingForAnalysts() {
         </h2>
         <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-text-mute">
           Publish conviction-backed research. Set your own subscription and per-report prices
-          and keep 90%. Build a public Track Score the market cannot argue with.
+          and keep 90%. Build a permanent, public record of calls the market has already graded.
         </p>
         <div className="mt-7 flex items-center justify-center gap-3">
           <Link href="/become-analyst" className={buttonClass("primary", "lg")}>

@@ -79,8 +79,8 @@ export function LandingHero({ calls }: { calls: ResolvedCall[] }) {
           className="fade-up mt-5 max-w-xl text-base leading-relaxed text-text-mute sm:text-lg"
           style={{ animationDelay: "0.08s" }}
         >
-          Independent analysts, verified by their record. Every call locks at publish, every target
-          is graded by the market, every Track Score is public.
+          Independent analysts, read on their record. Every call locks at publish, the market
+          grades it when the horizon closes, and the outcome stays public. Hits and misses both.
         </p>
 
         <div
@@ -92,7 +92,7 @@ export function LandingHero({ calls }: { calls: ResolvedCall[] }) {
             <ArrowRight size={16} aria-hidden />
           </Link>
           <Link href="/scoring" className={buttonClass("secondary", "lg")}>
-            How Track Scores work
+            How calls are graded
           </Link>
         </div>
 
