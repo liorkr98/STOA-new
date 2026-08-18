@@ -289,7 +289,7 @@ export async function buildTodayPage(userId: string | null): Promise<TodayPagePa
   const tickerRow = (symbol: string, suggestion = false): TodayTickerRow => ({
     symbol,
     price: quotes.get(symbol)?.price ?? null,
-    changePercent: null,
+    changePercent: quotes.get(symbol)?.changePercent ?? null,
     publications: coverage[symbol] ?? tickerPubs.get(symbol) ?? 0,
     suggestion,
   });

@@ -5,16 +5,13 @@ import { cn } from "@/lib/design/cn";
  *
  * The day-change slot. Grep DAY-CHANGE-PENDING to find every call site.
  *
- * The multi-symbol quote path (`getQuotesBatch` -> `Quote`) normalizes market
- * data down to a bare price and drops the previous close, so a day change
- * cannot be computed for any list surface. Krisi is adding it. Until then this
- * renders a neutral grey dash that occupies exactly the width and position the
- * real percentage will take, so no layout shifts when the data lands.
- *
- * Pass a real `percent` wherever one genuinely exists -- the single-symbol
- * `getStockSnapshot` does carry `changePercent` -- and this colours it as
- * sentiment. Passing null is the reserved state, never a gap and never
- * coloured.
+ * The batch quote path (`getQuotesBatch` -> `Quote.changePercent`) now carries
+ * the day change when the provider does (Yahoo does for equities, ETFs,
+ * indices and futures). Where a surface has not been wired to it, or the
+ * provider returned nothing, this renders a neutral grey dash that occupies
+ * exactly the width and position the real percentage will take, so no layout
+ * shifts when the data lands. Passing null is the reserved state, never a gap
+ * and never coloured; a real percent is coloured as sentiment.
  */
 export function DayChange({
   percent,

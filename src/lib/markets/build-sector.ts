@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { listTickerRows } from "@/lib/db/tickers";
 import { followedAnalystIds } from "@/lib/db/social";
+import { getQuotesBatch } from "@/lib/engine/market";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS } from "@/lib/markets/themes";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
@@ -24,7 +25,6 @@ export interface SectorAnalyst {
   displayName: string;
   avatarUrl: string | null;
   calls: number;
-  hitRatePct: number | null;
   following: boolean;
 }
 
@@ -34,8 +34,9 @@ export interface SectorPayload {
   analystsActive: number;
   publicationsThisWeek: number;
   names: SectorName[];
+  /** Equal-weight average of the listed names' day changes; null until quotes carry it. */
+  dayChangeEqualWeight: number | null;
   openCalls: number;
-  hitRatePct: number | null;
   resolvedCount: number;
   publications: TodayItem[];
   analysts: SectorAnalyst[];
@@ -56,18 +57,24 @@ function normalizeReport(row: Record<string, unknown>): Report {
   return { ...(row as unknown as Report), prediction: (raw ?? null) as Prediction | null };
 }
 
-function toItem(report: Report, themeTag: string | null): TodayItem | null {
+/**
+ * Honest badge (only what is stored) and the anchoring rule: only a locked
+ * call earns a ticker and direction; callless items anchor on the sector.
+ */
+function toItem(report: Report, sector: string): TodayItem | null {
   if (!report.author) return null;
-  const badge = ["Video"];
-  if (report.prediction || report.type === "call") badge.push("Call");
-  badge.push("Cards");
-  if (report.body) badge.push("Thesis");
+  const hasCall = Boolean(report.prediction);
+  const badge: string[] = [];
+  if (hasCall) badge.push("Call");
+  if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
+  if (badge.length === 0) badge.push("Note");
+  const themeTag = hasCall ? null : sector.toUpperCase();
 
   return {
     reportId: report.id,
     type: report.type,
-    ticker: report.ticker ?? report.prediction?.ticker ?? null,
-    direction: report.prediction?.direction ?? null,
+    ticker: hasCall ? (report.prediction?.ticker ?? null) : null,
+    direction: hasCall ? (report.prediction?.direction ?? null) : null,
     contentBadge: badge,
     headline: storyHeadline(report),
     deck: storyDek(report),
@@ -142,13 +149,9 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
 
   const openBySymbol = new Map<string, number>();
   const analystIds = new Set<string>();
-  const perAnalyst = new Map<
-    string,
-    { profile: Profile; calls: number; resolved: number; hits: number }
-  >();
+  const perAnalyst = new Map<string, { profile: Profile; calls: number }>();
   let openCalls = 0;
   let resolvedCount = 0;
-  let hits = 0;
 
   for (const p of predictions) {
     const sym = p.ticker?.toUpperCase();
@@ -156,17 +159,8 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
     analystIds.add(p.author_id);
 
     if (p.author) {
-      const entry = perAnalyst.get(p.author_id) ?? {
-        profile: p.author,
-        calls: 0,
-        resolved: 0,
-        hits: 0,
-      };
+      const entry = perAnalyst.get(p.author_id) ?? { profile: p.author, calls: 0 };
       entry.calls += 1;
-      if (p.outcome !== "open") {
-        entry.resolved += 1;
-        if (p.outcome === "hit") entry.hits += 1;
-      }
       perAnalyst.set(p.author_id, entry);
     }
 
@@ -175,7 +169,6 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       openBySymbol.set(sym, (openBySymbol.get(sym) ?? 0) + 1);
     } else {
       resolvedCount += 1;
-      if (p.outcome === "hit") hits += 1;
     }
   }
 
@@ -183,7 +176,10 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
   // a quiet sector still shows what it contains.
   const ranked = [...coverage.entries()].sort((a, b) => b[1] - a[1]).map(([s]) => s);
   const shortlist = [...new Set([...ranked, ...symbols])].slice(0, 8);
-  const tickerRows = await listTickerRows(shortlist);
+  const [tickerRows, quotes] = await Promise.all([
+    listTickerRows(shortlist),
+    getQuotesBatch(shortlist, { fetchBenchmark: false }).catch(() => new Map()),
+  ]);
   const bySymbol = new Map(tickerRows.map((r) => [r.symbol, r]));
 
   const names: SectorName[] = shortlist.flatMap((symbol) => {
@@ -195,9 +191,8 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       {
         symbol,
         company: name,
-        price: row?.last_price ?? null,
-        // DAY-CHANGE-PENDING: list surface, no previous close available.
-        changePercent: null,
+        price: quotes.get(symbol)?.price ?? row?.last_price ?? null,
+        changePercent: quotes.get(symbol)?.changePercent ?? null,
         marketCap: row?.market_cap ?? null,
         publications: coverage.get(symbol) ?? 0,
         openCalls: openBySymbol.get(symbol) ?? 0,
@@ -216,7 +211,6 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       displayName: a.profile.display_name,
       avatarUrl: a.profile.avatar_url,
       calls: a.calls,
-      hitRatePct: a.resolved > 0 ? Math.round((a.hits / a.resolved) * 100) : null,
       following: followedIds.has(a.profile.id),
     }));
 
@@ -224,19 +218,22 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
   // writing has a home; it reaches no other surface in the product.
   const publications = reports
     .flatMap((r) => {
-      const item = toItem(r, r.ticker ? null : sector);
+      const item = toItem(r, sector);
       return item ? [item] : [];
     })
     .slice(0, 5);
 
+  const changes = names.map((n) => n.changePercent).filter((c): c is number => c != null);
+  const dayChangeEqualWeight = changes.length ? changes.reduce((a, b) => a + b, 0) / changes.length : null;
+
   return {
     sector,
+    dayChangeEqualWeight,
     namesCovered: coverage.size,
     analystsActive: analystIds.size,
     publicationsThisWeek,
     names,
     openCalls,
-    hitRatePct: resolvedCount > 0 ? Math.round((hits / resolvedCount) * 100) : null,
     resolvedCount,
     publications,
     analysts,

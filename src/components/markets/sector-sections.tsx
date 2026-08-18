@@ -24,13 +24,15 @@ export function SectorHeader({ payload }: { payload: SectorPayload }) {
         </div>
 
         <div className="flex items-end gap-4">
-          {/* DAY-CHANGE-PENDING: a sector index level needs constituent day
-              changes to compute, so both the level and its change are reserved
-              rather than invented. */}
+          {/* No sector index series exists, so the level stays reserved. The
+              change is the equal-weight average of the listed names' day
+              changes, and says so. */}
           <span className="stock-price">
             <span className="markets-pending">No index level</span>
           </span>
-          <DayChange percent={null} size="lg" />
+          <span title="Equal-weight average day change of the names below">
+            <DayChange percent={payload.dayChangeEqualWeight} size="lg" />
+          </span>
           <FollowSector sector={payload.sector} className="mb-1" />
         </div>
       </div>
@@ -66,8 +68,8 @@ export function SectorPerformance({ sector }: { sector: string }) {
         <p className="markets-pending">No sector index series available</p>
       </div>
       <p className="markets-gap-note">
-        A sector index has to be built from constituent prices and day changes, which the list
-        quote path does not return yet. Nothing is drawn until it does.
+        A sector index has to be built from a history of constituent prices; the quote path
+        carries today&apos;s levels and day changes only. Nothing is drawn until a series exists.
       </p>
     </Band>
   );
@@ -114,7 +116,7 @@ export function SectorCoverage({ payload }: { payload: SectorPayload }) {
   return (
     <Band
       title={`Stoa coverage of ${payload.sector}`}
-      note="How much of Stoa is publishing here, and how its closed calls turned out."
+      note="How much of Stoa is publishing here. Volume only, never a house view."
     >
       <div className="stock-consensus">
         <div>
@@ -134,16 +136,8 @@ export function SectorCoverage({ payload }: { payload: SectorPayload }) {
           <p className="stock-consensus-key">Publications this week</p>
         </div>
         <div>
-          <p className="stock-consensus-figure">
-            {payload.hitRatePct == null ? (
-              <span className="markets-pending">No history</span>
-            ) : (
-              `${payload.hitRatePct}%`
-            )}
-          </p>
-          <p className="stock-consensus-key">
-            Hit rate · {payload.resolvedCount} resolved
-          </p>
+          <p className="stock-consensus-figure">{payload.resolvedCount}</p>
+          <p className="stock-consensus-key">Resolved {payload.resolvedCount === 1 ? "call" : "calls"}</p>
         </div>
       </div>
     </Band>
@@ -208,7 +202,6 @@ export function SectorAnalysts({
             </Link>
             <span className="markets-row-meta num">
               {a.calls} {a.calls === 1 ? "call" : "calls"}
-              {a.hitRatePct == null ? "" : ` · ${a.hitRatePct}% hit`}
             </span>
             <FollowButton analystId={a.id} initialFollowing={a.following} isAuthed={isAuthed} />
           </div>

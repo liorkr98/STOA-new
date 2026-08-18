@@ -1528,15 +1528,43 @@ body {
 
 /* ---- the tape ---- */
 
+/* The running tape: a newspaper's stock ticker, not a casino board. Slow,
+ * continuous, transform-only motion; the track is doubled so the loop is
+ * seamless. Pauses on hover. Under reduced motion it becomes a plain
+ * scrollable strip. */
 .markets-tape {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
+  position: relative;
   margin-top: var(--space-6);
   padding-block: var(--space-3);
   border-block: 1px solid var(--border);
-  overflow-x: auto;
+  overflow: hidden;
   white-space: nowrap;
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+}
+.markets-tape-track {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding-right: var(--space-6);
+  animation: markets-tape-run var(--tape-duration, 60s) linear infinite;
+  will-change: transform;
+}
+.markets-tape:hover .markets-tape-track,
+.markets-tape:focus-within .markets-tape-track {
+  animation-play-state: paused;
+}
+@keyframes markets-tape-run {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .markets-tape {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .markets-tape-track {
+    animation: none;
+  }
 }
 
 .markets-tape-item {

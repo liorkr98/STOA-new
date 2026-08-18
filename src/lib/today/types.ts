@@ -91,6 +91,7 @@ export interface TodayTicker {
   symbol: string;
   company: string | null;
   price: number | null;
+  changePercent?: number | null;
   publicationsToday: number;
 }
 
@@ -125,7 +126,7 @@ export interface TodayCreatorRow {
 export interface TodayTickerRow {
   symbol: string;
   price: number | null;
-  /** DAY_CHANGE_PLACEHOLDER: null on the batch quote path; the slot stays reserved. */
+  /** Null when the provider did not carry it; the slot stays reserved. */
   changePercent: number | null;
   publications: number;
   suggestion?: boolean;

@@ -16,6 +16,8 @@ export interface ThemeCard {
   deck: string;
   constituents: MarketRow[];
   publicationsThisWeek: number;
+  /** Momentum: this week against last. Coverage volume only, never stance. */
+  publicationsLastWeek: number;
 }
 
 export interface CoveredRow extends MarketRow {
@@ -46,8 +48,9 @@ export interface SectorTile {
 export interface TapeQuote {
   label: string;
   symbol: string;
+  /** Where a click lands: an instrument page, or null when the symbol has none. */
+  href: string | null;
   value: number | null;
-  /** DAY-CHANGE-PENDING */
   changePercent: number | null;
 }
 

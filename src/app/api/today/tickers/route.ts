@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listTickerRows } from "@/lib/db/tickers";
+import { getQuotesBatch } from "@/lib/engine/market";
 import { countPublicationsThisCycle } from "@/lib/today/build-today";
 import type { TodayTicker } from "@/lib/today/types";
 
@@ -21,9 +22,10 @@ export async function GET(req: Request) {
 
   if (symbols.length === 0) return NextResponse.json({ tickers: [] });
 
-  const [rows, counts] = await Promise.all([
+  const [rows, counts, quotes] = await Promise.all([
     listTickerRows(symbols),
     countPublicationsThisCycle(symbols),
+    getQuotesBatch(symbols, { fetchBenchmark: false }).catch(() => new Map()),
   ]);
 
   const bySymbol = new Map(rows.map((r) => [r.symbol, r]));
@@ -32,7 +34,8 @@ export async function GET(req: Request) {
     return {
       symbol,
       company: row?.name ?? null,
-      price: row?.last_price ?? null,
+      price: quotes.get(symbol)?.price ?? row?.last_price ?? null,
+      changePercent: quotes.get(symbol)?.changePercent ?? null,
       publicationsToday: counts.get(symbol) ?? 0,
     };
   });

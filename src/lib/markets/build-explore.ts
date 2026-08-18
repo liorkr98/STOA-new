@@ -5,6 +5,8 @@ import { listTickerRows } from "@/lib/db/tickers";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
+import { getQuotesBatch } from "@/lib/engine/market";
+import type { Quote } from "@/lib/engine/market/types";
 import type {
   CoveredRow,
   EtfBandRow,
@@ -20,18 +22,24 @@ import type { Direction, Profile } from "@/lib/types";
 const WEEK_MS = 7 * 86_400_000;
 
 /**
- * The tape. These are index and commodity symbols, which the instrument table
- * does not carry (it is equities only), so values stay null and the strip
- * renders labels with reserved slots until an index feed exists.
+ * The tape: major indices, key commodities, volatility, then the most-covered
+ * tickers on Stoa. Levels come live from the quote provider (Yahoo carries
+ * indices and futures); an index that returns nothing keeps a reserved slot.
+ * Indices click through to the fund that tracks them, since an index itself
+ * has no instrument page.
  */
-const TAPE: { label: string; symbol: string }[] = [
-  { label: "S&P 500", symbol: "^GSPC" },
-  { label: "Nasdaq", symbol: "^IXIC" },
-  { label: "TA-35", symbol: "^TA125.TA" },
-  { label: "VIX", symbol: "^VIX" },
-  { label: "WTI Crude", symbol: "CL=F" },
-  { label: "Gold", symbol: "GC=F" },
+const TAPE_FIXED: { label: string; symbol: string; href: string | null }[] = [
+  { label: "S&P 500", symbol: "^GSPC", href: "/markets/SPY" },
+  { label: "Nasdaq", symbol: "^IXIC", href: "/markets/QQQ" },
+  { label: "Dow", symbol: "^DJI", href: "/markets/DIA" },
+  { label: "Russell 2000", symbol: "^RUT", href: "/markets/IWM" },
+  { label: "TA-35", symbol: "TA35.TA", href: null },
+  { label: "VIX", symbol: "^VIX", href: "/markets/VXX" },
+  { label: "WTI Crude", symbol: "CL=F", href: "/markets/XLE" },
+  { label: "Gold", symbol: "GC=F", href: "/markets/GLD" },
+  { label: "10Y Treasury", symbol: "^TNX", href: "/markets/TLT" },
 ];
+const TAPE_COVERED = 8;
 
 function toRow(
   symbol: string,
@@ -39,12 +47,22 @@ function toRow(
   price: number | null,
   marketCap: number | null,
 ): MarketRow {
-  // DAY-CHANGE-PENDING: changePercent stays null on every list surface.
+  // The live quote overlay (applyQuotes) fills price and changePercent when
+  // the provider returns them; until then the change slot stays reserved.
   return { symbol, company: name, price, changePercent: null, marketCap };
 }
 
-/** Published report counts per ticker, optionally limited to a recent window. */
-async function coverageCounts(since?: Date): Promise<Map<string, number>> {
+/** Overlay live quotes onto rows built from the instrument table. */
+function applyQuotes<T extends MarketRow>(rows: T[], quotes: Map<string, Quote>): T[] {
+  return rows.map((r) => {
+    const q = quotes.get(r.symbol.toUpperCase());
+    if (!q) return r;
+    return { ...r, price: q.price ?? r.price, changePercent: q.changePercent ?? r.changePercent };
+  });
+}
+
+/** Published report counts per ticker, optionally limited to a window. */
+async function coverageCounts(since?: Date, until?: Date): Promise<Map<string, number>> {
   const supabase = await createClient();
   let query = supabase
     .from("reports")
@@ -53,6 +71,7 @@ async function coverageCounts(since?: Date): Promise<Map<string, number>> {
     .not("ticker", "is", null)
     .limit(2000);
   if (since) query = query.gte("published_at", since.toISOString());
+  if (until) query = query.lt("published_at", until.toISOString());
 
   const { data } = await query;
   const counts = new Map<string, number>();
@@ -104,7 +123,7 @@ async function callActivity(): Promise<
   return map;
 }
 
-async function buildThemes(coverageWeek: Map<string, number>): Promise<ThemeCard[]> {
+async function buildThemes(coverageWeek: Map<string, number>, coverageLastWeek: Map<string, number>): Promise<ThemeCard[]> {
   const symbols = [...new Set(MARKET_THEMES.flatMap((t) => t.tickers))];
   const rows = await listTickerRows(symbols);
   const bySymbol = new Map(rows.map((r) => [r.symbol, r]));
@@ -125,6 +144,10 @@ async function buildThemes(coverageWeek: Map<string, number>): Promise<ThemeCard
       constituents,
       publicationsThisWeek: theme.tickers.reduce(
         (sum, sym) => sum + (coverageWeek.get(sym) ?? 0),
+        0,
+      ),
+      publicationsLastWeek: theme.tickers.reduce(
+        (sum, sym) => sum + (coverageLastWeek.get(sym) ?? 0),
         0,
       ),
     };
@@ -264,28 +287,54 @@ async function buildUncovered(
 
 export async function buildExplore(): Promise<ExplorePayload> {
   const since = new Date(Date.now() - WEEK_MS);
-  const [coverageAll, coverageWeek, activity] = await Promise.all([
+  const twoWeeksAgo = new Date(Date.now() - 2 * WEEK_MS);
+  const [coverageAll, coverageWeek, coverageLastWeek, activity] = await Promise.all([
     coverageCounts(),
     coverageCounts(since),
+    coverageCounts(twoWeeksAgo, since),
     callActivity(),
   ]);
 
-  const [themes, covered, newlyCalled, sectors, uncovered] = await Promise.all([
-    buildThemes(coverageWeek),
+  const [themesRaw, coveredRaw, newlyCalledRaw, sectors, uncoveredRaw] = await Promise.all([
+    buildThemes(coverageWeek, coverageLastWeek),
     buildCovered(coverageAll, coverageWeek, activity, 6),
     buildNewlyCalled(4),
     buildSectors(coverageAll),
     buildUncovered(coverageAll, 4),
   ]);
 
-  // DAY-CHANGE-PENDING: index/commodity symbols are not in the instrument
-  // table, so both value and change stay reserved until an index feed lands.
-  const tape: TapeQuote[] = TAPE.map((t) => ({
-    label: t.label,
-    symbol: t.symbol,
-    value: null,
-    changePercent: null,
-  }));
+  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
+  const rowSymbols = [
+    ...themesRaw.flatMap((t) => t.constituents.map((c) => c.symbol)),
+    ...coveredRaw.map((r) => r.symbol),
+    ...newlyCalledRaw.map((r) => r.symbol),
+    ...uncoveredRaw.map((r) => r.symbol),
+  ];
+  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered, ...rowSymbols], { fetchBenchmark: false }).catch(
+    () => new Map<string, Quote>(),
+  );
+
+  const themes = themesRaw.map((t) => ({ ...t, constituents: applyQuotes(t.constituents, quotes) }));
+  const covered = applyQuotes(coveredRaw, quotes);
+  const newlyCalled = applyQuotes(newlyCalledRaw, quotes);
+  const uncovered = applyQuotes(uncoveredRaw, quotes);
+
+  const tape: TapeQuote[] = [
+    ...TAPE_FIXED.map((t) => ({
+      label: t.label,
+      symbol: t.symbol,
+      href: t.href,
+      value: quotes.get(t.symbol.toUpperCase())?.price ?? null,
+      changePercent: quotes.get(t.symbol.toUpperCase())?.changePercent ?? null,
+    })),
+    ...mostCovered.map((sym) => ({
+      label: sym,
+      symbol: sym,
+      href: `/markets/${sym}`,
+      value: quotes.get(sym)?.price ?? null,
+      changePercent: quotes.get(sym)?.changePercent ?? null,
+    })),
+  ];
 
   // Featured funds are curated; their Stoa activity is read from real data.
   const etfs: EtfBandRow[] = CURATED_ETFS.map((e) => ({

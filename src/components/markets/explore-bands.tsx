@@ -25,19 +25,38 @@ function Px({ value }: { value: number | null }) {
 /* ---------------------------------------------------------------- tape --- */
 
 export function MarketTape({ quotes }: { quotes: TapeQuote[] }) {
-  return (
-    <div className="markets-tape scroll-area" aria-label="Market tape">
-      {quotes.map((q) => (
-        <span key={q.symbol} className="markets-tape-item">
-          <span className="markets-tape-label">{q.label}</span>
-          {/* DAY-CHANGE-PENDING: index and commodity levels are not carried by
-              the instrument table, so the value is reserved alongside it. */}
-          <span className="num tabular-nums text-text">
-            {q.value == null ? <span className="markets-pending">&ndash;&ndash;</span> : price(q.value)}
-          </span>
-          <DayChange percent={q.changePercent} />
+  if (quotes.length === 0) return null;
+  // Doubled so the loop is seamless; the second copy is decoration.
+  const item = (q: TapeQuote, i: number, decorative: boolean) => {
+    const body = (
+      <>
+        <span className="markets-tape-label">{q.label}</span>
+        <span className="num tabular-nums text-text">
+          {q.value == null ? <span className="markets-pending">&ndash;&ndash;</span> : price(q.value)}
         </span>
-      ))}
+        <DayChange percent={q.changePercent} />
+      </>
+    );
+    const cls = "markets-tape-item";
+    if (q.href && !decorative) {
+      return (
+        <Link key={`${q.symbol}-${i}`} href={q.href} className={`${cls} focus-ring rounded`}>
+          {body}
+        </Link>
+      );
+    }
+    return (
+      <span key={`${q.symbol}-${i}`} className={cls} aria-hidden={decorative || undefined}>
+        {body}
+      </span>
+    );
+  };
+  return (
+    <div className="markets-tape" aria-label="Market tape" style={{ "--tape-duration": `${Math.max(40, quotes.length * 5)}s` } as React.CSSProperties}>
+      <div className="markets-tape-track">
+        {quotes.map((q, i) => item(q, i, false))}
+        {quotes.map((q, i) => item(q, i, true))}
+      </div>
     </div>
   );
 }
@@ -67,7 +86,26 @@ export function ExploreThemes({ themes }: { themes: ThemeCard[] }) {
             <p className="markets-theme-foot">
               {theme.publicationsThisWeek} Stoa{" "}
               {theme.publicationsThisWeek === 1 ? "publication" : "publications"} this week
+              <span aria-hidden> · </span>
+              <span
+                title="This week against last: coverage volume, never a stance"
+                className={
+                  theme.publicationsThisWeek > theme.publicationsLastWeek
+                    ? "text-text"
+                    : "text-text-faint"
+                }
+              >
+                {theme.publicationsThisWeek > theme.publicationsLastWeek
+                  ? "▲"
+                  : theme.publicationsThisWeek < theme.publicationsLastWeek
+                    ? "▼"
+                    : "="}{" "}
+                vs {theme.publicationsLastWeek} last week
+              </span>
             </p>
+            <Link href={`/markets/theme/${theme.slug}`} className="band-see-all focus-ring mt-2 inline-block">
+              The theme →
+            </Link>
           </article>
         ))}
       </div>

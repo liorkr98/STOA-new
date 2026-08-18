@@ -94,7 +94,7 @@ function YourTickers({ suggested }: { suggested: TodayTickerRow[] }) {
           (data.tickers ?? []).map((t) => ({
             symbol: t.symbol,
             price: t.price,
-            changePercent: null,
+            changePercent: t.changePercent ?? null,
             publications: t.publicationsToday,
           })),
         );
