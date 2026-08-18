@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { price, pct } from "@/lib/format";
 import type { Prediction } from "@/lib/types";
+import { cn } from "@/lib/design/cn";
 import { DirectionTag, GradeTag, PendingReviewTag } from "@/components/ui/tag";
 import { TickerChip } from "@/components/ui/ticker-chip";
 
@@ -9,7 +10,15 @@ import { TickerChip } from "@/components/ui/ticker-chip";
  * The full, auditable call ledger: every prediction with entry, resolution,
  * direction-aware return, and alpha vs S&P. This is the transparency moat.
  */
-export function CallHistory({ predictions }: { predictions: Prediction[] }) {
+export function CallHistory({
+  predictions,
+  showHeader = true,
+}: {
+  predictions: Prediction[];
+  /** Off where the surrounding surface already names and counts the table,
+   * as the profile's CALL HISTORY tab does. */
+  showHeader?: boolean;
+}) {
   if (predictions.length === 0) return null;
 
   const sorted = [...predictions].sort((a, b) => {
@@ -20,15 +29,17 @@ export function CallHistory({ predictions }: { predictions: Prediction[] }) {
 
   return (
     <section className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
-      <div className="flex items-center justify-between px-6 py-4">
-        <h2 className="t-h3">Call history</h2>
-        <span className="t-meta">{predictions.length} total</span>
-      </div>
+      {showHeader && (
+        <div className="flex items-center justify-between px-6 py-4">
+          <h2 className="t-h3">Call history</h2>
+          <span className="t-meta">{predictions.length} total</span>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="border-y border-border text-left">
+            <tr className={cn("text-left", showHeader ? "border-y border-border" : "border-b border-border")}>
               <th className="t-eyebrow px-6 py-2 font-medium">Ticker</th>
               <th className="t-eyebrow px-3 py-2 font-medium">Entry</th>
               <th className="t-eyebrow px-3 py-2 font-medium">Resolved</th>

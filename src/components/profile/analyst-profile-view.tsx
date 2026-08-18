@@ -231,8 +231,14 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
               href={props.pinned.href}
               className="mt-3.5 flex flex-1 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface transition-colors hover:border-border-strong"
             >
-              <VideoThumb duration={props.pinned.duration} className="min-h-[220px] w-full flex-1" />
-              <div className="flex flex-col gap-3 p-5">
+              {/* The poster is the card's flexible part: it absorbs whatever
+                  height is left once the card has matched the identity column,
+                  down to a floor that keeps it a still rather than a strip. */}
+              <VideoThumb
+                duration={props.pinned.duration}
+                className="h-52 w-full flex-none md:h-auto md:min-h-[140px] md:flex-1"
+              />
+              <div className="flex flex-none flex-col gap-3 p-5 md:gap-2.5 md:p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {props.pinned.ticker && <TickerChip ticker={props.pinned.ticker} />}
                   {props.pinned.direction && <DirectionTag direction={props.pinned.direction} />}
@@ -385,7 +391,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <div className="flex flex-col gap-3">
             <p className="t-meta">All calls, including missed targets, stay visible permanently.</p>
             {props.predictions.length > 0 ? (
-              <CallHistory predictions={props.predictions} />
+              <CallHistory predictions={props.predictions} showHeader={false} />
             ) : (
               <div className="flex h-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
                 <p className="t-meta">No calls yet.</p>
