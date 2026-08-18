@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { format, formatDistanceToNowStrict, differenceInCalendarDays } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { listByAuthor } from "@/lib/db/reports";
@@ -26,7 +27,8 @@ function badgeFor(r: Report, hasVideo: boolean, hasCall: boolean): string {
 }
 
 export default async function PublicationsPage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const [reports, predictions, clips] = await Promise.all([
     listByAuthor(profile.id, { limit: 100 }),
     listPredictionsByAuthor(profile.id),

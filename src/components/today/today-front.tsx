@@ -70,7 +70,7 @@ function Byline({ item, time = true, chips = true }: { item: TodayItem; time?: b
   return (
     <div className="num flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.6875rem] uppercase tracking-[0.1em] text-text-mute">
       <Link href={`/analyst/${item.author.handle}`} className="focus-ring inline-flex items-center gap-1.5 rounded text-text">
-        <Avatar src={item.author.avatarUrl} name={item.author.displayName} size="sm" className="!h-5 !w-5 !text-[8px]" />
+        <Avatar src={item.author.avatarUrl} name={item.author.displayName} size="sm" className="!h-5 !w-5 !text-[10px]" />
         <span className="font-sans text-[0.8125rem] font-semibold normal-case tracking-normal">{item.author.displayName}</span>
       </Link>
       {chips && item.ticker ? <SheetTickerChip ticker={item.ticker} /> : null}

@@ -18,7 +18,7 @@ export function InkTag({ ink }: { ink: ProvenanceInk }) {
   return (
     <span
       className={cn(
-        "num ml-1.5 inline-block rounded-[var(--radius-tag)] border px-1 py-px align-middle text-[9px] uppercase tracking-[0.12em]",
+        "num ml-1.5 inline-block rounded-[var(--radius-tag)] border px-1 py-px align-middle text-[10px] uppercase tracking-[0.12em]",
         ink === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
       )}
     >
@@ -193,7 +193,7 @@ function CardBody({ card }: { card: FeedCard }) {
           <div className="mt-2 text-right">
             <span
               className={cn(
-                "num inline-block rounded-[var(--radius-tag)] border px-1 py-px text-[9px] uppercase tracking-[0.12em]",
+                "num inline-block rounded-[var(--radius-tag)] border px-1 py-px text-[10px] uppercase tracking-[0.12em]",
                 card.source === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
               )}
             >
@@ -216,7 +216,7 @@ function CardBody({ card }: { card: FeedCard }) {
               <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-text">{card.answer}</p>
             </div>
           </div>
-          <p className="num mt-4 border-t border-border pt-3 text-[9px] uppercase tracking-[0.14em] text-text-faint">
+          <p className="num mt-4 border-t border-border pt-3 text-[10px] uppercase tracking-[0.14em] text-text-faint">
             The analyst chose to be challenged and answered on the record.
           </p>
         </CardFrame>

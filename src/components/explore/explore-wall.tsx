@@ -80,7 +80,7 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
 
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2.5 md:p-3">
         <div className="min-w-0">
-          {spotlight && tile.trending ? <div className="num mb-1 text-[9px] uppercase tracking-[0.18em] text-[var(--brass)]">Trending</div> : null}
+          {spotlight && tile.trending ? <div className="num mb-1 text-[10px] uppercase tracking-[0.18em] text-[var(--brass)]">Trending</div> : null}
           <h3
             className={cn(
               "font-display font-semibold leading-[1.15] tracking-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]",

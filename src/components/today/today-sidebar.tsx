@@ -46,7 +46,7 @@ function CreatorItem({ row }: { row: TodayCreatorRow }) {
         <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-text">{row.displayName}</span>
         {row.marker ? <span className="today-stage">{row.marker}</span> : null}
         {row.suggestion ? (
-          <span className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
+          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
         ) : null}
       </Link>
     </li>
@@ -68,7 +68,7 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
       <span className="num ml-auto text-[0.75rem] text-text">{row.price != null ? fmtPrice(row.price) : "—"}</span>
       <DayChange percent={row.changePercent} />
       {row.suggestion ? (
-        <span className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
+        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
       ) : null}
     </li>
   );

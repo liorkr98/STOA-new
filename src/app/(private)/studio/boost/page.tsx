@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { getWallet } from "@/lib/db/wallet";
@@ -25,7 +26,8 @@ const PACKAGES = [
 ];
 
 export default async function BoostPage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const [wallet, active] = await Promise.all([getWallet(profile.id), listActiveBoosts(profile.id)]);
 
   return (

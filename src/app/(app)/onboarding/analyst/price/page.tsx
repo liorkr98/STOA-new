@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { PriceStep } from "@/components/onboarding/price-step";
 
 export const metadata: Metadata = { title: "Set your pricing" };
 
 export default async function AnalystPricePage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   return (
     <div>
       <div className="text-center">

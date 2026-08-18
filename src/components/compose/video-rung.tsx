@@ -108,7 +108,7 @@ function Stage({
         <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--paper)_92%,black)]">
           <VisualBody source={cutaway.source} className="h-full w-full rounded-none border-0" />
           {!faithful ? (
-            <span className="num absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white">
+            <span className="num absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white">
               Cutaway · audio continues
             </span>
           ) : null}
@@ -215,7 +215,7 @@ function ThumbnailPicker({
           ) : (
             <>
               <Poster />
-              <span className="num absolute inset-x-0 bottom-2 text-center text-[9px] uppercase tracking-[0.12em] text-white/80">
+              <span className="num absolute inset-x-0 bottom-2 text-center text-[10px] uppercase tracking-[0.12em] text-white/80">
                 {chosen ? `Frame ${fmtTimecode(chosen.type === "frame" ? chosen.time : 0)}` : "None chosen"}
               </span>
             </>
@@ -241,7 +241,7 @@ function ThumbnailPicker({
                 ) : (
                   <Poster />
                 )}
-                <span className="num absolute bottom-0.5 right-1 text-[9px] text-white/80">{fmtTimecode(f.time)}</span>
+                <span className="num absolute bottom-0.5 right-1 text-[10px] text-white/80">{fmtTimecode(f.time)}</span>
               </button>
             ))}
           </div>
@@ -350,7 +350,7 @@ function Timeline({
 
   const track = (label: string, kind: Overlay["kind"]) => (
     <div className="relative h-11 border-t border-border" role="list" aria-label={`${label} track`}>
-      <span className="num absolute left-1 top-1 z-10 text-[9px] uppercase tracking-[0.16em] text-text-faint">{label}</span>
+      <span className="num absolute left-1 top-1 z-10 text-[10px] uppercase tracking-[0.16em] text-text-faint">{label}</span>
       {edit.overlays
         .filter((o) => o.kind === kind)
         .map((o) => (
@@ -405,7 +405,7 @@ function Timeline({
         {/* Time markers */}
         <div className="relative h-5">
           {markers.map((t) => (
-            <span key={t} className="num absolute top-1 text-[9px] text-text-faint" style={{ left: t * pxPerSec + 2 }}>
+            <span key={t} className="num absolute top-1 text-[10px] text-text-faint" style={{ left: t * pxPerSec + 2 }}>
               {fmtTimecode(t).replace(/\.0$/, "")}
             </span>
           ))}
@@ -463,7 +463,7 @@ function TimeField({ label, value, onChange }: { label: string; value: number; o
   useEffect(() => setDraft(fmtTimecode(value)), [value]);
   return (
     <label className="flex items-center gap-1.5">
-      <span className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">{label}</span>
+      <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{label}</span>
       <input
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -525,7 +525,7 @@ function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; 
       ) : (
         <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
           <div>
-            <div className="num mb-1 text-[9px] uppercase tracking-[0.14em] text-text-faint">Source</div>
+            <div className="num mb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">Source</div>
             <div className="flex flex-wrap gap-1">
               {(
                 [
@@ -552,7 +552,7 @@ function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; 
             </div>
           </div>
           <div>
-            <div className="num mb-1 text-[9px] uppercase tracking-[0.14em] text-text-faint">Display</div>
+            <div className="num mb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">Display</div>
             <div className="flex flex-col gap-1" role="radiogroup" aria-label="Display mode">
               {(["cutaway", "inset"] as const).map((m) => (
                 <button
@@ -569,12 +569,12 @@ function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; 
             </div>
           </div>
           <div>
-            <div className="num mb-1 text-[9px] uppercase tracking-[0.14em] text-text-faint">Position (inset)</div>
+            <div className="num mb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">Position (inset)</div>
             <GridPicker value={overlay.position} onChange={(p) => update({ position: p })} />
           </div>
         </div>
       )}
-      <p className="num mt-3 text-[9px] uppercase tracking-[0.12em] text-text-faint">
+      <p className="num mt-3 text-[10px] uppercase tracking-[0.12em] text-text-faint">
         {overlay.kind === "visual" ? "A cutaway hides the picture. Your audio never stops." : "Duration comes from the block's width on the timeline."}
       </p>
     </div>

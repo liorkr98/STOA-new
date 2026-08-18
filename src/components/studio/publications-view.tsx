@@ -71,7 +71,7 @@ function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publi
         ) : videoStatus === "processing" ? (
           <Loader2 size={14} className="animate-spin text-text-mute" aria-label="Video processing" />
         ) : videoStatus === "failed" ? (
-          <span className="num text-[8px] uppercase tracking-[0.1em] text-[var(--rust)]">Failed</span>
+          <span className="num text-[10px] uppercase tracking-[0.1em] text-[var(--rust)]">Failed</span>
         ) : (
           <FileText size={14} className="text-text-faint" aria-label="Written publication" />
         )}
@@ -82,7 +82,7 @@ function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publi
         </span>
       ) : null}
       {videoStatus === "processing" ? (
-        <span className="num absolute inset-x-0 bottom-1 text-center text-[7px] uppercase tracking-[0.1em] text-text-mute">Processing</span>
+        <span className="num absolute inset-x-0 bottom-1 text-center text-[10px] uppercase tracking-[0.1em] text-text-mute">Processing</span>
       ) : null}
     </div>
   );

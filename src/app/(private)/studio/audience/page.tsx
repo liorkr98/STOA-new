@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { format, isThisMonth } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
@@ -24,7 +25,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default async function StudioAudiencePage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const [subs, count, referralCount] = await Promise.all([
     listAnalystSubscribers(profile.id),
     subscriberCount(profile.id),

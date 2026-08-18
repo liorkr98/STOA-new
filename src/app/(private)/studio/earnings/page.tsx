@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { isThisMonth } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { getWallet, listTransactions } from "@/lib/db/wallet";
@@ -17,7 +18,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default async function EarningsPage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const [wallet, txns] = await Promise.all([getWallet(profile.id), listTransactions(profile.id)]);
 
   const net = wallet?.earnings ?? 0; // lifetime net, in cents

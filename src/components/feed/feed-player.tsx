@@ -188,7 +188,7 @@ export function FeedPlayer({
         <Link href={`/analyst/${pub.analyst.handle}`} className="focus-ring inline-flex items-center gap-2 rounded">
           <Avatar src={pub.analyst.avatarUrl} name={pub.analyst.displayName} size="sm" />
           <span className="text-[0.8125rem] font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">{pub.analyst.displayName}</span>
-          {pub.stageMarker ? <span className="num text-[9px] uppercase tracking-[0.16em] text-[var(--brass)]">{pub.stageMarker}</span> : null}
+          {pub.stageMarker ? <span className="num text-[10px] uppercase tracking-[0.16em] text-[var(--brass)]">{pub.stageMarker}</span> : null}
         </Link>
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute (M)" : "Mute (M)"} className="focus-ring rounded-full p-2 hover:bg-white/10">
@@ -296,7 +296,7 @@ export function FeedPlayer({
           </button>
         </div>
         {cardPanel}
-        <p className="num mt-3 hidden text-[9px] uppercase tracking-[0.14em] text-text-faint md:block">
+        <p className="num mt-3 hidden text-[10px] uppercase tracking-[0.14em] text-text-faint md:block">
           ↑↓ publications · ←→ cards · →→ unlock · M mute · Space pause · Esc close
         </p>
       </div>

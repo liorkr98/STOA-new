@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { getDraftForAuthor } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
@@ -18,7 +18,8 @@ export default async function ComposePage({
 }: {
   searchParams: Promise<{ id?: string; onboarding?: string; notebook?: string }>;
 }) {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const { id, onboarding, notebook } = await searchParams;
   const [draft, wallet, plans] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),

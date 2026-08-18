@@ -59,7 +59,7 @@ export function TagPicker({
     <div className="menu-pop mt-2 max-h-[280px] overflow-y-auto scroll-area rounded-[var(--radius-btn)] border border-border bg-surface p-2">
       {TAG_GROUPS.map((g) => (
         <div key={g.key} className="mb-2 last:mb-0">
-          <div className="num px-1 pb-1 text-[9px] uppercase tracking-[0.16em] text-text-faint">{g.label}</div>
+          <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">{g.label}</div>
           <div className="flex flex-wrap gap-1">
             {g.tags.map((t) => {
               const taken = t.slug === value.primary || value.secondary.includes(t.slug);
@@ -96,7 +96,7 @@ export function TagPicker({
         {primary ? (
           <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-tag)] bg-[var(--ink)] px-2.5 py-1 text-[12px] font-medium text-[var(--paper)]">
             {primary.label}
-            {autoFilled ? <span className="num text-[9px] uppercase tracking-[0.12em] opacity-70">Auto</span> : null}
+            {autoFilled ? <span className="num text-[10px] uppercase tracking-[0.12em] opacity-70">Auto</span> : null}
             <button
               type="button"
               aria-label="Clear primary tag"
@@ -150,7 +150,7 @@ export function TagPicker({
       {open === "secondary" ? <List slot="secondary" /> : null}
 
       {/* TAGS_PLACEHOLDER: no column stores tags yet. */}
-      <p className="num mt-3 border-t border-border pt-2 text-[9px] uppercase tracking-[0.12em] text-text-faint">
+      <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
         Not saved with the draft yet · needs a tags field on publications
       </p>
     </section>

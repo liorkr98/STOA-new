@@ -71,7 +71,7 @@ export function FeedDiscussion({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="text-[0.8125rem] font-semibold text-text">{c.author.displayName}</span>
-          {c.author.isAuthor ? <span className="num rounded-[var(--radius-tag)] border border-[var(--ink)] px-1 text-[9px] uppercase tracking-[0.14em] text-text">Author</span> : null}
+          {c.author.isAuthor ? <span className="num rounded-[var(--radius-tag)] border border-[var(--ink)] px-1 text-[10px] uppercase tracking-[0.14em] text-text">Author</span> : null}
           <span className="num text-[10px] uppercase tracking-[0.1em] text-text-faint">{sinceLabel(c.createdAt)}</span>
         </div>
         <p className="mt-1 text-[0.9375rem] leading-relaxed text-text">

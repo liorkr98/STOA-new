@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { isThisMonth } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
@@ -13,7 +14,8 @@ import { CallHistory } from "@/components/track/call-history";
 export const metadata: Metadata = { title: "Track record" };
 
 export default async function TrackRecordPage() {
-  const profile = (await getSessionProfile())!;
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
   const predictions = await listPredictionsByAuthor(profile.id);
   const stats = analystStats(predictions);
   const provisional = stats.total < 5;
