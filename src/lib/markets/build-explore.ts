@@ -285,6 +285,36 @@ async function buildUncovered(
     .map((r) => toRow(r.symbol, r.name, r.last_price, r.market_cap));
 }
 
+
+function tapeFrom(quotes: Map<string, Quote>, mostCovered: string[]): TapeQuote[] {
+  return [
+    ...TAPE_FIXED.map((t) => ({
+      label: t.label,
+      symbol: t.symbol,
+      href: t.href,
+      value: quotes.get(t.symbol.toUpperCase())?.price ?? null,
+      changePercent: quotes.get(t.symbol.toUpperCase())?.changePercent ?? null,
+    })),
+    ...mostCovered.map((sym) => ({
+      label: sym,
+      symbol: sym,
+      href: `/markets/${sym}`,
+      value: quotes.get(sym)?.price ?? null,
+      changePercent: quotes.get(sym)?.changePercent ?? null,
+    })),
+  ];
+}
+
+/** The tape alone (landing page, other surfaces): indices, commodities, then the most-covered names. */
+export async function buildTape(): Promise<TapeQuote[]> {
+  const coverageAll = await coverageCounts();
+  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
+  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered], { fetchBenchmark: false }).catch(
+    () => new Map<string, Quote>(),
+  );
+  return tapeFrom(quotes, mostCovered);
+}
+
 export async function buildExplore(): Promise<ExplorePayload> {
   const since = new Date(Date.now() - WEEK_MS);
   const twoWeeksAgo = new Date(Date.now() - 2 * WEEK_MS);
@@ -319,22 +349,7 @@ export async function buildExplore(): Promise<ExplorePayload> {
   const newlyCalled = applyQuotes(newlyCalledRaw, quotes);
   const uncovered = applyQuotes(uncoveredRaw, quotes);
 
-  const tape: TapeQuote[] = [
-    ...TAPE_FIXED.map((t) => ({
-      label: t.label,
-      symbol: t.symbol,
-      href: t.href,
-      value: quotes.get(t.symbol.toUpperCase())?.price ?? null,
-      changePercent: quotes.get(t.symbol.toUpperCase())?.changePercent ?? null,
-    })),
-    ...mostCovered.map((sym) => ({
-      label: sym,
-      symbol: sym,
-      href: `/markets/${sym}`,
-      value: quotes.get(sym)?.price ?? null,
-      changePercent: quotes.get(sym)?.changePercent ?? null,
-    })),
-  ];
+  const tape = tapeFrom(quotes, mostCovered);
 
   // Featured funds are curated; their Stoa activity is read from real data.
   const etfs: EtfBandRow[] = CURATED_ETFS.map((e) => ({

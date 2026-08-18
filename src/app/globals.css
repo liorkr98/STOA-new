@@ -2445,3 +2445,39 @@ body {
     grid-row: var(--r6);
   }
 }
+
+/* Landing: the doors, scroll-driven reveals, the wall of faces. Reveals are
+ * scrub-driven (view timeline), so they track the reader's own scroll like a
+ * scrollbar rather than firing on a timer; browsers without animation-timeline
+ * simply show the content, and reduced motion collapses it. */
+.landing-wordmark {
+  font-size: clamp(3.5rem, 2rem + 8vw, 7rem);
+  font-weight: 600;
+}
+.landing-reveal {
+  opacity: 1;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-reveal {
+      animation: fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+      --fade-y: 12px;
+    }
+  }
+}
+.landing-faces {
+  container-type: inline-size;
+}
+.landing-face {
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.landing-face:hover {
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-face:hover {
+    transform: none;
+  }
+}

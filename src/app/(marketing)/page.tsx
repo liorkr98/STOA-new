@@ -1,47 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUserId } from "@/lib/db/auth";
-import { listRecentResolved } from "@/lib/db/predictions";
-import { buildDispatch } from "@/lib/dispatch/build-dispatch";
-import { LandingHero } from "@/components/landing/landing-hero";
-import { LandingLedgerProof } from "@/components/landing/landing-ledger-proof";
-import { LandingHow } from "@/components/landing/landing-how";
-import { LandingDispatchTeaser } from "@/components/landing/landing-dispatch-teaser";
-import { LandingFaq } from "@/components/landing/landing-faq";
-import { LandingForAnalysts } from "@/components/landing/landing-for-analysts";
-import type { DispatchPayload } from "@/lib/dispatch/types";
+import { buildLanding } from "@/lib/landing/build-landing";
+import { LandingPage } from "@/components/landing/landing-page";
 
 export const metadata: Metadata = {
-  title: "Stoa - the analyst ledger",
+  title: "Stoa - Think clearly. Invest better.",
   description:
-    "Independent analysts publish price calls that lock at publish and get graded by the market. Every outcome stays visible, hits and misses both.",
+    "Independent analysts publish their research on video. Every call locks at publish and is graded by the market, hits and misses alike.",
 };
 
 /**
- * Signed-out landing, built from the live ledger: real graded calls in the
- * hero and proof strip, today's actual issue in the dispatch teaser. Signed-in
- * readers skip straight to their own dispatch at /home.
+ * The signed-out root: the doors, a glimpse of Today (headlines only), the
+ * most popular verdicts beside the most popular creators, and the footer.
+ * Built from real rows; a section with nothing to show collapses. Signed-in
+ * readers go straight to Today.
  */
-export default async function LandingPage() {
+export default async function RootPage() {
   const userId = await getSessionUserId();
   if (userId) redirect("/home");
-
-  let calls: Awaited<ReturnType<typeof listRecentResolved>> = [];
-  let dispatch: DispatchPayload | null = null;
-  try {
-    [calls, dispatch] = await Promise.all([listRecentResolved(16), buildDispatch(false)]);
-  } catch {
-    // The landing renders fully without data; sections with nothing to show collapse.
-  }
-
-  return (
-    <main>
-      <LandingHero calls={calls} />
-      <LandingLedgerProof calls={calls.slice(3)} />
-      <LandingHow />
-      <LandingDispatchTeaser dispatch={dispatch} />
-      <LandingFaq />
-      <LandingForAnalysts />
-    </main>
-  );
+  const data = await buildLanding();
+  return <LandingPage data={data} />;
 }

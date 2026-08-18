@@ -62,8 +62,8 @@ export function Footer() {
       </div>
       <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-5 pb-10">
         <p className="t-meta">
-          Stoa is a research marketplace, not a broker or investment adviser. Nothing here is
-          financial advice. Past performance does not guarantee future results.
+          Stoa publishes research and education, not investment advice. Stoa is not a broker or
+          investment adviser. Past performance does not guarantee future results.
         </p>
         <p className="t-meta text-[11px]">
           Charts by{" "}
