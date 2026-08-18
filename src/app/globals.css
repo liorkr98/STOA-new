@@ -2291,3 +2291,102 @@ body {
 [data-density="compact"] .ledger-card {
   padding: var(--density-pad);
 }
+
+/* ------------------------------------------------------------------ *
+ * Rail: a band that scrolls horizontally on its own (Today, Markets)
+ * ------------------------------------------------------------------ */
+@layer components {
+.rail {
+  margin-top: var(--space-8);
+  min-width: 0;
+}
+.rail-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--ink);
+}
+.rail-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.rail-note {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.rail-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  color: var(--text-mute);
+  background: transparent;
+  transition: color var(--dur-1) var(--ease-hover), border-color var(--dur-1) var(--ease-hover);
+}
+.rail-arrow:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.rail-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rail-track {
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+}
+.rail-track::-webkit-scrollbar {
+  display: none;
+}
+.rail-track > * {
+  flex: none;
+  scroll-snap-align: start;
+}
+}
+
+/* Today front page: sidebar lists and the lead split. */
+.today-side-list {
+  max-height: 176px;
+  overflow-y: auto;
+}
+.today-side-head {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.today-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.today-stage {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brass);
+}

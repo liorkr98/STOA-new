@@ -1,4 +1,5 @@
 import type { AccessType, ContentType, Direction, Outcome } from "@/lib/types";
+import type { NewsItem } from "@/lib/market/types";
 
 /** Byline identity, shared by every band. */
 export interface TodayAnalyst {
@@ -35,6 +36,10 @@ export interface TodayItem {
    * theme field to read.
    */
   themeTag?: string | null;
+  /** NEW or TRENDING when the lifecycle model says so; nothing else is ever shown. */
+  stageMarker?: StageMarker;
+  /** The ticker's sector from the instrument table, for kickers. */
+  sector?: string | null;
 }
 
 /** A resolved call, graded by the market. Never paywalled. */
@@ -98,4 +103,69 @@ export interface TodayPayload {
   saved: TodaySavedItem[];
   mostWatched: TodayVideo[];
   worthReading: TodayItem[];
+}
+
+/* ------------------------------------------------------------------ *
+ * The Today front page (the /home rebuild)
+ * ------------------------------------------------------------------ */
+
+export type StageMarker = "NEW" | "TRENDING" | null;
+
+/** A creator row in the sidebar: avatar and name only, never a number. */
+export interface TodayCreatorRow {
+  handle: string;
+  displayName: string;
+  avatarUrl: string | null;
+  marker: StageMarker;
+  /** Offered to fill an empty list; never presented as an existing relationship. */
+  suggestion?: boolean;
+}
+
+/** A ticker row in the sidebar: chip, price, day-change slot. */
+export interface TodayTickerRow {
+  symbol: string;
+  price: number | null;
+  /** DAY_CHANGE_PLACEHOLDER: null on the batch quote path; the slot stays reserved. */
+  changePercent: number | null;
+  publications: number;
+  suggestion?: boolean;
+}
+
+export interface TodaySidebarPayload {
+  trendingCreators: TodayCreatorRow[];
+  popularCreators: TodayCreatorRow[];
+  trendingTickers: TodayTickerRow[];
+  popularTickers: TodayTickerRow[];
+  memberships: TodayCreatorRow[];
+  following: TodayCreatorRow[];
+  /** Fill for short Memberships / Following lists. */
+  suggestedCreators: TodayCreatorRow[];
+  /** Fill for a short Your Tickers list. */
+  suggestedTickers: TodayTickerRow[];
+  signedIn: boolean;
+}
+
+/** A Your Desk card: the item plus how the reader knows the analyst. */
+export interface TodayDeskItem extends TodayItem {
+  relationship: "member" | "following";
+}
+
+export interface TodayThemeCluster {
+  slug: string;
+  name: string;
+  publicationsThisWeek: number;
+  items: TodayItem[];
+}
+
+export interface TodayPagePayload {
+  issue: { issueNumber: number; dateISO: string };
+  personalized: boolean;
+  lead: TodayItem | null;
+  secondary: TodayItem[];
+  trending: TodayItem[];
+  desk: TodayDeskItem[];
+  verdicts: TodayVerdict[];
+  theme: TodayThemeCluster | null;
+  news: NewsItem[];
+  sidebar: TodaySidebarPayload;
 }
