@@ -123,7 +123,7 @@ async function fetchSavedIds(userId: string): Promise<Set<string>> {
 }
 
 function creatorRow(p: Profile, marker: StageMarker, suggestion = false): TodayCreatorRow {
-  return { handle: p.handle, displayName: p.display_name, avatarUrl: p.avatar_url, marker, suggestion };
+  return { id: p.id, handle: p.handle, displayName: p.display_name, avatarUrl: p.avatar_url, marker, suggestion };
 }
 
 /**

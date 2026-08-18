@@ -175,6 +175,10 @@ browser-local (`localStorage` keys `stoa-watchlist`, `stoa-sector-watchlist`; `s
 so Your Tickers on Today re-resolves from the client and no ETF/sector follow survives a device
 change.
 
+Today's sidebar tops up short personal lists with suggestions that carry a small Follow control:
+creator follows go to `follows` through `toggleFollow` (server-side, real); ticker follows write
+the browser-local watchlist, so they do not survive a device change and the server never sees them.
+
 **Needed.** A `follows_instruments` table (`owner_id`, `kind: ticker|etf|sector|theme`,
 `symbol text`, `created_at`, PK owner+kind+symbol) with RLS owner-only, plus a one-time import
 endpoint the client can call to migrate its local list. This underpins Today's Your Tickers,

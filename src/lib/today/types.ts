@@ -114,6 +114,8 @@ export type StageMarker = "NEW" | "TRENDING" | null;
 
 /** A creator row in the sidebar: avatar and name only, never a number. */
 export interface TodayCreatorRow {
+  /** profiles.id, needed to follow from the row. */
+  id: string;
   handle: string;
   displayName: string;
   avatarUrl: string | null;

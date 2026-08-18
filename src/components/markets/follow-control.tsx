@@ -4,7 +4,7 @@ import { cn } from "@/lib/design/cn";
 import { useSectorWatchlist, useWatchlist } from "@/lib/watchlist";
 
 const pill =
-  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border px-2 py-0.5 text-[0.5938rem] font-medium uppercase tracking-[0.14em] transition-colors duration-[var(--dur-1)]";
+  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-[0.14em] transition-colors duration-[var(--dur-1)]";
 
 /**
  * Follow as a text pill rather than a star. Reads the same browser-local

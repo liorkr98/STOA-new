@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toggleFollow } from "@/app/actions/social";
+import { FollowTicker } from "@/components/markets/follow-control";
 import * as Dialog from "@radix-ui/react-dialog";
 import { PanelLeft, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
@@ -35,26 +38,60 @@ function SideList({ title, children, empty }: { title: string; children: ReactNo
   );
 }
 
-function CreatorItem({ row }: { row: TodayCreatorRow }) {
+const quietPill =
+  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border border-border px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-[0.14em] text-text-faint transition-colors duration-[var(--dur-1)] hover:border-border-strong hover:text-text";
+
+/**
+ * A suggested creator carries a small outlined Follow control instead of a
+ * label. On click the row follows and stays exactly where it is, joining the
+ * reader's real list; the button disappears, so only suggestions carry one.
+ */
+function CreatorItem({ row, signedIn }: { row: TodayCreatorRow; signedIn: boolean }) {
+  const router = useRouter();
+  const [followed, setFollowed] = useState(false);
+  const [pending, start] = useTransition();
+  const showFollow = row.suggestion && !followed;
+
+  const follow = () => {
+    if (!signedIn) {
+      router.push("/sign-in?next=/home");
+      return;
+    }
+    setFollowed(true);
+    start(async () => {
+      const res = await toggleFollow(row.id).catch(() => null);
+      if (res && res.following === false) setFollowed(false);
+    });
+  };
+
   return (
-    <li>
+    <li className="flex items-center gap-2">
       <Link
         href={`/analyst/${row.handle}`}
-        className="focus-ring flex items-center gap-2.5 rounded-[var(--radius-btn)] py-1.5 pr-1 hover:text-text"
+        className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-btn)] py-1.5 pr-1 hover:text-text"
       >
         <Avatar src={row.avatarUrl} name={row.displayName} size="sm" />
         <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-text">{row.displayName}</span>
         {row.marker ? <span className="today-stage">{row.marker}</span> : null}
-        {row.suggestion ? (
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
-        ) : null}
       </Link>
+      {showFollow ? (
+        <button type="button" onClick={follow} disabled={pending} aria-label={`Follow ${row.displayName}`} className={quietPill}>
+          Follow
+        </button>
+      ) : null}
     </li>
   );
 }
 
+/**
+ * A suggested ticker carries the outlined Follow control (browser-local
+ * watchlist, no server table yet). Once followed it reads as a real row and
+ * stays in place; a row already in the list shows no button.
+ */
 function TickerItem({ row }: { row: TodayTickerRow }) {
   const sheet = useInstrumentSheet();
+  const { ready, has } = useWatchlist();
+  const showFollow = row.suggestion && ready && !has(row.symbol);
   return (
     <li className="flex items-center gap-2 py-1.5">
       <button
@@ -67,9 +104,7 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
       </button>
       <span className="num ml-auto text-[0.75rem] text-text">{row.price != null ? fmtPrice(row.price) : "—"}</span>
       <DayChange percent={row.changePercent} />
-      {row.suggestion ? (
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Suggested</span>
-      ) : null}
+      {showFollow ? <FollowTicker ticker={row.symbol} /> : null}
     </li>
   );
 }
@@ -105,16 +140,26 @@ function YourTickers({ suggested }: { suggested: TodayTickerRow[] }) {
     };
   }, [key]);
 
+  // Suggestions are chosen once per mount, so following one keeps the row in
+  // place instead of reshuffling the list underneath the reader.
+  const [fill, setFill] = useState<TodayTickerRow[] | null>(null);
+  useEffect(() => {
+    if (rows === null || fill !== null) return;
+    const ownSet = new Set(rows.map((r) => r.symbol));
+    setFill(rows.length < 4 ? suggested.filter((s) => !ownSet.has(s.symbol)).slice(0, 4 - rows.length) : []);
+  }, [rows, fill, suggested]);
+
   if (!ready) return <SideList title="Your tickers">{null}</SideList>;
   const own = rows ?? [];
-  const ownSet = new Set(own.map((r) => r.symbol));
-  const fill = own.length < 4 ? suggested.filter((s) => !ownSet.has(s.symbol)).slice(0, 4 - own.length) : [];
+  const fillSet = new Set((fill ?? []).map((r) => r.symbol));
   return (
     <SideList title="Your tickers">
-      {own.map((r) => (
-        <TickerItem key={r.symbol} row={r} />
-      ))}
-      {fill.map((r) => (
+      {own
+        .filter((r) => !fillSet.has(r.symbol))
+        .map((r) => (
+          <TickerItem key={r.symbol} row={r} />
+        ))}
+      {(fill ?? []).map((r) => (
         <TickerItem key={`s-${r.symbol}`} row={r} />
       ))}
     </SideList>
@@ -132,12 +177,12 @@ export function TodaySidebarLists({ data }: { data: TodaySidebarPayload }) {
     <div className="flex flex-col gap-6">
       <SideList title="Trending creators" empty="Nothing gaining fast right now">
         {data.trendingCreators.map((c) => (
-          <CreatorItem key={c.handle} row={c} />
+          <CreatorItem key={c.handle} row={c} signedIn={data.signedIn} />
         ))}
       </SideList>
       <SideList title="Popular creators">
         {data.popularCreators.map((c) => (
-          <CreatorItem key={c.handle} row={c} />
+          <CreatorItem key={c.handle} row={c} signedIn={data.signedIn} />
         ))}
       </SideList>
       <SideList title="Trending tickers" empty="No names gaining fast right now">
@@ -152,15 +197,15 @@ export function TodaySidebarLists({ data }: { data: TodaySidebarPayload }) {
       </SideList>
       <SideList title="Your memberships" empty={data.signedIn ? undefined : "Sign in to see your memberships"}>
         {data.memberships.map((c) => (
-          <CreatorItem key={c.handle} row={c} />
+          <CreatorItem key={c.handle} row={c} signedIn={data.signedIn} />
         ))}
-        {data.signedIn ? membershipFill.map((c) => <CreatorItem key={`s-${c.handle}`} row={c} />) : null}
+        {data.signedIn ? membershipFill.map((c) => <CreatorItem key={`s-${c.handle}`} row={c} signedIn={data.signedIn} />) : null}
       </SideList>
       <SideList title="Following" empty={data.signedIn ? undefined : "Sign in to see who you follow"}>
         {data.following.map((c) => (
-          <CreatorItem key={c.handle} row={c} />
+          <CreatorItem key={c.handle} row={c} signedIn={data.signedIn} />
         ))}
-        {data.signedIn ? followingFill.map((c) => <CreatorItem key={`s-${c.handle}`} row={c} />) : null}
+        {data.signedIn ? followingFill.map((c) => <CreatorItem key={`s-${c.handle}`} row={c} signedIn={data.signedIn} />) : null}
       </SideList>
       <YourTickers suggested={data.suggestedTickers} />
     </div>

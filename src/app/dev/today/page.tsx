@@ -106,7 +106,7 @@ const theme = {
 };
 
 const creator = (a: TodayAnalyst, marker: TodayCreatorRow["marker"] = null, suggestion = false): TodayCreatorRow => ({
-  handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, suggestion,
+  id: `fx-${a.handle}`, handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, suggestion,
 });
 const tick = (symbol: string, price: number, publications: number, suggestion = false): TodayTickerRow => ({
   symbol, price, changePercent: null, publications, suggestion,
