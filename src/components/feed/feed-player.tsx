@@ -38,11 +38,16 @@ export function FeedPlayer({
   startIndex = 0,
   onClose,
   mode = "overlay",
+  onIndexChange,
+  below,
 }: {
   publications: FeedPublication[];
   startIndex?: number;
   onClose?: () => void;
   mode?: "overlay" | "page";
+  onIndexChange?: (index: number) => void;
+  /** Page mode only: content rendered beneath the stage and cards (the discussion). */
+  below?: (pub: FeedPublication) => React.ReactNode;
 }) {
   const [index, setIndex] = useState(Math.min(startIndex, Math.max(0, publications.length - 1)));
   const [cardIndex, setCardIndex] = useState(0);
@@ -87,6 +92,9 @@ export function FeedPlayer({
   useEffect(() => {
     rootRef.current?.focus();
   }, []);
+  useEffect(() => {
+    onIndexChange?.(index);
+  }, [index, onIndexChange]);
 
   useEffect(() => {
     if (mode !== "overlay") return;
@@ -298,7 +306,8 @@ export function FeedPlayer({
   if (mode === "page") {
     return (
       <div ref={rootRef} tabIndex={-1} onKeyDown={onKey} className="outline-none">
-        {inner}
+        <div className="md:h-[min(720px,calc(100dvh-160px))]">{inner}</div>
+        {below ? below(pub) : null}
       </div>
     );
   }
