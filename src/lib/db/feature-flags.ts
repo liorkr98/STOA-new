@@ -31,6 +31,14 @@ export async function isFeatureEnabled(key: FeatureFlagKey): Promise<boolean> {
   }
 }
 
+/**
+ * The video-first Feed is the product direction and is on by default. The
+ * database row no longer gates it; `NEXT_PUBLIC_VIDEO_FIRST_DISCOVER=0` in
+ * the environment turns it off wholesale for a rollback, and `?layout=text`
+ * reaches the legacy mosaic per visit.
+ */
 export async function isVideoFirstDiscover(): Promise<boolean> {
-  return isFeatureEnabled("video_first_discover");
+  const override = envOverride("video_first_discover");
+  if (override !== null) return override;
+  return true;
 }

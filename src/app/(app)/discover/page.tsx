@@ -111,8 +111,9 @@ export default async function DiscoverPage({
   const filters = parseFeedFilters(params);
   const filtersActive = Object.keys(filters).length > 0;
 
-  // Part 1: video-first layout is flag-gated and reversible. `?layout=video|text`
-  // forces either layout so the legacy feed stays reachable at all times.
+  // Video-first is the default Feed. `?layout=text` reaches the legacy text
+  // mosaic (the layout toggle and the empty state link to it); the env flag
+  // can turn video-first off wholesale for a rollback.
   const flagOn = await isVideoFirstDiscover();
   const videoFirst =
     tab !== "researchers" &&
