@@ -2390,3 +2390,30 @@ body {
   text-transform: uppercase;
   color: var(--brass);
 }
+
+/* Explore wall: 6 columns desktop / 3 mobile, 4px gaps, 4:5 tiles. Row height
+ * comes from the container width so spanning tiles keep the ratio. */
+.explore-wall {
+  container-type: inline-size;
+}
+.explore-grid {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: calc((100cqw - 2 * 4px) / 3 * 1.25);
+  grid-auto-flow: dense;
+}
+.explore-tile {
+  grid-column: var(--c3);
+  grid-row: var(--r3);
+}
+@media (min-width: 768px) {
+  .explore-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: calc((100cqw - 5 * 4px) / 6 * 1.25);
+  }
+  .explore-tile {
+    grid-column: var(--c6);
+    grid-row: var(--r6);
+  }
+}
