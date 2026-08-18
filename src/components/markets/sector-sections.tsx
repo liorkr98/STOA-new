@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowSector, FollowTicker } from "@/components/markets/follow-control";
@@ -10,7 +9,6 @@ import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
 import { price } from "@/lib/format";
 import type { SectorAnalyst, SectorName, SectorPayload } from "@/lib/markets/build-sector";
-import type { CallLean } from "@/lib/markets/types";
 
 export function SectorHeader({ payload }: { payload: SectorPayload }) {
   return (
@@ -75,23 +73,6 @@ export function SectorPerformance({ sector }: { sector: string }) {
   );
 }
 
-function LeanChip({ lean }: { lean: CallLean }) {
-  const total = lean.long + lean.short;
-  if (total === 0) return null;
-  const longMajority = lean.long >= lean.short;
-  return (
-    <span className="markets-lean num">
-      <span style={{ color: longMajority ? "var(--up)" : "var(--text-mute)" }}>
-        {lean.long} long
-      </span>
-      <span aria-hidden className="text-text-faint"> · </span>
-      <span style={{ color: longMajority ? "var(--text-mute)" : "var(--down)" }}>
-        {lean.short} short
-      </span>
-    </span>
-  );
-}
-
 export function SectorNames({ names }: { names: SectorName[] }) {
   if (names.length === 0) return null;
 
@@ -110,8 +91,10 @@ export function SectorNames({ names }: { names: SectorName[] }) {
             <DayChange percent={n.changePercent} />
             <span className="markets-row-meta num">
               {n.publications} {n.publications === 1 ? "publication" : "publications"}
+              {n.openCalls > 0
+                ? ` · ${n.openCalls} open ${n.openCalls === 1 ? "call" : "calls"}`
+                : ""}
             </span>
-            <LeanChip lean={n.lean} />
             <FollowTicker ticker={n.symbol} />
           </div>
         ))}
@@ -120,13 +103,18 @@ export function SectorNames({ names }: { names: SectorName[] }) {
   );
 }
 
-export function SectorStoaView({ payload }: { payload: SectorPayload }) {
+/**
+ * Coverage volume and the outcome record for the sector. There is deliberately
+ * no long/short split here: a sector-wide stance would read as a Stoa house
+ * view, and Stoa does not have one.
+ */
+export function SectorCoverage({ payload }: { payload: SectorPayload }) {
   if (payload.openCalls === 0 && payload.resolvedCount === 0) return null;
 
   return (
     <Band
-      title={`Stoa's view on ${payload.sector}`}
-      note="Where the analysts covering this sector actually stand."
+      title={`Stoa coverage of ${payload.sector}`}
+      note="How much of Stoa is publishing here, and how its closed calls turned out."
     >
       <div className="stock-consensus">
         <div>
@@ -136,22 +124,14 @@ export function SectorStoaView({ payload }: { payload: SectorPayload }) {
           </p>
         </div>
         <div>
-          <p className="stock-consensus-figure">
-            {payload.long}
-            <span aria-hidden className="text-text-faint"> / </span>
-            {payload.short}
+          <p className="stock-consensus-figure">{payload.analystsActive}</p>
+          <p className="stock-consensus-key">
+            {payload.analystsActive === 1 ? "Analyst active" : "Analysts active"}
           </p>
-          <p className="stock-consensus-key">Long / short split</p>
         </div>
         <div>
-          <p className="stock-consensus-figure">
-            {payload.averageScore == null ? (
-              <span className="markets-pending">Not scored</span>
-            ) : (
-              payload.averageScore
-            )}
-          </p>
-          <p className="stock-consensus-key">Avg Track Score active</p>
+          <p className="stock-consensus-figure">{payload.publicationsThisWeek}</p>
+          <p className="stock-consensus-key">Publications this week</p>
         </div>
         <div>
           <p className="stock-consensus-figure">
@@ -162,7 +142,7 @@ export function SectorStoaView({ payload }: { payload: SectorPayload }) {
             )}
           </p>
           <p className="stock-consensus-key">
-            Collective hit rate · {payload.resolvedCount} resolved
+            Hit rate · {payload.resolvedCount} resolved
           </p>
         </div>
       </div>
@@ -206,7 +186,7 @@ export function SectorPublications({
   );
 }
 
-export function SectorTopAnalysts({
+export function SectorAnalysts({
   analysts,
   isAuthed,
 }: {
@@ -216,20 +196,16 @@ export function SectorTopAnalysts({
   if (analysts.length === 0) return null;
 
   return (
-    <Band title="Top analysts in this sector" note="Ranked by Track Score among those active here.">
+    <Band title="Analysts covering this sector" note="Who publishes here most.">
       <div className="mt-2">
-        {analysts.map((a, i) => (
+        {analysts.map((a) => (
           <div key={a.handle} className="markets-row">
-            <span className="today-rank num" aria-hidden>
-              {String(i + 1).padStart(2, "0")}
-            </span>
             <Link href={`/analyst/${a.handle}`} className="markets-row-name focus-ring">
               <Avatar src={a.avatarUrl} name={a.displayName} size="sm" />
               <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text">
                 {a.displayName}
               </span>
             </Link>
-            <ScoreRing score={a.score} size="sm" provisional={a.provisional} />
             <span className="markets-row-meta num">
               {a.calls} {a.calls === 1 ? "call" : "calls"}
               {a.hitRatePct == null ? "" : ` · ${a.hitRatePct}% hit`}

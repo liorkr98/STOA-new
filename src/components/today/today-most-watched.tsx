@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { Band } from "@/components/ui/band";
 import { durationLabel } from "@/lib/today/format";
@@ -86,7 +85,6 @@ function VideoStill({ video }: { video: TodayVideo }) {
             {video.author.displayName}
           </span>
         </Link>
-        <ScoreRing score={video.author.score} size="sm" provisional={video.author.provisional} />
       </div>
     </article>
   );

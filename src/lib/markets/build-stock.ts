@@ -7,14 +7,14 @@ import type {
   OpenCall,
   ResolvedCall,
   StockAnalyst,
-  StockConsensus,
+  StockCoverage,
 } from "@/lib/markets/call-types";
 
 export type {
   OpenCall,
   ResolvedCall,
   StockAnalyst,
-  StockConsensus,
+  StockCoverage,
 } from "@/lib/markets/call-types";
 export { MAX_TARGET_LINES } from "@/lib/markets/call-types";
 
@@ -33,8 +33,6 @@ function toAnalyst(profile: Profile): StockAnalyst {
     handle: profile.handle,
     displayName: profile.display_name,
     avatarUrl: profile.avatar_url,
-    score: profile.score || null,
-    provisional: (profile.sample_size ?? 0) < 10,
     initials: initialsOf(profile.display_name),
   };
 }
@@ -50,7 +48,7 @@ function daysBetween(from: Date, to: Date): number {
 export interface StockCallsPayload {
   openCalls: OpenCall[];
   resolvedCalls: ResolvedCall[];
-  consensus: StockConsensus;
+  coverage: StockCoverage;
 }
 
 export async function buildStockCalls(ticker: string): Promise<StockCallsPayload> {
@@ -105,29 +103,22 @@ export async function buildStockCalls(ticker: string): Promise<StockCallsPayload
     }
   }
 
-  // Highest Track Score first: the chart draws the five most credible targets
-  // as labelled lines and folds the rest into a consensus band.
-  openCalls.sort((a, b) => (b.analyst.score ?? 0) - (a.analyst.score ?? 0));
+  // Newest call first. Ordering by Track Score would rank the analysts against
+  // each other, which is exactly what this surface no longer does.
+  openCalls.sort((a, b) => b.lockedAt.localeCompare(a.lockedAt));
 
-  const targets = openCalls.map((c) => c.targetPrice).filter((t): t is number => t != null);
-  const scores = openCalls.map((c) => c.analyst.score).filter((s): s is number => s != null);
   const hits = resolvedCalls.filter((c) => c.outcome === "hit").length;
 
-  const consensus: StockConsensus = {
+  const coverage: StockCoverage = {
     openCount: openCalls.length,
-    long: openCalls.filter((c) => c.direction === "long").length,
-    short: openCalls.filter((c) => c.direction === "short").length,
-    averageTarget: targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : null,
-    averageScore: scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : null,
+    analystCount: new Set(openCalls.map((c) => c.analyst.handle)).size,
     hitRatePct: resolvedCalls.length
       ? Math.round((hits / resolvedCalls.length) * 100)
       : null,
     resolvedCount: resolvedCalls.length,
   };
 
-  return { openCalls, resolvedCalls, consensus };
+  return { openCalls, resolvedCalls, coverage };
 }
 
 /** Client-safe chart payload: the price line plus the calls drawn on it. */

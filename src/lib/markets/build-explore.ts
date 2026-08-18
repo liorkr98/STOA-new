@@ -154,7 +154,7 @@ async function buildCovered(
         ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         newPublications: coverageWeek.get(symbol) ?? 0,
         analystCount: entry?.analysts.size ?? 0,
-        lean: { long: entry?.long ?? 0, short: entry?.short ?? 0 },
+        openCalls: (entry?.long ?? 0) + (entry?.short ?? 0),
       },
     ];
   });
@@ -207,8 +207,6 @@ async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
           handle: first.author.handle,
           displayName: first.author.display_name,
           avatarUrl: first.author.avatar_url,
-          score: first.author.score || null,
-          provisional: (first.author.sample_size ?? 0) < 10,
         },
         direction: first.direction,
         calledAt: first.created_at,

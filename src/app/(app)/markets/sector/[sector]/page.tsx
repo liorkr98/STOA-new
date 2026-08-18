@@ -7,8 +7,8 @@ import {
   SectorNames,
   SectorPerformance,
   SectorPublications,
-  SectorStoaView,
-  SectorTopAnalysts,
+  SectorCoverage,
+  SectorAnalysts,
 } from "@/components/markets/sector-sections";
 
 export async function generateMetadata({
@@ -47,9 +47,9 @@ export default async function SectorPage({
       <SectorHeader payload={payload} />
       <SectorPerformance sector={name} />
       <SectorNames names={payload.names} />
-      <SectorStoaView payload={payload} />
+      <SectorCoverage payload={payload} />
       <SectorPublications sector={name} items={payload.publications} />
-      <SectorTopAnalysts analysts={payload.topAnalysts} isAuthed={Boolean(userId)} />
+      <SectorAnalysts analysts={payload.analysts} isAuthed={Boolean(userId)} />
     </article>
   );
 }

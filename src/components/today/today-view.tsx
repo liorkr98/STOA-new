@@ -4,7 +4,6 @@ import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
 import { TodayDesk } from "@/components/today/today-desk";
 import { TodayMostWatched } from "@/components/today/today-most-watched";
 import { TodaySaved } from "@/components/today/today-saved";
-import { TodayStandings } from "@/components/today/today-standings";
 import { TodayTickers } from "@/components/today/today-tickers";
 import { TodayVerdicts } from "@/components/today/today-verdicts";
 import { TodayWorthReading } from "@/components/today/today-worth-reading";
@@ -60,7 +59,6 @@ export function TodayView({
       <TodayVerdicts verdicts={today.verdicts} />
       <TodaySaved items={today.saved} />
       <TodayMostWatched videos={today.mostWatched} />
-      <TodayStandings standings={today.standings} />
       <TodayWorthReading items={today.worthReading} />
       <TodayTickers />
 

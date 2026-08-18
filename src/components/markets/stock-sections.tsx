@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag, GradeTag } from "@/components/ui/tag";
 import { DayChange } from "@/components/markets/day-change";
@@ -10,7 +9,7 @@ import { FollowTicker } from "@/components/markets/follow-control";
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
 import { compact, price } from "@/lib/format";
-import type { OpenCall, ResolvedCall, StockConsensus } from "@/lib/markets/call-types";
+import type { OpenCall, ResolvedCall, StockCoverage } from "@/lib/markets/call-types";
 import type { TodayItem } from "@/lib/today/types";
 import type { TickerRow } from "@/lib/db/tickers";
 
@@ -98,55 +97,49 @@ export function StockHeader({
   );
 }
 
-export function StockConsensusBlock({
+/**
+ * Coverage volume and the outcome record, never a house view. The long/short
+ * split and the average target are gone on purpose: each analyst's position is
+ * attributed by name in the open-calls list below, and blending them into one
+ * number would save the reader from reading any of them.
+ */
+export function StockCoverageBlock({
   ticker,
-  consensus,
+  coverage,
 }: {
   ticker: string;
-  consensus: StockConsensus;
+  coverage: StockCoverage;
 }) {
-  if (consensus.openCount === 0 && consensus.resolvedCount === 0) return null;
+  if (coverage.openCount === 0 && coverage.resolvedCount === 0) return null;
 
   return (
-    <Band title={`Stoa consensus on ${ticker}`} note="Every open call on this name, in one place.">
+    <Band
+      title={`Stoa coverage of ${ticker}`}
+      note="How much of Stoa is on this name, and how its closed calls turned out."
+    >
       <div className="stock-consensus">
         <div>
-          <p className="stock-consensus-figure">{consensus.openCount}</p>
+          <p className="stock-consensus-figure">{coverage.openCount}</p>
           <p className="stock-consensus-key">
-            Open {consensus.openCount === 1 ? "call" : "calls"}
-            {consensus.openCount > 0 ? ` · ${consensus.long} long / ${consensus.short} short` : ""}
+            Open {coverage.openCount === 1 ? "call" : "calls"}
+          </p>
+        </div>
+        <div>
+          <p className="stock-consensus-figure">{coverage.analystCount}</p>
+          <p className="stock-consensus-key">
+            {coverage.analystCount === 1 ? "Analyst covering" : "Analysts covering"}
           </p>
         </div>
         <div>
           <p className="stock-consensus-figure">
-            {consensus.averageTarget == null ? (
-              <span className="markets-pending">No targets</span>
-            ) : (
-              price(consensus.averageTarget)
-            )}
-          </p>
-          <p className="stock-consensus-key">Average target</p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">
-            {consensus.averageScore == null ? (
-              <span className="markets-pending">Not scored</span>
-            ) : (
-              consensus.averageScore
-            )}
-          </p>
-          <p className="stock-consensus-key">Avg Track Score covering</p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">
-            {consensus.hitRatePct == null ? (
+            {coverage.hitRatePct == null ? (
               <span className="markets-pending">No history</span>
             ) : (
-              `${consensus.hitRatePct}%`
+              `${coverage.hitRatePct}%`
             )}
           </p>
           <p className="stock-consensus-key">
-            Hit rate · {consensus.resolvedCount} resolved
+            Hit rate · {coverage.resolvedCount} resolved
           </p>
         </div>
       </div>
@@ -158,7 +151,10 @@ export function StockOpenCalls({ calls }: { calls: OpenCall[] }) {
   if (calls.length === 0) return null;
 
   return (
-    <Band title="Open calls" note="Locked at publication, graded by the market at the horizon.">
+    <Band
+      title="Open calls"
+      note="Every position, attributed by name. Locked at publication, graded by the market at the horizon."
+    >
       <div className="mt-2">
         {calls.map((c) => (
           <div key={c.reportId} className="markets-row">
@@ -171,7 +167,6 @@ export function StockOpenCalls({ calls }: { calls: OpenCall[] }) {
                 {c.analyst.displayName}
               </span>
             </Link>
-            <ScoreRing score={c.analyst.score} size="sm" provisional={c.analyst.provisional} />
             <DirectionTag direction={c.direction} />
             <span className="num text-[0.8125rem] tabular-nums text-text">
               {price(c.entryPrice)}
@@ -240,7 +235,6 @@ export function StockResolvedHistory({ calls }: { calls: ResolvedCall[] }) {
                     className="focus-ring inline-flex items-center gap-2.5 rounded-[var(--radius-btn)]"
                   >
                     <span className="font-semibold">{c.analyst.displayName}</span>
-                    <ScoreRing score={c.analyst.score} size="sm" />
                   </Link>
                 </td>
                 <td>

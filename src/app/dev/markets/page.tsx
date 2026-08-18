@@ -1,6 +1,6 @@
 import { CallsChart } from "@/components/markets/calls-chart";
 import {
-  StockConsensusBlock,
+  StockCoverageBlock,
   StockHeader,
   StockOpenCalls,
   StockResolvedHistory,
@@ -10,7 +10,7 @@ import type { OpenCall, ResolvedCall, StockAnalyst } from "@/lib/markets/call-ty
 
 /**
  * Dev-only seeded stock page so the calls overlay on the chart can be reviewed
- * without a database: target lines, the consensus band, entry dots, and the
+ * without a database: target lines, the range band, entry dots, and the
  * resolution seals all need predictions to exist.
  */
 
@@ -30,13 +30,11 @@ function candles(): Candle[] {
   return out;
 }
 
-function analyst(name: string, handle: string, score: number, provisional = false): StockAnalyst {
+function analyst(name: string, handle: string): StockAnalyst {
   return {
     handle,
     displayName: name,
     avatarUrl: null,
-    score,
-    provisional,
     initials: name
       .split(" ")
       .map((w) => w[0])
@@ -45,13 +43,13 @@ function analyst(name: string, handle: string, score: number, provisional = fals
   };
 }
 
-const LK = analyst("Lena Kowalczyk", "lenakw", 84);
-const KT = analyst("Kai Tanaka", "kaitanaka", 79);
-const MW = analyst("Marcus Webb", "marcus_webb", 74);
-const PR = analyst("Priya Raman", "priya_raman", 71);
-const NH = analyst("Noor Haddad", "noorhaddad", 66);
-const AB = analyst("Aisha Bello", "aishab", 58, true);
-const TR = analyst("Tomas Reyes", "tomasr", 55);
+const LK = analyst("Lena Kowalczyk", "lenakw");
+const KT = analyst("Kai Tanaka", "kaitanaka");
+const MW = analyst("Marcus Webb", "marcus_webb");
+const PR = analyst("Priya Raman", "priya_raman");
+const NH = analyst("Noor Haddad", "noorhaddad");
+const AB = analyst("Aisha Bello", "aishab");
+const TR = analyst("Tomas Reyes", "tomasr");
 
 function iso(daysAgo: number): string {
   return new Date((NOW - daysAgo * DAY) * 1000).toISOString();
@@ -83,15 +81,9 @@ export default async function DevMarketsPage({
   const calls = {
     openCalls,
     resolvedCalls,
-    consensus: {
+    coverage: {
       openCount: openCalls.length,
-      long: openCalls.filter((c) => c.direction === "long").length,
-      short: openCalls.filter((c) => c.direction === "short").length,
-      averageTarget:
-        openCalls.reduce((s, c) => s + (c.targetPrice ?? 0), 0) / openCalls.length,
-      averageScore: Math.round(
-        openCalls.reduce((s, c) => s + (c.analyst.score ?? 0), 0) / openCalls.length,
-      ),
+      analystCount: new Set(openCalls.map((c) => c.analyst.handle)).size,
       hitRatePct: 50,
       resolvedCount: resolvedCalls.length,
     },
@@ -119,7 +111,7 @@ export default async function DevMarketsPage({
         range={range}
       />
 
-      <StockConsensusBlock ticker="NVDA" consensus={calls.consensus} />
+      <StockCoverageBlock ticker="NVDA" coverage={calls.coverage} />
       <StockOpenCalls calls={openCalls} />
       <StockResolvedHistory calls={resolvedCalls} />
     </article>

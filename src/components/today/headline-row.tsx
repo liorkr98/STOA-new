@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
@@ -58,7 +57,6 @@ export function HeadlineRow({
               {item.author.displayName}
             </span>
           </Link>
-          <ScoreRing score={item.author.score} size="sm" provisional={item.author.provisional} />
           {time ? (
             <span className="num text-[0.6875rem] tracking-[0.08em] text-text-faint">
               <span aria-hidden>· </span>

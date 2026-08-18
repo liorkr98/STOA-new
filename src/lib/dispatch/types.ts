@@ -31,11 +31,6 @@ export interface DispatchLedgerRow {
   reportId: string;
 }
 
-export interface DispatchLeaderboardEntry {
-  analyst: Profile;
-  resolvedCalls: number;
-}
-
 export interface DispatchPayload {
   cycle: DispatchCycle;
   readMinutes: number;
@@ -48,7 +43,6 @@ export interface DispatchPayload {
   /** Dense one-line stories after the featured block. */
   wire: DispatchStory[];
   resolved: DispatchLedgerRow[];
-  leaderboard: DispatchLeaderboardEntry[];
 }
 
 export type DispatchViewMode = "public" | "home";

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/design/cn";
 import { toggleFollow } from "@/app/actions/social";
-import { ScoreRing } from "@/components/ui/score-ring";
 
 export interface FollowCreator {
   id: string;
@@ -55,7 +54,6 @@ function CreatorRow({ c }: { c: FollowCreator }) {
           <Link href={c.href} className="font-display text-lg font-semibold tracking-tight hover:underline">
             {c.name}
           </Link>
-          <ScoreRing score={c.score} size="sm" />
         </div>
         <div className="num mt-1 text-[10px] uppercase tracking-[0.13em] text-text-mute">{c.specialty}</div>
         <div className="num mt-1 text-[10px] uppercase tracking-[0.13em] text-text-faint">{c.pubs}</div>

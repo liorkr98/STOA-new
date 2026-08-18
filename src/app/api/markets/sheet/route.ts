@@ -47,6 +47,6 @@ export async function GET(req: Request) {
     candles,
     openCalls: calls.openCalls,
     resolvedCalls: calls.resolvedCalls,
-    consensus: calls.consensus,
+    coverage: calls.coverage,
   });
 }

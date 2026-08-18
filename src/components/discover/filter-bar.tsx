@@ -8,7 +8,6 @@ import { cn } from "@/lib/design/cn";
 export interface DiscoverFilters {
   type?: "research" | "call" | "short_post";
   access?: "free" | "paid" | "subscribers";
-  score?: string;
   ticker?: string;
   status?: "open" | "resolved";
   mcap?: "mega" | "large" | "mid" | "small";
@@ -34,14 +33,6 @@ const STATUS_OPTIONS = [
   { value: "resolved", label: "Resolved" },
 ] as const;
 
-const SCORE_OPTIONS = [
-  { value: "", label: "Any Track Score" },
-  { value: "40", label: "40+" },
-  { value: "60", label: "60+" },
-  { value: "70", label: "70+" },
-  { value: "80", label: "80+" },
-] as const;
-
 const MCAP_OPTIONS = [
   { value: "", label: "Any market cap" },
   { value: "mega", label: "Mega ($200B+)" },
@@ -50,7 +41,7 @@ const MCAP_OPTIONS = [
   { value: "small", label: "Small (under $2B)" },
 ] as const;
 
-const FILTER_KEYS = ["type", "access", "score", "moat", "ticker", "status", "mcap"] as const;
+const FILTER_KEYS = ["type", "access", "ticker", "status", "mcap"] as const;
 
 const selectClass =
   "h-9 min-w-[8.5rem] rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-xs text-text focus-ring";
@@ -80,7 +71,6 @@ export function FilterBar() {
 
   function setParam(key: string, value: string) {
     replaceParams((next) => {
-      if (key === "score") next.delete("moat");
       if (value) next.set(key, value);
       else next.delete(key);
     });
@@ -90,12 +80,7 @@ export function FilterBar() {
     setParam("ticker", tickerDraft.trim().toUpperCase());
   }
 
-  const scoreValue = params.get("score") ?? params.get("moat") ?? "";
-  const activeCount = FILTER_KEYS.filter((k) => {
-    if (k === "moat") return false;
-    if (k === "score") return Boolean(scoreValue);
-    return Boolean(params.get(k));
-  }).length;
+  const activeCount = FILTER_KEYS.filter((k) => Boolean(params.get(k))).length;
 
   useEffect(() => {
     if (activeCount > 0) setOpen(true);
@@ -195,21 +180,6 @@ export function FilterBar() {
             >
               {STATUS_OPTIONS.map((o) => (
                 <option key={o.value || "any-status"} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="t-meta text-[10px] uppercase tracking-wider">Track Score</span>
-            <select
-              className={selectClass}
-              value={scoreValue}
-              onChange={(e) => setParam("score", e.target.value)}
-            >
-              {SCORE_OPTIONS.map((o) => (
-                <option key={o.value || "any-score"} value={o.value}>
                   {o.label}
                 </option>
               ))}

@@ -45,9 +45,6 @@ interface DiscoverParams {
   tab?: string;
   type?: string;
   access?: string;
-  score?: string;
-  /** @deprecated Use `score` */
-  moat?: string;
   ticker?: string;
   status?: string;
   mcap?: string;
@@ -63,8 +60,6 @@ function parseFeedFilters(params: DiscoverParams): FeedFilters {
   if (params.access && ACCESS_TYPES.includes(params.access as AccessType)) {
     filters.access = params.access as AccessType;
   }
-  const minScore = Number(params.score ?? params.moat);
-  if (minScore > 0) filters.minScore = minScore;
   if (params.ticker?.trim()) filters.ticker = params.ticker.trim().toUpperCase();
   if (params.status === "open" || params.status === "resolved") {
     filters.status = params.status;
@@ -86,7 +81,6 @@ function videoCardMatches(card: VideoClipCard, filters: FeedFilters): boolean {
     const t = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
     if (t !== filters.ticker) return false;
   }
-  if (filters.minScore && (report.author?.score ?? 0) < filters.minScore) return false;
   if (filters.status) {
     const outcome = report.prediction?.outcome;
     if (filters.status === "open" && outcome !== "open") return false;

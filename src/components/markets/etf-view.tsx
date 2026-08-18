@@ -1,7 +1,7 @@
 import { CallsChart } from "@/components/markets/calls-chart";
 import { EtfHeader, EtfHoldings, EtfSectorExposure } from "@/components/markets/etf-sections";
 import {
-  StockConsensusBlock,
+  StockCoverageBlock,
   StockOpenCalls,
   StockPublications,
   StockResolvedHistory,
@@ -56,7 +56,7 @@ export function EtfView({
       <EtfHoldings holdings={etf.holdings} coverage={coverage} />
       <EtfSectorExposure weights={etf.sectorWeights} />
 
-      <StockConsensusBlock ticker={etf.symbol} consensus={calls.consensus} />
+      <StockCoverageBlock ticker={etf.symbol} coverage={calls.coverage} />
       <StockOpenCalls calls={calls.openCalls} />
       <StockPublications items={publications} />
       <StockResolvedHistory calls={calls.resolvedCalls} />

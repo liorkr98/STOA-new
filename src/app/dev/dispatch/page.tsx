@@ -143,13 +143,6 @@ const payload: DispatchPayload = {
       reportId: "r22",
     },
   ],
-  leaderboard: [
-    { analyst: chen, resolvedCalls: 34 },
-    { analyst: vos, resolvedCalls: 27 },
-    { analyst: roy, resolvedCalls: 19 },
-    { analyst: webb, resolvedCalls: 41 },
-    { analyst: ito, resolvedCalls: 8 },
-  ],
 };
 
 export default function DispatchPreviewPage() {

@@ -7,7 +7,7 @@ import { hasResolvedHistory } from "@/lib/db/predictions";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CallsChart } from "@/components/markets/calls-chart";
 import {
-  StockConsensusBlock,
+  StockCoverageBlock,
   StockFundamentals,
   StockHeader,
   StockOpenCalls,
@@ -50,16 +50,16 @@ export async function generateMetadata({
   // "Verified track record" implies resolved history -- only claim that once
   // a call has actually resolved for this ticker.
   const description = !hasCoverage
-    ? `${name} (${sym}) on Stoa: independent analyst research with a permanent, publicly scored track record.`
+    ? `${name} (${sym}) on Stoa: independent analyst research with a permanent, public call record.`
     : resolvedHistory
-      ? `Review ${name}'s verified analyst track record: locked calls, resolved outcomes, and public Track Scores on Stoa.`
-      : `Locked, fact-checked research and price calls for ${name}. Track analyst Track Scores and theses on Stoa's permanent ledger.`;
+      ? `Review the analyst record on ${name}: locked calls, entry and exit prices, and graded outcomes on Stoa.`
+      : `Locked, fact-checked research and price calls for ${name}, each attributed by analyst on Stoa's permanent ledger.`;
 
   const ogImage = `/api/og/stock?ticker=${sym}`;
 
   return {
     // The root layout's title.template already appends " · Stoa" (layout.tsx).
-    title: `${name} (${sym}) · Analyst Ledger & Track Scores`,
+    title: `${name} (${sym}) · Analyst Ledger`,
     description,
     // A page with zero published reports is thin content -- render normally
     // (no 404, the ticker itself is real) but keep it out of the index until
@@ -104,8 +104,6 @@ function toItem(report: Report): TodayItem | null {
       handle: report.author.handle,
       displayName: report.author.display_name,
       avatarUrl: report.author.avatar_url,
-      score: report.author.score || null,
-      provisional: (report.author.sample_size ?? 0) < 10,
     },
     publishedAt: report.published_at ?? report.created_at,
     access: report.access,
@@ -194,7 +192,7 @@ export default async function TickerPage({
         customTo={query.to}
       />
 
-      <StockConsensusBlock ticker={sym} consensus={calls.consensus} />
+      <StockCoverageBlock ticker={sym} coverage={calls.coverage} />
       <StockOpenCalls calls={calls.openCalls} />
       <StockPublications items={publications} />
       <StockResolvedHistory calls={calls.resolvedCalls} />

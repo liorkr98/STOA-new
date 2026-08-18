@@ -13,7 +13,6 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { Avatar } from "@/components/ui/avatar";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { Tag } from "@/components/ui/tag";
 import { PredictionCard } from "@/components/prediction-card";
@@ -154,14 +153,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             compensationDetail={report.compensation_detail ?? undefined}
           />
           <DyorBar />
-          {author && (
-            <TrackScoreBadge
-              handle={author.handle}
-              score={author.score || null}
-              sampleSize={author.sample_size}
-              size="md"
-            />
-          )}
           {claims.length > 0 && (
             <FactCheckLayer
               claims={claims}

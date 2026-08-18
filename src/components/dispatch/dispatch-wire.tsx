@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
 /**
@@ -34,12 +33,6 @@ export function DispatchWire({ stories }: { stories: DispatchStory[] }) {
                 </span>
                 <span className="hidden shrink-0 items-center gap-2 sm:flex">
                   <span className="text-xs text-text-faint">{story.author.display_name}</span>
-                  <TrackScoreBadge
-                    handle={story.author.handle}
-                    score={story.author.score || null}
-                    size="sm"
-                    linked={false}
-                  />
                 </span>
                 <ArrowRight
                   size={13}

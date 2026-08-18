@@ -6,18 +6,15 @@ import { Play, Lock, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction, Prediction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { SealStamp } from "@/components/ui/seal-stamp";
-import { TrackChart } from "@/components/charts/track-chart";
-import { TrackBreakdown } from "@/components/track/track-breakdown";
 import { CallHistory } from "@/components/track/call-history";
 import { FollowButton } from "@/components/follow-button";
 import { ShareMenu } from "@/components/share/share-menu";
 import { TierPickerModal } from "@/components/profile/tier-picker-modal";
 
-type TabKey = "videos" | "verdicts" | "reports" | "score";
+type TabKey = "videos" | "verdicts" | "reports" | "calls";
 
 export interface ProfileVideo {
   id: string;
@@ -79,28 +76,21 @@ export interface AnalystProfileViewProps {
   handleLine: string;
   isSelf: boolean;
 
-  score: number | null;
-  provisional: boolean;
-  scoreLabel: string;
-  recordLine: string;
-  confidenceLine: string;
+  /**
+   * The one place on the platform either number is shown: "4.3K FOLLOWERS ·
+   * 214 MEMBERS". Members is the paying-subscriber count and is opt-in from
+   * the Storefront, so this is followers alone unless the analyst turned it on.
+   */
+  audienceLine: string;
 
-  tiles: { label: string; value: string; tone: "ink" | "up" }[];
-
-  counts: { videos: number; verdicts: number; reports: number };
+  counts: { videos: number; verdicts: number; reports: number; calls: number };
   videos: ProfileVideo[];
   pinned: ProfilePinned | null;
   verdicts: ProfileVerdict[];
   reports: ProfileReportRow[];
 
-  // Score tab (reuses the existing breakdown components)
+  /** Call History tab: the full ledger, open and resolved, misses included. */
   predictions: Prediction[];
-  series: { label: string; score: number }[];
-  breakdown: { winRate: number; profitFactor: number; alpha: number | null; consistency: number };
-  hits: number;
-  nearHits: number;
-  misses: number;
-  total: number;
 
   // Interactivity
   analystId: string;
@@ -155,7 +145,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
     { key: "videos", label: `VIDEOS · ${props.counts.videos}` },
     { key: "verdicts", label: `VERDICTS · ${props.counts.verdicts}` },
     { key: "reports", label: `REPORTS · ${props.counts.reports}` },
-    { key: "score", label: "SCORE" },
+    { key: "calls", label: `CALL HISTORY · ${props.counts.calls}` },
   ];
 
   const followBtn = (
@@ -170,7 +160,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
     <div className={cn("pb-24 md:pb-0", props.texture && "paper-texture")} style={props.storefrontStyle}>
       {/* HERO */}
       <div className="grid gap-8 md:grid-cols-[55fr_45fr] md:gap-16">
-        {/* LEFT: identity + score card + actions */}
+        {/* LEFT: identity + audience + actions */}
         <div>
           <div className="flex items-start gap-5">
             <span className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
@@ -193,6 +183,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
               <div className="num mt-2 text-[11px] uppercase tracking-[0.16em] text-text-mute">
                 {props.handleLine}
               </div>
+              <div className="num mt-1.5 text-[11px] uppercase tracking-[0.16em] text-text-faint">
+                {props.audienceLine}
+              </div>
             </div>
           </div>
 
@@ -209,27 +202,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
             </div>
           )}
 
-          {/* Score card */}
-          <div className="mt-7 flex items-center gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-5">
-            <ScoreRing score={props.score} size="md" provisional={props.provisional} />
-            <div className="flex-1">
-              <span className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
-                {props.scoreLabel}
-              </span>
-              <div className="mt-2 text-[15px]">{props.recordLine}</div>
-              <button
-                type="button"
-                onClick={() => setTab("score")}
-                className="num mt-3 text-[11px] uppercase tracking-[0.16em] text-text transition-colors hover:text-text-mute focus-ring"
-              >
-                View full breakdown →
-              </button>
-            </div>
-          </div>
-
           {/* Desktop action row */}
           {!props.isSelf && (
-            <div className="mt-5 hidden items-stretch gap-2.5 md:flex">
+            <div className="mt-7 hidden items-stretch gap-2.5 md:flex">
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
@@ -280,23 +255,8 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
         )}
       </div>
 
-      {/* STAT TILES */}
-      <div className="mt-11 grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
-        {props.tiles.map((t) => (
-          <div key={t.label} className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
-            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{t.label}</div>
-            <div
-              className="mt-2.5 text-[28px] font-semibold tracking-tight"
-              style={{ color: toneColor(t.tone) }}
-            >
-              {t.value}
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* TABS */}
-      <div className="sticky top-14 z-20 mt-9 border-b border-border bg-bg">
+      <div className="sticky top-14 z-20 mt-11 border-b border-border bg-bg">
         <div className="flex gap-6 overflow-x-auto md:gap-8">
           {tabs.map((t) => {
             const active = tab === t.key;
@@ -421,57 +381,16 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           </div>
         )}
 
-        {tab === "score" && (
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-wrap items-center gap-6">
-              <ScoreRing score={props.score} size="lg" provisional={props.provisional} />
-              <div className="flex gap-7">
-                {[
-                  { label: "HITS", value: props.hits, tone: "up" as const },
-                  { label: "NEAR", value: props.nearHits, tone: "neutral" as const },
-                  { label: "MISS", value: props.misses, tone: "down" as const },
-                ].map((c) => (
-                  <div key={c.label}>
-                    <div className="text-2xl font-semibold" style={{ color: toneColor(c.tone) }}>
-                      {c.value}
-                    </div>
-                    <div className="num mt-1 text-[10px] uppercase tracking-[0.16em] text-text-mute">{c.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">{props.confidenceLine}</div>
-
-            {props.series.length > 1 ? (
-              <div className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
-                <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
-                  Equity curve · resolved calls
-                </div>
-                <div className="mt-3.5">
-                  <TrackChart data={props.series} />
-                </div>
-              </div>
+        {tab === "calls" && (
+          <div className="flex flex-col gap-3">
+            <p className="t-meta">All calls, including missed targets, stay visible permanently.</p>
+            {props.predictions.length > 0 ? (
+              <CallHistory predictions={props.predictions} />
             ) : (
               <div className="flex h-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
-                <p className="t-meta">Equity curve appears after resolved calls.</p>
+                <p className="t-meta">No calls yet.</p>
               </div>
             )}
-
-            {props.total > 0 && (
-              <TrackBreakdown
-                score={props.score ?? 0}
-                breakdown={props.breakdown}
-                hits={props.hits}
-                nearHits={props.nearHits}
-                misses={props.misses}
-                total={props.total}
-              />
-            )}
-
-            <div>
-              <p className="t-meta mb-3">All calls, including missed targets, stay visible permanently.</p>
-              <CallHistory predictions={props.predictions} />
-            </div>
           </div>
         )}
       </div>

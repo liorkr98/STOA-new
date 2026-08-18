@@ -6,7 +6,6 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { listUserSubscriptions } from "@/lib/db/subscriptions";
 import { listUnlockedReports } from "@/lib/db/library";
 import { usd } from "@/lib/format";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { CancelSubscriptionButton } from "@/components/subscriptions/cancel-button";
@@ -73,7 +72,6 @@ export default async function SubscriptionsPage() {
                       {initialsOf(name)}
                     </span>
                     <span className="flex-1 font-display text-lg font-semibold tracking-tight">{name}</span>
-                    <ScoreRing score={s.analyst?.score ?? null} size="sm" />
                   </div>
                   <div className="mt-4 text-[15px]">Monthly subscription</div>
                   <div className="mt-1 flex items-baseline gap-1.5">

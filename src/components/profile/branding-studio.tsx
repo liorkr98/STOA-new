@@ -106,6 +106,7 @@ export function BrandingStudio({
   const [social, setSocial] = useState<{ label: string; url: string }[]>(initial.social ?? []);
   const [tickers, setTickers] = useState((initial.featured_tickers ?? []).join(", "));
   const [pinnedId, setPinnedId] = useState<string | null>(initial.pinned_report_id ?? null);
+  const [showMembers, setShowMembers] = useState(initial.show_member_count ?? false);
   const [credits, setCredits] = useState(aiCredits);
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
@@ -120,6 +121,7 @@ export function BrandingStudio({
     social: social.filter((s) => s.label.trim() && s.url.trim()),
     featured_tickers: tickers.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean),
     pinned_report_id: pinnedId,
+    show_member_count: showMembers,
   };
 
   const sensors = useSensors(
@@ -277,6 +279,25 @@ export function BrandingStudio({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Follower count always shows in the hero; the member count is the
+                analyst's call, since a small paying audience should not be a
+                public number unless they want it to be. */}
+            <div>
+              <p className="text-sm font-medium">Audience line</p>
+              <p className="t-meta mt-1">
+                Your public profile shows your follower count. You can add your paying member count
+                beside it.
+              </p>
+              <label className="mt-2 flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={showMembers}
+                  onChange={(e) => setShowMembers(e.target.checked)}
+                />
+                Show my member count
+              </label>
             </div>
 
             <div className="text-sm">

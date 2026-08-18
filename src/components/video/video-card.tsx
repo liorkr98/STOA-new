@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Play, ArrowRight, Lock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { DirectionTag } from "@/components/ui/tag";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
@@ -243,12 +242,6 @@ export function VideoCard({
             <Avatar src={data.analyst.avatarUrl} name={data.analyst.displayName} size="sm" />
             <span className="truncate text-xs font-medium text-text">{data.analyst.displayName}</span>
           </Link>
-          <TrackScoreBadge
-            handle={data.analyst.handle}
-            score={data.analyst.score}
-            sampleSize={data.analyst.sampleSize}
-            size="sm"
-          />
         </div>
 
         {/* Persistent, always-visible click-through path (the Part 1 metric). */}

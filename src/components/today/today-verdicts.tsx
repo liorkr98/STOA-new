@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { SealStamp, type SealStatus } from "@/components/ui/seal-stamp";
@@ -28,7 +27,7 @@ export function TodayVerdicts({ verdicts }: { verdicts: TodayVerdict[] }) {
       title="Verdicts"
       note="Calls the market just graded, from across Stoa."
       badge={<span className="band-badge">Always free</span>}
-      seeAllHref="/leaderboard"
+      seeAllHref="/discover?status=resolved"
       seeAllLabel="All verdicts"
     >
       <div className="mt-2">
@@ -39,12 +38,12 @@ export function TodayVerdicts({ verdicts }: { verdicts: TodayVerdict[] }) {
 
       <p className="today-explainer">
         Analysts on Stoa publish calls with an entry price and a target locked at publication. When
-        the market resolves one, it is graded a hit or a miss and added to their public track
-        score. No paywall, ever.
+        the market resolves one, it is graded a hit or a miss and stays on their record
+        permanently. No paywall, ever.
       </p>
       <p className="mt-2">
         <Link href="/scoring" className="today-see-all focus-ring">
-          How scoring works
+          How calls are graded
           <span aria-hidden> →</span>
         </Link>
       </p>
@@ -103,11 +102,6 @@ function VerdictRow({ verdict }: { verdict: TodayVerdict }) {
               {verdict.author.displayName}
             </span>
           </Link>
-          <ScoreRing
-            score={verdict.author.score}
-            size="sm"
-            provisional={verdict.author.provisional}
-          />
         </div>
       </div>
     </article>

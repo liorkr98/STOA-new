@@ -23,8 +23,8 @@ export default async function HomePage() {
   ]);
 
   // Only a genuinely empty issue falls back: a reader with no desk of their own
-  // still gets Verdicts, the Standings, and Worth Reading, which need no
-  // follows to be worth reading.
+  // still gets Verdicts and Worth Reading, which need no follows to be worth
+  // reading.
   const empty =
     dispatch.personalized &&
     !dispatch.lead &&
@@ -33,7 +33,6 @@ export default async function HomePage() {
     today.verdicts.length === 0 &&
     today.saved.length === 0 &&
     today.mostWatched.length === 0 &&
-    today.standings.length === 0 &&
     today.worthReading.length === 0;
 
   if (empty) {

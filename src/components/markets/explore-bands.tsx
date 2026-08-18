@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { DayChange } from "@/components/markets/day-change";
@@ -9,7 +8,6 @@ import { FollowSector, FollowTicker } from "@/components/markets/follow-control"
 import { sinceLabel } from "@/lib/today/format";
 import { compact, price } from "@/lib/format";
 import type {
-  CallLean,
   EtfBandRow,
   CoveredRow,
   MarketRow,
@@ -79,19 +77,6 @@ export function ExploreThemes({ themes }: { themes: ThemeCard[] }) {
 
 /* ------------------------------------------------------------- covered --- */
 
-function LeanChip({ lean }: { lean: CallLean }) {
-  const total = lean.long + lean.short;
-  if (total === 0) return <span className="markets-pending">No open calls</span>;
-  const longMajority = lean.long >= lean.short;
-  return (
-    <span className="markets-lean num">
-      <span style={{ color: longMajority ? "var(--up)" : "var(--text-mute)" }}>{lean.long} long</span>
-      <span aria-hidden className="text-text-faint"> · </span>
-      <span style={{ color: longMajority ? "var(--text-mute)" : "var(--down)" }}>{lean.short} short</span>
-    </span>
-  );
-}
-
 export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
   if (rows.length === 0) return null;
   return (
@@ -113,7 +98,11 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
               {r.newPublications} new · {r.analystCount}{" "}
               {r.analystCount === 1 ? "analyst" : "analysts"}
             </span>
-            <LeanChip lean={r.lean} />
+            <span className="markets-row-meta num">
+              {r.openCalls === 0
+                ? "No open calls"
+                : `${r.openCalls} open ${r.openCalls === 1 ? "call" : "calls"}`}
+            </span>
             <FollowTicker ticker={r.symbol} />
           </div>
         ))}
@@ -148,7 +137,6 @@ export function ExploreNewlyCalled({ rows }: { rows: NewlyCalledRow[] }) {
                 {r.analyst.displayName}
               </span>
             </Link>
-            <ScoreRing score={r.analyst.score} size="sm" provisional={r.analyst.provisional} />
             <DirectionTag direction={r.direction} />
             <span className="markets-row-meta num">Called {sinceLabel(r.calledAt).toLowerCase()}</span>
           </div>

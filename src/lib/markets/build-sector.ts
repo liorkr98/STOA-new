@@ -6,7 +6,7 @@ import { followedAnalystIds } from "@/lib/db/social";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS } from "@/lib/markets/themes";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
-import type { CallLean, MarketRow } from "@/lib/markets/types";
+import type { MarketRow } from "@/lib/markets/types";
 import type { TodayItem } from "@/lib/today/types";
 import type { Prediction, Profile, Report } from "@/lib/types";
 
@@ -14,7 +14,8 @@ const WEEK_MS = 7 * 86_400_000;
 
 export interface SectorName extends MarketRow {
   publications: number;
-  lean: CallLean;
+  /** Coverage volume, not a stance: open calls on this name. */
+  openCalls: number;
 }
 
 export interface SectorAnalyst {
@@ -22,8 +23,6 @@ export interface SectorAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
-  score: number | null;
-  provisional: boolean;
   calls: number;
   hitRatePct: number | null;
   following: boolean;
@@ -36,13 +35,10 @@ export interface SectorPayload {
   publicationsThisWeek: number;
   names: SectorName[];
   openCalls: number;
-  long: number;
-  short: number;
-  averageScore: number | null;
   hitRatePct: number | null;
   resolvedCount: number;
   publications: TodayItem[];
-  topAnalysts: SectorAnalyst[];
+  analysts: SectorAnalyst[];
 }
 
 export function isKnownSector(name: string): boolean {
@@ -79,8 +75,6 @@ function toItem(report: Report, themeTag: string | null): TodayItem | null {
       handle: report.author.handle,
       displayName: report.author.display_name,
       avatarUrl: report.author.avatar_url,
-      score: report.author.score || null,
-      provisional: (report.author.sample_size ?? 0) < 10,
     },
     publishedAt: report.published_at ?? report.created_at,
     access: report.access,
@@ -146,15 +140,13 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
     if ((r.published_at ?? r.created_at) >= since.toISOString()) publicationsThisWeek += 1;
   }
 
-  const leanBySymbol = new Map<string, CallLean>();
+  const openBySymbol = new Map<string, number>();
   const analystIds = new Set<string>();
   const perAnalyst = new Map<
     string,
     { profile: Profile; calls: number; resolved: number; hits: number }
   >();
   let openCalls = 0;
-  let long = 0;
-  let short = 0;
   let resolvedCount = 0;
   let hits = 0;
 
@@ -178,22 +170,13 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       perAnalyst.set(p.author_id, entry);
     }
 
-    const lean = leanBySymbol.get(sym) ?? { long: 0, short: 0 };
     if (p.outcome === "open") {
       openCalls += 1;
-      if (p.direction === "long") {
-        long += 1;
-        lean.long += 1;
-      }
-      if (p.direction === "short") {
-        short += 1;
-        lean.short += 1;
-      }
+      openBySymbol.set(sym, (openBySymbol.get(sym) ?? 0) + 1);
     } else {
       resolvedCount += 1;
       if (p.outcome === "hit") hits += 1;
     }
-    leanBySymbol.set(sym, lean);
   }
 
   // The eight most-covered names, falling back to the largest in the sector so
@@ -217,25 +200,21 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
         changePercent: null,
         marketCap: row?.market_cap ?? null,
         publications: coverage.get(symbol) ?? 0,
-        lean: leanBySymbol.get(symbol) ?? { long: 0, short: 0 },
+        openCalls: openBySymbol.get(symbol) ?? 0,
       },
     ];
   });
 
-  const scores = [...perAnalyst.values()]
-    .map((a) => a.profile.score)
-    .filter((s): s is number => typeof s === "number" && s > 0);
-
-  const topAnalysts: SectorAnalyst[] = [...perAnalyst.values()]
-    .sort((a, b) => (b.profile.score ?? 0) - (a.profile.score ?? 0))
+  // Ordered by how much they publish here, not by Track Score. Ranking the
+  // analysts against each other is the thing this surface no longer does.
+  const analysts: SectorAnalyst[] = [...perAnalyst.values()]
+    .sort((a, b) => b.calls - a.calls)
     .slice(0, 4)
     .map((a) => ({
       id: a.profile.id,
       handle: a.profile.handle,
       displayName: a.profile.display_name,
       avatarUrl: a.profile.avatar_url,
-      score: a.profile.score || null,
-      provisional: (a.profile.sample_size ?? 0) < 10,
       calls: a.calls,
       hitRatePct: a.resolved > 0 ? Math.round((a.hits / a.resolved) * 100) : null,
       following: followedIds.has(a.profile.id),
@@ -257,14 +236,9 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
     publicationsThisWeek,
     names,
     openCalls,
-    long,
-    short,
-    averageScore: scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : null,
     hitRatePct: resolvedCount > 0 ? Math.round((hits / resolvedCount) * 100) : null,
     resolvedCount,
     publications,
-    topAnalysts,
+    analysts,
   };
 }

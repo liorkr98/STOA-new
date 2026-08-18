@@ -18,15 +18,15 @@ function profile(id: string, name: string, handle: string, score: number): Profi
   } as unknown as Profile;
 }
 
-function analyst(name: string, handle: string, score: number, provisional = false): TodayAnalyst {
-  return { handle, displayName: name, avatarUrl: null, score, provisional };
+function analyst(name: string, handle: string): TodayAnalyst {
+  return { handle, displayName: name, avatarUrl: null };
 }
 
-const LENA = analyst("Lena Kowalczyk", "lenakw", 84);
-const KAI = analyst("Kai Tanaka", "kaitanaka", 77);
-const MARCUS = analyst("Marcus Webb", "marcus_webb", 71);
-const PRIYA = analyst("Priya Raman", "priya_raman", 68);
-const NOOR = analyst("Noor Haddad", "noorhaddad", 52, true);
+const LENA = analyst("Lena Kowalczyk", "lenakw");
+const KAI = analyst("Kai Tanaka", "kaitanaka");
+const MARCUS = analyst("Marcus Webb", "marcus_webb");
+const PRIYA = analyst("Priya Raman", "priya_raman");
+const NOOR = analyst("Noor Haddad", "noorhaddad");
 
 function item(
   id: string,
@@ -90,7 +90,6 @@ const dispatch: DispatchPayload = {
   secondary: [],
   wire: [],
   resolved: [],
-  leaderboard: [],
 };
 
 const today: TodayPayload = {
@@ -261,23 +260,13 @@ const today: TodayPayload = {
       author: KAI,
     },
   ],
-  standings: [
-    { rank: 1, analyst: LENA, hitRatePct: 71, resolvedCalls: 38 },
-    { rank: 2, analyst: KAI, hitRatePct: 68, resolvedCalls: 31 },
-    { rank: 3, analyst: MARCUS, hitRatePct: 64, resolvedCalls: 44 },
-    { rank: 4, analyst: PRIYA, hitRatePct: 61, resolvedCalls: 27 },
-    { rank: 5, analyst: analyst("Sofia Marchetti", "sofiam", 66), hitRatePct: 59, resolvedCalls: 22 },
-    { rank: 6, analyst: analyst("Daniel Okonkwo", "danielo", 63), hitRatePct: 57, resolvedCalls: 19 },
-    { rank: 7, analyst: analyst("Hana Lindqvist", "hanal", 61), hitRatePct: 55, resolvedCalls: 16 },
-    { rank: 8, analyst: NOOR, hitRatePct: 52, resolvedCalls: 9 },
-  ],
   worthReading: [
-    item("wr1", analyst("Sofia Marchetti", "sofiam", 66), "research", "European defence is a supply chain story", "Order backlogs are booked through 2031 and nobody can build faster.", { ticker: "RHM", access: "paid", price: 7 }),
-    item("wr2", analyst("Daniel Okonkwo", "danielo", 63), "call", "Nigeria's banks are the cheapest carry on earth", "A 22% policy rate and a currency that already found its floor.", { ticker: "GTCO", direction: "long", access: "free" }),
-    item("wr3", analyst("Hana Lindqvist", "hanal", 61), "research", "Shipping rates are telling on the consumer", "Transpacific spot fell 40% while retailers still guide up.", { access: "subscribers" }),
-    item("wr4", analyst("Tomas Reyes", "tomasr", 58), "call", "Uranium's contracting cycle has barely started", "Utilities are covered through 2027 and exposed after.", { ticker: "CCJ", direction: "long", access: "paid", price: 5 }),
-    item("wr5", analyst("Aisha Bello", "aishab", 55, true), "short_post", "A quick note on gold versus real rates", null, { access: "free" }),
-    item("wr6", analyst("Ivan Petrov", "ivanp", 54), "research", "The grid is the bottleneck, not generation", "Interconnection queues are now a decade long in three markets.", { ticker: "PWR", access: "subscribers" }),
+    item("wr1", analyst("Sofia Marchetti", "sofiam"), "research", "European defence is a supply chain story", "Order backlogs are booked through 2031 and nobody can build faster.", { ticker: "RHM", access: "paid", price: 7 }),
+    item("wr2", analyst("Daniel Okonkwo", "danielo"), "call", "Nigeria's banks are the cheapest carry on earth", "A 22% policy rate and a currency that already found its floor.", { ticker: "GTCO", direction: "long", access: "free" }),
+    item("wr3", analyst("Hana Lindqvist", "hanal"), "research", "Shipping rates are telling on the consumer", "Transpacific spot fell 40% while retailers still guide up.", { access: "subscribers" }),
+    item("wr4", analyst("Tomas Reyes", "tomasr"), "call", "Uranium's contracting cycle has barely started", "Utilities are covered through 2027 and exposed after.", { ticker: "CCJ", direction: "long", access: "paid", price: 5 }),
+    item("wr5", analyst("Aisha Bello", "aishab"), "short_post", "A quick note on gold versus real rates", null, { access: "free" }),
+    item("wr6", analyst("Ivan Petrov", "ivanp"), "research", "The grid is the bottleneck, not generation", "Interconnection queues are now a decade long in three markets.", { ticker: "PWR", access: "subscribers" }),
   ],
 };
 

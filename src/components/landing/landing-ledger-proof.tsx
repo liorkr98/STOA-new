@@ -37,10 +37,10 @@ export function LandingLedgerProof({ calls }: { calls: ResolvedCall[] }) {
         </div>
 
         <p className="t-meta mt-8">
-          <Link href="/leaderboard" className="underline transition-colors hover:text-text">
-            See who is actually right
+          <Link href="/discover?status=resolved" className="underline transition-colors hover:text-text">
+            See every call the market has graded
           </Link>{" "}
-          on the leaderboard.
+          and judge for yourself.
         </p>
       </div>
     </section>

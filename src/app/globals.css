@@ -1401,41 +1401,6 @@ body {
   background: var(--surface-2);
 }
 
-/* ---- standings ---- */
-
-/* Column-major so the board reads 01-04 down the left and 05-08 down the
- * right, the way a printed table would, rather than snaking across. */
-.today-standings {
-  display: grid;
-  gap: 0 var(--space-8);
-  margin-top: var(--space-2);
-}
-@media (min-width: 768px) {
-  .today-standings {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(4, auto);
-    grid-auto-flow: column;
-  }
-}
-
-.today-standing {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding-block: var(--space-3);
-  border-bottom: 1px solid var(--border);
-}
-
-.today-rank {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-faint);
-  width: 1.75rem;
-  flex: 0 0 auto;
-}
-
 /* ---- your tickers ---- */
 
 .today-ticker-row {
@@ -1694,13 +1659,6 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-}
-
-.markets-lean {
-  font-size: 0.625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
 }
 
 /* ---- movement: two peer columns ---- */
@@ -1962,8 +1920,12 @@ body {
     var(--shadow-card);
 }
 @media (min-width: 768px) {
+  /* Auto columns rather than a fixed four: the coverage block carries three
+     figures on an instrument and four on a sector, and neither should leave a
+     reserved empty cell. */
   .stock-consensus {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
   }
 }
 

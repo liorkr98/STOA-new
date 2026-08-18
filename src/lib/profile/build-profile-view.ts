@@ -4,10 +4,9 @@ import { getProfileByHandle } from "@/lib/db/profiles";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
 import { getSessionUserId } from "@/lib/db/auth";
-import { isFollowing, isSubscribed } from "@/lib/db/social";
+import { isFollowing, isSubscribed, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
-import { analystStats } from "@/lib/engine/track";
 import { pct, compact, usd } from "@/lib/format";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
@@ -62,25 +61,23 @@ export async function buildProfileView(
     listActivePlans(profile.id),
   ]);
 
-  const stats = analystStats(predictions);
   const isSelf = userId === profile.id;
-  const [following, subscribed, wallet] = await Promise.all([
+  const config = profile.profile_config ?? {};
+  const showMembers = config.show_member_count === true;
+  const [following, subscribed, wallet, members] = await Promise.all([
     userId ? isFollowing(userId, profile.id) : Promise.resolve(false),
     userId ? isSubscribed(userId, profile.id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
+    showMembers ? subscriberCount(profile.id) : Promise.resolve(0),
   ]);
 
   const reportById = new Map<string, Report>(reports.map((r) => [r.id, r]));
   const predByReport = new Map<string, Prediction>();
   for (const p of predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
 
-  const score = profile.score || stats.score || null;
-  const provisional = stats.total < 5;
-
   // Per-analyst storefront theming (branding studio Style tab): scoped custom
   // accent (re-validated so a bad stored value never ships), font pairing, and
   // the optional paper texture. Applied to the profile subtree only.
-  const config = profile.profile_config ?? {};
   const accentCheck = config.accent ? checkAccent(config.accent) : null;
   const storefrontStyle = {
     ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
@@ -90,39 +87,13 @@ export async function buildProfileView(
   const firstName = name.split(/\s+/)[0] || name;
   const joinedYear = new Date(profile.created_at).getFullYear();
 
-  const recordLine =
-    stats.total === 0
-      ? "Not yet scored"
-      : provisional
-        ? "Provisional · small sample"
-        : `${Math.round((stats.winRate ?? 0) * 100)}% hit rate over ${stats.total} resolved calls`;
-
-  const confidenceLine =
-    stats.total === 0
-      ? "NO RESOLVED CALLS YET"
-      : provisional
-        ? `PARTIAL SAMPLE · ${stats.total} RESOLVED CALL${stats.total === 1 ? "" : "S"}`
-        : `FULL SAMPLE · ${stats.total} RESOLVED CALLS`;
-
-  // Stat tiles (win rate + alpha read "—" for provisional / insufficient data).
-  const tiles: { label: string; value: string; tone: "ink" | "up" }[] = [
-    {
-      label: "WIN RATE",
-      value: provisional || stats.winRate == null ? "—" : pct(stats.winRate * 100, false),
-      tone: "ink",
-    },
-    {
-      label: "AVG RETURN",
-      value: stats.avgReturn == null ? "—" : pct(stats.avgReturn),
-      tone: stats.avgReturn != null && stats.avgReturn > 0 ? "up" : "ink",
-    },
-    {
-      label: "ALPHA VS S&P",
-      value: stats.avgAlpha == null ? "—" : pct(stats.avgAlpha),
-      tone: stats.avgAlpha != null && stats.avgAlpha > 0 ? "up" : "ink",
-    },
-    { label: "RESOLVED", value: String(stats.total), tone: "ink" },
-  ];
+  // The only two audience numbers shown anywhere on the platform. Followers is
+  // always present; members (paying subscribers) only when the analyst opted in
+  // from the Storefront.
+  const audienceLine = [
+    `${compact(profile.followers_count)} FOLLOWERS`,
+    ...(showMembers ? [`${compact(members)} MEMBER${members === 1 ? "" : "S"}`] : []),
+  ].join(" · ");
 
   // Verdicts = resolved calls, newest first.
   const resolved = predictions
@@ -211,26 +182,20 @@ export async function buildProfileView(
     verified: profile.verified,
     specialty: profile.headline?.trim() || "Independent analyst on Stoa",
     bio: profile.bio,
-    handleLine: `@${profile.handle.toUpperCase()} · ${compact(profile.followers_count)} FOLLOWERS · JOINED ${joinedYear}`,
+    handleLine: `@${profile.handle.toUpperCase()} · JOINED ${joinedYear}`,
     isSelf,
-    score,
-    provisional,
-    scoreLabel: "TRACK SCORE",
-    recordLine,
-    confidenceLine,
-    tiles,
-    counts: { videos: videos.length, verdicts: verdicts.length, reports: reportRows.length },
+    audienceLine,
+    counts: {
+      videos: videos.length,
+      verdicts: verdicts.length,
+      reports: reportRows.length,
+      calls: predictions.length,
+    },
     videos,
     pinned,
     verdicts,
     reports: reportRows,
     predictions,
-    series: stats.series,
-    breakdown: stats.breakdown,
-    hits: stats.hits,
-    nearHits: stats.nearHits,
-    misses: stats.misses,
-    total: stats.total,
     analystId: profile.id,
     initialFollowing: following,
     isAuthed: Boolean(userId),

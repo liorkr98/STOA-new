@@ -5,9 +5,6 @@ export interface TodayAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
-  score: number | null;
-  /** Under 10 resolved calls: ScoreRing shows its brass PROVISIONAL label. */
-  provisional: boolean;
 }
 
 /** A video's real thumbnail and duration, from `video_clips`. */
@@ -85,13 +82,6 @@ export interface TodayVideo {
   author: TodayAnalyst;
 }
 
-export interface TodayStanding {
-  rank: number;
-  analyst: TodayAnalyst;
-  hitRatePct: number | null;
-  resolvedCalls: number;
-}
-
 export interface TodayTicker {
   symbol: string;
   company: string | null;
@@ -107,6 +97,5 @@ export interface TodayPayload {
   verdicts: TodayVerdict[];
   saved: TodaySavedItem[];
   mostWatched: TodayVideo[];
-  standings: TodayStanding[];
   worthReading: TodayItem[];
 }

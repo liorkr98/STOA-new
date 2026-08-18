@@ -7,7 +7,6 @@ import { Bookmark, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { toggleSave } from "@/app/actions/social";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
-import { ScoreRing } from "@/components/ui/score-ring";
 
 export interface LibraryItem {
   id: string;
@@ -150,7 +149,6 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                     {it.analystInitials}
                   </span>
                   <span className="text-sm">{it.analystName}</span>
-                  <ScoreRing score={it.analystScore} size="sm" />
                 </div>
               </Link>
 

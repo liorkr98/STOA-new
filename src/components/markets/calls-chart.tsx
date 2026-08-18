@@ -32,10 +32,12 @@ type Hover =
  * The signature element: a price line with Stoa's calls drawn on it.
  *
  * Open calls become dashed target lines labelled at the right edge with the
- * analyst's initials and target. Only the five highest Track Scores draw as
- * lines; anything beyond that folds into a shaded consensus band so a widely
- * covered name stays readable. Resolved calls put an entry dot on the price
- * line at publication and a HIT/MISS seal where the market graded them.
+ * analyst's initials and target. The five most recent draw as lines; anything
+ * beyond that folds into a shaded range band, low to high, so a widely covered
+ * name stays readable. The band is a spread, not an average: it shows how far
+ * apart the remaining targets sit, never a blended house target. Resolved calls
+ * put an entry dot on the price line at publication and a HIT/MISS seal where
+ * the market graded them.
  *
  * There are deliberately no per-entry text labels on the plot: detail belongs
  * to the open-calls list underneath, and the chart stays a picture rather than
@@ -94,8 +96,6 @@ export function CallsChart({
   const bandTargets = withTargets.map((c) => c.targetPrice as number);
   const bandLow = overflow > 0 ? Math.min(...bandTargets) : null;
   const bandHigh = overflow > 0 ? Math.max(...bandTargets) : null;
-  const bandAvg =
-    overflow > 0 ? bandTargets.reduce((a, b) => a + b, 0) / bandTargets.length : null;
 
   // Seals thin out on long views so a busy name does not turn into a wall of
   // stamps: from 6M up only the last three months are stamped.
@@ -139,25 +139,13 @@ export function CallsChart({
           aria-label={`${ticker} price with ${openCalls.length} open Stoa calls and ${resolvedCalls.length} resolved`}
         >
           {bandLow != null && bandHigh != null && (
-            <>
-              <rect
-                x={PAD.left}
-                y={y(bandHigh)}
-                width={PLOT_W}
-                height={Math.max(1, y(bandLow) - y(bandHigh))}
-                fill="var(--accent-weak)"
-              />
-              {bandAvg != null && (
-                <line
-                  x1={PAD.left}
-                  x2={PAD.left + PLOT_W}
-                  y1={y(bandAvg)}
-                  y2={y(bandAvg)}
-                  stroke="var(--text-faint)"
-                  strokeWidth={1}
-                />
-              )}
-            </>
+            <rect
+              x={PAD.left}
+              y={y(bandHigh)}
+              width={PLOT_W}
+              height={Math.max(1, y(bandLow) - y(bandHigh))}
+              fill="var(--accent-weak)"
+            />
           )}
 
           {ticks.map((t) => (
@@ -280,7 +268,6 @@ export function CallsChart({
               {hover.call.analyst.displayName}
             </p>
             <p className="mt-1 text-text-mute">
-              Score {hover.call.analyst.score ?? "-"} ·{" "}
               {hover.call.direction === "short" ? "Short" : "Long"}
             </p>
             <p className="mt-1 text-text-mute">Entry {fmtPrice(hover.call.entryPrice)}</p>
@@ -324,7 +311,7 @@ export function CallsChart({
               className="inline-block h-2.5 w-4"
               style={{ background: "var(--accent-weak)" }}
             />
-            Consensus band · +{overflow} more calls
+            Target range · +{overflow} more calls
           </span>
         )}
         <span className="calls-chart-legend-key">

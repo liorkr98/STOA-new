@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { SealStamp, type SealStatus } from "@/components/ui/seal-stamp";
 import { FadeIn } from "@/components/motion/fade-in";
 import { cn } from "@/lib/design/cn";
@@ -109,7 +108,7 @@ export function DispatchLead({
           )}
         </div>
 
-        {/* Byline: identity · track score + rank · content facets · read link */}
+        {/* Byline: identity · content facets · read link */}
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-border pt-5">
           <Link
             href={`/analyst/${author.handle}`}
@@ -124,21 +123,6 @@ export function DispatchLead({
                 )}
               </span>
               <span className="num text-xs text-text-faint">@{author.handle}</span>
-            </span>
-          </Link>
-
-          <span aria-hidden className="hidden h-8 w-px bg-border sm:block" />
-
-          <Link
-            href={`/analyst/${author.handle}/score`}
-            className="flex items-center gap-3 focus-ring rounded-[var(--radius-btn)]"
-            title={author.score ? `Track Score ${author.score}` : "Not yet scored"}
-          >
-            <ScoreRing score={author.score || null} size="md" />
-            <span className="num flex flex-col text-[10px] font-semibold uppercase leading-tight tracking-[0.14em] text-text-faint">
-              <span>Track Score</span>
-              {/* Rank is a placeholder until per-cycle ranking is wired in. */}
-              <span>Rank #—</span>
             </span>
           </Link>
 

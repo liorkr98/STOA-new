@@ -18,16 +18,11 @@ export interface ThemeCard {
   publicationsThisWeek: number;
 }
 
-/** How the open calls on a name lean. Majority side is coloured. */
-export interface CallLean {
-  long: number;
-  short: number;
-}
-
 export interface CoveredRow extends MarketRow {
   newPublications: number;
   analystCount: number;
-  lean: CallLean;
+  /** Coverage volume, not a stance: how many calls on this name are still open. */
+  openCalls: number;
 }
 
 export interface NewlyCalledRow extends MarketRow {
@@ -35,8 +30,6 @@ export interface NewlyCalledRow extends MarketRow {
     handle: string;
     displayName: string;
     avatarUrl: string | null;
-    score: number | null;
-    provisional: boolean;
   };
   direction: Direction;
   calledAt: string;

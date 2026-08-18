@@ -30,8 +30,6 @@ export interface StockAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
-  score: number | null;
-  provisional: boolean;
   /** Two-letter mark used to label a target line at the chart's right edge. */
   initials: string;
 }
@@ -59,16 +57,20 @@ export interface ResolvedCall {
   resolvedAt: string;
 }
 
-export interface StockConsensus {
+/**
+ * Coverage volume plus the outcome record on one name. Deliberately not a
+ * consensus: no long/short split and no average target, because Stoa never
+ * blends its analysts into a single verdict. Who said what lives in the
+ * attributed open-calls list instead.
+ */
+export interface StockCoverage {
   openCount: number;
-  long: number;
-  short: number;
-  averageTarget: number | null;
-  averageScore: number | null;
+  /** Distinct analysts with an open call on this name. */
+  analystCount: number;
   /** Hit rate across resolved calls on this name. Null with no history. */
   hitRatePct: number | null;
   resolvedCount: number;
 }
 
-/** Open target lines drawn on the chart, before the consensus band takes over. */
+/** Open target lines drawn on the chart, before the range band takes over. */
 export const MAX_TARGET_LINES = 5;

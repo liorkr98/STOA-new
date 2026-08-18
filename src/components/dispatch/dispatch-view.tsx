@@ -5,7 +5,6 @@ import { DispatchForCreators } from "@/components/dispatch/dispatch-for-creators
 import { DispatchHowItWorks } from "@/components/dispatch/dispatch-how-it-works";
 import { DispatchIssueColumns } from "@/components/dispatch/dispatch-issue-columns";
 import { DispatchLead } from "@/components/dispatch/dispatch-lead";
-import { DispatchLeaderboard } from "@/components/dispatch/dispatch-leaderboard";
 import { DispatchLedger } from "@/components/dispatch/dispatch-ledger";
 import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
 import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
@@ -137,10 +136,6 @@ export function DispatchView({
       />
 
       <DispatchLedger items={dispatch.resolved} />
-
-      {isHome && dispatch.leaderboard.length > 0 ? (
-        <DispatchLeaderboard entries={dispatch.leaderboard} />
-      ) : null}
 
       {thinHome ? (
         <div className="dispatch-section rounded-[var(--radius-card)] border border-border bg-surface px-5 py-6 text-center">

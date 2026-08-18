@@ -12,14 +12,13 @@ import {
 import Link from "next/link";
 import { ArrowRight, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { DirectionTag } from "@/components/ui/tag";
 import { CallsChart } from "@/components/markets/calls-chart";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
-import type { OpenCall, ResolvedCall, StockConsensus } from "@/lib/markets/call-types";
+import type { OpenCall, ResolvedCall, StockCoverage } from "@/lib/markets/call-types";
 
 /** The sheet's smaller frame carries fewer lines before they crowd. */
 const SHEET_TARGET_LINES = 3;
@@ -34,7 +33,7 @@ interface SheetPayload {
   candles: Candle[];
   openCalls: OpenCall[];
   resolvedCalls: ResolvedCall[];
-  consensus: StockConsensus;
+  coverage: StockCoverage;
 }
 
 const SheetContext = createContext<{ open: (symbol: string) => void } | null>(null);
@@ -138,25 +137,23 @@ function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => v
               compact
             />
 
-            {data.consensus.openCount > 0 || data.consensus.resolvedCount > 0 ? (
+            {data.coverage.openCount > 0 || data.coverage.resolvedCount > 0 ? (
               <div className="sheet-consensus">
                 <div>
-                  <p className="stock-consensus-figure">{data.consensus.openCount}</p>
+                  <p className="stock-consensus-figure">{data.coverage.openCount}</p>
                   <p className="stock-consensus-key">
-                    Open · {data.consensus.long}L / {data.consensus.short}S
+                    Open {data.coverage.openCount === 1 ? "call" : "calls"}
+                  </p>
+                </div>
+                <div>
+                  <p className="stock-consensus-figure">{data.coverage.analystCount}</p>
+                  <p className="stock-consensus-key">
+                    {data.coverage.analystCount === 1 ? "Analyst" : "Analysts"}
                   </p>
                 </div>
                 <div>
                   <p className="stock-consensus-figure">
-                    {data.consensus.averageTarget == null
-                      ? "-"
-                      : fmtPrice(data.consensus.averageTarget)}
-                  </p>
-                  <p className="stock-consensus-key">Avg target</p>
-                </div>
-                <div>
-                  <p className="stock-consensus-figure">
-                    {data.consensus.hitRatePct == null ? "-" : `${data.consensus.hitRatePct}%`}
+                    {data.coverage.hitRatePct == null ? "-" : `${data.coverage.hitRatePct}%`}
                   </p>
                   <p className="stock-consensus-key">Hit rate</p>
                 </div>
@@ -172,7 +169,6 @@ function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => v
                     <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold text-text">
                       {c.analyst.displayName}
                     </span>
-                    <ScoreRing score={c.analyst.score} size="sm" provisional={c.analyst.provisional} />
                     <DirectionTag direction={c.direction} />
                     <span className="num text-[0.75rem] tabular-nums">
                       {c.targetPrice == null ? "-" : fmtPrice(c.targetPrice)}

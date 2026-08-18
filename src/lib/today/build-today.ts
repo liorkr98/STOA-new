@@ -3,7 +3,6 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { listSavedReports } from "@/lib/db/saved";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
-import { listTopAnalysts } from "@/lib/db/profiles";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
@@ -14,7 +13,6 @@ import type {
   TodayPayload,
   TodaySavedItem,
   TodaySavedReason,
-  TodayStanding,
   TodayVerdict,
   TodayVideo,
 } from "@/lib/today/types";
@@ -22,8 +20,6 @@ import type {
 const REPORT_SELECT =
   "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
 
-const PROVISIONAL_BELOW = 10;
-const STANDINGS_SIZE = 8;
 
 function normalizeReport(row: Record<string, unknown>): Report {
   const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
@@ -35,8 +31,6 @@ function toAnalyst(profile: Profile): TodayAnalyst {
     handle: profile.handle,
     displayName: profile.display_name,
     avatarUrl: profile.avatar_url,
-    score: profile.score || null,
-    provisional: (profile.sample_size ?? 0) < PROVISIONAL_BELOW,
   };
 }
 
@@ -255,40 +249,6 @@ async function buildMostWatched(limit: number): Promise<TodayVideo[]> {
     .slice(0, limit);
 }
 
-async function buildStandings(): Promise<TodayStanding[]> {
-  const top = await listTopAnalysts(STANDINGS_SIZE);
-  if (top.length === 0) return [];
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select("author_id, outcome")
-    .in(
-      "author_id",
-      top.map((a) => a.id),
-    )
-    .neq("outcome", "open");
-
-  const tally = new Map<string, { hits: number; resolved: number }>();
-  for (const row of (data as { author_id: string; outcome: string }[]) ?? []) {
-    const entry = tally.get(row.author_id) ?? { hits: 0, resolved: 0 };
-    entry.resolved += 1;
-    if (row.outcome === "hit") entry.hits += 1;
-    tally.set(row.author_id, entry);
-  }
-
-  return top.map((analyst, index) => {
-    const entry = tally.get(analyst.id);
-    return {
-      rank: index + 1,
-      analyst: toAnalyst(analyst),
-      hitRatePct:
-        entry && entry.resolved > 0 ? Math.round((entry.hits / entry.resolved) * 100) : null,
-      resolvedCalls: entry?.resolved ?? 0,
-    };
-  });
-}
-
 /**
  * Publications carrying each symbol that went out in the current dispatch
  * cycle. Backs the Your Tickers band, whose symbol list lives in the reader's
@@ -328,14 +288,13 @@ export async function buildToday(userId: string): Promise<TodayPayload> {
 
   const deskAuthorIds = new Set([...subscribedIds, ...followedIds]);
 
-  const [subscriptionReports, followingReports, discoveryPool, saved, mostWatched, standings] =
+  const [subscriptionReports, followingReports, discoveryPool, saved, mostWatched] =
     await Promise.all([
       fetchReportsByAuthors(subscribedIds, 12),
       fetchReportsByAuthors(followedIds, 12),
       fetchRecentReports(40),
       buildSaved(userId),
       buildMostWatched(4),
-      buildStandings(),
     ]);
 
   const verdicts = await fetchVerdicts(deskAuthorIds, 5);
@@ -367,7 +326,6 @@ export async function buildToday(userId: string): Promise<TodayPayload> {
     verdicts,
     saved,
     mostWatched,
-    standings,
     worthReading,
   };
 }

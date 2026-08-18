@@ -106,8 +106,8 @@ export function ProfilePreview({
       />
 
       <p className="t-meta text-[11px]">
-        Track Score badge, pricing, and track record are platform-controlled and always appear below this
-        hero on your public page.
+        Pricing and your call record are platform-controlled and always appear below this hero on
+        your public page.
       </p>
     </div>
   );
