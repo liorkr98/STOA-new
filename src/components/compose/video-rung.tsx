@@ -35,7 +35,6 @@ import {
  */
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const PX_PER_SEC_BASE = 8;
 
 function Poster({ className }: { className?: string }) {
   return (
@@ -294,13 +293,26 @@ function Timeline({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  const pxPerSec = PX_PER_SEC_BASE * zoom;
+  // At zoom 1 the whole clip spans the container, whatever its length: a
+  // 20-second clip and a 3-minute clip both fill the timeline. Zoom stretches
+  // the same track inside the container (which then scrolls) for fine work.
+  const [containerWidth, setContainerWidth] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setContainerWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const pxPerSec = containerWidth > 0 ? (containerWidth * zoom) / Math.max(1, edit.durationSeconds) : 0;
   const width = Math.max(1, edit.durationSeconds * pxPerSec);
 
   const timeAt = useCallback(
     (clientX: number) => {
       const el = ref.current;
-      if (!el) return 0;
+      if (!el || pxPerSec <= 0) return 0;
       const rect = el.getBoundingClientRect();
       return clamp((clientX - rect.left + el.scrollLeft) / pxPerSec, 0, edit.durationSeconds);
     },
@@ -344,7 +356,8 @@ function Timeline({
     };
   }, [drag, edit, onEdit, onTime, timeAt]);
 
-  const markerStep = zoom >= 6 ? 1 : zoom >= 3 ? 2 : zoom >= 1.5 ? 5 : 10;
+  // Time markers no closer than ~56px apart, from a sensible set of steps.
+  const markerStep = [1, 2, 5, 10, 15, 30, 60].find((step) => step * pxPerSec >= 56) ?? 60;
   const markers: number[] = [];
   for (let t = 0; t <= edit.durationSeconds; t += markerStep) markers.push(t);
 
