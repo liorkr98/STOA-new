@@ -169,6 +169,7 @@ export function ExploreWall({
   sector,
   dateline,
   basePath = "/explore",
+  canAct = false,
 }: {
   tiles: ExploreTile[];
   tickers: [string, number][];
@@ -177,6 +178,8 @@ export function ExploreWall({
   sector: string | null;
   dateline: string;
   basePath?: string;
+  /** Signed in: like, save and follow inside the player act; otherwise they route to sign-in. */
+  canAct?: boolean;
 }) {
   const router = useRouter();
   const search = useSearchParams();
@@ -260,7 +263,7 @@ export function ExploreWall({
         </div>
       )}
 
-      {openIndex !== null ? <FeedPlayer publications={publications} startIndex={openIndex} onClose={() => setOpenIndex(null)} /> : null}
+      {openIndex !== null ? <FeedPlayer publications={publications} startIndex={openIndex} onClose={() => setOpenIndex(null)} canAct={canAct} /> : null}
     </div>
   );
 }

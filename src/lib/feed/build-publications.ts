@@ -91,7 +91,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       sector,
       contentBadge: contentBadgeFor(r, true),
       stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
-      analyst: { handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
+      analyst: { id: r.author!.id, handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
       seal: resolved
         ? { status: p.outcome === "hit" ? "hit" : p.outcome === "near" ? "near" : "miss", dateISO: p.resolution_trading_date ?? p.resolves_at }
         : null,

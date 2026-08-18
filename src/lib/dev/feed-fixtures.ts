@@ -11,14 +11,15 @@ const NOW = Date.parse("2026-08-18T14:00:00Z");
 const hoursAgo = (h: number) => new Date(NOW - h * 3_600_000).toISOString();
 
 type A = FeedPublication["analyst"];
-const LENA: A = { handle: "lenakw", displayName: "Lena Kowalczyk", avatarUrl: null };
-const KAI: A = { handle: "kaitanaka", displayName: "Kai Tanaka", avatarUrl: null };
-const MARCUS: A = { handle: "marcus_webb", displayName: "Marcus Webb", avatarUrl: null };
-const PRIYA: A = { handle: "priyanadar", displayName: "Priya Nadar", avatarUrl: null };
-const NOOR: A = { handle: "noorhaddad", displayName: "Noor Haddad", avatarUrl: null };
-const DANA: A = { handle: "danafixture", displayName: "Dana Fixture", avatarUrl: null };
-const OMAR: A = { handle: "omarfixture", displayName: "Omar Fixture", avatarUrl: null };
-const IRIS: A = { handle: "irisfixture", displayName: "Iris Fixture", avatarUrl: null };
+const a = (handle: string, displayName: string): A => ({ id: `fx-${handle}`, handle, displayName, avatarUrl: null });
+const LENA = a("lenakw", "Lena Kowalczyk");
+const KAI = a("kaitanaka", "Kai Tanaka");
+const MARCUS = a("marcus_webb", "Marcus Webb");
+const PRIYA = a("priyanadar", "Priya Nadar");
+const NOOR = a("noorhaddad", "Noor Haddad");
+const DANA = a("danafixture", "Dana Fixture");
+const OMAR = a("omarfixture", "Omar Fixture");
+const IRIS = a("irisfixture", "Iris Fixture");
 
 function fullStack(id: string, ticker: string, locked: boolean[]): FeedCard[] {
   const l = (i: number) => Boolean(locked[i]);

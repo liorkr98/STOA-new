@@ -25,6 +25,7 @@ export function FeedPage({
     <FeedPlayer
       publications={publications}
       mode="page"
+      canAct={canPost}
       below={(pub) => (
         <FeedDiscussion
           comments={[...(extra[pub.id] ?? []), ...pub.comments]}

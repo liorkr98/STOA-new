@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bookmark, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Heart, MessageSquare, Pause, Play, Share2, Volume2, VolumeX, X } from "lucide-react";
+import { toggleFollow, toggleLike, toggleSave } from "@/app/actions/social";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
@@ -40,6 +42,7 @@ export function FeedPlayer({
   mode = "overlay",
   onIndexChange,
   below,
+  canAct = false,
 }: {
   publications: FeedPublication[];
   startIndex?: number;
@@ -48,6 +51,8 @@ export function FeedPlayer({
   onIndexChange?: (index: number) => void;
   /** Page mode only: content rendered beneath the stage and cards (the discussion). */
   below?: (pub: FeedPublication) => React.ReactNode;
+  /** Signed in: like, save and follow act; otherwise they route to sign-in. */
+  canAct?: boolean;
 }) {
   const [index, setIndex] = useState(Math.min(startIndex, Math.max(0, publications.length - 1)));
   const [cardIndex, setCardIndex] = useState(0);
@@ -57,6 +62,13 @@ export function FeedPlayer({
   const lastRight = useRef(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const cardTrackRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
+  const [, startAction] = useTransition();
+  const [liked, setLiked] = useState<Record<string, boolean>>({});
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [followed, setFollowed] = useState<Record<string, boolean>>({});
+  const [shared, setShared] = useState(false);
 
   const pub = publications[index];
   const cards = useMemo(() => pub?.cards ?? [], [pub]);
@@ -147,6 +159,67 @@ export function FeedPlayer({
 
   if (!pub) return null;
 
+  const requireAuth = () => {
+    if (canAct) return true;
+    router.push(`/sign-in?next=${encodeURIComponent(mode === "page" ? "/discover" : "/explore")}`);
+    return false;
+  };
+  const onLike = () => {
+    if (!requireAuth()) return;
+    setLiked((m) => ({ ...m, [pub.id]: !m[pub.id] }));
+    startAction(async () => {
+      const r = await toggleLike(pub.id).catch(() => null);
+      if (r) setLiked((m) => ({ ...m, [pub.id]: r.liked }));
+    });
+  };
+  const onSave = () => {
+    if (!requireAuth()) return;
+    setSaved((m) => ({ ...m, [pub.id]: !m[pub.id] }));
+    startAction(async () => {
+      const r = await toggleSave(pub.id).catch(() => null);
+      if (r) setSaved((m) => ({ ...m, [pub.id]: r.saved }));
+    });
+  };
+  const onFollow = () => {
+    if (!requireAuth()) return;
+    setFollowed((m) => ({ ...m, [pub.analyst.id]: !m[pub.analyst.id] }));
+    startAction(async () => {
+      const r = await toggleFollow(pub.analyst.id).catch(() => null);
+      if (r) setFollowed((m) => ({ ...m, [pub.analyst.id]: r.following }));
+    });
+  };
+  const onDiscuss = () => {
+    const el = document.querySelector('section[aria-label="Discussion"]');
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else router.push(`/report/${pub.id}#discussion`);
+  };
+  const onShare = async () => {
+    const url = `${window.location.origin}/report/${pub.id}`;
+    try {
+      if (navigator.share) await navigator.share({ title: pub.headline, url });
+      else await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 1600);
+    } catch {
+      // dismissed
+    }
+  };
+
+  const datelineParts = (withYear: boolean) =>
+    [
+      pub.typeLabel,
+      pub.ticker ?? pub.themeTag,
+      new Date(pub.publishedAt)
+        .toLocaleDateString("en-US", withYear ? { month: "short", day: "numeric", year: "numeric" } : { month: "short", day: "numeric" })
+        .toUpperCase(),
+      fmt(pub.durationSeconds),
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  const dateline = datelineParts(true);
+  const datelineShort = datelineParts(false);
+  const isFollowing = Boolean(followed[pub.analyst.id]);
+
   const stage = (
     <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)] text-[var(--paper)] md:h-full md:w-auto">
       {pub.embedUrl ? (
@@ -179,52 +252,101 @@ export function FeedPlayer({
         </>
       )}
 
-      {/* Scrim so overlays stay legible on any picture. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-[linear-gradient(to_top,rgba(0,0,0,0.62),transparent)]" />
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),transparent)]" />
-
-      {/* Top row: analyst, controls */}
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4">
-        <Link href={`/analyst/${pub.analyst.handle}`} className="focus-ring inline-flex items-center gap-2 rounded">
-          <Avatar src={pub.analyst.avatarUrl} name={pub.analyst.displayName} size="sm" />
-          <span className="text-[0.8125rem] font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">{pub.analyst.displayName}</span>
-          {pub.stageMarker ? <span className="num text-[10px] uppercase tracking-[0.16em] text-[var(--brass)]">{pub.stageMarker}</span> : null}
-        </Link>
-        <div className="flex items-center gap-1">
-          <button type="button" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute (M)" : "Mute (M)"} className="focus-ring rounded-full p-2 hover:bg-white/10">
-            {muted ? <VolumeX size={16} strokeWidth={1.6} /> : <Volume2 size={16} strokeWidth={1.6} />}
+      {/* The dateline strip: mono, inside the frame, above the picture. */}
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_70%,transparent)] px-4 pb-5 pt-3">
+        <span className="num hidden truncate text-[10px] uppercase tracking-[0.18em] text-white/90 sm:inline">{dateline}</span>
+        <span className="num truncate text-[10px] uppercase tracking-[0.14em] text-white/90 sm:hidden">{datelineShort}</span>
+        <div className="flex flex-none items-center gap-0.5">
+          <button type="button" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute (M)" : "Mute (M)"} className="focus-ring rounded-full p-1.5 hover:bg-white/10">
+            {muted ? <VolumeX size={15} strokeWidth={1.6} /> : <Volume2 size={15} strokeWidth={1.6} />}
           </button>
-          <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? "Play (Space)" : "Pause (Space)"} className="focus-ring rounded-full p-2 hover:bg-white/10">
-            {paused ? <Play size={16} strokeWidth={1.6} /> : <Pause size={16} strokeWidth={1.6} />}
+          <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? "Play (Space)" : "Pause (Space)"} className="focus-ring rounded-full p-1.5 hover:bg-white/10">
+            {paused ? <Play size={15} strokeWidth={1.6} /> : <Pause size={15} strokeWidth={1.6} />}
           </button>
           {onClose ? (
-            <button type="button" onClick={onClose} aria-label="Close (Esc)" className="focus-ring rounded-full p-2 hover:bg-white/10 md:hidden">
-              <ChevronLeft size={18} strokeWidth={1.6} />
+            <button type="button" onClick={onClose} aria-label="Close (Esc)" className="focus-ring rounded-full p-1.5 hover:bg-white/10 md:hidden">
+              <ChevronLeft size={17} strokeWidth={1.6} />
             </button>
           ) : null}
         </div>
       </div>
 
-      {/* Bottom: metadata row, headline, deck, seal */}
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="num text-[10px] uppercase tracking-[0.16em] text-white/80">{pub.typeLabel}</span>
-            {pub.ticker ? <TickerChip ticker={pub.ticker} className="!bg-white/15 !text-white !border-white/30" /> : null}
-            {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
-            {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} className="!bg-white/15 !text-white !border-white/30" /> : null}
-            <span className="num text-[10px] uppercase tracking-[0.14em] text-white/70">{pub.contentBadge}</span>
-          </div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-[1.15] tracking-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.5)] md:text-[1.625rem]">
-            {pub.headline}
-          </h2>
-          {pub.deck ? <p className="mt-1.5 line-clamp-2 text-[0.875rem] text-white/80">{pub.deck}</p> : null}
-        </div>
-        <div className="flex flex-none flex-col items-end gap-2">
-          {pub.seal ? <SealStamp status={pub.seal.status} date={new Date(pub.seal.dateISO)} size="md" /> : null}
-          <span className="num text-[10px] text-white/80">{fmt(pub.durationSeconds)}</span>
-        </div>
+      {/* The lower third: the identity band at the bottom of the picture. The
+          face stays the hero; the band anchors it, broadcast-style. */}
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-[linear-gradient(to_top,rgba(0,0,0,0.72),rgba(0,0,0,0.4)_70%,transparent)] px-4 pb-4 pt-8">
+        <Link href={`/analyst/${pub.analyst.handle}`} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded">
+          <Avatar src={pub.analyst.avatarUrl} name={pub.analyst.displayName} size="md" className="!border-white/30" />
+          <span className="min-w-0">
+            <span className="block truncate text-[0.9375rem] font-semibold leading-tight [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+              {pub.analyst.displayName}
+              {pub.stageMarker ? <span className="num ml-2 align-middle text-[10px] uppercase tracking-[0.16em] text-[var(--brass)]">{pub.stageMarker}</span> : null}
+            </span>
+            <span className="num block truncate text-[10px] uppercase tracking-[0.14em] text-white/75">@{pub.analyst.handle}</span>
+          </span>
+        </Link>
+        <button
+          type="button"
+          onClick={onFollow}
+          aria-pressed={isFollowing}
+          className={cn(
+            "num focus-ring flex-none rounded-[var(--radius-tag)] border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] transition-colors",
+            isFollowing ? "border-white/70 bg-white/15 text-white" : "border-white/45 text-white/90 hover:border-white hover:text-white",
+          )}
+        >
+          {isFollowing ? "Following" : "Follow"}
+        </button>
       </div>
+    </div>
+  );
+
+  /** LIKE · DISCUSS · SAVE · SHARE as small outlined icons with mono labels; the card pager at the right end. */
+  const actionBar = (
+    <div className="mt-3 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3" role="group" aria-label="Actions">
+        {(
+          [
+            { key: "like", label: "Like", Icon: Heart, on: onLike, active: Boolean(liked[pub.id]) },
+            { key: "discuss", label: "Discuss", Icon: MessageSquare, on: onDiscuss, active: false },
+            { key: "save", label: "Save", Icon: Bookmark, on: onSave, active: Boolean(saved[pub.id]) },
+            { key: "share", label: shared ? "Copied" : "Share", Icon: Share2, on: onShare, active: shared },
+          ] as const
+        ).map(({ key, label, Icon, on, active }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={on}
+            aria-pressed={key === "like" || key === "save" ? active : undefined}
+            className="focus-ring group flex items-center gap-1.5 rounded"
+          >
+            <span
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
+                active ? "border-[var(--ink)] text-text" : "border-border text-text-mute group-hover:border-border-strong group-hover:text-text",
+              )}
+            >
+              <Icon size={13} strokeWidth={1.6} fill={active && (key === "like" || key === "save") ? "currentColor" : "none"} />
+            </span>
+            <span className={cn("num hidden text-[10px] uppercase tracking-[0.16em] sm:inline", active ? "text-text" : "text-text-mute group-hover:text-text")}>{label}</span>
+          </button>
+        ))}
+      </div>
+      <span className="num text-[11px] tracking-[0.1em] text-text-mute" aria-label={`Card ${cardIndex + 1} of ${cards.length}`}>
+        {cards.length > 0 ? `${cardIndex + 1} / ${cards.length}` : ""}
+      </span>
+    </div>
+  );
+
+  const headlineBlock = (
+    <div className="mb-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
+        {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
+        {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} /> : null}
+        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{pub.contentBadge}</span>
+        {pub.seal ? <SealStamp status={pub.seal.status} date={new Date(pub.seal.dateISO)} size="sm" className="ml-auto" /> : null}
+      </div>
+      <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-[1.15] tracking-tight md:text-[1.5rem]">{pub.headline}</h2>
+      {pub.deck ? <p className="mt-1.5 line-clamp-2 text-[0.875rem] text-text-mute">{pub.deck}</p> : null}
     </div>
   );
 
@@ -232,9 +354,7 @@ export function FeedPlayer({
     cards.length > 0 ? (
       <div className="flex min-h-0 flex-1 flex-col md:h-full">
         <div className="mb-3 flex items-center justify-between">
-          <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">
-            Card {cardIndex + 1} of {cards.length}
-          </span>
+          <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">Evidence</span>
           <div className="flex items-center gap-1" role="group" aria-label="Cards">
             <button type="button" onClick={() => goCard(-1)} disabled={cardIndex === 0} aria-label="Previous card" className="rail-arrow focus-ring">
               <ChevronLeft size={16} strokeWidth={1.6} />
@@ -267,23 +387,24 @@ export function FeedPlayer({
     );
 
   const inner = (
-    <div className="mx-auto flex h-full w-full max-w-[1100px] flex-col gap-5 md:grid md:grid-cols-[auto_minmax(0,1fr)] md:items-stretch md:gap-8">
-      <div className="relative md:h-full">
-        {stage}
-        {/* Vertical navigation */}
-        <div className="absolute -right-3 top-1/2 hidden -translate-y-1/2 translate-x-full flex-col gap-2 md:flex" role="group" aria-label="Publications">
-          <button type="button" onClick={() => goPub(-1)} disabled={index === 0} aria-label="Previous publication" className="rail-arrow focus-ring bg-surface">
-            <ChevronUp size={16} strokeWidth={1.6} />
-          </button>
-          <span className="num text-center text-[10px] text-text-mute">
-            {index + 1}/{publications.length}
-          </span>
-          <button type="button" onClick={() => goPub(1)} disabled={index >= publications.length - 1} aria-label="Next publication" className="rail-arrow focus-ring bg-surface">
-            <ChevronDown size={16} strokeWidth={1.6} />
-          </button>
+    <div className="mx-auto flex h-full w-full max-w-[1100px] flex-col gap-5 md:grid md:grid-cols-[auto_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] md:items-stretch md:gap-x-8 md:gap-y-0">
+        <div className="relative md:col-start-1 md:row-start-1 md:h-full">
+          {stage}
+          {/* Vertical navigation */}
+          <div className="absolute -right-3 top-1/2 hidden -translate-y-1/2 translate-x-full flex-col gap-2 md:flex" role="group" aria-label="Publications">
+            <button type="button" onClick={() => goPub(-1)} disabled={index === 0} aria-label="Previous publication" className="rail-arrow focus-ring bg-surface">
+              <ChevronUp size={16} strokeWidth={1.6} />
+            </button>
+            <span className="num text-center text-[10px] text-text-mute">
+              {index + 1}/{publications.length}
+            </span>
+            <button type="button" onClick={() => goPub(1)} disabled={index >= publications.length - 1} aria-label="Next publication" className="rail-arrow focus-ring bg-surface">
+              <ChevronDown size={16} strokeWidth={1.6} />
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="flex min-h-0 flex-col md:pl-8">
+        <div className="md:col-start-1 md:row-start-2">{actionBar}</div>
+      <div className="flex min-h-0 flex-col md:col-start-2 md:row-span-2 md:row-start-1 md:pl-8">
         <div className="mb-3 flex items-center justify-between md:hidden">
           <button type="button" onClick={() => goPub(-1)} disabled={index === 0} className="rail-arrow focus-ring" aria-label="Previous publication">
             <ChevronUp size={16} strokeWidth={1.6} />
@@ -295,6 +416,7 @@ export function FeedPlayer({
             <ChevronDown size={16} strokeWidth={1.6} />
           </button>
         </div>
+        {headlineBlock}
         {cardPanel}
         <p className="num mt-3 hidden text-[10px] uppercase tracking-[0.14em] text-text-faint md:block">
           ↑↓ publications · ←→ cards · →→ unlock · M mute · Space pause · Esc close

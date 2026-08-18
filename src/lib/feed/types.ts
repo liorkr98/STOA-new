@@ -54,7 +54,7 @@ export interface FeedPublication {
   sector: string | null;
   contentBadge: string;
   stageMarker: StageMarker;
-  analyst: { handle: string; displayName: string; avatarUrl: string | null };
+  analyst: { id: string; handle: string; displayName: string; avatarUrl: string | null };
   seal: { status: "hit" | "miss" | "near"; dateISO: string } | null;
   access: "free" | "paid" | "subscribers";
   price: number | null;
