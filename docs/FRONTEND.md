@@ -145,7 +145,9 @@ visually mistaken for ordinary content.
 - **The seal animation is the one orchestrated moment in the product.** Press-scale (0.96 → 1.0)
   + 8° rotation settle + a radial ink-bleed opacity fade, ~400ms, ease-out. Everything else in the
   product uses fast, quiet transitions (150–200ms ease) for hover/focus states and simple fades
-  for content loading — no scroll-triggered reveals, no staggered card entrances, no parallax.
+  for content loading — no triggered scroll reveals, no staggered card entrances, no parallax.
+  (The one exception is the scrub-based, reduced-motion-safe landing reveal defined in
+  `docs/MOTION.md` law 11.)
   Restraint everywhere else is what makes the seal moment land.
 - All motion respects `prefers-reduced-motion: reduce` — the seal becomes an instant state-swap
   (unlocked card → locked card with seal already present) rather than an animated press.

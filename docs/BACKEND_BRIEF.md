@@ -10,13 +10,23 @@ Structure: the four cross-cutting concerns first (they apply to every item), the
 priority order with, per item, what the frontend does today, what it needs, and how each concern
 applies. Corrections to assumptions in the build spec are called out inline; three matter:
 
-- **A video entity already exists.** `video_clips` (migration 0042: `bunny_video_guid`,
+- **Video storage exists and is intended.** `video_clips` (migration 0042: `bunny_video_guid`,
   `playback_url`, `thumbnail_url`, `preview_url`, `caption_vtt_url`, `transcript`,
   `duration_seconds`, `status processing|ready|failed`, `published_at`) plus `video_view_events`
-  (`watched_seconds`), hosted on Bunny Stream via TUS upload and a ready webhook. There is also an
-  older `video_assets` table (`provider`, `playback_id`, `poster_url`, `duration_s`) that nothing
-  current renders. The frontend now reads `video_clips` for the profile shelves, Today, Explore
-  and the Feed. What is missing is not the entity but the pieces listed under item 1.
+  (`watched_seconds`), on Bunny Stream via TUS upload and a ready webhook, is the deliberate video
+  layer for the publication's clip. The frontend reads it for the profile shelves, Today, Explore
+  and the Feed. The remaining gap is **not** the video entity: it is the overlay burn-in pipeline
+  plus persistence of overlays and the chosen thumbnail (item 1).
+- **`video_assets` is a second, parallel video system, not a stray.** It is written by the report
+  editor's inline video block (`video-node-view.tsx` → `/api/video/upload`, `/api/video/token`,
+  the Cloudflare Stream webhook; `provider` defaults to `cloudflare`, columns `playback_id`,
+  `poster_url`, `duration_s`, `aspect_ratio`, `transcript jsonb`, `chapters jsonb`, `status`).
+  There is no schema conflict with `video_clips` (no shared keys; `video_view_events` references
+  `video_clips` only; RLS is separate). The conflict is conceptual: two providers, two tables, two
+  meanings of "video". A report whose only video is an inline Cloudflare asset reads as a *written*
+  publication on every video-first surface (profile tiers, Today, Explore, Feed, Studio list),
+  because those read `video_clips`. Flagged, not changed; decide whether the inline block should
+  keep its own provider, migrate to Bunny, or be retired.
 - **Day change is fixed on the frontend side.** Yahoo's batch quote already returns
   `regularMarketChangePercent` and `regularMarketPreviousClose`; the provider mapper was dropping
   them. `Quote` now carries `changePercent` / `previousClose` (nullable), and lists, the tape,
@@ -119,9 +129,10 @@ the item.
 
 ## The gap list, in priority order
 
-### 1. Video: overlays, burn-in, thumbnails, and what the entity still lacks
+### 1. Video: overlay burn-in and persistence (the entity itself is done)
 
-**Today.** `video_clips` exists (see the correction above). The Compose video rung
+**Today.** `video_clips` on Bunny is the intended video store and works end to end (upload,
+processing, ready webhook, captions, transcript). The Compose video rung
 (`src/components/compose/video-rung.tsx`) lets a creator pick a local file, extract a thumbnail
 frame or upload one, trim, and place text and visual overlays on two tracks with a faithful
 preview. All of it is held in memory: nothing stores the edit, and publishing with overlays is not
@@ -150,7 +161,9 @@ list read the clip's real `status`.
 - **View metrics readable by readers.** `video_view_events` is RLS-scoped to the creator, so
   "most watched" uses `reports.views`. Either an aggregate column (`video_clips.view_count`,
   `watch_seconds_total`) maintained by trigger, or a public materialised count.
-- **`video_assets`.** Retire or document; two video tables is confusing.
+- **`video_assets` / Cloudflare.** See the correction at the top: a parallel system for inline
+  report videos. Decide its future; if it stays, video-first surfaces should either ignore it
+  (today's behaviour) or count it as "has video" with a poster from `poster_url`.
 - Scalability: one clip per publication is assumed everywhere (`clipByReport` maps); if a
   publication can have several, add `is_primary`. Caching: clip ready invalidates profile/Explore.
   Rendering: embed URLs stay server-built. Regionality: burn-in near storage.

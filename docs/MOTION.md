@@ -55,6 +55,18 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
    plain 80ms opacity fade. The seal becomes "already stamped." No exceptions, including toasts.
 10. **No stagger-spam.** Stagger only genuinely related list items, groups of 3–7, 40ms steps,
     once per mount — never on scroll, never re-triggered by filtering.
+11. **Scroll reveals: one sanctioned pattern, and only on editorial pages.** Timer-driven,
+    observer-triggered "reveal on scroll" stays banned (it fires late in hidden tabs, ships blank
+    sections to headless renderers, and re-plays). What is allowed is the landing page's
+    **scrub-based** reveal: a CSS view-timeline animation (`animation-timeline: view()`) whose
+    progress *is* the reader's scroll position, like a scrollbar, so it never triggers, never
+    re-plays and never waits on a timer. Constraints: restrained (opacity plus a rise of 12px or
+    less over the first ~35% of entry, no scale, no stagger); `transform` and `opacity` only;
+    inside `@supports (animation-timeline: view())` so browsers without it simply show the content;
+    and always inside `@media (prefers-reduced-motion: no-preference)` so reduced motion collapses
+    it to nothing. Editorial and marketing surfaces only (the landing, a report's long read);
+    never Studio, Compose, nav, sidebars, feeds or lists. Reference implementation:
+    `.landing-reveal` in `src/app/globals.css`.
 
 ### A.3 Component-by-component
 
@@ -79,8 +91,9 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 
 Live prices and % changes in the ticker strip (they update constantly — frequency rule; just swap,
 tabular-nums prevents layout shift). Route/page transitions. Nav and sidebar. Filter chip
-selection beyond the browser-default background transition. Feed cards mounting on scroll.
-Text content. Chart lines on every data refresh (animate once on first mount only).
+selection beyond the browser-default background transition. Feed cards mounting on scroll
+(observer-triggered reveals of any kind; the scrub-based landing reveal in law 11 is the one
+exception). Text content. Chart lines on every data refresh (animate once on first mount only).
 The DisclosureBlock — it never moves, ever; stillness is part of its authority.
 
 ---
