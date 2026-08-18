@@ -10,9 +10,17 @@ Stoa is a marketplace where independent financial analysts publish stock researc
 commentary, and retail investors pay for it. The platform takes 10%.
 
 The core differentiator is the **Track Record Engine**: every call is logged at publication with
-its entry price locked and attested, then graded by the market at resolution. Graded call
-outcomes move the analyst's **Track Score**, shown out of 100. Track records are public,
-permanent, and non-transferable. That is the moat.
+its entry price locked and attested, then graded by the market at resolution. Every graded
+outcome (HIT / MISS / NEAR, entry to exit, return, alpha) is public, permanent and
+non-transferable, and stays visible wherever the call appears. That record is the moat.
+
+**There is no public scoring.** No score, rating, rank, percentile or leaderboard appears
+anywhere public, and no surface ever aggregates analysts into a verdict (no long/short splits,
+average targets or consensus). Analysts appear as an avatar and a name; the one exception is the
+public profile's audience line (`4.3K FOLLOWERS · 214 MEMBERS`, members opt-in). The engine still
+computes a private Track Score and records still accrue; the analyst sees their own number in
+their private track record only. Placement across the product is driven by the lifecycle model
+below, not by score.
 
 ## The content model (video-first)
 
@@ -20,14 +28,22 @@ The atomic unit of a publication is a short analyst **video**. Everything else i
 enrichment layered on top of the video:
 
 - **Call** — a locked prediction: ticker, direction, target price, horizon. Locked and attested
-  at publish, then immutable. The only element that feeds the Track Score.
+  at publish, then immutable. The only element the market grades.
 - **Cards** — a swipeable stack of evidence (see The Card Engine).
 - **Thesis** — the full written argument.
 
 So a publication can be a locked call with a full thesis and a deep card stack, or it can be
 video-only commentary with no call at all (e.g. "what the Iran escalation means for crude").
 
-**Only publications carrying a locked call are ever scored.** Commentary is never graded.
+**Only publications carrying a locked call are ever graded.** Commentary is never graded.
+
+### Anchoring rule
+
+Items **with** a call show a ticker chip and a direction chip, and a HIT / MISS / NEAR seal once
+resolved. Items **without** a call show no ticker, no direction chip and no seal; they anchor on
+a theme or sector tag instead (`MACRO · OIL & ENERGY`, `SEMIS`). Every item on every surface
+carries a **content badge** stating exactly what it contains (`VIDEO`, `VIDEO · CALL`,
+`VIDEO · CALL · CARDS · THESIS`), built only from what is stored.
 
 ### Type labels
 
@@ -36,15 +52,6 @@ Every publication is one of three types:
 - **CALL** — built around a locked call.
 - **RESEARCH** — a full written thesis; may or may not carry a call.
 - **NOTE** — short commentary, no call.
-
-### Content badge and anchoring
-
-Every publication carries a **content badge** stating what it contains, for example
-`VIDEO · CALL · CARDS` or `VIDEO · NOTE`. The badge tells a reader up front what they are getting.
-
-- Publications **with a call** show **ticker + direction chips** (e.g. `NVDA` + `LONG`).
-- Publications **without a call** anchor on a **theme / sector tag** instead
-  (e.g. `MACRO · OIL & ENERGY`, `SEMIS`).
 
 ## The surfaces
 
@@ -59,9 +66,23 @@ Stoa is organized around five surfaces.
   investor sections (library, subscriptions, following) and the creator sections (publications,
   track record, audience, earnings, storefront).
 
-> **Open decision — Feed vs Discover.** **Discover** is a real, already-designed surface and a
-> live route (`/discover`). Feed and Discover compete for the same discovery nav slot, and which
-> one wins is not yet decided. Both exist today; this document does not resolve the choice.
+Routes: Feed is `/discover` (the nav labels it "Feed"), Today is `/home` (there is no
+`/today`), Explore is `/explore`, Markets is `/markets`, Compose is `/studio/compose`, the public
+profile is `/analyst/[handle]`.
+
+Discovery is split by intent: the **Feed** is passive vertical video ("surprise me"), **Explore**
+is on-demand (a wall of faces the reader scans and chooses from, handing off to the Feed player),
+**Today** is the curated daily read.
+
+## The lifecycle model
+
+Content and creators move through five stages: **NEW** (time on platform plus publications),
+**AVERAGE** (the steady middle), **RISING** (gaining momentum), **TRENDING** (gaining fast:
+velocity, not accumulated volume), **POPULAR** (established, high accumulated attention). Only
+**NEW** and **TRENDING** are ever displayed; the rest are invisible mechanics that drive placement:
+Explore's tile sizes, Today's lists and lead, the Feed's ordering. This replaced score-based
+ranking. Thresholds live in `src/lib/lifecycle/stages.ts` as named constants; until engagement
+events are recorded, attention per day since arrival stands in for a windowed velocity.
 
 ## The Thesis Stack
 
@@ -95,7 +116,7 @@ opinion for a number.
 
 ## Devil's Advocate and The Steelman
 
-Two linked features that pressure-test conviction. Neither ever touches the Track Score.
+Two linked features that pressure-test conviction. Neither ever touches the record.
 
 ### Devil's Advocate (a paid conviction tool in Compose)
 
@@ -122,21 +143,22 @@ It has two independent placements, each with its own free or locked setting:
 Because the two placements gate independently, an analyst can tease The Steelman free in the feed
 while gating the full exchange inside the report.
 
-Neither Devil's Advocate nor The Steelman feeds the Track Score.
+Neither Devil's Advocate nor The Steelman feeds the record.
 
-## The Track Score
+## The Track Record Engine and the (private) Track Score
 
-The Track Score is an analyst's reputation, and it is the moat.
+The record is an analyst's reputation, and it is the moat.
 
 - Every call locks an entry price at publish, server-side, and attests it.
 - When the call's horizon ends, the market grades the outcome against that locked entry.
-- Graded call outcomes move the analyst's Track Score.
-- The score is displayed as a single number, 0 to 100.
-- It is **public** (anyone can see it), **permanent** (nothing is quietly erased), and
-  **non-transferable** (it belongs to the record, not the account).
+- Every graded outcome is **public** (seal, entry to exit, return, alpha), **permanent** (nothing
+  is quietly erased) and **non-transferable** (it belongs to the record, not the account).
+- The engine also computes a 0 to 100 **Track Score** from graded outcomes. It is **not shown
+  publicly**; the analyst sees it in their private track record. It must be settled (below) before
+  it is ever shown again.
 
-Only calls move the Track Score. Video commentary, notes, cards, polls, and any community
-sentiment never touch it.
+Only calls move the record. Video commentary, notes, cards, polls, and any community sentiment
+never touch it.
 
 ### Open decision: the scoring formula is unresolved
 
@@ -148,7 +170,7 @@ pick a winner:
   / alpha composite**.
 
 These are two different formulas. Reconciling them is open work and needs a decision with Krisi.
-Until then, treat the 0-100 display as settled and the underlying formula as undecided.
+Until then, the score stays private and the underlying formula undecided.
 
 ### Swapping the formula
 

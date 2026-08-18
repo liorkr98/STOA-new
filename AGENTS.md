@@ -7,7 +7,9 @@ editing this file and letting `CLAUDE.md` re-export it.
 **Full specs — read before any structural or visual work:**
 
 - `docs/PRODUCT_MODEL.md` — the current product model: the video-first content model, the five
-  surfaces, the Card Engine, the Track Score. Read this first.
+  surfaces, the Card Engine, the lifecycle model, the Track Record Engine. Read this first.
+- `docs/BUILD_SPEC.md` — the frontend build spec that this run implemented, and
+  `docs/BACKEND_BRIEF.md` — the backend gap list handed to Krisi.
 - `docs/BACKEND.md` — schema, RLS, the Track Score engine, the fact-checker pipeline, payments.
   **Does not exist yet.** No one has supplied the source content for it, so it is not being
   fabricated here. Until it exists, `supabase/migrations/*` and `docs/BACKEND_DATA_CONTRACTS.md`
@@ -30,8 +32,8 @@ with a locked call, evidence cards, and a written thesis. Full model in `docs/PR
 
 **Not a social network.** The value isn't a follow graph — it's a stranger trusting another
 stranger's paid opinion because the track record is more convincing than any relationship. Design
-and copy should reflect that: the trust surface (call block, disclosure block, Track Score)
-matters more than feed mechanics.
+and copy should reflect that: the trust surface (call block, disclosure block, the visible record
+of resolved outcomes) matters more than feed mechanics.
 
 One-line positioning if a pitch needs it: "Seeking Alpha's research model with Patreon's creator
 economics and a trust layer neither has." Do not compare Stoa to casual creator platforms.
@@ -42,7 +44,7 @@ The atomic unit of a publication is a short analyst **video**. Everything else i
 enrichment layered on top:
 
 - **Call** — a locked, attested prediction: ticker, direction, target price, horizon. Locked at
-  publish and immutable. A call is the ONLY element that feeds the Track Score.
+  publish and immutable. A call is the ONLY element the Track Record Engine grades.
 - **Cards** — a swipeable stack of evidence (the Card Engine; see docs/PRODUCT_MODEL.md).
 - **Thesis** — the full written argument.
 
@@ -50,11 +52,11 @@ A publication can be video-only commentary with no call at all (e.g. "what the I
 means for crude"). Scoring keys off one thing only: **does it carry a locked call.** Commentary is
 never graded.
 
-| Type label   | What it is                                              | Scored into Track Score? |
-| ------------ | ------------------------------------------------------- | ------------------------ |
-| **CALL**     | Publication built around a locked call (video + call).  | Yes (has a call)         |
+| Type label   | What it is                                              | Graded by the market?     |
+| ------------ | ------------------------------------------------------- | ------------------------- |
+| **CALL**     | Publication built around a locked call (video + call).  | Yes (has a call)          |
 | **RESEARCH** | A full written thesis; may or may not carry a call.     | Only if it carries a call |
-| **NOTE**     | Short video / commentary, no call.                      | No                       |
+| **NOTE**     | Short video / commentary, no call.                      | No                        |
 
 Every publication shows a **content badge** of what it contains, e.g. `VIDEO · CALL · CARDS` or
 `VIDEO · NOTE`. Publications with a call show **ticker + direction chips**; publications without a
@@ -73,17 +75,21 @@ Full model: docs/PRODUCT_MODEL.md.
 3. **A public, permanent, non-transferable record.** Every graded outcome is public, cannot be
    quietly erased, and belongs to the record rather than the account. This is the moat.
 
-The reputation number these produce is the **Track Score** (0-100), the only score shown in the
-UI (`TrackScoreBadge`; the 600-1400 rating display and `TierBadge` are retired from every route).
-See "The Track Score" in `docs/PRODUCT_MODEL.md` — the scoring *formula* is an open decision (the
-docs describe a modified Elo; the shipped engine computes a Wilson / profit-factor / alpha
-composite), so do not treat either formula as settled.
+**No public scoring.** The engine still computes a 0-100 Track Score internally and it is shown
+only to the analyst in their private track record (`/studio/track-record`); nothing public shows
+a score, rating, rank, percentile or leaderboard, and no surface aggregates analysts into a
+verdict. What is public is the record itself: HIT / MISS / NEAR seals, entry to exit, return and
+alpha per call, everywhere a resolved call appears. Placement is driven by the **lifecycle model**
+(`src/lib/lifecycle/stages.ts`): NEW / AVERAGE / RISING / TRENDING / POPULAR, of which only NEW
+and TRENDING are ever displayed. The scoring *formula* is an open decision (the docs describe a
+modified Elo; the shipped engine computes a Wilson / profit-factor / alpha composite), so do not
+treat either formula as settled.
 
 **Fact-check is a feature, not a pillar.** The AI fact-checker is a **pre-publish quality gate**:
 every claim in a report is classified (fact / unproven / opinion / contradicted) before publish is
 enabled. It already exists (`src/lib/ai/fact-check.ts`, `reports.fact_check_results`) and the
 frontend surfaces it inline (`FactCheckLayer`/`FactCheckedText`, `src/components/report/`). It
-improves quality; it is not one of the three trust pillars, and it never feeds the Track Score.
+improves quality; it is not one of the three trust pillars, and it never feeds the record.
 Still missing on the backend: `char_start`/`char_end` offsets on stored claims, and the
 `debate_threads`/`debate_replies` tables — see `docs/BACKEND_DATA_CONTRACTS.md`.
 
@@ -160,13 +166,13 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
   **Markets** (instrument exploration), **Compose** (the authoring studio), **Profile** (public
   storefront + one private area covering both investor and creator sections). See
   `docs/PRODUCT_MODEL.md`.
-- **Open decision — Feed vs Discover.** `Discover` is a real, already-designed surface and a live
-  route (`/discover`); Feed and Discover compete for the same discovery nav slot and the choice is
-  not yet made. Keep both; **do not rename Discover to Feed.**
+- **Feed lives at `/discover`.** The nav labels it "Feed"; the route stays `/discover` (do not
+  create a new feed route). Today is `/home`; there is no `/today` route. Explore is `/explore`.
 - Content types: **CALL / RESEARCH / NOTE** (see the content model above). A publication is a
   video, optionally carrying a locked call, cards, and a thesis.
-- The score: **Track Score**. One number, 0-100, public and permanent. No separate tier/rating
-  scale in the UI. The underlying formula is an open decision — see `docs/PRODUCT_MODEL.md`.
+- The score: **Track Score**, internal and private. Never shown publicly; the public sees the
+  record (seals, entry to exit, return). The underlying formula is an open decision — see
+  `docs/PRODUCT_MODEL.md`.
 - **Routes are unchanged from the existing build.** `docs/FRONTEND.md` was written against a
   `/@handle`-style IA; this repo keeps `/analyst/[handle]`, `/discover`, `/studio`, etc. Map the
   spec's routes onto the existing ones rather than renaming — this avoided conflicting with
@@ -251,8 +257,9 @@ Never trust client-supplied prices.
 - Em-dashes in any user-visible string.
 - Components calling Supabase directly. Data flows through `src/lib/db/*` only.
 - A locked call with no seal treatment — locked and unlocked states must be visually distinct.
-- A score and a separate tier/rating both shown as if they're independent signals. The Track Score
-  is the one number; there is no second scale in the UI.
+- Any score, rating, rank, percentile or leaderboard on a public surface, or any aggregate stance
+  (long/short split, average target, consensus). Resolved outcomes are evidence; a blended number
+  is a verdict.
 - The disclosure block restyled per analyst, or collapsed into an accordion.
 - Paywalled report bodies reachable via a direct client-side table read — `report_bodies` is
   already RLS-gated for this reason; keep it that way.
@@ -280,7 +287,9 @@ scripts and `README.md`; this section only records the non-obvious parts.
   from the environment (`src/lib/supabase/{client,server}.ts`). Next.js picks these up from either
   a gitignored `.env.local` (see `.env.example`) or from injected VM env vars, so no `.env.local`
   is required when those are provided as Cursor secrets. Without them, only the `(marketing)`
-  pages render; auth, Discover, profiles, Studio, and wallet stay blank/error.
+  pages render; auth, the Feed, profiles, Studio, and wallet stay blank/error. The `/dev/*`
+  fixture routes (profile, today, explore, feed, compose, landing, markets, ...) render every
+  surface with fictional data and are blocked in production by the middleware.
 - `SUPABASE_SERVICE_ROLE_KEY` is the service-role secret used only by the admin client
   (`src/lib/supabase/admin.ts`), i.e. `npm run seed` and `npm run grade`. It is **not** needed to
   run or browse the app, and it is not retrievable via the Supabase MCP; it must be supplied as a
