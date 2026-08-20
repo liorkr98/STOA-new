@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
 import { tickersInCapBand } from "@/lib/db/tickers";
+import { coverageAllTime } from "@/lib/markets/coverage";
 import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
 
@@ -267,21 +268,17 @@ export async function listPublishedByAuthors(authorIds: string[], limit = 24): P
   return asReportRows(data).map(normalize);
 }
 
-/** Map of ticker -> count of publicly visible reports covering it. */
+/**
+ * Map of ticker -> count of publicly visible reports covering it.
+ *
+ * Grouped in Postgres and cached (see src/lib/markets/coverage.ts). This used to
+ * ship up to 2000 report rows per request to be counted in Node, on Today, the
+ * landing tape, Markets and every ticker page.
+ */
 export async function tickerCoverage(): Promise<Record<string, number>> {
   try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("reports")
-      .select("ticker")
-      .in("status", ["published", "resolution_pending_review"])
-      .not("ticker", "is", null)
-      .limit(2000);
-    const counts: Record<string, number> = {};
-    for (const row of (data as { ticker: string | null }[]) ?? []) {
-      if (row.ticker) counts[row.ticker] = (counts[row.ticker] ?? 0) + 1;
-    }
-    return counts;
+    const map = await coverageAllTime();
+    return Object.fromEntries(map);
   } catch {
     return {};
   }

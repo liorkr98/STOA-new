@@ -6,6 +6,7 @@ import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import { getQuotesBatch } from "@/lib/engine/market";
+import { callActivity, coverageAllTime, coverageWindow } from "@/lib/markets/coverage";
 import type { Quote } from "@/lib/engine/market/types";
 import type {
   CoveredRow,
@@ -61,67 +62,13 @@ function applyQuotes<T extends MarketRow>(rows: T[], quotes: Map<string, Quote>)
   });
 }
 
-/** Published report counts per ticker, optionally limited to a window. */
-async function coverageCounts(since?: Date, until?: Date): Promise<Map<string, number>> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("reports")
-    .select("ticker, published_at")
-    .in("status", ["published", "resolution_pending_review"])
-    .not("ticker", "is", null)
-    .limit(2000);
-  if (since) query = query.gte("published_at", since.toISOString());
-  if (until) query = query.lt("published_at", until.toISOString());
-
-  const { data } = await query;
-  const counts = new Map<string, number>();
-  for (const row of (data as { ticker: string | null }[]) ?? []) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym) continue;
-    counts.set(sym, (counts.get(sym) ?? 0) + 1);
-  }
-  return counts;
-}
-
-/** Distinct analysts and open-call lean per ticker. */
-async function callActivity(): Promise<
-  Map<string, { analysts: Set<string>; long: number; short: number; firstAt: string }>
-> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select("ticker, author_id, direction, outcome, created_at")
-    .order("created_at", { ascending: true })
-    .limit(2000);
-
-  const map = new Map<
-    string,
-    { analysts: Set<string>; long: number; short: number; firstAt: string }
-  >();
-  for (const row of (data as {
-    ticker: string;
-    author_id: string;
-    direction: Direction;
-    outcome: string;
-    created_at: string;
-  }[]) ?? []) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym) continue;
-    const entry = map.get(sym) ?? {
-      analysts: new Set<string>(),
-      long: 0,
-      short: 0,
-      firstAt: row.created_at,
-    };
-    entry.analysts.add(row.author_id);
-    if (row.outcome === "open") {
-      if (row.direction === "long") entry.long += 1;
-      if (row.direction === "short") entry.short += 1;
-    }
-    map.set(sym, entry);
-  }
-  return map;
-}
+/**
+ * Coverage and call activity are grouped in Postgres and cached; see
+ * src/lib/markets/coverage.ts. Both used to be 2000-row scans reduced in Node,
+ * and Markets ran four of them per request.
+ */
+const coverageCounts = (since?: Date, until?: Date) =>
+  since || until ? coverageWindow(since, until) : coverageAllTime();
 
 async function buildThemes(coverageWeek: Map<string, number>, coverageLastWeek: Map<string, number>): Promise<ThemeCard[]> {
   const symbols = [...new Set(MARKET_THEMES.flatMap((t) => t.tickers))];
@@ -176,7 +123,7 @@ async function buildCovered(
       {
         ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         newPublications: coverageWeek.get(symbol) ?? 0,
-        analystCount: entry?.analysts.size ?? 0,
+        analystCount: entry?.analysts ?? 0,
         openCalls: (entry?.long ?? 0) + (entry?.short ?? 0),
       },
     ];
@@ -240,15 +187,13 @@ async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
 }
 
 async function buildSectors(coverageAll: Map<string, number>): Promise<SectorTile[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("tickers")
-    .select("symbol, sector")
-    .eq("status", "active")
-    .limit(4000);
+  // Only the covered symbols need a sector lookup. This used to scan up to 4000
+  // ticker rows to build a map of which a couple of dozen entries were read.
+  const coveredSymbols = [...coverageAll.keys()];
+  const rows = coveredSymbols.length ? await listTickerRows(coveredSymbols) : [];
 
   const sectorBySymbol = new Map<string, string>();
-  for (const row of (data as { symbol: string; sector: string | null }[]) ?? []) {
+  for (const row of rows) {
     if (row.sector) sectorBySymbol.set(row.symbol.toUpperCase(), row.sector);
   }
   for (const entry of UNIVERSE) {
