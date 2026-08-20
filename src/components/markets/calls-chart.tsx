@@ -16,7 +16,7 @@ import {
 
 const W = 880;
 const H = 380;
-const PAD = { top: 18, right: 96, bottom: 30, left: 10 };
+const PAD = { top: 18, right: 96, bottom: 30, left: 58 };
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
@@ -87,7 +87,7 @@ export function CallsChart({
     );
   }
 
-  const { x, y, linePath, minTime, maxTime } = geo;
+  const { x, y, linePath, minTime, maxTime, yLo, yHi } = geo;
 
   const withTargets = showOverlay ? openCalls.filter((c) => c.targetPrice != null) : [];
   const drawn = withTargets.slice(0, maxTargetLines);
@@ -117,7 +117,8 @@ export function CallsChart({
         return t >= minTime && t <= maxTime;
       });
 
-  const ticks = dateTicks(minTime, maxTime, 5);
+  const ticks = dateTicks(minTime, maxTime, compact ? 4 : 5);
+  const priceLevels = priceTicks(yLo, yHi, compact ? 4 : 5);
 
   return (
     <div className={compact ? "calls-chart calls-chart--compact" : "calls-chart"}>
@@ -148,12 +149,62 @@ export function CallsChart({
             />
           )}
 
-          {ticks.map((t) => (
+          <g aria-hidden>
+            {priceLevels.map((level) => (
+              <line
+                key={`gh-${level.value}`}
+                x1={PAD.left}
+                x2={PAD.left + PLOT_W}
+                y1={y(level.value)}
+                y2={y(level.value)}
+                stroke="var(--border)"
+                strokeWidth={1}
+                shapeRendering="crispEdges"
+              />
+            ))}
+            {ticks.map((t) => (
+              <line
+                key={`gv-${t.time}`}
+                x1={x(t.time)}
+                x2={x(t.time)}
+                y1={PAD.top}
+                y2={PAD.top + PLOT_H}
+                stroke="var(--border)"
+                strokeWidth={1}
+                shapeRendering="crispEdges"
+              />
+            ))}
+            <line
+              x1={PAD.left}
+              x2={PAD.left + PLOT_W}
+              y1={PAD.top + PLOT_H}
+              y2={PAD.top + PLOT_H}
+              stroke="var(--border-strong)"
+              strokeWidth={1}
+              shapeRendering="crispEdges"
+            />
+          </g>
+
+          {priceLevels.map((level) => (
+            <text
+              key={`py-${level.value}`}
+              x={PAD.left - 8}
+              y={y(level.value) + 3.5}
+              textAnchor="end"
+              fontFamily="var(--font-mono)"
+              fontSize={10}
+              fill="var(--text-faint)"
+            >
+              {level.label}
+            </text>
+          ))}
+
+          {ticks.map((t, i) => (
             <text
               key={t.time}
               x={x(t.time)}
               y={H - 8}
-              textAnchor="middle"
+              textAnchor={i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle"}
               fontFamily="var(--font-mono)"
               fontSize={10}
               fill="var(--text-faint)"
@@ -445,7 +496,38 @@ function buildGeometry(candles: Candle[], openCalls: OpenCall[]) {
     .map((c, i) => `${i === 0 ? "M" : "L"}${x(c.time).toFixed(2)},${y(c.close).toFixed(2)}`)
     .join(" ");
 
-  return { x, y, linePath, minTime, maxTime };
+  return { x, y, linePath, minTime, maxTime, yLo, yHi };
+}
+
+/**
+ * Round price levels for the value axis. Steps land on 1 / 2 / 2.5 / 5 of a
+ * power of ten so a reader can take a price off the chart without arithmetic,
+ * and the decimals follow the step rather than the price: a name moving in
+ * whole dollars gets no cents, a sub-dollar name gets two.
+ */
+function priceTicks(yLo: number, yHi: number, count: number) {
+  const span = yHi - yLo;
+  if (!Number.isFinite(span) || span <= 0) return [];
+
+  const raw = span / Math.max(1, count - 1);
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const normalized = raw / magnitude;
+  const step =
+    magnitude * (normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10);
+
+  const decimals = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
+  const format = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+
+  const out: { value: number; label: string }[] = [];
+  const first = Math.ceil(yLo / step) * step;
+  for (let v = first; v <= yHi + step / 1000; v += step) {
+    const value = Math.round(v / step) * step;
+    out.push({ value, label: format.format(value) });
+  }
+  return out;
 }
 
 /**
