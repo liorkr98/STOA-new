@@ -1,5 +1,6 @@
 import "./load-env";
 import { createClient } from "@supabase/supabase-js";
+import { listDemoUsers } from "./demo-data";
 
 /**
  * Read-only inventory of everything scoped to @stoa.demo. Touches nothing.
@@ -18,8 +19,7 @@ async function main() {
   console.log(`Target: ${new URL(url).host}\n`);
 
   const db = createClient(url, key, { auth: { persistSession: false } });
-  const { data: list } = await db.auth.admin.listUsers({ perPage: 1000 });
-  const demo = (list?.users ?? []).filter((u) => u.email?.endsWith("@stoa.demo"));
+  const demo = await listDemoUsers(db);
 
   if (demo.length === 0) {
     console.log("No @stoa.demo accounts exist. Nothing to lose, nothing stale.");
@@ -41,7 +41,7 @@ async function main() {
     totalPubs += pubs ?? 0;
     totalCalls += calls ?? 0;
     rows.push({
-      email: u.email!,
+      email: u.email,
       handle: (p?.handle as string) ?? "(no profile)",
       role: (p?.role as string) ?? "?",
       pubs: pubs ?? 0,

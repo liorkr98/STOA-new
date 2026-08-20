@@ -338,3 +338,40 @@ export const STEELMEN = [
   },
 ];
 
+
+/**
+ * Supabase's admin listUsers returns one page at a time. Callers that need the
+ * whole table (finding every demo account) must page or they silently stop at
+ * the first page, which would leave demo content behind on teardown.
+ */
+export interface DemoUser {
+  id: string;
+  email: string;
+  last_sign_in_at: string | null;
+}
+
+const USERS_PER_PAGE = 200;
+const MAX_USER_PAGES = 500;
+
+export async function listAllUsers(db: {
+  auth: { admin: { listUsers: (o: { page: number; perPage: number }) => Promise<{ data: { users: unknown[] } | null; error: unknown }> } };
+}): Promise<DemoUser[]> {
+  const out: DemoUser[] = [];
+  for (let page = 1; page <= MAX_USER_PAGES; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: USERS_PER_PAGE });
+    if (error) throw error;
+    const users = (data?.users ?? []) as { id: string; email?: string; last_sign_in_at?: string | null }[];
+    for (const u of users) {
+      if (u.email) out.push({ id: u.id, email: u.email, last_sign_in_at: u.last_sign_in_at ?? null });
+    }
+    if (users.length < USERS_PER_PAGE) return out;
+  }
+  throw new Error(
+    `Stopped after ${MAX_USER_PAGES} pages of users. Raise MAX_USER_PAGES in scripts/demo-data.ts if the project really has this many accounts.`,
+  );
+}
+
+/** Every @stoa.demo account, across all pages. */
+export async function listDemoUsers(db: Parameters<typeof listAllUsers>[0]): Promise<DemoUser[]> {
+  return (await listAllUsers(db)).filter((u) => u.email.endsWith(DEMO_EMAIL_DOMAIN));
+}

@@ -1,6 +1,6 @@
 import "./load-env";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { DEMO_EMAIL_DOMAIN } from "./demo-data";
+import { listDemoUsers } from "./demo-data";
 
 /**
  * Removes the entire demo dataset in one command: Bunny video assets first,
@@ -49,8 +49,7 @@ async function main() {
   console.log(`Target: ${new URL(url).host}${dryRun ? "  (dry run, nothing will be deleted)" : ""}\n`);
 
   const db = createClient(url, key, { auth: { persistSession: false } });
-  const { data: list } = await db.auth.admin.listUsers({ perPage: 1000 });
-  const demo = (list?.users ?? []).filter((u) => u.email?.endsWith(DEMO_EMAIL_DOMAIN));
+  const demo = await listDemoUsers(db);
 
   if (demo.length === 0) {
     console.log("No @stoa.demo accounts found. Nothing to remove.");

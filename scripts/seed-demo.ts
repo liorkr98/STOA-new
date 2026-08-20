@@ -7,6 +7,7 @@ import {
   DEMO_EMAIL_DOMAIN,
   DEMO_PASSWORD,
   buildCards,
+  listDemoUsers,
   resolvedFor,
   type Intent,
   NOTE_TAKES,
@@ -101,7 +102,14 @@ function basePrice(ticker: string) {
   return BASE_PRICE[ticker] ?? 100;
 }
 
-async function ensureUser(db: SupabaseClient, email: string, meta: Record<string, string>) {
+async function ensureUser(
+  db: SupabaseClient,
+  email: string,
+  meta: Record<string, string>,
+  known: Map<string, string>,
+) {
+  const existing = known.get(email);
+  if (existing) return existing;
   const { data, error } = await db.auth.admin.createUser({
     email,
     password: DEMO_PASSWORD,
@@ -110,12 +118,15 @@ async function ensureUser(db: SupabaseClient, email: string, meta: Record<string
   });
   if (error) {
     if (error.message.toLowerCase().includes("already")) {
-      const { data: list } = await db.auth.admin.listUsers({ perPage: 1000 });
-      const found = list.users.find((u) => u.email === email);
-      if (found) return found.id;
+      const found = (await listDemoUsers(db)).find((u) => u.email === email);
+      if (found) {
+        known.set(email, found.id);
+        return found.id;
+      }
     }
     throw error;
   }
+  known.set(email, data.user!.id);
   return data.user!.id;
 }
 
@@ -156,8 +167,8 @@ async function main() {
     ...READERS.map((r) => r.email),
     ...ANALYSTS.map((a) => `${a.handle}${DEMO_EMAIL_DOMAIN}`),
   ]);
-  const { data: existingList } = await db.auth.admin.listUsers({ perPage: 1000 });
-  const existingDemo = (existingList?.users ?? []).filter((u) => u.email?.endsWith(DEMO_EMAIL_DOMAIN));
+  const existingDemo = await listDemoUsers(db);
+  const knownIds = new Map(existingDemo.map((u) => [u.email, u.id]));
 
   if (existingDemo.length > 0) {
     console.log(`Found ${existingDemo.length} existing @stoa.demo accounts. Clearing their content first.`);
@@ -165,7 +176,7 @@ async function main() {
       const { error } = await db.rpc("purge_demo_author", { p_author_id: u.id });
       if (error) console.error(`  could not clear ${u.email}: ${error.message}`);
     }
-    const strays = existingDemo.filter((u) => !rosterEmails.has(u.email!));
+    const strays = existingDemo.filter((u) => !rosterEmails.has(u.email));
     if (strays.length > 0) {
       console.log(
         `${strays.length} demo account(s) are not part of this roster and were left in place (content cleared, login intact):`,
@@ -179,7 +190,7 @@ async function main() {
 
   const readerIds: string[] = [];
   for (const r of READERS) {
-    const id = await ensureUser(db, r.email, { display_name: r.name, handle: r.handle });
+    const id = await ensureUser(db, r.email, { display_name: r.name, handle: r.handle }, knownIds);
     readerIds.push(id);
     await db.from("profiles").update({ display_name: r.name, avatar_url: avatarUrl(r.handle) }).eq("id", id);
     await db.from("wallets").update({ balance: 500 }).eq("owner_id", id);
@@ -193,7 +204,7 @@ async function main() {
   const tickerTally: Record<string, number> = {};
 
   for (const a of ANALYSTS) {
-    const id = await ensureUser(db, `${a.handle}@stoa.demo`, { display_name: a.name, handle: a.handle });
+    const id = await ensureUser(db, `${a.handle}${DEMO_EMAIL_DOMAIN}`, { display_name: a.name, handle: a.handle }, knownIds);
     analystIds.push({ id, a });
 
     await db
