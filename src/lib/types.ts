@@ -99,6 +99,13 @@ export interface Report {
   views_certified: boolean;
   /** sha256 hex digest computed at publish; see ReportSchema. Null pre-migration or if hashing failed. */
   content_hash?: string | null;
+  /**
+   * Steelman placement gates. The objection and answer text lives in
+   * `publication_cards` (kind 'steelman'), not here: `reports` is public-read,
+   * so gated prose on it would leak. See migration 0051.
+   */
+  steelman_box_locked?: boolean;
+  steelman_card_locked?: boolean;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */

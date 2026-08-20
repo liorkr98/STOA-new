@@ -4,6 +4,7 @@ import { listTickerRows } from "@/lib/db/tickers";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { medianRate, publicationAttention, stageFor, visibleStageMarker, type AttentionSample } from "@/lib/lifecycle/stages";
 import { themeLabel } from "@/lib/tags/taxonomy";
+import { listCardsForReports } from "@/lib/db/publication-cards";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
@@ -13,9 +14,10 @@ import type { FeedCard, FeedPublication } from "@/lib/feed/types";
  * author and prediction) to the Feed player's publication shape. The Bunny
  * embed URL is built here so no provider/env code reaches the browser.
  *
- * Evidence cards are not stored per publication yet, so a live publication's
- * stack is the deck as its case card plus the unlock/read card.
- * CARDS_PLACEHOLDER: replace with stored cards once the Card Engine persists.
+ * Evidence cards come from `publication_cards` when the creator has built a
+ * stack; otherwise the stack is the deck as a case card plus the unlock card.
+ * Locked cards are filtered by RLS and stripped of their payload server-side, so
+ * gated prose and numbers never reach the browser.
  */
 
 function typeLabel(t: Report["type"]): FeedPublication["typeLabel"] {
@@ -30,19 +32,38 @@ export function contentBadgeFor(report: Report, hasVideo: boolean): string {
   return parts.length ? parts.join(" · ") : "NOTE";
 }
 
-function defaultCards(report: Report): FeedCard[] {
-  const cards: FeedCard[] = [];
-  const deck = report.summary?.trim();
-  if (deck) cards.push({ kind: "thesis", id: `${report.id}-case`, locked: false, title: storyHeadline(report), body: deck });
+function unlockCard(report: Report): FeedCard {
   const access = report.access === "paid" ? "paid" : report.access === "subscribers" ? "subscribers" : "free";
-  cards.push({
+  return {
     kind: "unlock",
     id: `${report.id}-unlock`,
     locked: false,
     access,
     price: report.price != null ? `$${report.price}` : null,
-  });
+  };
+}
+
+/**
+ * The stack for a publication with no stored cards: the deck as its case card
+ * plus the read/unlock card. Kept as the fallback so publications written before
+ * the Card Engine still render a coherent stack.
+ */
+function defaultCards(report: Report): FeedCard[] {
+  const cards: FeedCard[] = [];
+  const deck = report.summary?.trim();
+  if (deck) cards.push({ kind: "thesis", id: `${report.id}-case`, locked: false, title: storyHeadline(report), body: deck });
+  cards.push(unlockCard(report));
   return cards;
+}
+
+/**
+ * Stored cards win when present. The unlock card is appended here rather than
+ * stored, so its price and access always reflect the report's current terms.
+ */
+function cardsFor(report: Report, stored: FeedCard[] | undefined): FeedCard[] {
+  if (!stored || stored.length === 0) return defaultCards(report);
+  const withoutUnlock = stored.filter((c) => c.kind !== "unlock");
+  return [...withoutUnlock, unlockCard(report)];
 }
 
 export async function clipsToPublications(clips: VideoClipCard[], now = Date.now()): Promise<FeedPublication[]> {
@@ -52,6 +73,10 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
   ];
   const sectorByTicker = new Map<string, string | null>();
   for (const row of symbols.length ? await listTickerRows(symbols) : []) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
+
+  // One query for every publication's stack. RLS drops locked cards the reader
+  // is not entitled to, and the mapper strips any locked payload that remains.
+  const cardsByReport = await listCardsForReports(usable.map((c) => c.report!.id));
 
   const samples = new Map<string, AttentionSample>();
   for (const c of usable) {
@@ -99,7 +124,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
         : null,
       access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
       price: r.price,
-      cards: defaultCards(r),
+      cards: cardsFor(r, cardsByReport.get(r.id)),
       comments: [],
       publishedAt: r.published_at ?? r.created_at,
     };
