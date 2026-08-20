@@ -73,6 +73,14 @@ export interface Report {
   /** Perk slugs required on the subscriber's plan (see plans.perks). */
   required_perks?: string[];
   ticker: string | null;
+  /** Taxonomy slug (publication_tags) driving discovery placement. */
+  primary_tag?: string | null;
+  /** Up to 2 further taxonomy slugs, searchable only. */
+  secondary_tags?: string[];
+  /** Theme anchor for callless publications. */
+  theme_tag?: string | null;
+  /** Future publish time while still a draft. */
+  scheduled_for?: string | null;
   likes: number;
   views: number;
   comment_count: number;
@@ -91,6 +99,13 @@ export interface Report {
   views_certified: boolean;
   /** sha256 hex digest computed at publish; see ReportSchema. Null pre-migration or if hashing failed. */
   content_hash?: string | null;
+  /**
+   * Steelman placement gates. The objection and answer text lives in
+   * `publication_cards` (kind 'steelman'), not here: `reports` is public-read,
+   * so gated prose on it would leak. See migration 0051.
+   */
+  steelman_box_locked?: boolean;
+  steelman_card_locked?: boolean;
   /** Joined author, when the query asks for it. */
   author?: Profile;
   /** The investment card, for research + call types. */
@@ -211,6 +226,14 @@ export interface ComposeInput {
   horizon_days?: number;
   /** Explicit horizon end date (exchange-local). Must be after today when publishing. */
   target_horizon_date?: string;
+  /** Taxonomy slug driving discovery placement. Required to publish. */
+  primary_tag?: string | null;
+  /** Up to 2 further taxonomy slugs, searchable only. */
+  secondary_tags?: string[];
+  /** Theme anchor for callless publications; defaults to the primary tag. */
+  theme_tag?: string | null;
+  /** Future publish time. Held as a draft until the scheduler releases it. */
+  scheduled_for?: string | null;
   fact_check_results?: Record<string, unknown> | null;
   /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
   position_held?: boolean;
@@ -232,6 +255,8 @@ export interface Comment {
   id: string;
   report_id: string;
   author_id: string;
+  /** Set on a reply. Threads are exactly one level deep (DB trigger). */
+  parent_id?: string | null;
   body: string;
   likes: number;
   created_at: string;

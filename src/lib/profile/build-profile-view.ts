@@ -10,6 +10,8 @@ import { isFollowing, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
 import { pct, compact, usd } from "@/lib/format";
+import { themeLabel } from "@/lib/tags/taxonomy";
+import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
 import type { Direction, Prediction, Report } from "@/lib/types";
@@ -43,16 +45,21 @@ export function formatDuration(seconds: number): string {
 }
 
 /**
- * The content badge states exactly what a publication contains, built only
- * from what is stored: a ready video clip, a locked call, a written thesis.
- * Cards are not persisted per publication yet, so they never appear here.
- * CONTENT_BADGE_PLACEHOLDER: add CARDS once evidence cards are stored.
+ * The content badge states exactly what a publication contains, built only from
+ * what is stored: a ready video clip, a locked call, a written thesis, an
+ * evidence stack. Nothing is claimed that a reader cannot then find.
  */
-export function contentBadge(input: { hasVideo: boolean; hasCall: boolean; hasThesis: boolean }): string {
+export function contentBadge(input: {
+  hasVideo: boolean;
+  hasCall: boolean;
+  hasThesis: boolean;
+  hasCards?: boolean;
+}): string {
   const parts: string[] = [];
   if (input.hasVideo) parts.push("VIDEO");
   if (input.hasCall) parts.push("CALL");
   if (input.hasThesis) parts.push("THESIS");
+  if (input.hasCards) parts.push("CARDS");
   return parts.length ? parts.join(" · ") : "NOTE";
 }
 
@@ -72,6 +79,8 @@ export function buildPublications(input: {
   predictions: Prediction[];
   clips: VideoClip[];
   sectorByTicker: Map<string, string | null>;
+  /** Publications with a stored evidence stack. Omitted by the dev fixture. */
+  cardIds?: Set<string>;
 }): ProfilePublication[] {
   const predByReport = new Map<string, Prediction>();
   for (const p of input.predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
@@ -90,9 +99,14 @@ export function buildPublications(input: {
         : null;
 
     // Anchoring rule: only a call earns a ticker + direction. A callless item
-    // anchors on a theme tag; the closest stored fact is the ticker's sector.
-    // THEME_TAG_PLACEHOLDER: swap for the publication's own theme tag once stored.
-    const themeTag = !hasCall && r.ticker ? sectorTag(input.sectorByTicker.get(r.ticker.toUpperCase())) : null;
+    // anchors on its own theme tag, falling back to the ticker's sector for rows
+    // published before tags existed.
+    const themeTag = hasCall
+      ? null
+      : themeLabel(
+          r,
+          r.ticker ? sectorTag(input.sectorByTicker.get(r.ticker.toUpperCase())) : null,
+        );
     const subject = hasCall && pred ? pred.ticker : themeTag;
 
     return {
@@ -103,7 +117,12 @@ export function buildPublications(input: {
       ticker: hasCall && pred ? pred.ticker : null,
       direction: hasCall && pred ? (pred.direction as Direction) : null,
       themeTag,
-      badge: contentBadge({ hasVideo: Boolean(clip), hasCall, hasThesis }),
+      badge: contentBadge({
+        hasVideo: Boolean(clip),
+        hasCall,
+        hasThesis,
+        hasCards: input.cardIds?.has(r.id) ?? false,
+      }),
       title: r.title ?? "Untitled",
       deck: r.summary,
       duration: clip ? formatDuration(clip.duration_seconds) : null,
@@ -220,7 +239,8 @@ export async function buildProfileView(
     ...(showMembers ? [`${compact(members)} MEMBER${members === 1 ? "" : "S"}`] : []),
   ].join(" · ");
 
-  const publications = buildPublications({ reports, predictions, clips, sectorByTicker });
+  const cardIds = await reportIdsWithCards(reports.map((r) => r.id));
+  const publications = buildPublications({ reports, predictions, clips, sectorByTicker, cardIds });
   const tiers = tierPublications(publications, config.pinned_report_id ?? null);
 
   // Subscribe button label: "from $X/mo" using the cheapest paid plan (or legacy price).

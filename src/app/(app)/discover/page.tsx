@@ -193,7 +193,7 @@ export default async function DiscoverPage({
       pub.comments = (commentsByReport.get(pub.id) ?? []).map(
         (c): FeedComment => ({
           id: c.id,
-          parentId: null,
+          parentId: c.parent_id ?? null,
           author: {
             handle: c.author?.handle ?? "",
             displayName: c.author?.display_name ?? "Reader",

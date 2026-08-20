@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
 import { getTickerMeta } from "@/lib/engine/tickers";
+import { normalizeTags } from "@/lib/tags/validate";
 import {
   effectiveResolutionDate,
   horizonDateFromDays,
@@ -31,7 +32,20 @@ async function saveDraftBody(
   supabase: SupabaseClient,
   userId: string,
   input: ComposeInput,
+  opts: { requirePrimaryTag?: boolean } = {},
 ): Promise<string> {
+  let tags;
+  try {
+    tags = await normalizeTags(supabase, input, {
+      requirePrimary: opts.requirePrimaryTag,
+    });
+  } catch (e) {
+    throw new PublishReportError(
+      e instanceof Error ? e.message : "Invalid tags",
+      400,
+    );
+  }
+
   const payload = {
     author_id: userId,
     type: input.type,
@@ -43,6 +57,10 @@ async function saveDraftBody(
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
     required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
+    primary_tag: tags.primary_tag,
+    secondary_tags: tags.secondary_tags,
+    theme_tag: tags.theme_tag,
+    scheduled_for: input.scheduled_for ?? null,
     status: "draft" as const,
   };
 
@@ -97,6 +115,10 @@ export async function validateAndPublishReport(
     throw new PublishReportError("You must certify these are your own views before publishing.");
   }
 
+  // Tags are validated (closed taxonomy, max 2 secondaries) but a primary tag is
+  // not required server-side: written publications may legitimately have none,
+  // and discovery falls back to anchoring on the call's sector. The Compose
+  // picker is where the "choose a tag" prompt lives.
   const reportId = await saveDraftBody(supabase, userId, input);
 
   const [{ count: priorPublishCount }, { data: authorProfile }] = await Promise.all([

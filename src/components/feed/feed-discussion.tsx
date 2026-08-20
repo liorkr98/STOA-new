@@ -15,8 +15,8 @@ import type { FeedComment } from "@/lib/feed/types";
  * AUTHOR tag. Sort newest by default, or most-liked. No score, no follower
  * count anywhere.
  *
- * COMMENTS_PLACEHOLDER: the comments table has no parent_id, so live threads
- * arrive flat and a reply posts as a top-level comment mentioning the person.
+ * Threads are stored one level deep (comments.parent_id, migration 0053); the
+ * database rejects a reply to a reply, which is why flattening happens here.
  */
 export function FeedDiscussion({
   comments,
@@ -25,7 +25,7 @@ export function FeedDiscussion({
   className,
 }: {
   comments: FeedComment[];
-  /** Posts a comment (or a reply; parentId is null until the table carries it). */
+  /** Posts a comment, or a one-level reply when parentId is a top-level comment. */
   onPost?: (text: string, parentId: string | null) => Promise<void>;
   canPost: boolean;
   className?: string;
