@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { getMarketNews } from "@/lib/market/yahoo-news";
 import { MARKET_THEMES } from "@/lib/markets/themes";
+import { themeLabel } from "@/lib/tags/taxonomy";
 import { getCycleWindow, fallbackIssueNumber } from "@/lib/dispatch/cycle";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import {
@@ -95,8 +96,8 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
     price: report.price,
     saved: ctx.savedIds.has(report.id),
     thumb: clip ? { thumbnailUrl: clip.thumbnail_url, durationSeconds: clip.duration_seconds } : null,
-    // THEME_TAG_PLACEHOLDER: no per-publication theme is stored yet.
-    themeTag: null,
+    // Callless items anchor on the publication's stored theme tag.
+    themeTag: hasCall ? null : themeLabel(report),
     sector: (() => {
       const sym = (report.prediction?.ticker ?? report.ticker)?.toUpperCase();
       return sym ? ctx.sectorByTicker.get(sym) ?? null : null;

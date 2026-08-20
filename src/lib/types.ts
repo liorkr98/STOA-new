@@ -73,6 +73,14 @@ export interface Report {
   /** Perk slugs required on the subscriber's plan (see plans.perks). */
   required_perks?: string[];
   ticker: string | null;
+  /** Taxonomy slug (publication_tags) driving discovery placement. */
+  primary_tag?: string | null;
+  /** Up to 2 further taxonomy slugs, searchable only. */
+  secondary_tags?: string[];
+  /** Theme anchor for callless publications. */
+  theme_tag?: string | null;
+  /** Future publish time while still a draft. */
+  scheduled_for?: string | null;
   likes: number;
   views: number;
   comment_count: number;
@@ -211,6 +219,14 @@ export interface ComposeInput {
   horizon_days?: number;
   /** Explicit horizon end date (exchange-local). Must be after today when publishing. */
   target_horizon_date?: string;
+  /** Taxonomy slug driving discovery placement. Required to publish. */
+  primary_tag?: string | null;
+  /** Up to 2 further taxonomy slugs, searchable only. */
+  secondary_tags?: string[];
+  /** Theme anchor for callless publications; defaults to the primary tag. */
+  theme_tag?: string | null;
+  /** Future publish time. Held as a draft until the scheduler releases it. */
+  scheduled_for?: string | null;
   fact_check_results?: Record<string, unknown> | null;
   /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
   position_held?: boolean;

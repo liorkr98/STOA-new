@@ -245,6 +245,8 @@ export function StudioEditor({
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
         horizon_days: hasCard ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
       });
       setDraftId(res.id);
       setSaveStatus("saved");
@@ -334,6 +336,8 @@ export function StudioEditor({
             direction: lockingCall ? direction : undefined,
             target_price: lockingCall && target ? Number(target) : null,
             horizon_days: lockingCall ? horizon : undefined,
+            primary_tag: tags.primary,
+            secondary_tags: tags.secondary,
           });
           id = res.id;
           setDraftId(id);
@@ -360,6 +364,8 @@ export function StudioEditor({
         direction: lockingCall ? direction : undefined,
         target_price: lockingCall && target ? Number(target) : null,
         horizon_days: lockingCall ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {

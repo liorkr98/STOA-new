@@ -149,9 +149,8 @@ export function TagPicker({
       </div>
       {open === "secondary" ? <List slot="secondary" /> : null}
 
-      {/* TAGS_PLACEHOLDER: no column stores tags yet. */}
       <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-        Not saved with the draft yet · needs a tags field on publications
+        Primary drives placement · secondary tags are searchable
       </p>
     </section>
   );

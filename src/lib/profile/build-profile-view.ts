@@ -10,6 +10,7 @@ import { isFollowing, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
 import { pct, compact, usd } from "@/lib/format";
+import { themeLabel } from "@/lib/tags/taxonomy";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
 import type { Direction, Prediction, Report } from "@/lib/types";
@@ -90,9 +91,14 @@ export function buildPublications(input: {
         : null;
 
     // Anchoring rule: only a call earns a ticker + direction. A callless item
-    // anchors on a theme tag; the closest stored fact is the ticker's sector.
-    // THEME_TAG_PLACEHOLDER: swap for the publication's own theme tag once stored.
-    const themeTag = !hasCall && r.ticker ? sectorTag(input.sectorByTicker.get(r.ticker.toUpperCase())) : null;
+    // anchors on its own theme tag, falling back to the ticker's sector for rows
+    // published before tags existed.
+    const themeTag = hasCall
+      ? null
+      : themeLabel(
+          r,
+          r.ticker ? sectorTag(input.sectorByTicker.get(r.ticker.toUpperCase())) : null,
+        );
     const subject = hasCall && pred ? pred.ticker : themeTag;
 
     return {

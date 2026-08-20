@@ -3,6 +3,7 @@ import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { listTickerRows } from "@/lib/db/tickers";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { medianRate, publicationAttention, stageFor, visibleStageMarker, type AttentionSample } from "@/lib/lifecycle/stages";
+import { themeLabel } from "@/lib/tags/taxonomy";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
@@ -86,8 +87,9 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       typeLabel: typeLabel(r.type),
       ticker: hasCall ? sym : null,
       direction: hasCall ? (p?.direction ?? null) : null,
-      // THEME_TAG_PLACEHOLDER: the ticker's sector stands in for a stored theme.
-      themeTag: !hasCall && sector ? sector.toUpperCase() : null,
+      // Callless items anchor on the publication's own theme tag; the ticker's
+      // sector is the fallback for rows published before tags existed.
+      themeTag: hasCall ? null : themeLabel(r, sector),
       sector,
       contentBadge: contentBadgeFor(r, true),
       stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
