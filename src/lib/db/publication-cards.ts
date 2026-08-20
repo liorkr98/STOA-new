@@ -93,6 +93,25 @@ export async function listCardsForReport(reportId: string): Promise<FeedCard[]> 
 }
 
 /**
+ * Which of these publications have an evidence stack, for the content badge.
+ * Presence only, so it stays one indexed query and never fetches payloads.
+ */
+export async function reportIdsWithCards(reportIds: string[]): Promise<Set<string>> {
+  const out = new Set<string>();
+  if (reportIds.length === 0) return out;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("publication_cards")
+    .select("report_id")
+    .in("report_id", reportIds)
+    .neq("kind", "unlock");
+
+  for (const row of (data as { report_id: string }[] | null) ?? []) out.add(row.report_id);
+  return out;
+}
+
+/**
  * Replace a draft publication's card stack. Author-only via RLS, and blocked by
  * that policy once the report is locked, so this is a pre-publish operation.
  * Payloads are validated against their `kind` before insert, which is what makes

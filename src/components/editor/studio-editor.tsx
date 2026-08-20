@@ -96,7 +96,7 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
-  // TAGS_PLACEHOLDER: held in the editor only; no column stores tags yet.
+  // Persisted on save/publish to reports.primary_tag / secondary_tags.
   const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
   // The fork. An existing draft is written work until the creator adds video;
   // a fresh compose asks first. Switching keeps every field mounted, so nothing

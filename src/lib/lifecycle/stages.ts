@@ -9,9 +9,11 @@
  * is accumulated attention. Every threshold is a named constant so it can be
  * tuned in one place. LIFECYCLE_THRESHOLDS: change here, report the change.
  *
- * Without per-event engagement history, "attention per day since arrival" is
- * the honest velocity proxy; a windowed rate (last 48h vs prior 14d) should
- * replace it once engagement events are recorded. ENGAGEMENT_EVENTS_PLACEHOLDER.
+ * "Attention per day since arrival" remains the velocity proxy computed per
+ * request. `engagement_events` (migration 0050) now collects the per-event
+ * history a windowed rate needs (last 48h vs prior 14d), but the job that reads
+ * it and writes a stored stage is still to come, and it needs a fortnight of
+ * events before its output beats this proxy. See docs/BACKEND_BRIEF.md item 7.
  */
 
 export type LifecycleStage = "new" | "average" | "rising" | "trending" | "popular";
