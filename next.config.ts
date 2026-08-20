@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "i.pravatar.cc" },
       { protocol: "https", hostname: "api.dicebear.com" },
       { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "*.b-cdn.net" },
+      { protocol: "https", hostname: "iframe.mediadelivery.net" },
     ],
   },
 };

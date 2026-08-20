@@ -10,6 +10,7 @@ import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { storyHeadline } from "@/lib/dispatch/ranking";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
+import { cachedPage } from "@/lib/cache/page";
 import { attentionRate, publicationAttention } from "@/lib/lifecycle/stages";
 import type { TapeQuote } from "@/lib/markets/types";
 import type { TodayVerdict } from "@/lib/today/types";
@@ -54,6 +55,10 @@ export interface LandingPayload {
 }
 
 export async function buildLanding(): Promise<LandingPayload> {
+  return cachedPage("landing", 30, buildLandingUncached);
+}
+
+async function buildLandingUncached(): Promise<LandingPayload> {
   const now = Date.now();
   const cycle = getCycleWindow();
   const [pool, clips, analysts, resolved, activity, issueNumber] = await Promise.all([

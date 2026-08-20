@@ -1,6 +1,6 @@
 import "server-only";
 import YahooFinance from "yahoo-finance2";
-import { cached } from "./cache";
+import { cachedPage } from "@/lib/cache/page";
 import type { NewsItem } from "./types";
 
 /**
@@ -12,10 +12,10 @@ import type { NewsItem } from "./types";
 
 const yahooFinance = new YahooFinance({
   suppressNotices: ["yahooSurvey"],
-  queue: { concurrency: 2, interval: 250 },
+  queue: { concurrency: 8, interval: 100 },
 });
 
-const NEWS_TTL = 10 * 60_000;
+const NEWS_TTL_S = 10 * 60;
 
 interface YahooNews {
   title?: string;
@@ -45,7 +45,7 @@ async function search(query: string, count: number): Promise<NewsItem[]> {
 
 /** General market headlines for the Market News band. */
 export async function getMarketNews(limit = 12): Promise<NewsItem[]> {
-  return cached(`yahoo:news:market:${limit}`, NEWS_TTL, async () => {
+  return cachedPage(`yahoo:news:market:${limit}`, NEWS_TTL_S, async () => {
     const [a, b] = await Promise.all([search("stock market today", limit), search("Wall Street", limit)]);
     const seen = new Set<string>();
     return [...a, ...b]
@@ -58,5 +58,5 @@ export async function getMarketNews(limit = 12): Promise<NewsItem[]> {
 /** Ticker-specific headlines for an instrument page. */
 export async function getTickerNews(symbol: string, limit = 8): Promise<NewsItem[]> {
   const sym = symbol.toUpperCase();
-  return cached(`yahoo:news:${sym}:${limit}`, NEWS_TTL, () => search(sym, limit));
+  return cachedPage(`yahoo:news:${sym}:${limit}`, NEWS_TTL_S, () => search(sym, limit));
 }

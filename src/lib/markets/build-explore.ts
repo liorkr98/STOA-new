@@ -7,6 +7,7 @@ import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { callActivity, coverageAllTime, coverageWindow, firstCallsRecent } from "@/lib/markets/coverage";
+import { cachedPage } from "@/lib/cache/page";
 import type { Quote } from "@/lib/engine/market/types";
 import type {
   CoveredRow,
@@ -230,23 +231,52 @@ function tapeFrom(quotes: Map<string, Quote>, mostCovered: string[]): TapeQuote[
 
 /** The tape alone (landing page, other surfaces): indices, commodities, then the most-covered names. */
 export async function buildTape(): Promise<TapeQuote[]> {
+  return cachedPage("markets-tape", 20, buildTapeUncached);
+}
+
+async function buildTapeUncached(): Promise<TapeQuote[]> {
+  const fixedP = getQuotesBatch(
+    TAPE_FIXED.map((t) => t.symbol),
+    { fetchBenchmark: false },
+  ).catch(() => new Map<string, Quote>());
   const coverageAll = await coverageCounts();
   const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
-  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered], { fetchBenchmark: false }).catch(
-    () => new Map<string, Quote>(),
-  );
+  const [fixed, rest] = await Promise.all([
+    fixedP,
+    mostCovered.length
+      ? getQuotesBatch(mostCovered, { fetchBenchmark: false }).catch(() => new Map<string, Quote>())
+      : Promise.resolve(new Map<string, Quote>()),
+  ]);
+  const quotes = rest.size ? new Map([...fixed, ...rest]) : fixed;
   return tapeFrom(quotes, mostCovered);
 }
 
 export async function buildExplore(): Promise<ExplorePayload> {
-  const since = new Date(Date.now() - WEEK_MS);
-  const twoWeeksAgo = new Date(Date.now() - 2 * WEEK_MS);
-  const [coverageAll, coverageWeek, coverageLastWeek, activity] = await Promise.all([
+  return cachedPage("markets-explore", 20, buildExploreUncached);
+}
+
+async function buildExploreUncached(): Promise<ExplorePayload> {
+  const minute = 60_000;
+  const since = new Date(Math.floor((Date.now() - WEEK_MS) / minute) * minute);
+  const twoWeeksAgo = new Date(Math.floor((Date.now() - 2 * WEEK_MS) / minute) * minute);
+  const knownSymbols = [
+    ...TAPE_FIXED.map((t) => t.symbol),
+    ...MARKET_THEMES.flatMap((t) => t.tickers),
+    ...CURATED_ETFS.map((e) => e.symbol),
+  ];
+  const knownQuotesP = getQuotesBatch(knownSymbols, { fetchBenchmark: false }).catch(
+    () => new Map<string, Quote>(),
+  );
+
+  const [coverageAll, coverageWeek, coverageLastWeek, activity, knownQuotes] = await Promise.all([
     coverageCounts(),
     coverageCounts(since),
     coverageCounts(twoWeeksAgo, since),
     callActivity(),
+    knownQuotesP,
   ]);
+
+  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
 
   const [themesRaw, coveredRaw, newlyCalledRaw, sectors, uncoveredRaw] = await Promise.all([
     buildThemes(coverageWeek, coverageLastWeek),
@@ -256,16 +286,16 @@ export async function buildExplore(): Promise<ExplorePayload> {
     buildUncovered(coverageAll, 4),
   ]);
 
-  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
-  const rowSymbols = [
-    ...themesRaw.flatMap((t) => t.constituents.map((c) => c.symbol)),
+  const extraSymbols = [
+    ...mostCovered,
     ...coveredRaw.map((r) => r.symbol),
     ...newlyCalledRaw.map((r) => r.symbol),
     ...uncoveredRaw.map((r) => r.symbol),
-  ];
-  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered, ...rowSymbols], { fetchBenchmark: false }).catch(
-    () => new Map<string, Quote>(),
-  );
+  ].filter((s) => !knownQuotes.has(s.toUpperCase()));
+  const extraQuotes = extraSymbols.length
+    ? await getQuotesBatch(extraSymbols, { fetchBenchmark: false }).catch(() => new Map<string, Quote>())
+    : new Map<string, Quote>();
+  const quotes = extraQuotes.size ? new Map([...knownQuotes, ...extraQuotes]) : knownQuotes;
 
   const themes = themesRaw.map((t) => ({ ...t, constituents: applyQuotes(t.constituents, quotes) }));
   const covered = applyQuotes(coveredRaw, quotes);

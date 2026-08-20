@@ -1,22 +1,20 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
-import { cached } from "@/lib/market/cache";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import type { Direction } from "@/lib/types";
 
 /**
  * Ticker coverage and call activity, grouped in Postgres (migration 0054)
  * instead of shipping thousands of rows to be counted in Node.
  *
- * Every one of these was previously a `.limit(2000)` scan whose rows crossed the
- * wire on each request. Markets ran three coverage windows plus a 2000-row
- * prediction scan plus a 4000-row ticker scan per page view; Today, the landing
- * tape and every ticker page each ran another. They are also cached, because
- * coverage changes only when something is published.
+ * Cached across Vercel isolates (not just in-process): coverage only changes
+ * when something is published, so a minute of staleness is invisible. Windowed
+ * keys are bucketed to the minute; using Date.now() in the key used to miss
+ * on every request.
  */
 
-/** Coverage shifts only on publish, so a minute of staleness is invisible. */
-const COVERAGE_TTL_MS = 60_000;
+const COVERAGE_TTL_S = 60;
 
 export interface CallActivityEntry {
   analysts: number;
@@ -25,65 +23,70 @@ export interface CallActivityEntry {
   firstAt: string;
 }
 
+/** Stable timestamp so a 60s cache actually hits. */
+function bucketIso(d: Date): string {
+  const ms = 60_000;
+  return new Date(Math.floor(d.getTime() / ms) * ms).toISOString();
+}
+
 export async function coverageAllTime(): Promise<Map<string, number>> {
-  return cached("coverage:all", COVERAGE_TTL_MS, async () => {
-    const supabase = await createClient();
+  const entries = await cachedPage("coverage:all", COVERAGE_TTL_S, async () => {
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("ticker_coverage_counts");
-    if (error) return new Map<string, number>();
-    return new Map(
-      ((data as { symbol: string; report_count: number }[] | null) ?? []).map((r) => [
-        r.symbol,
-        Number(r.report_count),
-      ]),
+    if (error || !data) return [] as [string, number][];
+    return ((data as { symbol: string; report_count: number }[]) ?? []).map(
+      (r) => [r.symbol, Number(r.report_count)] as [string, number],
     );
   });
+  return new Map(entries);
 }
 
 export async function coverageWindow(since?: Date, until?: Date): Promise<Map<string, number>> {
-  const key = `coverage:win:${since?.toISOString() ?? "-"}:${until?.toISOString() ?? "-"}`;
-  return cached(key, COVERAGE_TTL_MS, async () => {
-    const supabase = await createClient();
+  const sinceIso = since ? bucketIso(since) : null;
+  const untilIso = until ? bucketIso(until) : null;
+  const entries = await cachedPage(`coverage:win:${sinceIso ?? "-"}:${untilIso ?? "-"}`, COVERAGE_TTL_S, async () => {
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("ticker_coverage_window", {
-      p_since: since?.toISOString() ?? null,
-      p_until: until?.toISOString() ?? null,
+      p_since: sinceIso,
+      p_until: untilIso,
     });
-    if (error) return new Map<string, number>();
-    return new Map(
-      ((data as { symbol: string; report_count: number }[] | null) ?? []).map((r) => [
-        r.symbol,
-        Number(r.report_count),
-      ]),
+    if (error || !data) return [] as [string, number][];
+    return ((data as { symbol: string; report_count: number }[]) ?? []).map(
+      (r) => [r.symbol, Number(r.report_count)] as [string, number],
     );
   });
+  return new Map(entries);
 }
 
 export async function callActivity(): Promise<Map<string, CallActivityEntry>> {
-  return cached("coverage:activity", COVERAGE_TTL_MS, async () => {
-    const supabase = await createClient();
+  const entries = await cachedPage("coverage:activity", COVERAGE_TTL_S, async () => {
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("ticker_call_activity");
-    if (error) return new Map<string, CallActivityEntry>();
-    return new Map(
-      (
-        (data as
-          | {
-              symbol: string;
-              analysts: number;
-              long_open: number;
-              short_open: number;
-              first_at: string;
-            }[]
-          | null) ?? []
-      ).map((r) => [
-        r.symbol,
-        {
-          analysts: Number(r.analysts),
-          long: Number(r.long_open),
-          short: Number(r.short_open),
-          firstAt: r.first_at,
-        },
-      ]),
+    if (error || !data) return [] as [string, CallActivityEntry][];
+    return (
+      (data as
+        | {
+            symbol: string;
+            analysts: number;
+            long_open: number;
+            short_open: number;
+            first_at: string;
+          }[]
+        | null) ?? []
+    ).map(
+      (r) =>
+        [
+          r.symbol,
+          {
+            analysts: Number(r.analysts),
+            long: Number(r.long_open),
+            short: Number(r.short_open),
+            firstAt: r.first_at,
+          },
+        ] as [string, CallActivityEntry],
     );
   });
+  return new Map(entries);
 }
 
 /**
@@ -116,8 +119,8 @@ const DIRECTIONS: Direction[] = ["long", "short", "hold"];
  * band without shipping 2000 prediction rows to Node.
  */
 export async function firstCallsRecent(limit: number): Promise<FirstCallRow[]> {
-  return cached(`coverage:first-calls:${limit}`, COVERAGE_TTL_MS, async () => {
-    const supabase = await createClient();
+  return cachedPage(`coverage:first-calls:${limit}`, COVERAGE_TTL_S, async () => {
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("first_calls_recent", { p_limit: limit });
     if (error || !data) return [];
     return ((data as {

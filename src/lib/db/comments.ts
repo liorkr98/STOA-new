@@ -1,8 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Comment } from "@/lib/types";
 
 export async function listComments(reportId: string, limit = 50): Promise<Comment[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("comments")
     .select("*, author:profiles!comments_author_id_fkey(*)")
@@ -16,7 +16,7 @@ export async function listComments(reportId: string, limit = 50): Promise<Commen
 export async function listCommentsForReports(reportIds: string[], limitPerReport = 30): Promise<Map<string, Comment[]>> {
   const map = new Map<string, Comment[]>();
   if (reportIds.length === 0) return map;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("comments")
     .select("*, author:profiles!comments_author_id_fkey(*)")

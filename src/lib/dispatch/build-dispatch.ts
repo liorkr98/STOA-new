@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
@@ -7,6 +8,7 @@ import { listSavedReports } from "@/lib/db/saved";
 import type { Prediction, Profile, Report } from "@/lib/types";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
+import { cachedPage } from "@/lib/cache/page";
 import {
   estimateReadMinutes,
   inCycle,
@@ -35,7 +37,7 @@ function normalizeReport(row: Record<string, unknown>): Report {
 const fetchIssueNumber = () => getIssueNumber(getCycleWindow().dateIso);
 
 async function fetchPublishedReports(limit = 80): Promise<Report[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
@@ -48,7 +50,7 @@ async function fetchPublishedReports(limit = 80): Promise<Report[]> {
 async function fetchResolvedPredictions(since: Date, limit = 40): Promise<
   (Prediction & { author?: Profile; report?: { id: string; ticker: string | null } })[]
 > {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("predictions")
     .select(
@@ -198,6 +200,11 @@ function buildLedger(
 }
 
 export async function buildDispatch(personalized: boolean): Promise<DispatchPayload> {
+  if (!personalized) return cachedPage("dispatch-public", 30, () => assembleDispatch(false));
+  return assembleDispatch(true);
+}
+
+async function assembleDispatch(personalized: boolean): Promise<DispatchPayload> {
   const resolvedLookback = new Date(getCycleWindow().start.getTime() - 14 * 86_400_000);
 
   const [personal, issueNumber, allReports, resolvedRaw] = await Promise.all([

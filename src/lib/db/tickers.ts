@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import type { CapBand } from "@/lib/market/cap-bands";
 import { UNIVERSE, type UniverseEntry } from "@/lib/universe";
 
@@ -64,8 +65,12 @@ export async function capBandForTicker(ticker: string | null | undefined): Promi
 
 export const getTickerRow = cache(async (symbol: string): Promise<TickerRow | null> => {
   const sym = symbol.toUpperCase();
+  return cachedPage(`ticker-row:${sym}`, 300, () => loadTickerRow(sym));
+});
+
+async function loadTickerRow(sym: string): Promise<TickerRow | null> {
   try {
-    const db = await createClient();
+    const db = createPublicClient();
     const { data } = await db.from("tickers").select("*").eq("symbol", sym).maybeSingle();
     if (data) return data as TickerRow;
   } catch {
@@ -85,7 +90,7 @@ export const getTickerRow = cache(async (symbol: string): Promise<TickerRow | nu
     cap_band: featured.capBand,
     metrics_updated_at: null,
   };
-});
+}
 
 /** Batch form of getTickerRow, for surfaces that resolve a whole watchlist. */
 export async function listTickerRows(symbols: string[]): Promise<TickerRow[]> {
@@ -94,7 +99,7 @@ export async function listTickerRows(symbols: string[]): Promise<TickerRow[]> {
 
   let rows: TickerRow[] = [];
   try {
-    const db = await createClient();
+    const db = createPublicClient();
     const { data } = await db.from("tickers").select("*").in("symbol", wanted);
     rows = (data as TickerRow[]) ?? [];
   } catch {
@@ -132,7 +137,7 @@ export async function listMarketTickers(
   const to = from + limit - 1;
 
   try {
-    const db = await createClient();
+    const db = createPublicClient();
     let q = db
       .from("tickers")
       .select("*", { count: "exact" })
@@ -190,7 +195,7 @@ export async function listMarketTickers(
 
 export async function listSectorPeers(sector: string, exclude: string, limit = 6): Promise<TickerRow[]> {
   try {
-    const db = await createClient();
+    const db = createPublicClient();
     const { data } = await db
       .from("tickers")
       .select("*")

@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { InstrumentSearch } from "@/components/markets/instrument-search";
-import {
-  ExploreCovered,
-  ExploreEtfs,
-  ExploreMovement,
-  ExploreNewlyCalled,
-  ExploreSectors,
-  ExploreThemes,
-  ExploreUncovered,
-  MarketTape,
-} from "@/components/markets/explore-bands";
-import { buildExplore } from "@/lib/markets/build-explore";
+import { ExploreFallback, ExploreSlot } from "@/components/markets/explore-slot";
 import { TodayNewsSlot } from "@/components/today/today-news-slot";
 
 export const metadata: Metadata = { title: "Markets" };
@@ -35,8 +25,6 @@ function dateline(): string {
  * already had in mind. No trade controls anywhere; this is research only.
  */
 export default async function MarketsPage() {
-  const explore = await buildExplore();
-
   return (
     <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
       <header>
@@ -46,15 +34,9 @@ export default async function MarketsPage() {
 
       <InstrumentSearch />
 
-      <MarketTape quotes={explore.tape} />
-
-      <ExploreThemes themes={explore.themes} />
-      <ExploreCovered rows={explore.covered} />
-      <ExploreNewlyCalled rows={explore.newlyCalled} />
-      <ExploreMovement />
-      <ExploreSectors sectors={explore.sectors} />
-      <ExploreEtfs rows={explore.etfs} />
-      <ExploreUncovered rows={explore.uncovered} />
+      <Suspense fallback={<ExploreFallback />}>
+        <ExploreSlot />
+      </Suspense>
       <Suspense fallback={null}>
         <TodayNewsSlot />
       </Suspense>

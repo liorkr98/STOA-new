@@ -1,5 +1,7 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import type { Prediction, Profile } from "@/lib/types";
 
 export type ResolvedCall = Prediction & {
@@ -9,7 +11,7 @@ export type ResolvedCall = Prediction & {
 /** Recently resolved calls with their analyst, newest first -- the landing
  * page's proof strip. Real outcomes only, hits and misses alike. */
 export async function listRecentResolved(limit = 8): Promise<ResolvedCall[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("predictions")
     .select("*, author:profiles!predictions_author_id_fkey(handle, display_name, score)")
@@ -27,19 +29,21 @@ export type ResolvedCallWithReport = Prediction & {
 
 /** Recently resolved calls joined to author and report, for Verdicts bands. */
 export async function listRecentResolvedWithReports(limit = 24): Promise<ResolvedCallWithReport[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select(
-      "*, author:profiles!predictions_author_id_fkey(*), report:reports!predictions_report_id_fkey(id, title, summary, status)",
-    )
-    .neq("outcome", "open")
-    .not("resolved_price", "is", null)
-    .order("resolves_at", { ascending: false })
-    .limit(limit);
-  return ((data as unknown as ResolvedCallWithReport[]) ?? []).filter(
-    (p) => p.author && p.report && p.report.status === "published",
-  );
+  return cachedPage(`resolved-with-reports:${limit}`, 30, async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("predictions")
+      .select(
+        "*, author:profiles!predictions_author_id_fkey(*), report:reports!predictions_report_id_fkey(id, title, summary, status)",
+      )
+      .neq("outcome", "open")
+      .not("resolved_price", "is", null)
+      .order("resolves_at", { ascending: false })
+      .limit(limit);
+    return ((data as unknown as ResolvedCallWithReport[]) ?? []).filter(
+      (p) => p.author && p.report && p.report.status === "published",
+    );
+  });
 }
 
 export async function listPredictionsByAuthor(
@@ -74,7 +78,7 @@ export async function resolvedCountsByAuthors(
   const out: Record<string, number> = Object.fromEntries(unique.map((id) => [id, 0]));
   if (unique.length === 0) return out;
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.rpc("resolved_counts_by_authors", { p_ids: unique });
   if (!error && data) {
     for (const row of data as { author_id: string; resolved_count: number }[]) {
@@ -97,7 +101,7 @@ export async function resolvedCountsByAuthors(
 /** Whether any resolved (non-open) call exists for this ticker -- the line
  * between "locked, fact-checked research" and "verified track record" copy. */
 export const hasResolvedHistory = cache(async (ticker: string): Promise<boolean> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { count } = await supabase
     .from("predictions")
     .select("id", { count: "exact", head: true })

@@ -12,6 +12,7 @@ import { MARKET_THEMES } from "@/lib/markets/themes";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
+import { cachedPage } from "@/lib/cache/page";
 import {
   medianRate,
   publicationAttention,
@@ -122,6 +123,11 @@ function creatorRow(p: Profile, marker: StageMarker, suggestion = false): TodayC
  * issue (no desk, no memberships); Verdicts renders for everyone.
  */
 export async function buildTodayPage(userId: string | null): Promise<TodayPagePayload> {
+  if (!userId) return cachedPage("today-public", 20, () => assembleTodayPage(null));
+  return assembleTodayPage(userId);
+}
+
+async function assembleTodayPage(userId: string | null): Promise<TodayPagePayload> {
   const now = Date.now();
   const cycle = getCycleWindow();
   const dateISO = cycle.dateIso;

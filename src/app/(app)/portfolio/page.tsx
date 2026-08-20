@@ -35,18 +35,13 @@ export default function PortfolioPage() {
     queryKey: ["portfolio-quotes", holdings.map((h) => h.ticker).sort().join(",")],
     enabled: holdings.length > 0,
     queryFn: async () => {
-      const entries = await Promise.all(
-        holdings.map(async (h) => {
-          try {
-            const r = await fetch(`/api/market/quote?ticker=${encodeURIComponent(h.ticker)}`);
-            const body = (await r.json()) as { price?: number };
-            return [h.ticker, typeof body.price === "number" ? body.price : null] as const;
-          } catch {
-            return [h.ticker, null] as const;
-          }
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number | null>;
+      const qs = holdings.map((h) => encodeURIComponent(h.ticker)).join(",");
+      const r = await fetch(`/api/market/quotes?tickers=${qs}`);
+      if (!r.ok) return {} as Record<string, number | null>;
+      const body = (await r.json()) as { quotes?: Record<string, { price: number | null }> };
+      const out: Record<string, number | null> = {};
+      for (const h of holdings) out[h.ticker] = body.quotes?.[h.ticker]?.price ?? null;
+      return out;
     },
   });
 

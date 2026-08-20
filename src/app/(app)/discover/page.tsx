@@ -104,9 +104,12 @@ export default async function DiscoverPage({
 }: {
   searchParams: Promise<DiscoverParams>;
 }) {
-  const params = await searchParams;
+  const [params, profile, flagOn] = await Promise.all([
+    searchParams,
+    getSessionProfile(),
+    isVideoFirstDiscover(),
+  ]);
   const tab = params.tab ?? "trending";
-  const profile = await getSessionProfile();
   const userId = profile?.id ?? null;
   const filters = parseFeedFilters(params);
   const filtersActive = Object.keys(filters).length > 0;
@@ -114,7 +117,6 @@ export default async function DiscoverPage({
   // Video-first is the default Feed. `?layout=text` reaches the legacy text
   // mosaic (the layout toggle and the empty state link to it); the env flag
   // can turn video-first off wholesale for a rollback.
-  const flagOn = await isVideoFirstDiscover();
   const videoFirst =
     tab !== "researchers" &&
     (params.layout === "video" || (flagOn && params.layout !== "text"));

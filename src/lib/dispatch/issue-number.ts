@@ -1,7 +1,7 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
-import { cached } from "@/lib/market/cache";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import { fallbackIssueNumber } from "@/lib/dispatch/cycle";
 
 /**
@@ -14,12 +14,10 @@ import { fallbackIssueNumber } from "@/lib/dispatch/cycle";
  * the render path entirely while keeping the same value.
  */
 
-const ISSUE_TTL_MS = 60 * 60_000;
-
 export async function getIssueNumber(dateISO: string): Promise<number> {
-  return cached(`dispatch:issue:${dateISO}`, ISSUE_TTL_MS, async () => {
+  return cachedPage(`dispatch:issue:${dateISO}`, 3600, async () => {
     try {
-      const supabase = await createClient();
+      const supabase = createPublicClient();
       const { data, error } = await supabase.rpc("bump_dispatch_issue");
       if (!error && typeof data === "number") return data;
     } catch {

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { getCandles, getCandlesBetween } from "@/lib/engine/market/candles";
 import { listByTicker, publishedReportCount } from "@/lib/db/reports";
-import { getTickerRow, listSectorPeers } from "@/lib/db/tickers";
+import { getTickerRow, listSectorPeers, featuredUniverseEntry } from "@/lib/db/tickers";
 import { hasResolvedHistory } from "@/lib/db/predictions";
-import { coverageFor } from "@/lib/markets/coverage";
+import { coverageAllTime } from "@/lib/markets/coverage";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CallsChart } from "@/components/markets/calls-chart";
 import {
@@ -141,13 +141,16 @@ export default async function TickerPage({
   // snapshots start in parallel with the fund check so stocks don't wait on a
   // Yahoo round trip that will return null.
   const knownFund = Boolean(curatedEtf(sym));
-  const [etf, reports, calls, candles, snapshot, meta] = await Promise.all([
+  const featured = featuredUniverseEntry(sym);
+  const [etf, reports, calls, candles, snapshot, meta, peersEarly, coverageAll] = await Promise.all([
     buildEtfSnapshot(sym),
     listByTicker(sym),
     buildStockCalls(sym),
     candlesFor(),
     knownFund ? Promise.resolve(null) : getStockSnapshot(sym),
     getTickerRow(sym),
+    featured?.sector ? listSectorPeers(featured.sector, sym, 6) : Promise.resolve(null),
+    coverageAllTime(),
   ]);
 
   const publications = reports.flatMap((r: Report) => {
@@ -155,8 +158,14 @@ export default async function TickerPage({
     return item ? [item] : [];
   });
 
+  const countsFor = (symbols: string[]) => {
+    const out: Record<string, number> = {};
+    for (const s of symbols) out[s.toUpperCase()] = coverageAll.get(s.toUpperCase()) ?? 0;
+    return out;
+  };
+
   if (etf) {
-    const coverage = await coverageFor(etf.holdings.map((h) => h.symbol));
+    const coverage = countsFor(etf.holdings.map((h) => h.symbol));
     return (
       <EtfView
         etf={etf}
@@ -172,8 +181,10 @@ export default async function TickerPage({
   }
 
   const equitySnapshot = snapshot ?? (await getStockSnapshot(sym));
-  const peers = meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : [];
-  const coverage = await coverageFor(peers.map((p) => p.symbol));
+  const peers =
+    peersEarly ??
+    (meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : []);
+  const coverage = countsFor(peers.map((p) => p.symbol));
 
   return (
     <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
