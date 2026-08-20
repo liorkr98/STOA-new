@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { deleteChartSnapshotsForReport } from "@/lib/reports/chart-storage";
 import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
+import { normalizeTags } from "@/lib/tags/validate";
 import type { ComposeInput, AccessType } from "@/lib/types";
 
 async function requireUser() {
@@ -19,6 +20,8 @@ async function requireUser() {
 /** Saves a draft. Returns the report id so the editor can keep autosaving. */
 export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
   const { supabase, userId } = await requireUser();
+  // A draft may be untagged; publish is where the primary tag becomes mandatory.
+  const tags = await normalizeTags(supabase, input);
   const payload = {
     author_id: userId,
     type: input.type,
@@ -30,6 +33,10 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
     required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     ticker: input.ticker ? input.ticker.toUpperCase() : null,
+    primary_tag: tags.primary_tag,
+    secondary_tags: tags.secondary_tags,
+    theme_tag: tags.theme_tag,
+    scheduled_for: input.scheduled_for ?? null,
     status: "draft" as const,
   };
 

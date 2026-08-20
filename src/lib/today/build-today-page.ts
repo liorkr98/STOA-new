@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { getMarketNews } from "@/lib/market/yahoo-news";
 import { MARKET_THEMES } from "@/lib/markets/themes";
+import { themeLabel } from "@/lib/tags/taxonomy";
+import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { getCycleWindow, fallbackIssueNumber } from "@/lib/dispatch/cycle";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import {
@@ -43,14 +45,15 @@ function toAnalyst(profile: Profile): TodayAnalyst {
 
 /**
  * The content badge states exactly what is stored: a ready clip, a locked
- * call, a written thesis. Cards are not persisted per publication, so they
- * are never claimed. CONTENT_BADGE_PLACEHOLDER: add "Cards" once stored.
+ * call, a written thesis, an evidence stack. Nothing is claimed that a reader
+ * cannot then find.
  */
-export function honestBadge(report: Report, hasVideo: boolean): string[] {
+export function honestBadge(report: Report, hasVideo: boolean, hasCards = false): string[] {
   const badge: string[] = [];
   if (hasVideo) badge.push("Video");
   if (report.prediction) badge.push("Call");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
+  if (hasCards) badge.push("Cards");
   if (badge.length === 0) badge.push("Note");
   return badge;
 }
@@ -70,6 +73,7 @@ interface Ctx {
   clipsByReport: Map<string, VideoClipCard>;
   sectorByTicker: Map<string, string | null>;
   savedIds: Set<string>;
+  cardIds: Set<string>;
   markerByReport: Map<string, StageMarker>;
   markerByAuthor: Map<string, StageMarker>;
 }
@@ -86,7 +90,7 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
     // Anchoring rule: only a locked call earns a ticker and direction chip.
     ticker: hasCall ? (report.prediction?.ticker ?? null) : null,
     direction: hasCall ? (report.prediction?.direction ?? null) : null,
-    contentBadge: honestBadge(report, Boolean(clip)),
+    contentBadge: honestBadge(report, Boolean(clip), ctx.cardIds.has(report.id)),
     headline: storyHeadline(report),
     deck: storyDek(report),
     author: toAnalyst(report.author),
@@ -95,8 +99,8 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
     price: report.price,
     saved: ctx.savedIds.has(report.id),
     thumb: clip ? { thumbnailUrl: clip.thumbnail_url, durationSeconds: clip.duration_seconds } : null,
-    // THEME_TAG_PLACEHOLDER: no per-publication theme is stored yet.
-    themeTag: null,
+    // Callless items anchor on the publication's stored theme tag.
+    themeTag: hasCall ? null : themeLabel(report),
     sector: (() => {
       const sym = (report.prediction?.ticker ?? report.ticker)?.toUpperCase();
       return sym ? ctx.sectorByTicker.get(sym) ?? null : null;
@@ -180,7 +184,8 @@ export async function buildTodayPage(userId: string | null): Promise<TodayPagePa
   const markerByAuthor = new Map<string, StageMarker>();
   for (const [id, s] of creatorSamples) markerByAuthor.set(id, visibleStageMarker(stageFor(s, "creator", creatorMedian, now)));
 
-  const ctx: Ctx = { clipsByReport, sectorByTicker, savedIds, markerByReport, markerByAuthor };
+  const cardIds = await reportIdsWithCards(pool.map((r) => r.id));
+  const ctx: Ctx = { clipsByReport, sectorByTicker, savedIds, cardIds, markerByReport, markerByAuthor };
   const items = new Map<string, TodayItem>();
   for (const r of pool) {
     const it = toItem(r, ctx);

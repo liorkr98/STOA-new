@@ -4,8 +4,9 @@
  * total. Tags are data, not hard-coded strings in components, so the list can
  * change here (or move to a table) without touching the picker.
  *
- * TAGS_PLACEHOLDER: there is no reports.primary_tag / reports.secondary_tags
- * column yet, so a picked tag lives in the editor only. See the backend brief.
+ * The canonical list now lives in the `publication_tags` table (migration 0049),
+ * which validates every write to `reports.primary_tag` / `secondary_tags`. This
+ * file mirrors it for the picker's grouping and labels; keep the two in sync.
  */
 
 export interface TagGroup {
@@ -95,4 +96,19 @@ export function tagForSector(sector: string | null | undefined): PublicationTag 
   if (!sector) return undefined;
   const s = sector.trim().toLowerCase();
   return ALL_TAGS.find((t) => t.sector?.toLowerCase() === s);
+}
+
+/**
+ * Display label for a theme chip on a callless publication. Prefers the stored
+ * theme tag, then the primary tag, and finally the ticker's sector as the legacy
+ * fallback for rows published before tags existed. An unrecognised slug still
+ * renders (uppercased) rather than disappearing.
+ */
+export function themeLabel(
+  input: { theme_tag?: string | null; primary_tag?: string | null },
+  sectorFallback?: string | null,
+): string | null {
+  const slug = input.theme_tag ?? input.primary_tag ?? null;
+  if (slug) return (tagBySlug(slug)?.label ?? slug).toUpperCase();
+  return sectorFallback ? sectorFallback.toUpperCase() : null;
 }

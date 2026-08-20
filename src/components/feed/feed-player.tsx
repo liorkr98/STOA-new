@@ -11,6 +11,7 @@ import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
+import { trackEngagement } from "@/lib/engagement/track-client";
 import { cn } from "@/lib/design/cn";
 import type { FeedPublication } from "@/lib/feed/types";
 
@@ -92,6 +93,23 @@ export function FeedPlayer({
   useEffect(() => {
     playerCommand(iframeRef.current, paused ? "pause" : "play");
   }, [paused, index]);
+
+  // Engagement (brief item 4): one impression + play per publication reached, and
+  // the swipe depth so the funnel knows how far a session got. Batched client-side.
+  useEffect(() => {
+    if (!pub) return;
+    trackEngagement({ reportId: pub.id, kind: "impression", surface: "feed" });
+    trackEngagement({ reportId: pub.id, kind: "play", surface: "feed" });
+    trackEngagement({ reportId: pub.id, kind: "swipe_depth", value: index, surface: "feed" });
+  }, [pub, index]);
+
+  // Reaching the unlock card is the paywall's funnel step.
+  useEffect(() => {
+    if (!pub) return;
+    if (unlockIndex >= 0 && cardIndex === unlockIndex) {
+      trackEngagement({ reportId: pub.id, kind: "cta_reach", value: cardIndex, surface: "feed" });
+    }
+  }, [pub, cardIndex, unlockIndex]);
 
   useEffect(() => {
     const el = cardTrackRef.current;

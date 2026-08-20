@@ -96,7 +96,7 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
-  // TAGS_PLACEHOLDER: held in the editor only; no column stores tags yet.
+  // Persisted on save/publish to reports.primary_tag / secondary_tags.
   const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
   // The fork. An existing draft is written work until the creator adds video;
   // a fresh compose asks first. Switching keeps every field mounted, so nothing
@@ -245,6 +245,8 @@ export function StudioEditor({
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
         horizon_days: hasCard ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
       });
       setDraftId(res.id);
       setSaveStatus("saved");
@@ -334,6 +336,8 @@ export function StudioEditor({
             direction: lockingCall ? direction : undefined,
             target_price: lockingCall && target ? Number(target) : null,
             horizon_days: lockingCall ? horizon : undefined,
+            primary_tag: tags.primary,
+            secondary_tags: tags.secondary,
           });
           id = res.id;
           setDraftId(id);
@@ -360,6 +364,8 @@ export function StudioEditor({
         direction: lockingCall ? direction : undefined,
         target_price: lockingCall && target ? Number(target) : null,
         horizon_days: lockingCall ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {
