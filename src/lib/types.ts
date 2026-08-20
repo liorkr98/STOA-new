@@ -255,6 +255,8 @@ export interface Comment {
   id: string;
   report_id: string;
   author_id: string;
+  /** Set on a reply. Threads are exactly one level deep (DB trigger). */
+  parent_id?: string | null;
   body: string;
   likes: number;
   created_at: string;
