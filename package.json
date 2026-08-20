@@ -30,7 +30,10 @@
     "test:users": "npx tsx scripts/simulate-users.ts",
     "vercel:setup": "node scripts/vercel-setup.mjs",
     "vercel:fix-cron-secret": "node scripts/fix-vercel-cron-secret.mjs",
-    "integrations:verify": "node scripts/verify-integrations.mjs"
+    "integrations:verify": "node scripts/verify-integrations.mjs",
+    "demo:seed": "tsx scripts/seed-demo.ts",
+    "demo:teardown": "tsx scripts/demo-teardown.ts",
+    "demo:inventory": "tsx scripts/demo-inventory.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.8",
