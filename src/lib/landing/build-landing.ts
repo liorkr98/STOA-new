@@ -6,10 +6,10 @@ import { listRecentResolvedWithReports } from "@/lib/db/predictions";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { listTickerRows } from "@/lib/db/tickers";
 import { getTodayActivity, type TodayActivity } from "@/lib/db/platform-stats";
-import { buildTape } from "@/lib/markets/build-explore";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { storyHeadline } from "@/lib/dispatch/ranking";
-import { fallbackIssueNumber, getCycleWindow } from "@/lib/dispatch/cycle";
+import { getCycleWindow } from "@/lib/dispatch/cycle";
+import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { attentionRate, publicationAttention } from "@/lib/lifecycle/stages";
 import type { TapeQuote } from "@/lib/markets/types";
 import type { TodayVerdict } from "@/lib/today/types";
@@ -56,13 +56,13 @@ export interface LandingPayload {
 export async function buildLanding(): Promise<LandingPayload> {
   const now = Date.now();
   const cycle = getCycleWindow();
-  const [pool, clips, analysts, resolved, activity, tape] = await Promise.all([
+  const [pool, clips, analysts, resolved, activity, issueNumber] = await Promise.all([
     listRecentPublished(80).catch(() => []),
     listVideoClipCards(80).catch(() => []),
     listAnalystsByFollowers(30).catch(() => []),
     listRecentResolvedWithReports(40).catch(() => []),
     getTodayActivity(),
-    buildTape().catch(() => [] as TapeQuote[]),
+    getIssueNumber(cycle.dateIso),
   ]);
 
   const symbols = [...new Set(pool.map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s)))];
@@ -141,8 +141,8 @@ export async function buildLanding(): Promise<LandingPayload> {
 
   return {
     activity,
-    tape,
-    issue: { issueNumber: fallbackIssueNumber(cycle.dateIso), dateISO: cycle.dateIso },
+    tape: [],
+    issue: { issueNumber, dateISO: cycle.dateIso },
     lead,
     headlines,
     verdicts,

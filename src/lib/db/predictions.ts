@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Prediction, Profile } from "@/lib/types";
 
@@ -58,18 +59,44 @@ export async function listPredictionsByAuthor(
 }
 
 export async function resolvedCountByAuthor(authorId: string): Promise<number> {
+  const counts = await resolvedCountsByAuthors([authorId]);
+  return counts[authorId] ?? 0;
+}
+
+/**
+ * Resolved (non-open) call counts for many analysts in one grouped query.
+ * Discover Researchers and Search used to fire one `count` round trip per card.
+ */
+export async function resolvedCountsByAuthors(
+  authorIds: string[],
+): Promise<Record<string, number>> {
+  const unique = [...new Set(authorIds.filter(Boolean))];
+  const out: Record<string, number> = Object.fromEntries(unique.map((id) => [id, 0]));
+  if (unique.length === 0) return out;
+
   const supabase = await createClient();
-  const { count } = await supabase
+  const { data, error } = await supabase.rpc("resolved_counts_by_authors", { p_ids: unique });
+  if (!error && data) {
+    for (const row of data as { author_id: string; resolved_count: number }[]) {
+      out[row.author_id] = Number(row.resolved_count);
+    }
+    return out;
+  }
+
+  const { data: rows } = await supabase
     .from("predictions")
-    .select("id", { count: "exact", head: true })
-    .eq("author_id", authorId)
+    .select("author_id")
+    .in("author_id", unique)
     .neq("outcome", "open");
-  return count ?? 0;
+  for (const row of (rows as { author_id: string }[] | null) ?? []) {
+    out[row.author_id] = (out[row.author_id] ?? 0) + 1;
+  }
+  return out;
 }
 
 /** Whether any resolved (non-open) call exists for this ticker -- the line
  * between "locked, fact-checked research" and "verified track record" copy. */
-export async function hasResolvedHistory(ticker: string): Promise<boolean> {
+export const hasResolvedHistory = cache(async (ticker: string): Promise<boolean> => {
   const supabase = await createClient();
   const { count } = await supabase
     .from("predictions")
@@ -77,4 +104,4 @@ export async function hasResolvedHistory(ticker: string): Promise<boolean> {
     .eq("ticker", ticker.toUpperCase())
     .neq("outcome", "open");
   return (count ?? 0) > 0;
-}
+});

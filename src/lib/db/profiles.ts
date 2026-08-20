@@ -1,7 +1,8 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
-export async function getProfileByHandle(handle: string): Promise<Profile | null> {
+export const getProfileByHandle = cache(async (handle: string): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
@@ -9,7 +10,7 @@ export async function getProfileByHandle(handle: string): Promise<Profile | null
     .eq("handle", handle)
     .maybeSingle();
   return (data as Profile) ?? null;
-}
+});
 
 export async function getProfileById(id: string): Promise<Profile | null> {
   const supabase = await createClient();

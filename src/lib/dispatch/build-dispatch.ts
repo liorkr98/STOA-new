@@ -5,7 +5,8 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { listSavedReports } from "@/lib/db/saved";
 import type { Prediction, Profile, Report } from "@/lib/types";
-import { fallbackIssueNumber, getCycleWindow } from "@/lib/dispatch/cycle";
+import { getCycleWindow } from "@/lib/dispatch/cycle";
+import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import {
   estimateReadMinutes,
   inCycle,
@@ -31,16 +32,7 @@ function normalizeReport(row: Record<string, unknown>): Report {
   return { ...(row as unknown as Report), prediction };
 }
 
-async function fetchIssueNumber(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("bump_dispatch_issue");
-    if (!error && typeof data === "number") return data;
-  } catch {
-    // migration may not be applied locally
-  }
-  return fallbackIssueNumber(getCycleWindow().dateIso);
-}
+const fetchIssueNumber = () => getIssueNumber(getCycleWindow().dateIso);
 
 async function fetchPublishedReports(limit = 80): Promise<Report[]> {
   const supabase = await createClient();
@@ -206,18 +198,22 @@ function buildLedger(
 }
 
 export async function buildDispatch(personalized: boolean): Promise<DispatchPayload> {
-  const userId = personalized ? await getSessionUserId() : null;
-  const issueNumber = await fetchIssueNumber();
+  const resolvedLookback = new Date(getCycleWindow().start.getTime() - 14 * 86_400_000);
 
-  let authorIds = new Set<string>();
-  const tickers = new Set<string>();
-  if (userId) {
-    const signals = await buildPersonalizationSets(userId);
-    authorIds = signals.authorIds;
-    for (const t of signals.tickers) tickers.add(t);
-  }
+  const [personal, issueNumber, allReports, resolvedRaw] = await Promise.all([
+    (async () => {
+      if (!personalized) return { userId: null as string | null, authorIds: new Set<string>(), tickers: new Set<string>() };
+      const userId = await getSessionUserId();
+      if (!userId) return { userId: null, authorIds: new Set<string>(), tickers: new Set<string>() };
+      const signals = await buildPersonalizationSets(userId);
+      return { userId, authorIds: signals.authorIds, tickers: signals.tickers };
+    })(),
+    fetchIssueNumber(),
+    fetchPublishedReports(),
+    fetchResolvedPredictions(resolvedLookback),
+  ]);
 
-  const allReports = await fetchPublishedReports();
+  const { userId, authorIds, tickers } = personal;
   let cycleWindow = getCycleWindow();
   let fallbackCycle = false;
 
@@ -252,8 +248,6 @@ export async function buildDispatch(personalized: boolean): Promise<DispatchPayl
     cycleWindow.end,
   );
 
-  const resolvedSince = new Date(cycleWindow.start.getTime() - 7 * 86_400_000);
-  const resolvedRaw = await fetchResolvedPredictions(resolvedSince);
   const resolved = buildLedger(
     resolvedRaw,
     cycleWindow.start,

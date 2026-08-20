@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { ComparisonNodeView } from "@/components/editor/tiptap/nodes/comparison-node-view";
+import { ComparisonNodeView } from "@/components/editor/tiptap/nodes/lazy-node-views";
 
 /**
  * comparisonNode -- a fundamental metric compared across 2-8 tickers over time

@@ -52,11 +52,9 @@ export async function generateMetadata({
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const report = await getReport(id);
+  const [report, userId] = await Promise.all([getReport(id), getSessionUserId()]);
   if (!report) notFound();
   const author = report.author;
-
-  const userId = await getSessionUserId();
   const isAuthor = userId === report.author_id;
 
   const [unlocked, subscribed, liked, saved, wallet, comments] = await Promise.all([

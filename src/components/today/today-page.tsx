@@ -9,13 +9,14 @@ import {
   TodayVerdictsRail,
 } from "@/components/today/today-front";
 import type { TodayPagePayload } from "@/lib/today/types";
+import type { ReactNode } from "react";
 
 /**
  * Today (/home): Stoa's daily newspaper. A persistent left sidebar of grouped
  * lists beside the main column; a masthead; a split lead; then bands that
  * each scroll horizontally on their own; a quiet wire-news list last.
  */
-export function TodayPage({ data }: { data: TodayPagePayload }) {
+export function TodayPage({ data, news }: { data: TodayPagePayload; news?: ReactNode }) {
   const hasAnything =
     data.lead || data.trending.length || data.desk.length || data.verdicts.length || data.theme || data.news.length;
 
@@ -38,7 +39,7 @@ export function TodayPage({ data }: { data: TodayPagePayload }) {
         <TodayDeskRail items={data.desk} />
         <TodayVerdictsRail verdicts={data.verdicts} />
         {data.theme ? <TodayThemeRail theme={data.theme} /> : null}
-        <TodayNews items={data.news} />
+        {news ?? <TodayNews items={data.news} />}
 
         {!hasAnything ? (
           <p className="mt-16 text-center font-display text-lg text-text-mute">

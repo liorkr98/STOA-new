@@ -8,9 +8,9 @@ import { listVideoClipCards } from "@/lib/db/video-clips";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { createClient } from "@/lib/supabase/server";
 import { getQuotesBatch } from "@/lib/engine/market";
-import { getMarketNews } from "@/lib/market/yahoo-news";
 import { MARKET_THEMES } from "@/lib/markets/themes";
-import { getCycleWindow, fallbackIssueNumber } from "@/lib/dispatch/cycle";
+import { getCycleWindow } from "@/lib/dispatch/cycle";
+import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import {
   medianRate,
@@ -55,16 +55,7 @@ export function honestBadge(report: Report, hasVideo: boolean): string[] {
   return badge;
 }
 
-async function fetchIssueNumber(dateISO: string): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("bump_dispatch_issue");
-    if (!error && typeof data === "number") return data;
-  } catch {
-    // migration may not be applied locally
-  }
-  return fallbackIssueNumber(dateISO);
-}
+const fetchIssueNumber = getIssueNumber;
 
 interface Ctx {
   clipsByReport: Map<string, VideoClipCard>;
@@ -135,33 +126,50 @@ export async function buildTodayPage(userId: string | null): Promise<TodayPagePa
   const cycle = getCycleWindow();
   const dateISO = cycle.dateIso;
 
-  const [pool, clips, analysts, resolved, coverage, news, issueNumber] = await Promise.all([
-    listRecentPublished(120),
-    listVideoClipCards(120),
-    listAnalystsByFollowers(40),
-    listRecentResolvedWithReports(24),
-    tickerCoverage(),
-    getMarketNews(10),
-    fetchIssueNumber(dateISO),
-  ]);
+  const emptySaved = new Set<string>();
+  const [pool, clips, analysts, resolved, coverage, issueNumber, subscribedIds, followedIds, savedIds] =
+    await Promise.all([
+      listRecentPublished(120),
+      listVideoClipCards(120),
+      listAnalystsByFollowers(40),
+      listRecentResolvedWithReports(24),
+      tickerCoverage(),
+      fetchIssueNumber(dateISO),
+      userId ? subscribedAnalystIds(userId) : Promise.resolve([] as string[]),
+      userId ? followedAnalystIds(userId) : Promise.resolve([] as string[]),
+      userId ? fetchSavedIds(userId) : Promise.resolve(emptySaved),
+    ]);
 
-  const [subscribedIds, followedIds, savedIds] = userId
-    ? await Promise.all([subscribedAnalystIds(userId), followedAnalystIds(userId), fetchSavedIds(userId)])
-    : [[], [], new Set<string>()];
   const deskAuthorIds = [...new Set([...subscribedIds, ...followedIds])];
-  const [deskReports, deskProfiles] = await Promise.all([
+  const poolSymbols = [
+    ...new Set(pool.map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s))),
+  ];
+  const popularSyms = Object.entries(coverage)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([s]) => s.toUpperCase());
+
+  const [deskReports, deskProfiles, poolTickerRows, popularQuotes] = await Promise.all([
     listPublishedByAuthors(deskAuthorIds, 30),
     getProfilesByIds(deskAuthorIds),
+    poolSymbols.length ? listTickerRows(poolSymbols) : Promise.resolve([]),
+    getQuotesBatch(popularSyms, { fetchBenchmark: false }).catch(() => new Map()),
   ]);
 
   const clipsByReport = new Map<string, VideoClipCard>();
   for (const c of clips) if (!clipsByReport.has(c.report_id)) clipsByReport.set(c.report_id, c);
 
-  const allSymbols = [
-    ...new Set([...pool, ...deskReports].map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s))),
+  const deskSymbols = [
+    ...new Set(
+      deskReports
+        .map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase())
+        .filter((s): s is string => typeof s === "string" && s.length > 0 && !poolSymbols.includes(s)),
+    ),
   ];
+  const extraTickerRows = deskSymbols.length ? await listTickerRows(deskSymbols) : [];
+
   const sectorByTicker = new Map<string, string | null>();
-  for (const row of allSymbols.length ? await listTickerRows(allSymbols) : []) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
+  for (const row of [...poolTickerRows, ...extraTickerRows]) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
 
   // Lifecycle stages for publications and creators, from the same pool.
   const pubSamples = new Map(pool.map((r) => [r.id, sampleFor(r)]));
@@ -282,10 +290,11 @@ export async function buildTodayPage(userId: string | null): Promise<TodayPagePa
     if (s > 0) tickerTrend.set(sym, (tickerTrend.get(sym) ?? 0) + s);
   }
   const trendingSyms = [...tickerTrend.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([s]) => s);
-  const popularSyms = Object.entries(coverage).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([s]) => s.toUpperCase());
-  const quotes = await getQuotesBatch([...new Set([...trendingSyms, ...popularSyms])], { fetchBenchmark: false }).catch(
-    () => new Map(),
-  );
+  const extraQuoteSyms = trendingSyms.filter((s) => !popularQuotes.has(s));
+  const extraQuotes = extraQuoteSyms.length
+    ? await getQuotesBatch(extraQuoteSyms, { fetchBenchmark: false }).catch(() => new Map())
+    : new Map();
+  const quotes = extraQuotes.size ? new Map([...popularQuotes, ...extraQuotes]) : popularQuotes;
   const tickerRow = (symbol: string, suggestion = false): TodayTickerRow => ({
     symbol,
     price: quotes.get(symbol)?.price ?? null,
@@ -316,7 +325,7 @@ export async function buildTodayPage(userId: string | null): Promise<TodayPagePa
     desk,
     verdicts,
     theme,
-    news,
+    news: [],
     sidebar,
   };
 }

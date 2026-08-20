@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
@@ -177,23 +178,21 @@ export async function listFeedFromAnalysts(
   ).slice(0, limit);
 }
 
-export async function getReport(id: string): Promise<Report | null> {
+export const getReport = cache(async (id: string): Promise<Report | null> => {
   try {
     const supabase = await createClient();
-    const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
-    if (!data) return null;
-    const report = normalize(asReportRow(data));
-    const { data: bodyRow } = await supabase
-      .from("report_bodies")
-      .select("body")
-      .eq("report_id", id)
-      .maybeSingle();
-    report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+    const [reportRes, bodyRes] = await Promise.all([
+      supabase.from("reports").select(SELECT).eq("id", id).maybeSingle(),
+      supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
+    ]);
+    if (!reportRes.data) return null;
+    const report = normalize(asReportRow(reportRes.data));
+    report.body = (bodyRes.data as { body: string | null } | null)?.body ?? null;
     return report;
   } catch {
     return null;
   }
-}
+});
 
 /** Load a draft for the compose editor. Returns null if missing or not a draft. */
 export async function getDraftForAuthor(
@@ -201,27 +200,31 @@ export async function getDraftForAuthor(
   authorId: string,
 ): Promise<Report | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select(SELECT)
-    .eq("id", id)
-    .eq("author_id", authorId)
-    .eq("status", "draft")
-    .maybeSingle();
-  if (!data) return null;
-  const report = normalize(asReportRow(data));
-  const { data: bodyRow } = await supabase
-    .from("report_bodies")
-    .select("body")
-    .eq("report_id", id)
-    .maybeSingle();
-  report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+  const [reportRes, bodyRes] = await Promise.all([
+    supabase
+      .from("reports")
+      .select(SELECT)
+      .eq("id", id)
+      .eq("author_id", authorId)
+      .eq("status", "draft")
+      .maybeSingle(),
+    supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
+  ]);
+  if (!reportRes.data) return null;
+  const report = normalize(asReportRow(reportRes.data));
+  report.body = (bodyRes.data as { body: string | null } | null)?.body ?? null;
   return report;
 }
 
 export async function getReportsByIds(ids: string[]): Promise<Report[]> {
-  const rows = await Promise.all(ids.map((id) => getReport(id)));
-  return rows.filter((r): r is Report => r != null);
+  if (ids.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("reports").select(SELECT).in("id", ids);
+  const map = new Map(asReportRows(data).map((row) => {
+    const report = normalize(row);
+    return [report.id, report] as const;
+  }));
+  return ids.map((id) => map.get(id)).filter((r): r is Report => r != null);
 }
 
 export async function listByAuthor(
@@ -305,7 +308,7 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
  * resolution_pending_review is included since the report itself never
  * unpublished, only one call's grading is waiting on market data.
  */
-export async function publishedReportCount(ticker: string): Promise<number> {
+export const publishedReportCount = cache(async (ticker: string): Promise<number> => {
   const supabase = await createClient();
   const { count } = await supabase
     .from("reports")
@@ -314,7 +317,7 @@ export async function publishedReportCount(ticker: string): Promise<number> {
     .in("status", ["published", "resolution_pending_review"])
     .not("locked_at", "is", null);
   return count ?? 0;
-}
+});
 
 /** Coverage counts for every ticker with at least one locked report --
  * powers the sitemap's tickers list and its priority tiering. */

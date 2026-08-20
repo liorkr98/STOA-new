@@ -15,10 +15,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
 
-  const [calls, candles, etf] = await Promise.all([
+  const [calls, candles, etf, snapshot, meta] = await Promise.all([
     buildStockCalls(symbol),
     getCandles(symbol, "6M"),
     buildEtfSnapshot(symbol),
+    getStockSnapshot(symbol),
+    getTickerRow(symbol),
   ]);
 
   let name = symbol;
@@ -32,7 +34,6 @@ export async function GET(req: Request) {
     price = etf.quote.price;
     changePercent = etf.changePercent;
   } else {
-    const [snapshot, meta] = await Promise.all([getStockSnapshot(symbol), getTickerRow(symbol)]);
     name = meta?.name ?? symbol;
     price = snapshot.quote.price;
     changePercent = snapshot.changePercent;

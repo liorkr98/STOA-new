@@ -1,12 +1,12 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
 import { listTickerRows } from "@/lib/db/tickers";
+import { getProfilesByIds } from "@/lib/db/profiles";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import { getQuotesBatch } from "@/lib/engine/market";
-import { callActivity, coverageAllTime, coverageWindow } from "@/lib/markets/coverage";
+import { callActivity, coverageAllTime, coverageWindow, firstCallsRecent } from "@/lib/markets/coverage";
 import type { Quote } from "@/lib/engine/market/types";
 import type {
   CoveredRow,
@@ -18,7 +18,6 @@ import type {
   TapeQuote,
   ThemeCard,
 } from "@/lib/markets/types";
-import type { Direction, Profile } from "@/lib/types";
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -132,55 +131,34 @@ async function buildCovered(
 
 /** Names whose very first Stoa call landed recently. */
 async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select(
-      "ticker, direction, created_at, report_id, author:profiles!predictions_author_id_fkey(*)",
-    )
-    .order("created_at", { ascending: true })
-    .limit(2000);
+  const firsts = await firstCallsRecent(limit);
+  if (firsts.length === 0) return [];
 
-  const rows = (data as unknown as {
-    ticker: string;
-    direction: Direction;
-    created_at: string;
-    report_id: string;
-    author: Profile | null;
-  }[]) ?? [];
-
-  const firstBySymbol = new Map<string, (typeof rows)[number]>();
-  for (const row of rows) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym || firstBySymbol.has(sym)) continue;
-    firstBySymbol.set(sym, row);
-  }
-
-  const newest = [...firstBySymbol.entries()]
-    .sort((a, b) => b[1].created_at.localeCompare(a[1].created_at))
-    .slice(0, limit);
-  if (newest.length === 0) return [];
-
-  const tickerRows = await listTickerRows(newest.map(([sym]) => sym));
+  const [authors, tickerRows] = await Promise.all([
+    getProfilesByIds([...new Set(firsts.map((f) => f.authorId))]),
+    listTickerRows(firsts.map((f) => f.symbol)),
+  ]);
+  const byAuthor = new Map(authors.map((p) => [p.id, p]));
   const bySymbol = new Map(tickerRows.map((r) => [r.symbol, r]));
 
-  return newest.flatMap(([symbol, first]) => {
-    if (!first.author) return [];
-    const row = bySymbol.get(symbol);
-    const fallback = UNIVERSE.find((u) => u.ticker === symbol);
+  return firsts.flatMap((first) => {
+    const author = byAuthor.get(first.authorId);
+    if (!author) return [];
+    const row = bySymbol.get(first.symbol);
+    const fallback = UNIVERSE.find((u) => u.ticker === first.symbol);
     const name = row?.name ?? fallback?.name;
     if (!name) return [];
     return [
       {
-        ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
+        ...toRow(first.symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         analyst: {
-          handle: first.author.handle,
-          displayName: first.author.display_name,
-          avatarUrl: first.author.avatar_url,
+          handle: author.handle,
+          displayName: author.display_name,
+          avatarUrl: author.avatar_url,
         },
         direction: first.direction,
-        calledAt: first.created_at,
-        reportId: first.report_id,
+        calledAt: first.calledAt,
+        reportId: first.reportId,
       },
     ];
   });

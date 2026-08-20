@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { cached } from "@/lib/market/cache";
+import type { Direction } from "@/lib/types";
 
 /**
  * Ticker coverage and call activity, grouped in Postgres (migration 0054)
@@ -98,4 +99,44 @@ export async function coverageFor(symbols: string[]): Promise<Record<string, num
     out[sym] = all.get(sym) ?? 0;
   }
   return out;
+}
+
+export interface FirstCallRow {
+  symbol: string;
+  direction: Direction;
+  calledAt: string;
+  reportId: string;
+  authorId: string;
+}
+
+const DIRECTIONS: Direction[] = ["long", "short", "hold"];
+
+/**
+ * The earliest call per ticker, newest first. Powers the Markets "newly called"
+ * band without shipping 2000 prediction rows to Node.
+ */
+export async function firstCallsRecent(limit: number): Promise<FirstCallRow[]> {
+  return cached(`coverage:first-calls:${limit}`, COVERAGE_TTL_MS, async () => {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("first_calls_recent", { p_limit: limit });
+    if (error || !data) return [];
+    return ((data as {
+      symbol: string;
+      direction: string;
+      called_at: string;
+      report_id: string;
+      author_id: string;
+    }[]) ?? []).flatMap((row) => {
+      if (!DIRECTIONS.includes(row.direction as Direction)) return [];
+      return [
+        {
+          symbol: row.symbol.toUpperCase(),
+          direction: row.direction as Direction,
+          calledAt: row.called_at,
+          reportId: row.report_id,
+          authorId: row.author_id,
+        },
+      ];
+    });
+  });
 }

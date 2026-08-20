@@ -82,13 +82,13 @@ function toItem(report: Report, themeName: string): TodayItem | null {
  */
 export async function buildTheme(theme: MarketTheme, viewerId: string | null): Promise<ThemePayload> {
   const supabase = await createClient();
-  const followedIds = new Set(viewerId ? await followedAnalystIds(viewerId) : []);
   const symbols = theme.tickers.map((s) => s.toUpperCase());
   const now = Date.now();
   const weekAgo = new Date(now - WEEK_MS).toISOString();
   const twoWeeksAgo = new Date(now - 2 * WEEK_MS).toISOString();
 
-  const [{ data: reportRows }, tickerRows, quotes] = await Promise.all([
+  const [followedList, reportRes, tickerRows, quotes] = await Promise.all([
+    viewerId ? followedAnalystIds(viewerId) : Promise.resolve([] as string[]),
     supabase
       .from("reports")
       .select(REPORT_SELECT)
@@ -99,6 +99,8 @@ export async function buildTheme(theme: MarketTheme, viewerId: string | null): P
     listTickerRows(symbols),
     getQuotesBatch(symbols, { fetchBenchmark: false }).catch(() => new Map()),
   ]);
+  const followedIds = new Set(followedList);
+  const reportRows = reportRes.data;
 
   const reports = ((reportRows as Record<string, unknown>[]) ?? []).map(normalizeReport);
   const coverage = new Map<string, number>();

@@ -23,7 +23,7 @@ import { listTopAnalysts, getProfilesByIds } from "@/lib/db/profiles";
 import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
-import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 import { listVideoClipCards, type VideoClipCard } from "@/lib/db/video-clips";
 import { isVideoFirstDiscover } from "@/lib/db/feature-flags";
 import { QuickPost } from "@/components/feed/quick-post";
@@ -130,20 +130,18 @@ export default async function DiscoverPage({
 
   if (tab === "researchers") {
     try {
-      const boostedIds = await listBoostedProfileIds("discover_researchers", 4);
+      const [boostedIds, organic] = await Promise.all([
+        listBoostedProfileIds("discover_researchers", 4),
+        listTopAnalysts(24),
+      ]);
       promotedAnalystIds = new Set(boostedIds);
       const boosted = await getProfilesByIds(boostedIds);
-      const organic = await listTopAnalysts(24);
       const seen = new Set(boostedIds);
       researchers = [...boosted, ...organic.filter((a) => !seen.has(a.id))].slice(0, 24);
     } catch {
       researchers = await listTopAnalysts(24);
     }
-    researcherCounts = Object.fromEntries(
-      await Promise.all(
-        researchers.map(async (a) => [a.id, await resolvedCountByAuthor(a.id)] as const),
-      ),
-    );
+    researcherCounts = await resolvedCountsByAuthors(researchers.map((a) => a.id));
   } else if (videoFirst) {
     // Video-led grid. The clip is the anchor; the linked report is the depth.
     const allCards = await listVideoClipCards(72);

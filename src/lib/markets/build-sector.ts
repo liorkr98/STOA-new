@@ -113,11 +113,12 @@ async function sectorSymbols(sector: string): Promise<string[]> {
 
 export async function buildSector(sector: string, viewerId: string | null): Promise<SectorPayload> {
   const supabase = await createClient();
-  const followedIds = new Set(viewerId ? await followedAnalystIds(viewerId) : []);
-  const symbols = await sectorSymbols(sector);
   const since = new Date(Date.now() - WEEK_MS);
+  const followedP = viewerId ? followedAnalystIds(viewerId) : Promise.resolve([] as string[]);
+  const symbols = await sectorSymbols(sector);
 
-  const [{ data: reportRows }, { data: predictionRows }] = await Promise.all([
+  const [followedList, { data: reportRows }, { data: predictionRows }] = await Promise.all([
+    followedP,
     symbols.length
       ? supabase
           .from("reports")
@@ -136,6 +137,7 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       : Promise.resolve({ data: [] }),
   ]);
 
+  const followedIds = new Set(followedList);
   const reports = ((reportRows as Record<string, unknown>[]) ?? []).map(normalizeReport);
   const predictions = (predictionRows as (Prediction & { author?: Profile | null })[]) ?? [];
 

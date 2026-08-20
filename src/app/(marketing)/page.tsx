@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { getSessionUserId } from "@/lib/db/auth";
 import { buildLanding } from "@/lib/landing/build-landing";
 import { LandingPage } from "@/components/landing/landing-page";
+import { MarketTapeFallback, MarketTapeSlot } from "@/components/markets/market-tape-slot";
 
 export const metadata: Metadata = {
   title: "Stoa - Think clearly. Invest better.",
@@ -20,5 +22,14 @@ export default async function RootPage() {
   const userId = await getSessionUserId();
   if (userId) redirect("/home");
   const data = await buildLanding();
-  return <LandingPage data={data} />;
+  return (
+    <LandingPage
+      data={data}
+      tape={
+        <Suspense fallback={<MarketTapeFallback />}>
+          <MarketTapeSlot />
+        </Suspense>
+      }
+    />
+  );
 }

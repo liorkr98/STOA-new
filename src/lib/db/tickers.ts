@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { CapBand } from "@/lib/market/cap-bands";
@@ -61,7 +62,7 @@ export async function capBandForTicker(ticker: string | null | undefined): Promi
   return UNIVERSE.find((u) => u.ticker === sym)?.capBand ?? null;
 }
 
-export async function getTickerRow(symbol: string): Promise<TickerRow | null> {
+export const getTickerRow = cache(async (symbol: string): Promise<TickerRow | null> => {
   const sym = symbol.toUpperCase();
   try {
     const db = await createClient();
@@ -84,7 +85,7 @@ export async function getTickerRow(symbol: string): Promise<TickerRow | null> {
     cap_band: featured.capBand,
     metrics_updated_at: null,
   };
-}
+});
 
 /** Batch form of getTickerRow, for surfaces that resolve a whole watchlist. */
 export async function listTickerRows(symbols: string[]): Promise<TickerRow[]> {
