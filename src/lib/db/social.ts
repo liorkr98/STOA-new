@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Profile } from "@/lib/types";
 
 export async function isFollowing(followerId: string, analystId: string): Promise<boolean> {
   const supabase = await createClient();
@@ -64,6 +65,15 @@ export async function followedAnalystIds(followerId: string): Promise<string[]> 
     .select("analyst_id")
     .eq("follower_id", followerId);
   return ((data as { analyst_id: string }[]) ?? []).map((r) => r.analyst_id);
+}
+
+/** Full profiles of the analysts the user follows (for the Following page). */
+export async function listFollowedAnalysts(followerId: string): Promise<Profile[]> {
+  const ids = await followedAnalystIds(followerId);
+  if (ids.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("*").in("id", ids);
+  return (data as Profile[]) ?? [];
 }
 
 export async function subscriberCount(analystId: string): Promise<number> {

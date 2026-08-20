@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { compact } from "@/lib/format";
 import type { Profile } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
-import { TrackScoreBadge } from "./ui/track-score-badge";
 import { Sparkline } from "./charts/sparkline";
 
 export function AnalystCard({
@@ -47,13 +45,6 @@ export function AnalystCard({
               Promoted
             </span>
           )}
-          <TrackScoreBadge
-          handle={analyst.handle}
-          score={analyst.score || null}
-          sampleSize={resolvedCalls}
-          size="sm"
-          linked={false}
-        />
         </div>
       </div>
 
@@ -62,7 +53,9 @@ export function AnalystCard({
       )}
 
       <div className="flex items-end justify-between">
-        <span className="t-meta num">{compact(analyst.followers_count)} followers</span>
+        <span className="t-meta num">
+          {resolvedCalls} resolved {resolvedCalls === 1 ? "call" : "calls"}
+        </span>
         {spark && spark.length > 1 && <Sparkline data={spark} width={96} height={28} />}
       </div>
     </Link>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
 /**
@@ -62,12 +61,6 @@ export function DispatchStoryList({
                 >
                   {story.author.display_name}
                 </Link>
-                <TrackScoreBadge
-                  handle={story.author.handle}
-                  score={story.author.score || null}
-                  sampleSize={story.author.sample_size}
-                  size="sm"
-                />
               </div>
             </article>
           );

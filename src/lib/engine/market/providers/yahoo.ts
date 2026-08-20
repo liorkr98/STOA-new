@@ -6,23 +6,30 @@ const yahooFinance = new YahooFinance({
   queue: { concurrency: 2, interval: 250 },
 });
 
-function toQuote(symbol: string, price: number | null | undefined): Quote | null {
-  if (!price || price <= 0) return null;
-  return {
-    symbol: symbol.toUpperCase(),
-    price,
-    mock: false,
-    available: true,
-    source: "yahoo",
-  };
+function num(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
+/**
+ * Yahoo's quote carries the day change and previous close alongside the
+ * price; both are kept so list surfaces (tape, movers, sector rows) can show
+ * a real day change instead of a reserved slot.
+ */
 function extractPrice(result: unknown): Quote | null {
   if (!result || typeof result !== "object") return null;
   const r = result as Record<string, unknown>;
   const sym = String(r.symbol ?? "").toUpperCase();
-  const price = r.regularMarketPrice;
-  return toQuote(sym, typeof price === "number" ? price : null);
+  const price = num(r.regularMarketPrice);
+  if (!price || price <= 0) return null;
+  return {
+    symbol: sym,
+    price,
+    changePercent: num(r.regularMarketChangePercent),
+    previousClose: num(r.regularMarketPreviousClose),
+    mock: false,
+    available: true,
+    source: "yahoo",
+  };
 }
 
 export const yahooProvider: MarketProvider = {

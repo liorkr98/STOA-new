@@ -17,8 +17,9 @@ const variants: Record<ButtonVariant, string> = {
   subtle: "bg-surface-2 text-text hover:opacity-80",
 };
 
+// Explicit heights: button height is a design decision, not a spacing step.
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-[0.8125rem]",
+  sm: "h-[34px] px-3 text-[0.8125rem]",
   md: "h-10 px-4 text-sm",
   lg: "h-12 px-6 text-[0.95rem]",
 };

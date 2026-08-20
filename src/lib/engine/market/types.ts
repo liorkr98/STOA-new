@@ -4,6 +4,10 @@ export type QuoteSource = "yahoo" | "twelvedata" | "alphavantage" | "unavailable
 export interface Quote {
   symbol: string;
   price: number | null;
+  /** Day change in percent, when the provider carries it (Yahoo does on the batch path). Null otherwise. */
+  changePercent?: number | null;
+  /** Previous session close, when carried. Null otherwise. */
+  previousClose?: number | null;
   /** @deprecated Always false — mock prices removed. */
   mock: boolean;
   available: boolean;

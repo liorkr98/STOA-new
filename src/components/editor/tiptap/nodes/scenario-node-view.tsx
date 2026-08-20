@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { BarChart2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { scenario, type ScenarioCase, type ScenarioResult } from "@/lib/valuation/model";
 
 /**
@@ -123,7 +124,7 @@ export function ScenarioNodeView({
       >
         <div className="mb-2 flex items-center gap-2">
           <BarChart2 size={14} className="text-text-faint" />
-          {ticker && <span className="num text-sm font-semibold">{ticker}</span>}
+          {ticker && <TickerChip ticker={ticker} />}
           <span className="t-eyebrow">Scenario analysis</span>
           {drivesTarget && <span className="t-meta text-[11px]">drives target</span>}
         </div>

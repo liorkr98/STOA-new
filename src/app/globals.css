@@ -8,7 +8,7 @@
 
 :root {
   --ink: #14171f;
-  --paper: #eff1ed;
+  --paper: #faf8f4;
   --verdigris: #2f6e5d;
   /* Deep antique brass: #b8863b read at 2.84:1 on paper -- an accessibility
    * fail everywhere brass carries meaning (PendingReviewTag, provisional
@@ -18,14 +18,18 @@
   --plum: #5b4b6b;
   --rust: #a6483c;
 
-  --surface: #f7f8f5;
-  --surface-2: #e6e8e2;
+  /* Warm neutrals, on the same axis as --paper. Literal values, not derived,
+   * so they must move whenever --paper does: the previous cool grey-greens
+   * (#f7f8f5 / #e6e8e2) sat within 0.005 luminance of the warmer paper, which
+   * collapsed the raised-card relationship and read green beside it. */
+  --surface: #fffdf9;
+  --surface-2: #f1ece3;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
+  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
   /* Decorative only (2.65:1): dividers, disabled glyphs, ornamental dashes.
    * Any text that carries meaning -- including placeholders -- uses
    * --text-mute or darker (C.2 rule 8). */
-  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
   --border: color-mix(in srgb, var(--ink) 14%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
 
@@ -81,8 +85,8 @@
   --surface: #1a1d26;
   --surface-2: #23262f;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 62%, transparent);
-  --text-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
+  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
   --border: color-mix(in srgb, var(--ink) 16%, transparent);
   --border-strong: color-mix(in srgb, var(--ink) 30%, transparent);
 
@@ -128,15 +132,10 @@
 
   --default-font-family: var(--font-sans);
 
-  --spacing-1: var(--space-1);
-  --spacing-2: var(--space-2);
-  --spacing-3: var(--space-3);
-  --spacing-4: var(--space-4);
-  --spacing-5: var(--space-5);
-  --spacing-6: var(--space-6);
-  --spacing-7: var(--space-7);
-  --spacing-8: var(--space-8);
-  --spacing-9: var(--space-9);
+  /* The --space-N ramp (docs/FRONTEND.md 7.2) is for hand-written CSS only.
+     Mapping it onto Tailwind's --spacing-N made h-9 render 96px instead of
+     36px and skewed every p/m/gap step above 4; utilities use the standard
+     4px-linear scale. */
 }
 
 * {
@@ -835,10 +834,14 @@ body {
   padding-top: var(--space-2);
 }
 
-.dispatch-wordmark {
+.dispatch-wordmark-block {
   /* Pin to the middle column so hiding the corner blocks on small screens
    * cannot re-flow the wordmark into column one. */
   grid-column: 2;
+  text-align: center;
+}
+
+.dispatch-wordmark {
   font-family: var(--font-display);
   font-weight: 640;
   font-size: clamp(2.75rem, 1.9rem + 4vw, 4.5rem);
@@ -847,6 +850,25 @@ body {
   color: var(--text);
   line-height: 1;
   text-align: center;
+}
+
+/* On the Today front page the wordmark is the dominant element. */
+.dispatch-page--home .dispatch-wordmark {
+  font-size: clamp(3.5rem, 2rem + 7vw, 6.5rem);
+  font-weight: 600;
+}
+
+/* Widely-spaced mono sub-label beneath the wordmark ("TODAY"). */
+.dispatch-sublabel {
+  display: block;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.55em;
+  text-indent: 0.55em;
+  text-transform: uppercase;
+  color: var(--text-mute);
 }
 
 .dispatch-corner {
@@ -1052,6 +1074,1227 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ * Today — the daily editorial read (/home). Full-width bands stacked
+ * down the page as peer departments. Serif band header, hairline rule,
+ * mono SEE ALL; inside, headline rows separated by rules. A reading
+ * list, never a card grid: nothing in here gets a box or a shadow.
+ * ------------------------------------------------------------------ */
+
+.band {
+  margin-top: var(--space-8);
+}
+
+.band-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--ink);
+}
+
+.band-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* Deliberately much quieter than the header it sits beside: the note
+ * explains the department, it does not compete to name it. */
+.band-note {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-mute);
+}
+
+.band-see-all {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  white-space: nowrap;
+  border-radius: var(--r-btn);
+  transition: color var(--dur-1) var(--ease-hover);
+}
+.band-see-all:hover {
+  color: var(--text);
+}
+
+.band-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--verdigris);
+  border: 1px solid color-mix(in srgb, var(--verdigris) 35%, transparent);
+  border-radius: var(--r-tag);
+  padding: 0.125rem 0.5rem;
+}
+
+.band-col-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.band-col-title {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Two equal peer columns with a real column rule, like a broadsheet.
+ * Neither is subordinate: same width, same header weight, no ordering. */
+.today-desk {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 768px) {
+  .today-desk {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
+  }
+  .today-desk > * {
+    padding-inline: var(--space-6);
+  }
+  .today-desk > *:first-child {
+    padding-inline-start: 0;
+    border-inline-end: 1px solid var(--border);
+  }
+  .today-desk > *:last-child {
+    padding-inline-end: 0;
+  }
+}
+
+/* ---- the headline row ---- */
+
+.today-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.today-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.today-meta-badge {
+  letter-spacing: 0.12em;
+}
+
+.today-headline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.3125rem;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  text-wrap: pretty;
+  transition: color var(--dur-1) var(--ease-hover);
+}
+.group:hover .today-headline {
+  color: var(--accent);
+}
+
+.today-deck {
+  margin-top: 0.4375rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text-mute);
+  text-wrap: pretty;
+}
+
+.today-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.today-row-rail {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding-top: 0.125rem;
+}
+
+.today-row-tag {
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--r-tag);
+  padding: 0.1875rem 0.4375rem;
+}
+.today-row-tag--quiet {
+  color: var(--text-mute);
+  border: 1px solid var(--border);
+}
+.today-row-tag--solid {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.today-row-tag--outline {
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+/* ---- video still ---- */
+
+.today-thumb {
+  position: relative;
+  display: block;
+  width: 118px;
+  height: 76px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface-2);
+}
+
+.today-thumb-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.today-thumb-play {
+  position: absolute;
+  bottom: 0.25rem;
+  inset-inline-start: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  color: var(--paper);
+}
+
+.today-thumb-dur {
+  position: absolute;
+  bottom: 0.25rem;
+  inset-inline-end: 0.25rem;
+  font-size: 0.5938rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  border-radius: var(--r-tag);
+  padding: 0.0625rem 0.25rem;
+}
+
+/* ---- verdicts ---- */
+
+.today-verdict {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.today-verdict-prices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.today-verdict-arrow {
+  color: var(--text-faint);
+}
+
+.today-explainer {
+  margin-top: var(--space-5);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  max-width: 62ch;
+}
+
+/* ---- most watched ---- */
+
+.today-watch-strip {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+@media (min-width: 768px) {
+  .today-watch-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .today-watch-strip {
+    grid-auto-flow: column;
+    grid-auto-columns: 68%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-2);
+  }
+  .today-watch-strip > * {
+    scroll-snap-align: start;
+  }
+}
+
+.today-watch-still {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  background: var(--surface-2);
+}
+
+/* ---- your tickers ---- */
+
+.today-ticker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- placeholders for data the backend does not carry yet ---- */
+
+.today-pending {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.today-gap-note {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- the issue ends ---- */
+
+.today-end {
+  margin-top: var(--space-9);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.today-end-slug {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ------------------------------------------------------------------ *
+ * Markets — the newspaper applied to instruments. Same band chrome as
+ * Today; the rows carry prices instead of headlines. No trade controls
+ * anywhere in here by design: this is a research surface.
+ * ------------------------------------------------------------------ */
+
+.markets-title {
+  font-family: var(--font-display);
+  font-weight: 640;
+  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.markets-dateline {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* ---- instrument search: the page's one prominent control ---- */
+
+.markets-search {
+  position: relative;
+  margin-top: var(--space-6);
+}
+
+.markets-search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-btn);
+  background: var(--surface);
+  transition: border-color var(--dur-1) var(--ease-hover);
+}
+
+.markets-search-hint {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.markets-search-results {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  top: calc(100% + var(--space-2));
+  max-height: 20rem;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-btn);
+  box-shadow: var(--shadow-card);
+}
+
+.markets-search-hit {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.markets-search-hit:last-child {
+  border-bottom: none;
+}
+.markets-search-hit.is-active {
+  background: var(--surface-2);
+}
+
+/* ---- the tape ---- */
+
+/* The running tape: a newspaper's stock ticker, not a casino board. Slow,
+ * continuous, transform-only motion; the track is doubled so the loop is
+ * seamless. Pauses on hover. Under reduced motion it becomes a plain
+ * scrollable strip. */
+.markets-tape {
+  position: relative;
+  margin-top: var(--space-6);
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--border);
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+}
+.markets-tape-track {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding-right: var(--space-6);
+  animation: markets-tape-run var(--tape-duration, 60s) linear infinite;
+  will-change: transform;
+}
+.markets-tape:hover .markets-tape-track,
+.markets-tape:focus-within .markets-tape-track {
+  animation-play-state: paused;
+}
+@keyframes markets-tape-run {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .markets-tape {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .markets-tape-track {
+    animation: none;
+  }
+}
+
+.markets-tape-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.markets-tape-label {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- themes: the hero band, most visual weight ---- */
+
+.markets-theme-grid {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .markets-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .markets-theme-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.markets-theme {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--surface);
+}
+
+.markets-theme-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.markets-theme-deck {
+  margin-top: var(--space-2);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-mute);
+  text-wrap: pretty;
+}
+
+.markets-theme-list {
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.markets-theme-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.markets-theme-foot {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- generic instrument row ---- */
+
+.markets-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.markets-row--reserved {
+  opacity: 0.55;
+}
+
+.markets-row-name {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 12rem;
+  align-items: center;
+  gap: var(--space-3);
+  border-radius: var(--r-btn);
+}
+
+.markets-row-meta {
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- movement: two peer columns ---- */
+
+.markets-movement {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+}
+@media (min-width: 768px) {
+  .markets-movement {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-8);
+  }
+}
+
+/* ---- sectors ---- */
+
+.markets-sector-grid {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 640px) {
+  .markets-sector-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .markets-sector-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.markets-sector {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+}
+
+.markets-sector-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+/* ---- reserved / missing data ---- */
+
+.markets-pending {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+.markets-gap-note {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.markets-empty {
+  margin-top: var(--space-4);
+  padding-block: var(--space-5);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  max-width: 60ch;
+}
+
+/* ------------------------------------------------------------------ *
+ * Stock page — the instrument destination. The chart is the signature
+ * element: a price line with Stoa calls drawn on it.
+ * ------------------------------------------------------------------ */
+
+.markets-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  border-radius: var(--r-btn);
+}
+.markets-crumb:hover {
+  color: var(--text);
+}
+
+.stock-name {
+  font-family: var(--font-display);
+  font-weight: 640;
+  font-size: clamp(1.875rem, 1.4rem + 2.2vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.stock-sub {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.stock-price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text);
+}
+
+.stock-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.stock-meta-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+}
+
+.stock-meta-key {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* The provenance mark from the Card Engine's three inks: this number is a
+ * market fact pulled automatically, not the analyst's estimate. */
+.auto-tag {
+  font-family: var(--font-mono);
+  font-size: 0.5313rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-radius: var(--r-tag);
+  padding: 0 0.25rem;
+}
+
+/* ---- the calls chart ---- */
+
+.calls-chart {
+  position: relative;
+  margin-top: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  padding: var(--space-5);
+}
+
+.calls-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.calls-chart-legend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.calls-tf {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  overflow: hidden;
+}
+
+/* Presets render as links and Custom as a button; both are segments of the
+ * same control, so the rule has to cover each. */
+.calls-tf a,
+.calls-tf button {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  color: var(--text-mute);
+  border-inline-end: 1px solid var(--border);
+  transition: background var(--dur-1) var(--ease-hover);
+}
+.calls-tf a:hover,
+.calls-tf button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.calls-tf > :last-child {
+  border-inline-end: none;
+}
+.calls-tf a[aria-pressed="true"],
+.calls-tf button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.calls-tooltip {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  min-width: 11rem;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-btn);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+/* ---- consensus ---- */
+
+.stock-consensus {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
+    var(--shadow-card);
+}
+@media (min-width: 768px) {
+  /* Auto columns rather than a fixed four: the coverage block carries three
+     figures on an instrument and four on a sector, and neither should leave a
+     reserved empty cell. */
+  .stock-consensus {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+}
+
+.stock-consensus-figure {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.stock-consensus-key {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ---- tables + strips ---- */
+
+.stock-table {
+  width: 100%;
+  margin-top: var(--space-4);
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.stock-table th {
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: left;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-strong);
+}
+.stock-table td {
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.stock-peers {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 768px) {
+  .stock-peers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .stock-peers {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.stock-peer {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+}
+
+.stock-fundamentals {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 768px) {
+  .stock-fundamentals {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Theme chip: the no-ticker cousin of TickerChip, for commentary anchored on
+ * a sector rather than a symbol. */
+.today-theme-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-tag);
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* ---- custom date range on the chart toggle ---- */
+
+.calls-tf-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.25rem var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-mute);
+}
+.calls-tf-custom input {
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  border: none;
+  outline: none;
+}
+.calls-tf-custom button {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: var(--r-tag);
+  padding: 0.1875rem 0.5rem;
+}
+
+.calls-chart--compact {
+  padding: var(--space-4);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin-top: var(--space-4);
+  padding-inline: 0;
+}
+
+/* ---- ETF sector exposure ---- */
+
+.etf-exposure {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.etf-exposure-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.etf-exposure-label {
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.etf-exposure-track {
+  display: block;
+  height: 6px;
+  border-radius: var(--r-tag);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.etf-exposure-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.55;
+}
+
+/* ---- sector performance placeholder ---- */
+
+.sector-perf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-5);
+  min-height: 12rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-card);
+}
+
+/* ------------------------------------------------------------------ *
+ * Instrument sheet — a compact panel for looking at an instrument
+ * without leaving the surface you were reading. Right-anchored on
+ * desktop, a bottom sheet on phones.
+ * ------------------------------------------------------------------ */
+
+.sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
+  animation: fade-in var(--dur-2) var(--ease-out) both;
+}
+
+.sheet-panel {
+  position: relative;
+  width: 480px;
+  max-width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  background: var(--paper);
+  border-inline-start: 1px solid var(--border-strong);
+  animation: sheet-in-x var(--dur-3) var(--ease-drawer) both;
+}
+
+@keyframes sheet-in-x {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (max-width: 639px) {
+  .sheet-root {
+    align-items: flex-end;
+  }
+  .sheet-panel {
+    width: 100%;
+    height: auto;
+    max-height: 88dvh;
+    border-inline-start: none;
+    border-top: 1px solid var(--border-strong);
+    border-start-start-radius: var(--r-card);
+    border-start-end-radius: var(--r-card);
+    animation: sheet-in-y var(--dur-3) var(--ease-drawer) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel,
+  .sheet-scrim {
+    animation: none;
+  }
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.sheet-name {
+  font-family: var(--font-display);
+  font-weight: 640;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.sheet-sub {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: var(--r-btn);
+  color: var(--text-mute);
+}
+.sheet-close:hover {
+  color: var(--text);
+}
+
+.sheet-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.sheet-consensus {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+}
+
+.sheet-calls {
+  margin-top: var(--space-5);
+}
+
+.sheet-call {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-full {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  border-radius: var(--r-btn);
+}
+.sheet-full:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ *
  * Density (docs/DESIGN_LANGUAGE.md §6). Reader prose is never affected.
  * ------------------------------------------------------------------ */
 
@@ -1075,4 +2318,166 @@ body {
 [data-density="compact"] .surface,
 [data-density="compact"] .ledger-card {
   padding: var(--density-pad);
+}
+
+/* ------------------------------------------------------------------ *
+ * Rail: a band that scrolls horizontally on its own (Today, Markets)
+ * ------------------------------------------------------------------ */
+@layer components {
+.rail {
+  margin-top: var(--space-8);
+  min-width: 0;
+}
+.rail-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--ink);
+}
+.rail-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.rail-note {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.rail-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  color: var(--text-mute);
+  background: transparent;
+  transition: color var(--dur-1) var(--ease-hover), border-color var(--dur-1) var(--ease-hover);
+}
+.rail-arrow:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.rail-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rail-track {
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+}
+.rail-track::-webkit-scrollbar {
+  display: none;
+}
+.rail-track > * {
+  flex: none;
+  scroll-snap-align: start;
+}
+}
+
+/* Today front page: sidebar lists and the lead split. */
+.today-side-list {
+  max-height: 176px;
+  overflow-y: auto;
+}
+.today-side-head {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.today-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.today-stage {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+/* Explore wall: 6 columns desktop / 3 mobile, 4px gaps, 4:5 tiles. Row height
+ * comes from the container width so spanning tiles keep the ratio. */
+.explore-wall {
+  container-type: inline-size;
+}
+.explore-grid {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: calc((100cqw - 2 * 4px) / 3 * 1.25);
+  grid-auto-flow: dense;
+}
+.explore-tile {
+  grid-column: var(--c3);
+  grid-row: var(--r3);
+}
+@media (min-width: 768px) {
+  .explore-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: calc((100cqw - 5 * 4px) / 6 * 1.25);
+  }
+  .explore-tile {
+    grid-column: var(--c6);
+    grid-row: var(--r6);
+  }
+}
+
+/* Landing: the doors, scroll-driven reveals, the wall of faces. Reveals are
+ * scrub-driven (view timeline), so they track the reader's own scroll like a
+ * scrollbar rather than firing on a timer; browsers without animation-timeline
+ * simply show the content, and reduced motion collapses it. */
+.landing-wordmark {
+  font-size: clamp(3.5rem, 2rem + 8vw, 7rem);
+  font-weight: 600;
+}
+.landing-reveal {
+  opacity: 1;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-reveal {
+      animation: fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+      --fade-y: 12px;
+    }
+  }
+}
+.landing-faces {
+  container-type: inline-size;
+}
+.landing-face {
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.landing-face:hover {
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-face:hover {
+    transform: none;
+  }
 }

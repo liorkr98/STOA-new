@@ -28,25 +28,38 @@ export function DispatchMasthead({
     .toLocaleDateString("en-US", { month: "short", timeZone: "America/New_York" })
     .toUpperCase();
   const dateline = formatDispatchDateline(dateIso);
-  const personalizedLabel =
-    mode === "home" && personalized ? "Your briefing" : personalized ? "Your dispatch" : null;
+  const isHome = mode === "home";
+  // Home reads as the dominant "TODAY" front page; the public dispatch keeps
+  // its corner-date device and the fuller stats line.
+  const briefingLabel = isHome
+    ? personalized
+      ? "Your daily briefing"
+      : "Your daily briefing"
+    : personalized
+      ? "Your dispatch"
+      : null;
 
   return (
     <header className={className}>
-      {/* Corner device per the reference: day/month stacked left, year split
-          in two lines right, wordmark centered between them. */}
       <div className="dispatch-masthead">
-        <div className="dispatch-corner hidden text-left sm:block" aria-hidden>
-          <span className="dispatch-corner-big">{day}</span>
-          <span className="dispatch-corner-small">{monthShort}</span>
+        {!isHome && (
+          <div className="dispatch-corner hidden text-left sm:block" aria-hidden>
+            <span className="dispatch-corner-big">{day}</span>
+            <span className="dispatch-corner-small">{monthShort}</span>
+          </div>
+        )}
+        <div className="dispatch-wordmark-block">
+          <h1 className="dispatch-wordmark" aria-label="Stoa">
+            STOA
+          </h1>
+          {isHome && <span className="dispatch-sublabel">Today</span>}
         </div>
-        <h1 className="dispatch-wordmark" aria-label="Stoa">
-          STOA
-        </h1>
-        <div className="dispatch-corner hidden text-right sm:block" aria-hidden>
-          <span className="dispatch-corner-big">{year.slice(0, 2)}</span>
-          <span className="dispatch-corner-big">{year.slice(2)}</span>
-        </div>
+        {!isHome && (
+          <div className="dispatch-corner hidden text-right sm:block" aria-hidden>
+            <span className="dispatch-corner-big">{year.slice(0, 2)}</span>
+            <span className="dispatch-corner-big">{year.slice(2)}</span>
+          </div>
+        )}
       </div>
 
       <div className="dispatch-oxford" aria-hidden />
@@ -57,17 +70,21 @@ export function DispatchMasthead({
           ·
         </span>
         <span>{dateline}</span>
-        <span className="dispatch-dateline-sep" aria-hidden>
-          ·
-        </span>
-        <span>{readMinutes} min read</span>
-        {personalizedLabel && (
+        {!isHome && (
           <>
             <span className="dispatch-dateline-sep" aria-hidden>
               ·
             </span>
-            <span className="font-semibold text-[var(--accent)]">{personalizedLabel}</span>
-            {followedCount > 0 && (
+            <span>{readMinutes} min read</span>
+          </>
+        )}
+        {briefingLabel && (
+          <>
+            <span className="dispatch-dateline-sep" aria-hidden>
+              ·
+            </span>
+            <span className="font-semibold text-text">{briefingLabel}</span>
+            {!isHome && followedCount > 0 && (
               <>
                 <span className="dispatch-dateline-sep" aria-hidden>
                   ·

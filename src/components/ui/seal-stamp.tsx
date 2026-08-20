@@ -3,17 +3,19 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/design/cn";
 
-export type SealStatus = "locked" | "hit" | "miss";
+export type SealStatus = "locked" | "hit" | "miss" | "near";
 
 const RING_COLOR: Record<SealStatus, string> = {
   locked: "var(--brass)",
   hit: "var(--verdigris)",
   miss: "var(--rust)",
+  near: "var(--text-mute)",
 };
 
 const px = { sm: 32, md: 48, lg: 72 } as const;
 
-function formatRingDate(date: Date) {
+function formatRingDate(date: Date | null | undefined) {
+  if (!date || Number.isNaN(date.getTime())) return "";
   return date
     .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     .toUpperCase();
@@ -79,14 +81,18 @@ export function SealStamp({
       ? `LOCKED • ${ringDate} •`
       : status === "hit"
         ? `RESOLVED • HIT • ${ringDate} •`
-        : `RESOLVED • MISS • ${ringDate} •`;
+        : status === "near"
+          ? `RESOLVED • NEAR • ${ringDate} •`
+          : `RESOLVED • MISS • ${ringDate} •`;
 
   const a11yLabel =
     status === "locked"
       ? `Locked ${ringDate}. Price target cannot be edited`
       : status === "hit"
         ? `Resolved hit on ${ringDate}`
-        : `Resolved miss on ${ringDate}`;
+        : status === "near"
+          ? `Resolved near on ${ringDate}`
+          : `Resolved miss on ${ringDate}`;
 
   const radius = dim / 2;
   const textRadius = radius - dim * 0.11;
@@ -167,9 +173,9 @@ export function SealStamp({
             fontSize={dim * 0.24}
             letterSpacing={dim * 0.01}
             fill={RING_COLOR[status]}
-            transform={`rotate(${status === "hit" ? -6 : 7} ${radius} ${radius})`}
+            transform={`rotate(${status === "miss" ? 7 : -6} ${radius} ${radius})`}
           >
-            {status === "hit" ? "HIT" : "MISS"}
+            {status === "hit" ? "HIT" : status === "near" ? "NEAR" : "MISS"}
           </text>
         )}
       </svg>

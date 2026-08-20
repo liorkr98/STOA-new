@@ -15,7 +15,7 @@ two disagree, this file wins and `AGENTS.md` should be corrected to match.
   This avoided conflicting with in-flight backend branches. The design system, components, and
   page content below apply within the existing URLs.
 
-Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the MOAT formula, the
+Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the Track Score formula, the
 fact-checker pipeline). Nothing here invents new data — every field referenced below should
 already exist in that schema, or is flagged explicitly where it doesn't yet.
 
@@ -76,7 +76,7 @@ that makes a product describable in one sentence.
 | Token | Hex | Role |
 |---|---|---|
 | `--ink` | `#14171F` | Primary text, dark UI surfaces. A near-black navy, not pure black — pure black against the paper tone below reads harsh under long reading sessions. |
-| `--paper` | `#EFF1ED` | Primary background. A cool, slightly sage-gray neutral — deliberately *not* the warm cream (`#F4F1EA`-family) that's become an AI-design default. Reads like aged ledger paper, not stationery. |
+| `--paper` | `#FAF8F4` | Primary background. A warm, light ledger-paper neutral. Warmed from the original cool sage-gray `#EFF1ED`, which read grey-green rather than like paper. The warmth is held low and the value high, so this stays aged-ledger, not the saturated cream of an AI-design default. |
 | `--verdigris` | `#2F6E5D` | Primary brand accent. Deep patinated-bronze green — the color of old bank stamps and aged copper. Doubles as the semantic color for **Fact** claims and **Hit** outcomes. |
 | `--brass` | `#855F22` | Certification accent — deep antique brass, used for the seal graphic itself and for **Unproven** claims (things pending verification, same visual family as "not yet certified"). Darkened from `#B8863B` (2.84:1, failed C.2 rule 8) to clear 4.5:1 on paper and surface-2 as meaning-bearing text. |
 | `--plum` | `#5B4B6B` | Semantic color for **Opinion** claims — a claim that's debatable belongs in a different hue family entirely from fact/unproven, not a lighter or darker version of them. |
@@ -85,6 +85,13 @@ that makes a product describable in one sentence.
 Every one of these is used at **low-saturation, high-legibility values** — this is not a bright,
 gamified palette. Fact-check underlines and stamps use these at full value; backgrounds, chips,
 and badges use 8–12% tints of the same hues rather than introducing new pastels.
+
+**Neutral surfaces sit on the `--paper` axis.** Text, borders, and muted tones are `color-mix`
+derivations of `--ink` over `--paper`, so they re-tune themselves whenever paper moves. Two
+neutrals are *not* derived and must be moved by hand alongside `--paper`: `--surface` (`#FFFDF9`,
+the raised card, one step lighter than paper) and `--surface-2` (`#F1ECE3`, the recessed chip
+tint, one step darker). If paper changes and these two do not, cards lose their separation from
+the page and drift off-hue.
 
 **Typography — three roles, never blended:**
 
@@ -97,6 +104,8 @@ and badges use 8–12% tints of the same hues rather than introducing new pastel
 Type scale (rem, 16px base):
 
 ```
+--text-micro: 10px              — mono eyebrows / uppercase-tracked labels only (never prose)
+--text-mini:  11px              — mono metadata inside dense data cards only (never prose)
 --text-xs:    0.75rem   (12px)  — timestamps, fine print, disclosure microcopy
 --text-sm:    0.875rem  (14px)  — secondary UI text, card metadata
 --text-base:  1rem      (16px)  — body copy, form inputs
@@ -106,6 +115,10 @@ Type scale (rem, 16px base):
 --text-3xl:   2.75rem   (44px)  — report headlines (Fraunces)
 --text-4xl:   4rem      (64px)  — homepage hero (Fraunces)
 ```
+
+Sub-12px is reserved for **monospace labels and metadata inside dense data widgets** (score
+rings, valuation cards, table eyebrows) — never for prose. Only two micro values are permitted,
+`10px` and `11px`; any other arbitrary sub-12px size is drift and should snap to one of these.
 
 **Spacing scale** (4px base unit, used for all padding/margin/gap — no arbitrary values):
 
@@ -132,7 +145,9 @@ visually mistaken for ordinary content.
 - **The seal animation is the one orchestrated moment in the product.** Press-scale (0.96 → 1.0)
   + 8° rotation settle + a radial ink-bleed opacity fade, ~400ms, ease-out. Everything else in the
   product uses fast, quiet transitions (150–200ms ease) for hover/focus states and simple fades
-  for content loading — no scroll-triggered reveals, no staggered card entrances, no parallax.
+  for content loading — no triggered scroll reveals, no staggered card entrances, no parallax.
+  (The one exception is the scrub-based, reduced-motion-safe landing reveal defined in
+  `docs/MOTION.md` law 11.)
   Restraint everywhere else is what makes the seal moment land.
 - All motion respects `prefers-reduced-motion: reduce` — the seal becomes an instant state-swap
   (unlocked card → locked card with seal already present) rather than an animated press.
@@ -1007,7 +1022,7 @@ values:
 ```css
 :root {
   --ink: #14171F;
-  --paper: #EFF1ED;
+  --paper: #FAF8F4;
   --verdigris: #2F6E5D;
   --brass: #855F22;
   --plum: #5B4B6B;

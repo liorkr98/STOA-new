@@ -51,6 +51,8 @@ export interface ProfileConfig {
   accent?: string;
   /** Storefront font pairing id (B2). */
   font_pairing?: "ledger" | "modern" | "editorial" | "mono";
+  /** Report pinned to the top of the public profile (set from Studio). */
+  pinned_report_id?: string | null;
   /** Addable storefront content sections (B3), rendered below the hero.
    * Separate key from `sections` (hero layout) so the two never collide. */
   storefront_sections?: ProfileSection[];
@@ -58,6 +60,10 @@ export interface ProfileConfig {
   layout?: "list" | "grid" | "magazine";
   /** Optional <=3% paper texture on the storefront only (B4). Default off. */
   texture?: boolean;
+  /** Show the paying-member count beside followers in the public profile hero.
+   * The analyst opts in; followers always show, members only when this is true.
+   * These two numbers appear nowhere else on the platform. */
+  show_member_count?: boolean;
 }
 
 export const BLOCK_META: Record<

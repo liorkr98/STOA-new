@@ -2,9 +2,8 @@ import { cn } from "@/lib/design/cn";
 import type { ReactNode } from "react";
 
 /**
- * Wraps the report body only -- never the ticker strip, call block,
- * disclosure block, or TrackScoreBadge, which render outside this component
- * entirely. onUnlock/onSubscribe should both be secondary (outlined)
+ * Wraps the report body only -- never the ticker strip, call block, or
+ * disclosure block, which render outside this component entirely. onUnlock/onSubscribe should both be secondary (outlined)
  * variants, not one primary + one secondary -- unlocking per-report and
  * subscribing are genuinely alternative paths, not a hierarchy.
  *
@@ -16,7 +15,7 @@ import type { ReactNode } from "react";
 export function PaywallGate({
   previewText,
   headline = "Unlock the full report",
-  body = "The locked call, disclosures, and Track Score stay visible. The research body unlocks with purchase or subscription.",
+  body = "The locked call and the disclosures stay visible. The research body unlocks with purchase or subscription.",
   onUnlock,
   onSubscribe,
   isAuthed,

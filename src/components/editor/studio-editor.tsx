@@ -40,6 +40,10 @@ import {
   isDocMostlyEmpty,
 } from "@/lib/editor/tiptap/apply-report-template";
 import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
+import { VideoRung } from "@/components/compose/video-rung";
+import { ComposeFork, type ComposeMode } from "@/components/compose/compose-fork";
+import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
+import { UNIVERSE } from "@/lib/universe";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -92,6 +96,13 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
+  // Persisted on save/publish to reports.primary_tag / secondary_tags.
+  const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
+  // The fork. An existing draft is written work until the creator adds video;
+  // a fresh compose asks first. Switching keeps every field mounted, so nothing
+  // written is lost either way.
+  const [mode, setMode] = useState<ComposeMode | null>(initialDraft?.id ? "written" : null);
+  const [showWrittenReport, setShowWrittenReport] = useState(Boolean(initialDraft?.body));
   const [direction, setDirection] = useState<Direction>("long");
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
@@ -234,6 +245,8 @@ export function StudioEditor({
         direction: hasCard ? direction : undefined,
         target_price: hasCard && target ? Number(target) : null,
         horizon_days: hasCard ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
       });
       setDraftId(res.id);
       setSaveStatus("saved");
@@ -282,6 +295,11 @@ export function StudioEditor({
   // Calls still require a ticker so there is something to lock.
   const lockingCall = hasCard && Boolean(ticker.trim());
   const publishBlockedBy: string | null = (() => {
+    if (!mode) return "Choose whether you are publishing with video.";
+    if (mode === "video") {
+      if (!title.trim()) return "Add a headline for the video.";
+      if (!tags.primary) return "Choose a primary tag.";
+    }
     if (type === "short_post") {
       return summary.trim() ? null : "Write your post first.";
     }
@@ -318,6 +336,8 @@ export function StudioEditor({
             direction: lockingCall ? direction : undefined,
             target_price: lockingCall && target ? Number(target) : null,
             horizon_days: lockingCall ? horizon : undefined,
+            primary_tag: tags.primary,
+            secondary_tags: tags.secondary,
           });
           id = res.id;
           setDraftId(id);
@@ -344,6 +364,8 @@ export function StudioEditor({
         direction: lockingCall ? direction : undefined,
         target_price: lockingCall && target ? Number(target) : null,
         horizon_days: lockingCall ? horizon : undefined,
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {
@@ -521,52 +543,86 @@ export function StudioEditor({
       >
         {/* Editor column */}
         <div className="min-w-0">
-          {type !== "short_post" && (
+          <ComposeFork mode={mode} onChoose={setMode} />
+
+          {/* The video path. The rung stays mounted (hidden) on the written
+              path so switching back never loses a chosen clip or its overlays;
+              it is never shown as a disabled module. */}
+          <div className={mode === "video" ? "" : "hidden"} aria-hidden={mode !== "video"}>
+            <VideoRung />
+          </div>
+
+          {mode ? (
             <>
-              <label htmlFor="report-title" className="sr-only">
-                Report title
+              {(mode === "video" || type !== "short_post") && (
+                <>
+                  <label htmlFor="report-title" className="sr-only">
+                    Headline
+                  </label>
+                  <input
+                    id="report-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={mode === "video" ? "Headline (required)" : "Report title"}
+                    className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  />
+                </>
+              )}
+              <label htmlFor="report-summary" className="sr-only">
+                {type === "short_post" && mode === "written" ? "Post text" : "Summary"}
               </label>
               <input
-                id="report-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Report title"
-                className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
-                style={{ fontFamily: "var(--font-display)" }}
+                id="report-summary"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder={type === "short_post" && mode === "written" ? "What's on your mind?" : "One-line summary shown in feeds"}
+                className="mb-6 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
               />
+
+              {mode === "video" ? (
+                <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-border py-3">
+                  <span className="num text-[10px] uppercase tracking-[0.16em] text-text-mute">Required · headline and tags (in the panel)</span>
+                  <span className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">Optional · evidence cards, a written report</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowWrittenReport((v) => !v)}
+                    className="num focus-ring ml-auto rounded text-[10px] uppercase tracking-[0.14em] text-text underline underline-offset-4"
+                  >
+                    {showWrittenReport ? "Hide the written report" : "Add a written report"}
+                  </button>
+                </div>
+              ) : null}
+
+              {(mode === "written" ? type !== "short_post" : showWrittenReport) && showTemplateStrip && (
+                <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+              )}
+
+              {/* The written report. Always mounted once shown so switching paths keeps the text. */}
+              <div className={(mode === "written" ? type !== "short_post" : showWrittenReport) ? "" : "hidden"}>
+                <TiptapEditor
+                  initialContent={initialDoc}
+                  onChange={onEditorChange}
+                  reportTicker={hasCard ? ticker || undefined : undefined}
+                  onReady={(e) => {
+                    editorRef.current = e;
+                    setEditor(e);
+                  }}
+                />
+              </div>
             </>
-          )}
-          <label htmlFor="report-summary" className="sr-only">
-            {type === "short_post" ? "Post text" : "Summary"}
-          </label>
-          <input
-            id="report-summary"
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            placeholder={type === "short_post" ? "What's on your mind?" : "One-line summary shown in feeds"}
-            className="mb-6 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
-          />
-
-          {type !== "short_post" && showTemplateStrip && (
-            <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
-          )}
-
-          {type !== "short_post" && (
-            <TiptapEditor
-              initialContent={initialDoc}
-              onChange={onEditorChange}
-              reportTicker={hasCard ? ticker || undefined : undefined}
-              onReady={(e) => {
-                editorRef.current = e;
-                setEditor(e);
-              }}
-            />
-          )}
+          ) : null}
         </div>
 
         {/* Lock & Publish panel (collapsible) */}
         {panelOpen && (
-          <aside className="scroll-area self-start lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:pl-1">
+          <aside className="scroll-area flex flex-col gap-4 self-start lg:sticky lg:top-14 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:pl-1">
+            <TagPicker
+              value={tags}
+              onChange={setTags}
+              hasCall={lockingCall}
+              callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
+            />
             <LockPublishPanel
               hasCard={hasCard}
               ticker={ticker}

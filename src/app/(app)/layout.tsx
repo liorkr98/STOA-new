@@ -1,6 +1,7 @@
 import { getSessionProfile } from "@/lib/db/auth";
 import { unreadNotificationCount } from "@/lib/db/notifications";
 import { TopNav } from "@/components/layout/top-nav";
+import { InstrumentSheetProvider } from "@/components/markets/instrument-sheet";
 import { redirect } from "next/navigation";
 import { getConsentRedirectPath } from "@/app/actions/consent";
 
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
   const unreadCount = profile ? await unreadNotificationCount(profile.id) : 0;
   return (
+    <InstrumentSheetProvider>
     <div className="flex min-h-[100dvh] flex-col">
       <a
         href="#main-content"
@@ -30,5 +32,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
     </div>
+    </InstrumentSheetProvider>
   );
 }

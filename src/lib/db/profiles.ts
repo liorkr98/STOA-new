@@ -40,6 +40,22 @@ export async function listTopAnalysts(limit = 12): Promise<Profile[]> {
   }
 }
 
+/** Analysts by accumulated audience (followers), the POPULAR pool. Never by score. */
+export async function listAnalystsByFollowers(limit = 24): Promise<Profile[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "analyst")
+      .order("followers_count", { ascending: false })
+      .limit(limit);
+    return (data as Profile[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function searchProfiles(query: string, limit = 8): Promise<Profile[]> {
   const supabase = await createClient();
   const { data } = await supabase

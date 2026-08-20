@@ -5,6 +5,7 @@ import { CheckCircle } from "@phosphor-icons/react";
 import { updateProfile } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
+import { AvatarUpload } from "@/components/profile/avatar-upload";
 import type { Profile } from "@/lib/types";
 
 const inputClass =
@@ -28,14 +29,16 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+      {/* Avatar — Settings is the single place identity (name, bio, headline, photo) is edited. */}
+      <AvatarUpload
+        userId={profile.id}
+        displayName={profile.display_name}
+        currentUrl={profile.avatar_url}
+      />
+
       <label className="flex flex-col gap-1 text-sm">
         Display name
-        <input
-          name="display_name"
-          defaultValue={profile.display_name}
-          required
-          className={inputClass}
-        />
+        <input name="display_name" defaultValue={profile.display_name} required className={inputClass} />
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
@@ -50,46 +53,30 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         />
       </label>
 
-      {isAnalyst && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            Headline
-            <input
-              name="headline"
-              defaultValue={profile.headline ?? ""}
-              maxLength={160}
-              placeholder="What you cover and how you invest"
-              className={inputClass}
-            />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1 text-sm">
-              Monthly subscription (USD)
-              <input
-                name="sub_price"
-                type="number"
-                min={5}
-                max={200}
-                defaultValue={profile.sub_price ?? ""}
-                className={cn(inputClass, "num")}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              Default report price (USD)
-              <input
-                name="report_price"
-                type="number"
-                min={1}
-                max={50}
-                defaultValue={profile.report_price ?? ""}
-                className={cn(inputClass, "num")}
-              />
-            </label>
-          </div>
-        </>
-      )}
+      <label className="flex flex-col gap-1 text-sm">
+        Headline
+        <input
+          name="headline"
+          defaultValue={profile.headline ?? ""}
+          maxLength={160}
+          placeholder="What you cover and how you invest"
+          className={inputClass}
+        />
+      </label>
 
-      <p className="t-meta">Handle: @{profile.handle}</p>
+      <div className="text-sm">
+        <span className="text-text-mute">Handle: </span>
+        <span className="num">@{profile.handle}</span>
+        <span className="num ml-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          Locked after onboarding
+        </span>
+      </div>
+
+      {isAnalyst && (
+        <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          Pricing and storefront design live in Storefront.
+        </p>
+      )}
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>

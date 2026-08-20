@@ -1,53 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Compass } from "lucide-react";
-import { DispatchView } from "@/components/dispatch/dispatch-view";
-import { EmptyState } from "@/components/ui/empty-state";
-import { buttonClass } from "@/components/ui/button";
+import { TodayPage } from "@/components/today/today-page";
 import { getSessionUserId } from "@/lib/db/auth";
-import { buildDispatch } from "@/lib/dispatch/build-dispatch";
-import { getDispatchVideos } from "@/lib/video/dispatch-videos";
+import { buildTodayPage } from "@/lib/today/build-today-page";
 
-export const metadata: Metadata = { title: "Home" };
+export const metadata: Metadata = {
+  title: "Today",
+  description: "Stoa's daily briefing: the lead, what is trending, and the calls the market just graded.",
+};
 
+/**
+ * Today is Stoa's daily newspaper. Signed-in readers get their desk and lists;
+ * signed-out readers get the platform-wide issue, so Verdicts is a real,
+ * server-rendered, indexable page for someone who has never heard of Stoa.
+ */
 export default async function HomePage() {
   const userId = await getSessionUserId();
-  if (!userId) redirect("/sign-in?next=/home");
-
-  const [dispatch, videos] = await Promise.all([buildDispatch(true), getDispatchVideos()]);
-  const empty =
-    dispatch.personalized &&
-    !dispatch.lead &&
-    dispatch.secondary.length === 0 &&
-    dispatch.wire.length === 0 &&
-    dispatch.resolved.length === 0 &&
-    dispatch.leaderboard.length === 0;
-
-  if (empty) {
-    return (
-      <div className="dispatch-page mx-auto flex min-h-[60vh] max-w-2xl items-center px-5 py-16">
-        <EmptyState
-          icon={<Compass size={32} />}
-          title="Your dispatch is empty"
-          body="Follow analysts or subscribe to their research. Their best calls will land here each morning, ranked by conviction and track record."
-          action={
-            <Link href="/discover?tab=researchers" className={buttonClass("primary", "md")}>
-              Find analysts to follow
-            </Link>
-          }
-        />
-      </div>
-    );
-  }
-
-  return (
-    <DispatchView
-      dispatch={dispatch}
-      mode="home"
-      videoFirst={videos.enabled}
-      videoLead={videos.lead}
-      videoSecondary={videos.secondary}
-    />
-  );
+  const data = await buildTodayPage(userId);
+  return <TodayPage data={data} />;
 }

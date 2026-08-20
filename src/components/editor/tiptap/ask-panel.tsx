@@ -140,7 +140,7 @@ function DraggableCard({
         <span className="block text-[12px] font-medium leading-tight text-text">{card.label}</span>
         <span className="block truncate text-[10px] text-text-faint">{card.subtitle}</span>
       </span>
-      <span className="hidden items-center gap-0.5 text-[9px] uppercase tracking-wide text-text-faint group-hover:flex">
+      <span className="hidden items-center gap-0.5 text-[10px] uppercase tracking-wide text-text-faint group-hover:flex">
         <GripVertical size={11} />
         Drag
       </span>

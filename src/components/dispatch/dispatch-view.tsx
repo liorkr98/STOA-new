@@ -5,7 +5,6 @@ import { DispatchForCreators } from "@/components/dispatch/dispatch-for-creators
 import { DispatchHowItWorks } from "@/components/dispatch/dispatch-how-it-works";
 import { DispatchIssueColumns } from "@/components/dispatch/dispatch-issue-columns";
 import { DispatchLead } from "@/components/dispatch/dispatch-lead";
-import { DispatchLeaderboard } from "@/components/dispatch/dispatch-leaderboard";
 import { DispatchLedger } from "@/components/dispatch/dispatch-ledger";
 import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
 import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
@@ -83,29 +82,7 @@ export function DispatchView({
         mode={mode}
       />
 
-      {isHome ? (
-        <FadeIn>
-          <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
-            <div>
-              <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
-                Personalized research, ranked by signal.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-text-mute">
-                From the analysts you follow and subscribe to. Not a social feed.
-              </p>
-            </div>
-            <div className="flex flex-col justify-between gap-4 sm:items-end sm:text-right">
-              <p className="text-sm leading-relaxed text-text-mute">
-                Locked targets stay on the record. Track Scores update when horizons close. Browse
-                the full catalog anytime in Discover.
-              </p>
-              <Link href="/discover" className={buttonClass("secondary", "sm")}>
-                Open Discover
-              </Link>
-            </div>
-          </div>
-        </FadeIn>
-      ) : (
+      {isHome ? null : (
         <FadeIn>
           <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
             <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
@@ -160,10 +137,6 @@ export function DispatchView({
 
       <DispatchLedger items={dispatch.resolved} />
 
-      {isHome && dispatch.leaderboard.length > 0 ? (
-        <DispatchLeaderboard entries={dispatch.leaderboard} />
-      ) : null}
-
       {thinHome ? (
         <div className="dispatch-section rounded-[var(--radius-card)] border border-border bg-surface px-5 py-6 text-center">
           <p className="text-sm text-text-mute">
@@ -179,8 +152,8 @@ export function DispatchView({
 
       {isHome ? (
         <div className="dispatch-section text-center">
-          <Link href="/discover" className={buttonClass("ghost", "sm")}>
-            Browse all research in Discover →
+          <Link href="/explore" className={buttonClass("ghost", "sm")}>
+            Browse all research in Explore →
           </Link>
         </div>
       ) : (

@@ -19,6 +19,28 @@ export async function listRecentResolved(limit = 8): Promise<ResolvedCall[]> {
   return (data as unknown as ResolvedCall[]) ?? [];
 }
 
+export type ResolvedCallWithReport = Prediction & {
+  author?: Profile | null;
+  report?: { id: string; title: string | null; summary: string | null; status: string } | null;
+};
+
+/** Recently resolved calls joined to author and report, for Verdicts bands. */
+export async function listRecentResolvedWithReports(limit = 24): Promise<ResolvedCallWithReport[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("predictions")
+    .select(
+      "*, author:profiles!predictions_author_id_fkey(*), report:reports!predictions_report_id_fkey(id, title, summary, status)",
+    )
+    .neq("outcome", "open")
+    .not("resolved_price", "is", null)
+    .order("resolves_at", { ascending: false })
+    .limit(limit);
+  return ((data as unknown as ResolvedCallWithReport[]) ?? []).filter(
+    (p) => p.author && p.report && p.report.status === "published",
+  );
+}
+
 export async function listPredictionsByAuthor(
   authorId: string,
   limit = 200,

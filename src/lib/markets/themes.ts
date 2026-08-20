@@ -1,0 +1,98 @@
+/**
+ * Editorial themes for the Markets Explore view.
+ *
+ * Themes are curation, not market data: an editor decides that "the AI
+ * buildout" is a lens worth browsing and which listed names sit inside it.
+ * This file is that editorial judgement, in the same spirit as `UNIVERSE`.
+ * Everything shown against a theme at render time -- prices, publication
+ * counts, analyst activity -- is read from real data.
+ *
+ * Constituents are drawn from `UNIVERSE`, so every symbol here resolves to a
+ * real instrument page.
+ */
+export interface MarketTheme {
+  slug: string;
+  name: string;
+  deck: string;
+  /** A short editorial paragraph for the theme page: what the theme is. */
+  about: string;
+  tickers: string[];
+}
+
+export const MARKET_THEMES: MarketTheme[] = [
+  {
+    slug: "ai-buildout",
+    name: "The AI buildout",
+    deck: "The silicon, the power, and the buildings behind every model release.",
+    about:
+      "Every model release is paid for in silicon, power and concrete. This theme follows the companies that sell the picks and shovels: accelerators, the equipment that makes them, and the networking that ties a data centre together.",
+    tickers: ["NVDA", "AVGO", "AMAT", "LRCX"],
+  },
+  {
+    slug: "software-margin",
+    name: "Software after the reset",
+    deck: "Growth is cheaper to buy than it was; the question is who still compounds.",
+    about:
+      "The software multiple reset separated companies that grow into their valuation from companies that grew into their marketing. This theme follows the platforms whose margins survived and asks which ones still compound.",
+    tickers: ["MSFT", "NOW", "SNOW", "PLTR"],
+  },
+  {
+    slug: "obesity-drugs",
+    name: "The weight-loss decade",
+    deck: "One drug class is re-rating an entire sector's terminal value.",
+    about:
+      "GLP-1 drugs moved from diabetes to obesity to a list of indications that keeps growing. This theme follows the makers, the fast followers and the businesses whose demand curves the drugs quietly bend.",
+    tickers: ["LLY", "MRK", "AMGN", "PFE"],
+  },
+  {
+    slug: "energy-realism",
+    name: "Energy realism",
+    deck: "Demand forecasts keep rising while supply discipline holds.",
+    about:
+      "The transition is real and so is the barrel. This theme follows the producers and industrial-gas names that benefit while demand forecasts keep rising and capital discipline keeps supply from chasing them.",
+    tickers: ["XOM", "CVX", "LIN"],
+  },
+  {
+    slug: "payments-rails",
+    name: "Who owns the rails",
+    deck: "Incumbent networks, neobanks, and crypto venues competing for the same flow.",
+    about:
+      "Money moves over rails, and whoever owns the rails takes a toll on every transaction. This theme follows the incumbent networks, the challengers building beside them and the venues trying to route around them.",
+    tickers: ["V", "MA", "COIN", "SOFI"],
+  },
+  {
+    slug: "grid-capex",
+    name: "The grid rebuild",
+    deck: "Transformers, turbines and transmission: the least glamorous bottleneck in the AI trade.",
+    about:
+      "Data centres, electrification and an ageing grid all want the same transformers and switchgear at the same time. This theme follows the industrials with decade-long backlogs and the contractors building against them.",
+    tickers: ["ETN", "GEV", "VRT", "PWR"],
+  },
+  {
+    slug: "memory-supercycle",
+    name: "Memory's turn",
+    deck: "High-bandwidth memory made a commodity business look, briefly, like a franchise.",
+    about:
+      "Memory has always been the cyclical end of semiconductors. HBM changed who the customer is and how much they care about price. This theme follows the memory makers and the equipment they depend on.",
+    tickers: ["MU", "AMAT", "LRCX", "KLAC"],
+  },
+];
+
+/**
+ * The twelve sectors carried by the instrument table. Fixed order so the
+ * Explore grid is stable between renders.
+ */
+export const MARKET_SECTORS: string[] = [
+  "Semiconductors",
+  "Software",
+  "Internet",
+  "Hardware",
+  "Financials",
+  "Healthcare",
+  "Consumer",
+  "Energy",
+  "Industrials",
+  "Materials",
+  "Media",
+  "Autos",
+];

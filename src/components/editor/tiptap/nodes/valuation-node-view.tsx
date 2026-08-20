@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Calculator, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import { dcf, dcfSensitivity, type DcfResult } from "@/lib/valuation/model";
 import { diverging } from "@/lib/design/chart-theme";
 
@@ -176,7 +177,7 @@ export function ValuationNodeView({
                         opacity: 0.85,
                       }}
                     />
-                    <span className="num text-[9px] text-text-faint">{i + 1}</span>
+                    <span className="num text-[10px] text-text-faint">{i + 1}</span>
                   </div>
                 );
               })}
@@ -188,7 +189,7 @@ export function ValuationNodeView({
                     background: "var(--brass)",
                   }}
                 />
-                <span className="num text-[9px] text-text-faint">TV</span>
+                <span className="num text-[10px] text-text-faint">TV</span>
               </div>
             </div>
           </div>
@@ -217,7 +218,7 @@ export function ValuationNodeView({
       >
         <div className="mb-2 flex items-center gap-2">
           <Calculator size={14} className="text-text-faint" />
-          {ticker && <span className="num text-sm font-semibold">{ticker}</span>}
+          {ticker && <TickerChip ticker={ticker} />}
           <span className="t-eyebrow">DCF valuation</span>
           {drivesTarget && <span className="t-meta text-[11px]">drives target</span>}
         </div>
@@ -402,7 +403,7 @@ export function ValuationNodeView({
                         return (
                           <div
                             key={ci}
-                            className="num flex flex-1 items-center justify-center py-1 text-[9px]"
+                            className="num flex flex-1 items-center justify-center py-1 text-[10px]"
                             style={{ background: Number.isFinite(cell) ? diverging(t) : "var(--surface-2)" }}
                             title={`WACC ${(sensitivity.waccSteps[ri] * 100).toFixed(1)}% / g ${(sensitivity.growthSteps[ci] * 100).toFixed(1)}%`}
                           >

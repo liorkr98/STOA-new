@@ -1,4 +1,9 @@
 # Stoa — Legal & Compliance Brief for Counsel
+
+> **Product model has changed since this brief was written.** The current model (a video-first
+> content model, among other changes) is captured in `docs/PRODUCT_MODEL.md`. This brief describes
+> how the product works, so it must be reviewed and updated with counsel before it is relied on.
+> The body below has NOT been revised for the new model.
 ### This is NOT legal advice and NOT drafted legal text. It's a briefing document — everything a lawyer needs to know about how the product actually works, so the engagement starts with informed drafting instead of hours of discovery. Hand this directly to whoever you retain, US and Israeli counsel both.
 
 ---

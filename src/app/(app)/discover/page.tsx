@@ -7,7 +7,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FilterBar } from "@/components/discover/filter-bar";
 import { ReportBlock } from "@/components/discover/report-block";
-import { VideoGrid } from "@/components/video/video-grid";
+import { FeedPage } from "@/components/feed/feed-page";
+import { clipsToPublications } from "@/lib/feed/build-publications";
+import { listCommentsForReports } from "@/lib/db/comments";
+import { postFeedComment } from "@/app/actions/feed";
+import type { FeedComment } from "@/lib/feed/types";
 import { DiscoverLayoutToggle } from "@/components/discover/layout-toggle";
 import {
   listFeed,
@@ -21,7 +25,6 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { resolvedCountByAuthor } from "@/lib/db/predictions";
 import { listVideoClipCards, type VideoClipCard } from "@/lib/db/video-clips";
-import { toVideoCardData } from "@/lib/video/card";
 import { isVideoFirstDiscover } from "@/lib/db/feature-flags";
 import { QuickPost } from "@/components/feed/quick-post";
 import type { CapBand } from "@/lib/market/cap-bands";
@@ -45,9 +48,6 @@ interface DiscoverParams {
   tab?: string;
   type?: string;
   access?: string;
-  score?: string;
-  /** @deprecated Use `score` */
-  moat?: string;
   ticker?: string;
   status?: string;
   mcap?: string;
@@ -63,8 +63,6 @@ function parseFeedFilters(params: DiscoverParams): FeedFilters {
   if (params.access && ACCESS_TYPES.includes(params.access as AccessType)) {
     filters.access = params.access as AccessType;
   }
-  const minScore = Number(params.score ?? params.moat);
-  if (minScore > 0) filters.minScore = minScore;
   if (params.ticker?.trim()) filters.ticker = params.ticker.trim().toUpperCase();
   if (params.status === "open" || params.status === "resolved") {
     filters.status = params.status;
@@ -86,7 +84,6 @@ function videoCardMatches(card: VideoClipCard, filters: FeedFilters): boolean {
     const t = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
     if (t !== filters.ticker) return false;
   }
-  if (filters.minScore && (report.author?.score ?? 0) < filters.minScore) return false;
   if (filters.status) {
     const outcome = report.prediction?.outcome;
     if (filters.status === "open" && outcome !== "open") return false;
@@ -114,8 +111,9 @@ export default async function DiscoverPage({
   const filters = parseFeedFilters(params);
   const filtersActive = Object.keys(filters).length > 0;
 
-  // Part 1: video-first layout is flag-gated and reversible. `?layout=video|text`
-  // forces either layout so the legacy feed stays reachable at all times.
+  // Video-first is the default Feed. `?layout=text` reaches the legacy text
+  // mosaic (the layout toggle and the empty state link to it); the env flag
+  // can turn video-first off wholesale for a rollback.
   const flagOn = await isVideoFirstDiscover();
   const videoFirst =
     tab !== "researchers" &&
@@ -186,9 +184,29 @@ export default async function DiscoverPage({
     }
   }
 
-  const videoCards = (videos ?? [])
-    .map(toVideoCardData)
-    .filter((v): v is NonNullable<typeof v> => v != null);
+  // The Feed player: publications built from clips, with their discussions.
+  const publications = videos && videos.length > 0 ? await clipsToPublications(videos) : [];
+  if (publications.length > 0) {
+    const commentsByReport = await listCommentsForReports(publications.map((p) => p.id));
+    for (const pub of publications) {
+      const authorHandle = pub.analyst.handle;
+      pub.comments = (commentsByReport.get(pub.id) ?? []).map(
+        (c): FeedComment => ({
+          id: c.id,
+          parentId: c.parent_id ?? null,
+          author: {
+            handle: c.author?.handle ?? "",
+            displayName: c.author?.display_name ?? "Reader",
+            avatarUrl: c.author?.avatar_url ?? null,
+            isAuthor: c.author?.handle === authorHandle,
+          },
+          createdAt: c.created_at,
+          text: c.body,
+          likes: c.likes ?? 0,
+        }),
+      );
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -258,8 +276,8 @@ export default async function DiscoverPage({
           />
         )
       ) : videoFirst ? (
-        videoCards.length > 0 ? (
-          <VideoGrid videos={videoCards} />
+        publications.length > 0 ? (
+          <FeedPage publications={publications} canPost={Boolean(userId)} onPost={userId ? postFeedComment : undefined} />
         ) : (
           <EmptyState
             icon={<Compass size={32} />}

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BookOpen, LineChart, Radio } from "lucide-react";
 import { FadeIn } from "@/components/motion/fade-in";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import type { DispatchStory } from "@/lib/dispatch/types";
 import { cn } from "@/lib/design/cn";
 
@@ -57,12 +56,6 @@ function IssueCard({
           >
             {story.author.display_name}
           </Link>
-          <TrackScoreBadge
-            handle={story.author.handle}
-            score={story.author.score || null}
-            sampleSize={story.author.sample_size}
-            size="sm"
-          />
         </div>
       </article>
     </FadeIn>

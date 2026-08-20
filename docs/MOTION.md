@@ -1,5 +1,7 @@
 # Stoa — Motion & Polish Spec
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 ### The go-live elevation pass. Extends `docs/FRONTEND.md` §1.5 — where they differ, this doc wins on motion; FRONTEND.md wins on everything else.
 
 Three inputs are encoded here, so Claude Code doesn't need to re-derive them per session:
@@ -53,6 +55,18 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
    plain 80ms opacity fade. The seal becomes "already stamped." No exceptions, including toasts.
 10. **No stagger-spam.** Stagger only genuinely related list items, groups of 3–7, 40ms steps,
     once per mount — never on scroll, never re-triggered by filtering.
+11. **Scroll reveals: one sanctioned pattern, and only on editorial pages.** Timer-driven,
+    observer-triggered "reveal on scroll" stays banned (it fires late in hidden tabs, ships blank
+    sections to headless renderers, and re-plays). What is allowed is the landing page's
+    **scrub-based** reveal: a CSS view-timeline animation (`animation-timeline: view()`) whose
+    progress *is* the reader's scroll position, like a scrollbar, so it never triggers, never
+    re-plays and never waits on a timer. Constraints: restrained (opacity plus a rise of 12px or
+    less over the first ~35% of entry, no scale, no stagger); `transform` and `opacity` only;
+    inside `@supports (animation-timeline: view())` so browsers without it simply show the content;
+    and always inside `@media (prefers-reduced-motion: no-preference)` so reduced motion collapses
+    it to nothing. Editorial and marketing surfaces only (the landing, a report's long read);
+    never Studio, Compose, nav, sidebars, feeds or lists. Reference implementation:
+    `.landing-reveal` in `src/app/globals.css`.
 
 ### A.3 Component-by-component
 
@@ -64,7 +78,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 | **DebateThread (mobile sheet)** | Use **Vaul** — gesture-driven, spring-based, interruptible, drag-to-dismiss. Desktop side panel: x 8px→0 + opacity. | Vaul defaults / `--dur-3` |
 | **Toasts** | Use **Sonner**. Bottom-center desktop, bottom mobile. The "Locked" toast carries the seal glyph. Default timings — don't restyle motion. | Sonner defaults |
 | **LockConfirmModal** | Overlay opacity 0→1; panel scale 0.98→1 + opacity, `--ease-out`. Exit reverse, faster. | enter `--dur-3`, exit `--dur-2` |
-| **MOAT score odometer** | Tabular-nums count from previous → new value, `--ease-out`, once per *meaningful* change (page load after a resolve; the resolve notification). Never on rerenders, never looping. | 600ms |
+| **Track Score odometer** | Tabular-nums count from previous → new value, `--ease-out`, once per *meaningful* change (page load after a resolve; the resolve notification). Never on rerenders, never looping. | 600ms |
 | **PaywallGate unlock** | The paid moment earns a small lift: scrim gradient fades out while revealed content rises y 8px→0. One-time per unlock. | `--dur-3` `--ease-out` |
 | **FeedCard hover** | Border-color shift + translateY(-1px). **No scale, no shadow-grow** — scale on large surfaces reads cheap and shadows violate the elevation system. | `--dur-1` `--ease-hover` |
 | **Dropdowns / role switcher / bell** | Scale 0.97→1 + opacity, origin at trigger edge. | `--dur-2` / `--dur-1` exit |
@@ -77,8 +91,9 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 
 Live prices and % changes in the ticker strip (they update constantly — frequency rule; just swap,
 tabular-nums prevents layout shift). Route/page transitions. Nav and sidebar. Filter chip
-selection beyond the browser-default background transition. Feed cards mounting on scroll.
-Text content. Chart lines on every data refresh (animate once on first mount only).
+selection beyond the browser-default background transition. Feed cards mounting on scroll
+(observer-triggered reveals of any kind; the scrub-based landing reveal in law 11 is the one
+exception). Text content. Chart lines on every data refresh (animate once on first mount only).
 The DisclosureBlock — it never moves, ever; stillness is part of its authority.
 
 ---

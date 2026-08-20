@@ -27,14 +27,15 @@ Light theme (`.dark` inverts these; values already in `globals.css`):
 | `--paper` | `#eff1ed` | app base background (warm greige) |
 | `--surface` | `#f7f8f5` | cards |
 | `--surface-2` | `#e6e8e2` | nested/inset panels, dense field backgrounds |
-| `--verdigris` | `#2f6e5d` | brand accent · `--up` · Hit · "Fact" |
-| `--brass` | `#b8863b` | the seal / certification · "Unproven" |
+| `--verdigris` | `#2f6e5d` | `--up` · Hit · "Fact" (sentiment only, never chrome) |
+| `--brass` | `#855f22` | the seal / certification · "Unproven" |
 | `--plum` | `#5b4b6b` | "Opinion" |
 | `--rust` | `#a6483c` | `--down` · Miss · "Contradicted" |
 
 Derived (never separately named): `--text-mute` (ink 62%), `--text-faint` (ink 42%), `--border`
-(ink 14%), `--border-strong` (ink 28%). `--accent = --verdigris`; `--up = --verdigris`;
-`--down = --rust`. **Never pure `#000` / `#fff`.**
+(ink 14%), `--border-strong` (ink 28%). `--accent = --ink` (chrome and primary buttons are ink;
+navy is reserved for the wordmark); `--up = --verdigris`; `--down = --rust`. **Never pure `#000` /
+`#fff`.** A verdigris primary button is a bug, not the design.
 
 ## 2. Backgrounds — how each surface reads
 

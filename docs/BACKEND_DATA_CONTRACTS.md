@@ -1,12 +1,14 @@
 # New data contracts for the rebrand
 
+> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+
 Written by the frontend/design pass on `design/full-rebrand`, for whoever picks up the backend
 side (Cursor). Nothing here should be built by the frontend agent -- `src/lib/db/*` is the only
 place that talks to Supabase per AGENTS.md, and payments/schema are backend scope.
 
 ## Already covered, no new backend work needed
 
-- **MOAT score display.** `profiles.score` (0-100, clamped) is the MOAT number. The engine
+- **Track Score display.** `profiles.score` (0-100, clamped) is the Track Score number. The engine
   (`src/lib/engine/score.ts`) already does Wilson-lower-bound hit rate, decay-weighted profit
   factor, alpha vs SPY, and a logarithmic sample-size ramp -- that ramp *is* the spec's
   "provisional score for small samples" concept. `MoatBadge` (`src/components/ui/moat-badge.tsx`)

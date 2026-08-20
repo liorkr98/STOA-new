@@ -241,6 +241,32 @@ export async function listByAuthor(
   return asReportRows(data).map(normalize);
 }
 
+/** Newest publicly visible publications platform-wide, with author and prediction. */
+export async function listRecentPublished(limit = 80): Promise<Report[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select(SELECT)
+    .in("status", ["published", "resolution_pending_review"])
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  return asReportRows(data).map(normalize);
+}
+
+/** Newest publicly visible publications by a set of authors (the reader's desk). */
+export async function listPublishedByAuthors(authorIds: string[], limit = 24): Promise<Report[]> {
+  if (authorIds.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select(SELECT)
+    .in("status", ["published", "resolution_pending_review"])
+    .in("author_id", authorIds)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  return asReportRows(data).map(normalize);
+}
+
 /** Map of ticker -> count of publicly visible reports covering it. */
 export async function tickerCoverage(): Promise<Record<string, number>> {
   try {

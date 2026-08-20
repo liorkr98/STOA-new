@@ -275,15 +275,19 @@ export async function updateProfile(formData: FormData) {
   const display_name = String(formData.get("display_name") ?? "");
   const bio = String(formData.get("bio") ?? "").slice(0, 500);
   const headline = String(formData.get("headline") ?? "").slice(0, 160);
-  const sub_price = Number(formData.get("sub_price") ?? 0) || null;
-  const report_price = Number(formData.get("report_price") ?? 0) || null;
 
-  await supabase
-    .from("profiles")
-    .update({ display_name, bio, headline, sub_price, report_price })
-    .eq("id", userId);
+  // Pricing lives in Storefront now; only touch it when the form actually sends
+  // it, so saving profile fields from Settings never wipes stored prices.
+  const update: Record<string, unknown> = { display_name, bio, headline };
+  if (formData.has("sub_price")) update.sub_price = Number(formData.get("sub_price") ?? 0) || null;
+  if (formData.has("report_price")) update.report_price = Number(formData.get("report_price") ?? 0) || null;
+
+  await supabase.from("profiles").update(update).eq("id", userId);
+  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/studio");
+  revalidatePath("/studio/branding"); // Storefront reads these for its live preview
   revalidatePath("/settings");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
   return { ok: true };
 }
 
@@ -293,6 +297,7 @@ export async function updateAvatarUrl(url: string) {
   const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/settings");
   revalidatePath("/settings/branding");
+  revalidatePath("/studio/branding"); // Storefront preview shows the avatar
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }
 
@@ -306,43 +311,68 @@ export async function updateCoverUrl(url: string) {
 
 export async function updateProfileConfig(config: ProfileConfig) {
   const { supabase, userId } = await requireUser();
-  await supabase.from("profiles").update({ profile_config: config }).eq("id", userId);
-  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
+  // Merge-safe like every other config writer here: a partial config from one
+  // editor must never erase keys owned by another (accent, pinned report, ...).
+  const { data } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+  const merged: ProfileConfig = { ...(data?.profile_config ?? {}), ...config };
+  await supabase.from("profiles").update({ profile_config: merged }).eq("id", userId);
   revalidatePath("/settings/branding");
   revalidatePath("/studio/branding");
   if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
 }
 
-/** Branding studio — identity fields + profile_config in one save. */
+/**
+ * Storefront save — presentation only (profile_config). Identity fields
+ * (display_name, headline, bio, avatar) are owned by Settings and are NOT
+ * written here, so the two surfaces can never disagree about who's authoritative.
+ */
 export async function saveBrandingStudio({
-  display_name,
-  headline,
-  bio,
   profile_config,
 }: {
-  display_name: string;
-  headline: string;
-  bio: string;
   profile_config: ProfileConfig;
 }) {
   const { supabase, userId } = await requireUser();
+  // Merge into the existing config so settings owned by other editors (accent,
+  // font pairing, layout, texture, storefront sections, pinned report) are never
+  // wiped when the storefront fields are saved.
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .single();
+  const merged = { ...(existing?.profile_config ?? {}), ...profile_config };
   const { error } = await supabase
     .from("profiles")
-    .update({
-      display_name: display_name.trim(),
-      headline: headline.trim() || null,
-      bio: bio.trim() || null,
-      profile_config,
-    })
+    .update({ profile_config: merged })
     .eq("id", userId);
   if (error) return { ok: false as const, error: error.message };
 
-  const { data } = await supabase.from("profiles").select("handle").eq("id", userId).single();
   revalidatePath("/studio/branding");
-  revalidatePath("/settings/branding");
-  revalidatePath("/settings");
-  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  revalidatePath("/studio");
+  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
   return { ok: true as const };
+}
+
+/** Set (or clear) the report pinned to the top of the public profile. */
+export async function setPinnedProfileReport(reportId: string | null) {
+  const { supabase, userId } = await requireUser();
+  const { data } = await supabase
+    .from("profiles")
+    .select("profile_config, handle")
+    .eq("id", userId)
+    .maybeSingle();
+  const config = (data?.profile_config as Record<string, unknown> | null) ?? {};
+  await supabase
+    .from("profiles")
+    .update({ profile_config: { ...config, pinned_report_id: reportId } })
+    .eq("id", userId);
+  revalidatePath("/studio");
+  if (data?.handle) revalidatePath(`/analyst/${data.handle}`);
+  return { pinned: reportId };
 }
 
 /** Pricing tab in branding studio — subscription + per-report prices. */

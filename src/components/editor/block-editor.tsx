@@ -1,4 +1,5 @@
 import { cn } from "@/lib/design/cn";
+import { TickerChip } from "@/components/ui/ticker-chip";
 import type { EditorBlock } from "@/lib/editor/types";
 import { parseMetricsItems } from "@/lib/editor/document";
 import { MiniChart } from "@/components/editor/mini-chart";
@@ -87,7 +88,7 @@ export function BlockEditor({
         <div className="flex gap-2">
           {readOnly ? (
             <>
-              <span className="num max-w-[120px] font-semibold">{ticker}</span>
+              <TickerChip ticker={ticker} />
               {c.caption && <span className="t-meta flex-1">{String(c.caption)}</span>}
             </>
           ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
@@ -26,7 +26,10 @@ type ReportHit = {
   author_handle: string | null;
 };
 
-/** Compact center-nav search with fast typeahead. */
+/**
+ * Nav search. Rests as an icon to keep the right side of the nav light, and
+ * expands in place into a field on click (Escape or a click away collapses it).
+ */
 export function NavSearch() {
   const router = useRouter();
   const listId = useId();
@@ -34,6 +37,7 @@ export function NavSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [creators, setCreators] = useState<CreatorHit[]>([]);
   const [tickers, setTickers] = useState<TickerHit[]>([]);
@@ -85,18 +89,31 @@ export function NavSearch() {
     };
   }, [q]);
 
+  /** Collapse back to the icon, dropping any in-progress query. */
+  const collapse = useCallback(() => {
+    setOpen(false);
+    setExpanded(false);
+    setQ("");
+  }, []);
+
   useEffect(() => {
     function onDoc(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) collapse();
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  }, [collapse]);
+
+  // Focus the field the moment it appears, so it is ready to type into.
+  useEffect(() => {
+    if (expanded) inputRef.current?.focus();
+  }, [expanded]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        setExpanded(true);
         inputRef.current?.focus();
         if (q.trim().length >= 1) setOpen(true);
       }
@@ -106,16 +123,30 @@ export function NavSearch() {
   }, [q]);
 
   const hasHits = creators.length > 0 || tickers.length > 0 || reports.length > 0;
-  const showPanel = open && q.trim().length >= 1;
+  const showPanel = expanded && open && q.trim().length >= 1;
+
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        aria-label="Search tickers, analysts"
+        aria-expanded={false}
+        onClick={() => setExpanded(true)}
+        className="focus-ring flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-btn)] text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
+      >
+        <Search size={17} aria-hidden />
+      </button>
+    );
+  }
 
   return (
-    <div ref={rootRef} className="relative w-[9.5rem] sm:w-[11.5rem] md:mx-auto md:w-[13rem]">
+    <div ref={rootRef} className="relative w-[220px] lg:w-[300px]">
       <form
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
           const trimmed = q.trim();
-          setOpen(false);
+          collapse();
           router.push(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/search");
         }}
       >
@@ -136,17 +167,17 @@ export function NavSearch() {
           onFocus={() => q.trim().length >= 1 && setOpen(true)}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
-              setOpen(false);
               inputRef.current?.blur();
+              collapse();
             }
           }}
-          placeholder="Search"
+          placeholder="Search tickers, analysts"
           aria-label="Search tickers, analysts, or reports"
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="h-8 w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
+          className="h-[34px] w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -160,6 +191,7 @@ export function NavSearch() {
               setOpen(false);
               inputRef.current?.focus();
             }}
+            tabIndex={-1}
             className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-[var(--radius-btn)] p-0.5 text-text-faint hover:text-text focus-ring"
           >
             <X size={12} aria-hidden />
@@ -171,7 +203,7 @@ export function NavSearch() {
         <div
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 min-w-[16rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)] sm:left-1/2 sm:right-auto sm:w-[18rem] sm:-translate-x-1/2"
+          className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[16rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)] sm:w-[18rem]"
         >
           {loading && !hasHits ? (
             <p className="px-3 py-2.5 text-[11px] text-text-faint" role="status">
@@ -183,7 +215,7 @@ export function NavSearch() {
               <button
                 type="button"
                 onClick={() => {
-                  setOpen(false);
+                  collapse();
                   router.push(`/search?q=${encodeURIComponent(q.trim())}`);
                 }}
                 className="mt-1.5 text-[11px] font-medium text-text underline hover:no-underline focus-ring rounded-[var(--radius-btn)]"
@@ -195,7 +227,7 @@ export function NavSearch() {
             <>
               {tickers.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Markets
                   </p>
                   {tickers.map((t) => (
@@ -203,7 +235,7 @@ export function NavSearch() {
                       key={t.symbol}
                       href={`/markets/${t.symbol}`}
                       role="option"
-                      onClick={() => setOpen(false)}
+                      onClick={collapse}
                       className="flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
                     >
                       <span className="num font-semibold">{t.symbol}</span>
@@ -214,7 +246,7 @@ export function NavSearch() {
               )}
               {creators.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Analysts
                   </p>
                   {creators.map((c) => (
@@ -222,7 +254,7 @@ export function NavSearch() {
                       key={c.id}
                       href={`/analyst/${c.handle}`}
                       role="option"
-                      onClick={() => setOpen(false)}
+                      onClick={collapse}
                       className={cn(
                         "flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring",
                       )}
@@ -235,7 +267,7 @@ export function NavSearch() {
               )}
               {reports.length > 0 && (
                 <div className="px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-[9px] font-semibold uppercase tracking-wider text-text-faint">
+                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-faint">
                     Reports
                   </p>
                   {reports.map((r) => (
@@ -243,7 +275,7 @@ export function NavSearch() {
                       key={r.id}
                       href={`/report/${r.id}`}
                       role="option"
-                      onClick={() => setOpen(false)}
+                      onClick={collapse}
                       className="block rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
                     >
                       <span className="line-clamp-1 font-medium">{r.title}</span>
@@ -258,7 +290,7 @@ export function NavSearch() {
               <button
                 type="button"
                 onClick={() => {
-                  setOpen(false);
+                  collapse();
                   router.push(`/search?q=${encodeURIComponent(q.trim())}`);
                 }}
                 className="w-full border-t border-border px-3 py-2 text-left text-[11px] font-medium text-text-mute hover:bg-surface-2 hover:text-text focus-ring"
