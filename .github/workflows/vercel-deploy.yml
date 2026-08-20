@@ -44,7 +44,7 @@ jobs:
           curl -fsS -X POST "$DEPLOY_HOOK"
           echo "Production deploy triggered."
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.plan.outputs.method == 'cli'
 
       - uses: actions/setup-node@v4
