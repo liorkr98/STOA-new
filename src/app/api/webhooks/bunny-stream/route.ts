@@ -2,18 +2,16 @@ import { NextResponse } from "next/server";
 import {
   getBunnyVideo,
   deleteBunnyVideo,
-  requestBunnyCaptions,
   bunnyPlaybackUrl,
   bunnyThumbnailUrl,
   bunnyPreviewUrl,
   bunnyCaptionVttUrl,
-  fetchTranscriptFromVtt,
   MAX_VIDEO_DURATION_SECONDS,
 } from "@/lib/video/bunny";
-import {
-  markVideoClipReadyByGuid,
-  setVideoClipTranscriptByGuid,
-} from "@/lib/db/video-clips";
+import { markVideoClipReadyByGuid } from "@/lib/db/video-clips";
+import { claimWebhookEvent } from "@/lib/webhooks/idempotency";
+import { enqueueOrRun } from "@/lib/jobs/client";
+import { processReadyVideo } from "@/lib/video/process";
 
 /**
  * Bunny Stream webhook (Part 2.3). Bunny does not sign webhooks, so the URL is
@@ -53,6 +51,11 @@ export async function POST(req: Request) {
   const finished = video.status === 4;
   const failed = video.status === 5 || video.status === 6;
 
+  // Idempotency: Bunny has no event id, so dedupe on the status transition.
+  // A re-delivered "finished" webhook must not re-enqueue processing twice.
+  const isNew = await claimWebhookEvent("bunny", `${guid}:${video.status}`).catch(() => true);
+  if (!isNew) return NextResponse.json({ ok: true, duplicate: true });
+
   // Enforce the teaser-length cap once true duration is known. Over-length
   // uploads are rejected here, not just in the UI (Part 2.3).
   if (finished && video.length > MAX_VIDEO_DURATION_SECONDS) {
@@ -80,15 +83,10 @@ export async function POST(req: Request) {
   });
 
   if (finished) {
-    // Captions are mandatory before publish (Part 2.4). Kick off transcription
-    // if Bunny has not produced any yet, then cache the transcript for the
-    // fact-checker (Part 2.5).
-    if (!video.captions || video.captions.length === 0) {
-      await requestBunnyCaptions(guid);
-    } else {
-      const transcript = await fetchTranscriptFromVtt(guid);
-      if (transcript) await setVideoClipTranscriptByGuid(guid, transcript);
-    }
+    // Captions are mandatory before publish (Part 2.4). Hand post-processing to
+    // the video-process queue (retries + dead-letter); runs inline when QStash
+    // is not configured so behaviour is unchanged without it.
+    await enqueueOrRun("video-process", { guid }, () => processReadyVideo(guid));
   }
 
   return NextResponse.json({ ok: true });

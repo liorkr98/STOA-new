@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getMoatSnapshots } from "@/lib/db/moat";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,7 @@ export async function GET(
     return NextResponse.json({ error: "creator not found" }, { status: 404 });
   }
 
-  const snapshots = await getMoatSnapshots(id);
+  const snapshots = await withCache(cacheKeys.creatorScore(id), 60, () => getMoatSnapshots(id));
   return NextResponse.json(snapshots, {
     headers: { "Cache-Control": "public, max-age=60" },
   });
