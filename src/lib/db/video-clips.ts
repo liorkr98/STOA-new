@@ -1,4 +1,6 @@
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
+import { cachedPage } from "@/lib/cache/page";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Prediction, Report } from "@/lib/types";
 
@@ -133,18 +135,20 @@ export async function listReadyClipsByCreator(creatorId: string): Promise<VideoC
 
 /** Published, ready clips for the video-first Discover grid. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("video_clips")
-    .select(CARD_SELECT)
-    .eq("status", "ready")
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  if (error || !data) return [];
-  return (data as Record<string, unknown>[])
-    .map(normalizeCard)
-    .filter((c) => c.report && c.report.status === "published");
+  return cachedPage(`video-cards:${limit}`, 20, async () => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("video_clips")
+      .select(CARD_SELECT)
+      .eq("status", "ready")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    if (error || !data) return [];
+    return (data as Record<string, unknown>[])
+      .map(normalizeCard)
+      .filter((c) => c.report && c.report.status === "published");
+  });
 }
 
 /** Webhook path: mark a clip ready with Bunny CDN URLs + duration. Service-role. */

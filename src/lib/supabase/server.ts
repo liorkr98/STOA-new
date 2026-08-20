@@ -1,13 +1,16 @@
+import { cache } from "react";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
 /**
- * Server-side Supabase client bound to the request cookies. Use inside Server
- * Components, Route Handlers, and Server Actions.
+ * Server-side Supabase client bound to the request cookies.
+ *
+ * Memoized per request: every db helper used to call `cookies()` + construct a
+ * new client, and a single page can do that a dozen times. One client is enough.
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,4 +33,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

@@ -1,11 +1,13 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
 import { listTickerRows } from "@/lib/db/tickers";
+import { getProfilesByIds } from "@/lib/db/profiles";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import { getQuotesBatch } from "@/lib/engine/market";
+import { callActivity, coverageAllTime, coverageWindow, firstCallsRecent } from "@/lib/markets/coverage";
+import { cachedPage } from "@/lib/cache/page";
 import type { Quote } from "@/lib/engine/market/types";
 import type {
   CoveredRow,
@@ -17,7 +19,6 @@ import type {
   TapeQuote,
   ThemeCard,
 } from "@/lib/markets/types";
-import type { Direction, Profile } from "@/lib/types";
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -61,67 +62,13 @@ function applyQuotes<T extends MarketRow>(rows: T[], quotes: Map<string, Quote>)
   });
 }
 
-/** Published report counts per ticker, optionally limited to a window. */
-async function coverageCounts(since?: Date, until?: Date): Promise<Map<string, number>> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("reports")
-    .select("ticker, published_at")
-    .in("status", ["published", "resolution_pending_review"])
-    .not("ticker", "is", null)
-    .limit(2000);
-  if (since) query = query.gte("published_at", since.toISOString());
-  if (until) query = query.lt("published_at", until.toISOString());
-
-  const { data } = await query;
-  const counts = new Map<string, number>();
-  for (const row of (data as { ticker: string | null }[]) ?? []) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym) continue;
-    counts.set(sym, (counts.get(sym) ?? 0) + 1);
-  }
-  return counts;
-}
-
-/** Distinct analysts and open-call lean per ticker. */
-async function callActivity(): Promise<
-  Map<string, { analysts: Set<string>; long: number; short: number; firstAt: string }>
-> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select("ticker, author_id, direction, outcome, created_at")
-    .order("created_at", { ascending: true })
-    .limit(2000);
-
-  const map = new Map<
-    string,
-    { analysts: Set<string>; long: number; short: number; firstAt: string }
-  >();
-  for (const row of (data as {
-    ticker: string;
-    author_id: string;
-    direction: Direction;
-    outcome: string;
-    created_at: string;
-  }[]) ?? []) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym) continue;
-    const entry = map.get(sym) ?? {
-      analysts: new Set<string>(),
-      long: 0,
-      short: 0,
-      firstAt: row.created_at,
-    };
-    entry.analysts.add(row.author_id);
-    if (row.outcome === "open") {
-      if (row.direction === "long") entry.long += 1;
-      if (row.direction === "short") entry.short += 1;
-    }
-    map.set(sym, entry);
-  }
-  return map;
-}
+/**
+ * Coverage and call activity are grouped in Postgres and cached; see
+ * src/lib/markets/coverage.ts. Both used to be 2000-row scans reduced in Node,
+ * and Markets ran four of them per request.
+ */
+const coverageCounts = (since?: Date, until?: Date) =>
+  since || until ? coverageWindow(since, until) : coverageAllTime();
 
 async function buildThemes(coverageWeek: Map<string, number>, coverageLastWeek: Map<string, number>): Promise<ThemeCard[]> {
   const symbols = [...new Set(MARKET_THEMES.flatMap((t) => t.tickers))];
@@ -176,7 +123,7 @@ async function buildCovered(
       {
         ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         newPublications: coverageWeek.get(symbol) ?? 0,
-        analystCount: entry?.analysts.size ?? 0,
+        analystCount: entry?.analysts ?? 0,
         openCalls: (entry?.long ?? 0) + (entry?.short ?? 0),
       },
     ];
@@ -185,70 +132,47 @@ async function buildCovered(
 
 /** Names whose very first Stoa call landed recently. */
 async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select(
-      "ticker, direction, created_at, report_id, author:profiles!predictions_author_id_fkey(*)",
-    )
-    .order("created_at", { ascending: true })
-    .limit(2000);
+  const firsts = await firstCallsRecent(limit);
+  if (firsts.length === 0) return [];
 
-  const rows = (data as unknown as {
-    ticker: string;
-    direction: Direction;
-    created_at: string;
-    report_id: string;
-    author: Profile | null;
-  }[]) ?? [];
-
-  const firstBySymbol = new Map<string, (typeof rows)[number]>();
-  for (const row of rows) {
-    const sym = row.ticker?.toUpperCase();
-    if (!sym || firstBySymbol.has(sym)) continue;
-    firstBySymbol.set(sym, row);
-  }
-
-  const newest = [...firstBySymbol.entries()]
-    .sort((a, b) => b[1].created_at.localeCompare(a[1].created_at))
-    .slice(0, limit);
-  if (newest.length === 0) return [];
-
-  const tickerRows = await listTickerRows(newest.map(([sym]) => sym));
+  const [authors, tickerRows] = await Promise.all([
+    getProfilesByIds([...new Set(firsts.map((f) => f.authorId))]),
+    listTickerRows(firsts.map((f) => f.symbol)),
+  ]);
+  const byAuthor = new Map(authors.map((p) => [p.id, p]));
   const bySymbol = new Map(tickerRows.map((r) => [r.symbol, r]));
 
-  return newest.flatMap(([symbol, first]) => {
-    if (!first.author) return [];
-    const row = bySymbol.get(symbol);
-    const fallback = UNIVERSE.find((u) => u.ticker === symbol);
+  return firsts.flatMap((first) => {
+    const author = byAuthor.get(first.authorId);
+    if (!author) return [];
+    const row = bySymbol.get(first.symbol);
+    const fallback = UNIVERSE.find((u) => u.ticker === first.symbol);
     const name = row?.name ?? fallback?.name;
     if (!name) return [];
     return [
       {
-        ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
+        ...toRow(first.symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         analyst: {
-          handle: first.author.handle,
-          displayName: first.author.display_name,
-          avatarUrl: first.author.avatar_url,
+          handle: author.handle,
+          displayName: author.display_name,
+          avatarUrl: author.avatar_url,
         },
         direction: first.direction,
-        calledAt: first.created_at,
-        reportId: first.report_id,
+        calledAt: first.calledAt,
+        reportId: first.reportId,
       },
     ];
   });
 }
 
 async function buildSectors(coverageAll: Map<string, number>): Promise<SectorTile[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("tickers")
-    .select("symbol, sector")
-    .eq("status", "active")
-    .limit(4000);
+  // Only the covered symbols need a sector lookup. This used to scan up to 4000
+  // ticker rows to build a map of which a couple of dozen entries were read.
+  const coveredSymbols = [...coverageAll.keys()];
+  const rows = coveredSymbols.length ? await listTickerRows(coveredSymbols) : [];
 
   const sectorBySymbol = new Map<string, string>();
-  for (const row of (data as { symbol: string; sector: string | null }[]) ?? []) {
+  for (const row of rows) {
     if (row.sector) sectorBySymbol.set(row.symbol.toUpperCase(), row.sector);
   }
   for (const entry of UNIVERSE) {
@@ -307,23 +231,52 @@ function tapeFrom(quotes: Map<string, Quote>, mostCovered: string[]): TapeQuote[
 
 /** The tape alone (landing page, other surfaces): indices, commodities, then the most-covered names. */
 export async function buildTape(): Promise<TapeQuote[]> {
+  return cachedPage("markets-tape", 20, buildTapeUncached);
+}
+
+async function buildTapeUncached(): Promise<TapeQuote[]> {
+  const fixedP = getQuotesBatch(
+    TAPE_FIXED.map((t) => t.symbol),
+    { fetchBenchmark: false },
+  ).catch(() => new Map<string, Quote>());
   const coverageAll = await coverageCounts();
   const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
-  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered], { fetchBenchmark: false }).catch(
-    () => new Map<string, Quote>(),
-  );
+  const [fixed, rest] = await Promise.all([
+    fixedP,
+    mostCovered.length
+      ? getQuotesBatch(mostCovered, { fetchBenchmark: false }).catch(() => new Map<string, Quote>())
+      : Promise.resolve(new Map<string, Quote>()),
+  ]);
+  const quotes = rest.size ? new Map([...fixed, ...rest]) : fixed;
   return tapeFrom(quotes, mostCovered);
 }
 
 export async function buildExplore(): Promise<ExplorePayload> {
-  const since = new Date(Date.now() - WEEK_MS);
-  const twoWeeksAgo = new Date(Date.now() - 2 * WEEK_MS);
-  const [coverageAll, coverageWeek, coverageLastWeek, activity] = await Promise.all([
+  return cachedPage("markets-explore", 20, buildExploreUncached);
+}
+
+async function buildExploreUncached(): Promise<ExplorePayload> {
+  const minute = 60_000;
+  const since = new Date(Math.floor((Date.now() - WEEK_MS) / minute) * minute);
+  const twoWeeksAgo = new Date(Math.floor((Date.now() - 2 * WEEK_MS) / minute) * minute);
+  const knownSymbols = [
+    ...TAPE_FIXED.map((t) => t.symbol),
+    ...MARKET_THEMES.flatMap((t) => t.tickers),
+    ...CURATED_ETFS.map((e) => e.symbol),
+  ];
+  const knownQuotesP = getQuotesBatch(knownSymbols, { fetchBenchmark: false }).catch(
+    () => new Map<string, Quote>(),
+  );
+
+  const [coverageAll, coverageWeek, coverageLastWeek, activity, knownQuotes] = await Promise.all([
     coverageCounts(),
     coverageCounts(since),
     coverageCounts(twoWeeksAgo, since),
     callActivity(),
+    knownQuotesP,
   ]);
+
+  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
 
   const [themesRaw, coveredRaw, newlyCalledRaw, sectors, uncoveredRaw] = await Promise.all([
     buildThemes(coverageWeek, coverageLastWeek),
@@ -333,16 +286,16 @@ export async function buildExplore(): Promise<ExplorePayload> {
     buildUncovered(coverageAll, 4),
   ]);
 
-  const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
-  const rowSymbols = [
-    ...themesRaw.flatMap((t) => t.constituents.map((c) => c.symbol)),
+  const extraSymbols = [
+    ...mostCovered,
     ...coveredRaw.map((r) => r.symbol),
     ...newlyCalledRaw.map((r) => r.symbol),
     ...uncoveredRaw.map((r) => r.symbol),
-  ];
-  const quotes = await getQuotesBatch([...TAPE_FIXED.map((t) => t.symbol), ...mostCovered, ...rowSymbols], { fetchBenchmark: false }).catch(
-    () => new Map<string, Quote>(),
-  );
+  ].filter((s) => !knownQuotes.has(s.toUpperCase()));
+  const extraQuotes = extraSymbols.length
+    ? await getQuotesBatch(extraSymbols, { fetchBenchmark: false }).catch(() => new Map<string, Quote>())
+    : new Map<string, Quote>();
+  const quotes = extraQuotes.size ? new Map([...knownQuotes, ...extraQuotes]) : knownQuotes;
 
   const themes = themesRaw.map((t) => ({ ...t, constituents: applyQuotes(t.constituents, quotes) }));
   const covered = applyQuotes(coveredRaw, quotes);

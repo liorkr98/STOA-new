@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { ChartNodeView } from "@/components/editor/tiptap/nodes/chart-node-view";
+import { ChartNodeView } from "@/components/editor/tiptap/nodes/lazy-node-views";
 
 /**
  * chartNode -- a live price chart as a real, draggable, editable document

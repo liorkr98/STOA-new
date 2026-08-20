@@ -43,16 +43,18 @@ export default function WatchlistPage() {
     queryKey: ["watchlist-market", tickers.slice().sort().join(",")],
     enabled: tickers.length > 0,
     queryFn: async () => {
-      const entries = await Promise.all(
-        tickers.map(async (t) => {
-          const [quote, spark] = await Promise.all([
-            fetch(`/api/market/quote?ticker=${t}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-            fetch(`/api/market/sparkline?ticker=${t}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-          ]);
-          return [t, { price: quote?.price ?? null, points: spark?.points ?? [] }] as const;
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, { price: number | null; points: number[] }>;
+      const qs = tickers.map((t) => encodeURIComponent(t)).join(",");
+      const res = await fetch(`/api/market/quotes?tickers=${qs}&sparks=1`);
+      if (!res.ok) return {};
+      const body = (await res.json()) as {
+        quotes?: Record<string, { price: number | null }>;
+        points?: Record<string, number[]>;
+      };
+      const out: Record<string, { price: number | null; points: number[] }> = {};
+      for (const t of tickers) {
+        out[t] = { price: body.quotes?.[t]?.price ?? null, points: body.points?.[t] ?? [] };
+      }
+      return out;
     },
   });
 

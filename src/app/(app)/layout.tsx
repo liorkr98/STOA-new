@@ -8,12 +8,16 @@ import { getConsentRedirectPath } from "@/app/actions/consent";
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // getSessionProfile is request-memoized, so the page below reuses this call
+  // rather than making its own auth round trip.
   const profile = await getSessionProfile();
-  if (profile) {
-    const consentPath = await getConsentRedirectPath(profile.id);
-    if (consentPath) redirect(consentPath);
-  }
-  const unreadCount = profile ? await unreadNotificationCount(profile.id) : 0;
+
+  // The consent check and the unread count are independent; they used to run in
+  // series after the profile resolved.
+  const [consentPath, unreadCount] = profile
+    ? await Promise.all([getConsentRedirectPath(profile.id), unreadNotificationCount(profile.id)])
+    : [null, 0];
+  if (consentPath) redirect(consentPath);
   return (
     <InstrumentSheetProvider>
     <div className="flex min-h-[100dvh] flex-col">

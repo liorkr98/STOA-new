@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { getCandles, getCandlesBetween } from "@/lib/engine/market/candles";
-import { listByTicker, publishedReportCount, tickerCoverage } from "@/lib/db/reports";
-import { getTickerRow, listSectorPeers } from "@/lib/db/tickers";
+import { listByTicker, publishedReportCount } from "@/lib/db/reports";
+import { getTickerRow, listSectorPeers, featuredUniverseEntry } from "@/lib/db/tickers";
 import { hasResolvedHistory } from "@/lib/db/predictions";
+import { coverageAllTime } from "@/lib/markets/coverage";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CallsChart } from "@/components/markets/calls-chart";
 import {
@@ -136,13 +137,20 @@ export default async function TickerPage({
       : getCandles(sym, range as ChartRange);
 
   // Funds resolve live from the provider, so any recognized symbol reaches the
-  // right layout whether or not it is on the curated Explore list.
-  const [etf, reports, calls, candles, coverage] = await Promise.all([
+  // right layout whether or not it is on the curated Explore list. Equity
+  // snapshots start in parallel with the fund check so stocks don't wait on a
+  // Yahoo round trip that will return null.
+  const knownFund = Boolean(curatedEtf(sym));
+  const featured = featuredUniverseEntry(sym);
+  const [etf, reports, calls, candles, snapshot, meta, peersEarly, coverageAll] = await Promise.all([
     buildEtfSnapshot(sym),
     listByTicker(sym),
     buildStockCalls(sym),
     candlesFor(),
-    tickerCoverage(),
+    knownFund ? Promise.resolve(null) : getStockSnapshot(sym),
+    getTickerRow(sym),
+    featured?.sector ? listSectorPeers(featured.sector, sym, 6) : Promise.resolve(null),
+    coverageAllTime(),
   ]);
 
   const publications = reports.flatMap((r: Report) => {
@@ -150,7 +158,14 @@ export default async function TickerPage({
     return item ? [item] : [];
   });
 
+  const countsFor = (symbols: string[]) => {
+    const out: Record<string, number> = {};
+    for (const s of symbols) out[s.toUpperCase()] = coverageAll.get(s.toUpperCase()) ?? 0;
+    return out;
+  };
+
   if (etf) {
+    const coverage = countsFor(etf.holdings.map((h) => h.symbol));
     return (
       <EtfView
         etf={etf}
@@ -165,8 +180,11 @@ export default async function TickerPage({
     );
   }
 
-  const [snapshot, meta] = await Promise.all([getStockSnapshot(sym), getTickerRow(sym)]);
-  const peers = meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : [];
+  const equitySnapshot = snapshot ?? (await getStockSnapshot(sym));
+  const peers =
+    peersEarly ??
+    (meta?.sector ? await listSectorPeers(meta.sector, sym, 6) : []);
+  const coverage = countsFor(peers.map((p) => p.symbol));
 
   return (
     <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
@@ -174,12 +192,12 @@ export default async function TickerPage({
         ticker={sym}
         name={meta?.name ?? sym}
         exchange={meta?.exchange ?? null}
-        currentPrice={snapshot.quote.price}
-        changePercent={snapshot.changePercent}
-        marketCap={snapshot.fundamentals.marketCap}
-        forwardPe={snapshot.forwardPe}
-        low52={snapshot.fiftyTwoWeekLow}
-        high52={snapshot.fiftyTwoWeekHigh}
+        currentPrice={equitySnapshot.quote.price}
+        changePercent={equitySnapshot.changePercent}
+        marketCap={equitySnapshot.fundamentals.marketCap}
+        forwardPe={equitySnapshot.forwardPe}
+        low52={equitySnapshot.fiftyTwoWeekLow}
+        high52={equitySnapshot.fiftyTwoWeekHigh}
       />
 
       <CallsChart
@@ -198,11 +216,11 @@ export default async function TickerPage({
       <StockResolvedHistory calls={calls.resolvedCalls} />
 
       <StockFundamentals
-        peRatio={snapshot.fundamentals.peRatio}
-        marketCap={snapshot.fundamentals.marketCap}
-        revenue={snapshot.fundamentals.revenue}
-        profitMargin={snapshot.fundamentals.profitMargin}
-        eps={snapshot.fundamentals.eps}
+        peRatio={equitySnapshot.fundamentals.peRatio}
+        marketCap={equitySnapshot.fundamentals.marketCap}
+        revenue={equitySnapshot.fundamentals.revenue}
+        profitMargin={equitySnapshot.fundamentals.profitMargin}
+        eps={equitySnapshot.fundamentals.eps}
       />
 
       <StockPeers peers={peers} coverage={coverage} />

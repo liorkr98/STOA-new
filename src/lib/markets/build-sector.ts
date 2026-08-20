@@ -1,12 +1,13 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { listTickerRows } from "@/lib/db/tickers";
 import { followedAnalystIds } from "@/lib/db/social";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS } from "@/lib/markets/themes";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
+import { cachedPage } from "@/lib/cache/page";
 import type { MarketRow } from "@/lib/markets/types";
 import type { TodayItem } from "@/lib/today/types";
 import type { Prediction, Profile, Report } from "@/lib/types";
@@ -94,7 +95,7 @@ function toItem(report: Report, sector: string): TodayItem | null {
 
 /** Symbols the instrument table places in this sector, plus the static universe. */
 async function sectorSymbols(sector: string): Promise<string[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("tickers")
     .select("symbol")
@@ -112,10 +113,19 @@ async function sectorSymbols(sector: string): Promise<string[]> {
 }
 
 export async function buildSector(sector: string, viewerId: string | null): Promise<SectorPayload> {
-  const supabase = await createClient();
-  const followedIds = new Set(viewerId ? await followedAnalystIds(viewerId) : []);
-  const symbols = await sectorSymbols(sector);
+  const payload = await cachedPage(`sector:${sector.toLowerCase()}`, 20, () => assembleSector(sector));
+  if (!viewerId) return payload;
+  const followed = new Set(await followedAnalystIds(viewerId));
+  return {
+    ...payload,
+    analysts: payload.analysts.map((a) => ({ ...a, following: followed.has(a.id) })),
+  };
+}
+
+async function assembleSector(sector: string): Promise<SectorPayload> {
+  const supabase = createPublicClient();
   const since = new Date(Date.now() - WEEK_MS);
+  const symbols = await sectorSymbols(sector);
 
   const [{ data: reportRows }, { data: predictionRows }] = await Promise.all([
     symbols.length
@@ -136,6 +146,7 @@ export async function buildSector(sector: string, viewerId: string | null): Prom
       : Promise.resolve({ data: [] }),
   ]);
 
+  const followedIds = new Set<string>();
   const reports = ((reportRows as Record<string, unknown>[]) ?? []).map(normalizeReport);
   const predictions = (predictionRows as (Prediction & { author?: Profile | null })[]) ?? [];
 

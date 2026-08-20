@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { withHandler } from "@/lib/http/handler";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +67,7 @@ async function fallbackSearch(
   q: string,
   limit: number,
 ): Promise<{ creators: SearchCreator[]; tickers: SearchTicker[]; reports: SearchReportHit[] }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const safe = q.replace(/[%_,]/g, "").slice(0, 64);
   if (!safe) return { creators: [], tickers: [], reports: [] };
   const like = `%${safe}%`;
@@ -123,7 +123,7 @@ async function fallbackSearch(
 }
 
 async function searchReports(q: string, limit: number): Promise<SearchReportHit[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const safe = q.replace(/[%_,]/g, "").slice(0, 64);
   if (!safe) return [];
   const like = `%${safe}%`;
@@ -161,7 +161,7 @@ async function handleSearch(req: Request) {
   const limit = Number.isFinite(limitParam) ? Math.min(12, Math.max(1, limitParam)) : 5;
 
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const [{ data, error }, reports] = await Promise.all([
       supabase.rpc("search_platform", { p_query: q, p_limit: limit }),
       searchReports(q, Math.min(4, limit)),
@@ -173,11 +173,14 @@ async function handleSearch(req: Request) {
       tickers: SearchTicker[];
     };
 
-    return NextResponse.json({
-      creators: rankCreators(payload.creators ?? [], q).slice(0, limit),
-      tickers: rankTickers(payload.tickers ?? [], q).slice(0, limit),
-      reports,
-    });
+    return NextResponse.json(
+      {
+        creators: rankCreators(payload.creators ?? [], q).slice(0, limit),
+        tickers: rankTickers(payload.tickers ?? [], q).slice(0, limit),
+        reports,
+      },
+      { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45" } },
+    );
   } catch {
     try {
       const fallback = await fallbackSearch(q, limit);

@@ -1,11 +1,12 @@
 import "server-only";
 import YahooFinance from "yahoo-finance2";
 import { fetchQuote } from "@/lib/engine/market/providers/chain";
+import { cachedPage } from "@/lib/cache/page";
 import type { Quote } from "@/lib/engine/market/types";
 
 const yf = new YahooFinance({
   suppressNotices: ["yahooSurvey"],
-  queue: { concurrency: 2, interval: 250 },
+  queue: { concurrency: 8, interval: 100 },
 });
 
 export interface EtfHolding {
@@ -77,6 +78,10 @@ export async function isEtfSymbol(symbol: string): Promise<boolean> {
  */
 export async function buildEtfSnapshot(symbol: string): Promise<EtfSnapshot | null> {
   const sym = symbol.toUpperCase();
+  return cachedPage(`etf:${sym}`, 60, () => loadEtfSnapshot(sym));
+}
+
+async function loadEtfSnapshot(sym: string): Promise<EtfSnapshot | null> {
   const quote = await fetchQuote(sym);
 
   try {

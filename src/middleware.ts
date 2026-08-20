@@ -33,8 +33,14 @@ export async function middleware(request: NextRequest) {
   return updateSession(request);
 }
 
+/**
+ * Excludes static assets, webhooks, and the read-only public JSON endpoints.
+ * Those last ones authenticate themselves where they need to and never depend on
+ * a refreshed cookie, so running the session refresh on them only added a
+ * Supabase Auth round trip to every quote, search and stats request.
+ */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sentry-tunnel|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sentry-tunnel|api/webhooks|api/market|api/stats|api/search|api/og|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf|map)$).*)",
   ],
 };

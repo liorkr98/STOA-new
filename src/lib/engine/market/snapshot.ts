@@ -1,12 +1,13 @@
 import "server-only";
 import YahooFinance from "yahoo-finance2";
 import { getLatestFiling } from "@/lib/db/financials";
+import { cachedPage } from "@/lib/cache/page";
 import { fetchQuote } from "./providers/chain";
 import type { CompanyFundamentals, Quote } from "./types";
 
 const yahooFinance = new YahooFinance({
   suppressNotices: ["yahooSurvey"],
-  queue: { concurrency: 2, interval: 250 },
+  queue: { concurrency: 8, interval: 100 },
 });
 
 export interface StockSnapshot {
@@ -30,7 +31,14 @@ export interface StockSnapshot {
 /** Full ticker snapshot for the markets research page (one Yahoo round-trip when possible). */
 export async function getStockSnapshot(symbol: string): Promise<StockSnapshot> {
   const sym = symbol.toUpperCase();
-  const quote = await fetchQuote(sym);
+  return cachedPage(`snapshot:${sym}`, 60, () => loadStockSnapshot(sym));
+}
+
+async function loadStockSnapshot(sym: string): Promise<StockSnapshot> {
+  const [quote, filing] = await Promise.all([
+    fetchQuote(sym),
+    getLatestFiling(sym).catch(() => null),
+  ]);
 
   const fundamentals: CompanyFundamentals = {
     symbol: sym,
@@ -107,16 +115,11 @@ export async function getStockSnapshot(symbol: string): Promise<StockSnapshot> {
     // Quote chain may still have a price from batch providers.
   }
 
-  try {
-    const filing = await getLatestFiling(sym);
-    if (filing) {
-      fundamentals.latestFilingPeriod = filing.period_end;
-      fundamentals.latestRevenue = filing.revenue;
-      fundamentals.latestNetIncome = filing.net_income;
-      fundamentals.source = fundamentals.source === "yahoo" ? "mixed" : "kaggle";
-    }
-  } catch {
-    // optional
+  if (filing) {
+    fundamentals.latestFilingPeriod = filing.period_end;
+    fundamentals.latestRevenue = filing.revenue;
+    fundamentals.latestNetIncome = filing.net_income;
+    fundamentals.source = fundamentals.source === "yahoo" ? "mixed" : "kaggle";
   }
 
   return {

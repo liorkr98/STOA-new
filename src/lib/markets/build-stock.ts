@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import type { Candle } from "@/lib/market/candle-types";
 import type { Prediction, Profile } from "@/lib/types";
 import type {
@@ -52,13 +53,18 @@ export interface StockCallsPayload {
 }
 
 export async function buildStockCalls(ticker: string): Promise<StockCallsPayload> {
-  const supabase = await createClient();
+  const sym = ticker.toUpperCase();
+  return cachedPage(`stock-calls:${sym}`, 20, () => loadStockCalls(sym));
+}
+
+async function loadStockCalls(sym: string): Promise<StockCallsPayload> {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("predictions")
     .select(
       "*, author:profiles!predictions_author_id_fkey(*), report:reports!predictions_report_id_fkey(id, status)",
     )
-    .eq("ticker", ticker.toUpperCase())
+    .eq("ticker", sym)
     .order("created_at", { ascending: false })
     .limit(200);
 

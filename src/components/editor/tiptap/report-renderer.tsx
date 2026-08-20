@@ -1,13 +1,18 @@
 "use client";
 
-import "katex/dist/katex.min.css";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
 import { TickerHoverLayer } from "@/components/report/ticker-hover-layer";
 import { TiptapClaimHighlighter } from "@/components/report/tiptap-claim-highlighter";
 import type { FactClaim } from "@/lib/ai/fact-check";
+
+function containsMath(node: JSONContent): boolean {
+  const t = node.type ?? "";
+  if (t === "math" || t === "inlineMath" || t === "blockMath") return true;
+  return node.content?.some(containsMath) ?? false;
+}
 
 /**
  * Read-only render of a Tiptap report body. Uses the same extension set as
@@ -37,6 +42,11 @@ export function TiptapReportRenderer({
       attributes: { class: "stoa-prose stoa-prose--read focus:outline-none" },
     },
   });
+
+  useEffect(() => {
+    if (!containsMath(json)) return;
+    void import("@/components/editor/tiptap/katex-css");
+  }, [json]);
 
   if (!editor) return null;
   return (

@@ -1,7 +1,11 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
 import { tickersInCapBand } from "@/lib/db/tickers";
+import { coverageAllTime } from "@/lib/markets/coverage";
 import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
 
@@ -113,16 +117,20 @@ export async function listFeed({
   try {
     const supabase = await createClient();
     const userId = await getSessionUserId();
-    const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
     const merged: FeedFilters = { ...filters, type: filters.type ?? type };
+    const [dismissedList, mcapTickers] = await Promise.all([
+      userId ? listDismissedReportIds(userId) : Promise.resolve([] as string[]),
+      merged.mcap ? tickersInCapBand(merged.mcap) : Promise.resolve(undefined),
+    ]);
+    const dismissed = new Set(dismissedList);
     const needsOverfetch =
       dismissed.size > 0 ||
       (merged.minScore != null && merged.minScore > 0) ||
       Boolean(merged.ticker) ||
       merged.status != null;
-    const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
-
-    const mcapTickers = merged.mcap ? await tickersInCapBand(merged.mcap) : undefined;
+    const fetchLimit = needsOverfetch
+      ? Math.min(200, Math.max(limit * 4, limit + dismissed.size))
+      : limit;
     let q = supabase
       .from("reports")
       .select(selectClause(merged))
@@ -152,15 +160,17 @@ export async function listFeedFromAnalysts(
   if (analystIds.length === 0) return [];
   const supabase = await createClient();
   const userId = await getSessionUserId();
-  const dismissed = userId ? new Set(await listDismissedReportIds(userId)) : new Set<string>();
+  const [dismissedList, mcapTickers] = await Promise.all([
+    userId ? listDismissedReportIds(userId) : Promise.resolve([] as string[]),
+    filters.mcap ? tickersInCapBand(filters.mcap) : Promise.resolve(undefined),
+  ]);
+  const dismissed = new Set(dismissedList);
   const needsOverfetch =
     dismissed.size > 0 ||
     (filters.minScore != null && filters.minScore > 0) ||
     Boolean(filters.ticker) ||
     filters.status != null;
   const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
-
-  const mcapTickers = filters.mcap ? await tickersInCapBand(filters.mcap) : undefined;
   let q = supabase
     .from("reports")
     .select(selectClause(filters))
@@ -176,23 +186,21 @@ export async function listFeedFromAnalysts(
   ).slice(0, limit);
 }
 
-export async function getReport(id: string): Promise<Report | null> {
+export const getReport = cache(async (id: string): Promise<Report | null> => {
   try {
     const supabase = await createClient();
-    const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
-    if (!data) return null;
-    const report = normalize(asReportRow(data));
-    const { data: bodyRow } = await supabase
-      .from("report_bodies")
-      .select("body")
-      .eq("report_id", id)
-      .maybeSingle();
-    report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+    const [reportRes, bodyRes] = await Promise.all([
+      supabase.from("reports").select(SELECT).eq("id", id).maybeSingle(),
+      supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
+    ]);
+    if (!reportRes.data) return null;
+    const report = normalize(asReportRow(reportRes.data));
+    report.body = (bodyRes.data as { body: string | null } | null)?.body ?? null;
     return report;
   } catch {
     return null;
   }
-}
+});
 
 /** Load a draft for the compose editor. Returns null if missing or not a draft. */
 export async function getDraftForAuthor(
@@ -200,27 +208,31 @@ export async function getDraftForAuthor(
   authorId: string,
 ): Promise<Report | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select(SELECT)
-    .eq("id", id)
-    .eq("author_id", authorId)
-    .eq("status", "draft")
-    .maybeSingle();
-  if (!data) return null;
-  const report = normalize(asReportRow(data));
-  const { data: bodyRow } = await supabase
-    .from("report_bodies")
-    .select("body")
-    .eq("report_id", id)
-    .maybeSingle();
-  report.body = (bodyRow as { body: string | null } | null)?.body ?? null;
+  const [reportRes, bodyRes] = await Promise.all([
+    supabase
+      .from("reports")
+      .select(SELECT)
+      .eq("id", id)
+      .eq("author_id", authorId)
+      .eq("status", "draft")
+      .maybeSingle(),
+    supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
+  ]);
+  if (!reportRes.data) return null;
+  const report = normalize(asReportRow(reportRes.data));
+  report.body = (bodyRes.data as { body: string | null } | null)?.body ?? null;
   return report;
 }
 
 export async function getReportsByIds(ids: string[]): Promise<Report[]> {
-  const rows = await Promise.all(ids.map((id) => getReport(id)));
-  return rows.filter((r): r is Report => r != null);
+  if (ids.length === 0) return [];
+  const supabase = createPublicClient();
+  const { data } = await supabase.from("reports").select(SELECT).in("id", ids);
+  const map = new Map(asReportRows(data).map((row) => {
+    const report = normalize(row);
+    return [report.id, report] as const;
+  }));
+  return ids.map((id) => map.get(id)).filter((r): r is Report => r != null);
 }
 
 export async function listByAuthor(
@@ -243,20 +255,22 @@ export async function listByAuthor(
 
 /** Newest publicly visible publications platform-wide, with author and prediction. */
 export async function listRecentPublished(limit = 80): Promise<Report[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select(SELECT)
-    .in("status", ["published", "resolution_pending_review"])
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  return asReportRows(data).map(normalize);
+  return cachedPage(`reports:recent:${limit}`, 20, async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("reports")
+      .select(SELECT)
+      .in("status", ["published", "resolution_pending_review"])
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    return asReportRows(data).map(normalize);
+  });
 }
 
 /** Newest publicly visible publications by a set of authors (the reader's desk). */
 export async function listPublishedByAuthors(authorIds: string[], limit = 24): Promise<Report[]> {
   if (authorIds.length === 0) return [];
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
@@ -267,36 +281,35 @@ export async function listPublishedByAuthors(authorIds: string[], limit = 24): P
   return asReportRows(data).map(normalize);
 }
 
-/** Map of ticker -> count of publicly visible reports covering it. */
+/**
+ * Map of ticker -> count of publicly visible reports covering it.
+ *
+ * Grouped in Postgres and cached (see src/lib/markets/coverage.ts). This used to
+ * ship up to 2000 report rows per request to be counted in Node, on Today, the
+ * landing tape, Markets and every ticker page.
+ */
 export async function tickerCoverage(): Promise<Record<string, number>> {
   try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("reports")
-      .select("ticker")
-      .in("status", ["published", "resolution_pending_review"])
-      .not("ticker", "is", null)
-      .limit(2000);
-    const counts: Record<string, number> = {};
-    for (const row of (data as { ticker: string | null }[]) ?? []) {
-      if (row.ticker) counts[row.ticker] = (counts[row.ticker] ?? 0) + 1;
-    }
-    return counts;
+    const map = await coverageAllTime();
+    return Object.fromEntries(map);
   } catch {
     return {};
   }
 }
 
 export async function listByTicker(ticker: string, limit = 30): Promise<Report[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select(SELECT)
-    .in("status", ["published", "resolution_pending_review"])
-    .eq("ticker", ticker.toUpperCase())
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  return asReportRows(data).map(normalize);
+  const sym = ticker.toUpperCase();
+  return cachedPage(`reports:ticker:${sym}:${limit}`, 20, async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("reports")
+      .select(SELECT)
+      .in("status", ["published", "resolution_pending_review"])
+      .eq("ticker", sym)
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    return asReportRows(data).map(normalize);
+  });
 }
 
 /**
@@ -308,8 +321,8 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
  * resolution_pending_review is included since the report itself never
  * unpublished, only one call's grading is waiting on market data.
  */
-export async function publishedReportCount(ticker: string): Promise<number> {
-  const supabase = await createClient();
+export const publishedReportCount = cache(async (ticker: string): Promise<number> => {
+  const supabase = createPublicClient();
   const { count } = await supabase
     .from("reports")
     .select("id", { count: "exact", head: true })
@@ -317,31 +330,23 @@ export async function publishedReportCount(ticker: string): Promise<number> {
     .in("status", ["published", "resolution_pending_review"])
     .not("locked_at", "is", null);
   return count ?? 0;
-}
+});
 
 /** Coverage counts for every ticker with at least one locked report --
  * powers the sitemap's tickers list and its priority tiering. */
 export async function allTickerCoverage(): Promise<Record<string, number>> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select("ticker")
-    .in("status", ["published", "resolution_pending_review"])
-    .not("locked_at", "is", null)
-    .not("ticker", "is", null)
-    .limit(5000);
-  const counts: Record<string, number> = {};
-  for (const row of (data as { ticker: string | null }[]) ?? []) {
-    if (row.ticker) counts[row.ticker] = (counts[row.ticker] ?? 0) + 1;
+  try {
+    return Object.fromEntries(await coverageAllTime());
+  } catch {
+    return {};
   }
-  return counts;
 }
 
 /** Locked report ids + lock timestamps for the sitemap's report entries. */
 export async function listLockedReportRoutes(
   limit = 5000,
 ): Promise<{ id: string; locked_at: string }[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("reports")
     .select("id, locked_at")

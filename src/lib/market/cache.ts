@@ -26,6 +26,7 @@ interface Entry<T> {
 }
 
 const store = new Map<string, Entry<unknown>>();
+const inflight = new Map<string, Promise<unknown>>();
 
 /** Milliseconds since epoch. Isolated so callers don't sprinkle Date.now(). */
 function now(): number {
@@ -35,15 +36,29 @@ function now(): number {
 /**
  * Return a cached value or compute + store it. A rejected `fn` is not cached, so
  * a transient provider failure doesn't poison the entry.
+ *
+ * Concurrent callers for the same key share one in-flight compute. Without that,
+ * a cold Markets + landing + Today stampede each rebuilt the same Yahoo batch.
  */
 export async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
   const hit = store.get(key);
   if (hit && hit.expires > now()) {
     return hit.value as T;
   }
-  const value = await fn();
-  store.set(key, { value, expires: now() + ttlMs });
-  return value;
+  const pending = inflight.get(key) as Promise<T> | undefined;
+  if (pending) return pending;
+
+  const p = (async () => {
+    try {
+      const value = await fn();
+      store.set(key, { value, expires: now() + ttlMs });
+      return value;
+    } finally {
+      inflight.delete(key);
+    }
+  })();
+  inflight.set(key, p);
+  return p;
 }
 
 /** Drop a single entry (e.g. after a known-stale write). */

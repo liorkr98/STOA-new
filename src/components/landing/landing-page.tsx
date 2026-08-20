@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { Play } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { SealStamp } from "@/components/ui/seal-stamp";
@@ -37,7 +38,7 @@ function Reveal({ children, className }: { children: React.ReactNode; className?
 
 /* ---------- Section 1: the doors ---------- */
 
-function Doors({ data }: { data: LandingPayload }) {
+function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   const a = data.activity;
   const activity = [
     `${a.publicationsToday} publication${a.publicationsToday === 1 ? "" : "s"} today`,
@@ -57,7 +58,7 @@ function Doors({ data }: { data: LandingPayload }) {
         <p className="num mt-10 text-[10px] uppercase tracking-[0.18em] text-text-faint">or scroll to see today ↓</p>
       </div>
       <div className="mt-8">
-        <MarketTape quotes={data.tape} />
+        {tape ?? <MarketTape quotes={data.tape} />}
       </div>
     </section>
   );
@@ -269,10 +270,10 @@ function Split({ data }: { data: LandingPayload }) {
   );
 }
 
-export function LandingPage({ data }: { data: LandingPayload }) {
+export function LandingPage({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   return (
     <div className="pb-24">
-      <Doors data={data} />
+      <Doors data={data} tape={tape} />
       <TodayLite data={data} />
       <Split data={data} />
     </div>

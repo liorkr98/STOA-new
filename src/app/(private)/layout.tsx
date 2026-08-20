@@ -17,10 +17,12 @@ export default async function PrivateLayout({ children }: { children: React.Reac
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
 
-  const consentPath = await getConsentRedirectPath(profile.id);
+  // Independent of each other; they used to run in series.
+  const [consentPath, unreadCount] = await Promise.all([
+    getConsentRedirectPath(profile.id),
+    unreadNotificationCount(profile.id),
+  ]);
   if (consentPath) redirect(consentPath);
-
-  const unreadCount = await unreadNotificationCount(profile.id);
 
   return (
     <div className="flex min-h-[100dvh] flex-col">

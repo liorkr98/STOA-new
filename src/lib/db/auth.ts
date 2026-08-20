@@ -1,15 +1,45 @@
+import { cache } from "react";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
-/** The signed-in user's profile, or null. Safe to call from any Server Component. */
-export async function getSessionProfile(): Promise<Profile | null> {
+/**
+ * Session helpers, deduplicated per request.
+ *
+ * A single navigation used to make three separate `getUser()` calls -- one in
+ * middleware, one in the layout, one in the page -- each a network round trip to
+ * Supabase Auth for the same answer. React's `cache()` memoizes per request, so
+ * the layout and the page (and anything else asking) now share one call.
+ * Middleware runs in a different context and is handled separately.
+ *
+ * Signed-out visitors have no `sb-` cookie. Calling `getUser()` anyway was a
+ * 200-400ms Auth round trip (Vercel iad1 to Supabase Singapore) on every
+ * landing, Markets, and dispatch render. Skip it when there is nothing to
+ * refresh, matching middleware.
+ */
+
+const getUserCached = cache(async () => {
   try {
+    const store = await cookies();
+    if (!store.getAll().some((c) => c.name.startsWith("sb-"))) return null;
+
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    return user ?? null;
+  } catch {
+    return null;
+  }
+});
+
+/** The signed-in user's profile, or null. Safe to call from any Server Component. */
+export const getSessionProfile = cache(async (): Promise<Profile | null> => {
+  try {
+    const user = await getUserCached();
     if (!user) return null;
 
+    const supabase = await createClient();
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
     if (data) return data as Profile;
 
@@ -36,16 +66,9 @@ export async function getSessionProfile(): Promise<Profile | null> {
   } catch {
     return null;
   }
-}
+});
 
-export async function getSessionUserId(): Promise<string | null> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user?.id ?? null;
-  } catch {
-    return null;
-  }
-}
+export const getSessionUserId = cache(async (): Promise<string | null> => {
+  const user = await getUserCached();
+  return user?.id ?? null;
+});

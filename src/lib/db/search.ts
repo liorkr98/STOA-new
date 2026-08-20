@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Profile, Report } from "@/lib/types";
 
 const REPORT_SELECT =
@@ -35,7 +35,7 @@ export async function searchAll(query: string, limit = 12): Promise<SearchResult
   const q = query.trim();
   if (!q) return { analysts: [], reports: [], tickers: [] };
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const upper = q.toUpperCase();
   const fetchLimit = Math.min(60, Math.max(limit * 3, 24));
 

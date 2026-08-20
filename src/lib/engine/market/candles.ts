@@ -1,7 +1,11 @@
 import YahooFinance from "yahoo-finance2";
 import type { Candle, ChartRange } from "@/lib/market/candle-types";
+import { cached, TTL } from "@/lib/market/cache";
 
-const yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
+const yf = new YahooFinance({
+  suppressNotices: ["yahooSurvey"],
+  queue: { concurrency: 8, interval: 100 },
+});
 
 type YahooInterval = "5m" | "60m" | "1d" | "1wk";
 
@@ -23,7 +27,8 @@ const RANGE_CFG: Record<ChartRange, { interval: YahooInterval; days: number }> =
  */
 export async function getCandles(symbol: string, range: ChartRange): Promise<Candle[]> {
   const cfg = RANGE_CFG[range] ?? RANGE_CFG["3M"];
-  const end = Math.floor(Date.now() / 1000);
+  const bucket = cfg.interval === "5m" ? 15 : cfg.interval === "60m" ? 60 : 300;
+  const end = Math.floor(Date.now() / 1000 / bucket) * bucket;
   return fetchBars(symbol, end - cfg.days * 86_400, end, cfg.interval);
 }
 
@@ -50,6 +55,16 @@ export async function getCandlesBetween(
 }
 
 async function fetchBars(
+  symbol: string,
+  start: number,
+  end: number,
+  interval: YahooInterval,
+): Promise<Candle[]> {
+  const ttl = interval === "5m" ? TTL.quote : interval === "60m" ? TTL.intraday : TTL.daily;
+  return cached(`candles:${symbol}:${interval}:${start}:${end}`, ttl, () => loadBars(symbol, start, end, interval));
+}
+
+async function loadBars(
   symbol: string,
   start: number,
   end: number,

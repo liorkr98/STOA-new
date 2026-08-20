@@ -23,18 +23,13 @@ function useQuotes(tickers: string[]) {
     queryKey: ["dash-quotes", tickers.slice().sort().join(",")],
     enabled: tickers.length > 0,
     queryFn: async () => {
-      const entries = await Promise.all(
-        tickers.map(async (t) => {
-          try {
-            const r = await fetch(`/api/market/quote?ticker=${encodeURIComponent(t)}`);
-            const b = (await r.json()) as { price?: number };
-            return [t, typeof b.price === "number" ? b.price : null] as const;
-          } catch {
-            return [t, null] as const;
-          }
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number | null>;
+      const qs = tickers.map((t) => encodeURIComponent(t)).join(",");
+      const r = await fetch(`/api/market/quotes?tickers=${qs}`);
+      if (!r.ok) return {} as Record<string, number | null>;
+      const body = (await r.json()) as { quotes?: Record<string, { price: number | null }> };
+      const out: Record<string, number | null> = {};
+      for (const t of tickers) out[t] = body.quotes?.[t]?.price ?? null;
+      return out;
     },
   });
 }

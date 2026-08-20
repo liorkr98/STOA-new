@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { ValuationNodeView } from "@/components/editor/tiptap/nodes/valuation-node-view";
+import { ValuationNodeView } from "@/components/editor/tiptap/nodes/lazy-node-views";
 
 /**
  * valuationNode -- a DCF in one block (A1). Inputs left, output card right (fair
