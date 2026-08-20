@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { withHandler } from "@/lib/http/handler";
 
 export const dynamic = "force-dynamic";
 
@@ -150,7 +151,7 @@ async function searchReports(q: string, limit: number): Promise<SearchReportHit[
 /**
  * Typeahead search across tickers, analysts, and reports.
  */
-export async function GET(req: Request) {
+async function handleSearch(req: Request) {
   const q = new URL(req.url).searchParams.get("q")?.trim() ?? "";
   if (!q) {
     return NextResponse.json({ creators: [], tickers: [], reports: [] });
@@ -193,3 +194,12 @@ export async function GET(req: Request) {
     }
   }
 }
+
+export const GET = withHandler(
+  {
+    route: "GET /api/search",
+    auth: "none",
+    rateLimit: { name: "search", limit: 60, windowSeconds: 60, by: "user-or-ip" },
+  },
+  ({ req }) => handleSearch(req),
+);

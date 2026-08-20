@@ -14,9 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -29,6 +29,21 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Engine tests
+        run: npm run test:engine
+
+      - name: Valuation tests
+        run: npm run test:valuation
+
+      - name: RLS tests
+        # Skips cleanly when Supabase secrets are absent (see tests/rls).
+        run: npm run test:rls
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          RLS_TEST_PASSWORD: ${{ secrets.RLS_TEST_PASSWORD }}
 
       - name: Build
         run: npm run build

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPlatformStats } from "@/lib/db/platform-stats";
+import { withHandler } from "@/lib/http/handler";
+import { withCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache/keys";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +10,8 @@ export const dynamic = "force-dynamic";
  * Homepage trust-bar aggregates from the platform_stats materialized view.
  * Refreshed nightly by the grading cron — never live count(*) on every hit.
  */
-export async function GET() {
-  const stats = await getPlatformStats();
+async function handleStats() {
+  const stats = await withCache(cacheKeys.platformStats(), 60, () => getPlatformStats());
 
   if (!stats) {
     return NextResponse.json(
@@ -37,3 +40,12 @@ export async function GET() {
     },
   );
 }
+
+export const GET = withHandler(
+  {
+    route: "GET /api/stats/platform",
+    auth: "none",
+    rateLimit: { name: "stats-platform", limit: 120, windowSeconds: 60, by: "ip" },
+  },
+  () => handleStats(),
+);

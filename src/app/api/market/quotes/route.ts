@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { getCandles } from "@/lib/engine/market/candles";
+import { withHandler } from "@/lib/http/handler";
+import { ApiError } from "@/lib/http/errors";
 
 const MAX = 40;
 
@@ -8,7 +10,7 @@ const MAX = 40;
  * Batch quotes (and optional 30-day closes) for watchlist/dashboard.
  * Those pages used to fire one request per ticker.
  */
-export async function GET(req: Request) {
+async function handleQuotes(req: Request) {
   const raw = new URL(req.url).searchParams.get("tickers") ?? "";
   const tickers = [
     ...new Set(
@@ -19,7 +21,7 @@ export async function GET(req: Request) {
     ),
   ].slice(0, MAX);
   if (tickers.length === 0) {
-    return NextResponse.json({ error: "tickers required" }, { status: 400 });
+    throw new ApiError("bad_request", "tickers required");
   }
 
   const wantSparks = new URL(req.url).searchParams.get("sparks") === "1";
@@ -52,3 +54,12 @@ export async function GET(req: Request) {
     },
   );
 }
+
+export const GET = withHandler(
+  {
+    route: "GET /api/market/quotes",
+    auth: "none",
+    rateLimit: { name: "market-quote", limit: 120, windowSeconds: 60, by: "ip" },
+  },
+  ({ req }) => handleQuotes(req),
+);
