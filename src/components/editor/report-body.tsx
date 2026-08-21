@@ -1,11 +1,18 @@
 import { parseDocument } from "@/lib/editor/document";
 import { isTiptapDoc, parseTiptapDoc } from "@/lib/editor/tiptap/serialize";
-import type { EditorBlock } from "@/lib/editor/types";
-import { BlockEditor } from "@/components/editor/block-editor";
-import { TiptapReportRenderer } from "@/components/editor/tiptap/report-renderer";
+import { tiptapStaticHtml } from "@/lib/editor/tiptap/static-html";
+import { HydratingReportBody } from "@/components/editor/hydrating-report-body";
+import { LazyBlockBody } from "@/components/editor/lazy-block-body";
 import { FactCheckedText } from "@/components/report/fact-check-layer";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
+/**
+ * Server component. Tiptap bodies render to static HTML here (instant text
+ * for readers and crawlers -- previously the body was client-only and blank
+ * until the full editor runtime hydrated); the interactive renderer streams
+ * in lazily and swaps over when ready. Interactive nodes (charts, video)
+ * render as empty placeholders in the static pass and appear on hydration.
+ */
 export function ReportBody({
   body,
   claims,
@@ -19,13 +26,14 @@ export function ReportBody({
 }) {
   if (!body?.trim()) return null;
 
-  // New reports are Tiptap JSON. Interactive claim popovers mount via
-  // TiptapClaimHighlighter until char-offset TipTap marks land.
   if (isTiptapDoc(body)) {
+    const json = parseTiptapDoc(body);
+    const staticHtml = tiptapStaticHtml(json);
     return (
       <div className="mt-8">
-        <TiptapReportRenderer
-          json={parseTiptapDoc(body)}
+        <HydratingReportBody
+          staticHtml={staticHtml}
+          json={json}
           claims={claims}
           isAuthed={isAuthed}
           reportId={reportId}
@@ -47,15 +55,5 @@ export function ReportBody({
   }
 
   const doc = parseDocument(body);
-  const blocks: EditorBlock[] = doc.blocks;
-
-  return (
-    <div className="mt-8 flex flex-col gap-8">
-      {blocks.map((block) => (
-        <section key={block.id}>
-          <BlockEditor block={block} onChange={() => {}} readOnly claims={claims} isAuthed={isAuthed} />
-        </section>
-      ))}
-    </div>
-  );
+  return <LazyBlockBody blocks={doc.blocks} claims={claims} isAuthed={isAuthed} />;
 }

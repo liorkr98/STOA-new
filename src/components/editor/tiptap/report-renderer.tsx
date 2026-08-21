@@ -1,7 +1,7 @@
 "use client";
 
 import "katex/dist/katex.min.css";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
@@ -20,11 +20,15 @@ export function TiptapReportRenderer({
   claims = [],
   isAuthed = false,
   reportId,
+  onReady,
 }: {
   json: JSONContent;
   claims?: FactClaim[];
   isAuthed?: boolean;
   reportId?: string;
+  /** Fires once the editor instance exists -- the server-rendered static body
+   * swaps out for this interactive one at that moment, never before. */
+  onReady?: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const extensions = useMemo(() => buildExtensions({ editable: false }), []);
@@ -37,6 +41,10 @@ export function TiptapReportRenderer({
       attributes: { class: "stoa-prose stoa-prose--read focus:outline-none" },
     },
   });
+
+  useEffect(() => {
+    if (editor) onReady?.();
+  }, [editor, onReady]);
 
   if (!editor) return null;
   return (

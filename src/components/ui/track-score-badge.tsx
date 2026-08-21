@@ -143,9 +143,6 @@ export function TrackScoreBadge({
   );
 }
 
-/** @deprecated Use TrackScoreBadge */
-export const MoatBadge = TrackScoreBadge;
-
 function SealDot({ color, size = 14 }: { color: string; size?: number }) {
   return (
     <span
