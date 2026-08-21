@@ -14,7 +14,7 @@ it is the only editor block with per-block plan gating built in. See `docs/VIDEO
 
 - **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Phosphor + Lucide icons.
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
-- **Video:** Cloudflare Stream behind a provider interface — direct upload, HMAC-verified
+- **Video:** Bunny Stream behind a provider interface — direct upload, HMAC-verified
   webhook, short-lived signed playback tokens, three-layer entitlement gating. `docs/VIDEO.md`.
 - **Engine:** a 0-100 analyst score (win rate + profit factor + alpha) mapped to a 600-1400 rating,
   with automatic grading of calls against live prices on a schedule.
@@ -78,11 +78,13 @@ TWELVE_DATA_API_KEY=                 # optional fallback if Yahoo fails
 ALPHA_VANTAGE_API_KEY=               # optional last-resort fallback
 CRON_SECRET=<a long random string>
 
-# Video (Cloudflare Stream). Optional: without these the video block reports
-# "provider unavailable" and nothing else breaks. See docs/VIDEO.md.
-CLOUDFLARE_ACCOUNT_ID=
-CLOUDFLARE_STREAM_API_TOKEN=
-CLOUDFLARE_STREAM_WEBHOOK_SECRET=
+# Video (Bunny Stream) — the lead medium. Optional: without these a mock
+# provider serves public sample clips so video stays explorable. docs/VIDEO.md.
+BUNNY_STREAM_LIBRARY_ID=
+BUNNY_STREAM_API_KEY=
+BUNNY_STREAM_CDN_HOSTNAME=           # pull zone, for posters
+BUNNY_STREAM_TOKEN_KEY=              # optional: token-authenticated embeds
+BUNNY_STREAM_WEBHOOK_SECRET=         # optional: shared secret in the webhook URL
 ```
 
 ## 3. Seed demo data (optional but recommended)
@@ -130,13 +132,14 @@ Postgres triggers, not just app-level checks:
 The product's lead medium, and the thing a subscription actually buys. Full spec:
 **`docs/VIDEO.md`**.
 
-Cloudflare Stream sits behind a provider interface (`src/lib/video/provider.ts`), so no component
+Bunny Stream sits behind a provider interface (`src/lib/video/provider.ts`), so no component
 ever imports a provider and swapping to Mux touches one file:
 
 1. **Upload** — `POST /api/video/upload` mints a one-time direct-upload URL. The file goes
    browser → provider; it never touches Stoa's servers.
-2. **Ready** — `POST /api/webhooks/cloudflare-stream` (HMAC verified) flips
-   `video_assets.status` when encoding finishes.
+2. **Ready** — `POST /api/webhooks/bunny-stream` fires when encoding finishes. Bunny signs
+   nothing, so the shared secret rides in the webhook URL and the route then re-reads the asset
+   from the Bunny API before writing: the payload is a hint, never the truth.
 3. **Playback** — `GET /api/video/token` runs the entitlement check, then returns a short-lived
    signed iframe src. This is the only route that can produce a playable URL.
 
@@ -149,8 +152,10 @@ poster, upgrade chip, no playable URL anywhere in the response.
 > visibility must be applied to all three in the same PR — see the regression note in
 > `docs/VIDEO.md`.
 
-Env (optional — without it the block reports "provider unavailable" and nothing else breaks):
-`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_STREAM_API_TOKEN`, `CLOUDFLARE_STREAM_WEBHOOK_SECRET`.
+Env (optional — with none of it set, a mock provider serves public sample clips so the whole
+video surface stays explorable in local dev): `BUNNY_STREAM_LIBRARY_ID`, `BUNNY_STREAM_API_KEY`,
+`BUNNY_STREAM_CDN_HOSTNAME`, plus optional `BUNNY_STREAM_TOKEN_KEY` and
+`BUNNY_STREAM_WEBHOOK_SECRET`.
 
 ## Fact-checker pipeline
 
@@ -312,9 +317,9 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - Full call ledger with alpha vs SPY on `/analyst/[handle]`
 
 #### Video (the lead medium — `docs/VIDEO.md`)
-- Cloudflare Stream behind a swappable `VideoProvider` interface
+- Bunny Stream behind a swappable `VideoProvider` interface
 - Direct browser-to-provider upload; the file never touches Stoa's servers
-- HMAC-verified webhook flips `video_assets.status` when encoding completes
+- Webhook flips `video_assets.status`, verified by secret + a re-read from the Bunny API
 - Short-lived signed playback tokens; no other route can produce a playable URL
 - Three-layer entitlement (RLS `video_read` + `canReadReport` + per-block `minPlanRank`)
 - Locked tease for unentitled readers: blurred poster + upgrade chip, no playable URL
@@ -430,7 +435,7 @@ src/app/
   api/
     video/upload/             POST — mint a one-time direct-upload URL
     video/token/              GET  — entitlement check + signed playback token
-    webhooks/cloudflare-stream/ POST — HMAC-verified "asset ready" webhook
+    webhooks/bunny-stream/ POST — HMAC-verified "asset ready" webhook
     ai/fact-check/            POST — run fact-check, optionally persist claims
     creator/paypal/onboard/   POST — start PayPal onboarding
     creator/paypal/status/    GET — poll onboarding status
@@ -438,7 +443,7 @@ src/app/
     cron/grade/               GET — hourly grading job (CRON_SECRET)
 
 src/lib/
-  video/provider.ts           VideoProvider interface (Cloudflare Stream default)
+  video/provider.ts           VideoProvider interface (Bunny Stream default)
   db/videos.ts                video_assets — only place video rows are touched
   editor/tiptap/nodes/video-node.ts   videoNode schema + attributes
   engine/score.ts             MOAT formula (Wilson + PF + alpha percentile)

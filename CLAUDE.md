@@ -24,7 +24,7 @@ Quick reminders:
   expressed via verdigris/rust, never raw hex.
 - Fraunces for display/editorial, IBM Plex Sans for UI, IBM Plex Mono for numerals.
 - The seal (`SealStamp`) is the only fully circular element in the product.
-- Video: Cloudflare Stream behind `src/lib/video/provider.ts`. A playable URL only ever comes
+- Video: Bunny Stream behind `src/lib/video/provider.ts`. A playable URL only ever comes
   from the signed-token route — never props, page data, or a CSS-hidden element.
 - Money is PayPal, not Stripe — Partner Referrals for onboarding, Orders v2 `platform_fees[]` for
   one-time purchases, multiparty Subscriptions for recurring billing.

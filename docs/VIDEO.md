@@ -27,15 +27,16 @@ thesis, the call block, and the fact-check are the receipts underneath it.
 Four moving parts. Components never talk to a provider directly; everything goes through routes.
 
 ```
-writer                         Stoa                          Cloudflare Stream
+writer                         Stoa                          Bunny Stream
   |                              |                                   |
   |-- insert /video block ------>|                                   |
   |                              |-- POST /api/video/upload -------->|
   |<-- one-time upload URL ------|<-- { uploadUrl, providerAssetId } |
   |-- file straight to provider ---------------------------------->  |
   |                              |                                   |
-  |                              |<-- webhook: asset ready ----------|
-  |                              |    (HMAC verified, status flip)   |
+  |                              |<-- webhook: "video 4 is done" ---|
+  |                              |    secret checked, then the API   |
+  |                              |    re-read decides the real state |
 reader                          |                                   |
   |-- open report -------------->|                                   |
   |                              |-- entitlement check (see below)   |
@@ -44,21 +45,24 @@ reader                          |                                   |
 
 | Piece | File | Job |
 | --- | --- | --- |
-| Provider interface | `src/lib/video/provider.ts` | `createDirectUpload`, `getPlaybackToken`, `verifyWebhook`. Cloudflare Stream is the default; Mux slots in behind the same interface when analytics matter. |
-| Upload route | `src/app/api/video/upload/route.ts` | Mints a one-time direct-upload URL. The file never touches Stoa's servers. |
+| Provider interface | `src/lib/video/provider.ts` | `createDirectUpload`, `getPlaybackToken`, `verifyWebhook`. Bunny Stream is the platform; the interface exists so a swap costs one file. |
+| Upload route | `src/app/api/video/upload/route.ts` | Creates the Bunny video and presigns a TUS upload. The file goes browser → Bunny; it never touches Stoa's servers. |
 | Token route | `src/app/api/video/token/route.ts` | Entitlement check, then a short-lived signed playback token. The only way to get a playable src. |
-| Webhook | `src/app/api/webhooks/cloudflare-stream/route.ts` | HMAC-verified. Flips `video_assets.status` when encoding finishes. |
+| Webhook | `src/app/api/webhooks/bunny-stream/route.ts` | Checks the URL secret, re-reads the asset from Bunny, then flips `video_assets.status`. |
 | Data layer | `src/lib/db/videos.ts` | The only place `video_assets` rows are read or written. |
 | Editor node | `src/lib/editor/tiptap/nodes/video-node.ts` | The `videoNode` schema and attributes. |
 | Node view | `src/components/editor/tiptap/nodes/video-node-view.tsx` | Upload UI for writers, player or locked tease for readers. |
 
-**Env** (all optional — without them the block reports "provider unavailable" and nothing else
-breaks):
+**Env** (all optional — with none set, `getVideoProvider()` returns a deterministic **mock**
+that serves public sample clips, the same fallback pattern the market and AI providers use, so
+local dev and CI never need a live key):
 
 ```
-CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_STREAM_API_TOKEN
-CLOUDFLARE_STREAM_WEBHOOK_SECRET   # from the Stream webhook subscription
+BUNNY_STREAM_LIBRARY_ID
+BUNNY_STREAM_API_KEY
+BUNNY_STREAM_CDN_HOSTNAME          # pull zone, for posters
+BUNNY_STREAM_TOKEN_KEY             # optional: token-authenticated embeds
+BUNNY_STREAM_WEBHOOK_SECRET        # optional: shared secret in the webhook URL
 ```
 
 ---
@@ -86,6 +90,13 @@ launch blocker, not a styling choice.
 > for a report they were entitled to. Fixed in migrations `0036`/`0037`. **Any change to report
 > visibility must be applied to all three layers in the same PR.**
 
+**Why the webhook is not signature-verified.** Bunny Stream, unlike Cloudflare, sends no HMAC
+header — its payload is just `{VideoLibraryId, VideoGuid, Status}`. So the route does three
+things instead: compares a shared secret carried in the webhook URL you configure in the Bunny
+dashboard, rejects a mismatched library id, and then **re-reads the asset from the Bunny API and
+writes that** rather than trusting the body. Treat the webhook as a nudge, never as a source of
+truth.
+
 ---
 
 ## Data contract
@@ -97,7 +108,7 @@ launch blocker, not a styling choice.
 | `id` | Stoa's asset id. This is what the `videoNode` stores, never the provider id. |
 | `creator_id` | Owner. Drives RLS and `meetsPlanRank`. |
 | `report_id` | Nullable: a video can be uploaded before its report exists. |
-| `provider` | `cloudflare` today. The column exists so Mux does not need a migration. |
+| `provider` | `bunny` in production, `mock` for seeded demo rows. |
 | `playback_id` | Provider asset id. Server-side only; never rendered raw to a client. |
 | `poster_url` | The frame shown before play, and blurred for the locked tease. |
 | `duration_s`, `aspect_ratio` | Reserve player space so arrival causes no layout shift. |
@@ -112,7 +123,7 @@ launch blocker, not a styling choice.
 
 1. **Never expose a playback URL without going through the token route.** Not in props, not in
    serialized page data, not in JSON-LD. The signed token is the only key.
-2. **The provider is behind the interface.** No component imports Cloudflare. Swapping to Mux
+2. **The provider is behind the interface.** No component imports Bunny. Swapping to Mux
    should touch `provider.ts` and nothing else.
 3. **Reserve the frame.** Use `aspect_ratio` for the player box before the source loads. A video
    that pops in and shoves the thesis down the page is a CLS bug.
@@ -126,9 +137,15 @@ launch blocker, not a styling choice.
 
 ## State of the build
 
-**Shipped and working end-to-end:** provider abstraction, direct upload, HMAC-verified webhook,
-signed playback tokens, three-layer gating with the locked tease, `video_assets` + RLS, editor
-node with upload UI, per-block plan rank.
+**Shipped and working end-to-end:** provider abstraction, Bunny TUS direct upload with progress,
+secret-checked webhook that re-reads state from the API, token-authenticated embeds, three-layer
+gating with the locked tease, `video_assets` + RLS, editor node with upload UI, per-block plan
+rank, and a mock provider so none of it requires keys to explore.
+
+**Seeded demo data.** `npm run seed` attaches a mock video to roughly 60% of research reports,
+always in the lead position, and gates some of them a tier above their report so the locked tease
+is seeded too. Rows carry `provider = "mock"`; `purge_demo_author` clears them (migration
+`0042`) so re-seeding stays clean.
 
 **What "main character" implies that does NOT exist yet.** Today video is one of roughly fourteen
 slash-menu blocks, filed under *Data*, with the subtitle "Subscriber-gated video upload." A

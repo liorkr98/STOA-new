@@ -30,9 +30,9 @@ const SUBPROCESSORS = [
     data: "Ticker symbols queried; no user PII sent",
   },
   {
-    name: "Cloudflare Stream",
-    purpose: "Video hosting (optional feature)",
-    data: "Uploaded video assets linked to reports",
+    name: "Bunny.net (Bunny Stream)",
+    purpose: "Video hosting, encoding, and delivery",
+    data: "Uploaded video assets linked to reports; viewer IP at CDN layer",
   },
   {
     name: "Vercel",

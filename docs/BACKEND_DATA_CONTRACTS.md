@@ -88,7 +88,7 @@ Created in `0023_research_platform.sql`. Full spec: **`docs/VIDEO.md`**.
 | `id` | Stoa's asset id. This is what `videoNode.assetId` stores — never the provider id. |
 | `creator_id` | Owner. Drives RLS and `meetsPlanRank`. |
 | `report_id` | Nullable: a video can exist before its report does. |
-| `provider` | `cloudflare` today; the column exists so Mux needs no migration. |
+| `provider` | `bunny` in production, `mock` for seeded demo rows. |
 | `playback_id` | Provider asset id. Server-side only, never rendered raw to a client. |
 | `poster_url` | Frame shown before play, blurred for the locked tease. |
 | `duration_s`, `aspect_ratio` | Reserve player space so arrival causes no layout shift. |

@@ -24,18 +24,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "analysts only" }, { status: 403 });
   }
 
-  const body = (await req.json().catch(() => ({}))) as { reportId?: string };
+  const body = (await req.json().catch(() => ({}))) as { reportId?: string; title?: string };
 
   try {
     const provider = getVideoProvider();
-    const upload = await provider.createDirectUpload({ creatorId: user.id });
+    const upload = await provider.createDirectUpload({ creatorId: user.id, title: body.title });
     const asset = await createVideoAsset({
       provider: provider.name,
       playback_id: upload.providerAssetId,
       report_id: body.reportId ?? null,
     });
     if (!asset) return NextResponse.json({ error: "could not create asset" }, { status: 500 });
-    return NextResponse.json({ assetId: asset.id, uploadUrl: upload.uploadUrl });
+    return NextResponse.json({
+      assetId: asset.id,
+      uploadUrl: upload.uploadUrl,
+      uploadHeaders: upload.uploadHeaders,
+      // Mock provider: no real upload happens, the asset is already playable.
+      mock: upload.mock ?? false,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "video provider unavailable" },

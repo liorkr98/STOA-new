@@ -47,6 +47,7 @@ export function VideoNodeView({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [play, setPlay] = useState<PlayState>({ kind: assetId ? "loading" : "idle" });
 
   const fetchToken = useCallback(async () => {
@@ -96,23 +97,46 @@ export function VideoNodeView({
         setUploadError(body?.error ?? "Upload unavailable");
         return;
       }
-      const { assetId: newId, uploadUrl } = (await res.json()) as {
+      const { assetId: newId, uploadUrl, uploadHeaders, mock } = (await res.json()) as {
         assetId: string;
         uploadUrl: string;
+        uploadHeaders?: Record<string, string>;
+        mock?: boolean;
       };
-      const form = new FormData();
-      form.append("file", file);
-      const up = await fetch(uploadUrl, { method: "POST", body: form });
-      if (!up.ok) {
-        setUploadError("Upload failed");
+
+      // No provider keys: the mock asset is already playable, skip the upload.
+      if (mock) {
+        updateAttributes({ assetId: newId });
+        setUploadProgress(null);
+        void fetchToken();
         return;
       }
+
+      // Bunny takes a TUS resumable upload, presigned server-side so the API
+      // key never reaches the browser. Loaded on demand -- the client never
+      // pays for the tus bundle unless someone actually uploads.
+      const { Upload } = await import("tus-js-client");
+      await new Promise<void>((resolve, reject) => {
+        const upload = new Upload(file, {
+          endpoint: uploadUrl,
+          headers: uploadHeaders ?? {},
+          retryDelays: [0, 1000, 3000, 5000],
+          metadata: { filetype: file.type, title: file.name },
+          onProgress: (sent, total) =>
+            setUploadProgress(total ? Math.round((sent / total) * 100) : null),
+          onSuccess: () => resolve(),
+          onError: (err) => reject(err),
+        });
+        upload.start();
+      });
+
       updateAttributes({ assetId: newId });
       setPlay({ kind: "processing" });
     } catch {
       setUploadError("Upload failed");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   }
 
@@ -255,7 +279,13 @@ export function VideoNodeView({
             className="flex w-full flex-col items-center justify-center gap-2 rounded-[var(--radius-btn)] border border-dashed border-border px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
           >
             <Upload size={22} className="text-text-faint" />
-            <span className="text-sm">{uploading ? "Uploading..." : "Upload a video"}</span>
+            <span className="num text-sm">
+              {uploading
+                ? uploadProgress != null
+                  ? `Uploading ${uploadProgress}%`
+                  : "Uploading..."
+                : "Upload a video"}
+            </span>
             {uploadError && <span className="text-[11px] text-[var(--down)]">{uploadError}</span>}
           </button>
         )}

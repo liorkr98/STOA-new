@@ -46,7 +46,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
 - **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
-- **Video pipeline (0023)** — Cloudflare Stream behind a swappable provider interface, direct browser-to-provider upload, HMAC-verified ready webhook, short-lived signed playback tokens, three-layer entitlement (RLS + `canReadReport` + per-block `minPlanRank`), locked tease for unentitled readers, `videoNode` in the compose slash menu
+- **Video pipeline (0023)** — Bunny Stream behind a swappable provider interface, direct browser-to-provider upload, HMAC-verified ready webhook, short-lived signed playback tokens, three-layer entitlement (RLS + `canReadReport` + per-block `minPlanRank`), locked tease for unentitled readers, `videoNode` in the compose slash menu
 - **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
 
 ## Make video lead (highest priority)

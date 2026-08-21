@@ -15,7 +15,7 @@ run through `tsc` locally. This doc is the single checklist for merging, auditin
 | Valuation math | `src/lib/valuation/model.ts` (decimal.js, pure) + `model.test.ts` (`npm run test:valuation`) |
 | Copilot (A13) | `ask-panel.tsx` inserts real pre-filled research blocks; multi-ticker detection |
 | Plans (C) | Migration (plans/coupons/min_plan_rank), plan-aware paywall RLS, `subscribe_to_plan` RPC, `canReadReport`/`meetsPlanRank`, PlanManager UI on `/studio/branding` |
-| Video (D) | Cloudflare Stream provider, upload/webhook/token routes, videoNode with locked-tease (per-block gating UI) |
+| Video (D) | Bunny Stream provider (TUS upload, token-auth embeds) + mock fallback, upload/webhook/token routes, videoNode with locked-tease (per-block gating UI). **The lead medium — see `docs/VIDEO.md`.** |
 | Notebook (F) | Schema + RLS, data layer, actions, board UI (`/notebook`), SaveToNotebookButton (wired on figure block) |
 | Investor (G) | Company page financials (EDGAR + estimates), `/portfolio`, `/screener`, `/dashboard` (drag widgets) |
 | Branding (B) | B1 custom accent (culori, WCAG-gated, scoped) + B2 font pairings — on `/studio/branding` |
@@ -37,9 +37,13 @@ New deps in `package.json` (cloud install picks up): `decimal.js`, `culori`, `se
 3. **Set env vars** (Vercel + local `.env.local`; all optional, features degrade without them):
    `SEC_EDGAR_USER_AGENT` (required for statements/figures — any descriptive string with contact),
    `FINNHUB_API_KEY`, `FMP_API_KEY`,
-   `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_STREAM_API_TOKEN` / `CLOUDFLARE_STREAM_WEBHOOK_SECRET`.
-4. **Cloudflare Stream setup** (when video matters): create the API token, subscribe a webhook to
-   `https://<domain>/api/webhooks/cloudflare-stream`, put its secret in the env var.
+   `BUNNY_STREAM_LIBRARY_ID` / `BUNNY_STREAM_API_KEY` / `BUNNY_STREAM_CDN_HOSTNAME` (plus optional
+   `BUNNY_STREAM_TOKEN_KEY`, `BUNNY_STREAM_WEBHOOK_SECRET`). Without them a mock provider serves
+   sample clips.
+4. **Bunny Stream setup** (video is the lead medium, so do this before launch): create a Stream
+   library, copy its id + API key, note the pull-zone hostname for posters, switch on Token
+   Authentication for paid content, and point the library webhook at
+   `https://<domain>/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>`.
 5. **Backend items for Cursor/Krisi** (out of Claude's lane per team split):
    - Alerts cron (price/filing/earnings + "creator I follow published on a ticker I hold") using
      the existing notifications infra.

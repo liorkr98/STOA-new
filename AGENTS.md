@@ -122,7 +122,7 @@ src/
   components/          UI. ui/ = primitives, charts/, layout/, feature components.
   lib/
     supabase/          Browser + server clients, middleware helper.
-    video/             VideoProvider interface (Cloudflare Stream default, Mux swappable).
+    video/             VideoProvider interface (Bunny Stream default, Mux swappable).
                        No component imports a provider directly.
     engine/            Scoring engine + market data. Pure, server-side, tested by hand.
     db/                Typed queries + mutations (the only place that talks to Supabase).
@@ -243,7 +243,7 @@ Never trust client-supplied prices.
 - Changing report visibility in only one of the three video entitlement layers (`video_read` RLS,
   `canReadReport`, per-block `minPlanRank`). They are duplicated deliberately and have silently
   disagreed before — see the regression note in `docs/VIDEO.md`.
-- A component importing Cloudflare (or any provider) directly instead of going through
+- A component importing Bunny (or any provider) directly instead of going through
   `src/lib/video/provider.ts`.
 - Autoplaying video, or preloading a full source before the reader asks. Poster first, always.
 - "OnlyFans," dating-app, or other casual-platform comparisons in any user-facing or internal

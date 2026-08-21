@@ -130,11 +130,14 @@ GET /v1/transcripts/{ticker}       earnings-call transcripts (A15)
 
 ### 4.2 Video (Part D) — one provider interface
 
-`src/lib/video/provider.ts` is the only surface components use. **Cloudflare Stream** is the
-default (encoding included, signed playback tokens); **Mux** (`@mux/mux-node` +
-`@mux/mux-player-react`, Mux Data, DRM, transcripts) is a drop-in swap when analytics matter.
-Playback is gated by a signed token from `GET /api/video/token`, which runs `canReadReport` + plan
-rank server-side.
+`src/lib/video/provider.ts` is the only surface components use. **Bunny Stream** is the platform
+(encoding, global CDN, token-authenticated embeds, TUS resumable upload); the `VideoProvider`
+interface exists so a swap costs one file. With no keys configured a deterministic **mock**
+provider serves public sample clips, so local dev and CI never need a live key.
+
+Video is the product's lead medium, not one block among many — see **`docs/VIDEO.md`** for the
+pipeline, the three-layer gating, and the data contract. Playback is gated by a signed token from
+`GET /api/video/token`, which runs `canReadReport` + plan rank server-side.
 
 ### 4.3 Libraries
 
@@ -185,8 +188,8 @@ DATA_SERVICE_URL           base URL of the FastAPI sidecar
 # fallbacks (optional, already partly present in .env.example)
 TWELVE_DATA_API_KEY
 ALPHA_VANTAGE_API_KEY
-# video (Part D)
-CLOUDFLARE_STREAM_ACCOUNT_ID / _API_TOKEN / _SIGNING_KEY   (or MUX_TOKEN_ID / MUX_TOKEN_SECRET)
+# video (Bunny Stream) — all optional, mock provider without them
+BUNNY_STREAM_LIBRARY_ID / _API_KEY / _CDN_HOSTNAME / _TOKEN_KEY / _WEBHOOK_SECRET
 ```
 
 Server-only secrets never appear in client components or `NEXT_PUBLIC_*` (AGENTS.md code rule 15).

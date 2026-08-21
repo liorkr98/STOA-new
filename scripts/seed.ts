@@ -306,6 +306,102 @@ function tickersFor(analyst: AnalystSeed): string[] {
   return TICKERS_US;
 }
 
+
+/* ------------------------------------------------------------------ *
+ * Mock video (docs/VIDEO.md). Video is the lead medium, so seeded
+ * research reports open with one. These rows point at public sample
+ * clips and the mock provider serves them, so the whole video surface --
+ * player, poster, locked tease, per-block plan gating -- is explorable
+ * with no Bunny Stream keys configured.
+ * ------------------------------------------------------------------ */
+
+const MOCK_CLIPS = [
+  {
+    id: "mock-bigbuckbunny",
+    poster: "https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+    duration: 596,
+  },
+  {
+    id: "mock-elephantsdream",
+    poster: "https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+    duration: 653,
+  },
+  {
+    id: "mock-forbiggerblazes",
+    poster: "https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+    duration: 15,
+  },
+  {
+    id: "mock-subaru",
+    poster:
+      "https://storage.googleapis.com/gtv-videos-bucket/sample/images/SubaruOutbackOnStreetAndDirt.jpg",
+    duration: 594,
+  },
+] as const;
+
+const VIDEO_INTROS = [
+  "The two-minute version of this call",
+  "Why I am putting my score behind this",
+  "Walking the model, line by line",
+  "What the street is getting wrong here",
+  "The one chart that changed my mind",
+] as const;
+
+/** Creates a ready mock video asset and returns its id, or null on failure. */
+async function seedVideoAsset(
+  db: SupabaseClient,
+  creatorId: string,
+  reportId: string,
+  createdAt: string,
+): Promise<{ id: string; poster: string; duration: number } | null> {
+  const clip = pick(MOCK_CLIPS);
+  const { data } = await db
+    .from("video_assets")
+    .insert({
+      creator_id: creatorId,
+      report_id: reportId,
+      provider: "mock",
+      playback_id: clip.id,
+      poster_url: clip.poster,
+      duration_s: clip.duration,
+      aspect_ratio: "16:9",
+      status: "ready",
+      created_at: createdAt,
+    })
+    .select("id")
+    .single();
+  if (!data) return null;
+  return { id: (data as { id: string }).id, poster: clip.poster, duration: clip.duration };
+}
+
+/** Tiptap body that opens with the video, then the written thesis under it. */
+function videoLedBody(
+  video: { id: string; poster: string },
+  caption: string,
+  minPlanRank: number,
+  paragraphs: string[],
+): string {
+  return JSON.stringify({
+    type: "doc",
+    content: [
+      {
+        type: "videoNode",
+        attrs: {
+          assetId: video.id,
+          caption,
+          posterUrl: video.poster,
+          aspectRatio: "16:9",
+          minPlanRank,
+        },
+      },
+      ...paragraphs.map((text) => ({
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      })),
+    ],
+  });
+}
+
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -419,7 +515,24 @@ async function main() {
         .single();
 
       if (!report) continue;
-      await db.from("report_bodies").insert({ report_id: (report as { id: string }).id, body });
+      const reportId = (report as { id: string }).id;
+
+      // Video leads (docs/VIDEO.md): most research reports open with one, and
+      // some gate it a tier above the report so the locked tease is seeded too.
+      let finalBody = body;
+      if (type === "research" && Math.random() < 0.6) {
+        const video = await seedVideoAsset(db, id, reportId, daysAgo(ageDays));
+        if (video) {
+          const gated = access !== "free" && Math.random() < 0.5 ? 2 : 0;
+          finalBody = videoLedBody(video, pick(VIDEO_INTROS), gated, [
+            `${a.name} on ${ticker}.`,
+            a.bio,
+            `Thesis: ${direction} over ${horizon} days. Entry locked at publication. Risk: macro shock overwhelms the single-name view.`,
+            "[Demo seed content — not investment advice.]",
+          ]);
+        }
+      }
+      await db.from("report_bodies").insert({ report_id: reportId, body: finalBody });
 
       const outcome = isResolved
         ? gradeOutcome({ direction, lock_price: lock, target_price: target, resolved_price: resolvedPrice! })
@@ -431,7 +544,7 @@ async function main() {
         : daysAhead(Math.max(3, horizon - (ageDays % horizon)));
 
       await db.from("predictions").insert({
-        report_id: (report as { id: string }).id,
+        report_id: reportId,
         author_id: id,
         ticker,
         direction,
