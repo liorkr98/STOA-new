@@ -24,12 +24,9 @@ export function SectorHeader({ payload }: { payload: SectorPayload }) {
         </div>
 
         <div className="flex items-end gap-4">
-          {/* No sector index series exists, so the level stays reserved. The
-              change is the equal-weight average of the listed names' day
-              changes, and says so. */}
-          <span className="stock-price">
-            <span className="markets-pending">No index level</span>
-          </span>
+          {/* There is no sector index series, so there is no level to print.
+              The change is real: the equal-weight average of the listed names'
+              day changes, which the tooltip states. */}
           <span title="Equal-weight average day change of the names below">
             <DayChange percent={payload.dayChangeEqualWeight} size="lg" />
           </span>
@@ -52,26 +49,6 @@ export function SectorHeader({ payload }: { payload: SectorPayload }) {
         </span>
       </div>
     </header>
-  );
-}
-
-/**
- * Performance needs a sector index series and an S&P series to compare it
- * against. Neither exists: the platform has no sector index, so the section
- * shows its structure and says what is missing rather than drawing a line that
- * would look like a measurement.
- */
-export function SectorPerformance({ sector }: { sector: string }) {
-  return (
-    <Band title="Performance" note={`${sector} against the S&P 500.`}>
-      <div className="sector-perf">
-        <p className="markets-pending">No sector index series available</p>
-      </div>
-      <p className="markets-gap-note">
-        A sector index has to be built from a history of constituent prices; the quote path
-        carries today&apos;s levels and day changes only. Nothing is drawn until a series exists.
-      </p>
-    </Band>
   );
 }
 
@@ -145,10 +122,8 @@ export function SectorCoverage({ payload }: { payload: SectorPayload }) {
 }
 
 export function SectorPublications({
-  sector,
   items,
 }: {
-  sector: string;
   items: import("@/lib/today/types").TodayItem[];
 }) {
   if (items.length === 0) return null;
@@ -172,10 +147,6 @@ export function SectorPublications({
           />
         ))}
       </div>
-      <p className="markets-gap-note">
-        Commentary carrying no ticker is tagged to {sector}; the content model has no per-report
-        theme field yet, so the sector page is the only surface that can tag it.
-      </p>
     </Band>
   );
 }

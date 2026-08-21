@@ -5,7 +5,6 @@ import { buildSector, canonicalSector } from "@/lib/markets/build-sector";
 import {
   SectorHeader,
   SectorNames,
-  SectorPerformance,
   SectorPublications,
   SectorCoverage,
   SectorAnalysts,
@@ -45,10 +44,9 @@ export default async function SectorPage({
   return (
     <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
       <SectorHeader payload={payload} />
-      <SectorPerformance sector={name} />
       <SectorNames names={payload.names} />
       <SectorCoverage payload={payload} />
-      <SectorPublications sector={name} items={payload.publications} />
+      <SectorPublications items={payload.publications} />
       <SectorAnalysts analysts={payload.analysts} isAuthed={Boolean(userId)} />
     </article>
   );

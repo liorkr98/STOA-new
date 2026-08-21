@@ -835,7 +835,7 @@ export function VideoRung({
           </p>
         </div>
         <p className="num max-w-[38ch] text-right text-[10px] uppercase leading-relaxed tracking-[0.12em] text-text-faint">
-          Burning overlays into the video needs a processing service that does not exist yet. The editor is real; publishing with overlays is not wired.
+          Overlays show in this preview but are not part of the published video yet.
         </p>
       </div>
     </section>

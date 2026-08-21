@@ -222,7 +222,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
           <PrefGroup title="Reading" rows={READING_PREFS} />
           {isAnalyst && <PrefGroup title="Your research" rows={RESEARCH_PREFS} />}
           <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
-            Preferences are not saved yet — storage is pending backend support.
+            These choices are not saved yet, so they reset when you leave.
           </p>
         </div>
       )}
