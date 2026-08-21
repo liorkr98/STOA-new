@@ -1,28 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { buttonClass } from "@/components/ui/button";
+import { StoaLogo } from "@/components/brand/logo";
+import { ErrorPanel } from "@/components/errors/error-panel";
 
 /**
- * Route error boundary. Never shows a raw error string to the reader; always
- * offers a way forward (docs/MOTION.md C.2 items 3 and 12).
+ * Last-resort boundary. Each route group has its own error.tsx that keeps that
+ * group's chrome; this one only catches what those cannot -- an error thrown by
+ * a group layout itself -- so it renders with no layout around it and has to
+ * carry its own header and footer links, or the reader is stranded.
  */
 export default function RouteError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center gap-4 px-5 text-center">
-      <h1 className="t-h1">Something broke on our side</h1>
-      <p className="t-body">
-        The page hit an error while loading. Your data is fine. Try again, or head back to the
-        feed.
-      </p>
-      <div className="mt-2 flex gap-3">
-        <button type="button" onClick={reset} className={buttonClass("primary", "md")}>
-          Try again
-        </button>
-        <Link href="/discover" className={buttonClass("secondary", "md")}>
-          Go to Discover
+    <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
+      <header className="border-b border-border px-5 py-4">
+        <Link href="/" aria-label="Stoa home" className="focus-ring inline-flex rounded-[var(--radius-btn)]">
+          <StoaLogo />
         </Link>
-      </div>
+      </header>
+      <main className="flex-1">
+        <ErrorPanel reset={reset} />
+      </main>
+      <footer className="border-t border-border px-5 py-4">
+        <nav aria-label="Site" className="flex flex-wrap justify-center gap-x-5 gap-y-2 t-body">
+          <Link href="/home" className="focus-ring text-text-mute hover:text-text">Today</Link>
+          <Link href="/discover" className="focus-ring text-text-mute hover:text-text">Feed</Link>
+          <Link href="/explore" className="focus-ring text-text-mute hover:text-text">Explore</Link>
+          <Link href="/markets" className="focus-ring text-text-mute hover:text-text">Markets</Link>
+        </nav>
+      </footer>
     </div>
   );
 }

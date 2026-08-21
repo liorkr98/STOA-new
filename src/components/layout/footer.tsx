@@ -5,7 +5,7 @@ const groups = [
   {
     title: "Product",
     links: [
-      { href: "/discover", label: "Discover" },
+      { href: "/discover", label: "Feed" },
       { href: "/markets", label: "Markets" },
       { href: "/become-analyst", label: "For analysts" },
     ],
