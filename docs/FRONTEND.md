@@ -320,6 +320,28 @@ Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
 - `Draft` — dashed neutral outline, pencil icon, "Draft" (creator-facing only, never shown to
   investors)
 
+### 2.8b `<VideoNodeView>` — the lead medium
+
+Video is the main character (`docs/VIDEO.md`), and this is the only place a reader meets it.
+Three states, one component:
+
+- **Player (entitled).** Poster frame fills the box at the asset's `aspect_ratio`, reserved
+  *before* the source loads so arrival never shifts the thesis below it. Signed iframe src from
+  `/api/video/token`, requested on intent — never autoplay, never preload a full source.
+- **Locked tease (unentitled).** Not an error state — this is the upgrade pitch, and it should
+  get the care of a real surface: blurred poster, `--brass` lock glyph, the plan name required,
+  and a working upgrade path. **No playable URL exists anywhere in the response** (§ paywall
+  integrity — a CSS-hidden video is a launch blocker, not a styling choice).
+- **Processing.** The webhook has not flipped `status` yet. Poster or neutral placeholder at the
+  same reserved height, plain "Processing" label. Never a spinner that implies reader error.
+
+Writer-side, the same component is the upload surface: file picker → direct upload to the
+provider → optimistic processing state. Per-block `minPlanRank` lives on the node, so one report
+can carry a free intro clip and a subscriber-only deep dive.
+
+Caption sits below the frame in `--text-sm --text-mute`, same treatment as chart captions.
+Captions/transcript are not built yet and are required once video leads — `docs/ROADMAP.md`.
+
 ### 2.9 Buttons, inputs, toasts — base component notes
 
 - **Primary button:** `--ink` fill, `--paper` text, `--radius-sm`. Reserved for the single most

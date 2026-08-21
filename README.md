@@ -6,18 +6,24 @@ scoring engine fed by real market data.
 
 Tagline: Think clearly. Invest better.
 
+**Video is the main character.** A locked call proves what an analyst said; the video proves how
+they thought. Text is the free tier that earns discovery, video is what a subscription is for —
+it is the only editor block with per-block plan gating built in. See `docs/VIDEO.md`.
+
 ## What is in here
 
-- **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Motion, Phosphor icons.
+- **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Phosphor + Lucide icons.
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
+- **Video:** Cloudflare Stream behind a provider interface — direct upload, HMAC-verified
+  webhook, short-lived signed playback tokens, three-layer entitlement gating. `docs/VIDEO.md`.
 - **Engine:** a 0-100 analyst score (win rate + profit factor + alpha) mapped to a 600-1400 rating,
   with automatic grading of calls against live prices on a schedule.
 - **Money:** a simulated wallet/credits system with a 90/10 split, built so real PayPal payouts can
   drop in later (PayPal, not Stripe Connect, since Stripe Connect payouts aren't available for
   Israel-based platforms/sellers).
 
-See `design-system/MASTER.md` for the visual system and `AGENTS.md` for the rules every AI agent
-(Cursor and Claude Code) follows.
+See `docs/FRONTEND.md` for the visual system (`design-system/MASTER.md` is deprecated) and
+`AGENTS.md` for the rules every AI agent (Cursor and Claude Code) follows.
 
 ## Prerequisites
 
@@ -71,6 +77,12 @@ SUPABASE_SERVICE_ROLE_KEY=...        # server only, keep secret
 TWELVE_DATA_API_KEY=                 # optional fallback if Yahoo fails
 ALPHA_VANTAGE_API_KEY=               # optional last-resort fallback
 CRON_SECRET=<a long random string>
+
+# Video (Cloudflare Stream). Optional: without these the video block reports
+# "provider unavailable" and nothing else breaks. See docs/VIDEO.md.
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_STREAM_API_TOKEN=
+CLOUDFLARE_STREAM_WEBHOOK_SECRET=
 ```
 
 ## 3. Seed demo data (optional but recommended)
@@ -112,6 +124,33 @@ Postgres triggers, not just app-level checks:
   and `views_certified` (a Reg-AC-style "these are my own views" cert). `publishReport` blocks the
   publish server-side once the caller starts sending a certification value — see
   `src/app/actions/reports.ts`.
+
+## Video pipeline
+
+The product's lead medium, and the thing a subscription actually buys. Full spec:
+**`docs/VIDEO.md`**.
+
+Cloudflare Stream sits behind a provider interface (`src/lib/video/provider.ts`), so no component
+ever imports a provider and swapping to Mux touches one file:
+
+1. **Upload** — `POST /api/video/upload` mints a one-time direct-upload URL. The file goes
+   browser → provider; it never touches Stoa's servers.
+2. **Ready** — `POST /api/webhooks/cloudflare-stream` (HMAC verified) flips
+   `video_assets.status` when encoding finishes.
+3. **Playback** — `GET /api/video/token` runs the entitlement check, then returns a short-lived
+   signed iframe src. This is the only route that can produce a playable URL.
+
+Entitlement is **three independent layers that must all agree**: the `video_read` RLS policy,
+`canReadReport`, and the per-block `minPlanRank` (so a cheaper plan can read the report and still
+not watch the video). Failing any layer returns 403 and renders the locked tease — blurred
+poster, upgrade chip, no playable URL anywhere in the response.
+
+> Because those layers are duplicated by design, they can silently disagree. Any change to report
+> visibility must be applied to all three in the same PR — see the regression note in
+> `docs/VIDEO.md`.
+
+Env (optional — without it the block reports "provider unavailable" and nothing else breaks):
+`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_STREAM_API_TOKEN`, `CLOUDFLARE_STREAM_WEBHOOK_SECRET`.
 
 ## Fact-checker pipeline
 
@@ -272,6 +311,15 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - Score breakdown, hit/near/miss counts, tier progress on analyst profiles
 - Full call ledger with alpha vs SPY on `/analyst/[handle]`
 
+#### Video (the lead medium — `docs/VIDEO.md`)
+- Cloudflare Stream behind a swappable `VideoProvider` interface
+- Direct browser-to-provider upload; the file never touches Stoa's servers
+- HMAC-verified webhook flips `video_assets.status` when encoding completes
+- Short-lived signed playback tokens; no other route can produce a playable URL
+- Three-layer entitlement (RLS `video_read` + `canReadReport` + per-block `minPlanRank`)
+- Locked tease for unentitled readers: blurred poster + upgrade chip, no playable URL
+- `videoNode` in the compose slash menu with per-block plan gating
+
 #### AI features
 - AI credits economy (wallet → credits, spend on chat/outline/fact-check)
 - FactChecker panel in compose (classify claims, Yahoo price cross-check)
@@ -380,6 +428,9 @@ src/app/
     claims.ts                 persistClaims, postDebateComment
     social.ts                 follow, like, comment, save
   api/
+    video/upload/             POST — mint a one-time direct-upload URL
+    video/token/              GET  — entitlement check + signed playback token
+    webhooks/cloudflare-stream/ POST — HMAC-verified "asset ready" webhook
     ai/fact-check/            POST — run fact-check, optionally persist claims
     creator/paypal/onboard/   POST — start PayPal onboarding
     creator/paypal/status/    GET — poll onboarding status
@@ -387,6 +438,9 @@ src/app/
     cron/grade/               GET — hourly grading job (CRON_SECRET)
 
 src/lib/
+  video/provider.ts           VideoProvider interface (Cloudflare Stream default)
+  db/videos.ts                video_assets — only place video rows are touched
+  editor/tiptap/nodes/video-node.ts   videoNode schema + attributes
   engine/score.ts             MOAT formula (Wilson + PF + alpha percentile)
   engine/grade.ts             Grading job (resolve calls, recompute scores)
   engine/market/              Yahoo Finance + fallbacks (MarketProvider interface)
@@ -397,6 +451,7 @@ src/lib/
   types.ts                    Domain types mirroring Postgres schema
 
 supabase/migrations/          0001–0017 (see list above)
+docs/VIDEO.md                 Video subsystem: pipeline, gating, data contract
 docs/ROADMAP.md               Product roadmap (done vs next)
 docs/platform.md              External services tracker
 ```

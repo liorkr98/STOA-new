@@ -4,6 +4,10 @@ Claude Code: read **[AGENTS.md](./AGENTS.md)** for the full project context, tec
 map, and rules. It is the shared source of truth for every AI agent on this repo (Cursor reads
 `AGENTS.md` directly).
 
+**Video is the main character** — a locked call proves what an analyst said, the video proves how
+they thought. Read **[docs/VIDEO.md](./docs/VIDEO.md)** before touching upload, playback, or
+entitlement; its three gating layers have silently disagreed before.
+
 Before any visual change, read **[docs/FRONTEND.md](./docs/FRONTEND.md)** — the full design
 system, every page, every component. `design-system/MASTER.md` is deprecated; kept only as a
 short pointer.
@@ -20,6 +24,8 @@ Quick reminders:
   expressed via verdigris/rust, never raw hex.
 - Fraunces for display/editorial, IBM Plex Sans for UI, IBM Plex Mono for numerals.
 - The seal (`SealStamp`) is the only fully circular element in the product.
+- Video: Cloudflare Stream behind `src/lib/video/provider.ts`. A playable URL only ever comes
+  from the signed-token route — never props, page data, or a CSS-hidden element.
 - Money is PayPal, not Stripe — Partner Referrals for onboarding, Orders v2 `platform_fees[]` for
   one-time purchases, multiparty Subscriptions for recurring billing.
 - Icons: Lucide going forward for new components; existing Phosphor usage isn't an urgent

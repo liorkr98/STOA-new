@@ -2,6 +2,8 @@
 
 Stoa is a **two-sided marketplace for independent stock research** where analysts publish calls and investors pay for access. The moat is a **verified, permanent track record**: every scored call locks an entry price server-side and is graded automatically when the horizon ends.
 
+**Video is the main character.** The ledger proves an analyst was right; video is how a reader decides to trust them in the first place. Text earns discovery, video is what the subscription buys. The pipeline is built end-to-end (`docs/VIDEO.md`); what is missing is the *product* treatment that makes it lead — see "Make video lead" below.
+
 This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (Base44 + Vite) with the [STOA-new rebuild](https://github.com/liorkr98/STOA-new) (Next.js + Supabase) and tracks what is done vs planned.
 
 ## Architecture (rebuild is better)
@@ -44,7 +46,26 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
 - **MOAT score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
+- **Video pipeline (0023)** — Cloudflare Stream behind a swappable provider interface, direct browser-to-provider upload, HMAC-verified ready webhook, short-lived signed playback tokens, three-layer entitlement (RLS + `canReadReport` + per-block `minPlanRank`), locked tease for unentitled readers, `videoNode` in the compose slash menu
 - **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
+
+## Make video lead (highest priority)
+
+The pipeline is done; the positioning is not. Today video is one of ~14 slash-menu blocks filed
+under *Data*, which means the thing subscriptions are sold on is invisible until a reader is
+already deep in a text report. In rough dependency order:
+
+1. **Show video exists before the click.** Feed cards, dispatch entries, search results, and OG
+   images currently render a report with video identically to one without. A duration chip and
+   poster thumbnail is the single highest-leverage change on this list.
+2. **A lead-video slot in the reading view** — above the thesis, not wherever the writer happened
+   to drop the block.
+3. **A video-first entry point in compose** — "record your take" as a primary action and a
+   video-led report template, so writers do not have to know to reach for a *Data* block.
+4. **Captions and transcript.** Non-negotiable once video leads: an accessibility requirement,
+   and the transcript is also the SEO and fact-check surface for spoken claims.
+5. **Unify with `AudioBrief`.** TTS audio and uploaded video are two features telling one media
+   story; they should be one system, not two.
 
 ## In progress / next (high priority)
 

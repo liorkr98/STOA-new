@@ -16,6 +16,12 @@ The one deliberate brand-register exception is the marketing site (`/`, `/how-it
 The product is a public ledger of claims made and outcomes proven, where nothing can be quietly
 erased.
 
+**Video is the main character.** The ledger proves an analyst was right; video is how a reader
+decides to trust them in the first place. Text is the free tier that earns discovery, video is
+what the subscription is for — the only block with per-block plan gating built in. Design
+decisions that trade the written report against the video resolve in the video's favour. Spec:
+`docs/VIDEO.md`.
+
 ## Brand personality
 
 Notary's seal, rubber date-stamp, certified document, ledger book. Credible without borrowing

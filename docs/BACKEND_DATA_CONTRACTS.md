@@ -76,3 +76,29 @@ place that talks to Supabase per AGENTS.md, and payments/schema are backend scop
   or survive a cleared browser. Needs `watchlist_items(user_id, ticker, created_at)`, RLS scoped to
   the owner. Swap `useWatchlist()`'s localStorage read/write for a Supabase query once it exists;
   the component API (`tickers`, `toggle`, `has`) can stay the same.
+
+---
+
+## Video (`video_assets`) — shipped
+
+Created in `0023_research_platform.sql`. Full spec: **`docs/VIDEO.md`**.
+
+| Column | Notes |
+| --- | --- |
+| `id` | Stoa's asset id. This is what `videoNode.assetId` stores — never the provider id. |
+| `creator_id` | Owner. Drives RLS and `meetsPlanRank`. |
+| `report_id` | Nullable: a video can exist before its report does. |
+| `provider` | `cloudflare` today; the column exists so Mux needs no migration. |
+| `playback_id` | Provider asset id. Server-side only, never rendered raw to a client. |
+| `poster_url` | Frame shown before play, blurred for the locked tease. |
+| `duration_s`, `aspect_ratio` | Reserve player space so arrival causes no layout shift. |
+| `status` | `uploading` → provider-ready, flipped by the HMAC-verified webhook. |
+
+**Entitlement is three layers that must all agree** — `video_read` RLS, `canReadReport`, and the
+per-block `minPlanRank`. They are duplicated deliberately, which means they can silently
+disagree: in July 2026 a visibility change applied to only one layer 403'd fully-paid subscribers
+(fixed in `0036`/`0037`). Any change to report visibility must touch all three in the same PR.
+
+**Known gap:** no transcript or captions table. Both become requirements the moment video leads
+the reading view — captions for accessibility, transcript as the SEO and fact-check surface for
+spoken claims. See `docs/ROADMAP.md` → "Make video lead".

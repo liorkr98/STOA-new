@@ -23,6 +23,12 @@ price targets, and get paid — with every claim fact-checked and every locked c
 the record. Named after the ancient Athenian Stoa, a public place for debate and commerce.
 Tagline: "Think clearly. Invest better."
 
+**Video is the main character.** A locked call proves *what* an analyst said; the video proves
+*how they thought*. Text is the free tier that earns discovery; video is what a subscription
+actually buys, and it is the only editor block with per-block plan gating built into the node.
+When a change forces a tradeoff between the written report and the video, the video wins. Full
+spec: `docs/VIDEO.md` — read it before touching upload, playback, or entitlement.
+
 **Not a social network.** The value isn't a follow graph — it's a stranger trusting another
 stranger's paid opinion because the track record and the fact-check are more convincing than any
 relationship. Design and copy should reflect that: the trust surface (call block, disclosure
@@ -40,6 +46,10 @@ research model with Patreon's creator economics and a trust layer neither has."
 | Research report  | Long-form analysis with a locked call.       | Yes                |
 | BUY/SELL/short call | Short call with a locked target, no long-form body. | Yes         |
 | Short post        | Commentary / news reaction. No locked call.   | No                 |
+
+Any report or call can carry video. It is a block, not a content type — but it is the block the
+subscription is sold on, so treat "does this surface show that a report has video?" as a real
+question wherever reports are listed.
 
 ### The trust mechanic — three pillars, not one
 
@@ -112,6 +122,8 @@ src/
   components/          UI. ui/ = primitives, charts/, layout/, feature components.
   lib/
     supabase/          Browser + server clients, middleware helper.
+    video/             VideoProvider interface (Cloudflare Stream default, Mux swappable).
+                       No component imports a provider directly.
     engine/            Scoring engine + market data. Pure, server-side, tested by hand.
     db/                Typed queries + mutations (the only place that talks to Supabase).
     wallet/            Ledger logic (server actions) — see money migration note above.
@@ -122,6 +134,8 @@ supabase/
 docs/
   BACKEND.md            Full backend spec — schema, engine, fact-checker, payments. Does not
                          exist yet; see the note at the top of this file.
+  VIDEO.md               The video subsystem: pipeline, three-layer gating, data contract,
+                         and what "main character" still implies that is not built.
   FRONTEND.md            Full frontend spec — every page, every component, design system.
   BACKEND_DATA_CONTRACTS.md  Real gaps found while building the frontend, plus the PayPal
                          research. The closest thing to a backend reference until BACKEND.md
@@ -223,6 +237,15 @@ Never trust client-supplied prices.
 - The disclosure block restyled per analyst, or collapsed into an accordion.
 - Paywalled report bodies reachable via a direct client-side table read — `report_bodies` is
   already RLS-gated for this reason; keep it that way.
+- A playable video URL anywhere outside the signed-token route: not in props, not in serialized
+  page data, not in JSON-LD, never a CSS-hidden `<video>`. Unentitled readers get the locked
+  tease, which contains no source at all.
+- Changing report visibility in only one of the three video entitlement layers (`video_read` RLS,
+  `canReadReport`, per-block `minPlanRank`). They are duplicated deliberately and have silently
+  disagreed before — see the regression note in `docs/VIDEO.md`.
+- A component importing Cloudflare (or any provider) directly instead of going through
+  `src/lib/video/provider.ts`.
+- Autoplaying video, or preloading a full source before the reader asks. Poster first, always.
 - "OnlyFans," dating-app, or other casual-platform comparisons in any user-facing or internal
   copy.
 - Running any design-system generator that persists output into this repo (e.g. UI/UX Pro Max
