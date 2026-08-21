@@ -133,6 +133,20 @@ export async function listReadyClipsByCreator(creatorId: string): Promise<VideoC
   return data as VideoClip[];
 }
 
+/** Which of these reports have a ready, published clip. One query, not one per report. */
+export async function listReportIdsWithClips(reportIds: string[]): Promise<Set<string>> {
+  if (reportIds.length === 0) return new Set();
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("video_clips")
+    .select("report_id")
+    .in("report_id", reportIds)
+    .eq("status", "ready")
+    .not("published_at", "is", null);
+  if (error || !data) return new Set();
+  return new Set((data as { report_id: string }[]).map((r) => r.report_id));
+}
+
 /** Published, ready clips for the video-first Discover grid. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
   return cachedPage(`video-cards:${limit}`, 20, async () => {

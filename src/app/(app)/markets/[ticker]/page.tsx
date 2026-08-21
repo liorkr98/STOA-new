@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { getCandles, getCandlesBetween } from "@/lib/engine/market/candles";
 import { listByTicker, publishedReportCount } from "@/lib/db/reports";
+import { listReportIdsWithClips } from "@/lib/db/video-clips";
+import { listCardsForReports } from "@/lib/db/publication-cards";
 import { getTickerRow, listSectorPeers, featuredUniverseEntry } from "@/lib/db/tickers";
 import { hasResolvedHistory } from "@/lib/db/predictions";
 import { coverageAllTime } from "@/lib/markets/coverage";
@@ -86,12 +88,16 @@ export async function generateMetadata({
   };
 }
 
-function toItem(report: Report): TodayItem | null {
+function toItem(report: Report, hasVideo: boolean, hasCards: boolean): TodayItem | null {
   if (!report.author) return null;
-  const badge = ["Video"];
+  // Each part has to be earned. Hardcoding "Video" and "Cards" made every row
+  // advertise a clip and an evidence stack it did not have.
+  const badge: string[] = [];
+  if (hasVideo) badge.push("Video");
   if (report.prediction || report.type === "call") badge.push("Call");
-  badge.push("Cards");
+  if (hasCards) badge.push("Cards");
   if (report.body) badge.push("Thesis");
+  if (badge.length === 0) badge.push("Note");
 
   return {
     reportId: report.id,
@@ -153,8 +159,13 @@ export default async function TickerPage({
     coverageAllTime(),
   ]);
 
+  const reportIds = reports.map((r: Report) => r.id);
+  const [clipReportIds, cardsByReport] = await Promise.all([
+    listReportIdsWithClips(reportIds),
+    listCardsForReports(reportIds),
+  ]);
   const publications = reports.flatMap((r: Report) => {
-    const item = toItem(r);
+    const item = toItem(r, clipReportIds.has(r.id), (cardsByReport.get(r.id)?.length ?? 0) > 0);
     return item ? [item] : [];
   });
 
