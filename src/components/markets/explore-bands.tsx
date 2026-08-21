@@ -184,50 +184,6 @@ export function ExploreNewlyCalled({ rows }: { rows: NewlyCalledRow[] }) {
   );
 }
 
-/* ------------------------------------------------------------ movement --- */
-
-/**
- * DAY-CHANGE-PENDING
- *
- * Both columns are entirely derived from data the platform does not hold:
- * movers need a day change, unusual volume needs current and average volume on
- * the list path. The band renders its structure with reserved rows rather than
- * inventing movers, so the shape is reviewable and fills in later.
- */
-export function ExploreMovement() {
-  return (
-    <Band title="Movement" note="What moved today, and where the volume was unusual.">
-      <div className="markets-movement">
-        <div>
-          <h3 className="band-col-title mb-2">Today&apos;s movers</h3>
-          <MovementPlaceholder reason="Waiting on day change" rows={4} />
-        </div>
-        <div>
-          <h3 className="band-col-title mb-2">Unusual volume</h3>
-          <MovementPlaceholder reason="Waiting on volume" rows={4} />
-        </div>
-      </div>
-      <p className="markets-gap-note">
-        Movers and volume need per-symbol day change and average volume, which the list quote path
-        does not return yet.
-      </p>
-    </Band>
-  );
-}
-
-function MovementPlaceholder({ reason, rows }: { reason: string; rows: number }) {
-  return (
-    <div>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="markets-row markets-row--reserved" aria-hidden>
-          <span className="markets-pending flex-1">{reason}</span>
-          <DayChange percent={null} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------- sectors --- */
 
 export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
@@ -242,11 +198,12 @@ export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
               className="focus-ring flex items-baseline justify-between gap-2 rounded-[var(--radius-btn)]"
             >
               <span className="markets-sector-name">{s.name}</span>
-              <DayChange percent={s.changePercent} />
             </Link>
             <div className="mt-2 flex items-center justify-between gap-2">
               <span className="markets-row-meta num">
-                {s.publications} {s.publications === 1 ? "publication" : "publications"}
+                {s.publications === 0
+                  ? "No coverage yet"
+                  : `${s.publications} ${s.publications === 1 ? "publication" : "publications"}`}
               </span>
               <FollowSector sector={s.name} />
             </div>
@@ -261,16 +218,21 @@ export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
 
 /**
  * The featured funds are curated in `CURATED_ETFS` rather than read from the
- * instrument table, which is equities only. Each row's Stoa activity is real;
- * every other fund the provider recognizes is reachable through search.
+ * instrument table, which is equities only. Every other fund the provider
+ * recognizes is reachable through search.
+ *
+ * The band used to be titled "by Stoa activity" and every row printed its
+ * publication count, which read as "0 PUBLICATIONS" five times over while no
+ * analyst had covered a fund. It now leads with the live day change, and a
+ * coverage count appears only on a fund that actually has coverage.
  */
 export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
   if (rows.length === 0) return null;
 
   return (
     <Band
-      title="ETFs by Stoa activity"
-      note="Funds analysts are publishing on."
+      title="ETFs"
+      note="Funds worth watching, and the Stoa coverage on them."
       seeAllHref="/markets"
     >
       <div className="mt-2">
@@ -280,11 +242,12 @@ export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
               <TickerChip ticker={e.symbol} />
               <span className="min-w-0 flex-1 truncate text-sm text-text">{e.name}</span>
             </Link>
-            {/* DAY-CHANGE-PENDING: the band uses the list quote path. */}
-            <DayChange percent={null} />
-            <span className="markets-row-meta num">
-              {e.publications} {e.publications === 1 ? "publication" : "publications"}
-            </span>
+            <DayChange percent={e.changePercent} />
+            {e.publications > 0 && (
+              <span className="markets-row-meta num">
+                {e.publications} {e.publications === 1 ? "publication" : "publications"}
+              </span>
+            )}
             <FollowTicker ticker={e.symbol} />
           </div>
         ))}

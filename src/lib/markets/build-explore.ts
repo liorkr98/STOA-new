@@ -186,11 +186,12 @@ async function buildSectors(coverageAll: Map<string, number>): Promise<SectorTil
     counts.set(sector, (counts.get(sector) ?? 0) + count);
   }
 
-  // DAY-CHANGE-PENDING: a sector-level change needs constituent day changes.
+  // A sector tile carries Stoa coverage only. A sector-level day change needs
+  // constituent day changes weighted into an index, which the quote path does
+  // not provide; the tile no longer reserves a slot for one.
   return MARKET_SECTORS.map((name) => ({
     name,
     publications: counts.get(name) ?? 0,
-    changePercent: null,
   }));
 }
 
@@ -304,11 +305,14 @@ async function buildExploreUncached(): Promise<ExplorePayload> {
 
   const tape = tapeFrom(quotes, mostCovered);
 
-  // Featured funds are curated; their Stoa activity is read from real data.
+  // Featured funds are curated; their Stoa activity is read from real data, and
+  // the day change comes from `knownQuotes`, which already batches every curated
+  // symbol. Funds carrying coverage lead; the rest are ordered by the curation.
   const etfs: EtfBandRow[] = CURATED_ETFS.map((e) => ({
     symbol: e.symbol,
     name: e.name,
     publications: coverageAll.get(e.symbol) ?? 0,
+    changePercent: quotes.get(e.symbol.toUpperCase())?.changePercent ?? null,
   }))
     .sort((a, b) => b.publications - a.publications)
     .slice(0, ETF_BAND_SIZE);

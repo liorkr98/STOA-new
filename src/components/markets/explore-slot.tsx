@@ -2,7 +2,6 @@ import { buildExplore } from "@/lib/markets/build-explore";
 import {
   ExploreCovered,
   ExploreEtfs,
-  ExploreMovement,
   ExploreNewlyCalled,
   ExploreSectors,
   ExploreThemes,
@@ -23,7 +22,6 @@ export async function ExploreSlot() {
       <ExploreThemes themes={explore.themes} />
       <ExploreCovered rows={explore.covered} />
       <ExploreNewlyCalled rows={explore.newlyCalled} />
-      <ExploreMovement />
       <ExploreSectors sectors={explore.sectors} />
       <ExploreEtfs rows={explore.etfs} />
       <ExploreUncovered rows={explore.uncovered} />

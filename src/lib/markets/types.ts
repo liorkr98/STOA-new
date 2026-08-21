@@ -41,8 +41,6 @@ export interface NewlyCalledRow extends MarketRow {
 export interface SectorTile {
   name: string;
   publications: number;
-  /** DAY-CHANGE-PENDING */
-  changePercent: number | null;
 }
 
 export interface TapeQuote {
@@ -58,6 +56,8 @@ export interface EtfBandRow {
   symbol: string;
   name: string;
   publications: number;
+  /** Live day change from the batch quote path; null if the provider had none. */
+  changePercent: number | null;
 }
 
 export interface ExplorePayload {
