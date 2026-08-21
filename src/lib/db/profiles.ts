@@ -25,6 +25,29 @@ export async function getProfilesByIds(ids: string[]): Promise<Profile[]> {
   return ids.map((id) => map.get(id)).filter(Boolean) as Profile[];
 }
 
+/**
+ * Score + specialties only, for percentile ranking against the whole analyst
+ * pool. The score page ranked against 500 analysts by pulling 500 full
+ * profile rows (every column including the profile_config JSON blob) purely
+ * to read two fields.
+ */
+export async function listAnalystScorePool(
+  limit = 500,
+): Promise<Pick<Profile, "score" | "profile_config">[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("score, profile_config")
+      .eq("role", "analyst")
+      .order("score", { ascending: false })
+      .limit(limit);
+    return (data as Pick<Profile, "score" | "profile_config">[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function listTopAnalysts(limit = 12): Promise<Profile[]> {
   try {
     const supabase = await createClient();

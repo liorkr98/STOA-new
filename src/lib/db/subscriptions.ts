@@ -14,7 +14,8 @@ export async function listUserSubscriptions(
     .select("*, analyst:profiles!subscriptions_analyst_id_fkey(*)")
     .eq("subscriber_id", subscriberId)
     .in("status", ["active", "cancelled"])
-    .order("started_at", { ascending: false });
+    .order("started_at", { ascending: false })
+    .limit(200);
   const rows = (data as unknown as Record<string, unknown>[]) ?? [];
   return rows.map((row) => {
     const a = row.analyst;
@@ -39,7 +40,8 @@ export async function listAnalystSubscribers(analystId: string): Promise<Subscri
     .eq("analyst_id", analystId)
     .eq("status", "active")
     .gt("renews_at", new Date().toISOString())
-    .order("started_at", { ascending: false });
+    .order("started_at", { ascending: false })
+    .limit(1000);
   const rows = (data as unknown as Record<string, unknown>[]) ?? [];
   return rows.map((row) => {
     const sub = row.subscriber;

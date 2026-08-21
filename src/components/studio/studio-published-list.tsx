@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { compact } from "@/lib/format";
 import type { Plan } from "@/lib/db/plans";
@@ -7,6 +5,10 @@ import type { Report } from "@/lib/types";
 import { ReportAccessEditor } from "@/components/studio/report-access-editor";
 import { PendingReviewTag } from "@/components/ui/tag";
 
+/**
+ * Server component: renders markup only. ReportAccessEditor carries its own
+ * "use client" for the popover it owns.
+ */
 export function StudioPublishedList({
   reports,
   plans,

@@ -17,7 +17,7 @@ import { listTopAnalysts, getProfilesByIds } from "@/lib/db/profiles";
 import { listBoostedProfileIds, listBoostedReportIds } from "@/lib/db/boosts";
 import { getSessionProfile } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
-import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 import { QuickPost } from "@/components/feed/quick-post";
 import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Report } from "@/lib/types";
@@ -106,11 +106,7 @@ export default async function DiscoverPage({
     } catch {
       researchers = await listTopAnalysts(24);
     }
-    researcherCounts = Object.fromEntries(
-      await Promise.all(
-        researchers.map(async (a) => [a.id, await resolvedCountByAuthor(a.id)] as const),
-      ),
-    );
+    researcherCounts = await resolvedCountsByAuthors(researchers.map((a) => a.id));
   } else if (tab === "following") {
     if (!userId) needsAuth = true;
     else reports = await listFeedFromAnalysts(await followedAnalystIds(userId), 36, filters);

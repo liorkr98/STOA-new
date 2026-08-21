@@ -5,7 +5,7 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { listSavedReports } from "@/lib/db/saved";
 import { listTopAnalysts } from "@/lib/db/profiles";
-import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 import type { Prediction, Profile, Report } from "@/lib/types";
 import { fallbackIssueNumber, getCycleWindow } from "@/lib/dispatch/cycle";
 import {
@@ -211,12 +211,11 @@ function buildLedger(
 async function buildLeaderboard(): Promise<DispatchLeaderboardEntry[]> {
   const top = await listTopAnalysts(5);
   if (top.length === 0) return [];
-  return Promise.all(
-    top.map(async (analyst) => ({
-      analyst,
-      resolvedCalls: await resolvedCountByAuthor(analyst.id),
-    })),
-  );
+  const counts = await resolvedCountsByAuthors(top.map((a) => a.id));
+  return top.map((analyst) => ({
+    analyst,
+    resolvedCalls: counts[analyst.id] ?? 0,
+  }));
 }
 
 export async function buildDispatch(personalized: boolean): Promise<DispatchPayload> {

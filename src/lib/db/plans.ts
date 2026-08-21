@@ -50,7 +50,8 @@ export async function listPlansForCreator(
     .from("plans")
     .select(COLUMNS)
     .eq("creator_id", creatorId)
-    .order("rank", { ascending: true });
+    .order("rank", { ascending: true })
+    .limit(50);
   if (!opts.includeArchived) query = query.eq("is_archived", false);
   const { data, error } = await query;
   if (error || !data) return [];

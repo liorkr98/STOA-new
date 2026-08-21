@@ -20,7 +20,7 @@ import { fontPairingVars } from "@/lib/profile/fonts";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { Stat } from "@/components/ui/stat";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
-import { TrackChart } from "@/components/charts/track-chart";
+import { TrackChartLazy } from "@/components/charts/track-chart-lazy";
 import { TabBar } from "@/components/feed/tab-bar";
 import { ReportCard } from "@/components/report-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -189,7 +189,7 @@ export default async function AnalystProfilePage({
         <h2 className="t-h3">Track record</h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           {stats.series.length > 1 ? (
-            <TrackChart data={stats.series} />
+            <TrackChartLazy data={stats.series} />
           ) : (
             <div className="flex h-56 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
               <p className="t-meta">Track chart appears after resolved calls.</p>

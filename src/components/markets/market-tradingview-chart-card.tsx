@@ -1,8 +1,10 @@
-"use client";
-
 import { ChartCandlestick } from "lucide-react";
 import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
 
+/**
+ * Server component: a titled shell around TradingViewChart, which is the
+ * client part and declares "use client" itself.
+ */
 export function MarketTradingViewChartCard({ ticker }: { ticker: string }) {
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5">

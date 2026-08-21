@@ -46,7 +46,8 @@ export async function listNotebooks(): Promise<Notebook[]> {
     .from("notebooks")
     .select("id, owner_id, title, created_at, notebook_entries(count)")
     .eq("owner_id", user.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
   if (error || !data) return [];
   return data.map((n) => {
     const countRel = (n as { notebook_entries?: { count: number }[] }).notebook_entries;
@@ -93,7 +94,8 @@ export async function listEntries(notebookId: string): Promise<NotebookEntry[]> 
     .from("notebook_entries")
     .select(ENTRY_COLUMNS)
     .eq("notebook_id", notebookId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(500);
   if (error || !data) return [];
   return data as NotebookEntry[];
 }

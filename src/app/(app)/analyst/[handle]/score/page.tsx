@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getProfileByHandle, listTopAnalysts } from "@/lib/db/profiles";
+import { getProfileByHandle, listAnalystScorePool } from "@/lib/db/profiles";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { analystStats } from "@/lib/engine/track";
 import { price, pct } from "@/lib/format";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
-import { TrackChart } from "@/components/charts/track-chart";
+import { TrackChartLazy } from "@/components/charts/track-chart-lazy";
 import { TrackBreakdown } from "@/components/track/track-breakdown";
 import { StatusChip } from "@/components/ui/status-chip";
 
@@ -39,7 +39,7 @@ export default async function TrackScoreAnalyticsPage({
 
   const [predictions, pool] = await Promise.all([
     listPredictionsByAuthor(profile.id),
-    listTopAnalysts(500),
+    listAnalystScorePool(500),
   ]);
   const stats = analystStats(predictions);
 
@@ -102,7 +102,7 @@ export default async function TrackScoreAnalyticsPage({
         <h2 className="t-h3 mb-3">Score history</h2>
         {stats.series.length > 1 ? (
           <div className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
-            <TrackChart data={stats.series} />
+            <TrackChartLazy data={stats.series} />
           </div>
         ) : (
           <div className="flex h-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">

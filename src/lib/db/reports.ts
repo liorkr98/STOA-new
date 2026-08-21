@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
@@ -176,7 +177,12 @@ export async function listFeedFromAnalysts(
   ).slice(0, limit);
 }
 
-export async function getReport(id: string): Promise<Report | null> {
+/**
+ * Wrapped in React.cache: the report page calls this from both
+ * generateMetadata and the page body, which previously ran the report +
+ * body queries twice per view. cache() dedupes within a single request.
+ */
+export const getReport = cache(async (id: string): Promise<Report | null> => {
   try {
     const supabase = await createClient();
     const { data } = await supabase.from("reports").select(SELECT).eq("id", id).maybeSingle();
@@ -192,7 +198,7 @@ export async function getReport(id: string): Promise<Report | null> {
   } catch {
     return null;
   }
-}
+});
 
 /** Load a draft for the compose editor. Returns null if missing or not a draft. */
 export async function getDraftForAuthor(
@@ -218,9 +224,22 @@ export async function getDraftForAuthor(
   return report;
 }
 
+/**
+ * Card-shaped fetch for a set of report ids in one query, preserving input
+ * order. Bodies are deliberately not fetched: callers render feed cards
+ * (title, summary, author, prediction), and the old per-id getReport path
+ * was 2 queries per report including full bodies nobody displayed.
+ */
 export async function getReportsByIds(ids: string[]): Promise<Report[]> {
-  const rows = await Promise.all(ids.map((id) => getReport(id)));
-  return rows.filter((r): r is Report => r != null);
+  if (ids.length === 0) return [];
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.from("reports").select(SELECT).in("id", ids);
+    const byId = new Map(asReportRows(data).map(normalize).map((r) => [r.id, r]));
+    return ids.map((id) => byId.get(id)).filter((r): r is Report => r != null);
+  } catch {
+    return [];
+  }
 }
 
 export async function listByAuthor(

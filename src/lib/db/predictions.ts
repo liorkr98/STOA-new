@@ -44,3 +44,27 @@ export async function resolvedCountByAuthor(authorId: string): Promise<number> {
     .neq("outcome", "open");
   return count ?? 0;
 }
+
+/**
+ * Resolved-call counts for many analysts in one query, instead of one count
+ * query per analyst (the Discover researchers tab was issuing 24). Fetches
+ * only author_id per resolved row and reduces in memory; every requested id
+ * is present in the result, zero included.
+ */
+export async function resolvedCountsByAuthors(
+  authorIds: string[],
+): Promise<Record<string, number>> {
+  const counts: Record<string, number> = Object.fromEntries(authorIds.map((id) => [id, 0]));
+  if (authorIds.length === 0) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("predictions")
+    .select("author_id")
+    .in("author_id", authorIds)
+    .neq("outcome", "open")
+    .limit(10000);
+  for (const row of (data as { author_id: string }[]) ?? []) {
+    counts[row.author_id] = (counts[row.author_id] ?? 0) + 1;
+  }
+  return counts;
+}

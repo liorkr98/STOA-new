@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { BadgeCheck } from "lucide-react";
 import { listTopAnalysts } from "@/lib/db/profiles";
-import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 import { compact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
@@ -12,9 +12,8 @@ export const metadata: Metadata = { title: "Leaderboard" };
 
 export default async function LeaderboardPage() {
   const raw = await listTopAnalysts(50);
-  const analysts = await Promise.all(
-    raw.map(async (a) => ({ ...a, resolved: await resolvedCountByAuthor(a.id) })),
-  );
+  const counts = await resolvedCountsByAuthors(raw.map((a) => a.id));
+  const analysts = raw.map((a) => ({ ...a, resolved: counts[a.id] ?? 0 }));
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">

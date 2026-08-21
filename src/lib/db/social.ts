@@ -62,7 +62,8 @@ export async function followedAnalystIds(followerId: string): Promise<string[]> 
   const { data } = await supabase
     .from("follows")
     .select("analyst_id")
-    .eq("follower_id", followerId);
+    .eq("follower_id", followerId)
+    .limit(1000);
   return ((data as { analyst_id: string }[]) ?? []).map((r) => r.analyst_id);
 }
 
@@ -82,6 +83,7 @@ export async function subscribedAnalystIds(subscriberId: string): Promise<string
     .from("subscriptions")
     .select("analyst_id")
     .eq("subscriber_id", subscriberId)
-    .eq("status", "active");
+    .eq("status", "active")
+    .limit(1000);
   return ((data as { analyst_id: string }[]) ?? []).map((r) => r.analyst_id);
 }

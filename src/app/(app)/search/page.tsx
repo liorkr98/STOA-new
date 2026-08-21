@@ -6,7 +6,7 @@ import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchForm } from "@/components/search/search-form";
 import { searchAll } from "@/lib/db/search";
-import { resolvedCountByAuthor } from "@/lib/db/predictions";
+import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 
 export const metadata: Metadata = { title: "Search" };
 
@@ -18,13 +18,11 @@ export default async function SearchPage({
   const { q = "" } = await searchParams;
   const results = q.trim() ? await searchAll(q) : null;
 
+  const analystCounts = results
+    ? await resolvedCountsByAuthors(results.analysts.map((a) => a.id))
+    : {};
   const analystsWithCounts = results
-    ? await Promise.all(
-        results.analysts.map(async (a) => ({
-          analyst: a,
-          resolved: await resolvedCountByAuthor(a.id),
-        })),
-      )
+    ? results.analysts.map((a) => ({ analyst: a, resolved: analystCounts[a.id] ?? 0 }))
     : [];
 
   const totalHits = results
