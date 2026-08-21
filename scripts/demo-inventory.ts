@@ -30,21 +30,33 @@ async function main() {
   const { data: profiles } = await db.from("profiles").select("id, handle, display_name, role, created_at").in("id", ids);
   const byId = new Map((profiles ?? []).map((p) => [p.id as string, p]));
 
-  const rows: { email: string; handle: string; role: string; pubs: number; calls: number; lastSignIn: string }[] = [];
+  const rows: { email: string; handle: string; role: string; pubs: number; hidden: number; calls: number; lastSignIn: string }[] = [];
   let totalPubs = 0;
+  let totalHidden = 0;
   let totalCalls = 0;
 
   for (const u of demo) {
-    const { count: pubs } = await db.from("reports").select("id", { count: "exact", head: true }).eq("author_id", u.id);
+    const { count: pubs } = await db
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", u.id)
+      .in("status", ["published", "resolution_pending_review"]);
+    const { count: hidden } = await db
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", u.id)
+      .eq("status", "archived");
     const { count: calls } = await db.from("predictions").select("id", { count: "exact", head: true }).eq("author_id", u.id);
     const p = byId.get(u.id);
     totalPubs += pubs ?? 0;
+    totalHidden += hidden ?? 0;
     totalCalls += calls ?? 0;
     rows.push({
       email: u.email,
       handle: (p?.handle as string) ?? "(no profile)",
       role: (p?.role as string) ?? "?",
       pubs: pubs ?? 0,
+      hidden: hidden ?? 0,
       calls: calls ?? 0,
       lastSignIn: u.last_sign_in_at ? new Date(u.last_sign_in_at).toISOString().slice(0, 10) : "never",
     });
@@ -52,12 +64,17 @@ async function main() {
 
   rows.sort((a, b) => (a.lastSignIn === "never" ? 1 : 0) - (b.lastSignIn === "never" ? 1 : 0) || b.pubs - a.pubs);
 
-  console.log(`${demo.length} @stoa.demo accounts, ${totalPubs} publications, ${totalCalls} calls.\n`);
-  console.log("email".padEnd(34) + "handle".padEnd(20) + "role".padEnd(9) + "pubs".padStart(5) + "calls".padStart(7) + "  last sign-in");
-  console.log("-".repeat(92));
+  console.log(`${demo.length} @stoa.demo accounts, ${totalPubs} live publications, ${totalCalls} calls.`);
+  if (totalHidden > 0) {
+    console.log(`${totalHidden} archived publications are hidden from readers but still in the tables.`);
+    console.log("Archiving conceals; it does not remove. See item 15 in docs/BACKEND_BRIEF.md.");
+  }
+  console.log();
+  console.log("email".padEnd(34) + "handle".padEnd(20) + "role".padEnd(9) + "live".padStart(5) + "arch".padStart(6) + "calls".padStart(7) + "  last sign-in");
+  console.log("-".repeat(98));
   for (const r of rows) {
     console.log(
-      r.email.padEnd(34) + r.handle.padEnd(20) + r.role.padEnd(9) + String(r.pubs).padStart(5) + String(r.calls).padStart(7) + "  " + r.lastSignIn,
+      r.email.padEnd(34) + r.handle.padEnd(20) + r.role.padEnd(9) + String(r.pubs).padStart(5) + String(r.hidden).padStart(6) + String(r.calls).padStart(7) + "  " + r.lastSignIn,
     );
   }
 
