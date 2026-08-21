@@ -658,13 +658,22 @@ export class ContentForge {
 
   /**
    * Compose a publication carrying a view on one of `tickers`, preferring the
-   * earlier entries. Returns null only if every candidate headline is spent.
+   * earlier entries. `directionFor` supplies the side this analyst takes on a
+   * given name. Returns null only if every candidate headline is spent.
    */
-  compose(tickers: string[], direction: Direction, targetKnown = true): Composed | null {
+  compose(
+    tickers: string[],
+    directionFor: (ticker: string) => Direction,
+    targetKnown = true,
+  ): Composed | null {
     for (const ticker of tickers) {
       const bank = this.bank(ticker);
       if (!bank) continue;
       const name = SHORT_NAME[ticker] ?? ticker.replace(".TA", "");
+      // Each candidate is argued the way this analyst already argues that name,
+      // so the composed direction matches their standing stance and the piece
+      // can carry a locked call.
+      const direction = directionFor(ticker);
       for (const angle of shuffled(this.anglesFor(bank, direction), this.rnd)) {
         // Position in the sector's own angle list, which is the index the
         // mechanism / evidence / risk banks are written against.
@@ -694,8 +703,15 @@ export class ContentForge {
       for (const head of shuffled(note.heads, this.rnd)) {
         if (this.usedNote.has(head)) continue;
         this.usedNote.add(head);
-        const paras = shuffled(note.body, this.rnd);
-        const body = paras.join("\n\n");
+        // A note has more headline forms than it has paragraph orders, so two
+        // notes off the same tag could otherwise land on the same body. Walk
+        // the orderings until one is unused.
+        let body = "";
+        for (let attempt = 0; attempt < 24; attempt++) {
+          const candidate = shuffled(note.body, this.rnd).join("\n\n");
+          if (!this.usedBody.has(candidate)) { body = candidate; break; }
+        }
+        if (!body) body = `${shuffled(note.body, this.rnd).join("\n\n")}\n\n(${this.usedBody.size})`;
         this.usedBody.add(body);
         return {
           ticker: null,
