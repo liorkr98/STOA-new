@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": [
+    "scripts/demo-data.ts",
+    "scripts/seed-demo.ts",
+    "scripts/demo-teardown.ts",
+    "scripts/demo-inventory.ts"
+  ],
+  "exclude": ["node_modules"]
+}

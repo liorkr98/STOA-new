@@ -12,6 +12,7 @@ import {
   type Intent,
   NOTE_TAKES,
   SECTOR_BY_TICKER,
+  STEELMEN,
   TAIL_TAKES,
   TAIL_TICKERS,
   TAKES,
