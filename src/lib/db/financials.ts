@@ -1,4 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+
+/**
+ * `company_financials` and `sp_benchmark_bars` are public reference data
+ * (migration 0006, `using (true)`), identical for every viewer. They therefore
+ * use the cookie-free anon client: these reads run inside cached page builds
+ * (the Markets ticker snapshot), and `cookies()` inside a cache scope throws.
+ */
 
 export interface FilingRow {
   symbol: string;
@@ -11,7 +18,7 @@ export interface FilingRow {
 }
 
 export async function getLatestFiling(symbol: string): Promise<FilingRow | null> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("company_financials")
     .select("symbol, period_end, frequency, revenue, net_income, total_assets, eps")
@@ -25,7 +32,7 @@ export async function getLatestFiling(symbol: string): Promise<FilingRow | null>
 }
 
 export async function listFilings(symbol: string, limit = 4): Promise<FilingRow[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("company_financials")
     .select("symbol, period_end, frequency, revenue, net_income, total_assets, eps")
@@ -38,7 +45,7 @@ export async function listFilings(symbol: string, limit = 4): Promise<FilingRow[
 }
 
 export async function getSpBenchmarkClose(asOf?: Date): Promise<number | null> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase
     .from("sp_benchmark_bars")
     .select("close")

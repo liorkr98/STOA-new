@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { validateCards, type ValidatedCard } from "@/lib/feed/card-schema";
 import type { FeedCard } from "@/lib/feed/types";
 
@@ -95,12 +96,22 @@ export async function listCardsForReport(reportId: string): Promise<FeedCard[]> 
 /**
  * Which of these publications have an evidence stack, for the content badge.
  * Presence only, so it stays one indexed query and never fetches payloads.
+ *
+ * `sessionless` reads with the cookie-free anon client. Callers must pass it
+ * when there is no signed-in reader, because those call sites run inside a
+ * cached page build: `cookies()` inside a cache scope throws (that crashed
+ * signed-out /home), and a shared cache entry must not depend on one visitor's
+ * session anyway. With no session the two clients see the same rows under the
+ * `publication_cards_read` policy, so the badge is unchanged.
  */
-export async function reportIdsWithCards(reportIds: string[]): Promise<Set<string>> {
+export async function reportIdsWithCards(
+  reportIds: string[],
+  { sessionless = false }: { sessionless?: boolean } = {},
+): Promise<Set<string>> {
   const out = new Set<string>();
   if (reportIds.length === 0) return out;
 
-  const supabase = await createClient();
+  const supabase = sessionless ? createPublicClient() : await createClient();
   const { data } = await supabase
     .from("publication_cards")
     .select("report_id")

@@ -164,7 +164,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     getProfilesByIds(deskAuthorIds),
     poolSymbols.length ? listTickerRows(poolSymbols) : Promise.resolve([]),
     getQuotesBatch(popularSyms, { fetchBenchmark: false }).catch(() => new Map()),
-    reportIdsWithCards(pool.map((r) => r.id)),
+    reportIdsWithCards(pool.map((r) => r.id), { sessionless: userId === null }),
   ]);
 
   const clipsByReport = new Map<string, VideoClipCard>();
