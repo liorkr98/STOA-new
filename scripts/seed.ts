@@ -321,9 +321,11 @@ async function main() {
 
   const db = createClient(url, key, { auth: { persistSession: false } });
 
+  // The email is the documented demo login and must not change; the display
+  // name and handle are public on every comment, so they read as a person.
   const investorId = await ensureUser(db, "investor@stoa.demo", {
-    display_name: "Demo Investor",
-    handle: "demo_investor",
+    display_name: "Noa Bergman",
+    handle: "noa_bergman",
   });
   await db.from("wallets").update({ balance: 500 }).eq("owner_id", investorId);
   console.log("Investor: investor@stoa.demo /", PASSWORD);
@@ -460,10 +462,16 @@ async function main() {
 
     // Short posts (no prediction / track record).
     for (let p = 0; p < Math.floor(rand(2, 5)); p++) {
+      // A short post still needs a headline: without one the report page has no
+      // H1 and every list falls back to rendering the summary as the title,
+      // which is how "[Demo post]" ended up reading as a publication title.
+      const stanceWord = pick(["watching", "trimmed", "added", "staying on the sidelines"]);
+      const line = pick(pool);
       await db.from("reports").insert({
         author_id: id,
         type: "short_post",
-        summary: `${pick(pool)} — quick take: ${pick(["watching", "trimmed", "added", "on sidelines"])}. [Demo post]`,
+        title: `Quick take: ${line}`,
+        summary: `${line} Position: ${stanceWord}.`,
         status: "published",
         access: "free",
         published_at: daysAgo(Math.floor(rand(1, 14))),

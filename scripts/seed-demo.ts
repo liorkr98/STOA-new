@@ -10,15 +10,13 @@ import {
   listDemoUsers,
   resolvedFor,
   type Intent,
-  NOTE_TAKES,
   SECTOR_BY_TICKER,
   STEELMEN,
-  TAIL_TAKES,
   TAIL_TICKERS,
-  TAKES,
   THEME_BY_TICKER,
   type AnalystSeed,
 } from "./demo-data";
+import { ContentForge, type Direction } from "./demo-content";
 
 /**
  * Pass 1 of the demo dataset: 40 analysts and their publications, with resolved
@@ -50,7 +48,10 @@ const BASE_PRICE: Record<string, number> = {
 };
 
 const READERS = [
-  { email: "investor@stoa.demo", handle: "demo_investor", name: "Demo Investor" },
+  // The email is the documented demo login (README, docs/ROADMAP.md) and must
+  // not change. The display name and handle are public on every comment, so they
+  // read as a person rather than as a fixture.
+  { email: "investor@stoa.demo", handle: "noa_bergman", name: "Noa Bergman" },
   { email: "reader_dana@stoa.demo", handle: "reader_dana", name: "Dana Katz" },
   { email: "reader_omri@stoa.demo", handle: "reader_omri", name: "Omri Shaked" },
   { email: "reader_pauline@stoa.demo", handle: "reader_pauline", name: "Pauline Vidal" },
@@ -58,30 +59,6 @@ const READERS = [
   { email: "reader_yael@stoa.demo", handle: "reader_yael", name: "Yael Brenner" },
   { email: "reader_marco@stoa.demo", handle: "reader_marco", name: "Marco Bianchi" },
   { email: "reader_ines@stoa.demo", handle: "reader_ines", name: "Ines Ferreira" },
-];
-
-const READER_COMMENTS = [
-  "What invalidates this? You give a target but not a level where you would walk away.",
-  "The interconnect point is the one I keep coming back to. Nobody models the queue.",
-  "Been long since the last piece. The thesis has held up better than the price has.",
-  "Respectfully I think the margin bridge is doing more work here than you admit.",
-  "How much of this is already in consensus? Feels like the buy side got there first.",
-  "Second source in a constrained market is the underrated part of this.",
-  "Your last call on this name was early rather than wrong. Same risk here.",
-  "Good piece. The comp math in the third card is what changed my mind.",
-  "Where does this break if rates back up another 50bp?",
-  "The volume versus price split is the detail everyone skips. Thanks for showing it.",
-  "Not convinced. Same setup failed twice in 2023 for exactly this reason.",
-  "Adding on weakness. The catalyst timeline alone is worth the unlock.",
-];
-
-const AUTHOR_REPLIES = [
-  "Fair. Invalidation is a close below the lock price on volume, which I should have written into the card. Doing that now.",
-  "Partly, yes. The sell-side got the direction and not the magnitude, and the magnitude is the whole trade.",
-  "That is the right objection and it is the one in the steelman card. My answer is that the timing differs from 2023 because the supply response is slower now.",
-  "Rates matter to the multiple, not the earnings path here. A 50bp move costs maybe two turns and does not touch the thesis.",
-  "Early is a fair criticism of the last one. This time the catalyst is dated rather than open-ended.",
-  "Appreciate it. The comp table took longer than the rest of the piece put together.",
 ];
 
 function rand(min: number, max: number) {
@@ -144,10 +121,32 @@ function coverUrl(seed: string) {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/400`;
 }
 
-/** Ticker for one publication: the analyst's own names most of the time, tail otherwise. */
-function tickerFor(a: AnalystSeed) {
-  if (a.tickers.length && chance(0.78)) return pick(a.tickers);
-  return chance(0.55) ? pick(CORE_TICKERS) : pick(TAIL_TICKERS);
+const ALL_TICKERS: string[] = [...new Set([...CORE_TICKERS, ...TAIL_TICKERS])];
+
+function shuffle<T>(arr: readonly T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/**
+ * Tickers this analyst will consider for one publication, best first: their own
+ * names, then others in the same sectors, then the rest of the universe.
+ *
+ * The forge walks this list and takes the first name whose headline it has not
+ * already issued, so an analyst stays on their specialty until that specialty's
+ * headlines are spent and only then widens. That is what stops a heavily
+ * covered name accumulating the same title under several bylines.
+ */
+function tickerCandidates(a: AnalystSeed): string[] {
+  const own = a.tickers.filter((t) => ALL_TICKERS.includes(t));
+  const sectors = new Set(own.map((t) => SECTOR_BY_TICKER[t]).filter(Boolean));
+  const adjacent = ALL_TICKERS.filter((t) => !own.includes(t) && sectors.has(SECTOR_BY_TICKER[t]));
+  const rest = ALL_TICKERS.filter((t) => !own.includes(t) && !adjacent.includes(t));
+  return [...shuffle(own), ...shuffle(adjacent), ...shuffle(rest)];
 }
 
 async function main() {
@@ -210,10 +209,48 @@ async function main() {
   for (const r of READERS) {
     const id = await ensureUser(db, r.email, { display_name: r.name, handle: r.handle }, knownIds);
     readerIds.push(id);
-    await db.from("profiles").update({ display_name: r.name, avatar_url: avatarUrl(r.handle) }).eq("id", id);
+    // The handle is updated too, not just the display name: for an account that
+    // already exists, ensureUser's metadata is ignored and a stale handle like
+    // "demo_investor" stays visible on every comment the reader has posted.
+    await db
+      .from("profiles")
+      .update({ handle: r.handle, display_name: r.name, avatar_url: avatarUrl(r.handle) })
+      .eq("id", id);
     await db.from("wallets").update({ balance: 500 }).eq("owner_id", id);
   }
   console.log(`Readers: ${readerIds.length}`);
+
+  const forge = new ContentForge(
+    (t) => SECTOR_BY_TICKER[t],
+    (t) => THEME_BY_TICKER[t],
+  );
+
+  /**
+   * One standing stance per analyst per name: which way they argue it, and how
+   * the market treated them on it.
+   *
+   * The old seed drew a fresh outcome for every call independently, so the same
+   * analyst could be graded HIT +25.3% and MISS -12.9% on the same name and
+   * direction three days apart. Fixing the outcome family per name keeps a
+   * record internally consistent: an analyst who was right about a name is
+   * right about it across the window, with NEAR as the only variation.
+   */
+  const stances = new Map<string, { direction: Direction; family: "hit" | "near" | "miss" }>();
+  function stanceFor(a: AnalystSeed, ticker: string) {
+    const key = `${a.handle}|${ticker}`;
+    const existing = stances.get(key);
+    if (existing) return existing;
+    const dirRoll = Math.random();
+    const direction: Direction = dirRoll < 0.64 ? "long" : dirRoll < 0.9 ? "short" : "hold";
+    const r = Math.random();
+    const family = r < a.skill ? "hit" : r < a.skill + 0.18 ? "near" : "miss";
+    const made = { direction, family } as const;
+    stances.set(key, made);
+    return made;
+  }
+  function stanceDirection(a: AnalystSeed, ticker: string | undefined): Direction {
+    return ticker ? stanceFor(a, ticker).direction : "long";
+  }
 
   const analystIds: { id: string; a: AnalystSeed }[] = [];
   let totalPubs = 0;
@@ -252,27 +289,36 @@ async function main() {
       const type = roll < 0.5 ? "call" : roll < 0.78 ? "research" : "short_post";
       const hasCall = type === "call" || (type === "research" && chance(0.42));
 
-      const ticker = type === "short_post" && !hasCall ? (chance(0.45) ? tickerFor(a) : null) : tickerFor(a);
-      const noteTake = !hasCall && !ticker ? pick(NOTE_TAKES) : null;
+      // A callless note some of the time; otherwise a view on a name.
+      const wantsNote = !hasCall && type === "short_post" && chance(0.55);
+      let composed = wantsNote ? forge.composeNote() : null;
 
-      let headline: string;
-      let deck: string;
-      let direction: "long" | "short" | "hold" = "long";
-
-      if (noteTake) {
-        headline = noteTake.headline;
-        deck = noteTake.deck;
-      } else {
-        const sym = ticker!;
-        const pool = TAKES[sym];
-        const take = pool ? pick(pool) : { ...pick(TAIL_TAKES) };
-        headline = take.headline.replace("{T}", sym.replace(".TA", ""));
-        deck = take.deck.replace("{T}", sym.replace(".TA", ""));
-        direction = take.d;
+      if (!composed) {
+        // One stance per analyst per name for the whole window. An analyst who
+        // is long MSFT is long MSFT in every piece they write about it, which
+        // is what stops the same name being graded HIT and MISS days apart.
+        const candidates = tickerCandidates(a);
+        const wanted = stanceDirection(a, candidates[0]);
+        composed = forge.compose(candidates, wanted, true) ?? forge.composeNote();
+      }
+      if (!composed) {
+        console.error(`  content exhausted for @${a.handle}; stopping this analyst`);
+        break;
       }
 
-      const themeTag = noteTake ? noteTake.tag : ticker ? THEME_BY_TICKER[ticker] ?? null : null;
-      const primaryTag = ticker ? SECTOR_BY_TICKER[ticker] ?? null : (noteTake?.tag ?? null);
+      const ticker = composed.ticker;
+      const headline = composed.headline;
+      const deck = composed.dek;
+      const direction: Direction = composed.direction;
+
+      // If the forge had to argue a different side than this analyst's standing
+      // stance on the name, the piece runs as research without a locked call
+      // rather than contradicting their own record.
+      const stance = ticker ? stanceFor(a, ticker) : null;
+      const carriesCall = hasCall && !!ticker && (!stance || stance.direction === direction) && direction !== "hold";
+
+      const themeTag = composed.themeTagHint;
+      const primaryTag = ticker ? SECTOR_BY_TICKER[ticker] ?? null : composed.themeTagHint;
 
       const accessRoll = Math.random();
       const access = accessRoll < 0.5 ? "free" : accessRoll < 0.78 ? "paid" : "subscribers";
@@ -286,7 +332,10 @@ async function main() {
         .insert({
           author_id: id,
           type,
-          title: type === "short_post" ? null : headline,
+          // Every publication carries a headline. Short posts used to store
+          // null here, which left the report page with no H1 at all and made
+          // the profile list render them as "Untitled".
+          title: headline,
           summary: deck,
           status: "published",
           access,
@@ -312,24 +361,20 @@ async function main() {
       totalPubs++;
       if (ticker) tickerTally[ticker] = (tickerTally[ticker] ?? 0) + 1;
 
-      const body =
-        type === "short_post"
-          ? deck
-          : `${deck}\n\nThe position: ${direction} with a defined invalidation level, sized to the catalyst rather than to conviction. Entry is locked at publication and the exit is dated.\n\nWhat would change my mind is written into the kill-switch card rather than left implicit. If the conditions there trigger, the call closes early and takes the mark.\n\nRisk: a macro shock large enough to overwhelm the single-name view. That risk is not hedged here and it is the main reason to size this smaller than the conviction implies.`;
-      await db.from("report_bodies").insert({ report_id: reportId, body });
+      // The body is composed from mechanism, evidence and risk banks that share
+      // no text with the dek, so a reader never gets the same sentence twice.
+      await db.from("report_bodies").insert({ report_id: reportId, body: composed.body });
 
       let target: number | null = null;
       let lock = 0;
 
-      if (hasCall && ticker) {
+      if (carriesCall && ticker) {
         totalCalls++;
         lock = round2(basePrice(ticker) * rand(0.88, 1.12));
         const horizon = pick([7, 7, 14, 14, 21, 21, 30, 30, 45, 60, 90]);
         const targetPct = rand(0.07, 0.2);
-        target =
-          direction === "hold"
-            ? null
-            : round2(lock * (direction === "short" ? 1 - targetPct : 1 + targetPct));
+        // carriesCall already excludes "hold", so a locked call always has a target.
+        target = round2(lock * (direction === "short" ? 1 - targetPct : 1 + targetPct));
 
         const isResolved = ageDays > horizon;
         let outcome = "open";
@@ -338,8 +383,13 @@ async function main() {
         let benchmark: number | null = null;
 
         if (isResolved) {
-          const r = Math.random();
-          const intent: Intent = r < a.skill * 0.72 ? "hit" : r < a.skill * 0.72 + 0.22 ? "near" : "miss";
+          // Consistent with this analyst's standing record on the name: a
+          // "hit" name never also produces a miss, only the occasional near.
+          const family = stance?.family ?? "near";
+          const intent: Intent =
+            family === "hit" ? (chance(0.74) ? "hit" : "near")
+            : family === "miss" ? (chance(0.74) ? "miss" : "near")
+            : "near";
           resolvedPrice = resolvedFor(intent, direction, lock, target);
           outcome = gradeOutcome({ direction, lock_price: lock, target_price: target, resolved_price: resolvedPrice });
           ret = callReturn(direction, lock, resolvedPrice);
@@ -400,7 +450,7 @@ async function main() {
           const at = iso(-(ageDays - rand(0, Math.min(ageDays, 3))));
           const { data: parent } = await db
             .from("comments")
-            .insert({ report_id: reportId, author_id: commenterId, body: pick(READER_COMMENTS), likes: Math.round(rand(0, 40)), created_at: at })
+            .insert({ report_id: reportId, author_id: commenterId, body: forge.comment(), likes: Math.round(rand(0, 40)), created_at: at })
             .select("id")
             .single();
 
@@ -410,7 +460,7 @@ async function main() {
               report_id: reportId,
               author_id: replyAuthor,
               parent_id: (parent as { id: string }).id,
-              body: replyAuthor === id ? pick(AUTHOR_REPLIES) : pick(READER_COMMENTS),
+              body: replyAuthor === id ? forge.reply() : forge.comment(),
               likes: Math.round(rand(0, 25)),
               created_at: iso(-(ageDays - rand(0, Math.min(ageDays, 2)))),
             });
