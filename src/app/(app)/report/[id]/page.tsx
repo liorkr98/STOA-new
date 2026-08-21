@@ -74,6 +74,14 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
   const claims = factCheck?.claims ?? [];
 
+  // The headline is resolved the same way ReportSchema and the feed blocks
+  // resolve it, so this page can never open with no H1 at all -- it used to
+  // render nothing when title was null, leaving a chip row and a timestamp
+  // above the dek. When the summary has to stand in as the headline it is not
+  // also printed as the dek, so a reader never gets one sentence twice.
+  const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
+  const dek = report.title?.trim() ? report.summary?.trim() : null;
+
   return (
     <article className="mx-auto max-w-6xl">
       {/* Scroll-scrubbed, like a scrollbar -- reading position, not animation,
@@ -96,8 +104,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </span>
       </div>
 
-      {report.title && <h1 className="t-h1 mt-3">{report.title}</h1>}
-      {report.summary && <p className="t-body mt-3 text-lg">{report.summary}</p>}
+      <h1 className="t-h1 mt-3">{headline}</h1>
+      {dek && <p className="t-body mt-3 text-lg">{dek}</p>}
 
       {author && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
