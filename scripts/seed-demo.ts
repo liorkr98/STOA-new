@@ -298,8 +298,7 @@ async function main() {
         // is long MSFT is long MSFT in every piece they write about it, which
         // is what stops the same name being graded HIT and MISS days apart.
         const candidates = tickerCandidates(a);
-        const wanted = stanceDirection(a, candidates[0]);
-        composed = forge.compose(candidates, wanted, true) ?? forge.composeNote();
+        composed = forge.compose(candidates, (t) => stanceDirection(a, t), true) ?? forge.composeNote();
       }
       if (!composed) {
         console.error(`  content exhausted for @${a.handle}; stopping this analyst`);
@@ -316,6 +315,10 @@ async function main() {
       // rather than contradicting their own record.
       const stance = ticker ? stanceFor(a, ticker) : null;
       const carriesCall = hasCall && !!ticker && (!stance || stance.direction === direction) && direction !== "hold";
+      // docs/PRODUCT_MODEL.md: a CALL is "built around a locked call". If this
+      // piece did not end up carrying one, it is research, not a call -- the
+      // chip on the page has to match what is actually in the publication.
+      const publishedType = type === "call" && !carriesCall ? "research" : type;
 
       const themeTag = composed.themeTagHint;
       const primaryTag = ticker ? SECTOR_BY_TICKER[ticker] ?? null : composed.themeTagHint;
@@ -331,7 +334,7 @@ async function main() {
         .from("reports")
         .insert({
           author_id: id,
-          type,
+          type: publishedType,
           // Every publication carries a headline. Short posts used to store
           // null here, which left the report page with no H1 at all and made
           // the profile list render them as "Untitled".
