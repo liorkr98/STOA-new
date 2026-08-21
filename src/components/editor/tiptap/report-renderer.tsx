@@ -25,11 +25,15 @@ export function TiptapReportRenderer({
   claims = [],
   isAuthed = false,
   reportId,
+  onReady,
 }: {
   json: JSONContent;
   claims?: FactClaim[];
   isAuthed?: boolean;
   reportId?: string;
+  /** Fires once the editor instance exists, so a server-rendered static body
+   * can swap for this interactive one at that moment and never before. */
+  onReady?: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const extensions = useMemo(() => buildExtensions({ editable: false }), []);
@@ -47,6 +51,10 @@ export function TiptapReportRenderer({
     if (!containsMath(json)) return;
     void import("@/components/editor/tiptap/katex-css");
   }, [json]);
+
+  useEffect(() => {
+    if (editor) onReady?.();
+  }, [editor, onReady]);
 
   if (!editor) return null;
   return (

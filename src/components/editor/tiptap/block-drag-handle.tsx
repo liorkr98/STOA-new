@@ -155,15 +155,20 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
     });
   }
 
+  // Must stay referentially stable: @tiptap/extension-drag-handle-react keys
+  // its plugin-registration effect on onNodeChange, so a new function each
+  // render unregisters and re-registers the drag-handle plugin. That
+  // reconfigures the editor's plugin set on every keystroke and destroys every
+  // plugin view with it, including the slash-menu suggestion popup the instant
+  // it opens. Do not inline this back.
+  const onNodeChange = useCallback(({ node, pos }: { node: PMNode | null; pos: number }) => {
+    if (node && pos >= 0) setHoverTarget({ node, pos });
+    // Do not close pinned menus when hover moves -- that was a separate bug.
+  }, []);
+
   return (
     <>
-      <DragHandle
-        editor={editor}
-        onNodeChange={({ node, pos }) => {
-          if (node && pos >= 0) setHoverTarget({ node, pos });
-          // Do not close pinned menus when hover moves — that was the bug.
-        }}
-      >
+      <DragHandle editor={editor} onNodeChange={onNodeChange}>
         <div data-stoa-gutter className="relative flex items-center gap-0.5">
           <button
             type="button"
