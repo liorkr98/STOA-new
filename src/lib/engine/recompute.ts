@@ -53,11 +53,19 @@ export async function recomputeAllScores(
   for (const authorId of authorIds) {
     const { data: rows, error } = await db
       .from("predictions")
-      .select("*")
+      .select("*, report:reports!predictions_report_id_fkey(status)")
       .eq("author_id", authorId)
       .limit(1000);
     if (error) throw new Error(error.message);
-    callsByAuthor.set(authorId, (rows as Prediction[]) ?? []);
+    // Score from the same set the public track record displays: calls whose
+    // parent report is published. listResolvedCallsWithReports already filters
+    // this way, so without it a recomputed score counts calls the record does
+    // not show, and an archived report would still move the number.
+    type RowWithReport = Prediction & { report: { status: string } | null };
+    const published = ((rows as RowWithReport[]) ?? []).filter(
+      (p) => p.report?.status === "published",
+    );
+    callsByAuthor.set(authorId, published);
   }
 
   // Pass 1: the shared, canonical alpha distribution from fresh avg_alpha.

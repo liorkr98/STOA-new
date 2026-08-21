@@ -414,6 +414,51 @@ shown publicly again: settle the formula, add `formula_version` to `profiles` an
 
 ---
 
+### 15. `purge_demo_author` cannot delete a locked report
+
+**What happens today.** `purge_demo_author` (migration 0034) is the only sanctioned way to clear
+demo content, and it has never worked. It sets `app.allow_prediction_delete` so
+`prevent_prediction_delete` lets the calls go, then runs `delete from reports` straight into
+`prevent_locked_report_delete`, which has no equivalent escape hatch and refuses anything locked
+or `published | archived | resolution_pending_review`. Every report is locked at insert by
+`set_locked_at_on_insert`, so the delete always raises `Locked reports cannot be deleted, only
+archived.` and, because the function is one transaction, the prediction delete rolls back with it.
+The function clears nothing and reports no error to anything that does not read the RPC response.
+
+The same guard makes the demo accounts undeletable: `auth.admin.deleteUser` cascades
+`profiles -> reports`, the BEFORE DELETE trigger fires on the cascade, and the delete fails.
+
+**What it costs.** `scripts/seed-demo.ts` and `scripts/demo-teardown.ts` currently archive instead.
+Archiving is genuinely sufficient for *reading* surfaces, because `reports_read` (migration 0036)
+is `status in ('published','resolution_pending_review') or author_id = auth.uid()`, so an archived
+report is invisible to every reader at the database level, and `predictions_read` and
+`can_read_report_body` both gate on the parent report's status, so calls and evidence cards go with
+it. But it conceals rather than removes: the rows stay, every reseed adds another archived layer,
+and `demo:teardown` cannot deliver the single-command removal it is supposed to. The demo dataset
+is currently ~330 archived publications that nobody can clear.
+
+**What it needs.** Give `prevent_locked_report_delete` and the DELETE branch of
+`prevent_locked_body_edit` the same transaction-local escape hatch `prevent_prediction_delete`
+already has (say `app.allow_demo_purge`), and set it inside `purge_demo_author` alongside the
+existing `app.allow_prediction_delete`. The public record stays protected for every other caller:
+the setting defaults to off, is scoped to one transaction via `set_config(..., true)`, and is only
+ever set inside `purge_demo_author`, which is `security definer`, granted to `service_role` alone,
+and still refuses any account whose email is not `@stoa.demo`.
+
+**Concerns.** *Trust*: this loosens two immutability triggers, so the review should be on the
+scoping rather than the mechanism, which already exists for predictions. *Data*: nothing to
+backfill; the archived rows can be deleted once the hatch exists.
+
+**Related, and a decision for you.** `recomputeAllScores` (`src/lib/engine/recompute.ts`) selected
+every prediction by `author_id` with no join to `reports`, while the displayed track record
+(`listResolvedCallsWithReports`) filters to `report.status === 'published'`. A recomputed score
+therefore counted calls the public record does not show, and archived demo calls would have been
+folded straight back in. The recompute now filters to published parents so the two agree. That
+raises a product question this brief cannot settle: **if archiving removes a call from the score,
+an analyst can improve their record by archiving their misses.** Either archiving should be barred
+once a call is locked, or the score should count archived calls while the record hides them, and
+the two paths should then differ deliberately rather than by accident.
+
 ## Suggested sequence, dependencies and sizing
 
 Sizes are rough and assume one person who knows this codebase. They are for ordering, not

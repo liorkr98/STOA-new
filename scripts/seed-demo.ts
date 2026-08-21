@@ -27,6 +27,12 @@ import {
  *
  * Every account is @stoa.demo, which is what `npm run demo:teardown` keys off.
  *
+ * Existing demo content is ARCHIVED, not deleted. purge_demo_author cannot
+ * delete a locked report (see docs/BACKEND_BRIEF.md), so archiving is the only
+ * sweep available until that migration lands. Archived rows are hidden from
+ * every reader by the reports_read RLS policy, but they are still in the
+ * tables: this conceals, it does not remove.
+ *
  * Run: npm run demo:seed
  */
 
@@ -172,15 +178,26 @@ async function main() {
   const knownIds = new Map(existingDemo.map((u) => [u.email, u.id]));
 
   if (existingDemo.length > 0) {
-    console.log(`Found ${existingDemo.length} existing @stoa.demo accounts. Clearing their content first.`);
+    console.log(`Found ${existingDemo.length} existing @stoa.demo accounts. Archiving their content first.`);
+    let archived = 0;
     for (const u of existingDemo) {
-      const { error } = await db.rpc("purge_demo_author", { p_author_id: u.id });
-      if (error) console.error(`  could not clear ${u.email}: ${error.message}`);
+      const { data, error } = await db
+        .from("reports")
+        .update({ status: "archived" })
+        .eq("author_id", u.id)
+        .in("status", ["published", "resolution_pending_review", "draft"])
+        .select("id");
+      if (error) {
+        console.error(`  could not archive ${u.email}: ${error.message}`);
+        continue;
+      }
+      archived += data?.length ?? 0;
     }
+    console.log(`  archived ${archived} existing demo publications.`);
     const strays = existingDemo.filter((u) => !rosterEmails.has(u.email));
     if (strays.length > 0) {
       console.log(
-        `${strays.length} demo account(s) are not part of this roster and were left in place (content cleared, login intact):`,
+        `${strays.length} demo account(s) are not part of this roster and were left in place (content archived, login intact):`,
       );
       for (const u of strays) {
         console.log(`  ${u.email}${u.last_sign_in_at ? ` (last sign-in ${u.last_sign_in_at.slice(0, 10)})` : " (never signed in)"}`);
@@ -277,7 +294,7 @@ async function main() {
           ticker,
           primary_tag: primaryTag,
           theme_tag: themeTag,
-          secondary_tags: a.tags.slice(0, 2),
+          secondary_tags: a.tags.filter((t) => t !== primaryTag).slice(0, 2),
           published_at: iso(-ageDays),
           locked_at: iso(-ageDays),
           created_at: iso(-ageDays),
@@ -307,7 +324,7 @@ async function main() {
       if (hasCall && ticker) {
         totalCalls++;
         lock = round2(basePrice(ticker) * rand(0.88, 1.12));
-        const horizon = pick([7, 14, 21, 30, 45, 60, 90]);
+        const horizon = pick([7, 7, 14, 14, 21, 21, 30, 30, 45, 60, 90]);
         const targetPct = rand(0.07, 0.2);
         target =
           direction === "hold"
