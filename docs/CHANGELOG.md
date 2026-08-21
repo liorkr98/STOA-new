@@ -33,6 +33,9 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   no title at all, so the page began with a chip row, a timestamp and then the
   dek — and the body was that same dek repeated, giving the reader one sentence
   twice. On the page where someone decides whether to pay.
+- Nothing on the site now explains its own implementation to the reader. Four
+  pieces of copy did; the sector Performance band that existed only to carry one
+  is gone, and the sector header no longer reserves an empty price slot.
 - The demo data no longer reads as fake. Reseeded to 455 publications across 40
   analysts: no publication is untitled, no two share a headline or body text, no
   analyst is graded HIT and MISS on the same name, nobody is called "Demo
@@ -63,10 +66,13 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   an empty title and an empty body, so Today lists it as "Untitled research". It
   is real account data, not demo data, so it was left alone -- it needs a
   decision, not a fix.
-- Two more engineering-voice notes are still rendering as body copy on
-  `/markets/sector/[sector]` ("the content model has no per-report theme field
-  yet", "Nothing is drawn until a series exists"). Left alone this batch because
-  they are on a different route; they should get the same treatment.
+- The Performance band on `/markets/sector/[sector]` is removed, not solved. A
+  sector-level index needs a history of constituent prices, which the quote path
+  does not carry. The sector day change shown in the header is real: the
+  equal-weight average of the listed names.
+- Two caveats were kept but rewritten out of engineering voice, and both still
+  describe real gaps: Inbox notification preferences do not persist, and Compose
+  overlays are previewed but not burned into the published video.
 - Still open from before: `formula_version` columns on `profiles` and
   `moat_score_snapshots`, and the unresolved Track Score formula (docs describe
   a modified Elo, the shipped engine computes a Wilson composite).
