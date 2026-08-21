@@ -33,11 +33,12 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   no title at all, so the page began with a chip row, a timestamp and then the
   dek — and the body was that same dek repeated, giving the reader one sentence
   twice. On the page where someone decides whether to pay.
-- The demo data no longer reads as fake. Publications titled "Untitled" are
-  gone, no two publications share a headline or body text, an analyst is no
-  longer graded HIT and MISS on the same call days apart, the commenter called
-  "Demo Investor" has a real name, no two commenters post identical text, and
-  "[Demo post]" no longer appears anywhere.
+- The demo data no longer reads as fake. Reseeded to 455 publications across 40
+  analysts: no publication is untitled, no two share a headline or body text, no
+  analyst is graded HIT and MISS on the same name, nobody is called "Demo
+  Investor", no two commenters post identical text across 1,132 comments, and
+  "[Demo post]" is gone. Every publication labelled CALL now actually carries a
+  locked call (224 of 224), which was not true before.
 
 **Needs Krisi**
 
@@ -58,6 +59,10 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   there is no dev or staging Supabase configured. Old demo content was archived,
   not deleted, so the rows are still there and hidden by RLS. A real dev project
   would make this safe to iterate on.
+- **One publication on Bar's own account** (`@barams2023`, published 18 Aug) has
+  an empty title and an empty body, so Today lists it as "Untitled research". It
+  is real account data, not demo data, so it was left alone -- it needs a
+  decision, not a fix.
 - Two more engineering-voice notes are still rendering as body copy on
   `/markets/sector/[sector]` ("the content model has no per-report theme field
   yet", "Nothing is drawn until a series exists"). Left alone this batch because
