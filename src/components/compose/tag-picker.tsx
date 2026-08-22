@@ -15,6 +15,52 @@ export interface TagSelection {
 export const EMPTY_TAGS: TagSelection = { primary: null, secondary: [], primaryPinned: false };
 
 /**
+ * The tag menu. Module level rather than nested in TagPicker: a component
+ * declared during render is a new type on every render, so the open menu would
+ * unmount and remount (losing its scroll position) on each keystroke.
+ */
+function TagList({
+  slot,
+  primary,
+  secondary,
+  onPick,
+}: {
+  slot: "primary" | "secondary";
+  primary: string | null;
+  secondary: string[];
+  onPick: (slot: "primary" | "secondary", tag: PublicationTag) => void;
+}) {
+  return (
+    <div className="menu-pop mt-2 max-h-[280px] overflow-y-auto scroll-area rounded-[var(--radius-btn)] border border-border bg-surface p-2">
+      {TAG_GROUPS.map((g) => (
+        <div key={g.key} className="mb-2 last:mb-0">
+          <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">{g.label}</div>
+          <div className="flex flex-wrap gap-1">
+            {g.tags.map((t) => {
+              const taken = t.slug === primary || secondary.includes(t.slug);
+              return (
+                <button
+                  key={t.slug}
+                  type="button"
+                  disabled={taken}
+                  onClick={() => onPick(slot, t)}
+                  className={cn(
+                    "focus-ring rounded-[var(--radius-tag)] border px-2 py-0.5 text-[11px]",
+                    taken ? "border-border text-text-faint" : "border-border text-text hover:border-border-strong",
+                  )}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Tagging: a closed curated list, one PRIMARY tag that drives placement, up
  * to two SECONDARY tags that are searchable only. The primary auto-fills from
  * the call's ticker sector when a call exists (overridable in one click);
@@ -55,35 +101,6 @@ export function TagPicker({
     setOpen(null);
   };
 
-  const List = ({ slot }: { slot: "primary" | "secondary" }) => (
-    <div className="menu-pop mt-2 max-h-[280px] overflow-y-auto scroll-area rounded-[var(--radius-btn)] border border-border bg-surface p-2">
-      {TAG_GROUPS.map((g) => (
-        <div key={g.key} className="mb-2 last:mb-0">
-          <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">{g.label}</div>
-          <div className="flex flex-wrap gap-1">
-            {g.tags.map((t) => {
-              const taken = t.slug === value.primary || value.secondary.includes(t.slug);
-              return (
-                <button
-                  key={t.slug}
-                  type="button"
-                  disabled={taken}
-                  onClick={() => pick(slot, t)}
-                  className={cn(
-                    "focus-ring rounded-[var(--radius-tag)] border px-2 py-0.5 text-[11px]",
-                    taken ? "border-border text-text-faint" : "border-border text-text hover:border-border-strong",
-                  )}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4" aria-label="Tags">
       <p className="t-eyebrow mb-1">Tags</p>
@@ -118,7 +135,9 @@ export function TagPicker({
       {autoFilled ? (
         <p className="num mt-1.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">Filled from the call&apos;s sector · one click to change</p>
       ) : null}
-      {open === "primary" ? <List slot="primary" /> : null}
+      {open === "primary" ? (
+        <TagList slot="primary" primary={value.primary} secondary={value.secondary} onPick={pick} />
+      ) : null}
 
       <div className="num mb-1.5 mt-4 text-[10px] uppercase tracking-[0.16em] text-text-mute">
         Secondary · searchable only · {secondaries.length}/{TAG_LIMITS.secondary}
@@ -147,7 +166,9 @@ export function TagPicker({
           </button>
         ) : null}
       </div>
-      {open === "secondary" ? <List slot="secondary" /> : null}
+      {open === "secondary" ? (
+        <TagList slot="secondary" primary={value.primary} secondary={value.secondary} onPick={pick} />
+      ) : null}
 
       <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
         Primary drives placement · secondary tags are searchable
