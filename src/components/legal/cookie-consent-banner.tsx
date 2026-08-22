@@ -1,32 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
+import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
 
 const STORAGE_KEY = "stoa_cookie_consent";
+const CONSENT_EVENT = "stoa-cookie-consent";
 
 type ConsentChoice = "essential" | "all";
 
+function parseConsent(raw: string | null): ConsentChoice | null {
+  return raw === "essential" || raw === "all" ? raw : null;
+}
+
 function readConsent(): ConsentChoice | null {
   if (typeof window === "undefined") return null;
-  const v = localStorage.getItem(STORAGE_KEY);
-  return v === "essential" || v === "all" ? v : null;
+  return parseConsent(localStorage.getItem(STORAGE_KEY));
 }
 
 export function CookieConsentBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(readConsent() === null);
-  }, []);
+  // Read straight from storage. The banner hides because the stored value
+  // changed, not because an effect pushed it into state.
+  const consent = useStoredValue(STORAGE_KEY, parseConsent, null, CONSENT_EVENT);
+  // Stays out of the server HTML, so someone who already chose never sees it flash.
+  const hydrated = useHydrated();
 
   function save(choice: ConsentChoice) {
     localStorage.setItem(STORAGE_KEY, choice);
-    setVisible(false);
+    window.dispatchEvent(new Event(CONSENT_EVENT));
   }
 
-  if (!visible) return null;
+  if (!hydrated || consent !== null) return null;
 
   return (
     <div

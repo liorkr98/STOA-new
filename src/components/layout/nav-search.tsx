@@ -26,6 +26,12 @@ type ReportHit = {
   author_handle: string | null;
 };
 
+// Stable empties, so an idle search box does not hand the list a new array
+// identity on every render.
+const EMPTY_CREATORS: CreatorHit[] = [];
+const EMPTY_TICKERS: TickerHit[] = [];
+const EMPTY_REPORTS: ReportHit[] = [];
+
 /**
  * Nav search. Rests as an icon to keep the right side of the nav light, and
  * expands in place into a field on click (Escape or a click away collapses it).
@@ -38,22 +44,18 @@ export function NavSearch() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [creators, setCreators] = useState<CreatorHit[]>([]);
-  const [tickers, setTickers] = useState<TickerHit[]>([]);
-  const [reports, setReports] = useState<ReportHit[]>([]);
+  const [result, setResult] = useState<{
+    q: string;
+    creators: CreatorHit[];
+    tickers: TickerHit[];
+    reports: ReportHit[];
+  } | null>(null);
+
+  const trimmed = q.trim();
 
   useEffect(() => {
-    const trimmed = q.trim();
-    if (trimmed.length < 1) {
-      setCreators([]);
-      setTickers([]);
-      setReports([]);
-      setLoading(false);
-      return;
-    }
+    if (trimmed.length < 1) return;
     const controller = new AbortController();
-    setLoading(true);
     const timer = setTimeout(() => {
       void fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=5`, {
         signal: controller.signal,
@@ -68,18 +70,17 @@ export function NavSearch() {
           if (!r.ok && !data.creators && !data.tickers) {
             throw new Error(data.error ?? "search failed");
           }
-          setCreators(data.creators ?? []);
-          setTickers(data.tickers ?? []);
-          setReports(data.reports ?? []);
+          setResult({
+            q: trimmed,
+            creators: data.creators ?? [],
+            tickers: data.tickers ?? [],
+            reports: data.reports ?? [],
+          });
           setOpen(true);
-          setLoading(false);
         })
         .catch((err: unknown) => {
           if (err instanceof DOMException && err.name === "AbortError") return;
-          setCreators([]);
-          setTickers([]);
-          setReports([]);
-          setLoading(false);
+          setResult({ q: trimmed, creators: [], tickers: [], reports: [] });
           setOpen(true);
         });
     }, 90);
@@ -87,7 +88,15 @@ export function NavSearch() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [q]);
+  }, [trimmed]);
+
+  // The result carries the query it answered, so clearing the box empties the
+  // panel during render instead of through a second effect pass.
+  const settled = trimmed.length >= 1 && result?.q === trimmed ? result : null;
+  const loading = trimmed.length >= 1 && settled === null;
+  const creators = settled?.creators ?? EMPTY_CREATORS;
+  const tickers = settled?.tickers ?? EMPTY_TICKERS;
+  const reports = settled?.reports ?? EMPTY_REPORTS;
 
   /** Collapse back to the icon, dropping any in-progress query. */
   const collapse = useCallback(() => {
