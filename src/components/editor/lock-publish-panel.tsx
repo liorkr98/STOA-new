@@ -131,7 +131,10 @@ export function LockPublishPanel({
   pending: boolean;
   error: string | null;
 }) {
-  const [live, setLive] = useState<number | null>(null);
+  // Tagged with the ticker it quotes, so clearing the field drops the price
+  // during render rather than through the effect.
+  const [quote, setQuote] = useState<{ ticker: string; price: number | null } | null>(null);
+  const live = hasCard && quote?.ticker === ticker.trim() ? quote.price : null;
   const [committedTicker, setCommittedTicker] = useState("");
   const [attestationLoading, setAttestationLoading] = useState(false);
   const [attestationError, setAttestationError] = useState<string | null>(null);
@@ -204,10 +207,7 @@ export function LockPublishPanel({
   }
 
   useEffect(() => {
-    if (!hasCard || !ticker.trim()) {
-      setLive(null);
-      return;
-    }
+    if (!hasCard || !ticker.trim()) return;
     const controller = new AbortController();
     const t = setTimeout(() => {
       fetch(`/api/market/quote?ticker=${encodeURIComponent(ticker.trim())}`, {
@@ -221,8 +221,8 @@ export function LockPublishPanel({
             return null;
           }
         })
-        .then((j) => setLive(j?.price ?? null))
-        .catch(() => setLive(null));
+        .then((j) => setQuote({ ticker: ticker.trim(), price: j?.price ?? null }))
+        .catch(() => setQuote({ ticker: ticker.trim(), price: null }));
     }, 600);
     return () => {
       controller.abort();

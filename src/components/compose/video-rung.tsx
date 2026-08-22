@@ -157,15 +157,26 @@ function ThumbnailPicker({
   edit: VideoEdit;
   onChange: (t: VideoEdit["thumbnail"]) => void;
 }) {
-  const [frames, setFrames] = useState<{ time: number; url: string | null }[]>([]);
   const uploadRef = useRef<HTMLInputElement>(null);
 
+  const times = useMemo(
+    () => Array.from({ length: 8 }, (_, i) => Math.round(((i + 0.5) / 8) * edit.durationSeconds * 10) / 10),
+    [edit.durationSeconds],
+  );
+  // Empty slots are what the strip looks like before (or without) a video, so
+  // they are derived rather than pushed in by the effect.
+  const placeholder = useMemo(
+    () => times.map((t) => ({ time: t, url: null as string | null })),
+    [times],
+  );
+  const [grabbed, setGrabbed] = useState<{
+    src: string;
+    frames: { time: number; url: string | null }[];
+  } | null>(null);
+  const frames = src && grabbed?.src === src ? grabbed.frames : placeholder;
+
   useEffect(() => {
-    const times = Array.from({ length: 8 }, (_, i) => Math.round(((i + 0.5) / 8) * edit.durationSeconds * 10) / 10);
-    if (!src) {
-      setFrames(times.map((t) => ({ time: t, url: null })));
-      return;
-    }
+    if (!src) return;
     let cancelled = false;
     const video = document.createElement("video");
     video.src = src;
@@ -176,7 +187,7 @@ function ThumbnailPicker({
     const grab = (i: number) => {
       if (cancelled) return;
       if (i >= times.length) {
-        setFrames(out);
+        setGrabbed({ src, frames: out });
         return;
       }
       const onSeeked = () => {
@@ -194,7 +205,7 @@ function ThumbnailPicker({
     return () => {
       cancelled = true;
     };
-  }, [src, edit.durationSeconds]);
+  }, [src, times]);
 
   const chosen = edit.thumbnail;
   const chosenUrl =
@@ -472,8 +483,11 @@ function GridPicker({ value, onChange }: { value: GridPosition; onChange: (p: Gr
 }
 
 function TimeField({ label, value, onChange }: { label: string; value: number; onChange: (t: number) => void }) {
-  const [draft, setDraft] = useState(fmtTimecode(value));
-  useEffect(() => setDraft(fmtTimecode(value)), [value]);
+  // The draft remembers the value it was typed against, so the field follows a
+  // scrub during render instead of an effect overwriting what is being typed.
+  const [typed, setTyped] = useState<{ forValue: number; text: string } | null>(null);
+  const draft = typed?.forValue === value ? typed.text : fmtTimecode(value);
+  const setDraft = (text: string) => setTyped({ forValue: value, text });
   return (
     <label className="flex items-center gap-1.5">
       <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{label}</span>
@@ -613,7 +627,9 @@ export function VideoRung({
   const [zoom, setZoom] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [faithful, setFaithful] = useState(false);
-  const [timecodeDraft, setTimecodeDraft] = useState("0:00.0");
+  // Same shape as TimeField: tagged with the playhead it was typed against.
+  const [typedTimecode, setTypedTimecode] = useState<{ forTime: number; text: string } | null>(null);
+  const timecodeDraft = typedTimecode?.forTime === time ? typedTimecode.text : fmtTimecode(time);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const timelineWrap = useRef<HTMLDivElement>(null);
@@ -625,8 +641,6 @@ export function VideoRung({
     },
     [onChange],
   );
-
-  useEffect(() => setTimecodeDraft(fmtTimecode(time)), [time]);
 
   // Live preview: the real video follows the playhead; the poster stage runs a clock.
   useEffect(() => {
@@ -742,11 +756,11 @@ export function VideoRung({
             <input
               aria-label="Current time"
               value={timecodeDraft}
-              onChange={(e) => setTimecodeDraft(e.target.value)}
+              onChange={(e) => setTypedTimecode({ forTime: time, text: e.target.value })}
               onBlur={() => {
                 const t = parseTimecode(timecodeDraft);
                 if (t != null) jump(t);
-                else setTimecodeDraft(fmtTimecode(time));
+                else setTypedTimecode(null);
               }}
               onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
               className="num w-[68px] rounded-[4px] border border-border bg-bg px-1.5 py-1 text-center text-[12px] text-text focus-ring"

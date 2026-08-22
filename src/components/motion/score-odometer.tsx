@@ -16,9 +16,11 @@ const seenScores = new Map<string, number>();
  * static number under reduced motion or on first sight of an analyst.
  */
 export function ScoreOdometer({ value, storageKey }: { value: number; storageKey: string }) {
-  const [display, setDisplay] = useState(value);
-
-  useEffect(() => {
+  // Captured once, as this component first renders: the score the reader last
+  // saw. Seeding it here rather than in an effect means the first painted frame
+  // is already the old number, so the count-up never flashes the final value
+  // first. Reduced motion collapses origin onto value, which makes it static.
+  const [origin] = useState(() => {
     const key = `stoa-score:${storageKey}`;
     if (!seenScores.has(key)) {
       try {
@@ -30,12 +32,19 @@ export function ScoreOdometer({ value, storageKey }: { value: number; storageKey
         seenScores.set(key, value);
       }
     }
+    const previous = seenScores.get(key) ?? value;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    return reduced ? value : previous;
+  });
 
-    const from = seenScores.get(key) ?? value;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (from === value || reduced) {
+  // null means "not counting", and the number shows as itself.
+  const [frame, setFrame] = useState<number | null>(origin === value ? null : origin);
+  const display = frame ?? value;
+
+  useEffect(() => {
+    const key = `stoa-score:${storageKey}`;
+    if (origin === value) {
       seenScores.set(key, value);
-      setDisplay(value);
       return;
     }
 
@@ -45,23 +54,26 @@ export function ScoreOdometer({ value, storageKey }: { value: number; storageKey
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - t, 4);
-      setDisplay(Math.round(from + (value - from) * eased));
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else seenScores.set(key, value);
+      setFrame(Math.round(origin + (value - origin) * eased));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        seenScores.set(key, value);
+        setFrame(null);
+      }
     };
-    setDisplay(from);
     raf = requestAnimationFrame(tick);
     // The real score must never depend on rAF firing: a throttled or hidden
     // tab settles to the final value the moment the duration elapses.
     const settle = window.setTimeout(() => {
       seenScores.set(key, value);
-      setDisplay(value);
+      setFrame(null);
     }, duration + 100);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
     };
-  }, [value, storageKey]);
+  }, [value, storageKey, origin]);
 
   return <>{display}</>;
 }
