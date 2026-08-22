@@ -57,17 +57,21 @@ export function InstrumentSheetProvider({ children }: { children: ReactNode }) {
 }
 
 function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => void }) {
-  const [data, setData] = useState<SheetPayload | null>(null);
-  const [failed, setFailed] = useState(false);
+  // Tagged with the symbol it describes, so switching instruments shows the
+  // loading state during render instead of being reset from the effect.
+  const [result, setResult] = useState<{ symbol: string; payload: SheetPayload | null } | null>(
+    null,
+  );
+  const settled = result?.symbol === symbol ? result : null;
+  const data = settled?.payload ?? null;
+  const failed = settled !== null && settled.payload === null;
 
   useEffect(() => {
     let live = true;
-    setData(null);
-    setFailed(false);
     fetch(`/api/markets/sheet?symbol=${encodeURIComponent(symbol)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
-      .then((payload: SheetPayload) => live && setData(payload))
-      .catch(() => live && setFailed(true));
+      .then((payload: SheetPayload) => live && setResult({ symbol, payload }))
+      .catch(() => live && setResult({ symbol, payload: null }));
     return () => {
       live = false;
     };

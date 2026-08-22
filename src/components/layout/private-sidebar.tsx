@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
@@ -152,13 +152,13 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
   const active = activeHref(pathname, isAnalyst);
   const groups = visibleGroups(isAnalyst);
-  const [open, setOpen] = useState<string | null>(null);
-
   // The private layout persists across route changes, so the panel would stay
-  // open after navigating. Close it whenever the path changes.
-  useEffect(() => {
-    setOpen(null);
-  }, [pathname]);
+  // open after navigating. Tagging it with the path it was opened on closes it
+  // on the next route during render, with no effect to reset it.
+  const [openOn, setOpenOn] = useState<{ path: string; group: string } | null>(null);
+  const open = openOn?.path === pathname ? openOn.group : null;
+  const setOpen = (group: string | null) =>
+    setOpenOn(group === null ? null : { path: pathname, group });
 
   return (
     <div className="sticky top-14 z-30 border-b border-border bg-surface md:hidden">
