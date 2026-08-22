@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Link2, Mail, Share2, Smartphone } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { useHydrated } from "@/lib/hooks/use-stored-value";
 
 /**
  * ShareMenu: share a report or profile to X, Facebook, LinkedIn, Reddit,
@@ -68,12 +69,12 @@ export function ShareMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [canNative, setCanNative] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setCanNative(typeof navigator !== "undefined" && !!navigator.share);
-  }, []);
+  // Derived, not stored: navigator is only readable once hydrated, and this
+  // never changes afterwards.
+  const hydrated = useHydrated();
+  const canNative = hydrated && typeof navigator !== "undefined" && !!navigator.share;
 
   useEffect(() => {
     if (!open) return;
