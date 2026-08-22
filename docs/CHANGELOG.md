@@ -59,6 +59,14 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   to hear it. There is no pending delivery and Bunny does not replay. The
   registration covers future uploads; this batch needs one
   `npm run demo:video:check -- --promote` sweep, which is written and unrun.
+- **This is not only a demo problem, and it is worse on the real path.** A
+  creator whose upload finishes but whose webhook never lands cannot publish at
+  all: the publish route refuses on `status !== 'ready'`, and captions are only
+  ever requested by the webhook, so the "captions are still generating" gate
+  never clears either. The clip sits in processing forever, nothing retries and
+  nothing alerts. Item 17 asks Krisi to confirm the URL is genuinely saved and
+  enabled in Bunny rather than just entered, and proposes a polling reconciler
+  on the existing cron surface so a stuck clip heals itself.
 - **The webhook never sets `published_at`.** It sets `status` and nothing else,
   while every discovery query filters on `status = 'ready' AND published_at IS
   NOT NULL`. The seeder sets it at insert so the demo does not need a second

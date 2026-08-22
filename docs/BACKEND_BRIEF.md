@@ -502,6 +502,62 @@ sidestep this, but for real creator uploads the publish step is load-bearing and
 should be treated as a credential and rotated if it ever reaches a log. *Data*: nothing to
 backfill beyond the one `--promote` sweep.
 
+### 17. A creator's upload has no fallback if the webhook never arrives
+
+**What happens today.** Item 16 is about the demo dataset. This is the same gap on the real
+product path, where it is worse: a clip that Bunny finished but never told us about is stuck
+permanently, and the creator cannot publish.
+
+The publish route (`src/app/api/creator/videos/[id]/publish/route.ts`) has two hard gates and the
+webhook is the only thing that opens either:
+
+- `clip.status !== "ready"` returns `conflict`, "video is still processing". Status is written by
+  `markVideoClipReadyByGuid`, called only from the webhook.
+- An empty transcript returns `conflict`, "Captions are still generating. Try again in a moment."
+  Captions are requested by `processReadyVideo`, which is reachable only from the webhook or from
+  the `video-process` job, and that job is only ever enqueued *by the webhook*. With no webhook
+  the captions are never even requested, so this gate does not resolve by waiting.
+
+So the failure is silent and permanent: Bunny finished the video, the creator sees "still
+processing" forever, and the copy tells them to try again in a moment, which will never help.
+Nothing retries, nothing alerts, and no surface distinguishes "transcoding" from "abandoned".
+
+**What to check first.** Confirm the webhook URL is actually saved *and* enabled on the Bunny video
+library, not just typed in: the field can hold a URL while delivery is off. Then confirm it is
+arriving, rather than assuming it from the dashboard. `npm run demo:video:check` is the cheapest
+probe: it prints Bunny's status and ours side by side, and any clip sitting at Finished-in-Bunny
+but processing-in-database is a webhook that did not land. Also confirm
+`BUNNY_STREAM_WEBHOOK_SECRET` is set in the deployment environment and matches what is in the URL;
+if the variable is unset in production the route skips the check entirely and accepts any caller,
+and if it is set but different every real delivery is refused 401 and the symptom looks identical
+to no webhook at all.
+
+**What it needs.** A reconciler, so a stuck clip self-heals instead of depending on a push that
+may not come. The shape already exists in this codebase: a `/api/cron/*` route guarded by
+`isAuthorizedCron`, wrapped in `withCronMonitor`, reporting through `alertCronResult`, registered
+in `vercel.json` alongside the four existing crons. It would select `video_clips` where
+`status = 'processing'` and `created_at` is older than a few minutes, ask Bunny for each one's
+authoritative record, and apply exactly what the webhook applies: the same 90-second cap, the same
+CDN URLs, the same status transition, and the same `processReadyVideo` hand-off so captions are
+actually requested. `scripts/demo-video-check.ts --promote` is that logic already written against
+the real API and is the obvious thing to lift.
+
+Two details worth deciding rather than inheriting. First, it should also flip Bunny status 5/6 to
+`failed`, so a genuinely broken upload stops looking like a slow one and the creator can be told.
+Second, it needs a give-up threshold: a clip processing for a day is not processing, and something
+should say so rather than leaving it in the list forever.
+
+**Concerns.** *Trust*: none beyond the existing cron surface; the reconciler reads Bunny and writes
+the same fields the webhook already writes, so it adds no new authority. *Data*: nothing to
+backfill, though the first run will sweep up whatever is already stuck. *Cost*: one Bunny API call
+per processing clip per run, bounded by the age filter, so it is proportional to genuine backlog
+rather than to library size.
+
+**Worth noting.** The webhook and the reconciler are not redundant. The webhook is what makes
+publishing feel immediate; the reconciler is what makes it *reliable*. Shipping only the webhook
+leaves the current failure mode intact for any delivery that is dropped, retried past its window,
+or refused on a secret mismatch.
+
 ## Suggested sequence, dependencies and sizing
 
 Sizes are rough and assume one person who knows this codebase. They are for ordering, not
@@ -519,6 +575,11 @@ planning.
 One soft dependency: **item 7 needs item 4 to have been collecting for a while.** The windowed
 velocity job compares the last 48 hours against the prior 14 days, so it needs at least a
 fortnight of events before its output beats the proxy the frontend already runs.
+
+**Items 16 and 17 sit outside this ordering.** They are operations rather than schema: registering
+the webhook is a dashboard field and a config check, and the reconciler in item 17 is a day. Item
+17 should not wait for its position in a list, because until it exists a dropped webhook delivery
+means a real creator cannot publish and nothing tells anyone.
 
 **Suggested order:**
 
