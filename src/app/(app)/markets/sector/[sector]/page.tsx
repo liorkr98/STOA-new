@@ -42,7 +42,7 @@ export default async function SectorPage({
   const payload = await buildSector(name, userId);
 
   return (
-    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+    <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <SectorHeader payload={payload} />
       <SectorNames names={payload.names} />
       <SectorCoverage payload={payload} />

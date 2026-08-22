@@ -38,7 +38,7 @@ export function CookieConsentBanner() {
       aria-label="Cookie consent"
       className="fixed inset-x-0 bottom-0 z-[100] border-t border-border bg-surface/95 px-5 py-3 backdrop-blur-sm"
     >
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-[var(--w-wide)] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-text-mute">
           We use essential cookies to run Stoa. Optional analytics stay off unless you accept.{" "}
           <Link href="/cookies" className="text-accent underline hover:no-underline">

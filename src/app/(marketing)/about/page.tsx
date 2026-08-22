@@ -4,7 +4,7 @@ export const metadata: Metadata = { title: "About" };
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-2xl px-5 py-16">
+    <div className="mx-auto max-w-[var(--w-reading)] px-5 py-16">
       <h1 className="t-h1">About Stoa</h1>
       <p className="t-body mt-4">
         Stoa is a marketplace for independent stock research. Analysts publish their work and set

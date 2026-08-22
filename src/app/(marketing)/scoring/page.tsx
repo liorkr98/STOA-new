@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function GradingPage() {
   return (
-    <article className="mx-auto max-w-3xl flex flex-col gap-10 py-4">
+    <article className="mx-auto max-w-[var(--w-reading)] flex flex-col gap-10 py-4">
       <header>
         <p className="t-eyebrow">Transparency</p>
         <h1 className="t-display mt-2 text-4xl">How calls are graded</h1>

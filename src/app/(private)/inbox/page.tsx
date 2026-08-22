@@ -64,5 +64,9 @@ export default async function InboxPage() {
   const items =
     process.env.NODE_ENV === "development" ? [...demoItems(isAnalyst), ...real] : real;
 
-  return <InboxView items={items} isAnalyst={isAnalyst} />;
+  return (
+    <div className="mx-auto w-full max-w-[var(--w-standard)]">
+      <InboxView items={items} isAnalyst={isAnalyst} />
+    </div>
+  );
 }

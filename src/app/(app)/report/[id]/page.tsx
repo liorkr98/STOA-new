@@ -83,7 +83,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const dek = report.title?.trim() ? report.summary?.trim() : null;
 
   return (
-    <article className="mx-auto max-w-6xl">
+    <article className="mx-auto max-w-[var(--w-standard)]">
       {/* Scroll-scrubbed, like a scrollbar -- reading position, not animation,
         * so the frequency rule does not apply. Hidden without scroll-timeline
         * support and under reduced motion it still just mirrors scroll. */}

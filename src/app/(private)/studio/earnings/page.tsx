@@ -33,7 +33,7 @@ export default async function EarningsPage() {
   const thisMonth = revenue.filter((t) => isThisMonth(new Date(t.created_at))).reduce((s, t) => s + t.amount, 0);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-10">
+    <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">
       <div>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Earnings</h1>
         <p className="t-body mt-2">What you&apos;ve made, and what&apos;s coming.</p>

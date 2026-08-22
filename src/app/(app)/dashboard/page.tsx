@@ -70,7 +70,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <DensityRoot className="flex flex-col gap-5">
+    <DensityRoot className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">
       <div>
         <h1 className="t-h1">Dashboard</h1>
         <p className="t-body mt-1">Your board. Drag widgets to arrange it.</p>

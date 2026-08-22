@@ -27,5 +27,9 @@ export default async function FollowingPage() {
     pubs: "— PUBLICATIONS THIS MONTH",
   }));
 
-  return <FollowingView creators={creators} />;
+  return (
+    <div className="mx-auto w-full max-w-[var(--w-standard)]">
+      <FollowingView creators={creators} />
+    </div>
+  );
 }

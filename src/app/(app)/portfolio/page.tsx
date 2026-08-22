@@ -112,7 +112,7 @@ export default function PortfolioPage() {
   ];
 
   return (
-    <DensityRoot className="flex flex-col gap-6">
+    <DensityRoot className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="t-h1">Portfolio</h1>

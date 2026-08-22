@@ -26,7 +26,7 @@ function dateline(): string {
  */
 export default async function MarketsPage() {
   return (
-    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+    <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <header>
         <h1 className="markets-title">Markets</h1>
         <p className="markets-dateline">{dateline()}</p>

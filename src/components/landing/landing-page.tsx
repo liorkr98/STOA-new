@@ -48,7 +48,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   ].join(" · ");
   return (
     <section aria-label="Stoa" className="landing-doors">
-      <div className="mx-auto flex max-w-[720px] flex-col items-center px-5 pt-16 text-center md:pt-24">
+      <div className="mx-auto flex max-w-[var(--w-reading)] flex-col items-center px-[var(--page-gutter)] pt-16 text-center md:pt-24">
         <h1 className="dispatch-wordmark landing-wordmark">STOA</h1>
         <p className="mt-5 font-display text-[1.375rem] tracking-tight text-text md:text-[1.625rem]">Think clearly. Invest better.</p>
         <p className="mt-6 max-w-[46ch] font-display text-[1.0625rem] leading-relaxed text-text-mute">
@@ -81,7 +81,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
   if (!data.lead) return null;
   const lead = data.lead;
   return (
-    <section aria-label="Today, a glimpse" className="landing-today mx-auto mt-20 max-w-[1100px] px-5">
+    <section aria-label="Today, a glimpse" className="landing-today mx-auto mt-20 max-w-[var(--w-standard)] px-[var(--page-gutter)]">
       <Reveal>
         <div className="flex items-baseline justify-between border-y border-[var(--ink)] py-2">
           <span className="font-display text-[1.125rem] font-semibold tracking-[0.2em]">STOA · TODAY</span>
@@ -242,7 +242,7 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
 function Split({ data }: { data: LandingPayload }) {
   if (data.verdicts.length === 0 && data.faces.length === 0) return null;
   return (
-    <section aria-label="Verdicts and creators" className="mx-auto mt-24 max-w-[1100px] px-5">
+    <section aria-label="Verdicts and creators" className="mx-auto mt-24 max-w-[var(--w-standard)] px-[var(--page-gutter)]">
       <div className="grid gap-12 md:grid-cols-2 md:divide-x md:divide-[var(--border)]">
         <div className="md:pr-12">
           <Verdicts data={data} />

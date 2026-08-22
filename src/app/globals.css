@@ -61,6 +61,31 @@
   --space-8: 64px;
   --space-9: 96px;
 
+  /* ---------------------------------------------------------------- widths --
+   * Three page measures. Every page picks one; nothing sets its own number.
+   *
+   * The measure is the width of the content column itself. The gap to the
+   * viewport edge is the layout's own padding (--page-gutter), so on a screen
+   * narrower than the tier the page simply uses what is available and keeps
+   * that gutter -- the tier is a ceiling, never a floor.
+   *
+   *   reading   one column of prose or a single form. Long-form measure plus
+   *             its furniture; the prose itself is still capped at 68ch.
+   *   standard  the default. A column with a rail beside it, or a list.
+   *   wide      data-dense: grids, tables, a persistent sidebar, or several
+   *             columns of numbers that are read across.
+   *
+   * A newspaper sets an article narrow and a market table wide, and these are
+   * that. Do not add a fourth without a reason that is not "this page felt
+   * cramped".
+   */
+  --w-reading: 760px;
+  --w-standard: 1200px;
+  --w-wide: 1400px;
+
+  /* Minimum breathing room at the viewport edge, applied by the layout. */
+  --page-gutter: 20px;
+
   /* Motion tokens (docs/MOTION.md A.1). Use nothing else. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -70,6 +95,12 @@
   --dur-2: 180ms;
   --dur-3: 240ms;
   --dur-ceremony: 400ms;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-gutter: 40px;
+  }
 }
 
 .dark {

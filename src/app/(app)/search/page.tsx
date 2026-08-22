@@ -31,7 +31,7 @@ export default async function SearchPage({
     : 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-8">
       <div>
         <h1 className="t-h1">Search</h1>
         <p className="t-body mt-1">Find analysts, tickers, and published research.</p>

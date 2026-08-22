@@ -14,7 +14,7 @@ export default async function AnalystOnboardingLayout({
   await ensureProfile();
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col gap-10 py-4">
+    <div className="mx-auto flex min-h-[70vh] max-w-[var(--w-reading)] flex-col gap-10 py-4">
       <AnalystOnboardingSteps />
       {children}
     </div>

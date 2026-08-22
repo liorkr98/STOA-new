@@ -28,10 +28,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         Skip to content
       </a>
       <TopNav profile={profile} unreadCount={unreadCount} />
+      {/*
+        The width cap lives on each page (--w-reading / --w-standard / --w-wide),
+        not here: one global measure forced a market table and an article into
+        the same column. The layout owns the gutter only.
+      */}
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto w-full max-w-[1200px] flex-1 px-5 py-8 outline-none"
+        className="w-full flex-1 px-[var(--page-gutter)] py-8 outline-none"
       >
         {children}
       </main>

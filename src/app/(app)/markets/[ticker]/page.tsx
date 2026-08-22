@@ -199,7 +199,7 @@ export default async function TickerPage({
   const coverage = countsFor(peers.map((p) => p.symbol));
 
   return (
-    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+    <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <StockHeader
         ticker={sym}
         name={meta?.name ?? sym}

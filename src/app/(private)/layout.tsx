@@ -37,7 +37,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
         <PrivateSidebar profile={profile} />
         <div className="flex min-w-0 flex-1 flex-col">
           <PrivateMobileNav profile={profile} />
-          <main id="main-content" tabIndex={-1} className="flex-1 px-5 py-8 outline-none md:px-8">
+          <main id="main-content" tabIndex={-1} className="flex-1 px-[var(--page-gutter)] py-8 outline-none">
             {children}
           </main>
         </div>

@@ -108,5 +108,9 @@ export default async function PublicationsPage() {
     toPublication(r, predByReport.get(r.id), clipByReport.get(r.id), pinnedId),
   );
 
-  return <PublicationsView pubs={pubs} />;
+  return (
+    <div className="mx-auto w-full max-w-[var(--w-wide)]">
+      <PublicationsView pubs={pubs} />
+    </div>
+  );
 }

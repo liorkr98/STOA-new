@@ -50,5 +50,9 @@ export default async function AnalystProfilePage({
   const view = await buildProfileView(handle);
   if (!view) notFound();
 
-  return <AnalystProfileView {...view} />;
+  return (
+    <div className="mx-auto w-full max-w-[var(--w-wide)]">
+      <AnalystProfileView {...view} />
+    </div>
+  );
 }

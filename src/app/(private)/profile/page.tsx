@@ -23,7 +23,7 @@ export default async function MyProfilePage() {
   if (!view) redirect("/saved");
 
   return (
-    <div className="mx-auto w-full max-w-[1100px]">
+    <div className="mx-auto w-full max-w-[var(--w-wide)]">
       <AnalystProfileView {...view} />
     </div>
   );

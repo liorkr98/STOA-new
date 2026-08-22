@@ -18,11 +18,13 @@ export default async function NotebookPage() {
   const entries = first ? await listEntries(first.id) : [];
 
   return (
-    <NotebookBoard
-      notebooks={notebooks}
-      initialNotebookId={first?.id}
-      initialEntries={entries}
-      mode="investor"
-    />
+    <div className="mx-auto w-full max-w-[var(--w-standard)]">
+      <NotebookBoard
+        notebooks={notebooks}
+        initialNotebookId={first?.id}
+        initialEntries={entries}
+        mode="investor"
+      />
+    </div>
   );
 }

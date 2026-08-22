@@ -37,7 +37,7 @@ export default async function BecomeAnalystPage({
 
   if (existing && !submitted && !reapply) {
     return (
-      <div className="mx-auto max-w-xl py-8">
+      <div className="mx-auto max-w-[var(--w-reading)] py-8">
         <ApplicationStatus application={existing} />
       </div>
     );
@@ -45,7 +45,7 @@ export default async function BecomeAnalystPage({
 
   if (submitted === "1") {
     return (
-      <div className="mx-auto max-w-xl py-8">
+      <div className="mx-auto max-w-[var(--w-reading)] py-8">
         <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
           <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
           <h1 className="t-h2">Application submitted!</h1>
@@ -59,7 +59,7 @@ export default async function BecomeAnalystPage({
   }
 
   return (
-    <div className="mx-auto max-w-xl py-8">
+    <div className="mx-auto max-w-[var(--w-reading)] py-8">
       <h1 className="t-h1">Apply to publish research</h1>
       <p className="t-body mt-2 text-text-mute">
         Stoa is invite quality. We review every application to keep the signal high. Once

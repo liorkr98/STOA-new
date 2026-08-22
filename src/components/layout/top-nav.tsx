@@ -57,8 +57,8 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
   const logoHref = profile ? DEFAULT_HREF : "/";
 
   return (
-    <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper">
-      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-5 lg:gap-6">
+    <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper px-[var(--page-gutter)]">
+      <div className="mx-auto flex h-14 w-full max-w-[var(--w-wide)] items-center justify-between gap-4 lg:gap-6">
         {/* Wordmark + nav items */}
         <div className="flex min-w-0 items-center gap-6 lg:gap-8">
           <Link href={logoHref} className="focus-ring shrink-0 rounded-[var(--radius-btn)]">

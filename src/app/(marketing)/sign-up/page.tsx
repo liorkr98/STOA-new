@@ -17,7 +17,7 @@ export default async function SignUpPage({
   const refHandle = ref?.trim().toLowerCase().replace(/^@/, "") || undefined;
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-[1200px] items-center px-5 py-16">
+    <div className="mx-auto flex min-h-[70vh] max-w-[var(--w-standard)] items-center px-5 py-16">
       <AuthForm mode="sign-up" refHandle={refHandle} />
     </div>
   );

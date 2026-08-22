@@ -29,7 +29,7 @@ export default async function SettingsPage() {
   const email = user?.email ?? "—";
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-10">
+    <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">
       <div>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Settings</h1>
         <p className="t-body mt-2">Your account and identity.</p>

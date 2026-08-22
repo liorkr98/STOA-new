@@ -19,7 +19,7 @@ export default async function StudioStorefrontPage() {
   ]);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex max-w-[var(--w-wide)] flex-col gap-6">
       <div>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Storefront</h1>
         <p className="t-body mt-2">How your public profile looks and what it costs.</p>

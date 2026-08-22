@@ -16,7 +16,7 @@ export default async function AdminIntegrationsPage() {
   const status = await getIntegrationStatus();
 
   return (
-    <div className="mx-auto max-w-3xl py-8">
+    <div className="mx-auto max-w-[var(--w-reading)] py-8">
       <div className="flex items-start gap-3">
         <Plug className="mt-1 h-6 w-6 text-text-mute" aria-hidden />
         <div>

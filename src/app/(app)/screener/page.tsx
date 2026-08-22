@@ -93,7 +93,7 @@ export default function ScreenerPage() {
     "h-9 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-sm focus-ring";
 
   return (
-    <DensityRoot className="flex flex-col gap-5">
+    <DensityRoot className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">
       <div>
         <h1 className="t-h1">Screener</h1>
         <p className="t-body mt-1">Filter the covered universe by fundamentals.</p>

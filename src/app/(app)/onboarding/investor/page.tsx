@@ -12,7 +12,7 @@ export default async function InvestorOnboardingPage() {
   if (!profile) redirect("/sign-in");
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center gap-8">
+    <div className="mx-auto flex min-h-[70vh] max-w-[var(--w-reading)] flex-col justify-center gap-8">
       <div>
         <h1 className="t-h1">What are you interested in?</h1>
         <p className="t-body mt-2">

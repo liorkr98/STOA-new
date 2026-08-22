@@ -44,9 +44,9 @@ export default async function ComposePage({
   }
 
   return (
-    <div className="-mx-5 -my-8 md:-mx-8">
+    <div className="-mx-[var(--page-gutter)] -my-8">
       {onboarding === "1" && (
-        <div className="mx-auto max-w-3xl px-4 pt-6">
+        <div className="mx-auto max-w-[var(--w-reading)] px-4 pt-6">
           <FirstReportBanner />
         </div>
       )}

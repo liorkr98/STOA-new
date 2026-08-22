@@ -209,7 +209,7 @@ export default async function DiscoverPage({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="t-h1">Discover</h1>

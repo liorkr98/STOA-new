@@ -544,7 +544,9 @@ export function StudioEditor({
       <div
         className={cn(
           "mx-auto grid w-full flex-1 gap-8 px-4 py-8 md:px-6",
-          panelOpen ? "max-w-6xl lg:grid-cols-[minmax(0,1fr)_340px]" : "max-w-3xl grid-cols-1",
+          panelOpen
+            ? "max-w-[var(--w-standard)] lg:grid-cols-[minmax(0,1fr)_340px]"
+            : "max-w-[var(--w-reading)] grid-cols-1",
         )}
       >
         {/* Editor column */}

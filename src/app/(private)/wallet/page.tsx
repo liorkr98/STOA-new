@@ -41,7 +41,7 @@ export default async function WalletPage() {
   const balance = wallet?.balance ?? 0;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8">
+    <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-8">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight">Wallet</h1>

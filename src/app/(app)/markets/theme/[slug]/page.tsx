@@ -25,7 +25,7 @@ export default async function ThemePage({ params }: { params: Promise<{ slug: st
   const payload = await buildTheme(theme, userId);
 
   return (
-    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+    <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <ThemeHeader payload={payload} />
       <ThemeNames payload={payload} />
       <ThemePublications payload={payload} />

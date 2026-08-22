@@ -38,7 +38,7 @@ export default async function SubscriptionsPage() {
   const totalSpend = unlocked.reduce((sum, u) => sum + (u.price ?? 0), 0);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-10">
       <div>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Subscriptions</h1>
         <p className="t-body mt-2">Analysts you support.</p>

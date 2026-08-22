@@ -42,7 +42,7 @@ export default async function AdminApplicationsPage() {
   const reviewed = apps.filter((a) => a.status !== "pending");
 
   return (
-    <div className="mx-auto max-w-3xl py-8">
+    <div className="mx-auto max-w-[var(--w-reading)] py-8">
       <h1 className="t-h1">Analyst Applications</h1>
       <p className="t-body mt-1 text-text-mute">
         {pending.length} pending · {reviewed.length} reviewed · applicants apply at{" "}

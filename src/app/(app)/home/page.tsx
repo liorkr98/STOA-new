@@ -7,7 +7,8 @@ import { buildTodayPage } from "@/lib/today/build-today-page";
 
 export const metadata: Metadata = {
   title: "Today",
-  description: "Stoa's daily briefing: the lead, what is trending, and the calls the market just graded.",
+  description:
+    "Stoa's daily briefing: the lead, what is trending, and the calls the market just graded.",
 };
 
 /**
@@ -19,13 +20,15 @@ export default async function HomePage() {
   const userId = await getSessionUserId();
   const data = await buildTodayPage(userId);
   return (
-    <TodayPage
-      data={data}
-      news={
-        <Suspense fallback={null}>
-          <TodayNewsSlot />
-        </Suspense>
-      }
-    />
+    <div className="mx-auto w-full max-w-[var(--w-wide)]">
+      <TodayPage
+        data={data}
+        news={
+          <Suspense fallback={null}>
+            <TodayNewsSlot />
+          </Suspense>
+        }
+      />
+    </div>
   );
 }

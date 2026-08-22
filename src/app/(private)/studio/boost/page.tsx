@@ -31,7 +31,7 @@ export default async function BoostPage() {
   const [wallet, active] = await Promise.all([getWallet(profile.id), listActiveBoosts(profile.id)]);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-10">
+    <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">
       <div>
         <h1 className="font-display text-4xl font-semibold tracking-tight">Boost</h1>
         <p className="t-body mt-2">Paid placement, always labelled.</p>

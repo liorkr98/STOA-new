@@ -36,8 +36,8 @@ const groups = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+    <footer className="border-t border-border bg-surface px-[var(--page-gutter)]">
+      <div className="mx-auto grid w-full max-w-[var(--w-wide)] gap-10 py-14 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div className="flex flex-col gap-3">
           <StoaLogo />
           <p className="t-meta max-w-xs">
@@ -60,7 +60,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-5 pb-10">
+      <div className="mx-auto flex w-full max-w-[var(--w-wide)] flex-col gap-2 pb-10">
         <p className="t-meta">
           Stoa publishes research and education, not investment advice. Stoa is not a broker or
           investment adviser. Past performance does not guarantee future results.

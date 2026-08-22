@@ -40,7 +40,7 @@ export function EtfView({
   customTo?: string;
 }) {
   return (
-    <article className="markets-page mx-auto w-full max-w-6xl px-5 py-10 sm:py-14">
+    <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <EtfHeader etf={etf} />
 
       <CallsChart

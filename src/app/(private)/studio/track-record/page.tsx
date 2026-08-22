@@ -49,7 +49,7 @@ export default async function TrackRecordPage() {
         <div className="flex flex-col items-center gap-5 rounded-[var(--radius-card)] border border-dashed border-border px-6 py-14 text-center">
           <ScoreRing score={null} size="lg" />
           <p className="font-display text-2xl font-semibold tracking-tight">No resolved calls yet</p>
-          <p className="num max-w-md text-[11px] uppercase leading-relaxed tracking-[0.14em] text-text-mute">
+          <p className="num max-w-[var(--w-standard)] text-[11px] uppercase leading-relaxed tracking-[0.14em] text-text-mute">
             Your Track Score firms up once your calls resolve against the market. Publish a call, and it starts
             building your record here.
           </p>

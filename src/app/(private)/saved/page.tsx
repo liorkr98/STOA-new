@@ -103,5 +103,9 @@ export default async function LibraryPage() {
     };
   });
 
-  return <LibraryView items={items} />;
+  return (
+    <div className="mx-auto w-full max-w-[var(--w-standard)]">
+      <LibraryView items={items} />
+    </div>
+  );
 }
