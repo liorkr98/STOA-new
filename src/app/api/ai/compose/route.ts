@@ -376,7 +376,7 @@ ${preparedContext.selection ? `<selection>${escapePromptTagContent(preparedConte
               }
             : { role: "assistant" as const, content: m.content },
         ),
-        temperature: 0.5,
+        temperature: 0.3,
         maxOutputTokens: Math.min(outputBudget, 800),
       });
       return NextResponse.json({
