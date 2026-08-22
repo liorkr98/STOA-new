@@ -35,3 +35,6 @@ yarn-error.log*
 
 # large Kaggle downloads (import script reads from here)
 /data/kaggle/
+
+# generated demo video clips (pass 2 of the demo dataset; large binaries)
+/demo-clips/

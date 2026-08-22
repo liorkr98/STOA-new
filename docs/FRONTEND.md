@@ -354,6 +354,33 @@ Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
   button labeled "Lock it in" produces a toast that says "Locked," never "Submitted
   successfully"). Errors state what happened and how to fix it, without apologizing or hedging.
 
+### 2.10 `<PlaceholderThumb>` — the generated stand-in for a video thumbnail
+
+One picture, drawn twice: once in the browser as a React component
+(`src/components/ui/placeholder-thumb.tsx`), once as pixels for the demo video clips
+(`scripts/demo-video-frames.ts`). They must stay identical, so the same analyst looks the same
+whether a surface is showing their placeholder or playing their clip. **Change one and you have
+to change the other**, then regenerate and re-upload the clips.
+
+- **Colour** comes from `analystColor()` in `src/lib/design/analyst-color.ts`, seeded on the
+  analyst's **id**, never their handle or name, so a rename does not change their colour. Eight
+  muted tones, deliberately excluding `--verdigris` and `--rust`: those two carry verdict meaning
+  (Fact/Hit, Contradicted/Miss) and must never be spent on decoration. Sage is greyer and lighter
+  than verdigris, clay browner and softer than rust, so a placeholder can never be misread as a
+  seal.
+- **Wash:** `linear-gradient(158deg, color-mix(in srgb, <colour> 55%, var(--paper)), <colour>)`.
+  Mixing toward `--paper` rather than white is what keeps it warm and on-palette.
+- **Figure:** a circle (head) and a rounded shoulder shape rising from the bottom edge, filled
+  `--paper` at 20% opacity, in a 100x100 viewBox with `preserveAspectRatio="xMidYMax meet"` so the
+  shoulders meet the bottom edge at any aspect ratio: 16:9 on Today, 4:5 on an Explore tile,
+  near-square on a rail.
+- **No text and no initials, ever.** The surrounding UI already names the analyst and the
+  headline; repeating either here only adds noise at the size the image has to work at.
+- **It is not a video affordance.** It never draws a play glyph, a duration or a VIDEO badge;
+  those are earned from a stored clip and belong to the call site.
+- Every call site renders it behind a `thumbnailUrl ? real : placeholder` check, so it disappears
+  on its own as real thumbnails arrive, with no migration and no cleanup.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)

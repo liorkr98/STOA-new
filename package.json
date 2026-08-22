@@ -34,7 +34,10 @@
     "demo:seed": "tsx scripts/seed-demo.ts",
     "demo:teardown": "tsx scripts/demo-teardown.ts",
     "demo:inventory": "tsx scripts/demo-inventory.ts",
-    "typecheck:scripts": "tsc --noEmit -p tsconfig.scripts.json"
+    "typecheck:scripts": "tsc --noEmit -p tsconfig.scripts.json",
+    "demo:video:generate": "tsx scripts/demo-video-generate.ts",
+    "demo:video:upload": "tsx scripts/demo-video-upload.ts",
+    "demo:video:check": "tsx scripts/demo-video-check.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.42",

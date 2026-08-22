@@ -459,6 +459,49 @@ an analyst can improve their record by archiving their misses.** Either archivin
 once a call is locked, or the score should count archived calls while the record hides them, and
 the two paths should then differ deliberately rather than by accident.
 
+### 16. The Bunny Stream webhook is not registered, and will not backfill what is already there
+
+**What happens today.** The webhook handler exists and works
+(`src/app/api/webhooks/bunny-stream/route.ts`); nothing on the Bunny side points at it. The URL to
+register in the Bunny dashboard, under the video library's **Webhook** setting, is:
+
+```
+https://<site-host>/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>
+```
+
+The secret goes in the query string, not in a header. Bunny does not sign its webhooks, so that
+shared secret is the whole of the authentication: the route compares
+`?secret=` against `BUNNY_STREAM_WEBHOOK_SECRET` and answers 401 on a mismatch. Both halves are
+already in `.env.local`; the same value has to reach the deployment environment, because a secret
+set locally and absent in production makes the route accept every unauthenticated caller (the
+check is skipped when the variable is unset).
+
+Verified locally against the real library on 2026-08-22: a POST with the wrong secret is refused
+401, and a POST with the right one flips the clip to `ready`, writes the Bunny CDN thumbnail,
+preview and caption URLs, and records the true duration Bunny measured.
+
+**The part that will surprise you.** Registering the webhook will not make the 112 demo clips
+ready. Bunny fires on a status *transition*, and all 112 finished transcoding before any webhook
+existed to hear it, so there is no pending delivery to receive and Bunny does not replay past
+events. The registration governs future uploads only. The existing batch needs the polling path
+below, once.
+
+**The polling path.** `npm run demo:video:check -- --promote` asks Bunny for each clip's
+authoritative record and applies exactly what the webhook applies: the same 90-second length cap,
+the same CDN URLs, the same status transition. It is written and unrun. Without `--promote` the
+same command is read-only and prints where every clip has got to on both sides, which is also the
+fastest way to tell whether a registered webhook is actually arriving.
+
+**One thing the webhook does not do.** `markVideoClipReadyByGuid` sets `status` and never touches
+`published_at`, while every discovery query filters on `status = 'ready' AND published_at IS NOT
+NULL`. A clip that only ever goes through the webhook is therefore ready and still invisible;
+`publishVideoClip` is the path that sets `published_at`. The demo seeder sets it at insert to
+sidestep this, but for real creator uploads the publish step is load-bearing and easy to miss.
+
+**Concerns.** *Trust*: the secret is the only gate on a route that writes to `video_clips`, so it
+should be treated as a credential and rotated if it ever reaches a log. *Data*: nothing to
+backfill beyond the one `--promote` sweep.
+
 ## Suggested sequence, dependencies and sizing
 
 Sizes are rough and assume one person who knows this codebase. They are for ordering, not

@@ -10,6 +10,77 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-22 — Demo video, pass 2: a clip for every publication that should have one
+
+**For someone using the site**
+
+- Nothing is visibly different yet, and that is the intended stopping point.
+  Explore and the Feed only show publications that carry a video clip, and the
+  demo dataset had 455 publications and no video at all, so both surfaces were
+  empty. There are now 112 clips generated and uploaded, one each for the three
+  most recent publications of all 40 demo analysts. They sit in Bunny's
+  "processing" state until the webhook is registered, so the surfaces stay empty
+  until then; see below.
+- The clips are honest placeholders, not pretend footage. Each one is the
+  analyst's own placeholder thumbnail held for 30 to 85 seconds: their assigned
+  colour, the same soft two-tone wash, the same abstract circle-and-shoulders
+  figure at 20% opacity, with a slow drift of light across it so it reads as
+  video rather than a frozen frame. No text, no initials, no stock footage of
+  real people. At tile size it reads as a person on camera; at full size it is
+  obviously synthetic, which is what a demo dataset should look like.
+- An analyst is the same colour everywhere. The clips reuse `analystColor()`,
+  the same id-seeded assignment the placeholder thumbnails already use, so an
+  analyst's clip matches their placeholder on every surface.
+
+**What was added**
+
+- `npm run demo:video:generate` renders the clips into `demo-clips/`, which is
+  gitignored, because 122 MB of mp4 has no business in the repo. Files are named for
+  their report id so the upload step matches clip to publication by name rather
+  than by guessing, and a manifest records the pairing.
+- `npm run demo:video:upload` pushes them to Bunny and attaches a `video_clips`
+  row to each publication. It resumes rather than duplicating if re-run, and
+  deletes the Bunny asset again if the database row cannot be written, so a
+  paid library never accumulates assets that teardown cannot see.
+- `npm run demo:video:check` reports where every clip has got to on both sides,
+  Bunny and the database, and is read-only unless given `--promote`.
+- `npm run demo:teardown` already covers all of it: it reads the Bunny GUIDs out
+  of the `video_clips` rows and deletes the assets before the rows. Confirmed
+  against the real library: a dry run accounts for all 112.
+
+**Needs Krisi**
+
+- **Register the Bunny webhook.** Full URL, secret and the exact behaviour are
+  in `docs/BACKEND_BRIEF.md` item 16. The handler was verified against the real
+  library: wrong secret refused 401, right secret flips the clip to ready with
+  Bunny's own CDN URLs and measured duration.
+- **Registering it will not make these 112 clips ready.** Bunny fires on a
+  status transition, and all 112 finished transcoding before any webhook existed
+  to hear it. There is no pending delivery and Bunny does not replay. The
+  registration covers future uploads; this batch needs one
+  `npm run demo:video:check -- --promote` sweep, which is written and unrun.
+- **The webhook never sets `published_at`.** It sets `status` and nothing else,
+  while every discovery query filters on `status = 'ready' AND published_at IS
+  NOT NULL`. The seeder sets it at insert so the demo does not need a second
+  pass, but for real creator uploads the publish step is load-bearing and easy
+  to miss. Item 16 has the detail.
+
+**Found in passing, not fixed**
+
+- Explore draws nothing at all below three ready clips. The wall packs into rows
+  of six or three with `complete: true` and drops any incomplete trailing row,
+  so one or two ready clips render as "Nothing to explore yet for this filter."
+  Correct for a full wall, confusing while a dataset is filling up. Worth a
+  short-row fallback if the empty state is ever reachable in production.
+- `node_modules` on this machine was a full Next 15 install while `package.json`
+  and the lockfile both specify Next 16, which broke `npm run lint` outright
+  (`eslint-config-next/core-web-vitals` cannot resolve). `npm install` fixes it
+  and left the lockfile untouched, so this was a stale local install rather than
+  anything in the repo. Worth knowing because a dev server started before that
+  install keeps running against the deleted modules and 500s on every route.
+
+---
+
 ## 2026-08-21 — Live-audit fixes: the signed-out crash on Today and Markets, the Markets placeholders, report headlines, and honest demo data
 
 **For someone using the site**
