@@ -1,12 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { Rail } from "@/components/ui/rail";
-import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { ClipThumb } from "@/components/ui/clip-thumb";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
 import { pct } from "@/lib/format";
 import { cn } from "@/lib/design/cn";
@@ -28,23 +27,17 @@ export function Poster({
   analystId,
   className,
   glyph = "md",
-  sizes = "600px",
 }: {
   thumb: TodayItem["thumb"];
   analystId: string | null | undefined;
   className?: string;
   glyph?: "sm" | "md" | "lg";
-  sizes?: string;
 }) {
   const dur = thumb ? durationLabel(thumb.durationSeconds) : "";
   const g = glyph === "lg" ? 64 : glyph === "md" ? 40 : 28;
   return (
     <div className={cn("relative overflow-hidden rounded-[var(--radius-card)] bg-surface-2", className)}>
-      {thumb?.thumbnailUrl ? (
-        <Image src={thumb.thumbnailUrl} alt="" fill sizes={sizes} className="object-cover" />
-      ) : (
-        <PlaceholderThumb seed={analystId} />
-      )}
+      <ClipThumb src={thumb?.thumbnailUrl ?? null} seed={analystId} />
       {thumb ? (
         <>
           <span
@@ -93,7 +86,7 @@ export function TodayLeadSplit({ lead, secondary }: { lead: TodayItem; secondary
     <section aria-label="The lead" className="mt-10 grid gap-10 md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:gap-12">
       <article className="min-w-0">
         <Link href={`/report/${lead.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-          <Poster thumb={lead.thumb} analystId={lead.author.id} glyph="lg" className="-mx-5 aspect-video rounded-none sm:mx-0 sm:rounded-[var(--radius-card)]" sizes="(min-width: 768px) 60vw, 100vw" />
+          <Poster thumb={lead.thumb} analystId={lead.author.id} glyph="lg" className="-mx-5 aspect-video rounded-none sm:mx-0 sm:rounded-[var(--radius-card)]" />
         </Link>
         <div className="today-kicker mt-5">The lead · {kickerFor(lead)}</div>
         <Link href={`/report/${lead.reportId}`} className="focus-ring block rounded">
@@ -154,7 +147,7 @@ export function TodayDeskRail({ items }: { items: TodayDeskItem[] }) {
       {items.map((it) => (
         <article key={it.reportId} className="w-[240px] md:w-[260px]">
           <Link href={`/report/${it.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-            <Poster thumb={it.thumb} analystId={it.author.id} className="aspect-video" sizes="260px" />
+            <Poster thumb={it.thumb} analystId={it.author.id} className="aspect-video" />
           </Link>
           <div className="num mt-2.5 truncate text-[0.6875rem] uppercase tracking-[0.12em] text-text-mute">
             {it.author.displayName} · {it.relationship === "member" ? "Member" : "Following"}
@@ -235,7 +228,7 @@ export function TodayThemeRail({ theme }: { theme: TodayThemeCluster }) {
       {[a, b].filter(Boolean).map((it) => (
         <article key={it!.reportId} className="w-[320px] md:w-[380px]">
           <Link href={`/report/${it!.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-            <Poster thumb={it!.thumb} analystId={it!.author.id} className="aspect-video" sizes="380px" />
+            <Poster thumb={it!.thumb} analystId={it!.author.id} className="aspect-video" />
           </Link>
           <Link href={`/report/${it!.reportId}`} className="focus-ring block rounded">
             <h3 className="mt-3 font-display text-[1.25rem] font-semibold leading-[1.15] tracking-tight line-clamp-3">

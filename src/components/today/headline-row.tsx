@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
-import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { ClipThumb } from "@/components/ui/clip-thumb";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
@@ -108,11 +107,7 @@ function RowThumb({
   const duration = hasClip ? durationLabel(durationSeconds) : "";
   return (
     <Link href={href} className="today-thumb focus-ring" tabIndex={-1} aria-hidden>
-      {thumbnailUrl ? (
-        <Image src={thumbnailUrl} alt="" fill sizes="118px" className="object-cover" />
-      ) : (
-        <PlaceholderThumb seed={analystId} />
-      )}
+      <ClipThumb src={thumbnailUrl} seed={analystId} />
       {hasClip ? (
         <>
           <span className="today-thumb-play">

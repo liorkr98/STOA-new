@@ -9,7 +9,7 @@ import { DirectionTag } from "@/components/ui/tag";
 import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
 import { pct } from "@/lib/format";
-import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { ClipThumb } from "@/components/ui/clip-thumb";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
@@ -102,10 +102,8 @@ function TodayLite({ data }: { data: LandingPayload }) {
                     allow="autoplay; encrypted-media"
                     className="absolute inset-0 h-full w-full border-0"
                   />
-                ) : lead.thumbnailUrl ? (
-                  <Image src={lead.thumbnailUrl} alt="" fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover" />
                 ) : (
-                  <PlaceholderThumb seed={lead.analystId} />
+                  <ClipThumb src={lead.thumbnailUrl} seed={lead.analystId} />
                 )}
                 {/*
                   The play glyph needs a real clip behind it. A stored thumbnail
