@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardBoard, SortableWidget } from "@/components/ui/dashboard-widget";
 import { DensityRoot } from "@/components/layout/density-root";
+import { useStoredValue } from "@/lib/hooks/use-stored-value";
 import { useWatchlist } from "@/lib/watchlist";
 import { usePortfolio } from "@/lib/portfolio";
 import { UNIVERSE } from "@/lib/universe";
@@ -16,6 +17,8 @@ import { UNIVERSE } from "@/lib/universe";
  */
 
 const ORDER_KEY = "stoa-dashboard-order";
+const ORDER_EVENT = "stoa-dashboard-order-changed";
+const identity = (raw: string | null) => raw;
 const DEFAULT_ORDER = ["watchlist", "portfolio", "movers"];
 
 function useQuotes(tickers: string[]) {
@@ -35,27 +38,28 @@ function useQuotes(tickers: string[]) {
 }
 
 export default function DashboardPage() {
-  const [order, setOrder] = useState<string[]>(DEFAULT_ORDER);
+  // Storage is the source of truth for the layout, so the saved order is read
+  // rather than copied into state on mount. Kept as the raw string because the
+  // snapshot has to be comparable by value; the array is derived from it.
+  const orderRaw = useStoredValue(ORDER_KEY, identity, null, ORDER_EVENT);
 
-  useEffect(() => {
+  const order = useMemo(() => {
     try {
-      const raw = window.localStorage.getItem(ORDER_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as string[];
-        const valid = saved.filter((id) => DEFAULT_ORDER.includes(id));
-        if (valid.length === DEFAULT_ORDER.length) setOrder(valid);
-      }
+      const saved = orderRaw ? (JSON.parse(orderRaw) as string[]) : null;
+      const valid = saved?.filter((id) => DEFAULT_ORDER.includes(id));
+      if (valid && valid.length === DEFAULT_ORDER.length) return valid;
     } catch {
       /* keep default */
     }
-  }, []);
+    return DEFAULT_ORDER;
+  }, [orderRaw]);
 
   function reorder(ids: string[]) {
-    setOrder(ids);
     try {
       window.localStorage.setItem(ORDER_KEY, JSON.stringify(ids));
+      window.dispatchEvent(new Event(ORDER_EVENT));
     } catch {
-      /* in-memory only */
+      /* storage unavailable: the layout stays as it was */
     }
   }
 

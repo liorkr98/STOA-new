@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
 import { toggleInstrumentFollow } from "@/app/actions/follows-instruments";
 
 const STORAGE_KEY = "stoa-watchlist";
 const SECTOR_STORAGE_KEY = "stoa-sector-watchlist";
 const IMPORTED_FLAG = "stoa-follows-imported";
+const FOLLOWS_EVENT = "stoa-follows-changed";
+
+const identity = (raw: string | null) => raw;
+const EMPTY: string[] = [];
 
 type FollowKind = "ticker" | "etf" | "sector" | "theme";
 
@@ -44,20 +49,32 @@ function readLocal(storageKey: string): string[] {
 function writeLocal(storageKey: string, value: string[]): void {
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(value));
+    // Storage is what the hook renders from, so every writer announces itself.
+    window.dispatchEvent(new Event(FOLLOWS_EVENT));
   } catch {
     /* storage unavailable, keep in-memory only */
   }
 }
 
 function useInstrumentFollows(storageKey: string, kind: FollowKind) {
-  const [tickers, setTickers] = useState<string[]>([]);
-  const [ready, setReady] = useState(false);
+  // Rendered straight from storage, so the server reconcile below and a second
+  // tab both land without an effect copying values into state.
+  const raw = useStoredValue(storageKey, identity, null, FOLLOWS_EVENT);
+  const ready = useHydrated();
+
+  const tickers = useMemo<string[]>(() => {
+    if (!raw) return EMPTY;
+    try {
+      const parsed = JSON.parse(raw) as string[];
+      return Array.isArray(parsed) ? parsed : EMPTY;
+    } catch {
+      return EMPTY;
+    }
+  }, [raw]);
 
   useEffect(() => {
     let cancelled = false;
     const local = readLocal(storageKey);
-    setTickers(local);
-    setReady(true);
 
     // Reconcile with the server. A guest response leaves the local list alone.
     void (async () => {
@@ -85,7 +102,6 @@ function useInstrumentFollows(storageKey: string, kind: FollowKind) {
 
         const merged = [...new Set([...remote, ...missing])];
         if (cancelled) return;
-        setTickers(merged);
         writeLocal(storageKey, merged);
       } catch {
         // Offline or signed out: the local list already painted.
@@ -99,15 +115,13 @@ function useInstrumentFollows(storageKey: string, kind: FollowKind) {
 
   const toggle = useCallback(
     (symbol: string) => {
-      setTickers((prev) => {
-        const following = prev.includes(symbol);
-        const next = following ? prev.filter((t) => t !== symbol) : [...prev, symbol];
-        writeLocal(storageKey, next);
-        // Fire-and-forget: a signed-out reader gets an error we intentionally
-        // ignore, since localStorage already holds the change.
-        void toggleInstrumentFollow(kind, symbol, following).catch(() => undefined);
-        return next;
-      });
+      const current = readLocal(storageKey);
+      const following = current.includes(symbol);
+      const next = following ? current.filter((t) => t !== symbol) : [...current, symbol];
+      writeLocal(storageKey, next);
+      // Fire-and-forget: a signed-out reader gets an error we intentionally
+      // ignore, since localStorage already holds the change.
+      void toggleInstrumentFollow(kind, symbol, following).catch(() => undefined);
     },
     [storageKey, kind],
   );

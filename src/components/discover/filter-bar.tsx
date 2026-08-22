@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
@@ -54,12 +54,12 @@ export function FilterBar() {
   const router = useRouter();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
-  const [tickerDraft, setTickerDraft] = useState(params.get("ticker") ?? "");
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setTickerDraft(params.get("ticker") ?? "");
-  }, [params]);
+  const urlTicker = params.get("ticker") ?? "";
+  // The draft remembers which URL value it was typed against, so a navigation
+  // that changes the ticker shows the new one without an effect resetting it.
+  const [tickerDraft, setTickerDraft] = useState<{ forUrl: string; value: string } | null>(null);
+  const ticker = tickerDraft?.forUrl === urlTicker ? tickerDraft.value : urlTicker;
+  const [openOverride, setOpenOverride] = useState<boolean | null>(null);
 
   function replaceParams(mutate: (next: URLSearchParams) => void) {
     const next = new URLSearchParams(params.toString());
@@ -77,21 +77,20 @@ export function FilterBar() {
   }
 
   function commitTicker() {
-    setParam("ticker", tickerDraft.trim().toUpperCase());
+    setParam("ticker", ticker.trim().toUpperCase());
   }
 
   const activeCount = FILTER_KEYS.filter((k) => Boolean(params.get(k))).length;
-
-  useEffect(() => {
-    if (activeCount > 0) setOpen(true);
-  }, [activeCount]);
+  // Open follows the filters until the reader says otherwise, then their choice
+  // sticks. Previously an effect forced it open and it could never follow back.
+  const open = openOverride ?? activeCount > 0;
 
   return (
     <div className="rounded-[var(--radius-card)] border border-border bg-surface">
       <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpenOverride(!open)}
           aria-expanded={open}
           className={cn(
             "inline-flex h-9 items-center gap-2 rounded-[var(--radius-btn)] border px-3 text-xs font-medium transition-colors focus-ring",
@@ -110,8 +109,8 @@ export function FilterBar() {
         </button>
 
         <input
-          value={tickerDraft}
-          onChange={(e) => setTickerDraft(e.target.value.toUpperCase())}
+          value={ticker}
+          onChange={(e) => setTickerDraft({ forUrl: urlTicker, value: e.target.value.toUpperCase() })}
           onKeyDown={(e) => e.key === "Enter" && commitTicker()}
           onBlur={commitTicker}
           placeholder="Ticker"
@@ -127,7 +126,7 @@ export function FilterBar() {
               startTransition(() => {
                 router.replace(tab ? `/discover?tab=${tab}` : "/discover", { scroll: false });
               });
-              setTickerDraft("");
+              setTickerDraft({ forUrl: urlTicker, value: "" });
             }}
             className="inline-flex h-9 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-xs text-text-faint transition-colors hover:text-text focus-ring"
           >
