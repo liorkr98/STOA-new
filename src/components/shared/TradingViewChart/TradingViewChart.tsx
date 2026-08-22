@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
+import { useHydrated } from "@/lib/hooks/use-stored-value";
 import { chartRangeToTvInterval, toTradingViewSymbol } from "@/lib/market/tradingview-symbol";
 import type { ChartRange } from "@/lib/market/candle-types";
 
@@ -29,9 +30,7 @@ export function TradingViewChart({
 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
 
   const studiesKey = studies.join("|");
 

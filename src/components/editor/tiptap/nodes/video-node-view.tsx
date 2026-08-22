@@ -79,7 +79,11 @@ export function VideoNodeView({
   }, [assetId, minPlanRank]);
 
   useEffect(() => {
-    if (assetId) void fetchToken();
+    if (!assetId) return;
+    // Started on a later task: fetchToken moves the playback state, and doing
+    // that inside the effect body renders the node twice before it paints.
+    const id = setTimeout(() => void fetchToken(), 0);
+    return () => clearTimeout(id);
   }, [assetId, fetchToken]);
 
   async function handleFile(file: File) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -183,7 +183,9 @@ export function ExploreWall({
 }) {
   const router = useRouter();
   const search = useSearchParams();
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Tagged with the filter it was opened under, so changing ticker or sector
+  // closes the player during render instead of through an effect.
+  const [opened, setOpened] = useState<{ scope: string; index: number } | null>(null);
 
   const setFilter = (key: "ticker" | "sector", v: string | null) => {
     const q = new URLSearchParams(search.toString());
@@ -205,12 +207,11 @@ export function ExploreWall({
     return { six, three };
   }, [tiles, filtered]);
 
+  const filterScope = `${ticker ?? ""}|${sector ?? ""}`;
+  const openIndex = opened?.scope === filterScope ? opened.index : null;
+
   const shown = tiles.filter((t) => layouts.six.has(t.pub.id) || layouts.three.has(t.pub.id));
   const publications = useMemo(() => shown.map((t) => t.pub), [shown]);
-
-  useEffect(() => {
-    setOpenIndex(null);
-  }, [ticker, sector]);
 
   return (
     <div>
@@ -256,14 +257,14 @@ export function ExploreWall({
                 key={t.pub.id}
                 tile={t}
                 placed={{ six: layouts.six.get(t.pub.id) ?? null, three: layouts.three.get(t.pub.id) ?? null }}
-                onOpen={() => setOpenIndex(i)}
+                onOpen={() => setOpened({ scope: filterScope, index: i })}
               />
             ))}
           </div>
         </div>
       )}
 
-      {openIndex !== null ? <FeedPlayer publications={publications} startIndex={openIndex} onClose={() => setOpenIndex(null)} canAct={canAct} /> : null}
+      {openIndex !== null ? <FeedPlayer publications={publications} startIndex={openIndex} onClose={() => setOpened(null)} canAct={canAct} /> : null}
     </div>
   );
 }
