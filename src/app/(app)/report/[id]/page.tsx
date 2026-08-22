@@ -7,6 +7,8 @@ import { compact } from "@/lib/format";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
+import { getReadyClipForReport } from "@/lib/db/video-clips";
+import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
@@ -22,6 +24,7 @@ import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
+import { ReportClip } from "@/components/report/report-clip";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
 import { PriceAttestationSection } from "@/components/report/price-attestation-section";
@@ -57,7 +60,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const author = report.author;
   const isAuthor = userId === report.author_id;
 
-  const [unlocked, subscribed, liked, saved, wallet, comments] = await Promise.all([
+  const [unlocked, subscribed, liked, saved, wallet, comments, clip] = await Promise.all([
     userId && report.access === "paid" ? hasUnlocked(userId, id) : Promise.resolve(false),
     userId && report.access === "subscribers"
       ? isSubscribed(userId, report.author_id)
@@ -66,7 +69,22 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     userId ? hasSaved(userId, id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
     listComments(id),
+    getReadyClipForReport(id),
   ]);
+
+  /*
+    Built here rather than in the client component: bunnyEmbedUrl reads
+    server-only env, so the library id must never travel to the browser as
+    anything but a finished URL.
+
+    Bunny's own chrome stays on, unlike the Feed. Someone who pressed play on a
+    report wants a scrubber, a volume control and fullscreen; the Feed hides
+    them because it supplies its own and because its clips play unasked.
+  */
+  const clipEmbedUrl =
+    clip && isBunnyConfigured()
+      ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
+      : null;
 
   const canRead =
     report.access === "free" || isAuthor || unlocked || subscribed;
@@ -141,6 +159,27 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {/* Trust rail stacks above the body on mobile; sticky sidebar on desktop. */}
+      {/*
+        Above the columns, not inside the body one. On a phone the aside stacks
+        first, so a clip placed in the body column landed under the position and
+        disclosure panels: the analyst's own argument, below the small print.
+        Here it leads on both layouts.
+
+        Above the paywall too, and deliberately. The clip is the teaser and is
+        public by design: it is how an analyst makes their case to someone who
+        has not paid. The depth stays gated below it.
+      */}
+      {clip ? (
+        <ReportClip
+          reportId={id}
+          embedUrl={clipEmbedUrl}
+          thumbnailUrl={clip.thumbnail_url}
+          analystId={report.author_id}
+          durationSeconds={clip.duration_seconds}
+          analystName={author?.display_name ?? "The analyst"}
+        />
+      ) : null}
+
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
         <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
           {report.prediction && (

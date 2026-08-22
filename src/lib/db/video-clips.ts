@@ -147,6 +147,28 @@ export async function listReportIdsWithClips(reportIds: string[]): Promise<Set<s
   return new Set((data as { report_id: string }[]).map((r) => r.report_id));
 }
 
+/**
+ * The published, ready clip for one publication, for the report page.
+ *
+ * Public client, so it answers for a signed-out reader: the teaser is public by
+ * design and the paywalled depth stays behind the report's own RLS. Newest wins
+ * if a publication somehow carries more than one.
+ */
+export async function getReadyClipForReport(reportId: string): Promise<VideoClip | null> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("video_clips")
+    .select(COLUMNS)
+    .eq("report_id", reportId)
+    .eq("status", "ready")
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as VideoClip;
+}
+
 /** Published, ready clips for the Feed and the Explore wall. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
   return cachedPage(`video-cards:${limit}`, 20, async () => {
