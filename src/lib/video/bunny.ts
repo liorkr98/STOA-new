@@ -103,7 +103,7 @@ export function bunnyCaptionVttUrl(guid: string, lang = "en"): string {
 /** Bunny's own embed player (handles HLS + captions + disclosure track). */
 export function bunnyEmbedUrl(
   guid: string,
-  opts: { autoplay?: boolean; muted?: boolean; loop?: boolean } = {},
+  opts: { autoplay?: boolean; muted?: boolean; loop?: boolean; chrome?: boolean } = {},
 ): string {
   const { libraryId } = bunnyEnv();
   const params = new URLSearchParams({
@@ -113,6 +113,11 @@ export function bunnyEmbedUrl(
     preload: "true",
     responsive: "true",
   });
+  // Bunny reads `controls` as the list of controls to draw, so an empty list
+  // draws none. The Feed passes chrome: false because it supplies its own
+  // progress bar, mute and play controls, and Bunny's default bar sits exactly
+  // where the analyst's lower-third identity band goes.
+  if (opts.chrome === false) params.set("controls", "");
   return `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}?${params.toString()}`;
 }
 

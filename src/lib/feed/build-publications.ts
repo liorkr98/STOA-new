@@ -92,7 +92,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
     const r = c.report!;
     let embedUrl: string | null = null;
     try {
-      embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true });
+      embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true, chrome: false });
     } catch {
       embedUrl = c.playback_url || null;
     }
