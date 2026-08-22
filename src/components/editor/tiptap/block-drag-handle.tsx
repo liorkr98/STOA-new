@@ -78,8 +78,12 @@ type PinnedMenu =
 export function BlockDragHandle({ editor }: { editor: Editor }) {
   const [hoverTarget, setHoverTarget] = useState<BlockTarget | null>(null);
   const [pinned, setPinned] = useState<PinnedMenu | null>(null);
+  // Mirrored so the pointer and key handlers can read the latest pinned menu
+  // without re-subscribing. Written after commit, never during render.
   const pinnedRef = useRef<PinnedMenu | null>(null);
-  pinnedRef.current = pinned;
+  useEffect(() => {
+    pinnedRef.current = pinned;
+  }, [pinned]);
 
   const closePinned = useCallback(() => setPinned(null), []);
 
