@@ -206,12 +206,19 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     if (it) items.set(r.id, it);
   }
 
-  // Ranking by velocity, then recency. The lead is the strongest item with a video.
+  // Ranking by velocity, then recency. The lead is simply the strongest item.
+  //
+  // Deliberately blind to whether a publication carries a clip. Today is the
+  // reading surface, so leading with a written report is honest; preferring
+  // video here quietly promoted the second-best story whenever the best one
+  // happened to be text, and made an editorial judgement on format rather than
+  // on merit. The Feed is the surface where having a clip is the entry
+  // requirement.
   const ranked = [...pool]
     .map((r) => ({ r, score: trendingScore(pubSamples.get(r.id)!, now) }))
     .sort((a, b) => b.score - a.score || Date.parse(b.r.published_at ?? b.r.created_at) - Date.parse(a.r.published_at ?? a.r.created_at))
     .map((x) => x.r);
-  const leadReport = ranked.find((r) => clipsByReport.has(r.id) && items.has(r.id)) ?? ranked.find((r) => items.has(r.id)) ?? null;
+  const leadReport = ranked.find((r) => items.has(r.id)) ?? null;
   const lead = leadReport ? items.get(leadReport.id) ?? null : null;
   const used = new Set<string>(lead ? [lead.reportId] : []);
   const secondary: TodayItem[] = [];
