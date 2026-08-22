@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
+import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
@@ -69,42 +70,57 @@ export function HeadlineRow({
       <div className="today-row-rail">
         <SaveToggle reportId={item.reportId} initialSaved={item.saved} />
         {tag}
-        {item.thumb ? (
-          <RowThumb
-            href={href}
-            thumbnailUrl={item.thumb.thumbnailUrl}
-            durationSeconds={item.thumb.durationSeconds}
-            headline={item.headline}
-          />
-        ) : null}
+        <RowThumb
+          href={href}
+          thumbnailUrl={item.thumb?.thumbnailUrl ?? null}
+          durationSeconds={item.thumb?.durationSeconds ?? null}
+          analystId={item.author.id}
+        />
       </div>
     </article>
   );
 }
 
+/**
+ * The row's image slot.
+ *
+ * `durationSeconds` is null when the publication has no stored clip. In that
+ * case the slot still renders -- as the analyst's placeholder rather than an
+ * empty frame -- but the play glyph and the duration are withheld, because both
+ * are claims about a video and only a stored clip earns them.
+ *
+ * It used to print the first two letters of the headline into an empty frame;
+ * the row already carries the headline, so that was noise as well as a poor
+ * stand-in for an image.
+ */
 function RowThumb({
   href,
   thumbnailUrl,
   durationSeconds,
-  headline,
+  analystId,
 }: {
   href: string;
   thumbnailUrl: string | null;
-  durationSeconds: number;
-  headline: string;
+  durationSeconds: number | null;
+  analystId: string | null | undefined;
 }) {
-  const duration = durationLabel(durationSeconds);
+  const hasClip = durationSeconds != null;
+  const duration = hasClip ? durationLabel(durationSeconds) : "";
   return (
     <Link href={href} className="today-thumb focus-ring" tabIndex={-1} aria-hidden>
       {thumbnailUrl ? (
         <Image src={thumbnailUrl} alt="" fill sizes="118px" className="object-cover" />
       ) : (
-        <span className="today-thumb-empty num">{headline.slice(0, 2).toUpperCase()}</span>
+        <PlaceholderThumb seed={analystId} />
       )}
-      <span className="today-thumb-play">
-        <Play size={11} fill="currentColor" strokeWidth={0} />
-      </span>
-      {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
+      {hasClip ? (
+        <>
+          <span className="today-thumb-play">
+            <Play size={11} fill="currentColor" strokeWidth={0} />
+          </span>
+          {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
+        </>
+      ) : null}
     </Link>
   );
 }

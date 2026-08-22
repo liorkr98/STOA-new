@@ -41,7 +41,7 @@ import type {
 const DAY = 86_400_000;
 
 function toAnalyst(profile: Profile): TodayAnalyst {
-  return { handle: profile.handle, displayName: profile.display_name, avatarUrl: profile.avatar_url };
+  return { id: profile.id, handle: profile.handle, displayName: profile.display_name, avatarUrl: profile.avatar_url };
 }
 
 /**

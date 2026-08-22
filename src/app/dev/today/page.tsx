@@ -21,7 +21,8 @@ import type {
 const NOW = Date.parse("2026-08-18T14:00:00Z");
 const hoursAgo = (h: number) => new Date(NOW - h * 3_600_000).toISOString();
 
-const analyst = (name: string, handle: string): TodayAnalyst => ({ handle, displayName: name, avatarUrl: null });
+// Fixture ids are the handle: stable, so the placeholder colour is stable here too.
+const analyst = (name: string, handle: string): TodayAnalyst => ({ id: handle, handle, displayName: name, avatarUrl: null });
 const LENA = analyst("Lena Kowalczyk", "lenakw");
 const KAI = analyst("Kai Tanaka", "kaitanaka");
 const MARCUS = analyst("Marcus Webb", "marcus_webb");

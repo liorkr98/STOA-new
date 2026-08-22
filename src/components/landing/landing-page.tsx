@@ -9,6 +9,7 @@ import { DirectionTag } from "@/components/ui/tag";
 import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
 import { pct } from "@/lib/format";
+import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
@@ -104,16 +105,15 @@ function TodayLite({ data }: { data: LandingPayload }) {
                 ) : lead.thumbnailUrl ? (
                   <Image src={lead.thumbnailUrl} alt="" fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover" />
                 ) : (
-                  <div
-                    aria-hidden
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                      background:
-                        "repeating-linear-gradient(118deg, color-mix(in srgb, var(--paper) 14%, transparent) 0 8px, transparent 8px 18px)",
-                    }}
-                  />
+                  <PlaceholderThumb seed={lead.analystId} />
                 )}
-                {!lead.embedUrl ? (
+                {/*
+                  The play glyph needs a real clip behind it. A stored thumbnail
+                  proves one exists; the placeholder above means there is none,
+                  and a play button over it would promise a video that is not
+                  there.
+                */}
+                {!lead.embedUrl && lead.thumbnailUrl ? (
                   <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
                     <Play size={20} fill="currentColor" strokeWidth={0} className="ml-0.5" />
                   </span>

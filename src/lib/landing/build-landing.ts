@@ -35,6 +35,8 @@ export interface LandingLead extends LandingHeadline {
   /** Muted, looping autoplay embed when a ready clip exists; null renders no fake video. */
   embedUrl: string | null;
   thumbnailUrl: string | null;
+  /** The analyst's id, so the placeholder thumbnail can take their colour. */
+  analystId: string | null;
 }
 
 export interface LandingFace {
@@ -114,7 +116,12 @@ async function buildLandingUncached(): Promise<LandingPayload> {
         embedUrl = null;
       }
     }
-    lead = { ...toHeadline(leadReport), embedUrl, thumbnailUrl: clip?.thumbnail_url ?? null };
+    lead = {
+      ...toHeadline(leadReport),
+      embedUrl,
+      thumbnailUrl: clip?.thumbnail_url ?? null,
+      analystId: leadReport.author?.id ?? null,
+    };
   }
   const headlines = ranked.filter((r) => r.id !== leadReport?.id).slice(0, 4).map(toHeadline);
 
@@ -129,7 +136,7 @@ async function buildLandingUncached(): Promise<LandingPayload> {
     exitPrice: p.resolved_price,
     returnPct: p.return_pct,
     resolvedAt: p.resolution_trading_date ?? p.resolves_at,
-    author: { handle: p.author!.handle, displayName: p.author!.display_name, avatarUrl: p.author!.avatar_url },
+    author: { id: p.author!.id, handle: p.author!.handle, displayName: p.author!.display_name, avatarUrl: p.author!.avatar_url },
   }));
   let verdicts = verdictsAll.slice(0, 5);
   if (!verdicts.some((v) => v.outcome === "miss")) {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Play, ArrowRight, Lock, ShieldCheck } from "lucide-react";
+import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
@@ -163,7 +164,8 @@ export function VideoCard({
             aria-label={`Play video: ${data.headline}`}
             className="absolute inset-0 h-full w-full focus-ring"
           >
-            {/* Static poster */}
+            {/* Static poster; the analyst's placeholder until a real one lands. */}
+            {!data.thumbnailUrl && <PlaceholderThumb seed={data.analyst.id} />}
             {data.thumbnailUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img

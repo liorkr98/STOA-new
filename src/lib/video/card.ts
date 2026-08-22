@@ -38,6 +38,7 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
     access: report.access,
     price: report.price,
     analyst: {
+      id: author?.id ?? null,
       handle: author?.handle ?? "",
       displayName: author?.display_name ?? "Analyst",
       avatarUrl: author?.avatar_url ?? null,

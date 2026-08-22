@@ -65,7 +65,7 @@ function toItem(report: Report, themeName: string): TodayItem | null {
     contentBadge: badge,
     headline: storyHeadline(report),
     deck: storyDek(report),
-    author: { handle: report.author.handle, displayName: report.author.display_name, avatarUrl: report.author.avatar_url },
+    author: { id: report.author.id, handle: report.author.handle, displayName: report.author.display_name, avatarUrl: report.author.avatar_url },
     publishedAt: report.published_at ?? report.created_at,
     access: report.access,
     price: report.price,

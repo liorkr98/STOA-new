@@ -12,6 +12,7 @@ import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
 import { trackEngagement } from "@/lib/engagement/track-client";
+import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { cn } from "@/lib/design/cn";
 import type { FeedPublication } from "@/lib/feed/types";
 
@@ -255,18 +256,19 @@ export function FeedPlayer({
           {pub.thumbnailUrl ? (
             <Image src={pub.thumbnailUrl} alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover opacity-90" />
           ) : (
-            <div
-              aria-hidden
-              className="absolute inset-0 opacity-30"
-              style={{
-                background:
-                  "repeating-linear-gradient(118deg, color-mix(in srgb, var(--paper) 14%, transparent) 0 8px, transparent 8px 18px)",
-              }}
-            />
+            <PlaceholderThumb seed={pub.analyst.id} />
           )}
-          <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
-            {paused ? <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" /> : <Pause size={22} fill="currentColor" strokeWidth={0} />}
-          </span>
+          {/*
+            The transport glyph belongs to a real clip. The Feed only queries
+            publications that have one, so this is normally drawn; gating it on
+            clipId keeps the placeholder honest if a clipless publication ever
+            reaches the stage.
+          */}
+          {pub.clipId ? (
+            <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
+              {paused ? <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" /> : <Pause size={22} fill="currentColor" strokeWidth={0} />}
+            </span>
+          ) : null}
         </>
       )}
 

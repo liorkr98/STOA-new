@@ -53,6 +53,7 @@ export default async function DevLandingPage() {
       direction: "long",
       embedUrl: null,
       thumbnailUrl: null,
+      analystId: "lenakw",
     },
     headlines: [
       { reportId: "x2", kicker: "ENERGY", headline: "The refiners nobody is modelling correctly", analyst: "Kai Tanaka", ticker: "VLO", direction: "long" },
@@ -61,11 +62,11 @@ export default async function DevLandingPage() {
       { reportId: "x5", kicker: "MATERIALS", headline: "Copper is the only clean energy trade left", analyst: "Noor Haddad", ticker: "FCX", direction: "long" },
     ],
     verdicts: [
-      { reportId: "v1", ticker: "NVDA", direction: "long", outcome: "hit", headline: "Blackwell demand is being underwritten, not forecast", entryPrice: 118.4, exitPrice: 142.1, returnPct: 20.0, resolvedAt: hoursAgo(5), author: { handle: "lenakw", displayName: "Lena Kowalczyk", avatarUrl: null } },
-      { reportId: "v4", ticker: "XOM", direction: "long", outcome: "hit", headline: "Supply discipline holds through the summer", entryPrice: 104.2, exitPrice: 118.7, returnPct: 13.9, resolvedAt: hoursAgo(31), author: { handle: "kaitanaka", displayName: "Kai Tanaka", avatarUrl: null } },
-      { reportId: "v3", ticker: "ASML", direction: "long", outcome: "miss", headline: "Bookings trough was the second quarter", entryPrice: 712.4, exitPrice: 665.2, returnPct: -6.6, resolvedAt: hoursAgo(28), author: { handle: "priyanadar", displayName: "Priya Nadar", avatarUrl: null } },
-      { reportId: "v6", ticker: "FCX", direction: "long", outcome: "hit", headline: "Copper into the summer restock", entryPrice: 41.2, exitPrice: 48.9, returnPct: 18.7, resolvedAt: hoursAgo(70), author: { handle: "noorhaddad", displayName: "Noor Haddad", avatarUrl: null } },
-      { reportId: "v2", ticker: "AMD", direction: "short", outcome: "near", headline: "The MI350 share-gain story runs out of road", entryPrice: 162.1, exitPrice: 158.9, returnPct: 1.98, resolvedAt: hoursAgo(9), author: { handle: "lenakw", displayName: "Lena Kowalczyk", avatarUrl: null } },
+      { reportId: "v1", ticker: "NVDA", direction: "long", outcome: "hit", headline: "Blackwell demand is being underwritten, not forecast", entryPrice: 118.4, exitPrice: 142.1, returnPct: 20.0, resolvedAt: hoursAgo(5), author: { id: "lenakw", handle: "lenakw", displayName: "Lena Kowalczyk", avatarUrl: null } },
+      { reportId: "v4", ticker: "XOM", direction: "long", outcome: "hit", headline: "Supply discipline holds through the summer", entryPrice: 104.2, exitPrice: 118.7, returnPct: 13.9, resolvedAt: hoursAgo(31), author: { id: "kaitanaka", handle: "kaitanaka", displayName: "Kai Tanaka", avatarUrl: null } },
+      { reportId: "v3", ticker: "ASML", direction: "long", outcome: "miss", headline: "Bookings trough was the second quarter", entryPrice: 712.4, exitPrice: 665.2, returnPct: -6.6, resolvedAt: hoursAgo(28), author: { id: "priyanadar", handle: "priyanadar", displayName: "Priya Nadar", avatarUrl: null } },
+      { reportId: "v6", ticker: "FCX", direction: "long", outcome: "hit", headline: "Copper into the summer restock", entryPrice: 41.2, exitPrice: 48.9, returnPct: 18.7, resolvedAt: hoursAgo(70), author: { id: "noorhaddad", handle: "noorhaddad", displayName: "Noor Haddad", avatarUrl: null } },
+      { reportId: "v2", ticker: "AMD", direction: "short", outcome: "near", headline: "The MI350 share-gain story runs out of road", entryPrice: 162.1, exitPrice: 158.9, returnPct: 1.98, resolvedAt: hoursAgo(9), author: { id: "lenakw", handle: "lenakw", displayName: "Lena Kowalczyk", avatarUrl: null } },
     ],
     faces: FACES,
   };

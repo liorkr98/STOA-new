@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, type CSSProperties } from "react";
 import { Play, BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import type { Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
@@ -94,18 +95,28 @@ const toneColor = (tone: "up" | "down" | "neutral") =>
   tone === "up" ? "var(--up)" : tone === "down" ? "var(--down)" : "var(--text-mute)";
 
 /**
- * A video poster: the real thumbnail when one is stored, otherwise a quiet
- * hatched neutral. Never a stock image, so a missing thumbnail cannot pass
- * for a real one.
+ * A publication's image slot: the real thumbnail when one is stored, otherwise
+ * a generated placeholder in this analyst's colour. Never a stock image, so a
+ * missing thumbnail cannot pass for a real one.
+ *
+ * The play glyph is drawn only for a publication that actually has a clip. It
+ * used to render unconditionally, which put a play button on written reports
+ * and on videos whose thumbnail had not arrived -- a video affordance on
+ * something with no video. `duration` is the tell: it is set only from a stored
+ * clip, so it decides both.
  */
 function VideoThumb({
   src,
   duration,
+  analystId,
+  isVideo,
   className,
   glyph = "md",
 }: {
   src: string | null;
   duration: string | null;
+  analystId: string | null | undefined;
+  isVideo: boolean;
   className?: string;
   glyph?: "md" | "lg";
 }) {
@@ -115,25 +126,20 @@ function VideoThumb({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-40"
-          style={{
-            background:
-              "repeating-linear-gradient(118deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 7px, transparent 7px 16px)",
-          }}
-        />
+        <PlaceholderThumb seed={analystId} />
       )}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span
-          className={cn(
-            "flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]",
-            glyph === "lg" ? "h-16 w-16" : "h-10 w-10",
-          )}
-        >
-          <Play size={glyph === "lg" ? 22 : 14} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
-        </span>
-      </div>
+      {isVideo && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className={cn(
+              "flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]",
+              glyph === "lg" ? "h-16 w-16" : "h-10 w-10",
+            )}
+          >
+            <Play size={glyph === "lg" ? 22 : 14} className="ml-0.5 text-[var(--ink)]" fill="currentColor" />
+          </span>
+        </div>
+      )}
       {duration && (
         <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
           {duration}
@@ -181,7 +187,7 @@ function ViewsMeta({ p }: { p: ProfilePublication }) {
 }
 
 /** Tier 1: the lead publication at full content width. */
-function LeadTier({ p, label }: { p: ProfilePublication; label: string }) {
+function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: string; analystId: string }) {
   return (
     <section aria-label={`${label} publication`}>
       <div className="num mb-3 text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</div>
@@ -190,12 +196,24 @@ function LeadTier({ p, label }: { p: ProfilePublication; label: string }) {
           <VideoThumb
             src={p.thumbnailUrl}
             duration={p.duration}
+            analystId={analystId}
+            isVideo={p.kind === "video"}
             glyph="lg"
             className="-mx-4 aspect-video sm:mx-0 sm:rounded-[var(--radius-card)]"
           />
         ) : (
-          <div className="flex aspect-[21/9] flex-col justify-end border border-border bg-surface p-6 sm:rounded-[var(--radius-card)] md:p-8">
-            <div className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">Written report</div>
+          /*
+            The lead's media area for a publication with no clip. It used to be
+            an empty bordered rectangle with a caption in the corner -- the
+            largest blank space on the profile. The placeholder fills it while
+            the label keeps saying plainly what this publication is, so nothing
+            here implies a video.
+          */
+          <div className="relative flex aspect-[21/9] flex-col justify-end overflow-hidden border border-border p-6 sm:rounded-[var(--radius-card)] md:p-8">
+            <PlaceholderThumb seed={analystId} />
+            <div className="num relative w-fit rounded bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
+              Written report
+            </div>
           </div>
         )}
         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
@@ -221,14 +239,14 @@ function LeadTier({ p, label }: { p: ProfilePublication; label: string }) {
 }
 
 /** Tier 2: a row of the analyst's most-watched videos. */
-function MostWatchedTier({ items }: { items: ProfilePublication[] }) {
+function MostWatchedTier({ items, analystId }: { items: ProfilePublication[]; analystId: string }) {
   return (
     <section aria-label="Most watched">
       <SectionHead label="Most watched" />
       <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0">
         {items.map((p) => (
           <Link key={p.id} href={p.href} className="group w-[68vw] flex-none snap-start focus-ring md:w-auto">
-            <VideoThumb src={p.thumbnailUrl} duration={p.duration} className="aspect-video rounded-[10px]" />
+            <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo={p.kind === "video"} className="aspect-video rounded-[10px]" />
             <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
               {p.title}
             </h3>
@@ -240,10 +258,10 @@ function MostWatchedTier({ items }: { items: ProfilePublication[] }) {
   );
 }
 
-function VideoTile({ p }: { p: ProfilePublication }) {
+function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string }) {
   return (
     <Link href={p.href} className="group flex flex-col focus-ring">
-      <VideoThumb src={p.thumbnailUrl} duration={p.duration} className="aspect-video rounded-[10px]" />
+      <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo={p.kind === "video"} className="aspect-video rounded-[10px]" />
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
         <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
@@ -342,7 +360,7 @@ function SubjectFilter({
 }
 
 /** Tier 3: everything, videos and written reports as peers. */
-function EverythingTier({ items, subjects }: { items: ProfilePublication[]; subjects: ProfileSubject[] }) {
+function EverythingTier({ items, subjects, analystId }: { items: ProfilePublication[]; subjects: ProfileSubject[]; analystId: string }) {
   const [subject, setSubject] = useState<string | null>(null);
   const shown = useMemo(() => (subject ? items.filter((p) => p.subject === subject) : items), [items, subject]);
   return (
@@ -351,7 +369,7 @@ function EverythingTier({ items, subjects }: { items: ProfilePublication[]; subj
         {subjects.length > 0 && <SubjectFilter subjects={subjects} value={subject} onChange={setSubject} />}
       </SectionHead>
       <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-7 md:grid-cols-3 md:gap-x-6 md:gap-y-9">
-        {shown.map((p) => (p.kind === "video" ? <VideoTile key={p.id} p={p} /> : <WrittenTile key={p.id} p={p} />))}
+        {shown.map((p) => (p.kind === "video" ? <VideoTile key={p.id} p={p} analystId={analystId} /> : <WrittenTile key={p.id} p={p} />))}
       </div>
     </section>
   );
@@ -433,9 +451,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
 
       {/* THE WORK: three tiers of decreasing size. A new analyst gets only what exists. */}
       <div className="mt-12 flex flex-col gap-14 md:mt-16 md:gap-20">
-        {props.lead && <LeadTier p={props.lead} label={props.leadLabel} />}
-        {props.mostWatched.length > 0 && <MostWatchedTier items={props.mostWatched} />}
-        {props.everything.length > 0 && <EverythingTier items={props.everything} subjects={props.subjects} />}
+        {props.lead && <LeadTier p={props.lead} label={props.leadLabel} analystId={props.analystId} />}
+        {props.mostWatched.length > 0 && <MostWatchedTier items={props.mostWatched} analystId={props.analystId} />}
+        {props.everything.length > 0 && <EverythingTier items={props.everything} subjects={props.subjects} analystId={props.analystId} />}
         {!props.lead && (
           <p className="t-meta">No publications yet.</p>
         )}

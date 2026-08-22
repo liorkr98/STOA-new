@@ -108,6 +108,7 @@ function toItem(report: Report, hasVideo: boolean, hasCards: boolean): TodayItem
     headline: storyHeadline(report),
     deck: storyDek(report),
     author: {
+      id: report.author.id,
       handle: report.author.handle,
       displayName: report.author.display_name,
       avatarUrl: report.author.avatar_url,

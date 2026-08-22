@@ -28,6 +28,7 @@ function normalizeReport(row: Record<string, unknown>): Report {
 
 function toAnalyst(profile: Profile): TodayAnalyst {
   return {
+    id: profile.id,
     handle: profile.handle,
     displayName: profile.display_name,
     avatarUrl: profile.avatar_url,

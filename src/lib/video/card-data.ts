@@ -6,6 +6,8 @@ import type { Direction } from "@/lib/types";
  * Discover (Part 4) and the Dispatch (Part 5) -- one card component, two places.
  */
 export interface VideoCardAnalyst {
+  /** Profile id, for the placeholder thumbnail's stable colour. */
+  id: string | null;
   handle: string;
   displayName: string;
   avatarUrl: string | null;

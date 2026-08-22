@@ -3,6 +3,12 @@ import type { NewsItem } from "@/lib/market/types";
 
 /** Byline identity, shared by every band. */
 export interface TodayAnalyst {
+  /**
+   * The analyst's profile id. Carried for the generated placeholder thumbnail,
+   * which derives a stable colour from it -- an id survives a rename, a handle
+   * does not.
+   */
+  id: string;
   handle: string;
   displayName: string;
   avatarUrl: string | null;
