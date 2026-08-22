@@ -94,29 +94,33 @@ function TodayLite({ data }: { data: LandingPayload }) {
         <div className="mt-8 grid gap-10 md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
           <Reveal>
             <article>
-              <div className="relative aspect-video overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
-                {lead.embedUrl ? (
-                  <iframe
-                    src={lead.embedUrl}
-                    title={lead.headline}
-                    allow="autoplay; encrypted-media"
-                    className="absolute inset-0 h-full w-full border-0"
-                  />
-                ) : (
-                  <ClipThumb src={lead.thumbnailUrl} seed={lead.analystId} />
-                )}
-                {/*
-                  The play glyph needs a real clip behind it. A stored thumbnail
-                  proves one exists; the placeholder above means there is none,
-                  and a play button over it would promise a video that is not
-                  there.
-                */}
-                {!lead.embedUrl && lead.thumbnailUrl ? (
-                  <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
-                    <Play size={20} fill="currentColor" strokeWidth={0} className="ml-0.5" />
-                  </span>
-                ) : null}
-              </div>
+              {/*
+                The lead prefers a publication with a clip but does not require
+                one, so this whole frame is conditional. With no clip there is
+                no media area at all: the lead reads as kicker, headline and
+                byline, the way a written report does everywhere else. Filling
+                it with a placeholder was reserving a video slot for something
+                that has no video.
+              */}
+              {lead.embedUrl || lead.thumbnailUrl ? (
+                <div className="relative aspect-video overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
+                  {lead.embedUrl ? (
+                    <iframe
+                      src={lead.embedUrl}
+                      title={lead.headline}
+                      allow="autoplay; encrypted-media"
+                      className="absolute inset-0 h-full w-full border-0"
+                    />
+                  ) : (
+                    <>
+                      <ClipThumb src={lead.thumbnailUrl} seed={lead.analystId} />
+                      <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
+                        <Play size={20} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+                      </span>
+                    </>
+                  )}
+                </div>
+              ) : null}
               <div className="today-kicker mt-5">The lead · {lead.kicker}</div>
               <h2 className="dispatch-lead-headline mt-2">{lead.headline}</h2>
               <div className="mt-3 flex flex-wrap items-center gap-2">

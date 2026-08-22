@@ -81,16 +81,16 @@ export function HeadlineRow({
 }
 
 /**
- * The row's image slot.
+ * The row's image slot, and nothing at all when the publication has no clip.
  *
- * `durationSeconds` is null when the publication has no stored clip. In that
- * case the slot still renders -- as the analyst's placeholder rather than an
- * empty frame -- but the play glyph and the duration are withheld, because both
- * are claims about a video and only a stored clip earns them.
+ * `durationSeconds` is null when there is no stored clip, and that is the whole
+ * test: the row then ends after its tag, with no frame reserved. It used to
+ * render the slot regardless, filled with the analyst's placeholder, which put
+ * a coloured square beside every written report and implied a video that was
+ * not there.
  *
- * It used to print the first two letters of the headline into an empty frame;
- * the row already carries the headline, so that was noise as well as a poor
- * stand-in for an image.
+ * The placeholder can still appear inside the slot, for the different case of a
+ * clip whose poster frame Bunny has not produced yet.
  */
 function RowThumb({
   href,
@@ -103,19 +103,15 @@ function RowThumb({
   durationSeconds: number | null;
   analystId: string | null | undefined;
 }) {
-  const hasClip = durationSeconds != null;
-  const duration = hasClip ? durationLabel(durationSeconds) : "";
+  if (durationSeconds == null) return null;
+  const duration = durationLabel(durationSeconds);
   return (
     <Link href={href} className="today-thumb focus-ring" tabIndex={-1} aria-hidden>
       <ClipThumb src={thumbnailUrl} seed={analystId} />
-      {hasClip ? (
-        <>
-          <span className="today-thumb-play">
-            <Play size={11} fill="currentColor" strokeWidth={0} />
-          </span>
-          {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
-        </>
-      ) : null}
+      <span className="today-thumb-play">
+        <Play size={11} fill="currentColor" strokeWidth={0} />
+      </span>
+      {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
     </Link>
   );
 }

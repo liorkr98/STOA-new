@@ -15,45 +15,54 @@ import type { TodayDeskItem, TodayItem, TodayThemeCluster, TodayVerdict } from "
 /* ---------- shared bits ---------- */
 
 /**
- * A video poster: the real thumbnail when one is stored, otherwise a generated
- * placeholder in the analyst's colour.
+ * A publication's video poster, and nothing at all when there is no video.
  *
- * The play glyph and the duration stay tied to `thumb`, which is only set when
- * a real clip exists. So a publication with no clip gets a coloured image slot
- * and nothing else -- the placeholder fills the frame, it never implies a video.
+ * `thumb` is set only when a ready clip exists, and no clip means no slot: no
+ * placeholder, no empty frame, no coloured block. Today is the reading surface,
+ * so a written report leads it as a headline, dek and byline with no image area
+ * reserved, the same as a written report anywhere else. Reserving the frame
+ * regardless was quietly asserting that every publication is a video.
+ *
+ * It owns its own link, so the rule cannot be got wrong at a call site: an
+ * `if (!thumb)` at each one would leave an empty anchor behind.
+ *
+ * The placeholder still appears in one case, and it is a different case: a clip
+ * that exists but whose poster frame Bunny has not produced yet. That is a
+ * video with no still, not a publication with no video.
  */
 export function Poster({
   thumb,
+  href,
   analystId,
   className,
   glyph = "md",
 }: {
   thumb: TodayItem["thumb"];
+  href: string;
   analystId: string | null | undefined;
   className?: string;
   glyph?: "sm" | "md" | "lg";
 }) {
-  const dur = thumb ? durationLabel(thumb.durationSeconds) : "";
+  if (!thumb) return null;
+  const dur = durationLabel(thumb.durationSeconds);
   const g = glyph === "lg" ? 64 : glyph === "md" ? 40 : 28;
   return (
-    <div className={cn("relative overflow-hidden rounded-[var(--radius-card)] bg-surface-2", className)}>
-      <ClipThumb src={thumb?.thumbnailUrl ?? null} seed={analystId} />
-      {thumb ? (
-        <>
-          <span
-            className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]"
-            style={{ width: g, height: g }}
-          >
-            <Play size={Math.round(g * 0.36)} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+    <Link href={href} className="focus-ring block rounded-[var(--radius-card)]">
+      <div className={cn("relative overflow-hidden rounded-[var(--radius-card)] bg-surface-2", className)}>
+        <ClipThumb src={thumb.thumbnailUrl} seed={analystId} />
+        <span
+          className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]"
+          style={{ width: g, height: g }}
+        >
+          <Play size={Math.round(g * 0.36)} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+        </span>
+        {dur ? (
+          <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
+            {dur}
           </span>
-          {dur ? (
-            <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
-              {dur}
-            </span>
-          ) : null}
-        </>
-      ) : null}
-    </div>
+        ) : null}
+      </div>
+    </Link>
   );
 }
 
@@ -85,9 +94,13 @@ export function TodayLeadSplit({ lead, secondary }: { lead: TodayItem; secondary
   return (
     <section aria-label="The lead" className="mt-10 grid gap-10 md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:gap-12">
       <article className="min-w-0">
-        <Link href={`/report/${lead.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-          <Poster thumb={lead.thumb} analystId={lead.author.id} glyph="lg" className="-mx-5 aspect-video rounded-none sm:mx-0 sm:rounded-[var(--radius-card)]" />
-        </Link>
+        <Poster
+          thumb={lead.thumb}
+          href={`/report/${lead.reportId}`}
+          analystId={lead.author.id}
+          glyph="lg"
+          className="-mx-5 aspect-video rounded-none sm:mx-0 sm:rounded-[var(--radius-card)]"
+        />
         <div className="today-kicker mt-5">The lead · {kickerFor(lead)}</div>
         <Link href={`/report/${lead.reportId}`} className="focus-ring block rounded">
           <h1 className="dispatch-lead-headline mt-2">{lead.headline}</h1>
@@ -146,9 +159,7 @@ export function TodayDeskRail({ items }: { items: TodayDeskItem[] }) {
     <Rail title="Your desk" note="From your memberships and follows" trackClassName="items-start">
       {items.map((it) => (
         <article key={it.reportId} className="w-[240px] md:w-[260px]">
-          <Link href={`/report/${it.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-            <Poster thumb={it.thumb} analystId={it.author.id} className="aspect-video" />
-          </Link>
+          <Poster thumb={it.thumb} href={`/report/${it.reportId}`} analystId={it.author.id} className="aspect-video" />
           <div className="num mt-2.5 truncate text-[0.6875rem] uppercase tracking-[0.12em] text-text-mute">
             {it.author.displayName} · {it.relationship === "member" ? "Member" : "Following"}
           </div>
@@ -227,9 +238,7 @@ export function TodayThemeRail({ theme }: { theme: TodayThemeCluster }) {
     >
       {[a, b].filter(Boolean).map((it) => (
         <article key={it!.reportId} className="w-[320px] md:w-[380px]">
-          <Link href={`/report/${it!.reportId}`} className="focus-ring block rounded-[var(--radius-card)]">
-            <Poster thumb={it!.thumb} analystId={it!.author.id} className="aspect-video" />
-          </Link>
+          <Poster thumb={it!.thumb} href={`/report/${it!.reportId}`} analystId={it!.author.id} className="aspect-video" />
           <Link href={`/report/${it!.reportId}`} className="focus-ring block rounded">
             <h3 className="mt-3 font-display text-[1.25rem] font-semibold leading-[1.15] tracking-tight line-clamp-3">
               {it!.headline}

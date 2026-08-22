@@ -192,30 +192,24 @@ function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: strin
     <section aria-label={`${label} publication`}>
       <div className="num mb-3 text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</div>
       <Link href={p.href} className="group block focus-ring">
+        {/*
+          No clip, no media area. This slot has been through a bordered empty
+          rectangle and then a coloured placeholder, both of which were ways of
+          filling space that a written report does not need: it leads with its
+          headline, dek and byline, exactly as it does everywhere else. The type
+          is already stated in the meta row below, so nothing is lost by
+          drawing nothing.
+        */}
         {p.kind === "video" ? (
           <VideoThumb
             src={p.thumbnailUrl}
             duration={p.duration}
             analystId={analystId}
-            isVideo={p.kind === "video"}
+            isVideo
             glyph="lg"
             className="-mx-4 aspect-video sm:mx-0 sm:rounded-[var(--radius-card)]"
           />
-        ) : (
-          /*
-            The lead's media area for a publication with no clip. It used to be
-            an empty bordered rectangle with a caption in the corner -- the
-            largest blank space on the profile. The placeholder fills it while
-            the label keeps saying plainly what this publication is, so nothing
-            here implies a video.
-          */
-          <div className="relative flex aspect-[21/9] flex-col justify-end overflow-hidden border border-border p-6 sm:rounded-[var(--radius-card)] md:p-8">
-            <PlaceholderThumb seed={analystId} />
-            <div className="num relative w-fit rounded bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
-              Written report
-            </div>
-          </div>
-        )}
+        ) : null}
         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
           <div>
             <MetaRow p={p} />
@@ -246,7 +240,7 @@ function MostWatchedTier({ items, analystId }: { items: ProfilePublication[]; an
       <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0">
         {items.map((p) => (
           <Link key={p.id} href={p.href} className="group w-[68vw] flex-none snap-start focus-ring md:w-auto">
-            <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo={p.kind === "video"} className="aspect-video rounded-[10px]" />
+            <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo className="aspect-video rounded-[10px]" />
             <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
               {p.title}
             </h3>
@@ -261,7 +255,7 @@ function MostWatchedTier({ items, analystId }: { items: ProfilePublication[]; an
 function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string }) {
   return (
     <Link href={p.href} className="group flex flex-col focus-ring">
-      <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo={p.kind === "video"} className="aspect-video rounded-[10px]" />
+      <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo className="aspect-video rounded-[10px]" />
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
         <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
