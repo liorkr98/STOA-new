@@ -433,12 +433,29 @@ The clip at the top of a report, and deliberately not the Feed's stage.
   and is public by design, and on a phone the aside stacks first, so anything
   placed in the body column lands under the position and disclosure panels.
 
-**One rule across every surface:** a clip poster is drawn by `ClipThumb`, which
-falls back to `PlaceholderThumb` when and only when there is no thumbnail. The
-coloured placeholder means "this publication has no clip" and must never mean
-"the image failed to load". `ClipThumb` also exists because Bunny's pull zone
-refuses requests with no `Referer` and Next's image optimiser fetches
-server-side, so clip posters never go through `next/image`.
+**Two rules across every surface.**
+
+1. **No clip, no slot.** A publication with no video gets no image area: not a
+   placeholder, not an empty frame, not a coloured block. It renders as a
+   headline, a dek and a byline, the way a written report does everywhere else.
+   Reserving the frame regardless asserts that every publication is a video.
+   The components own this themselves (`Poster` and the Today row thumbnail
+   return `null`, and carry their own link so a call site cannot leave an empty
+   anchor behind).
+
+2. **`ClipThumb` draws every clip poster**, falling back to `PlaceholderThumb`
+   only for a clip whose poster frame has not been produced yet. That is a video
+   with no still, which is not the same thing as a publication with no video.
+   `ClipThumb` exists because Bunny's pull zone refuses requests with no
+   `Referer` and Next's image optimiser fetches server-side, so clip posters
+   never go through `next/image`.
+
+**Selection is a separate question from rendering.** Today's lead is chosen
+blind to whether a publication has a clip, because Today is the reading surface
+and preferring video there is an editorial judgement on format rather than
+merit. A profile's lead still prefers the analyst's video, because a profile is
+a storefront. Both obey rule 1 when the chosen publication turns out to have no
+clip.
 
 ---
 

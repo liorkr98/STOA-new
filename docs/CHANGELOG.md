@@ -10,6 +10,46 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-23 (later still) — No video slot where there is no video
+
+**For someone using the site**
+
+- **Today no longer prefers publications with video when picking its lead.** It
+  had been choosing the strongest publication *that has a clip*, falling back to
+  the strongest overall, which meant a written report could be the best story of
+  the day and still be demoted. Today is the reading surface; the lead is now
+  simply the strongest item.
+- **A publication with no video gets no image area.** Not a placeholder, not an
+  empty frame, not a coloured block. It renders as a headline, dek and byline,
+  the way a written report does everywhere else. Applied to Today's lead and
+  rail posters, the Today row thumbnail, the landing lead, and the profile's
+  lead tier, all four of which had been reserving a frame regardless and filling
+  it with the analyst's colour.
+
+**The one case the placeholder survives**
+
+A clip that exists but whose poster frame Bunny has not produced yet. That is a
+video with no still, which is not the same thing as a publication with no video,
+and there the slot is legitimately a video slot.
+
+**Selection versus rendering**
+
+These are separate questions and only the first was asked about Today. A
+profile's lead still prefers the analyst's video, because a profile is a
+storefront rather than a reading surface. It obeys the same rendering rule when
+the chosen publication has no clip.
+
+**Verified**
+
+Both branches, which the live data cannot currently produce on demand: every
+demo analyst carries at least one clip. `/dev/today?lead=written` strips the
+clip from the fixture lead, and `/dev/profile?pinned=r3` pins a written
+publication as a profile lead. Checked at 1440 and 390. On the dev Today page
+exactly eight media slots render for exactly the eight fixture items that have a
+clip.
+
+---
+
 ## 2026-08-23 (later) — Clips reach Today and the report page
 
 **For someone using the site**
