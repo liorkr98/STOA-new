@@ -410,6 +410,36 @@ scroll-snap, nothing below the fold.
 - Bunny's own player chrome is switched off. It draws a control bar exactly where the identity
   band goes, and the surface supplies its own progress, mute and pause.
 
+### 2.12 `<ReportClip>` — the analyst's video on a report
+
+The clip at the top of a report, and deliberately not the Feed's stage.
+
+- **It waits.** The poster shows with a play control and nothing happens until
+  the reader presses it. The Feed autoplays because its clips arrive unasked; a
+  report is a page someone chose to open, so the choice stays theirs.
+- **It plays in place.** Pressing play mounts the player in the same frame
+  rather than routing to the Feed. The reader asked to watch this argument, on
+  the page where the argument is made.
+- **The player only mounts on that press**, which is why it may carry
+  `autoplay`: by then there has been a gesture, so no browser blocks it, and
+  nothing is downloaded for a reader who only wanted to read.
+- **Bunny's own chrome stays on**, unlike the Feed. Someone who pressed play on
+  a report wants a scrubber, a volume control and fullscreen. The Feed hides
+  them because it supplies its own.
+- **Portrait, capped in height on desktop, full-width on a phone.** Analyst
+  clips are phone-shaped; a 16:9 frame pillarboxes the player and crops the
+  poster to a different shape than the video, so the frame jumps on play.
+- **Above the paywall and above the two-column grid.** The clip is the teaser
+  and is public by design, and on a phone the aside stacks first, so anything
+  placed in the body column lands under the position and disclosure panels.
+
+**One rule across every surface:** a clip poster is drawn by `ClipThumb`, which
+falls back to `PlaceholderThumb` when and only when there is no thumbnail. The
+coloured placeholder means "this publication has no clip" and must never mean
+"the image failed to load". `ClipThumb` also exists because Bunny's pull zone
+refuses requests with no `Referer` and Next's image optimiser fetches
+server-side, so clip posters never go through `next/image`.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)

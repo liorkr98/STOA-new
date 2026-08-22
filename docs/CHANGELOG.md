@@ -10,6 +10,61 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-23 (later) — Clips reach Today and the report page
+
+**For someone using the site**
+
+- **Today shows a real frame from the video** wherever a publication has a
+  clip, on the lead and on every poster in the bands. It was showing a blank
+  grey box with a play glyph. Nothing autoplays and nothing plays inline:
+  pressing a poster opens the publication, which is the point of Today.
+- **The report page now leads with the analyst's video.** The poster sits at the
+  top with a clear play control, and pressing it plays the clip there on the
+  page rather than sending the reader to the Feed. It does not autoplay; the
+  reader chooses. Bunny's own controls are on, so it can be scrubbed and
+  fullscreened.
+- **The landing page's lead poster** had the same fault and is fixed with it.
+
+**Why they were empty, and it was not the same reason twice**
+
+- **Today knew about the clips all along.** It reads the same query the Feed and
+  Explore read, and 78 of the 120 publications in its pool carry one. It drew
+  the poster through Next's image optimiser, which fetches the file from our own
+  server, where there is no referring page to send. The Bunny pull zone refuses
+  that, so every thumbnail came back 403.
+
+  Worth being precise, because the symptom misled: nothing fell back to the
+  coloured placeholder. The placeholder is only reached when the thumbnail URL
+  is null, and it was not null. It was a good URL our own optimiser could not
+  fetch, so the surface showed neither a frame nor a placeholder. That is the
+  same fault fixed for Explore and the Feed earlier today, in the two places
+  that had not been converted.
+
+- **The report page did not know.** There was no clip query and no video
+  component on it at all. It was never wired, so no amount of ready clips would
+  have shown anything.
+
+- **Profiles were already fine.** They draw thumbnails with a plain image tag,
+  so the pull zone serves them normally. The lead tier and the grid have been
+  showing real frames since the clips went ready; nothing needed changing there.
+
+**Checked and left alone**
+
+- The coloured placeholder now appears only where a publication genuinely has no
+  clip. Every poster on the site goes through one component, which falls back to
+  the placeholder when there is no thumbnail, and the only other uses of it are
+  the profile's written-report lead and a card that guards on the same condition.
+
+**Known rough edge**
+
+- Clips are portrait and several surfaces frame them landscape, so a 16:9 tile
+  crops a portrait frame to its middle third. On Today's lead and the profile's
+  lead tier that reads as a close crop rather than a full frame. Correct for a
+  real talking head, where the middle third is the face, and left as it is
+  rather than redesigning those tiles in a bug fix.
+
+---
+
 ## 2026-08-23 — The Feed as designed, Discover retired, and Explore unblocked
 
 **For someone using the site**
