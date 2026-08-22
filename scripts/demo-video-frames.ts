@@ -13,8 +13,13 @@ import { ANALYST_COLORS, analystColor } from "../src/lib/design/analyst-color";
  * No text, no initials, no photography. A two-tone wash and one abstract figure.
  */
 
-export const WIDTH = 1280;
-export const HEIGHT = 720;
+/**
+ * Portrait, because the Feed's stage is portrait. The clip stands in for a
+ * phone-shot analyst video, and a landscape file letterboxes into black bars
+ * top and bottom on the one surface that plays it.
+ */
+export const WIDTH = 1080;
+export const HEIGHT = 1920;
 
 /** `--paper` in light mode (src/app/globals.css). The figure and the gradient's
  * light end are both mixed toward it, which is what keeps the wash warm. */
@@ -91,7 +96,14 @@ function gradientMap(): Float32Array {
  * visibly stepped at the size a feed tile actually renders.
  */
 function figureCoverage(): Float32Array {
-  const scale = Math.min(WIDTH / 100, HEIGHT / 100);
+  // `PlaceholderThumb` uses preserveAspectRatio="xMidYMax meet", which fits the
+  // drawing inside the box. On a 9:16 frame that leaves the figure sitting in
+  // the bottom half with the head two thirds of the way down, which does not
+  // read as someone framed on camera. The clip covers instead: same drawing,
+  // same bottom anchor, scaled to the taller side so the shoulders run past
+  // both edges the way a real portrait shot does. It is the one place the clip
+  // and the component deliberately differ, and only because the frame is tall.
+  const scale = Math.max(WIDTH / 100, HEIGHT / 100);
   const offsetX = (WIDTH - 100 * scale) / 2;
   const offsetY = HEIGHT - 100 * scale;
 
