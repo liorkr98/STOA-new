@@ -16,6 +16,11 @@ import type {
  * Fixture-only: fictional analysts with no photos, hatched posters instead of
  * thumbnails, fake durations. Market news is real (Yahoo, no key) so the band
  * shows its true shape. `?state=empty` renders the signed-out, no-desk issue.
+ *
+ * `?lead=written` swaps in a lead with no clip, which is the case the real page
+ * only reaches when the day's strongest publication happens to be written. Both
+ * branches of the poster rule are then reviewable here rather than waiting for
+ * the data to produce one.
  */
 
 const NOW = Date.parse("2026-08-18T14:00:00Z");
@@ -113,15 +118,27 @@ const tick = (symbol: string, price: number, publications: number, suggestion = 
   symbol, price, changePercent: null, publications, suggestion,
 });
 
-export default async function DevTodayPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
-  const { state } = await searchParams;
+export default async function DevTodayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string; lead?: string }>;
+}) {
+  const { state, lead: leadMode } = await searchParams;
   const signedOut = state === "empty";
+  // The same lead with its clip taken away, so the no-video branch is reviewable.
+  // The VIDEO badge goes with it: on the real page the badge is computed from
+  // whether a clip exists, so leaving it here would show a state the product
+  // cannot actually produce.
+  const activeLead =
+    leadMode === "written"
+      ? { ...lead, thumb: null, contentBadge: lead.contentBadge.filter((b) => b !== "Video") }
+      : lead;
   const news = await getMarketNews(10);
 
   const data: TodayPagePayload = {
     issue: { issueNumber: 41, dateISO: "2026-08-18" },
     personalized: !signedOut,
-    lead,
+    lead: activeLead,
     secondary,
     trending,
     desk: signedOut ? [] : desk,
