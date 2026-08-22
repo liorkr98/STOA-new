@@ -109,49 +109,56 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
   );
 }
 
+const EMPTY_ROWS: TodayTickerRow[] = [];
+
+/** Pads a short list with suggestions the reader does not already follow. */
+function pickFill(rows: TodayTickerRow[], suggested: TodayTickerRow[]): TodayTickerRow[] {
+  if (rows.length >= 4) return EMPTY_ROWS;
+  const ownSet = new Set(rows.map((r) => r.symbol));
+  return suggested.filter((s) => !ownSet.has(s.symbol)).slice(0, 4 - rows.length);
+}
+
 /** YOUR TICKERS lives in the reader's browser until a follows table exists. */
 function YourTickers({ suggested }: { suggested: TodayTickerRow[] }) {
   const { tickers, ready } = useWatchlist();
-  const [rows, setRows] = useState<TodayTickerRow[] | null>(null);
   const key = tickers.slice(0, 12).join(",");
+  // Rows carry the symbol list they answered, so an empty or changed watchlist
+  // resolves during render rather than being cleared from the effect.
+  const [result, setResult] = useState<{ key: string; rows: TodayTickerRow[] } | null>(null);
+  // Chosen once and then frozen, so following a suggestion keeps the row in
+  // place instead of reshuffling the list underneath the reader.
+  const [fill, setFill] = useState<TodayTickerRow[] | null>(null);
 
   useEffect(() => {
-    if (!key) {
-      setRows([]);
-      return;
-    }
+    if (!key) return;
     let live = true;
     fetch(`/api/today/tickers?symbols=${encodeURIComponent(key)}`)
       .then((r) => (r.ok ? r.json() : { tickers: [] }))
       .then((data: { tickers: TodayTicker[] }) => {
         if (!live) return;
-        setRows(
-          (data.tickers ?? []).map((t) => ({
-            symbol: t.symbol,
-            price: t.price,
-            changePercent: t.changePercent ?? null,
-            publications: t.publicationsToday,
-          })),
-        );
+        const next = (data.tickers ?? []).map((t) => ({
+          symbol: t.symbol,
+          price: t.price,
+          changePercent: t.changePercent ?? null,
+          publications: t.publicationsToday,
+        }));
+        setResult({ key, rows: next });
+        setFill((prev) => prev ?? pickFill(next, suggested));
       })
-      .catch(() => live && setRows([]));
+      .catch(() => {
+        if (live) setResult({ key, rows: [] });
+      });
     return () => {
       live = false;
     };
-  }, [key]);
-
-  // Suggestions are chosen once per mount, so following one keeps the row in
-  // place instead of reshuffling the list underneath the reader.
-  const [fill, setFill] = useState<TodayTickerRow[] | null>(null);
-  useEffect(() => {
-    if (rows === null || fill !== null) return;
-    const ownSet = new Set(rows.map((r) => r.symbol));
-    setFill(rows.length < 4 ? suggested.filter((s) => !ownSet.has(s.symbol)).slice(0, 4 - rows.length) : []);
-  }, [rows, fill, suggested]);
+  }, [key, suggested]);
 
   if (!ready) return <SideList title="Your tickers">{null}</SideList>;
-  const own = rows ?? [];
-  const fillSet = new Set((fill ?? []).map((r) => r.symbol));
+  const own = key ? (result?.key === key ? result.rows : EMPTY_ROWS) : EMPTY_ROWS;
+  // With nothing followed there is nothing to wait on, so the suggestions
+  // stand in directly.
+  const shownFill = key ? (fill ?? EMPTY_ROWS) : suggested.slice(0, 4);
+  const fillSet = new Set(shownFill.map((r) => r.symbol));
   return (
     <SideList title="Your tickers">
       {own
@@ -159,7 +166,7 @@ function YourTickers({ suggested }: { suggested: TodayTickerRow[] }) {
         .map((r) => (
           <TickerItem key={r.symbol} row={r} />
         ))}
-      {(fill ?? []).map((r) => (
+      {shownFill.map((r) => (
         <TickerItem key={`s-${r.symbol}`} row={r} />
       ))}
     </SideList>

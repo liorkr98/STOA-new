@@ -27,6 +27,54 @@ function stop(e: React.SyntheticEvent) {
   e.stopPropagation();
 }
 
+/**
+ * Module level rather than nested in NapkinNodeView: a component declared
+ * during render is a fresh type each time, so the diagram would remount (and
+ * re-run its canvas draw) on every keystroke in the editor.
+ */
+function DiagramPreview({
+  hasBuiltIn,
+  bulletPoints,
+  diagramId,
+  diagramTheme,
+  isRough,
+  url,
+  caption,
+}: {
+  hasBuiltIn: boolean;
+  bulletPoints: BulletPoint[];
+  diagramId: DiagramId;
+  diagramTheme: DiagramTheme;
+  isRough: boolean;
+  url: string;
+  caption: string;
+}) {
+  if (hasBuiltIn) {
+    return (
+      <OpenDiagramFrame bulletPoints={bulletPoints} theme={diagramTheme}>
+        <DiagramRenderer
+          diagramId={diagramId}
+          theme={diagramTheme}
+          isRough={isRough}
+          width="100%"
+          className="max-h-48 w-full"
+        />
+      </OpenDiagramFrame>
+    );
+  }
+  if (url) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={url}
+        alt={caption || "Diagram"}
+        className="block w-full rounded-[var(--radius-btn)] border border-border"
+      />
+    );
+  }
+  return null;
+}
+
 export function NapkinNodeView({
   node,
   updateAttributes,
@@ -157,44 +205,29 @@ export function NapkinNodeView({
     if (!autoGenerate || autoStarted.current || hasDiagram) return;
     if (!sourceText.trim()) return;
     autoStarted.current = true;
-    void generate();
+    // Kicked off on a later task: generate() flips the generating/error state
+    // immediately, and doing that inside the effect body makes the node render
+    // twice before it has painted once.
+    const id = setTimeout(() => void generate(), 0);
+    return () => clearTimeout(id);
   }, [autoGenerate, sourceText, hasDiagram, generate]);
 
   const styleGroups = [...new Set(NAPKIN_STYLES.map((s) => s.group))];
-
-  function DiagramPreview() {
-    if (hasBuiltIn) {
-      return (
-        <OpenDiagramFrame bulletPoints={bulletPoints} theme={diagramTheme}>
-          <DiagramRenderer
-            diagramId={diagramId}
-            theme={diagramTheme}
-            isRough={isRough}
-            width="100%"
-            className="max-h-48 w-full"
-          />
-        </OpenDiagramFrame>
-      );
-    }
-    if (url) {
-      return (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={url}
-          alt={caption || "Diagram"}
-          className="block w-full rounded-[var(--radius-btn)] border border-border"
-        />
-      );
-    }
-    return null;
-  }
 
   if (!isEditable) {
     if (!hasDiagram) return <NodeViewWrapper contentEditable={false} className="hidden" />;
     return (
       <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4">
         <div className="mx-auto" style={{ width: `${widthPct}%` }}>
-          <DiagramPreview />
+          <DiagramPreview
+              hasBuiltIn={hasBuiltIn}
+              bulletPoints={bulletPoints}
+              diagramId={diagramId}
+              diagramTheme={diagramTheme}
+              isRough={isRough}
+              url={url}
+              caption={caption}
+            />
           {caption ? <p className="t-meta mt-1.5 text-center">{caption}</p> : null}
           <p className="t-meta mt-1 text-center text-[10px] text-text-faint">AI diagram</p>
         </div>
@@ -402,7 +435,15 @@ export function NapkinNodeView({
         ) : (
           <>
             <div className="mx-auto overflow-x-auto" style={{ width: `${widthPct}%` }}>
-              <DiagramPreview />
+              <DiagramPreview
+              hasBuiltIn={hasBuiltIn}
+              bulletPoints={bulletPoints}
+              diagramId={diagramId}
+              diagramTheme={diagramTheme}
+              isRough={isRough}
+              url={url}
+              caption={caption}
+            />
             </div>
             {provider === "cloud" && variationUrls.length > 1 ? (
               <div>

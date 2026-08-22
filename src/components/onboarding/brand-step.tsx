@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Spinner } from "@phosphor-icons/react";
 import { cn } from "@/lib/design/cn";
@@ -28,32 +28,33 @@ export function BrandStep({ profile }: { profile: Profile }) {
   const [bio, setBio] = useState(profile.bio ?? "");
   const [bannerStyle, setBannerStyle] = useState(profile.profile_config?.banner_style ?? "gradient-accent");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
-  const [availability, setAvailability] = useState<Availability>("idle");
+  // Only the server's answer is stored; idle, invalid and checking all follow
+  // from the handle itself, so they are worked out during render.
+  const [checked, setChecked] = useState<{ handle: string; ok: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const router = useRouter();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clean = handle.trim().toLowerCase();
+  const isOwnHandle = clean === profile.handle;
+  const isWellFormed = HANDLE_RE.test(clean);
+
+  const availability: Availability = isOwnHandle
+    ? "idle"
+    : !isWellFormed
+      ? "invalid"
+      : checked?.handle === clean
+        ? checked.ok
+          ? "available"
+          : "taken"
+        : "checking";
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const clean = handle.trim().toLowerCase();
-    if (clean === profile.handle) {
-      setAvailability("idle");
-      return;
-    }
-    if (!HANDLE_RE.test(clean)) {
-      setAvailability("invalid");
-      return;
-    }
-    setAvailability("checking");
-    debounceRef.current = setTimeout(() => {
-      checkHandleAvailable(clean).then((ok) => setAvailability(ok ? "available" : "taken"));
+    if (isOwnHandle || !isWellFormed) return;
+    const timer = setTimeout(() => {
+      void checkHandleAvailable(clean).then((ok) => setChecked({ handle: clean, ok }));
     }, 400);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handle]);
+    return () => clearTimeout(timer);
+  }, [clean, isOwnHandle, isWellFormed]);
 
   const bannerClass = BANNER_OPTIONS.find((b) => b.value === bannerStyle)?.className ?? BANNER_OPTIONS[0].className;
   const handleValid = availability === "idle" || availability === "available";

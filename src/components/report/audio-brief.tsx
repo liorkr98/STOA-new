@@ -36,7 +36,10 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
   }
 
   useEffect(() => {
-    void fetchUrl();
+    // Started on a later task: fetchUrl moves the brief's status, and doing
+    // that inside the effect body renders the card twice before first paint.
+    const id = setTimeout(() => void fetchUrl(), 0);
+    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId]);
 

@@ -13,41 +13,41 @@ function resolveMarket(ticker: string): AttestationMarket {
 }
 
 export function PriceAttestationSection({ ticker }: { ticker: string }) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<AttestedPriceData | null>(null);
+  // One tagged result instead of three flags. Tagging it with the ticker it
+  // belongs to means "still loading" is derived during render, so the effect
+  // never has to reset state synchronously on a ticker change.
+  const [result, setResult] = useState<{
+    ticker: string;
+    data: AttestedPriceData | null;
+    error: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setData(null);
 
     void attestPrice({ ticker, market: resolveMarket(ticker) })
-      .then((result) => {
+      .then((outcome) => {
         if (cancelled) return;
-        if (result.success) {
-          setData(result.data);
-          setError(null);
-        } else {
-          setError(result.error);
-          setData(null);
-        }
+        setResult(
+          outcome.success
+            ? { ticker, data: outcome.data, error: null }
+            : { ticker, data: null, error: outcome.error },
+        );
       })
       .catch(() => {
         if (cancelled) return;
-        setError("Unable to fetch attested quote.");
-        setData(null);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setLoading(false);
+        setResult({ ticker, data: null, error: "Unable to fetch attested quote." });
       });
 
     return () => {
       cancelled = true;
     };
   }, [ticker]);
+
+  const settled = result?.ticker === ticker ? result : null;
+  const loading = settled === null;
+  const data = settled?.data ?? null;
+  const error = settled?.error ?? null;
 
   return (
     <PriceAttestationCard

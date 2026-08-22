@@ -177,30 +177,38 @@ function LightweightChartNodeView({
   const sourceText = node.attrs.sourceText ? String(node.attrs.sourceText) : "";
   const savedVisibleRange = parseVisibleRange(node.attrs.visibleRange);
   const visibleRangeRef = useRef(savedVisibleRange);
-  visibleRangeRef.current = savedVisibleRange;
 
   // Reading mode with a captured screenshot: show the PNG, never mount a live
   // chart (avoids an authed candle fetch for logged-out readers).
   const useScreenshot = !isEditable && !!screenshotUrl;
   const [imgFailed, setImgFailed] = useState(false);
 
-  const [draftTicker, setDraftTicker] = useState(ticker);
-  const [status, setStatus] = useState<"idle" | "loading" | "empty" | "auth" | "ready">(
-    ticker ? "loading" : "idle",
-  );
+  // The draft carries the ticker it was typed against, so switching charts
+  // shows the new ticker without an effect copying the prop into state.
+  const [draft, setDraft] = useState<{ forTicker: string; value: string } | null>(null);
+  const draftTicker = draft?.forTicker === ticker ? draft.value : ticker;
+  const [fetchStatus, setStatus] = useState<"loading" | "empty" | "auth" | "ready">("loading");
+  // Idle is not a fetch outcome, it is "no ticker yet", so it is derived.
+  const status = ticker ? fetchStatus : "idle";
   const [readout, setReadout] = useState<Readout | null>(null);
   const [drawMode, setDrawMode] = useState<DrawMode>("pan");
   const [trendDraft, setTrendDraft] = useState<TrendDraft | null>(null);
   const containerRef = useRef<ChartContainerEl>(null);
   const annotationsRef = useRef(annotations);
-  annotationsRef.current = annotations;
   const indicatorsRef = useRef(indicators);
-  indicatorsRef.current = indicators;
+
+  // These three mirror the node attributes for the chart's imperative
+  // callbacks, which must not re-subscribe when a drawing changes. Written
+  // after every commit rather than during render; the attrs are re-parsed each
+  // render, so there is no stable dependency to key this on.
+  useEffect(() => {
+    visibleRangeRef.current = savedVisibleRange;
+    annotationsRef.current = annotations;
+    indicatorsRef.current = indicators;
+  });
 
   const hasRsi = indicators.some((i) => i.type === "rsi");
   const chartHeight = hasRsi ? 332 : 260;
-
-  useEffect(() => setDraftTicker(ticker), [ticker]);
 
   // Assign a stable id once, so screenshot capture can find this chart at
   // publish time. Editable-only; a read-only editor can't updateAttributes.
@@ -231,7 +239,6 @@ function LightweightChartNodeView({
   useEffect(() => {
     const el = containerRef.current;
     if (!el || !ticker || (useScreenshot && !imgFailed)) {
-      if (!ticker) setStatus("idle");
       return;
     }
 
@@ -526,7 +533,7 @@ function LightweightChartNodeView({
           <ChartCandlestick size={13} className="text-text-faint" />
           <input
             value={draftTicker}
-            onChange={(e) => setDraftTicker(e.target.value.toUpperCase())}
+            onChange={(e) => setDraft({ forTicker: ticker, value: e.target.value.toUpperCase() })}
             onBlur={commitTicker}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), commitTicker())}
             onMouseDown={stopEditorCapture}

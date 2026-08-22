@@ -19,7 +19,10 @@ export function TabBar({
 }) {
   const pathname = usePathname();
   const listRef = useRef<HTMLDivElement | null>(null);
-  const mountedRef = useRef(false);
+  // Drives render (it decides whether the underline transitions), so it is
+  // state rather than a ref: the first placement lands with no animation, and
+  // every move after it slides.
+  const [animate, setAnimate] = useState(false);
   // The shared underline slides between tabs (MOTION.md A.3). Base width is
   // 1px and the real width comes from scaleX, so only transform animates.
   const [indicator, setIndicator] = useState<{ x: number; scale: number } | null>(null);
@@ -39,9 +42,7 @@ export function TabBar({
     };
 
     measure();
-    const raf = requestAnimationFrame(() => {
-      mountedRef.current = true;
-    });
+    const raf = requestAnimationFrame(() => setAnimate(true));
     const ro = new ResizeObserver(measure);
     ro.observe(list);
     document.fonts?.ready.then(measure).catch(() => {});
@@ -83,9 +84,7 @@ export function TabBar({
           style={{
             transform: `translateX(${indicator.x}px) scaleX(${indicator.scale})`,
             transformOrigin: "0 50%",
-            transition: mountedRef.current
-              ? "transform var(--dur-2) var(--ease-in-out)"
-              : "none",
+            transition: animate ? "transform var(--dur-2) var(--ease-in-out)" : "none",
           }}
         />
       )}

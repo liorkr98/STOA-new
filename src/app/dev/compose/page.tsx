@@ -74,6 +74,11 @@ const PUBS: Publication[] = [
   },
 ];
 
+// Fixed at module load: these are demo timestamps, and reading the clock during
+// render makes this page re-render impure.
+const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
+const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
+
 export default function DevComposePage() {
   const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
   return (
@@ -98,8 +103,8 @@ export default function DevComposePage() {
 
       <h2 className="t-eyebrow mt-12">After publish</h2>
       <div className="mt-3 grid gap-4 md:grid-cols-2">
-        <ProcessingState status="processing" startedAt={new Date(Date.now() - 2 * 60_000).toISOString()} reportHref="/report/p1" hasOverlays />
-        <ProcessingState status="ready" startedAt={new Date(Date.now() - 9 * 60_000).toISOString()} reportHref="/report/p2" hasOverlays={false} />
+        <ProcessingState status="processing" startedAt={PROCESSING_STARTED_AT} reportHref="/report/p1" hasOverlays />
+        <ProcessingState status="ready" startedAt={READY_STARTED_AT} reportHref="/report/p2" hasOverlays={false} />
       </div>
 
       <h2 className="t-eyebrow mt-12">In the Publications list</h2>

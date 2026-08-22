@@ -1,11 +1,14 @@
-import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withSentryConfig } from "@sentry/nextjs";
 
+// Plain ESM rather than next.config.ts: Next 16 compiles a TypeScript config to
+// CommonJS in a .js file, which this package's "type": "module" then refuses to
+// load. JSDoc keeps the editor types.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
   // Keep file tracing scoped to this app when other lockfiles exist in parent dirs.
   outputFileTracingRoot: path.join(__dirname),
   images: {

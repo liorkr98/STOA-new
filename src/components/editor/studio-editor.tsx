@@ -130,6 +130,11 @@ export function StudioEditor({
     isDocMostlyEmpty(null, initialDoc),
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Stamped when the confirm modal opens, not read during render: the analyst
+  // is confirming the horizon they saw, and render has to stay pure.
+  const [confirmHorizonDate, setConfirmHorizonDate] = useState(
+    () => new Date(Date.now() + 30 * 86_400_000),
+  );
   const [captureStatus, setCaptureStatus] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
@@ -416,6 +421,7 @@ export function StudioEditor({
       return;
     }
     if (lockingCall) {
+      setConfirmHorizonDate(new Date(Date.now() + horizon * 86_400_000));
       setConfirmOpen(true);
     } else {
       start(async () => {
@@ -696,7 +702,7 @@ export function StudioEditor({
         onOpenChange={setConfirmOpen}
         ticker={ticker.trim().toUpperCase()}
         targetPrice={target ? Number(target) : null}
-        horizonDate={new Date(Date.now() + horizon * 86_400_000)}
+        horizonDate={confirmHorizonDate}
         busyLabel={captureStatus}
         onConfirm={doPublish}
       />

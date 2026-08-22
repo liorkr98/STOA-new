@@ -48,7 +48,10 @@ export function VideoCard({
   autoPreview?: boolean;
 }) {
   const router = useRouter();
-  const [previewing, setPreviewing] = useState(false);
+  // Hover and viewport drive this; autoPreview is a prop that forces it on, so
+  // it is folded in during render instead of pushed into state by the effect.
+  const [hovering, setHovering] = useState(false);
+  const previewing = autoPreview || hovering;
   const [playing, setPlaying] = useState(false);
   const [showDisclosure, setShowDisclosure] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -65,8 +68,8 @@ export function VideoCard({
   // Prefetch the first ~5s of the stream the moment intent is shown
   // (hover on desktop, in-view on mobile), so tapping play starts instantly.
   useEffect(() => {
-    if (previewing || autoPreview) void prefetchVideoStart(data.playbackUrl);
-  }, [previewing, autoPreview, data.playbackUrl]);
+    if (previewing) void prefetchVideoStart(data.playbackUrl);
+  }, [previewing, data.playbackUrl]);
   const reportHref = `/report/${data.reportId}`;
   const accessLabel =
     data.access === "paid"
@@ -80,16 +83,12 @@ export function VideoCard({
   // Mobile / lead: play the muted preview when the card scrolls into view.
   useEffect(() => {
     const el = rootRef.current;
-    if (!el || playing) return;
-    if (autoPreview) {
-      setPreviewing(true);
-      return;
-    }
+    if (!el || playing || autoPreview) return;
     if (typeof IntersectionObserver === "undefined") return;
     const isTouch = window.matchMedia?.("(hover: none)").matches;
     if (!isTouch) return;
     const obs = new IntersectionObserver(
-      ([entry]) => setPreviewing(entry.isIntersecting && entry.intersectionRatio > 0.6),
+      ([entry]) => setHovering(entry.isIntersecting && entry.intersectionRatio > 0.6),
       { threshold: [0, 0.6, 1] },
     );
     obs.observe(el);
@@ -129,8 +128,8 @@ export function VideoCard({
         "transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
         isLead && "sm:rounded-[calc(var(--radius-card)+2px)]",
       )}
-      onMouseEnter={() => !playing && setPreviewing(true)}
-      onMouseLeave={() => !playing && setPreviewing(false)}
+      onMouseEnter={() => !playing && setHovering(true)}
+      onMouseLeave={() => !playing && setHovering(false)}
     >
       {/* Media region: static poster -> muted preview on hover/in-view -> inline player on tap. */}
       <div

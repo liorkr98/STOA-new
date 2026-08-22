@@ -1,23 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DENSITY_STORAGE_KEY, parseDensity, type Density } from "@/lib/design/density";
+import { DENSITY_STORAGE_KEY, DENSITY_EVENT, parseDensity, type Density } from "@/lib/design/density";
+import { useStoredValue } from "@/lib/hooks/use-stored-value";
 import { cn } from "@/lib/design/cn";
 
 /**
  * Persists comfortable/compact for dense surfaces only. Reader pages ignore this.
  */
 export function DensityToggle() {
-  const [density, setDensity] = useState<Density>("comfortable");
-
-  useEffect(() => {
-    setDensity(parseDensity(window.localStorage.getItem(DENSITY_STORAGE_KEY)));
-  }, []);
+  const density = useStoredValue(DENSITY_STORAGE_KEY, parseDensity, "comfortable", DENSITY_EVENT);
 
   function choose(next: Density) {
-    setDensity(next);
     window.localStorage.setItem(DENSITY_STORAGE_KEY, next);
-    window.dispatchEvent(new Event("stoa-density"));
+    window.dispatchEvent(new Event(DENSITY_EVENT));
   }
 
   return (

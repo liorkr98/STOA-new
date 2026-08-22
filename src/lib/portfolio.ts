@@ -1,14 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
 
 /**
  * localStorage-backed portfolio (Part G), same approach as useWatchlist until a
  * real `portfolios` table exists (see docs/BACKEND_DATA_CONTRACTS.md). Private
  * to the browser; a holding is a ticker with a share count and a cost basis.
+ *
+ * Storage is the source of truth: the hook reads it rather than copying it into
+ * state on mount, so two portfolio views (and a second tab) stay in step.
  */
 
 const STORAGE_KEY = "stoa-portfolio";
+const PORTFOLIO_EVENT = "stoa-portfolio-changed";
+
+const identity = (raw: string | null) => raw;
+const EMPTY: Holding[] = [];
 
 export interface Holding {
   ticker: string;
@@ -18,23 +26,25 @@ export interface Holding {
 }
 
 export function usePortfolio() {
-  const [holdings, setHoldings] = useState<Holding[]>([]);
-  const [ready, setReady] = useState(false);
+  // Held as the raw string: the snapshot has to compare by value, so the array
+  // is parsed out of it rather than being the snapshot itself.
+  const raw = useStoredValue(STORAGE_KEY, identity, null, PORTFOLIO_EVENT);
+  const ready = useHydrated();
 
-  useEffect(() => {
+  const holdings = useMemo<Holding[]>(() => {
+    if (!raw) return EMPTY;
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      setHoldings(raw ? JSON.parse(raw) : []);
+      const parsed = JSON.parse(raw) as Holding[];
+      return Array.isArray(parsed) ? parsed : EMPTY;
     } catch {
-      setHoldings([]);
+      return EMPTY;
     }
-    setReady(true);
-  }, []);
+  }, [raw]);
 
   const persist = useCallback((next: Holding[]) => {
-    setHoldings(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      window.dispatchEvent(new Event(PORTFOLIO_EVENT));
     } catch {
       /* storage unavailable */
     }
@@ -42,24 +52,16 @@ export function usePortfolio() {
 
   const upsert = useCallback(
     (holding: Holding) => {
-      setHoldings((prev) => {
-        const next = [...prev.filter((h) => h.ticker !== holding.ticker), holding];
-        persist(next);
-        return next;
-      });
+      persist([...holdings.filter((h) => h.ticker !== holding.ticker), holding]);
     },
-    [persist],
+    [holdings, persist],
   );
 
   const remove = useCallback(
     (ticker: string) => {
-      setHoldings((prev) => {
-        const next = prev.filter((h) => h.ticker !== ticker);
-        persist(next);
-        return next;
-      });
+      persist(holdings.filter((h) => h.ticker !== ticker));
     },
-    [persist],
+    [holdings, persist],
   );
 
   return { holdings, ready, upsert, remove };

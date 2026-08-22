@@ -18,33 +18,37 @@ interface TickerHit {
 export function InstrumentSearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<TickerHit[]>([]);
+  const [result, setResult] = useState<{ q: string; hits: TickerHit[] } | null>(null);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  const q = query.trim();
+
   useEffect(() => {
-    const q = query.trim();
-    if (q.length < 1) {
-      setHits([]);
-      return;
-    }
+    if (q.length < 1) return;
     let live = true;
     const timer = setTimeout(() => {
       fetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`)
         .then((r) => (r.ok ? r.json() : { tickers: [] }))
         .then((data: { tickers?: TickerHit[] }) => {
           if (!live) return;
-          setHits(data.tickers ?? []);
+          setResult({ q, hits: data.tickers ?? [] });
           setActive(0);
         })
-        .catch(() => live && setHits([]));
+        .catch(() => {
+          if (live) setResult({ q, hits: [] });
+        });
     }, 160);
     return () => {
       live = false;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [q]);
+
+  // Results carry the query they answered, so an empty or changed box shows
+  // nothing during render rather than being cleared from the effect.
+  const hits = q.length >= 1 && result?.q === q ? result.hits : [];
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
