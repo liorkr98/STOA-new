@@ -130,7 +130,14 @@ export function packTiles(items: PackInput[], cols: number, opts: { complete?: b
     if (!crosses) break;
     cut--;
   }
-  return placed.filter((p) => p.row + p.h - 1 <= cut);
+  const trimmed = placed.filter((p) => p.row + p.h - 1 <= cut);
+
+  // Completing the last row is a finish, not a gate. Below roughly one full row
+  // there is nothing to complete, so the trim above discards every tile and the
+  // wall renders as "nothing to explore" while content exists. Falling back to
+  // the untrimmed placement keeps the gap-free wall whenever there is enough to
+  // build one, and shows a short row rather than an empty page when there is not.
+  return trimmed.length > 0 ? trimmed : placed;
 }
 
 /** Cells covered by a layout, for tests and reporting. */
