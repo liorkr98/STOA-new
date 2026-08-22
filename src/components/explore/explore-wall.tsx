@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Play } from "lucide-react";
 import { DirectionTag } from "@/components/ui/tag";
 import { FeedPlayer } from "@/components/feed/feed-player";
 import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
-import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { ClipThumb } from "@/components/ui/clip-thumb";
 import { cn } from "@/lib/design/cn";
 
 /**
@@ -56,11 +55,11 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
       )}
       aria-label={`${p.headline} by ${p.analyst.displayName}`}
     >
-      {p.thumbnailUrl ? (
-        <Image src={p.thumbnailUrl} alt="" fill sizes="(min-width: 768px) 17vw, 33vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
-      ) : (
-        <PlaceholderThumb seed={p.analyst.id} />
-      )}
+      <ClipThumb
+        src={p.thumbnailUrl}
+        seed={p.analyst.id}
+        className="transition-transform duration-300 group-hover:scale-[1.02]"
+      />
       {/* Scrim: transparent at ~60% height, ~55% black at the base. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-[linear-gradient(to_top,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,transparent)]" />
 
