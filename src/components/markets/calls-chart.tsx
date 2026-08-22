@@ -67,6 +67,9 @@ export function CallsChart({
   compact?: boolean;
 }) {
   const [hover, setHover] = useState<Hover>(null);
+  // Pinned at mount rather than read during render: render has to be pure, and
+  // a cutoff that drifts every frame would restamp the chart as time passes.
+  const [mountedAt] = useState(() => Date.now());
   const showOverlay = overlayVisible(range);
   const activeRange = range;
 
@@ -99,7 +102,7 @@ export function CallsChart({
 
   // Seals thin out on long views so a busy name does not turn into a wall of
   // stamps: from 6M up only the last three months are stamped.
-  const sealCutoff = range === "1M" || range === "1W" ? 0 : Date.now() - THREE_MONTHS_MS;
+  const sealCutoff = range === "1M" || range === "1W" ? 0 : mountedAt - THREE_MONTHS_MS;
   const seals = !showOverlay
     ? []
     : resolvedCalls
