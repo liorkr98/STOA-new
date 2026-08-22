@@ -11,7 +11,7 @@ import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
 
 // Feed is the default landing page even though Today is listed first.
-const DEFAULT_HREF = "/discover";
+const DEFAULT_HREF = "/feed";
 
 type NavItem = { key: string; href: string; label: string };
 // The profile area is reached only through the avatar, never a nav item.

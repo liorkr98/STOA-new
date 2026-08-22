@@ -19,8 +19,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // Placeholder package pricing until a boost-pricing config exists in the backend.
 const PACKAGES = [
-  { key: "profile-24", kind: "PROFILE", duration: "24 HOURS", price: 10, desc: "Your profile featured in Discover for a day." },
-  { key: "profile-7", kind: "PROFILE", duration: "7 DAYS", price: 50, desc: "Your profile featured in Discover for a week." },
+  { key: "profile-24", kind: "PROFILE", duration: "24 HOURS", price: 10, desc: "Your profile featured for a day." },
+  { key: "profile-7", kind: "PROFILE", duration: "7 DAYS", price: 50, desc: "Your profile featured for a week." },
   { key: "report-24", kind: "REPORT", duration: "24 HOURS", price: 8, desc: "One publication promoted for a day." },
   { key: "report-7", kind: "REPORT", duration: "7 DAYS", price: 40, desc: "One publication promoted for a week." },
 ];
@@ -38,7 +38,7 @@ export default async function BoostPage() {
       </div>
 
       <p className="t-body max-w-2xl text-text-mute">
-        Boost puts your profile or a single publication in front of more investors in Discover for a set
+        Boost puts your profile or a single publication in front of more investors for a set
         window. Pick a package below.
       </p>
       <p className="num text-[11px] uppercase tracking-[0.14em] text-text-mute">

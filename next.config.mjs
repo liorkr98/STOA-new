@@ -11,6 +11,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   // Keep file tracing scoped to this app when other lockfiles exist in parent dirs.
   outputFileTracingRoot: path.join(__dirname),
+  /**
+   * Discover was retired: the Feed is the only video discovery surface and it
+   * is called Feed. Links to the old route exist in the wild, so it redirects
+   * rather than 404s. Permanent, because it is never coming back.
+   */
+  async redirects() {
+    return [{ source: "/discover", destination: "/feed", permanent: true }];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos" },

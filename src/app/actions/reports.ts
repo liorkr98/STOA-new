@@ -159,7 +159,7 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
     const { id } = await validateAndPublishReport(supabase, userId, input);
     revalidatePath("/");
     revalidatePath("/home");
-    revalidatePath("/discover");
+    revalidatePath("/feed");
     revalidatePath("/studio");
     redirect(`/report/${id}`);
   } catch (e) {
@@ -217,7 +217,7 @@ export async function updateReportAccess(input: {
 
   revalidatePath("/studio");
   revalidatePath("/studio/compose");
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   revalidatePath(`/report/${input.id}`);
   return { ok: true };
 }
@@ -267,7 +267,7 @@ export async function archiveReport(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/studio");
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   revalidatePath(`/report/${id}`);
 }
 
@@ -316,6 +316,6 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
 
   revalidatePath("/");
   revalidatePath("/home");
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   return { ok: true };
 }

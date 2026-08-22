@@ -39,6 +39,6 @@ export async function purchaseBoost({
   if (result.error) return { ok: false as const, error: result.error };
 
   revalidatePath("/studio/branding");
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   return { ok: true as const };
 }

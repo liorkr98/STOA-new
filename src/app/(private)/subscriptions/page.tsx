@@ -52,7 +52,7 @@ export default async function SubscriptionsPage() {
             title="No active subscriptions"
             body="Subscribe to an analyst to unlock subscriber-only research."
             action={
-              <Link href="/discover" className={buttonClass("primary", "md")}>
+              <Link href="/feed" className={buttonClass("primary", "md")}>
                 Browse analysts
               </Link>
             }

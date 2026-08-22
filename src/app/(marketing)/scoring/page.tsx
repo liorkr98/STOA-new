@@ -119,8 +119,8 @@ export default function GradingPage() {
 
       <p className="t-meta">
         Read the record for yourself in{" "}
-        <Link href="/discover" className="text-text underline hover:no-underline">
-          Discover
+        <Link href="/feed" className="text-text underline hover:no-underline">
+          Feed
         </Link>
         .
       </p>

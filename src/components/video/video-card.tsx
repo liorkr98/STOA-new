@@ -30,10 +30,10 @@ function disclosureLine(d: VideoCardData["disclosure"]): string | null {
 
 /**
  * The reusable video card (Part 4.1). Video is the door; the linked report is
- * the room. Used by Discover (grid) and the Dispatch (lead + secondary) -- one
+ * the room. Used by Explore (the wall) and the Dispatch (lead + secondary) -- one
  * component, two surfaces.
  *
- * Motion: no entrance animation (Discover is a high-frequency surface, per
+ * Motion: no entrance animation (Explore is a high-frequency surface, per
  * docs/MOTION.md). Hover-preview and inline-play are the only motion, and the
  * preview is the core content, not decoration. Everything respects the static
  * poster default.

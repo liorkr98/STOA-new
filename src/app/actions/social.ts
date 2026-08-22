@@ -31,7 +31,7 @@ export async function toggleFollow(analystId: string) {
       // non-critical
     }
   }
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   return { following: !existing };
 }
 

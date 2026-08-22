@@ -64,7 +64,7 @@ export const POST = withHandler<{ id: string }>(
       throw new ApiError("internal", result.error ?? "publish failed");
     }
 
-    revalidatePath("/discover");
+    revalidatePath("/feed");
     revalidatePath("/home");
     revalidatePath("/dispatch");
     revalidatePath(`/report/${clip.report_id}`);

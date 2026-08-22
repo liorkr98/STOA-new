@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Play } from "lucide-react";
 import { DirectionTag } from "@/components/ui/tag";
-import { FeedPlayer } from "@/components/feed/feed-player";
 import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
 import { ClipThumb } from "@/components/ui/clip-thumb";
@@ -162,7 +161,6 @@ export function ExploreWall({
   sector,
   dateline,
   basePath = "/explore",
-  canAct = false,
 }: {
   tiles: ExploreTile[];
   tickers: [string, number][];
@@ -171,14 +169,9 @@ export function ExploreWall({
   sector: string | null;
   dateline: string;
   basePath?: string;
-  /** Signed in: like, save and follow inside the player act; otherwise they route to sign-in. */
-  canAct?: boolean;
 }) {
   const router = useRouter();
   const search = useSearchParams();
-  // Tagged with the filter it was opened under, so changing ticker or sector
-  // closes the player during render instead of through an effect.
-  const [opened, setOpened] = useState<{ scope: string; index: number } | null>(null);
 
   const setFilter = (key: "ticker" | "sector", v: string | null) => {
     const q = new URLSearchParams(search.toString());
@@ -200,11 +193,7 @@ export function ExploreWall({
     return { six, three };
   }, [tiles, filtered]);
 
-  const filterScope = `${ticker ?? ""}|${sector ?? ""}`;
-  const openIndex = opened?.scope === filterScope ? opened.index : null;
-
   const shown = tiles.filter((t) => layouts.six.has(t.pub.id) || layouts.three.has(t.pub.id));
-  const publications = useMemo(() => shown.map((t) => t.pub), [shown]);
 
   return (
     <div>
@@ -245,19 +234,18 @@ export function ExploreWall({
       ) : (
         <div className="explore-wall mt-4">
           <div className="explore-grid">
-            {shown.map((t, i) => (
+            {shown.map((t) => (
               <Tile
                 key={t.pub.id}
                 tile={t}
                 placed={{ six: layouts.six.get(t.pub.id) ?? null, three: layouts.three.get(t.pub.id) ?? null }}
-                onOpen={() => setOpened({ scope: filterScope, index: i })}
+                onOpen={() => router.push(`/feed?at=${encodeURIComponent(t.pub.id)}`)}
               />
             ))}
           </div>
         </div>
       )}
 
-      {openIndex !== null ? <FeedPlayer publications={publications} startIndex={openIndex} onClose={() => setOpened(null)} canAct={canAct} /> : null}
     </div>
   );
 }

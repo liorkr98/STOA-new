@@ -24,7 +24,7 @@ export default function RouteError({ reset }: { error: Error; reset: () => void 
       <footer className="border-t border-border px-5 py-4">
         <nav aria-label="Site" className="flex flex-wrap justify-center gap-x-5 gap-y-2 t-body">
           <Link href="/home" className="focus-ring text-text-mute hover:text-text">Today</Link>
-          <Link href="/discover" className="focus-ring text-text-mute hover:text-text">Feed</Link>
+          <Link href="/feed" className="focus-ring text-text-mute hover:text-text">Feed</Link>
           <Link href="/explore" className="focus-ring text-text-mute hover:text-text">Explore</Link>
           <Link href="/markets" className="focus-ring text-text-mute hover:text-text">Markets</Link>
         </nav>

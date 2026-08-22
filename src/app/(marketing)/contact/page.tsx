@@ -44,8 +44,8 @@ export default async function ContactPage({
             Thanks for reaching out. We read every message and usually reply within one to two
             business days.
           </p>
-          <Link href="/discover" className="text-sm text-accent underline hover:no-underline">
-            Back to Discover
+          <Link href="/feed" className="text-sm text-accent underline hover:no-underline">
+            Back to the Feed
           </Link>
         </div>
       </div>

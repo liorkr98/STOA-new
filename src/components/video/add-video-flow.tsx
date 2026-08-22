@@ -446,7 +446,7 @@ export function AddVideoFlow({
               </span>
               <p className="text-sm font-semibold text-text">Video published</p>
               <p className="text-xs text-text-mute">
-                It is now attached to your report and will appear in the video-first Discover and Dispatch.
+                It is now attached to your report and will appear in the Feed, on Explore and in the Dispatch.
               </p>
               <Button variant="secondary" onClick={onClose}>
                 Done

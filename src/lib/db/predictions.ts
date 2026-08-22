@@ -69,7 +69,7 @@ export async function resolvedCountByAuthor(authorId: string): Promise<number> {
 
 /**
  * Resolved (non-open) call counts for many analysts in one grouped query.
- * Discover Researchers and Search used to fire one `count` round trip per card.
+ * Search used to fire one `count` round trip per analyst card.
  */
 export async function resolvedCountsByAuthors(
   authorIds: string[],

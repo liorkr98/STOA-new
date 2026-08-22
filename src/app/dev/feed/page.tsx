@@ -1,11 +1,11 @@
 "use client";
 
-import { FeedPage } from "@/components/feed/feed-page";
+import { FeedSurface } from "@/components/feed/feed-surface";
 import { fixturePublications } from "@/lib/dev/feed-fixtures";
 import type { FeedComment } from "@/lib/feed/types";
 
 /**
- * Dev-only Feed: the player as a page over 30 fictional publications. The
+ * Dev-only Feed: the real surface over 30 fictional publications. The
  * first items put a call (with sealed locked cards and a locked Steelman)
  * beside a callless NOTE (theme chip, no ticker, no seal) and a resolved call
  * with its seal, so both anchoring styles and both Steelman states are visible.
@@ -24,9 +24,5 @@ export default function DevFeedPage() {
     text,
     likes: 0,
   });
-  return (
-    <div className="mx-auto w-full max-w-[1200px] px-5 py-8">
-      <FeedPage publications={ordered} canPost onPost={onPost} />
-    </div>
-  );
+  return <FeedSurface publications={ordered} canAct onPost={onPost} />;
 }

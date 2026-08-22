@@ -2,7 +2,7 @@ import { VideoCard } from "@/components/video/video-card";
 import type { VideoCardData } from "@/lib/video/card-data";
 
 /**
- * Discover video grid (Part 4.1): 1 col mobile, 2 col small, 3 col desktop.
+ * Video grid (Part 4.1): 1 col mobile, 2 col small, 3 col desktop.
  * Browsable and boundaried -- not an infinite vertical swipe. The first item is
  * not special here (the Dispatch owns the lead treatment, Part 5).
  */

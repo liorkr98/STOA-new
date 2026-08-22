@@ -56,7 +56,7 @@ async function tickerRoutes(): Promise<MetadataRoute.Sitemap> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
-    { url: `${SITE_URL}/discover`, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${SITE_URL}/feed`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${SITE_URL}/markets`, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/pricing`, changeFrequency: "monthly", priority: 0.5 },

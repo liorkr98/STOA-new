@@ -17,7 +17,6 @@ const ROUTES: { href: string; label: string; note: string }[] = [
   { href: "/dev/compose", label: "Compose", note: "The video rung with sample overlays, tags, the processing state, the Publications row." },
   { href: "/dev/markets", label: "Markets", note: "Markets bands with fixture coverage." },
   { href: "/dev/dispatch", label: "Dispatch", note: "The public dispatch page with fixture stories." },
-  { href: "/dev/discover", label: "Discover (text mosaic)", note: "The legacy text layout of /discover." },
   { href: "/dev/editor", label: "Editor", note: "The Tiptap report editor with sample blocks." },
   { href: "/dev/components", label: "Components", note: "Shared primitives: chips, seals, buttons, cards." },
   { href: "/dev/marks", label: "Marks", note: "Wordmark and brand marks." },

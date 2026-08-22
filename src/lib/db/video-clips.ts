@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Prediction, Report } from "@/lib/types";
 
 /**
- * video_clips + video_view_events data layer (video-first Discover). The only
+ * video_clips + video_view_events data layer (the video-first Feed). The only
  * place these tables are read/written. RLS: creator manages own rows; published
  * + ready rows are publicly readable (the teaser is public by design). The
  * paywalled depth stays behind the linked report, unchanged.
@@ -147,7 +147,7 @@ export async function listReportIdsWithClips(reportIds: string[]): Promise<Set<s
   return new Set((data as { report_id: string }[]).map((r) => r.report_id));
 }
 
-/** Published, ready clips for the video-first Discover grid. */
+/** Published, ready clips for the Feed and the Explore wall. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
   return cachedPage(`video-cards:${limit}`, 20, async () => {
     const supabase = createPublicClient();

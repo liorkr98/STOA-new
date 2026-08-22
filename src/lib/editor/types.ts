@@ -44,7 +44,7 @@ export interface ProfileConfig {
   specialties?: string[];
   social?: { label: string; url: string }[];
   featured_tickers?: string[];
-  /** Investor-side sector picks from onboarding. Shapes the Discover feed. */
+  /** Investor-side sector picks from onboarding. Shapes the Feed. */
   interests?: string[];
   /** Custom storefront accent (B1). Hex string; overrides only --accent on the
    * public profile, never app-wide. Validated for WCAG AA vs --paper on save. */

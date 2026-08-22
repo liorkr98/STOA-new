@@ -143,7 +143,7 @@ export function DispatchView({
             Thin briefing today. Follow more analysts to fill tomorrow&apos;s issue.
           </p>
           <div className="mt-4">
-            <Link href="/discover?tab=researchers" className={buttonClass("secondary", "sm")}>
+            <Link href="/explore" className={buttonClass("secondary", "sm")}>
               Find analysts
             </Link>
           </div>
@@ -163,7 +163,7 @@ export function DispatchView({
             Next issue tomorrow. Read it again then, or browse the archive now.
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/discover" className={buttonClass("secondary", "sm")}>
+            <Link href="/feed" className={buttonClass("secondary", "sm")}>
               Browse all research
             </Link>
             <Link href="/sign-up" className={buttonClass("primary", "sm")}>

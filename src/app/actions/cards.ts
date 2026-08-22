@@ -23,7 +23,7 @@ export async function saveCards(
   if (!result.ok) return result;
 
   revalidatePath(`/report/${reportId}`);
-  revalidatePath("/discover");
+  revalidatePath("/feed");
   return { ok: true };
 }
 

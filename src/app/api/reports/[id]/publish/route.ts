@@ -35,7 +35,7 @@ export const POST = withHandler<{ id: string }>(
       });
       revalidatePath("/");
       revalidatePath("/home");
-      revalidatePath("/discover");
+      revalidatePath("/feed");
       revalidatePath("/studio");
       return NextResponse.json({ ok: true, id: result.id });
     } catch (e) {

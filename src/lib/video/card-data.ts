@@ -3,7 +3,7 @@ import type { Direction } from "@/lib/types";
 /**
  * Client-safe shape for the reusable video card (Part 4.1). Built on the server
  * by `toVideoCardData` so no Bunny/env code ships to the browser. Used by both
- * Discover (Part 4) and the Dispatch (Part 5) -- one card component, two places.
+ * Explore (Part 4) and the Dispatch (Part 5) -- one card component, two places.
  */
 export interface VideoCardAnalyst {
   /** Profile id, for the placeholder thumbnail's stable colour. */

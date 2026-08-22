@@ -342,7 +342,12 @@ const FeedItem = function FeedItem({
     const el = trackRef.current;
     const child = el?.children[card] as HTMLElement | undefined;
     if (!el || !child) return;
-    el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: "smooth" });
+    // A smooth scroll never completes in a hidden document, which leaves the
+    // track stranded between two cards while the pager says it moved.
+    el.scrollTo({
+      left: child.offsetLeft - el.offsetLeft,
+      behavior: document.hidden ? "auto" : "smooth",
+    });
   }, [card]);
 
   const goCard = useCallback(

@@ -11,7 +11,7 @@ import { buttonClass } from "@/components/ui/button";
  * (logo, nav, footer). A boundary that renders outside the layout leaves the
  * reader on a dead page with no way back into the product.
  *
- * The wording matches the nav: `/discover` is labelled "Feed" there, so it is
+ * The wording matches the nav: `/feed` is labelled "Feed" there, so it is
  * called Feed here too (docs/PRODUCT_MODEL.md, "The surfaces").
  */
 export function ErrorPanel({ reset }: { reset: () => void }) {
@@ -26,7 +26,7 @@ export function ErrorPanel({ reset }: { reset: () => void }) {
         <button type="button" onClick={reset} className={buttonClass("primary", "md")}>
           Try again
         </button>
-        <Link href="/discover" className={buttonClass("secondary", "md")}>
+        <Link href="/feed" className={buttonClass("secondary", "md")}>
           Go to Feed
         </Link>
       </div>

@@ -32,7 +32,7 @@ function admin() {
   return createAdminClient();
 }
 
-/** Tickers in a cap band for Discover filtering (DB-backed). */
+/** Tickers in a cap band for catalog filtering (DB-backed). */
 export async function tickersInCapBand(band: CapBand): Promise<string[]> {
   try {
     const db = admin();

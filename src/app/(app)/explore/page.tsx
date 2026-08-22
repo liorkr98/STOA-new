@@ -11,7 +11,6 @@ import {
 } from "@/lib/explore/wall";
 import { publicationAttention } from "@/lib/lifecycle/stages";
 import { formatDispatchDateline, getCycleWindow } from "@/lib/dispatch/cycle";
-import { getSessionUserId } from "@/lib/db/auth";
 
 export const metadata: Metadata = {
   title: "Explore",
@@ -29,10 +28,9 @@ export default async function ExplorePage({
   searchParams: Promise<{ ticker?: string; sector?: string }>;
 }) {
   const { ticker, sector } = await searchParams;
-  const [clips, userId] = await Promise.all([
-    listVideoClipCards(EXPLORE.TARGET_TILES * 3),
-    getSessionUserId(),
-  ]);
+  // Explore hands off to the Feed rather than acting on a publication itself,
+  // so it no longer needs to know whether anyone is signed in.
+  const clips = await listVideoClipCards(EXPLORE.TARGET_TILES * 3);
   const pubs = await clipsToPublications(clips);
   const attention = new Map(
     clips
@@ -66,7 +64,6 @@ export default async function ExplorePage({
           ticker={ticker?.toUpperCase() ?? null}
           sector={sector ?? null}
           dateline={formatDispatchDateline(getCycleWindow().dateIso)}
-          canAct={Boolean(userId)}
         />
       </div>
     </Suspense>

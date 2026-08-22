@@ -23,7 +23,7 @@ export function SectorPicker({ sectors, initial }: { sectors: string[]; initial:
   function finish(picked: string[]) {
     start(async () => {
       await setInvestorInterests(picked);
-      router.push("/discover");
+      router.push("/feed");
       router.refresh();
     });
   }
