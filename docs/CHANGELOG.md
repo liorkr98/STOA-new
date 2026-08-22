@@ -10,6 +10,103 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-23 — The Feed as designed, Discover retired, and Explore unblocked
+
+**For someone using the site**
+
+- **The Feed is the designed one.** Full-screen: one publication fills the
+  viewport, scrolling snaps to the next, and the clip autoplays muted as it
+  arrives and stops as it leaves. The clip and the publication's evidence cards
+  share a single portrait stage, so moving sideways moves through the evidence:
+  the analyst's face, then the case, then the unlock. Above the frame, the mono
+  dateline; on the picture, ticker and direction chips, the seal when the call is
+  resolved, and the analyst's identity band; beneath it, LIKE, DISCUSS, SAVE and
+  SHARE with the pager at the right end. Keyboard throughout: up and down between
+  publications, left and right through cards, a double right to the unlock card,
+  M to mute, Space to pause.
+- **Discover is gone.** Not renamed, retired. The Feed is the only video
+  discovery surface and it is called Feed. The sections, the layout toggle, the
+  text mosaic and the `?layout=` parameters have all gone with it. Old links
+  still work: `/discover` permanently redirects to `/feed`.
+- **Explore works again.** It had been showing "Nothing to explore yet" over a
+  full catalogue. Tapping a tile now opens the Feed at that publication rather
+  than a separate overlay player.
+- **Thumbnails appear.** Every clip thumbnail on Explore, and the Feed's poster
+  frame, had been rendering as a black rectangle.
+
+**Why Explore was empty**
+
+Two faults stacked, and both had to be true for the page to look broken.
+
+- 111 of the 112 clips were still marked "processing", because the Bunny webhook
+  that flips them to ready has never been registered. Explore only shows
+  publications with a ready clip, so it had exactly one candidate.
+- Explore's wall packs tiles into complete rows and discards an incomplete
+  trailing row, so it ends flush. One tile cannot complete a row, so the one
+  candidate was discarded too and the page rendered its empty state.
+
+The Feed looked fine throughout because it was not showing video at all. It was
+falling back to the old text mosaic, which read publications directly and never
+needed a clip. That fallback was chosen by an env flag that was present but
+empty, and an empty value counted as "explicitly off" rather than "unset". All
+three are fixed: the clips are ready, a thin wall now renders a short row rather
+than nothing, and the flag is deleted rather than corrected, because with the
+mosaic gone it has nothing left to choose between.
+
+**Also fixed**
+
+- **Bunny thumbnails cannot go through Next's image optimiser.** The pull zone
+  refuses requests with no `Referer`, and the optimiser fetches from our own
+  server where there is no referring page: every request came back 403. They are
+  now loaded as plain images, which the browser sends an origin with. The other
+  fix is on the Bunny side, by allowing the no-referrer case, which is a
+  deliberate security setting and not ours to flip.
+- **The demo clips are portrait.** They were generated at 1280x720 before this
+  design existed and sat letterboxed in the 9:16 stage. All 112 were regenerated
+  at 1080x1920 and re-uploaded, and the previous Bunny assets were deleted first
+  so the library holds one set.
+
+**Where Discover appeared, and what happened to each**
+
+- Routes: `(app)/discover/` and `dev/discover/` deleted; `/discover` redirects.
+- Components: `components/discover/` (filter bar, report block, layout toggle)
+  deleted, along with the Feed's tab bar, QuickPost composer, and the previous
+  player and page wrappers that only Discover used.
+- Links: the nav, the footer, the error and not-found pages, the error panel,
+  Contact, Scoring, Subscriptions, the Dispatch and onboarding all pointed at
+  `/discover`; all now point at `/feed`, or at `/explore` where they meant
+  "browse analysts".
+- Revalidation: seven `revalidatePath("/discover")` calls across the report,
+  card, boost, social and publish paths now revalidate `/feed`.
+- The `video_first_discover` feature flag, its helper and its env override:
+  deleted.
+- Boost placements `discover_researchers` and `discover_sidebar` renamed to
+  `analyst_featured` and `analyst_sidebar`. Safe to rename because the `boosts`
+  table has never been migrated, so no stored row carries the old values.
+- Copy and comments across fourteen files, plus the sitemap entry.
+- Docs: `CLAUDE.md`, `AGENTS.md`, `docs/PRODUCT_MODEL.md`, `docs/FRONTEND.md`,
+  `README.md`, `docs/ROADMAP.md`, `docs/MOTION.md`, `docs/SCALE.md` and
+  `docs/BACKEND.md`. CLAUDE.md and AGENTS.md are read at the start of every
+  session and both said the Feed lives at `/discover`, so a stale line there
+  would have kept steering work back to a surface that no longer exists.
+
+**Needs Krisi**
+
+- The Bunny webhook is still unregistered, so the 112 clips were promoted by
+  polling again (`demo:video:check -- --promote`). Nothing has changed about
+  items 16 and 17 in `docs/BACKEND_BRIEF.md`; they are still the fix.
+
+**Left undone, deliberately**
+
+- The QuickPost composer went with Discover. Analysts compose in Studio, which
+  the nav's Write button already points at, so nothing is unreachable, but this
+  did remove a one-line posting entry point rather than move it.
+- The Researchers tab is gone and nothing replaced it. The two analyst boost
+  packages are still priced and sold against a placement that now has no
+  surface to render in.
+
+---
+
 ## 2026-08-22 — Demo video, pass 2: a clip for every publication that should have one
 
 **For someone using the site**

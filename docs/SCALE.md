@@ -2,7 +2,7 @@
 
 Living runbook for running Stoa at social-network scale. Companion to `AGENTS.md`.
 Covers caching, idempotency, rate limiting, the job queue, observability, database
-depth, security, and disaster recovery. Discover 2.0 (two-axis video feed) is a
+depth, security, and disaster recovery. The two-axis video Feed is a
 separate project and is intentionally not covered here.
 
 ## Layers

@@ -11,7 +11,8 @@ two disagree, this file wins and `AGENTS.md` should be corrected to match.
   investor-to-analyst billing. Full research and rationale in `docs/BACKEND_DATA_CONTRACTS.md`.
 - **Route names are unchanged from the existing build**, not renamed to the `/@handle`-style
   paths this doc originally used. `/analyst/[handle]` stays `/analyst/[handle]` (not `/@handle`),
-  `/discover` stays `/discover` (not `/feed`), `/studio` stays `/studio` (not `/dashboard`), etc.
+  the Feed is `/feed` (Discover is retired; `/discover` redirects), `/studio` stays `/studio`
+  (not `/dashboard`), etc.
   This avoided conflicting with in-flight backend branches. The design system, components, and
   page content below apply within the existing URLs.
 
@@ -225,7 +226,7 @@ deprecated alias that re-exports this component; do not use it in new code.)
   threads. Renders as: small ink-ring seal icon + score number in Plex Mono, e.g. `78`.
   Tapping/clicking always opens that creator's Track Score analytics page - never just decorative.
 - **`size="md"`** - used on the report detail page's trust rail and on creator cards in
-  Discover/leaderboard. Adds hit rate when available.
+  Explore/leaderboard. Adds hit rate when available.
 - **`size="lg"`** - used on the creator's own profile / score page. Full treatment: score, hit
   rate, sample size, and a "View full breakdown" link, laid out as a small ledger-card itself
   (double-ruled border per §1.4).
@@ -381,6 +382,34 @@ to change the other**, then regenerate and re-upload the clips.
 - Every call site renders it behind a `thumbnailUrl ? real : placeholder` check, so it disappears
   on its own as real thumbnails arrive, with no migration and no cleanup.
 
+### 2.11 `<FeedSurface>` — the Feed
+
+The only video discovery surface. Full-screen: one publication per viewport, native vertical
+scroll-snap, nothing below the fold.
+
+- **Stage:** 9:16, height-bound and centred on `--paper`, so the frame is the same shape on a
+  phone and on a 1440 desktop and never depends on the window's aspect ratio. The clip is panel 0
+  of a horizontal track and the publication's evidence cards are the panels behind it, so sideways
+  movement is movement through the publication.
+- **Above the frame:** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
+  in the feed at the right end. A callless publication has no ticker, so its theme tag takes that
+  slot.
+- **On the picture:** ticker and direction chips top-left, the resolution seal top-right when the
+  call is resolved, the mute control beside it, a progress bar along the top edge, and the
+  analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
+- **Beneath the frame:** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
+  SHARE as small outlined icons with mono uppercase letterspaced labels), then the pager (`1 / 7`)
+  at the right end. The pager is a button: it jumps to the unlock card.
+- **Callless publications show no ticker, no direction chip and no seal.** They anchor on a theme
+  or sector tag instead. This is the rule, not a fallback.
+- **Keyboard:** up/down between publications, left/right through cards, a double right to the
+  unlock card, M to mute, Space to pause.
+- **Autoplay:** only the publication in view mounts a player, which is both the autoplay rule and
+  the performance rule. A poster covers the frame until playback is under way, because the embed
+  is opaque black while an HLS stream starts.
+- Bunny's own player chrome is switched off. It draws a control bar exactly where the identity
+  band goes, and the surface supplies its own progress, mute and pause.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)
@@ -427,9 +456,9 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
 
 **Today's Record** + **Top creators this week** leaderboard
 
-**CTA:** "Browse all research in Discover →"
+**CTA:** "Browse every analyst on Explore →"
 
-**Empty state** (no signals / no matching content): prompt to follow analysts → `/discover?tab=researchers`
+**Empty state** (no signals / no matching content): prompt to follow analysts → `/explore`
 
 **Backend:** `GET /api/dispatch?personalized=true` — same ranking as `buildDispatch(true)`.
 
@@ -683,16 +712,22 @@ report" remains unchecked and the checklist persists until it's genuinely done.
 
 ## PART 5 — INVESTOR APP
 
-### 5.1 Home + Discover
+### 5.1 Home + Feed
 
 **Home (`/home`):** Personalized Stoa Dispatch (§3.1b) — follows, subscriptions, saved + recent
 reads. Requires sign-in.
 
-**Discover (`/discover`):** Browse surface — report cards in a responsive **2-column grid**
-(trending, recent, following, subscriptions tabs). Researchers tab stays a card grid. Sidebar:
-top analysts.
+**Feed (`/feed`):** The full-screen vertical video reader, and the only video discovery surface.
+One publication fills the viewport and scrolling snaps to the next; the clip autoplays muted on
+arrival and stops on leaving. The clip and the publication's evidence cards share one 9:16 stage,
+so moving sideways moves through the evidence. Above the frame, the mono dateline; on the picture,
+ticker and direction chips, the seal when resolved, and the analyst's lower-third identity band;
+beneath it, the editorial action bar and the pager. See §2.11.
 
-**Feed card component** (reused in Discover tabs):
+There is no browse-as-text surface. The tabs, the layout toggle and the report-card grid that
+used to live here went with Discover; scanning the catalogue is Explore's job.
+
+**Feed card component**:
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -967,7 +1002,7 @@ Three tabs: **Drafts** / **Locked (open)** / **Resolved**.
 - Churn rate, shown plainly as a percentage with a short explanatory tooltip, not dressed up
 - Subscriber list (paginated table: name/handle, subscribed-since date, tier if multiple exist)
 - **Top referral sources** — where subscribers are coming from (a simple bar list: Direct,
-  Explore/Discover, Shared report links, Search)
+  Explore/Feed, Shared report links, Search)
 - **Referral program section** (full vision, not deferred): a creator-specific referral link they
   can share, with a small dashboard of signups attributed to it — kept genuinely simple, one
   link, one stat block, no complex multi-tier referral mechanics
@@ -1039,7 +1074,7 @@ creator-specific notification types added: new subscriber, new debate reply, rep
 
 **On this build:** routes are NOT renamed to the `/@[handle]` pattern above — see the adaptation
 note at the top of this document. Read the structure above as "what the ideal IA looks like,"
-and map it onto the existing `/analyst/[handle]`, `/discover`, `/studio` routes in practice.
+and map it onto the existing `/analyst/[handle]`, `/feed`, `/studio` routes in practice.
 
 ### 7.2 Token file, concretely
 

@@ -117,7 +117,7 @@ Baseline controls:
 |-------|------|---------|
 | `/studio/branding` | Analyst | Branding studio (identity, themes, AI analyzer, pricing, boosts) |
 | `POST /api/ai/brand-analyze` | Signed in | AI brand scores + copy suggestions (2 AI credits) |
-| `purchase_boost` RPC | Signed in | Debit wallet, activate Discover placement |
+| `purchase_boost` RPC | Signed in | Debit wallet, activate boost placement |
 
 ### Boost packages (wallet balance)
 

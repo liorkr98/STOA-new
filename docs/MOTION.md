@@ -82,7 +82,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 | **PaywallGate unlock** | The paid moment earns a small lift: scrim gradient fades out while revealed content rises y 8px→0. One-time per unlock. | `--dur-3` `--ease-out` |
 | **FeedCard hover** | Border-color shift + translateY(-1px). **No scale, no shadow-grow** — scale on large surfaces reads cheap and shadows violate the elevation system. | `--dur-1` `--ease-hover` |
 | **Dropdowns / role switcher / bell** | Scale 0.97→1 + opacity, origin at trigger edge. | `--dur-2` / `--dur-1` exit |
-| **Tabs (My Reports, Discover)** | Shared underline slides between tabs, `--ease-in-out`. Panel content: plain 120ms opacity crossfade, no translate. | `--dur-2` |
+| **Tabs (My Reports)** | Shared underline slides between tabs, `--ease-in-out`. Panel content: plain 120ms opacity crossfade, no translate. | `--dur-2` |
 | **Skeleton → content** | Crossfade with 2px blur→0 on incoming content. Skeletons never pop out. | `--dur-2` |
 | **StatusChip change** | Old chip fades/scales out, new one in — never text morphing. | `--dur-1` out, `--dur-2` in |
 | **Notifications list** | New unread item: single y 6px→0 + opacity on arrival. Existing items never re-animate. | `--dur-2` |

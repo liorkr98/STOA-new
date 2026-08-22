@@ -22,7 +22,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - Server-side price lock + SPY benchmark at publish
 - Hourly grading cron + CLI (`npm run grade`)
 - Track Score (0-100) is the only score in the UI; the 600-1400 rating display + tiers are retired. Underlying formula is an open decision (modified Elo vs Wilson/PF/alpha composite) — see `docs/PRODUCT_MODEL.md`
-- Discover feed (trending, recent, following, subscriptions, **researchers**)
+- The Feed (full-screen vertical video; Discover and its tabs are retired)
 - Analyst profiles, leaderboard, markets browser
 - Wallet (simulated credits), subscribe, unlock, confirm-spend dialog
 - Comments, likes, follows, save toggle

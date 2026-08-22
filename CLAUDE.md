@@ -21,6 +21,10 @@ Quick reminders:
 - **Video-first content model.** The atomic unit of a publication is a short analyst video; a
   locked call, evidence cards, and a written thesis are optional enrichment. Only publications
   with a locked call are scored. See `docs/PRODUCT_MODEL.md`.
+- **There is no Discover.** The Feed is the only video discovery surface, it is called Feed, and
+  it lives at `/feed`; `/discover` is a permanent redirect. The text mosaic and the video/text
+  layout toggle that used to live there are gone. Do not reintroduce a browse-as-text surface:
+  scanning the catalogue is Explore's job.
 - **No public scoring.** No score, rating, rank, percentile or leaderboard appears anywhere
   public; analysts appear as an avatar and a name (the public profile shows followers and, if the
   analyst opts in, members). The Track Record Engine still runs and records still accrue; resolved

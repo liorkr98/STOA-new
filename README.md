@@ -245,7 +245,7 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 
 | Role | Can do |
 |---|---|
-| `user` (investor) | Read, subscribe, unlock, like, comment, save, post quick notes on Discover |
+| `user` (investor) | Read, subscribe, unlock, like, comment, save |
 | `analyst` | Everything above + Studio compose, publish research/calls, set pricing |
 | `admin` | Everything above + `/admin/applications` (approve/reject analyst applications) |
 
@@ -258,13 +258,12 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - Publish research, calls, short posts via block compose editor (`/studio/compose`)
 - Server-side price lock at publish (Yahoo Finance) + SPY benchmark for alpha
 - Hourly grading cron grades open calls, recomputes score/rating/tier
-- Discover feed, analyst profiles, leaderboard, markets browser, search
+- Feed, Explore, analyst profiles, leaderboard, markets browser, search
 - Wallet: top-up (demo), subscribe (90/10 split), pay-per-report unlock
 - Comments, likes, follows, saves, inbox notifications
 - Account dropdown menu, settings, profile branding (avatar/cover/sections)
 
 #### Social / Substack-style layer
-- QuickPost composer on Discover (`postNote` — any signed-in user)
 - Newsletter fan-out on publish (notifies followers + active subscribers)
 - Social notifications (follow, like, comment, publication, sale, subscribe)
 
@@ -369,7 +368,7 @@ npm run grade        # manually run grading engine once
 src/app/
   (app)/become-analyst/       Application funnel (investors apply)
   (app)/admin/applications/   Admin approve/reject UI
-  (app)/discover/             Feed + QuickPost composer
+  (app)/feed/                 The Feed: full-screen vertical video reader
   (app)/analyst/[handle]/     Public analyst profile + track record
   (app)/report/[id]/          Report reader + fact-check results
   (app)/settings/             Profile settings

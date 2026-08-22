@@ -57,7 +57,9 @@ Every publication is one of three types:
 
 Stoa is organized around five surfaces.
 
-- **Feed** — video-first discovery. A vertical stream of publications you swipe through.
+- **Feed** — video-first discovery, and the only one. A full-screen vertical stream: one
+  publication fills the viewport, scrolling snaps to the next, the clip autoplays muted as it
+  arrives and stops as it leaves. Sideways moves through that publication's evidence cards.
 - **Today** — the daily editorial read. A curated, newspaper-style briefing of what matters now.
 - **Markets** — instrument exploration: stocks, ETFs, and sectors, and the Stoa coverage on each.
 - **Compose** — the authoring studio where analysts record the video and assemble the call,
@@ -66,12 +68,17 @@ Stoa is organized around five surfaces.
   investor sections (library, subscriptions, following) and the creator sections (publications,
   track record, audience, earnings, storefront).
 
-Routes: Feed is `/discover` (the nav labels it "Feed"), Today is `/home` (there is no
-`/today`), Explore is `/explore`, Markets is `/markets`, Compose is `/studio/compose`, the public
-profile is `/analyst/[handle]`.
+Routes: Feed is `/feed`, Today is `/home` (there is no `/today`), Explore is `/explore`,
+Markets is `/markets`, Compose is `/studio/compose`, the public profile is `/analyst/[handle]`.
+
+There is no Discover. It was the Feed's old route and old name, and both are gone: `/discover`
+permanently redirects to `/feed`. The text mosaic and the video/text layout toggle that lived
+there are gone with it. A publication reaches the Feed because it has a clip, and browsing the
+whole catalogue as text is not a thing this product does.
 
 Discovery is split by intent: the **Feed** is passive vertical video ("surprise me"), **Explore**
-is on-demand (a wall of faces the reader scans and chooses from, handing off to the Feed player),
+is on-demand (a wall of faces the reader scans and chooses from, each tile opening the Feed at
+that publication),
 **Today** is the curated daily read.
 
 ## The lifecycle model

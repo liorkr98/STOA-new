@@ -166,15 +166,16 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
   **Markets** (instrument exploration), **Compose** (the authoring studio), **Profile** (public
   storefront + one private area covering both investor and creator sections). See
   `docs/PRODUCT_MODEL.md`.
-- **Feed lives at `/discover`.** The nav labels it "Feed"; the route stays `/discover` (do not
-  create a new feed route). Today is `/home`; there is no `/today` route. Explore is `/explore`.
+- **The Feed lives at `/feed`.** It used to live at `/discover` under the label "Feed"; Discover
+  is retired as a surface, a route and a name, and `/discover` is a permanent redirect to `/feed`.
+  Today is `/home`; there is no `/today` route. Explore is `/explore`.
 - Content types: **CALL / RESEARCH / NOTE** (see the content model above). A publication is a
   video, optionally carrying a locked call, cards, and a thesis.
 - The score: **Track Score**, internal and private. Never shown publicly; the public sees the
   record (seals, entry to exit, return). The underlying formula is an open decision — see
   `docs/PRODUCT_MODEL.md`.
 - **Routes are unchanged from the existing build.** `docs/FRONTEND.md` was written against a
-  `/@handle`-style IA; this repo keeps `/analyst/[handle]`, `/discover`, `/studio`, etc. Map the
+  `/@handle`-style IA; this repo keeps `/analyst/[handle]`, `/feed`, `/studio`, etc. Map the
   spec's routes onto the existing ones rather than renaming — this avoided conflicting with
   in-flight backend branches and still stands.
 
