@@ -36,6 +36,9 @@ jobs:
       - name: Valuation tests
         run: npm run test:valuation
 
+      - name: Ranking tests
+        run: npm run test:ranking
+
       - name: RLS tests
         # Skips cleanly when Supabase secrets are absent (see tests/rls).
         run: npm run test:rls
