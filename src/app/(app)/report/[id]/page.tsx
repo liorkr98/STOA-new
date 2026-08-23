@@ -158,30 +158,42 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      {/* Trust rail stacks above the body on mobile; sticky sidebar on desktop. */}
       {/*
-        Above the columns, not inside the body one. On a phone the aside stacks
-        first, so a clip placed in the body column landed under the position and
-        disclosure panels: the analyst's own argument, below the small print.
-        Here it leads on both layouts.
+        Two columns: the writing on one side, the analyst's clip on the other,
+        so a reader can watch while reading instead of scrolling past the video
+        to reach the words. The clip is sticky within its column, so it stays in
+        view for the length of the read rather than scrolling away mid-watch.
 
-        Above the paywall too, and deliberately. The clip is the teaser and is
-        public by design: it is how an analyst makes their case to someone who
-        has not paid. The depth stays gated below it.
+        On a phone there is no room for two columns, so the three blocks stack:
+        clip, then the writing, then the trust panels. The wrappers are
+        `display: contents` below `lg`, which dissolves them and lets the clip
+        and the panels be ordered independently against the body; above `lg`
+        they become real boxes again and share the right column. Without that,
+        the panels sat between the video and the first paragraph.
+
+        The clip sits above the paywall branch deliberately: it is the teaser
+        and is public by design, because it is how an analyst makes their case
+        to someone who has not paid. The depth stays gated below it.
+
+        With no clip this is the layout it always was: one column of writing
+        with the trust panels beside it.
       */}
-      {clip ? (
-        <ReportClip
-          reportId={id}
-          embedUrl={clipEmbedUrl}
-          thumbnailUrl={clip.thumbnail_url}
-          analystId={report.author_id}
-          durationSeconds={clip.duration_seconds}
-          analystName={author?.display_name ?? "The analyst"}
-        />
-      ) : null}
-
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
-        <aside className="order-1 flex flex-col gap-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]">
+        <div className="contents lg:order-2 lg:block">
+          <div className="contents lg:sticky lg:top-20 lg:block lg:space-y-5">
+            {clip ? (
+              <div className="order-1 lg:order-none">
+                <ReportClip
+                  reportId={id}
+                  embedUrl={clipEmbedUrl}
+                  thumbnailUrl={clip.thumbnail_url}
+                  analystId={report.author_id}
+                  durationSeconds={clip.duration_seconds}
+                  analystName={author?.display_name ?? "The analyst"}
+                />
+              </div>
+            ) : null}
+            <aside className="order-3 flex flex-col gap-4 lg:order-none">
           {report.prediction && (
             <PredictionCard
               prediction={report.prediction}
@@ -204,7 +216,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--radius-card)] border border-border bg-surface px-3 py-3 t-meta"
             />
           )}
-        </aside>
+            </aside>
+          </div>
+        </div>
 
         <div className="order-2 min-w-0 lg:order-1">
           {canRead ? (
