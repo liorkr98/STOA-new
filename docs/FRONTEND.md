@@ -474,6 +474,34 @@ merit. A profile's lead still prefers the analyst's video, because a profile is
 a storefront. Both obey rule 1 when the chosen publication turns out to have no
 clip.
 
+### 2.13 `<FilterPicker>` — a filter you type into
+
+Explore's ticker and sector filters. One control for both, so they behave alike.
+
+- **Type to narrow.** Clicking opens a field; typing filters the list; the
+  reader picks from what is left. Prefix matches rank above substring matches,
+  so "SN" reaches SNOW before anything merely containing "sn".
+- **Useful before anything is typed.** The full list shows, ordered
+  most-covered first, so the options worth having are the ones in view.
+- **No counts.** A number on every row is noise on a page this quiet, and the
+  reader is picking a ticker rather than auditing coverage. Ordering carries
+  that information instead, and `filterOptions` returns names only so the counts
+  cannot creep back into a call site.
+- **Quiet and typographic**, matching the page: mono, uppercase, letterspaced,
+  hairline border, no heavy chrome. The trigger is unchanged from the menu it
+  replaced.
+- **Popover on a wide screen, sheet on a phone.** The sheet is the case that
+  breaks: a list anchored under the trigger sits behind the on-screen keyboard,
+  so the reader types and cannot see the options. It is sized from
+  `visualViewport`, the only thing that reports the space the keyboard has left,
+  with the field pinned at the top and the results scrolling in what remains.
+- **Subscribe, do not measure.** Both the breakpoint and the viewport come
+  through `useSyncExternalStore`. An effect that measures and then sets state
+  has to defer its first read to avoid a render loop, and anything deferred to
+  an animation frame never happens where frames are not being produced, which
+  left the sheet rendering as a desktop popover.
+- **Keyboard:** arrows move, Enter selects, Escape closes.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)

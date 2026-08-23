@@ -10,6 +10,53 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-24 (later) — Explore's filters are searchable
+
+**For someone using the site**
+
+- **The ticker and sector filters are pickers you type into.** Clicking one
+  opens a field; typing narrows the list; you choose from what is left. Names
+  that start with what you typed come first. Before anything is typed the whole
+  list is there, ordered most-covered first, so the control is still useful
+  without searching.
+- **The counts beside each option are gone.** No "(14)" and no "8
+  publications", just the ticker or the sector. The ordering still carries
+  coverage, which was the useful part.
+- **On a phone it opens as a sheet**, with the field at the top and the results
+  below it, sized to the space the on-screen keyboard leaves.
+
+**What they were before**
+
+A plain menu. A button opened a scrolling list, each row printing the option and
+its publication count ("GS 2", "Software 5"), with no field and no way to type.
+That is fine at a dozen tickers and unusable at the few hundred the list reaches
+as the catalogue grows.
+
+Worth recording, since it was asked: the earlier instruction to make these
+searchable was never applied. The control had not changed since it was written
+on 2026-08-18, and none of the commits that have touched this file since then
+went near it.
+
+**The part that usually breaks**
+
+A list anchored under the trigger ends up behind the keyboard on a phone, so the
+reader types and cannot see what they are choosing from. The sheet is sized from
+`visualViewport`, which is the only thing that reports the space actually left.
+Measured at a keyboard-sized viewport of 420px: the panel is 420, the list ends
+at 419, the field is still visible, and 343px of a 616px list is showing and
+scrolls.
+
+**One thing to know about the option list**
+
+The options come from what is on the wall, so today that is 14 tickers and 8
+sectors rather than hundreds: Explore builds 30 tiles and the filter offers the
+tickers those tiles cover. The picker scales to hundreds when the wall does.
+Widening it to the whole catalogue would mean filtering could return
+publications the wall never fetched, which is a different change and not this
+one.
+
+---
+
 ## 2026-08-24 — No slot without a video, and the report reads in two columns
 
 **For someone using the site**
