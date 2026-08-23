@@ -1,5 +1,6 @@
 import type { FeedCard, FeedComment, FeedPublication } from "@/lib/feed/types";
 import type { AttentionSample } from "@/lib/lifecycle/stages";
+import { demoClipPath } from "@/lib/demo/clips";
 
 /**
  * Dev-only fixtures for the Feed player and the Explore wall. Fictional
@@ -102,14 +103,16 @@ const SPECS: Spec[] = [
 ];
 
 export function fixturePublications(): FeedPublication[] {
-  return SPECS.map((s) => {
+  return SPECS.map((s, i) => {
     const hasCall = Boolean(s.ticker);
     const badge = ["VIDEO", hasCall ? "CALL" : null, s.type === "RESEARCH" ? "THESIS" : null].filter(Boolean).join(" · ");
+    const clip = demoClipPath(i);
     return {
       id: s.id,
       clipId: `clip-${s.id}`,
       embedUrl: null,
-      thumbnailUrl: null,
+      playbackUrl: clip.src,
+      thumbnailUrl: clip.poster,
       durationSeconds: s.secs,
       headline: s.headline,
       deck: s.deck ?? null,

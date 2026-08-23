@@ -43,6 +43,8 @@ export interface FeedPublication {
   clipId: string | null;
   /** Bunny embed URL when a real clip exists; null renders the poster stage. */
   embedUrl: string | null;
+  /** Direct mp4/webm when the clip is a file the browser can play. */
+  playbackUrl: string | null;
   thumbnailUrl: string | null;
   durationSeconds: number;
   headline: string;

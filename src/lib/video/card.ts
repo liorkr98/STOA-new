@@ -2,6 +2,8 @@ import "server-only";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { VideoCardData } from "@/lib/video/card-data";
+import { resolveClipPlayback } from "@/lib/demo/clips";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 
 /**
  * Server-side mapper: video_clips row (+ joined report) -> client-safe card data
@@ -23,14 +25,21 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
   const author = report.author;
   const ticker = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase() || null;
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
+  const seed = [...card.id].reduce((n, ch) => n + ch.charCodeAt(0), 0);
+  const media = resolveClipPlayback({
+    playbackUrl: card.playback_url,
+    thumbnailUrl: card.thumbnail_url,
+    index: seed,
+  });
+  const native = isDirectVideoUrl(media.src);
 
   return {
     id: card.id,
     reportId: report.id,
-    embedUrl,
-    playbackUrl: card.playback_url,
-    thumbnailUrl: card.thumbnail_url,
-    previewUrl: card.preview_url,
+    embedUrl: native ? media.src : embedUrl,
+    playbackUrl: media.src,
+    thumbnailUrl: media.poster,
+    previewUrl: native ? media.src : card.preview_url,
     durationSeconds: card.duration_seconds,
     headline,
     ticker,

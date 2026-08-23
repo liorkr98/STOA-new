@@ -3,6 +3,7 @@
 import { Lock, Check, Minus, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/design/cn";
+import { TickerChart } from "@/components/feed/ticker-chart";
 import type { FeedCard, InkValue, ProvenanceInk } from "@/lib/feed/types";
 
 /**
@@ -48,7 +49,7 @@ function CardFrame({ children, className }: { children: React.ReactNode; classNa
   );
 }
 
-function CardBody({ card }: { card: FeedCard }) {
+function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) {
   switch (card.kind) {
     case "thesis":
       return (
@@ -184,6 +185,10 @@ function CardBody({ card }: { card: FeedCard }) {
           <div className="relative mt-3 flex-1 overflow-hidden rounded-[var(--radius-btn)] border border-border bg-surface-2">
             {card.imageUrl ? (
               <Image src={card.imageUrl} alt={card.caption} fill sizes="480px" className="object-contain" />
+            ) : ticker ? (
+              <div className="absolute inset-0 p-3">
+                <TickerChart ticker={ticker} caption={card.caption} />
+              </div>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Figure not available</span>
@@ -244,7 +249,15 @@ function CardBody({ card }: { card: FeedCard }) {
 }
 
 /** Sealed: blurred content and a lock mark. Never skipped. */
-export function FeedCardView({ card, onSealedTap }: { card: FeedCard; onSealedTap?: () => void }) {
+export function FeedCardView({
+  card,
+  ticker,
+  onSealedTap,
+}: {
+  card: FeedCard;
+  ticker?: string | null;
+  onSealedTap?: () => void;
+}) {
   if (card.kind !== "unlock" && card.locked) {
     return (
       <button
@@ -254,7 +267,7 @@ export function FeedCardView({ card, onSealedTap }: { card: FeedCard; onSealedTa
         aria-label="Locked card. Opens the unlock card."
       >
         <div aria-hidden className="pointer-events-none h-full select-none blur-[6px]">
-          <CardBody card={card} />
+          <CardBody card={card} ticker={ticker} />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] bg-[color-mix(in_srgb,var(--paper)_35%,transparent)]">
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ink)] bg-surface">
@@ -265,5 +278,5 @@ export function FeedCardView({ card, onSealedTap }: { card: FeedCard; onSealedTa
       </button>
     );
   }
-  return <CardBody card={card} />;
+  return <CardBody card={card} ticker={ticker} />;
 }

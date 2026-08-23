@@ -9,6 +9,7 @@ import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { getReadyClipForReport } from "@/lib/db/video-clips";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
+import { resolveClipPlayback } from "@/lib/demo/clips";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments } from "@/lib/db/comments";
 import { getSessionUserId } from "@/lib/db/auth";
@@ -81,8 +82,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     report wants a scrubber, a volume control and fullscreen; the Feed hides
     them because it supplies its own and because its clips play unasked.
   */
+  const clipMedia = clip
+    ? resolveClipPlayback({ playbackUrl: clip.playback_url, thumbnailUrl: clip.thumbnail_url, index: 0 })
+    : null;
   const clipEmbedUrl =
-    clip && isBunnyConfigured()
+    clip && !clipMedia?.src.endsWith(".mp4") && isBunnyConfigured()
       ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
       : null;
 
@@ -186,7 +190,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 <ReportClip
                   reportId={id}
                   embedUrl={clipEmbedUrl}
-                  thumbnailUrl={clip.thumbnail_url}
+                  playbackUrl={clipMedia?.src ?? null}
+                  thumbnailUrl={clipMedia?.poster ?? clip.thumbnail_url}
                   analystId={report.author_id}
                   durationSeconds={clip.duration_seconds}
                   analystName={author?.display_name ?? "The analyst"}
