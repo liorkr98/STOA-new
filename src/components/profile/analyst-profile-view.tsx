@@ -266,17 +266,26 @@ function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string 
   );
 }
 
-/** A written report with no video: the headline set on paper, so it reads as something to read. */
+/**
+ * A written report with no video: its headline and metadata, and no media area.
+ *
+ * It used to sit inside a bordered 16:9 box so it lined up with the video tiles
+ * beside it. That box was an image slot with no image in it, kept only for the
+ * grid's benefit, and the tidy row it bought was worth less than the honesty of
+ * not drawing one. The tiles are top-aligned, so a shorter text item simply
+ * ends sooner.
+ */
 function WrittenTile({ p }: { p: ProfilePublication }) {
   return (
     <Link href={p.href} className="group flex flex-col focus-ring">
-      <div className="flex aspect-video flex-col justify-between rounded-[10px] border border-border bg-surface p-4 transition-colors group-hover:border-border-strong">
-        <MetaRow p={p} />
-        <div className="flex items-end justify-between gap-3">
-          <h3 className="font-display text-xl font-semibold leading-[1.15] tracking-tight line-clamp-3">{p.title}</h3>
-          {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
-        </div>
+      <MetaRow p={p} />
+      <div className="mt-2 flex items-start justify-between gap-3">
+        <h3 className="font-display text-xl font-semibold leading-[1.15] tracking-tight line-clamp-3 group-hover:underline">
+          {p.title}
+        </h3>
+        {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
       </div>
+      {p.deck && <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute line-clamp-2">{p.deck}</p>}
       <ViewsMeta p={p} />
     </Link>
   );
@@ -362,7 +371,7 @@ function EverythingTier({ items, subjects, analystId }: { items: ProfilePublicat
       <SectionHead label="Everything">
         {subjects.length > 0 && <SubjectFilter subjects={subjects} value={subject} onChange={setSubject} />}
       </SectionHead>
-      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-7 md:grid-cols-3 md:gap-x-6 md:gap-y-9">
+      <div className="mt-5 grid grid-cols-2 items-start gap-x-4 gap-y-7 md:grid-cols-3 md:gap-x-6 md:gap-y-9">
         {shown.map((p) => (p.kind === "video" ? <VideoTile key={p.id} p={p} analystId={analystId} /> : <WrittenTile key={p.id} p={p} />))}
       </div>
     </section>
