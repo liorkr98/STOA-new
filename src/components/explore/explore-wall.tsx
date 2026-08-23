@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { DirectionTag } from "@/components/ui/tag";
 import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { FilterPicker } from "@/components/explore/filter-picker";
 import { cn } from "@/lib/design/cn";
 
 /**
@@ -90,68 +91,6 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
   );
 }
 
-function Dropdown({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string | null;
-  options: [string, number][];
-  onChange: (v: string | null) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className="num focus-ring flex items-center gap-1.5 rounded text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text"
-      >
-        {value ?? label}
-        <ChevronDown size={12} strokeWidth={1.6} aria-hidden />
-      </button>
-      {open ? (
-        <ul role="listbox" className="menu-pop absolute right-0 z-20 mt-2 max-h-[320px] min-w-[220px] overflow-y-auto scroll-area rounded-[var(--radius-btn)] border border-border bg-surface py-1">
-          <li>
-            <button
-              type="button"
-              role="option"
-              aria-selected={value === null}
-              onClick={() => {
-                onChange(null);
-                setOpen(false);
-              }}
-              className={cn("num flex w-full items-center justify-between px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2", value === null ? "text-text" : "text-text-mute")}
-            >
-              All
-            </button>
-          </li>
-          {options.map(([opt, count]) => (
-            <li key={opt}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={value === opt}
-                onClick={() => {
-                  onChange(opt);
-                  setOpen(false);
-                }}
-                className={cn("num flex w-full items-center justify-between gap-6 px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2", value === opt ? "text-text" : "text-text-mute")}
-              >
-                <span>{opt}</span>
-                <span className="text-text-faint">{count}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
 
 export function ExploreWall({
   tiles,
@@ -163,8 +102,8 @@ export function ExploreWall({
   basePath = "/explore",
 }: {
   tiles: ExploreTile[];
-  tickers: [string, number][];
-  sectors: [string, number][];
+  tickers: string[];
+  sectors: string[];
   ticker: string | null;
   sector: string | null;
   dateline: string;
@@ -224,8 +163,20 @@ export function ExploreWall({
           )}
         </div>
         <div className="flex items-center gap-6">
-          <Dropdown label="Ticker ▾" value={ticker} options={tickers} onChange={(v) => setFilter("ticker", v)} />
-          <Dropdown label="Sector ▾" value={sector} options={sectors} onChange={(v) => setFilter("sector", v)} />
+          <FilterPicker
+            label="Ticker ▾"
+            searchLabel="Search tickers"
+            value={ticker}
+            options={tickers}
+            onChange={(v) => setFilter("ticker", v)}
+          />
+          <FilterPicker
+            label="Sector ▾"
+            searchLabel="Search sectors"
+            value={sector}
+            options={sectors}
+            onChange={(v) => setFilter("sector", v)}
+          />
         </div>
       </div>
 

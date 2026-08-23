@@ -56,13 +56,25 @@ export function filterTiles(tiles: ExploreTile[], f: ExploreFilters): ExploreTil
   });
 }
 
-export function filterOptions(tiles: ExploreTile[]) {
+/**
+ * The filter choices, ordered most-covered first.
+ *
+ * Names only. The counts used to be rendered beside each option and are not any
+ * more: a number on every row is noise on a page this quiet, and the reader is
+ * picking a ticker rather than auditing coverage. They still decide the order,
+ * which is the part that was actually useful, so the options worth having are
+ * the ones in view before anyone types.
+ */
+export function filterOptions(tiles: ExploreTile[]): { tickers: string[]; sectors: string[] } {
   const tickers = new Map<string, number>();
   const sectors = new Map<string, number>();
   for (const t of tiles) {
     if (t.pub.ticker) tickers.set(t.pub.ticker, (tickers.get(t.pub.ticker) ?? 0) + 1);
     if (t.pub.sector) sectors.set(t.pub.sector, (sectors.get(t.pub.sector) ?? 0) + 1);
   }
-  const sortEntries = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  return { tickers: sortEntries(tickers), sectors: sortEntries(sectors) };
+  const byCoverage = (m: Map<string, number>) =>
+    [...m.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name]) => name);
+  return { tickers: byCoverage(tickers), sectors: byCoverage(sectors) };
 }
