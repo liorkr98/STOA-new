@@ -12,6 +12,18 @@ const nextConfig = {
   // Keep file tracing scoped to this app when other lockfiles exist in parent dirs.
   outputFileTracingRoot: path.join(__dirname),
   /**
+   * Next 15+ defaults the client router cache for dynamic pages to 0s, so every
+   * click waits on a full server round trip even when you just left that page.
+   * Thirty seconds is long enough that Today → Feed → Today feels instant, and
+   * short enough that a new publication still shows up on the next click.
+   */
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
+  },
+  /**
    * Discover was retired: the Feed is the only video discovery surface and it
    * is called Feed. Links to the old route exist in the wild, so it redirects
    * rather than 404s. Permanent, because it is never coming back.

@@ -109,6 +109,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
                 <Link
                   key={it.href}
                   href={it.href}
+                  prefetch
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "relative rounded-[var(--radius-btn)] px-3 py-1.5 text-sm transition-colors",

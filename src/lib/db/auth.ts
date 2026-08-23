@@ -6,11 +6,10 @@ import type { Profile } from "@/lib/types";
 /**
  * Session helpers, deduplicated per request.
  *
- * A single navigation used to make three separate `getUser()` calls -- one in
- * middleware, one in the layout, one in the page -- each a network round trip to
- * Supabase Auth for the same answer. React's `cache()` memoizes per request, so
- * the layout and the page (and anything else asking) now share one call.
- * Middleware runs in a different context and is handled separately.
+ * Middleware already refreshed a near-expiry token. Layouts and pages only
+ * need the user id from the cookie, so they read `getSession()` (local JWT)
+ * rather than calling `getUser()` again. React's `cache()` memoizes per
+ * request, so the layout and the page share that one read.
  *
  * Signed-out visitors have no `sb-` cookie. Calling `getUser()` anyway was a
  * 200-400ms Auth round trip (Vercel iad1 to Supabase Singapore) on every
@@ -25,9 +24,9 @@ const getUserCached = cache(async () => {
 
     const supabase = await createClient();
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user ?? null;
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.user ?? null;
   } catch {
     return null;
   }

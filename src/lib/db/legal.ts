@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { cachedPage } from "@/lib/cache/page";
 import type { LegalDocType } from "@/lib/legal/constants";
 
 export interface LegalDocument {
@@ -12,21 +14,23 @@ export interface LegalDocument {
 export async function getCurrentLegalDocuments(
   types: LegalDocType[],
 ): Promise<LegalDocument[]> {
-  const supabase = await createClient();
-  const docs: LegalDocument[] = [];
-
-  for (const docType of types) {
-    const { data } = await supabase
-      .from("legal_documents")
-      .select("id, doc_type, version, content_url, effective_at")
-      .eq("doc_type", docType)
-      .order("effective_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (data) docs.push(data as LegalDocument);
-  }
-
-  return docs;
+  const key = [...types].sort().join(",");
+  return cachedPage(`legal-docs:${key}`, 300, async () => {
+    const supabase = createPublicClient();
+    const rows = await Promise.all(
+      types.map(async (docType) => {
+        const { data } = await supabase
+          .from("legal_documents")
+          .select("id, doc_type, version, content_url, effective_at")
+          .eq("doc_type", docType)
+          .order("effective_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return data as LegalDocument | null;
+      }),
+    );
+    return rows.filter((row): row is LegalDocument => row != null);
+  });
 }
 
 export async function getUserConsentedDocumentIds(userId: string): Promise<Set<string>> {
@@ -41,8 +45,10 @@ export async function getUserConsentedDocumentIds(userId: string): Promise<Set<s
 /** Document types the user has not accepted at the current published version. */
 export async function getPendingConsentTypes(userId: string): Promise<LegalDocType[]> {
   const { SIGNUP_CONSENT_TYPES } = await import("@/lib/legal/constants");
-  const current = await getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES);
-  const accepted = await getUserConsentedDocumentIds(userId);
+  const [current, accepted] = await Promise.all([
+    getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES),
+    getUserConsentedDocumentIds(userId),
+  ]);
   return current
     .filter((doc) => !accepted.has(doc.id))
     .map((doc) => doc.doc_type);
