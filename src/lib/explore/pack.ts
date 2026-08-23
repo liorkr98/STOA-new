@@ -2,7 +2,7 @@
  * Gap-free packing for the Explore wall.
  *
  * Tiles come in three sizes on a fixed-column grid: standard (1x1), medium
- * (2x1), spotlight (2x2). Sizes are decided by trending rank before packing;
+ * (2x1), spotlight (2x2). Sizes are decided by the Explore ranker before packing;
  * this module only decides where each tile sits, with two hard rules: the grid
  * never shows an empty cell, and the last row is complete. Large tiles are
  * spread through the sequence (seeded by id, so the wall is stable between

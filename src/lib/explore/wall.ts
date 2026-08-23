@@ -3,12 +3,10 @@ import type { FeedPublication } from "@/lib/feed/types";
 import type { TileSize } from "@/lib/explore/pack";
 
 /**
- * Explore tile sizing. Sizes follow trending rank: the strongest-trending
- * items get spotlight, the next tier medium, the rest standard. Because
- * trending is velocity, new content can earn a large tile and popularity
- * never compounds into permanent occupancy of the big slots. When nothing is
- * young enough to trend, the wall falls back to attention rate so it never
- * flattens into all-standard tiles. EXPLORE_SIZE_COUNTS: tune here.
+ * Explore tile sizing. Incoming order is the ranker's order; this function
+ * only assigns sizes. The first two slots are spotlight, the next four are
+ * medium, the rest standard. TRENDING still marks tiles that have velocity,
+ * but it no longer re-sorts the wall.
  */
 export const EXPLORE = {
   SPOTLIGHT_COUNT: 2,
@@ -24,6 +22,29 @@ export interface ExploreTile {
   trending: boolean;
 }
 
+function sizeForIndex(i: number): TileSize {
+  if (i < EXPLORE.SPOTLIGHT_COUNT) return "spotlight";
+  if (i < EXPLORE.SPOTLIGHT_COUNT + EXPLORE.MEDIUM_COUNT) return "medium";
+  return "standard";
+}
+
+/** Layout-only: keep the caller's order and stamp sizes by position. */
+export function sizeTilesByRank(
+  pubs: FeedPublication[],
+  sampleFor: (p: FeedPublication) => AttentionSample,
+  now = Date.now(),
+): ExploreTile[] {
+  return pubs.map((p, i) => {
+    const trend = trendingScore(sampleFor(p), now);
+    return {
+      pub: p,
+      size: sizeForIndex(i),
+      trending: trend > 0 && i < EXPLORE.SPOTLIGHT_COUNT + EXPLORE.MEDIUM_COUNT,
+    };
+  });
+}
+
+/** Dev fixture helper: sort by trending, then size. Live Explore uses sizeTilesByRank. */
 export function sizeTiles(
   pubs: FeedPublication[],
   sampleFor: (p: FeedPublication) => AttentionSample,
@@ -36,10 +57,13 @@ export function sizeTiles(
     })
     .sort((a, b) => b.trend - a.trend || b.rate - a.rate);
 
-  return ranked.map((x, i) => ({
-    pub: x.p,
-    size: i < EXPLORE.SPOTLIGHT_COUNT ? "spotlight" : i < EXPLORE.SPOTLIGHT_COUNT + EXPLORE.MEDIUM_COUNT ? "medium" : "standard",
-    trending: x.trend > 0 && i < EXPLORE.SPOTLIGHT_COUNT + EXPLORE.MEDIUM_COUNT,
+  return sizeTilesByRank(
+    ranked.map((x) => x.p),
+    sampleFor,
+    now,
+  ).map((tile, i) => ({
+    ...tile,
+    trending: ranked[i]!.trend > 0 && i < EXPLORE.SPOTLIGHT_COUNT + EXPLORE.MEDIUM_COUNT,
   }));
 }
 
