@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { isDeadMediaUrl } from "@/lib/video/direct";
 
 /**
  * A video clip's poster frame, or the analyst's generated stand-in when there
@@ -11,12 +15,8 @@ import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
  * rectangle. A browser-issued `<img>` sends the origin as its referrer and is
  * served normally.
  *
- * Losing the optimiser costs little here. Bunny already returns a sized JPEG
- * from a CDN, which is most of what the optimiser would have done.
- *
- * The other way to fix this is on the Bunny side, by allowing the no-referrer
- * case on the pull zone. That is a deliberate security setting and not ours to
- * flip, so this component does not depend on it.
+ * If the URL is a known-dead Bunny object, or the image fails to load, we
+ * fall back to the analyst colour stand-in rather than a broken icon.
  */
 export function ClipThumb({
   src,
@@ -25,19 +25,21 @@ export function ClipThumb({
   loading = "lazy",
 }: {
   src: string | null;
-  /** The analyst's id, so the fallback is their colour on every surface. */
   seed: string | null | undefined;
   className?: string;
   loading?: "lazy" | "eager";
 }) {
-  if (!src) return <PlaceholderThumb seed={seed} />;
+  const usable = src && !isDeadMediaUrl(src) ? src : null;
+  const [failed, setFailed] = useState(false);
+  if (!usable || failed) return <PlaceholderThumb seed={seed} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={usable}
       alt=""
       loading={loading}
       decoding="async"
+      onError={() => setFailed(true)}
       className={`absolute inset-0 h-full w-full object-cover ${className}`}
     />
   );

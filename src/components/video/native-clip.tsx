@@ -35,8 +35,14 @@ export function NativeClip({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (paused) el.pause();
-    else void el.play().catch(() => undefined);
+    if (paused) {
+      el.pause();
+      return;
+    }
+    void el.play().catch(() => {
+      el.muted = true;
+      void el.play().catch(() => undefined);
+    });
   }, [paused, src]);
 
   useEffect(() => {

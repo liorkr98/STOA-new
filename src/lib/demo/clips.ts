@@ -1,4 +1,4 @@
-import { isDirectVideoUrl } from "@/lib/video/direct";
+import { isDeadMediaUrl, isDirectVideoUrl } from "@/lib/video/direct";
 
 /**
  * Short playable stand-ins for investor demos. Live Bunny rows currently point
@@ -22,11 +22,15 @@ export function resolveClipPlayback(input: {
   thumbnailUrl: string | null | undefined;
   index: number;
 }): { src: string; poster: string | null } {
-  if (isDirectVideoUrl(input.playbackUrl)) {
-    return { src: input.playbackUrl!, poster: input.thumbnailUrl ?? null };
-  }
   const demo = demoClipPath(input.index);
-  return { src: demo.src, poster: input.thumbnailUrl || demo.poster };
+  if (isDirectVideoUrl(input.playbackUrl)) {
+    const poster =
+      input.thumbnailUrl && !isDeadMediaUrl(input.thumbnailUrl) ? input.thumbnailUrl : demo.poster;
+    return { src: input.playbackUrl!, poster };
+  }
+  const poster =
+    input.thumbnailUrl && !isDeadMediaUrl(input.thumbnailUrl) ? input.thumbnailUrl : demo.poster;
+  return { src: demo.src, poster };
 }
 
 /** Seeded walk so a chart is never blank when Yahoo is quiet. */
