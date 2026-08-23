@@ -23,8 +23,10 @@ import { FeedCardView } from "@/components/feed/feed-cards";
 import { FeedDiscussion } from "@/components/feed/feed-discussion";
 import { trackEngagement } from "@/lib/engagement/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { NativeClip } from "@/components/video/native-clip";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 import type { FeedComment, FeedPublication } from "@/lib/feed/types";
 
 /**
@@ -451,7 +453,7 @@ const FeedItem = function FeedItem({
       ref={ref}
       data-feed-item={index}
       aria-label={pub.headline}
-      className={cn("flex snap-start flex-col items-center justify-center px-4 py-3", ITEM_H)}
+      className={cn("flex snap-start snap-always flex-col items-center justify-center px-4 py-3", ITEM_H)}
     >
       <div className="flex h-full w-full max-w-[420px] flex-col justify-center gap-2">
         {/* The dateline strip, above the frame. */}
@@ -469,11 +471,23 @@ const FeedItem = function FeedItem({
           <div className="relative mx-auto h-full max-h-full overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--ink)] text-[var(--paper)] [aspect-ratio:9/16]">
             <div
               ref={trackRef}
-              className="scroll-area flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
+              className="scroll-area flex h-full snap-x snap-mandatory overflow-x-hidden [scrollbar-width:none]"
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">
-                {isActive && pub.embedUrl ? (
+                {isActive && isDirectVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
+                  <NativeClip
+                    src={pub.playbackUrl}
+                    poster={pub.thumbnailUrl}
+                    muted={muted}
+                    paused={paused}
+                    title={pub.headline}
+                    onProgress={(ratio) => {
+                      setProgress(ratio);
+                      if (ratio > 0) setStarted(true);
+                    }}
+                  />
+                ) : isActive && pub.embedUrl ? (
                   <iframe
                     ref={iframeRef}
                     src={pub.embedUrl}
@@ -588,6 +602,7 @@ const FeedItem = function FeedItem({
                 <div key={c.id} className="h-full w-full flex-none snap-center bg-bg p-3 text-text">
                   <FeedCardView
                     card={c}
+                    ticker={pub.ticker}
                     onSealedTap={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
                   />
                 </div>

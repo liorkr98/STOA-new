@@ -10,6 +10,7 @@ import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
 import { pct } from "@/lib/format";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { NativeClip } from "@/components/video/native-clip";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
@@ -102,9 +103,17 @@ function TodayLite({ data }: { data: LandingPayload }) {
                 it with a placeholder was reserving a video slot for something
                 that has no video.
               */}
-              {lead.embedUrl || lead.thumbnailUrl ? (
+              {lead.playbackUrl || lead.embedUrl || lead.thumbnailUrl ? (
                 <div className="relative aspect-video overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
-                  {lead.embedUrl ? (
+                  {lead.playbackUrl ? (
+                    <NativeClip
+                      src={lead.playbackUrl}
+                      poster={lead.thumbnailUrl}
+                      muted
+                      paused={false}
+                      title={lead.headline}
+                    />
+                  ) : lead.embedUrl ? (
                     <iframe
                       src={lead.embedUrl}
                       title={lead.headline}

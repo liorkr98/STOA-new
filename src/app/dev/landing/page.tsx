@@ -52,7 +52,8 @@ export default async function DevLandingPage() {
       ticker: "NVDA",
       direction: "long",
       embedUrl: null,
-      thumbnailUrl: null,
+      playbackUrl: "/demo/clips/clip-01.mp4",
+      thumbnailUrl: "/demo/clips/clip-01.jpg",
       analystId: "lenakw",
     },
     headlines: [

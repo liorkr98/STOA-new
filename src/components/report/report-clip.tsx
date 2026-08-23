@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { NativeClip } from "@/components/video/native-clip";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 import { trackEngagement } from "@/lib/engagement/track-client";
 import { cn } from "@/lib/design/cn";
 
@@ -31,6 +33,7 @@ const TWO_COLUMN = "(min-width: 1024px)";
 export function ReportClip({
   reportId,
   embedUrl,
+  playbackUrl,
   thumbnailUrl,
   analystId,
   durationSeconds,
@@ -38,6 +41,7 @@ export function ReportClip({
 }: {
   reportId: string;
   embedUrl: string | null;
+  playbackUrl?: string | null;
   thumbnailUrl: string | null;
   analystId: string | null;
   durationSeconds: number;
@@ -129,7 +133,15 @@ export function ReportClip({
                 : "w-full max-w-full sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]",
             )}
           >
-            {playing && embedUrl ? (
+            {playing && isDirectVideoUrl(playbackUrl) && playbackUrl ? (
+              <NativeClip
+                src={playbackUrl}
+                poster={thumbnailUrl}
+                muted={false}
+                paused={false}
+                title={`${analystName} on this publication`}
+              />
+            ) : playing && embedUrl ? (
               <iframe
                 src={embedUrl}
                 title={`${analystName} on this publication`}

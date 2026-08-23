@@ -7,6 +7,8 @@ import { listVideoClipCards } from "@/lib/db/video-clips";
 import { listTickerRows } from "@/lib/db/tickers";
 import { getTodayActivity, type TodayActivity } from "@/lib/db/platform-stats";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
+import { resolveClipPlayback } from "@/lib/demo/clips";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 import { storyHeadline } from "@/lib/dispatch/ranking";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
@@ -34,6 +36,8 @@ export interface LandingHeadline {
 export interface LandingLead extends LandingHeadline {
   /** Muted, looping autoplay embed when a ready clip exists; null renders no fake video. */
   embedUrl: string | null;
+  /** Direct mp4 for investor-demo playback when Bunny is empty. */
+  playbackUrl: string | null;
   thumbnailUrl: string | null;
   /** The analyst's id, so the placeholder thumbnail can take their colour. */
   analystId: string | null;
@@ -109,17 +113,29 @@ async function buildLandingUncached(): Promise<LandingPayload> {
   if (leadReport) {
     const clip = clipByReport.get(leadReport.id);
     let embedUrl: string | null = null;
+    let playbackUrl: string | null = null;
+    let thumbnailUrl: string | null = clip?.thumbnail_url ?? null;
     if (clip) {
-      try {
-        embedUrl = bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: true, loop: true });
-      } catch {
-        embedUrl = null;
+      const media = resolveClipPlayback({
+        playbackUrl: clip.playback_url,
+        thumbnailUrl: clip.thumbnail_url,
+        index: 0,
+      });
+      thumbnailUrl = media.poster;
+      if (isDirectVideoUrl(media.src)) playbackUrl = media.src;
+      else {
+        try {
+          embedUrl = bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: true, loop: true });
+        } catch {
+          embedUrl = null;
+        }
       }
     }
     lead = {
       ...toHeadline(leadReport),
       embedUrl,
-      thumbnailUrl: clip?.thumbnail_url ?? null,
+      playbackUrl,
+      thumbnailUrl,
       analystId: leadReport.author?.id ?? null,
     };
   }

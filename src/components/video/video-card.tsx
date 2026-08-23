@@ -10,6 +10,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
+import { NativeClip } from "@/components/video/native-clip";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 import type { VideoCardData } from "@/lib/video/card-data";
 
 function formatDuration(seconds: number): string {
@@ -141,15 +143,25 @@ export function VideoCard({
       >
         {playing ? (
           <>
-            <iframe
-              key={embedSrc}
-              src={embedSrc}
-              title={data.headline}
-              loading="lazy"
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full"
-            />
+            {isDirectVideoUrl(data.playbackUrl) ? (
+              <NativeClip
+                src={data.playbackUrl}
+                poster={data.thumbnailUrl}
+                muted
+                paused={false}
+                title={data.headline}
+              />
+            ) : (
+              <iframe
+                key={embedSrc}
+                src={embedSrc}
+                title={data.headline}
+                loading="lazy"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            )}
             {showDisclosure && disclosure && (
               <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-1.5 bg-[var(--ink)]/85 px-3 py-2 text-[11px] font-medium text-[var(--paper)]">
                 <ShieldCheck size={12} aria-hidden />

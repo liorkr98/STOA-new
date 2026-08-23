@@ -8,6 +8,8 @@ import { listCardsForReports } from "@/lib/db/publication-cards";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
+import { resolveClipPlayback } from "@/lib/demo/clips";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 
 /**
  * Server-side mapper from published video clips (with their joined report,
@@ -60,10 +62,22 @@ function defaultCards(report: Report): FeedCard[] {
  * Stored cards win when present. The unlock card is appended here rather than
  * stored, so its price and access always reflect the report's current terms.
  */
-function cardsFor(report: Report, stored: FeedCard[] | undefined): FeedCard[] {
-  if (!stored || stored.length === 0) return defaultCards(report);
-  const withoutUnlock = stored.filter((c) => c.kind !== "unlock");
-  return [...withoutUnlock, unlockCard(report)];
+function cardsFor(report: Report, stored: FeedCard[] | undefined, ticker: string | null): FeedCard[] {
+  const base =
+    !stored || stored.length === 0
+      ? defaultCards(report)
+      : [...stored.filter((c) => c.kind !== "unlock"), unlockCard(report)];
+  if (!ticker || base.some((c) => c.kind === "figure")) return base;
+  const tape: FeedCard = {
+    kind: "figure",
+    id: `${report.id}-tape`,
+    locked: false,
+    caption: `${ticker} · last 30 sessions`,
+    imageUrl: null,
+    source: "auto",
+  };
+  const insertAt = Math.min(1, Math.max(0, base.length - 1));
+  return [...base.slice(0, insertAt), tape, ...base.slice(insertAt)];
 }
 
 export async function clipsToPublications(clips: VideoClipCard[], now = Date.now()): Promise<FeedPublication[]> {
@@ -88,13 +102,21 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
   }
   const median = medianRate([...samples.values()], now);
 
-  return usable.map((c) => {
+  return usable.map((c, index) => {
     const r = c.report!;
+    const media = resolveClipPlayback({
+      playbackUrl: c.playback_url,
+      thumbnailUrl: c.thumbnail_url,
+      index,
+    });
+    const native = isDirectVideoUrl(media.src);
     let embedUrl: string | null = null;
-    try {
-      embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true, chrome: false });
-    } catch {
-      embedUrl = c.playback_url || null;
+    if (!native) {
+      try {
+        embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true, chrome: false });
+      } catch {
+        embedUrl = c.playback_url || null;
+      }
     }
     const hasCall = Boolean(r.prediction);
     const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
@@ -105,7 +127,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       id: r.id,
       clipId: c.id,
       embedUrl,
-      thumbnailUrl: c.thumbnail_url,
+      playbackUrl: native ? media.src : null,
+      thumbnailUrl: media.poster,
       durationSeconds: c.duration_seconds,
       headline: storyHeadline(r),
       deck: storyDek(r),
@@ -124,7 +147,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
         : null,
       access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
       price: r.price,
-      cards: cardsFor(r, cardsByReport.get(r.id)),
+      cards: cardsFor(r, cardsByReport.get(r.id), hasCall ? sym : null),
       comments: [],
       publishedAt: r.published_at ?? r.created_at,
     };
