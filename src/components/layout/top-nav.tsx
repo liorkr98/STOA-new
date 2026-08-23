@@ -9,6 +9,7 @@ import type { Profile } from "@/lib/types";
 import { StoaLogo } from "@/components/brand/logo";
 import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
+import { LinkPending } from "@/components/layout/link-pending";
 
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/feed";
@@ -71,6 +72,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                 <Link
                   key={item.key}
                   href={item.href}
+                  prefetch
                   className={cn(
                     "focus-ring relative rounded-[var(--radius-btn)] px-3 py-2 text-sm transition-colors",
                     active ? "text-text" : "text-text-mute hover:text-text",
@@ -78,6 +80,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                 >
                   {item.label}
                   {active && <span aria-hidden className="absolute inset-x-3 -bottom-px h-[1.5px] bg-[var(--ink)]" />}
+                  <LinkPending />
                 </Link>
               );
             })}
@@ -148,12 +151,13 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
         <div className="border-t border-border bg-surface px-5 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
             {items.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
-              >
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  prefetch
+                  onClick={() => setOpen(false)}
+                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
+                >
                 {item.label}
               </Link>
             ))}

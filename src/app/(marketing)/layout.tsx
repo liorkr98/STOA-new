@@ -1,13 +1,14 @@
+import { Suspense } from "react";
 import { getSessionProfile } from "@/lib/db/auth";
 import { TopNav } from "@/components/layout/top-nav";
+import { NavSkeleton } from "@/components/layout/nav-skeleton";
 import { Footer } from "@/components/layout/footer";
 
-export default async function MarketingLayout({
+export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await getSessionProfile();
   return (
     <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
       <a
@@ -16,11 +17,18 @@ export default async function MarketingLayout({
       >
         Skip to content
       </a>
-      <TopNav profile={profile} />
+      <Suspense fallback={<NavSkeleton />}>
+        <MarketingNav />
+      </Suspense>
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
       <Footer />
     </div>
   );
+}
+
+async function MarketingNav() {
+  const profile = await getSessionProfile();
+  return <TopNav profile={profile} />;
 }

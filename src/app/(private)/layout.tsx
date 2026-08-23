@@ -1,28 +1,22 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getSessionProfile } from "@/lib/db/auth";
+import { getSessionProfile, getSessionUserId } from "@/lib/db/auth";
 import { unreadNotificationCount } from "@/lib/db/notifications";
 import { getConsentRedirectPath } from "@/app/actions/consent";
 import { TopNav } from "@/components/layout/top-nav";
+import { NavSkeleton } from "@/components/layout/nav-skeleton";
 import { PrivateSidebar, PrivateMobileNav } from "@/components/layout/private-sidebar";
+import type { Profile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 /**
- * The unified private area: Reading, Publishing (analyst only), and Account all
- * share this one shell -- global top nav on top, a single sidebar on the left,
- * group dropdowns on mobile. Being here requires a signed-in account; the
- * studio subtree keeps its own analyst gate in (private)/studio/layout.tsx.
+ * Sign-in is a local JWT read, so it is cheap. The rest of the chrome
+ * (profile, consent, unread) streams in; the page does not wait for it.
  */
 export default async function PrivateLayout({ children }: { children: React.ReactNode }) {
-  const profile = await getSessionProfile();
-  if (!profile) redirect("/sign-in");
-
-  // Independent of each other; they used to run in series.
-  const [consentPath, unreadCount] = await Promise.all([
-    getConsentRedirectPath(profile.id),
-    unreadNotificationCount(profile.id),
-  ]);
-  if (consentPath) redirect(consentPath);
+  const userId = await getSessionUserId();
+  if (!userId) redirect("/sign-in");
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
@@ -32,11 +26,17 @@ export default async function PrivateLayout({ children }: { children: React.Reac
       >
         Skip to content
       </a>
-      <TopNav profile={profile} unreadCount={unreadCount} />
+      <Suspense fallback={<NavSkeleton />}>
+        <PrivateNav />
+      </Suspense>
       <div className="flex flex-1">
-        <PrivateSidebar profile={profile} />
+        <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border md:block" />}>
+          <PrivateRail />
+        </Suspense>
         <div className="flex min-w-0 flex-1 flex-col">
-          <PrivateMobileNav profile={profile} />
+          <Suspense fallback={null}>
+            <PrivateMobile />
+          </Suspense>
           <main id="main-content" tabIndex={-1} className="flex-1 px-[var(--page-gutter)] py-8 outline-none">
             {children}
           </main>
@@ -44,4 +44,30 @@ export default async function PrivateLayout({ children }: { children: React.Reac
       </div>
     </div>
   );
+}
+
+async function privateProfile(): Promise<Profile> {
+  const profile = await getSessionProfile();
+  if (!profile) redirect("/sign-in");
+  const consentPath = await getConsentRedirectPath(profile.id, {
+    ageAttested: Boolean(profile.age_attested_at),
+  });
+  if (consentPath) redirect(consentPath);
+  return profile;
+}
+
+async function PrivateNav() {
+  const profile = await privateProfile();
+  const unreadCount = await unreadNotificationCount(profile.id);
+  return <TopNav profile={profile} unreadCount={unreadCount} />;
+}
+
+async function PrivateRail() {
+  const profile = await privateProfile();
+  return <PrivateSidebar profile={profile} />;
+}
+
+async function PrivateMobile() {
+  const profile = await privateProfile();
+  return <PrivateMobileNav profile={profile} />;
 }

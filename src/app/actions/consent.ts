@@ -65,9 +65,16 @@ export async function recordSignupCompliance(userId: string): Promise<{ error?: 
   return null;
 }
 
-export async function getConsentRedirectPath(userId: string): Promise<string | null> {
-  const pending = await getPendingConsentTypes(userId);
-  const needsAge = !(await hasAgeAttestation(userId));
+export async function getConsentRedirectPath(
+  userId: string,
+  known?: { ageAttested?: boolean },
+): Promise<string | null> {
+  const [pending, needsAge] = await Promise.all([
+    getPendingConsentTypes(userId),
+    known?.ageAttested === undefined
+      ? hasAgeAttestation(userId).then((ok) => !ok)
+      : Promise.resolve(!known.ageAttested),
+  ]);
   if (pending.length > 0 || needsAge) return "/consent-required";
   return null;
 }

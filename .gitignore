@@ -38,3 +38,4 @@ yarn-error.log*
 
 # generated demo video clips (pass 2 of the demo dataset; large binaries)
 /demo-clips/
+**/__pycache__/
