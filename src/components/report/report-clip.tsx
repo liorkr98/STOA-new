@@ -116,7 +116,7 @@ export function ReportClip({
         <div
           className={cn(
             docked
-              ? "fixed bottom-4 right-4 z-40 w-[132px] overflow-hidden rounded-[var(--radius-card)] border border-border shadow-2xl"
+              ? "fixed z-40 w-[132px] overflow-hidden rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-card)] bottom-[max(1rem,var(--safe-bottom))] right-[max(1rem,var(--safe-right))]"
               : // In the column it hugs the player, so a portrait clip does not
                 // sit in a band of its own letterboxing. Only there: below `lg`
                 // the clip fills the width, and `w-fit` against a `w-full`
@@ -130,7 +130,7 @@ export function ReportClip({
               "relative aspect-[9/16]",
               docked
                 ? "w-full"
-                : "w-full max-w-full sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]",
+                : "mx-auto w-[min(100%,18rem)] sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]",
             )}
           >
             {playing && isDirectVideoUrl(playbackUrl) && playbackUrl ? (

@@ -36,7 +36,7 @@ export default async function ContactPage({
 
   if (submitted === "1") {
     return (
-      <div className="mx-auto max-w-[var(--w-reading)] px-[var(--page-gutter)] py-16">
+      <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
         <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-[var(--verdigris)]" aria-hidden />
           <h1 className="t-h2">Message sent</h1>
@@ -53,7 +53,7 @@ export default async function ContactPage({
   }
 
   return (
-    <div className="mx-auto max-w-[var(--w-reading)] px-[var(--page-gutter)] py-16">
+    <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
       <h1 className="t-h1">Contact us</h1>
       <p className="t-body mt-2 text-text-mute">
         Questions about Stoa, your account, analyst applications, or accessibility? Send us a note

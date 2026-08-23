@@ -79,7 +79,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
   const groups = visibleGroups(isAnalyst);
 
   return (
-    <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
+    <aside className="sticky top-[var(--nav-h)] hidden h-[calc(var(--app-h)-var(--nav-h))] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
       {/* Identity header doubles as the way back to the storefront view, which is
           the profile area's default. Non-publishers have no public page. */}
       <Link
@@ -161,9 +161,13 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const setOpen = (group: string | null) =>
     setOpenOn(group === null ? null : { path: pathname, group });
 
+  // Compose owns the viewport with its own toolbar; a second sticky bar
+  // would eat the writing column.
+  if (pathname.startsWith("/studio/compose")) return null;
+
   return (
-    <div className="sticky top-14 z-30 border-b border-border bg-surface md:hidden">
-      <div className="flex items-stretch gap-1 px-3">
+    <div className="sticky top-[var(--nav-h)] z-30 border-b border-border bg-surface md:hidden">
+      <div className="flex items-stretch gap-1 overflow-x-auto px-3 [scrollbar-width:none]">
         {groups.map((g) => {
           const groupActive = g.items.some((it) => it.href === active);
           const isOpen = open === g.key;
@@ -174,7 +178,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                 onClick={() => setOpen(isOpen ? null : g.key)}
                 aria-expanded={isOpen}
                 className={cn(
-                  "focus-ring flex items-center gap-1 border-b-2 px-2 py-3 text-xs font-semibold uppercase tracking-wide transition-colors",
+                  "focus-ring flex shrink-0 items-center gap-1 border-b-2 px-2 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors",
                   groupActive
                     ? "border-[var(--ink)] text-text"
                     : "border-transparent text-text-mute hover:text-text",
@@ -188,7 +192,12 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                 />
               </button>
               {isOpen && (
-                <div className="ledger-card absolute left-0 top-full z-40 mt-1 min-w-[12rem] p-1">
+                <div
+                  className={cn(
+                    "ledger-card absolute top-full z-40 mt-1 min-w-[12rem] max-w-[calc(100svw-2rem)] p-1",
+                    g.key === "account" ? "right-0" : "left-0",
+                  )}
+                >
                   {g.items.map((it) => (
                     <Link
                       key={it.href}

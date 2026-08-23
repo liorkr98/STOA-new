@@ -1,8 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { fraunces, plexSans, plexMono } from "./fonts";
 import { Providers } from "./providers";
 import { SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FAF8F4",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

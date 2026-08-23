@@ -69,8 +69,8 @@ export function DispatchView({
     <article
       className={
         isHome
-          ? "dispatch-page dispatch-page--home mx-auto w-full max-w-[var(--w-wide)] px-[var(--page-gutter)] py-10 sm:py-14"
-          : "dispatch-page dispatch-page--public mx-auto w-full max-w-[var(--w-wide)] px-[var(--page-gutter)] py-10 sm:py-14"
+          ? "dispatch-page dispatch-page--home gutter-x mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14"
+          : "dispatch-page dispatch-page--public gutter-x mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14"
       }
     >
       <DispatchMasthead

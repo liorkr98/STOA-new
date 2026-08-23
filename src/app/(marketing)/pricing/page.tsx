@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Pricing" };
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-[var(--w-reading)] px-5 py-16">
+    <div className="mx-auto max-w-[var(--w-reading)] gutter-x py-16">
       <h1 className="t-h1">Pricing</h1>
       <p className="t-body mt-3">
         Browsing is free. Analysts set their own prices; Stoa takes a flat 10% of what they earn.

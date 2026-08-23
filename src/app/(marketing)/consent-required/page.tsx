@@ -21,7 +21,7 @@ export default async function ConsentRequiredPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-[var(--w-reading)] flex-col justify-center px-5 py-16">
+    <div className="mx-auto flex min-h-[60vh] max-w-[var(--w-reading)] flex-col justify-center gutter-x py-16">
       <ConsentForm pendingTypes={pendingTypes} requireAge={requireAge} />
     </div>
   );

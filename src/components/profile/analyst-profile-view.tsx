@@ -390,11 +390,11 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
   );
 
   return (
-    <div className={cn("pb-24 md:pb-0", props.texture && "paper-texture")} style={props.storefrontStyle}>
+    <div className={cn("pb-[calc(6rem+var(--safe-bottom))] md:pb-0", props.texture && "paper-texture")} style={props.storefrontStyle}>
       {/* HERO: identity, audience, actions */}
       <div className="max-w-[720px]">
-        <div className="flex items-start gap-5">
-          <span className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
+        <div className="flex items-start gap-4 sm:gap-5">
+          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
             {props.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
@@ -402,9 +402,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
               props.initials
             )}
           </span>
-          <div className="pt-1">
-            <div className="flex items-center gap-2.5">
-              <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-[40px]">
+          <div className="min-w-0 pt-1">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <h1 className="min-w-0 break-words font-display text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[40px]">
                 {props.name}
               </h1>
               {props.verified && (
@@ -464,11 +464,11 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
 
       {/* MOBILE sticky action bar */}
       {!props.isSelf && (
-        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2.5 border-t border-border bg-bg px-4 pb-4 pt-3 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2.5 border-t border-border bg-bg px-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-3 pb-[max(0.75rem,var(--safe-bottom))] md:hidden">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
+            className="min-w-0 flex-1 truncate rounded-[var(--radius-btn)] bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
           >
             {props.subscribeLabel}
           </button>

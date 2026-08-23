@@ -332,7 +332,7 @@ export function AskPanel({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 right-0 z-40 flex w-[min(380px,100vw)] flex-col border-l border-border bg-surface",
+        "fixed inset-y-0 right-0 z-50 flex w-full max-w-[380px] flex-col border-l border-border bg-surface pt-[var(--safe-top)] pb-[var(--safe-bottom)]",
         "shadow-[var(--shadow-card)]",
       )}
       role="dialog"

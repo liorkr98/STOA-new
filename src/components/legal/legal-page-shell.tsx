@@ -20,7 +20,7 @@ interface LegalPageShellProps {
 
 export function LegalPageShell({ title, children }: LegalPageShellProps) {
   return (
-    <div className="mx-auto max-w-[var(--w-reading)] px-[var(--page-gutter)] py-16">
+    <div className="mx-auto max-w-[var(--w-reading)] gutter-x py-16">
       <LegalPlaceholderBanner />
       <h1 className="t-h1">{title}</h1>
       <div className="mt-8 flex flex-col gap-6">{children}</div>

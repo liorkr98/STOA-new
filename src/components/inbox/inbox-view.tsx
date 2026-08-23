@@ -227,7 +227,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
         </div>
       )}
 
-      <div className="flex gap-2 overflow-x-auto">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
         {CHIPS.map((c) => (
           <button
             key={c.key}

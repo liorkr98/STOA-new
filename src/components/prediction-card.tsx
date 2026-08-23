@@ -51,11 +51,10 @@ export function PredictionCard({
         ? "miss"
         : "locked";
   const showTarget = !hideTarget;
-  const cols = showTarget ? "grid-cols-3" : "grid-cols-2";
 
   return (
     <div className={cn("ledger-card p-4", className)}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <TickerChip ticker={ticker} />
           <DirectionTag direction={direction} />
@@ -74,7 +73,7 @@ export function PredictionCard({
         </div>
       </div>
 
-      <div className={cn("mt-4 grid gap-3", cols)}>
+      <div className={cn("mt-4 grid grid-cols-1 gap-3 min-[400px]:grid-cols-3", !showTarget && "min-[400px]:grid-cols-2")}>
         <Field label="Entry" value={`$${price(lock_price)}`} />
         {showTarget && (
           <Field
@@ -90,7 +89,7 @@ export function PredictionCard({
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
         <span className="t-meta inline-flex items-center gap-1">
           <Clock size={13} strokeWidth={2.5} />
           {prediction.horizon_days}d horizon
@@ -142,7 +141,7 @@ function Field({
         {icon}
         {label}
       </span>
-      <span className="inline-flex items-center gap-1.5">
+      <span className="inline-flex min-w-0 flex-wrap items-center gap-1.5">
         <span className="num text-sm font-medium">{value}</span>
         {trailing}
       </span>

@@ -135,7 +135,7 @@ export function ReportTemplatePicker({
             aria-modal="true"
             aria-label="Report templates"
             className={cn(
-              "fixed z-50 flex max-h-[min(88dvh,720px)] w-[min(560px,calc(100vw-1.5rem))] flex-col overflow-hidden",
+              "fixed z-50 flex max-h-[min(88svh,720px)] w-[min(560px,calc(100svw-1.5rem))] flex-col overflow-hidden",
               "rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)]",
               anchor === "compose"
                 ? "left-1/2 top-[12%] -translate-x-1/2"
