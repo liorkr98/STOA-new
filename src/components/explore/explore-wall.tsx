@@ -13,8 +13,8 @@ import { cn } from "@/lib/design/cn";
 
 /**
  * Explore: a wall of faces the reader scans and chooses from. Six columns on
- * desktop, three on mobile, 4px gaps, 4:5 tiles, sized by trending and packed
- * without gaps. Clicking a tile opens the Feed player at that item as an
+ * desktop, three on mobile, 4px gaps, 4:5 tiles, sized by the Explore ranker
+ * and packed without gaps. Clicking a tile opens the Feed player at that item as an
  * overlay above the wall (mobile: full-bleed with a back chevron); closing
  * returns to the exact scroll position because the wall never unmounts.
  */

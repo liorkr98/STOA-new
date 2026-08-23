@@ -9,6 +9,9 @@ import { listCommentsForReports } from "@/lib/db/comments";
 import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
+import { recordRankingImpressions } from "@/lib/db/ranking";
+import { loadViewerContext } from "@/lib/ranking/context";
+import { rankClips } from "@/lib/ranking/rank";
 import type { FeedComment } from "@/lib/feed/types";
 
 export const metadata: Metadata = { title: "Feed" };
@@ -24,19 +27,42 @@ export const metadata: Metadata = { title: "Feed" };
  *
  * `?at=<publication id>` opens partway in, which is how an Explore tile hands
  * over: the reader taps a face on the wall and lands on that face here.
+ *
+ * Order comes from the Feed ranker (likes, comments, completion, click-through,
+ * watchlist, recency; MOAT is a light gate). Not recency alone.
  */
 export default async function FeedPage({
   searchParams,
 }: {
   searchParams: Promise<{ at?: string }>;
 }) {
-  const [{ at }, userId, clips] = await Promise.all([
+  const sessionId = crypto.randomUUID();
+  const [atParams, userId, clips, viewer] = await Promise.all([
     searchParams,
     getSessionUserId(),
     listVideoClipCards(72),
+    loadViewerContext(),
   ]);
+  const { at } = atParams;
 
-  const publications = clips.length > 0 ? await clipsToPublications(clips) : [];
+  const ranked = await rankClips(clips, viewer, "feed");
+  const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
+  const reasonsByReport = new Map(ranked.map((r) => [r.reportId, r.reasons]));
+  for (const pub of publications) pub.rankReasons = reasonsByReport.get(pub.id);
+
+  void recordRankingImpressions({
+    sessionId,
+    userId,
+    surface: "feed",
+    rows: ranked.map((r, i) => ({
+      videoId: r.videoId,
+      reportId: r.reportId,
+      analystId: r.analystId,
+      position: i,
+      score: r.score,
+      reasons: r.reasons,
+    })),
+  });
 
   if (publications.length > 0) {
     const commentsByReport = await listCommentsForReports(publications.map((p) => p.id));
@@ -88,6 +114,7 @@ export default async function FeedPage({
         startIndex={startIndex}
         canAct={Boolean(userId)}
         onPost={userId ? postFeedComment : undefined}
+        sessionId={sessionId}
       />
     </div>
   );

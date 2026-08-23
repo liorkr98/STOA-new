@@ -28,6 +28,10 @@ export interface VideoClip {
   fact_check_results: Record<string, unknown> | null;
   created_at: string;
   published_at: string | null;
+  /** Funnel counters maintained by a trigger on video_view_events. */
+  play_count?: number;
+  completion_count?: number;
+  click_through_count?: number;
 }
 
 /** A published clip joined to its report (with author + prediction) for feed cards. */
@@ -36,7 +40,7 @@ export interface VideoClipCard extends VideoClip {
 }
 
 const COLUMNS =
-  "id, report_id, creator_id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url, transcript, duration_seconds, status, fact_check_results, created_at, published_at";
+  "id, report_id, creator_id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url, transcript, duration_seconds, status, fact_check_results, created_at, published_at, play_count, completion_count, click_through_count";
 
 const CARD_SELECT = `${COLUMNS}, report:reports!video_clips_report_id_fkey(*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*))`;
 
@@ -259,6 +263,12 @@ export async function recordVideoViewEvent(input: {
   watchedSeconds?: number;
   completed?: boolean;
   clickedThroughToReport?: boolean;
+  sessionId?: string | null;
+  videoLengthSeconds?: number;
+  replayed?: boolean;
+  skippedAtSeconds?: number | null;
+  surface?: string | null;
+  positionInFeed?: number | null;
 }): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const {
@@ -270,6 +280,12 @@ export async function recordVideoViewEvent(input: {
     watched_seconds: input.watchedSeconds ?? null,
     completed: input.completed ?? false,
     clicked_through_to_report: input.clickedThroughToReport ?? false,
+    session_id: input.sessionId ?? null,
+    video_length_seconds: input.videoLengthSeconds ?? null,
+    replayed: input.replayed ?? false,
+    skipped_at_seconds: input.skippedAtSeconds ?? null,
+    surface: input.surface ?? null,
+    position_in_feed: input.positionInFeed ?? null,
   });
   return { ok: !error };
 }

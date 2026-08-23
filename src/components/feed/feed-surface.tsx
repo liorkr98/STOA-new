@@ -22,6 +22,7 @@ import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
 import { FeedDiscussion } from "@/components/feed/feed-discussion";
 import { trackEngagement } from "@/lib/engagement/track-client";
+import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
 import { buttonClass } from "@/components/ui/button";
@@ -73,12 +74,14 @@ export function FeedSurface({
   startIndex = 0,
   canAct = false,
   onPost,
+  sessionId,
 }: {
   publications: FeedPublication[];
   startIndex?: number;
   /** Signed in: like, save and follow act; otherwise they route to sign-in. */
   canAct?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  sessionId?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
@@ -139,6 +142,7 @@ export function FeedSurface({
           onPrev={() => goTo(i - 1)}
           onNext={() => goTo(i + 1)}
           onDiscuss={() => setDiscussing(pub.id)}
+          sessionId={sessionId}
         />
       ))}
 
@@ -173,6 +177,7 @@ const FeedItem = function FeedItem({
   onPrev,
   onNext,
   onDiscuss,
+  sessionId,
 }: {
   ref: (el: HTMLElement | null) => void;
   pub: FeedPublication;
@@ -185,6 +190,7 @@ const FeedItem = function FeedItem({
   onPrev: () => void;
   onNext: () => void;
   onDiscuss: () => void;
+  sessionId?: string;
 }) {
   const router = useRouter();
   const [, startAction] = useTransition();
@@ -199,6 +205,10 @@ const FeedItem = function FeedItem({
   const [saved, setSaved] = useState(false);
   const [following, setFollowing] = useState(false);
   const [shared, setShared] = useState(false);
+  const lastRatioRef = useRef(0);
+  const loopedRef = useRef(false);
+  const trackedPlayRef = useRef(false);
+  const clickTrackedRef = useRef(false);
 
   /**
    * Hand the stage from the poster to the player a beat after the publication
@@ -246,10 +256,55 @@ const FeedItem = function FeedItem({
   }, [isActive, pub.id, index]);
 
   useEffect(() => {
+    if (!pub.clipId) return;
+    if (isActive) {
+      if (!trackedPlayRef.current) {
+        trackedPlayRef.current = true;
+        loopedRef.current = false;
+        lastRatioRef.current = 0;
+        trackVideoEvent(pub.clipId, {
+          watchedSeconds: 0,
+          sessionId,
+          videoLengthSeconds: pub.durationSeconds,
+          surface: "feed",
+          positionInFeed: index,
+        });
+      }
+      return;
+    }
+    const ratio = lastRatioRef.current;
+    if (trackedPlayRef.current && ratio > 0.02) {
+      const watched = Math.round(ratio * pub.durationSeconds);
+      trackVideoEvent(pub.clipId, {
+        watchedSeconds: watched,
+        completed: ratio >= 0.8,
+        skippedAtSeconds: ratio < 0.2 ? watched : undefined,
+        replayed: loopedRef.current,
+        sessionId,
+        videoLengthSeconds: pub.durationSeconds,
+        surface: "feed",
+        positionInFeed: index,
+      });
+    }
+    trackedPlayRef.current = false;
+    clickTrackedRef.current = false;
+  }, [isActive, pub.clipId, pub.durationSeconds, index, sessionId]);
+
+  useEffect(() => {
     if (isActive && unlockIndex >= 0 && card === unlockIndex + 1) {
       trackEngagement({ reportId: pub.id, kind: "cta_reach", value: card, surface: "feed" });
+      if (pub.clipId && !clickTrackedRef.current) {
+        clickTrackedRef.current = true;
+        trackVideoEvent(pub.clipId, {
+          clickedThroughToReport: true,
+          sessionId,
+          videoLengthSeconds: pub.durationSeconds,
+          surface: "feed",
+          positionInFeed: index,
+        });
+      }
     }
-  }, [isActive, card, unlockIndex, pub.id]);
+  }, [isActive, card, unlockIndex, pub.id, pub.clipId, pub.durationSeconds, index, sessionId]);
 
   useEffect(() => {
     if (isActive) playerCommand(iframeRef.current, muted ? "mute" : "unmute");
@@ -296,7 +351,12 @@ const FeedItem = function FeedItem({
       if (msg.event === "timeupdate" && msg.value) {
         const { seconds = 0, duration = 0 } = msg.value;
         setStarted(true);
-        if (duration > 0) setProgress(Math.min(1, seconds / duration));
+        if (duration > 0) {
+          const ratio = Math.min(1, seconds / duration);
+          if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
+          lastRatioRef.current = ratio;
+          setProgress(ratio);
+        }
       }
     };
 
@@ -336,7 +396,15 @@ const FeedItem = function FeedItem({
     if (!isActive || !started || paused) return;
     const duration = pub.durationSeconds || 0;
     if (duration <= 0) return;
-    const id = setInterval(() => setProgress((p) => Math.min(1, p + 0.25 / duration)), 250);
+    const id = setInterval(
+      () =>
+        setProgress((p) => {
+          const next = Math.min(1, p + 0.25 / duration);
+          lastRatioRef.current = next;
+          return next;
+        }),
+      250,
+    );
     return () => clearInterval(id);
   }, [isActive, started, paused, pub.durationSeconds]);
 
@@ -486,6 +554,8 @@ const FeedItem = function FeedItem({
                     paused={paused}
                     title={pub.headline}
                     onProgress={(ratio) => {
+                      if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
+                      lastRatioRef.current = ratio;
                       setProgress(ratio);
                       if (ratio > 0) setStarted(true);
                     }}

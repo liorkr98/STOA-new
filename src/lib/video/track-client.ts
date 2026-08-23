@@ -7,6 +7,12 @@ export interface VideoTrackPayload {
   watchedSeconds?: number;
   completed?: boolean;
   clickedThroughToReport?: boolean;
+  sessionId?: string;
+  videoLengthSeconds?: number;
+  replayed?: boolean;
+  skippedAtSeconds?: number;
+  surface?: "feed" | "explore";
+  positionInFeed?: number;
 }
 
 export function trackVideoEvent(videoId: string, payload: VideoTrackPayload): void {

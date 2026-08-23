@@ -20,6 +20,12 @@ export const POST = withHandler<{ id: string }>(
       watchedSeconds?: number;
       completed?: boolean;
       clickedThroughToReport?: boolean;
+      sessionId?: string;
+      videoLengthSeconds?: number;
+      replayed?: boolean;
+      skippedAtSeconds?: number;
+      surface?: string;
+      positionInFeed?: number;
     };
 
     const { ok } = await recordVideoViewEvent({
@@ -30,6 +36,19 @@ export const POST = withHandler<{ id: string }>(
           : undefined,
       completed: body.completed === true,
       clickedThroughToReport: body.clickedThroughToReport === true,
+      sessionId: typeof body.sessionId === "string" ? body.sessionId : null,
+      videoLengthSeconds:
+        typeof body.videoLengthSeconds === "number"
+          ? Math.max(0, Math.round(body.videoLengthSeconds))
+          : undefined,
+      replayed: body.replayed === true,
+      skippedAtSeconds:
+        typeof body.skippedAtSeconds === "number"
+          ? Math.max(0, Math.round(body.skippedAtSeconds))
+          : null,
+      surface: typeof body.surface === "string" ? body.surface : null,
+      positionInFeed:
+        typeof body.positionInFeed === "number" ? Math.max(0, Math.round(body.positionInFeed)) : null,
     });
 
     return NextResponse.json({ ok });

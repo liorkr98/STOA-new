@@ -63,4 +63,6 @@ export interface FeedPublication {
   cards: FeedCard[];
   comments: FeedComment[];
   publishedAt: string;
+  /** Logged with the impression; not rendered. */
+  rankReasons?: string[];
 }
