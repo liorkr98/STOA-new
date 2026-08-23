@@ -428,20 +428,37 @@ The clip at the top of a report, and deliberately not the Feed's stage.
   them because it supplies its own.
 - **Portrait, capped in height on desktop, full-width on a phone.** Analyst
   clips are phone-shaped; a 16:9 frame pillarboxes the player and crops the
-  poster to a different shape than the video, so the frame jumps on play.
-- **Above the paywall and above the two-column grid.** The clip is the teaser
-  and is public by design, and on a phone the aside stacks first, so anything
-  placed in the body column lands under the position and disclosure panels.
+  poster to a different shape than the video, so the frame jumps on play. In the
+  column the frame hugs the player rather than filling the width, so a portrait
+  clip does not sit in a band of its own letterboxing.
+- **It is the second column, and it sticks.** The writing is on one side and the
+  player on the other, so a reader can watch while reading rather than scrolling
+  past the video to reach the words. Sticky needs somewhere to travel, so the
+  column is a grid item that stretches to the row height rather than shrinking
+  to its contents.
+- **On a phone it leads the page and then docks.** Once playing and scrolled out
+  of sight it shrinks to a corner and keeps going, with a way back to its place
+  and a way to stop it. The player is never re-parented: moving an iframe in the
+  DOM reloads it, so the same element changes position and the slot holds its
+  measured height.
+- **Above the paywall.** The clip is the teaser and is public by design.
+- **With no clip the page is a single column of writing** with the trust panels
+  beside it, unchanged.
 
 **Two rules across every surface.**
 
 1. **No clip, no slot.** A publication with no video gets no image area: not a
    placeholder, not an empty frame, not a coloured block. It renders as a
-   headline, a dek and a byline, the way a written report does everywhere else.
-   Reserving the frame regardless asserts that every publication is a video.
-   The components own this themselves (`Poster` and the Today row thumbnail
-   return `null`, and carry their own link so a call site cannot leave an empty
-   anchor behind).
+   headline, a dek and its metadata, the way a written report does everywhere
+   else. Reserving the frame regardless asserts that every publication is a
+   video. The components own this themselves (`Poster` and the Today row
+   thumbnail return `null`, and carry their own link so a call site cannot leave
+   an empty anchor behind).
+
+   This holds on every surface: Today's lead and bands, the profile's lead tier
+   and grid, Markets publication rows (which render through Today's row), the
+   landing lead, Explore and the Feed. Explore and the Feed only ever query
+   publications that have a clip, so the question does not arise there.
 
 2. **`ClipThumb` draws every clip poster**, falling back to `PlaceholderThumb`
    only for a clip whose poster frame has not been produced yet. That is a video

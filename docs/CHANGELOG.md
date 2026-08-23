@@ -10,6 +10,67 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-24 — No slot without a video, and the report reads in two columns
+
+**For someone using the site**
+
+- **No publication without a video reserves space for one, anywhere.** The last
+  holdout was the profile grid, where a written report sat inside a bordered
+  16:9 box with its headline set into it. That box was an image slot with no
+  image, kept so the grid rows lined up. Written reports are now their
+  metadata, headline, dek and view count, and the grid is top-aligned so a
+  shorter item simply ends sooner.
+- **The report page reads in two columns.** The analyst's clip sits beside the
+  writing rather than above it, so a reader can watch while reading instead of
+  scrolling past the video to reach the words. The player is click-to-play, not
+  autoplaying, and sticks within its column so it holds still for the length of
+  the read.
+- **On a phone the clip leads the page and then gets out of the way.** Once it
+  is playing and has been scrolled past, it shrinks to a corner and keeps going,
+  with a way back to its place in the page and a way to stop it.
+- **A report with no video is a single column of writing**, unchanged.
+
+**What needed no change**
+
+- Markets publication rows already render through Today's row component, which
+  stopped reserving a thumbnail in the previous batch.
+- Explore and the Feed only ever query publications that have a clip.
+- Today's lead and bands, the landing lead, and the profile lead tier were done
+  in the previous batch.
+
+**The placeholder now has exactly one use**
+
+A clip that exists but whose poster frame Bunny has not produced yet. That is a
+video with no still, not a publication with no video. Every other use is gone:
+it is reached only through `ClipThumb`, from surfaces that have already
+established a clip exists, plus two components that guard on the same condition.
+If clips always arrived with a poster, the component would have no callers left.
+
+**Two implementation notes worth keeping**
+
+- Getting the phone order right (clip, writing, panels) needed `display:
+  contents` on the layout wrappers below `lg`, which dissolves them so the clip
+  and the trust panels can be ordered independently against the body. Without
+  it the panels sat between the video and the first paragraph.
+- The docked player is never re-parented. Moving an iframe in the DOM reloads
+  it, which would restart the video at the exact moment it docked.
+
+**Verified, and one thing not**
+
+Checked signed out at 1440 and 390, on a report with a clip and one without.
+The two-column layout, the sticky player, click-to-play, the phone stacking
+order and the single-column no-video page all confirmed, including the sticky
+geometry on a real report: a 763px block inside a 1087px column.
+
+The phone docking is **not** confirmed. It depends on scrolling and on an
+intersection observer, and the preview browser here never reports itself
+visible, so the page does not scroll, observers do not fire and animation frames
+do not run. The code is in and everything around it works; the behaviour itself
+wants a real phone or a real browser window. To check it: open a report at
+phone width, press play, and scroll into the text.
+
+---
+
 ## 2026-08-23 (later still) — No video slot where there is no video
 
 **For someone using the site**
