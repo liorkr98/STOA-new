@@ -437,9 +437,9 @@ export function StudioEditor({
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-1px)] flex-col">
+    <div className="flex min-h-[calc(var(--app-h)-1px)] flex-col">
       {/* Top bar: back, type, save status, Save draft, Publish. Nothing else. */}
-      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-paper px-4 py-2.5 md:px-6">
+      <div className="sticky top-0 z-30 flex items-center gap-2 overflow-x-auto border-b border-border bg-paper px-3 py-2.5 [scrollbar-width:none] md:flex-wrap md:gap-3 md:px-6">
         <Link
           href="/studio"
           className="flex items-center gap-1.5 text-sm text-text-mute transition-colors hover:text-text focus-ring rounded-[var(--radius-btn)]"
@@ -451,7 +451,7 @@ export function StudioEditor({
         <div
           role="radiogroup"
           aria-label="Report type"
-          className="inline-flex rounded-[var(--radius-btn)] border border-border bg-surface p-0.5"
+          className="inline-flex shrink-0 rounded-[var(--radius-btn)] border border-border bg-surface p-0.5"
         >
           {types.map((t) => (
             <button
@@ -479,7 +479,7 @@ export function StudioEditor({
           </span>
         )}
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {hasCard && (
             <>
               {editor && (
@@ -522,9 +522,16 @@ export function StudioEditor({
             <FloppyDisk size={16} />
             <span className="hidden sm:inline">Save draft</span>
           </Button>
-          <Button size="sm" disabled={pending} onClick={onPublishClick}>
+          <Button size="sm" disabled={pending} onClick={onPublishClick} className="shrink-0">
             <RocketLaunch size={15} weight="fill" />
-            {pending ? "Publishing..." : lockingCall ? "Publish & Lock" : "Publish"}
+            {pending ? "Publishing..." : lockingCall ? (
+              <>
+                <span className="sm:hidden">Lock</span>
+                <span className="hidden sm:inline">Publish & Lock</span>
+              </>
+            ) : (
+              "Publish"
+            )}
           </Button>
           <button
             type="button"
@@ -624,7 +631,7 @@ export function StudioEditor({
 
         {/* Lock & Publish panel (collapsible) */}
         {panelOpen && (
-          <aside className="scroll-area flex flex-col gap-4 self-start lg:sticky lg:top-14 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:pl-1">
+          <aside className="scroll-area flex flex-col gap-4 self-start lg:sticky lg:top-[var(--nav-h)] lg:max-h-[calc(var(--app-h)-5rem)] lg:overflow-y-auto lg:pl-1">
             <TagPicker
               value={tags}
               onChange={setTags}

@@ -245,7 +245,7 @@ export function TodaySidebar({ data }: { data: TodaySidebarPayload }) {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--ink)_40%,transparent)] md:hidden" />
           <Dialog.Content
-            className="fixed inset-y-0 left-0 z-50 w-[300px] max-w-[85vw] overflow-y-auto scroll-area border-r border-border bg-bg px-4 py-5 md:hidden"
+            className="fixed inset-y-0 left-0 z-50 w-[300px] max-w-[85vw] overflow-y-auto scroll-area border-r border-border bg-bg px-4 py-5 pl-[max(1rem,var(--safe-left))] pt-[max(1.25rem,var(--safe-top))] pb-[max(1.25rem,var(--safe-bottom))] md:hidden"
             aria-label="Today lists"
           >
             <div className="mb-5 flex items-center justify-between">

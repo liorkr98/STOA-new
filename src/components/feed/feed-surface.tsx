@@ -53,7 +53,7 @@ import type { FeedComment, FeedPublication } from "@/lib/feed/types";
  * section have to agree on this exactly: any disagreement and each snap lands
  * a little further off than the last.
  */
-const ITEM_H = "h-[calc(100dvh-3.5rem)]";
+const ITEM_H = "feed-snap";
 
 function fmt(seconds: number) {
   const s = Math.max(0, Math.round(seconds));
@@ -453,7 +453,10 @@ const FeedItem = function FeedItem({
       ref={ref}
       data-feed-item={index}
       aria-label={pub.headline}
-      className={cn("flex snap-start snap-always flex-col items-center justify-center px-4 py-3", ITEM_H)}
+      className={cn(
+        "flex snap-start snap-always flex-col items-center justify-center py-3 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))]",
+        ITEM_H,
+      )}
     >
       <div className="flex h-full w-full max-w-[420px] flex-col justify-center gap-2">
         {/* The dateline strip, above the frame. */}
@@ -765,9 +768,9 @@ function DiscussionPanel({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)]">
-      <button type="button" aria-label="Close discussion" onClick={onClose} className="flex-1" />
-      <div className="flex h-full w-full max-w-[460px] flex-col overflow-y-auto bg-bg p-4 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
+      <button type="button" aria-label="Close discussion" onClick={onClose} className="absolute inset-0 md:static md:flex-1" />
+      <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-[var(--radius-card)] bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">

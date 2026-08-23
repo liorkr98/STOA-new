@@ -86,6 +86,17 @@
   /* Minimum breathing room at the viewport edge, applied by the layout. */
   --page-gutter: 20px;
 
+  /* Notch / home-indicator insets. 0 on screens that have none. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Sticky top nav is h-14 plus the status-bar inset when present. */
+  --nav-h: calc(3.5rem + var(--safe-top));
+  --main-pad-y: 1.25rem;
+  --app-h: 100dvh;
+
   /* Motion tokens (docs/MOTION.md A.1). Use nothing else. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -100,7 +111,38 @@
 @media (min-width: 768px) {
   :root {
     --page-gutter: 40px;
+    --main-pad-y: 2rem;
   }
+}
+
+@supports (height: 100svh) {
+  :root {
+    /* Small viewport: the visible area with browser chrome, so feed/editor
+       chrome is not tucked behind the iOS home indicator. */
+    --app-h: 100svh;
+  }
+}
+
+/* Horizontal page padding that also clears the iPhone notch in landscape. */
+.gutter-x {
+  padding-left: max(var(--page-gutter), var(--safe-left));
+  padding-right: max(var(--page-gutter), var(--safe-right));
+}
+
+/* Cancel the layout gutter + vertical pad so a screen can own the viewport. */
+.breakout-main {
+  margin-left: calc(-1 * max(var(--page-gutter), var(--safe-left)));
+  margin-right: calc(-1 * max(var(--page-gutter), var(--safe-right)));
+  margin-top: calc(-1 * var(--main-pad-y));
+  margin-bottom: calc(-1 * var(--main-pad-y));
+}
+
+.feed-snap {
+  height: calc(var(--app-h) - var(--nav-h));
+}
+
+.safe-bottom {
+  padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
 .dark {
@@ -178,8 +220,8 @@ html {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Anchor targets land clear of the sticky top nav (h-16 + breathing room). */
-  scroll-padding-top: 5rem;
+  /* Anchor targets land clear of the sticky top nav (nav + breathing room). */
+  scroll-padding-top: calc(var(--nav-h) + 0.75rem);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2203,12 +2245,13 @@ body {
   .sheet-panel {
     width: 100%;
     height: auto;
-    max-height: 88dvh;
+    max-height: min(88svh, 88dvh);
     border-inline-start: none;
     border-top: 1px solid var(--border-strong);
     border-start-start-radius: var(--r-card);
     border-start-end-radius: var(--r-card);
     animation: sheet-in-y var(--dur-3) var(--ease-drawer) both;
+    padding-bottom: max(var(--space-8), var(--safe-bottom));
   }
 }
 
@@ -2350,6 +2393,7 @@ body {
 }
 .rail-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
@@ -2399,6 +2443,7 @@ body {
   scroll-snap-type: x proximity;
   padding-top: var(--space-5);
   padding-bottom: var(--space-2);
+  padding-right: var(--page-gutter);
   scrollbar-width: none;
 }
 .rail-track::-webkit-scrollbar {
@@ -2443,6 +2488,8 @@ body {
  * comes from the container width so spanning tiles keep the ratio. */
 .explore-wall {
   container-type: inline-size;
+  margin-left: calc(-1 * max(var(--page-gutter), var(--safe-left)));
+  margin-right: calc(-1 * max(var(--page-gutter), var(--safe-right)));
 }
 .explore-grid {
   display: grid;

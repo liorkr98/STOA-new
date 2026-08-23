@@ -137,19 +137,19 @@ export function ExploreWall({
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--ink)] pb-4">
-        <div>
+      <div className="flex flex-col gap-4 border-b border-[var(--ink)] pb-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
           {ticker ? (
             <>
               <Link href={basePath} className="num focus-ring rounded text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text">
                 ← All of Explore
               </Link>
-              <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight md:text-5xl">{ticker}</h1>
+              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-5xl">{ticker}</h1>
               <div className="num mt-1.5 text-[11px] uppercase tracking-[0.18em] text-text-mute">Every take on this name</div>
             </>
           ) : (
             <>
-              <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">{sector ? sector : "Explore"}</h1>
+              <h1 className="font-display text-3xl font-semibold tracking-tight md:text-5xl">{sector ? sector : "Explore"}</h1>
               <div className="num mt-1.5 text-[11px] uppercase tracking-[0.18em] text-text-mute">
                 {sector ? (
                   <Link href={basePath} className="focus-ring rounded hover:text-text">
@@ -162,7 +162,7 @@ export function ExploreWall({
             </>
           )}
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <FilterPicker
             label="Ticker ▾"
             searchLabel="Search tickers"

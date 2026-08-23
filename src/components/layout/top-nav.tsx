@@ -10,6 +10,7 @@ import { StoaLogo } from "@/components/brand/logo";
 import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
 import { LinkPending } from "@/components/layout/link-pending";
+import { signOut } from "@/app/actions/auth";
 
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/feed";
@@ -58,8 +59,8 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
   const logoHref = profile ? DEFAULT_HREF : "/";
 
   return (
-    <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper px-[var(--page-gutter)]">
-      <div className="mx-auto flex h-14 w-full max-w-[var(--w-wide)] items-center justify-between gap-4 lg:gap-6">
+    <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper pt-[var(--safe-top)] gutter-x">
+      <div className="mx-auto flex h-14 w-full min-w-0 max-w-[var(--w-wide)] items-center justify-between gap-2 md:gap-4 lg:gap-6">
         {/* Wordmark + nav items */}
         <div className="flex min-w-0 items-center gap-6 lg:gap-8">
           <Link href={logoHref} className="focus-ring shrink-0 rounded-[var(--radius-btn)]">
@@ -127,7 +128,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
         </div>
 
         {/* Mobile right cluster: search icon + avatar + hamburger */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 md:hidden">
           <Link href="/search" aria-label="Search" className="focus-ring rounded-[var(--radius-btn)] p-2 text-text-mute">
             <Search size={18} />
           </Link>
@@ -148,7 +149,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
 
       {/* Mobile drawer: full item list + account links */}
       {open && (
-        <div className="border-t border-border bg-surface px-5 py-3 md:hidden">
+        <div className="max-h-[calc(var(--app-h)-var(--nav-h))] overflow-y-auto border-t border-border bg-surface py-3 pb-[max(0.75rem,var(--safe-bottom))] md:hidden">
           <nav className="flex flex-col gap-1">
             {items.map((item) => (
                 <Link
@@ -171,9 +172,17 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                 <Link href="/inbox" onClick={() => setOpen(false)} className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text">
                   Inbox{unreadCount > 0 ? " ·" : ""}
                 </Link>
+                <Link href="/settings" onClick={() => setOpen(false)} className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text">
+                  Settings
+                </Link>
+                <form action={signOut}>
+                  <button type="submit" className="focus-ring w-full rounded-[var(--radius-btn)] px-3 py-2 text-left text-sm text-text-mute hover:bg-surface-2 hover:text-text">
+                    Sign out
+                  </button>
+                </form>
               </>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 px-3 py-2">
                 <Link href="/sign-in" className={buttonClass("secondary", "sm")}>Sign in</Link>
                 <Link href="/sign-up" className={buttonClass("primary", "sm")}>Join Stoa</Link>
               </div>

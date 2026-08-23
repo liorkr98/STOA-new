@@ -36,7 +36,7 @@ const groups = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-surface px-[var(--page-gutter)]">
+    <footer className="gutter-x border-t border-border bg-surface pb-[max(2.5rem,var(--safe-bottom))]">
       <div className="mx-auto grid w-full max-w-[var(--w-wide)] gap-10 py-14 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div className="flex flex-col gap-3">
           <StoaLogo />

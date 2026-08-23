@@ -24,11 +24,11 @@ import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing
  */
 
 const ACTIONS = (
-  <div className="flex items-center justify-center gap-3">
-    <Link href="/sign-up" className={buttonClass("primary", "lg")}>
+  <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
+    <Link href="/sign-up" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
       Sign up
     </Link>
-    <Link href="/sign-in" className={buttonClass("secondary", "lg")}>
+    <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
       Log in
     </Link>
   </div>
@@ -49,7 +49,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   ].join(" · ");
   return (
     <section aria-label="Stoa" className="landing-doors">
-      <div className="mx-auto flex max-w-[var(--w-reading)] flex-col items-center px-[var(--page-gutter)] pt-16 text-center md:pt-24">
+      <div className="gutter-x mx-auto flex max-w-[var(--w-reading)] flex-col items-center pt-16 text-center md:pt-24">
         <h1 className="dispatch-wordmark landing-wordmark">STOA</h1>
         <p className="mt-5 font-display text-[1.375rem] tracking-tight text-text md:text-[1.625rem]">Think clearly. Invest better.</p>
         <p className="mt-6 max-w-[46ch] font-display text-[1.0625rem] leading-relaxed text-text-mute">
@@ -82,9 +82,9 @@ function TodayLite({ data }: { data: LandingPayload }) {
   if (!data.lead) return null;
   const lead = data.lead;
   return (
-    <section aria-label="Today, a glimpse" className="landing-today mx-auto mt-20 max-w-[var(--w-standard)] px-[var(--page-gutter)]">
+    <section aria-label="Today, a glimpse" className="landing-today gutter-x mx-auto mt-20 max-w-[var(--w-standard)]">
       <Reveal>
-        <div className="flex items-baseline justify-between border-y border-[var(--ink)] py-2">
+        <div className="flex flex-col gap-1 border-y border-[var(--ink)] py-2 sm:flex-row sm:items-baseline sm:justify-between">
           <span className="font-display text-[1.125rem] font-semibold tracking-[0.2em]">STOA · TODAY</span>
           <span className="num text-[10px] uppercase tracking-[0.16em] text-text-mute">
             Issue №{data.issue.issueNumber} · {formatDispatchDateline(data.issue.dateISO)}
@@ -253,7 +253,7 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
 function Split({ data }: { data: LandingPayload }) {
   if (data.verdicts.length === 0 && data.faces.length === 0) return null;
   return (
-    <section aria-label="Verdicts and creators" className="mx-auto mt-24 max-w-[var(--w-standard)] px-[var(--page-gutter)]">
+    <section aria-label="Verdicts and creators" className="gutter-x mx-auto mt-24 max-w-[var(--w-standard)]">
       <div className="grid gap-12 md:grid-cols-2 md:divide-x md:divide-[var(--border)]">
         <div className="md:pr-12">
           <Verdicts data={data} />

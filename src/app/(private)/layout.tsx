@@ -19,7 +19,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
   if (!userId) redirect("/sign-in");
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[var(--app-h)] min-w-0 flex-col">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
@@ -37,7 +37,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
           <Suspense fallback={null}>
             <PrivateMobile />
           </Suspense>
-          <main id="main-content" tabIndex={-1} className="flex-1 px-[var(--page-gutter)] py-8 outline-none">
+          <main id="main-content" tabIndex={-1} className="gutter-x min-w-0 flex-1 py-[var(--main-pad-y)] outline-none">
             {children}
           </main>
         </div>

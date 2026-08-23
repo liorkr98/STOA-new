@@ -44,7 +44,7 @@ export default async function ComposePage({
   }
 
   return (
-    <div className="-mx-[var(--page-gutter)] -my-8">
+    <div className="breakout-main">
       {onboarding === "1" && (
         <div className="mx-auto max-w-[var(--w-reading)] px-4 pt-6">
           <FirstReportBanner />

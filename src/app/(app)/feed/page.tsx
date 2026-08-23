@@ -82,7 +82,7 @@ export default async function FeedPage({
   return (
     // The Feed is the viewport. This cancels the app layout's gutter and vertical
     // padding so the stage is measured against the window, not against a column.
-    <div className="-mx-[var(--page-gutter)] -my-8">
+    <div className="breakout-main">
       <FeedSurface
         publications={publications}
         startIndex={startIndex}
