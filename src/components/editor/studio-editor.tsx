@@ -126,6 +126,7 @@ export function StudioEditor({
   analystReportPrice,
   initialDraft,
   initialCards = [],
+  hasVideoClip = false,
   aiCredits = 0,
   plans = [],
 }: {
@@ -133,6 +134,8 @@ export function StudioEditor({
   initialDraft?: Report | null;
   /** The draft's saved deck, payloads intact (see listAuthorCards). */
   initialCards?: DraftCard[];
+  /** The draft already has a clip, so it opens with its video module. */
+  hasVideoClip?: boolean;
   aiCredits?: number;
   plans?: Plan[];
 }) {
@@ -160,7 +163,9 @@ export function StudioEditor({
   // The publication's modules. No fork: a publication may have video,
   // research, both or neither, and adding one is not a question asked before
   // the creator has written anything.
-  const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(null);
+  const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() =>
+    hasVideoClip ? emptyEdit(90) : null,
+  );
   const [hasResearch, setHasResearch] = useState(Boolean(initialDraft?.body));
   const [videoOpen, setVideoOpen] = useState(true);
   const [researchOpen, setResearchOpen] = useState(true);

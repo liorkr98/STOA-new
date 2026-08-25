@@ -5,6 +5,7 @@ import { getDraftForAuthor } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
 import { listAuthorCards } from "@/lib/db/publication-cards";
+import { listVideosByReport } from "@/lib/db/video-clips";
 import { listEntries, listNotebooks } from "@/lib/db/notebooks";
 import { notebookToDoc } from "@/lib/editor/notebook-seed";
 import { StudioEditor } from "@/components/editor/studio-editor";
@@ -22,11 +23,12 @@ export default async function ComposePage({
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
   const { id, onboarding, notebook } = await searchParams;
-  const [draft, wallet, plans, savedCards] = await Promise.all([
+  const [draft, wallet, plans, savedCards, clips] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),
     listActivePlans(profile.id),
     id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
+    id ? listVideosByReport(id) : Promise.resolve([]),
   ]);
   if (id && !draft) notFound();
 
@@ -65,6 +67,7 @@ export default async function ComposePage({
         analystReportPrice={profile.report_price}
         initialDraft={draft ?? seeded}
         initialCards={initialCards}
+        hasVideoClip={clips.length > 0}
         aiCredits={wallet?.ai_credits ?? 0}
         plans={plans}
       />

@@ -1,33 +1,116 @@
 "use client";
 
 import { useState } from "react";
-import { VideoRung } from "@/components/compose/video-rung";
+import Link from "next/link";
 import { StudioEditor } from "@/components/editor/studio-editor";
-import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
-import type { VideoEdit } from "@/lib/compose/overlays";
+import type { DraftCard } from "@/lib/compose/cards";
+import type { Report } from "@/lib/types";
 
 /**
- * Dev-only Compose fixture: the video rung with sample overlays (one text,
- * one full-frame cutaway, one inset), the tag picker with an auto-filled
- * primary, the post-publish processing state, and how a processing
- * publication reads in the Publications list. No real video: the stage runs
- * a 90-second clock over a poster.
+ * Dev-only Compose fixture: the workspace on each of the three draft shapes
+ * a creator can open, so the rails, the modules and the card placements can
+ * be reviewed without a database. Saving and publishing fail here; everything
+ * else behaves as on /studio/compose.
  */
 
-const SAMPLE: VideoEdit = {
-  durationSeconds: 90,
-  trimStart: 1.5,
-  trimEnd: 86,
-  thumbnail: { type: "frame", time: 5.6 },
-  overlays: [
-    { id: "t1", kind: "text", start: 2, end: 8, text: "Blackwell demand into January", position: 8, size: "md" },
-    { id: "v1", kind: "visual", start: 12, end: 24, source: { type: "card", cardId: null, label: "Price chart · entry & target" }, mode: "cutaway", position: 5 },
-    { id: "t2", kind: "text", start: 14, end: 22, text: "Entry 118.40 · Target 142", position: 8, size: "sm" },
-    { id: "v2", kind: "visual", start: 40, end: 52, source: { type: "chart", ticker: "NVDA" }, mode: "inset", position: 3 },
+const CARDS: DraftCard[] = [
+  {
+    id: "c_thesis",
+    kind: "thesis",
+    locked: false,
+    payload: {
+      title: "Blackwell demand is under-modelled",
+      body: "January quarter guidance assumes a supply ceiling that has already moved. The street is modelling the old one.",
+    },
+  },
+  {
+    id: "c_edge",
+    kind: "edge",
+    locked: false,
+    payload: {
+      street: [
+        { text: "Consensus revenue $37.1B", ink: "auto" },
+        { text: "Gross margin 73%", ink: "auto" },
+      ],
+      mine: [
+        { text: "Revenue $39.4B", ink: "creator_est" },
+        { text: "Margin holds at 74.5%", ink: "creator_est" },
+      ],
+    },
+  },
+  {
+    id: "c_path",
+    kind: "path_to_target",
+    locked: true,
+    payload: {
+      steps: [
+        { label: "Units shipped", value: { text: "+18%", ink: "creator_est" } },
+        { label: "ASP", value: { text: "$41,200", ink: "auto" } },
+      ],
+      result: { text: "$142 target", ink: "creator_est" },
+    },
+  },
+  {
+    id: "c_kill",
+    kind: "kill_switch",
+    locked: false,
+    payload: {
+      conditions: [
+        { text: "Hyperscaler capex guided down two quarters running", ink: "plain" },
+        { text: "Lead times below 12 weeks", ink: "creator_est" },
+      ],
+    },
+  },
+];
+
+const BODY = JSON.stringify({
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "The supply ceiling everyone is modelling was set before the packaging capacity came online. That is the whole disagreement, and it is measurable.",
+        },
+      ],
+    },
+    { type: "cardNode", attrs: { cardId: "c_edge" } },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "On our numbers the January quarter clears consensus on both lines, and the margin question resolves itself a quarter later.",
+        },
+      ],
+    },
   ],
-};
+});
+
+type Shape = "video" | "research" | "both";
+
+const SHAPES: { key: Shape; label: string; blurb: string }[] = [
+  { key: "video", label: "Video only", blurb: "A clip, no written report" },
+  { key: "research", label: "Research only", blurb: "Written work, no clip" },
+  { key: "both", label: "Video and research", blurb: "Both modules present" },
+];
+
+function draftFor(shape: Shape): Report {
+  return {
+    id: `dev-${shape}`,
+    type: "call",
+    title: "Blackwell demand is still under-modelled into the January quarter",
+    summary: "The supply ceiling moved. Consensus is still modelling the old one.",
+    body: shape === "video" ? null : BODY,
+    access: "free",
+    ticker: "NVDA",
+    primary_tag: "semiconductors",
+    secondary_tags: ["ai-infrastructure"],
+  } as unknown as Report;
+}
 
 const PUBS: Publication[] = [
   {
@@ -80,36 +163,67 @@ const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
 const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
 
 export default function DevComposePage() {
-  const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
+  const [shape, setShape] = useState<Shape>("both");
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-10">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Compose fixture</h1>
-      <p className="mt-1 text-sm text-text-mute">The full compose screen with its fork, then the video rung, tags, the processing state, and the Publications list row.</p>
+    <div className="w-full py-6">
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Compose fixture</h1>
+        <p className="mt-1 text-sm text-text-mute">
+          The workspace on each draft shape. Left is what you build with, right is what you publish as.
+        </p>
 
-      <h2 className="t-eyebrow mt-10">The compose screen (as an analyst sees it)</h2>
-      <p className="mb-3 mt-1 text-sm text-text-mute">The real editor, mounted here without a database. Saving and publishing will fail; everything else behaves as on /studio/compose.</p>
-      <div className="overflow-hidden rounded-[var(--radius-card)] border border-border">
-        <StudioEditor analystReportPrice={null} initialDraft={null} aiCredits={0} plans={[]} />
-      </div>
-
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0">
-          <VideoRung initial={SAMPLE} />
+        <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Draft shape">
+          {SHAPES.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              role="radio"
+              aria-checked={shape === s.key}
+              onClick={() => setShape(s.key)}
+              className={
+                shape === s.key
+                  ? "focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-[0.8125rem] text-[var(--paper)]"
+                  : "focus-ring rounded-[var(--radius-btn)] border border-border px-3 py-1.5 text-left text-[0.8125rem] text-text-mute hover:text-text"
+              }
+            >
+              <span className="block font-medium">{s.label}</span>
+              <span className="block text-[0.75rem] opacity-80">{s.blurb}</span>
+            </button>
+          ))}
+          <Link
+            href="/dev/compose"
+            className="num focus-ring self-center rounded text-[10px] uppercase tracking-[0.14em] text-text-faint hover:text-text"
+          >
+            Reload
+          </Link>
         </div>
-        <aside className="flex flex-col gap-4">
-          <TagPicker value={tags} onChange={setTags} hasCall callSector="Semiconductors" />
-        </aside>
       </div>
 
-      <h2 className="t-eyebrow mt-12">After publish</h2>
-      <div className="mt-3 grid gap-4 md:grid-cols-2">
-        <ProcessingState status="processing" startedAt={PROCESSING_STARTED_AT} reportHref="/report/p1" hasOverlays />
-        <ProcessingState status="ready" startedAt={READY_STARTED_AT} reportHref="/report/p2" hasOverlays={false} />
+      <div className="mt-6 border-y border-border">
+        <StudioEditor
+          key={shape}
+          analystReportPrice={null}
+          initialDraft={draftFor(shape)}
+          initialCards={CARDS}
+          hasVideoClip={shape !== "research"}
+          aiCredits={40}
+          plans={[]}
+        />
       </div>
 
-      <h2 className="t-eyebrow mt-12">In the Publications list</h2>
-      <div className="mt-3">
-        <PublicationsView pubs={PUBS} />
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <h2 className="t-eyebrow mt-12">After publish</h2>
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          <ProcessingState status="processing" startedAt={PROCESSING_STARTED_AT} reportHref="/report/p1" hasOverlays />
+          <ProcessingState status="ready" startedAt={READY_STARTED_AT} reportHref="/report/p2" hasOverlays={false} />
+        </div>
+
+        <h2 className="t-eyebrow mt-12">In the Publications list</h2>
+        <p className="mt-1 text-sm text-text-mute">Promote is reachable here, on a publication that is already out.</p>
+        <div className="mt-3">
+          <PublicationsView pubs={PUBS} />
+        </div>
       </div>
     </div>
   );
