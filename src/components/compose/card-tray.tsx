@@ -59,7 +59,7 @@ function TrayCard({
   index: number;
   selected: boolean;
   onSelect: () => void;
-  onReorder: (toIndex: number) => void;
+  onReorder: (cardId: string, toIndex: number) => void;
   onPlaceInVideo: () => void;
   onPlaceInResearch: () => void;
   canPlaceInVideo: boolean;
@@ -71,6 +71,7 @@ function TrayCard({
 
   return (
     <li
+      data-card-id={card.id}
       draggable={!pinned}
       onDragStart={(e) => {
         e.dataTransfer.setData(CARD_DRAG_TYPE, card.id);
@@ -89,7 +90,7 @@ function TrayCard({
         if (!draggedId || draggedId === card.id) return;
         e.preventDefault();
         e.stopPropagation();
-        onReorder(index);
+        onReorder(draggedId, index);
       }}
       className={cn(
         "group relative rounded-[var(--radius-btn)] border transition-colors",
@@ -195,7 +196,6 @@ export function CardTray({
   hasVideo: boolean;
   hasResearch: boolean;
 }) {
-  const [dragged, setDragged] = useState<string | null>(null);
   const count = cards.filter((c) => c.kind !== "unlock").length;
 
   return (
@@ -212,28 +212,21 @@ export function CardTray({
           Cards are your evidence. Build them once and use them in the video, in the research, or in both.
         </p>
       ) : (
-        <ul
-          className="mt-2 space-y-1.5"
-          onDragStart={(e) => setDragged((e.target as HTMLElement).getAttribute("data-card-id"))}
-          onDragEnd={() => setDragged(null)}
-        >
+        <ul className="mt-2 space-y-1.5">
           {cards.map((card, i) => (
-            <div key={card.id} data-card-id={card.id}>
-              <TrayCard
-                card={card}
-                index={i}
-                usage={usage.get(card.id) ?? { inVideo: false, inResearch: false }}
-                selected={selectedId === card.id}
-                onSelect={() => onSelect(selectedId === card.id ? null : card.id)}
-                onReorder={(to) => {
-                  if (dragged) onReorder(dragged, to);
-                }}
-                onPlaceInVideo={() => onPlaceInVideo(card.id)}
-                onPlaceInResearch={() => onPlaceInResearch(card.id)}
-                canPlaceInVideo={hasVideo}
-                canPlaceInResearch={hasResearch}
-              />
-            </div>
+            <TrayCard
+              key={card.id}
+              card={card}
+              index={i}
+              usage={usage.get(card.id) ?? { inVideo: false, inResearch: false }}
+              selected={selectedId === card.id}
+              onSelect={() => onSelect(selectedId === card.id ? null : card.id)}
+              onReorder={onReorder}
+              onPlaceInVideo={() => onPlaceInVideo(card.id)}
+              onPlaceInResearch={() => onPlaceInResearch(card.id)}
+              canPlaceInVideo={hasVideo}
+              canPlaceInResearch={hasResearch}
+            />
           ))}
         </ul>
       )}
