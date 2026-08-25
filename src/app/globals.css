@@ -1359,6 +1359,22 @@ body {
   background: var(--surface-2);
 }
 
+/* Beside a headline in a narrow column (the lead's secondary list) rather than
+   beside a full-width row. */
+.today-thumb--sm {
+  width: 84px;
+  height: 54px;
+}
+
+/* Above a headline, filling its column. Used where the column is too narrow to
+   give up 84px sideways without shredding the headline into two words a line,
+   which is what Trending Now and the tail of a theme cluster both are. */
+.today-thumb--wide {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
 .today-thumb-play {
   position: absolute;
   bottom: 0.25rem;

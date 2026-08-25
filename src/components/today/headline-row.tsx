@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Play } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
-import { ClipThumb } from "@/components/ui/clip-thumb";
-import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
+import { ClipSlot } from "@/components/today/clip-slot";
+import { sinceLabel, typeLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
 
@@ -69,50 +68,9 @@ export function HeadlineRow({
       <div className="today-row-rail">
         <SaveToggle reportId={item.reportId} initialSaved={item.saved} />
         {tag}
-        <RowThumb
-          href={href}
-          thumbnailUrl={item.thumb?.thumbnailUrl ?? null}
-          durationSeconds={item.thumb?.durationSeconds ?? null}
-          analystId={item.author.id}
-        />
+        <ClipSlot thumb={item.thumb} href={href} analystId={item.author.id} size="md" />
       </div>
     </article>
-  );
-}
-
-/**
- * The row's image slot, and nothing at all when the publication has no clip.
- *
- * `durationSeconds` is null when there is no stored clip, and that is the whole
- * test: the row then ends after its tag, with no frame reserved. It used to
- * render the slot regardless, filled with the analyst's placeholder, which put
- * a coloured square beside every written report and implied a video that was
- * not there.
- *
- * The placeholder can still appear inside the slot, for the different case of a
- * clip whose poster frame Bunny has not produced yet.
- */
-function RowThumb({
-  href,
-  thumbnailUrl,
-  durationSeconds,
-  analystId,
-}: {
-  href: string;
-  thumbnailUrl: string | null;
-  durationSeconds: number | null;
-  analystId: string | null | undefined;
-}) {
-  if (durationSeconds == null) return null;
-  const duration = durationLabel(durationSeconds);
-  return (
-    <Link href={href} className="today-thumb focus-ring" tabIndex={-1} aria-hidden>
-      <ClipThumb src={thumbnailUrl} seed={analystId} />
-      <span className="today-thumb-play">
-        <Play size={11} fill="currentColor" strokeWidth={0} />
-      </span>
-      {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
-    </Link>
   );
 }
 

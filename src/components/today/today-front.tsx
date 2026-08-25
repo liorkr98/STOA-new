@@ -6,6 +6,7 @@ import { SealStamp } from "@/components/ui/seal-stamp";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
 import { Rail } from "@/components/ui/rail";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { ClipSlot } from "@/components/today/clip-slot";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
 import { pct } from "@/lib/format";
 import { cn } from "@/lib/design/cn";
@@ -113,14 +114,17 @@ export function TodayLeadSplit({ lead, secondary }: { lead: TodayItem; secondary
 
       <div className="flex min-w-0 flex-col divide-y divide-[var(--border)] border-t border-[var(--border)] md:border-t-0 md:pt-0">
         {secondary.map((s, i) => (
-          <article key={s.reportId} className={cn("py-5", i === 0 && "md:pt-0")}>
-            <div className="today-kicker">{kickerFor(s)}</div>
-            <Link href={`/report/${s.reportId}`} className="focus-ring block rounded">
-              <h2 className="mt-1.5 font-display text-[1.375rem] font-semibold leading-[1.15] tracking-tight">{s.headline}</h2>
-            </Link>
-            <div className="mt-2.5">
-              <Byline item={s} chips={false} />
+          <article key={s.reportId} className={cn("flex gap-3", i === 0 ? "py-5 md:pt-0" : "py-5")}>
+            <div className="min-w-0 flex-1">
+              <div className="today-kicker">{kickerFor(s)}</div>
+              <Link href={`/report/${s.reportId}`} className="focus-ring block rounded">
+                <h2 className="mt-1.5 font-display text-[1.375rem] font-semibold leading-[1.15] tracking-tight">{s.headline}</h2>
+              </Link>
+              <div className="mt-2.5">
+                <Byline item={s} chips={false} />
+              </div>
             </div>
+            <ClipSlot thumb={s.thumb} href={`/report/${s.reportId}`} analystId={s.author.id} className="mt-5" />
           </article>
         ))}
       </div>
@@ -136,7 +140,14 @@ export function TrendingCard({ item, index }: { item: TodayItem; index: number }
       <span className="num w-9 flex-none font-display text-[2rem] font-semibold leading-none text-text-faint md:text-[2.25rem]">
         {index + 1}
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
+        <ClipSlot
+          thumb={item.thumb}
+          href={`/report/${item.reportId}`}
+          analystId={item.author.id}
+          size="wide"
+          className="mb-2.5"
+        />
         <div className="today-kicker">{kickerFor(item)}</div>
         <Link href={`/report/${item.reportId}`} className="focus-ring block rounded">
           <h3 className="mt-1 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight line-clamp-3">
@@ -251,6 +262,13 @@ export function TodayThemeRail({ theme }: { theme: TodayThemeCluster }) {
       ))}
       {rest.map((it) => (
         <article key={it.reportId} className="w-[220px]">
+          <ClipSlot
+            thumb={it.thumb}
+            href={`/report/${it.reportId}`}
+            analystId={it.author.id}
+            size="wide"
+            className="mb-2.5"
+          />
           <div className="today-kicker">{kickerFor(it)}</div>
           <Link href={`/report/${it.reportId}`} className="focus-ring block rounded">
             <h3 className="mt-1 font-display text-[1rem] font-semibold leading-[1.2] tracking-tight line-clamp-3">{it.headline}</h3>
