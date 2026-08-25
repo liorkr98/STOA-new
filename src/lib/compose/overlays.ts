@@ -25,7 +25,9 @@ export interface TextOverlay {
 }
 
 export type VisualSource =
-  | { type: "card"; label: string }
+  /** A real card from the publication's deck. `label` is a fallback name for
+   *  when the card has been deleted out from under the placement. */
+  | { type: "card"; cardId: string | null; label: string }
   | { type: "figure"; label: string; imageUrl: string | null }
   | { type: "chart"; ticker: string }
   | { type: "upload"; label: string; imageUrl: string | null };
@@ -87,10 +89,15 @@ export function emptyEdit(durationSeconds: number): VideoEdit {
   return { durationSeconds, trimStart: 0, trimEnd: durationSeconds, thumbnail: null, overlays: [] };
 }
 
-export function sourceLabel(s: VisualSource): string {
+/**
+ * The label shown on the timeline block and in the picker. A card source is
+ * resolved through `names` so the block follows the card's current name
+ * instead of freezing whatever it was called when it was dropped.
+ */
+export function sourceLabel(s: VisualSource, names?: Map<string, string>): string {
   switch (s.type) {
     case "card":
-      return `Card · ${s.label}`;
+      return `Card · ${(s.cardId && names?.get(s.cardId)) || s.label}`;
     case "figure":
       return `Figure · ${s.label}`;
     case "chart":

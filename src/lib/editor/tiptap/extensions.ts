@@ -7,6 +7,7 @@ import { Callout } from "./callout";
 import { OpinionMark } from "./opinion-mark";
 import { TickerMark } from "./ticker-mark";
 import { Dir } from "./dir-attribute";
+import { CardNode } from "./nodes/card-node";
 import { ChartNode } from "./nodes/chart-node";
 import { DataFigureNode } from "./nodes/data-figure-node";
 import { CompareNode } from "./nodes/compare-node";
@@ -46,6 +47,7 @@ export function buildExtensions({
       dropcursor: { color: "var(--verdigris)", width: 2 },
     }),
     Callout,
+    CardNode,
     ChartNode,
     DataFigureNode,
     CompareNode,

@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Film, ImagePlus, Pause, Play, Type, Upload, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
+import { CardPreview } from "@/components/compose/card-preview";
+import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
+import { cardName, type DraftCard } from "@/lib/compose/cards";
 import {
   FRAME,
   MIN_EVENT,
@@ -51,10 +54,13 @@ function Poster({ className }: { className?: string }) {
 
 /* ---------- the stage: video + live overlays ---------- */
 
-function VisualBody({ source, className }: { source: VisualSource; className?: string }) {
+function VisualBody({ source, cards, className }: { source: VisualSource; cards: DraftCard[]; className?: string }) {
+  const card = source.type === "card" && source.cardId ? cards.find((c) => c.id === source.cardId) ?? null : null;
   return (
     <div className={cn("relative flex items-center justify-center overflow-hidden rounded-[6px] border border-white/20 bg-[color-mix(in_srgb,var(--paper)_92%,black)] text-[var(--ink)]", className)}>
-      {source.type === "figure" || source.type === "upload" ? (
+      {card ? (
+        <CardPreview card={card} compact className="h-full w-full overflow-hidden border-0 bg-transparent" />
+      ) : source.type === "figure" || source.type === "upload" ? (
         source.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={source.imageUrl} alt="" className="h-full w-full object-contain" />
@@ -78,6 +84,7 @@ function Stage({
   src,
   time,
   overlays,
+  cards,
   playing,
   videoRef,
   onTogglePlay,
@@ -86,6 +93,7 @@ function Stage({
   src: string | null;
   time: number;
   overlays: Overlay[];
+  cards: DraftCard[];
   playing: boolean;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   onTogglePlay: () => void;
@@ -105,7 +113,7 @@ function Stage({
       {/* A cutaway hides the picture, never the sound. */}
       {cutaway ? (
         <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--paper)_92%,black)]">
-          <VisualBody source={cutaway.source} className="h-full w-full rounded-none border-0" />
+          <VisualBody source={cutaway.source} cards={cards} className="h-full w-full rounded-none border-0" />
           {!faithful ? (
             <span className="num absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white">
               Cutaway · audio continues
@@ -115,7 +123,7 @@ function Stage({
       ) : null}
       {insets.map((o) => (
         <div key={o.id} className="absolute h-[42%] w-[46%]" style={gridStyle(o.position)}>
-          <VisualBody source={o.source} className="h-full w-full" />
+          <VisualBody source={o.source} cards={cards} className="h-full w-full" />
         </div>
       ))}
       {texts.map((o) => (
@@ -290,18 +298,24 @@ function Timeline({
   time,
   zoom,
   selectedId,
+  cards,
   onTime,
   onSelect,
   onEdit,
+  onDropCard,
 }: {
   edit: VideoEdit;
   time: number;
   zoom: number;
   selectedId: string | null;
+  cards: DraftCard[];
   onTime: (t: number) => void;
   onSelect: (id: string | null) => void;
   onEdit: (e: VideoEdit) => void;
+  /** A card dropped on the visual track, at the second it was dropped over. */
+  onDropCard: (cardId: string, atSeconds: number) => void;
 }) {
+  const [dropActive, setDropActive] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   // At zoom 1 the whole clip spans the container, whatever its length: a
@@ -319,6 +333,7 @@ function Timeline({
   }, []);
   const pxPerSec = containerWidth > 0 ? (containerWidth * zoom) / Math.max(1, edit.durationSeconds) : 0;
   const width = Math.max(1, edit.durationSeconds * pxPerSec);
+  const names = useMemo(() => new Map(cards.map((c) => [c.id, cardName(c)])), [cards]);
 
   const timeAt = useCallback(
     (clientX: number) => {
@@ -373,8 +388,42 @@ function Timeline({
   for (let t = 0; t <= edit.durationSeconds; t += markerStep) markers.push(t);
 
   const track = (label: string, kind: Overlay["kind"]) => (
-    <div className="relative h-11 border-t border-border" role="list" aria-label={`${label} track`}>
-      <span className="num absolute left-1 top-1 z-10 text-[10px] uppercase tracking-[0.16em] text-text-faint">{label}</span>
+    <div
+      className={cn(
+        "relative h-11 border-t border-border transition-colors",
+        kind === "visual" && dropActive && "bg-[color-mix(in_srgb,var(--brass)_16%,transparent)] ring-1 ring-inset ring-[var(--brass)]",
+      )}
+      role="list"
+      aria-label={`${label} track`}
+      onDragOver={
+        kind === "visual"
+          ? (e) => {
+              if (!isCardDrag(e)) return;
+              e.preventDefault();
+              e.stopPropagation();
+              e.dataTransfer.dropEffect = "copy";
+              setDropActive(true);
+            }
+          : undefined
+      }
+      onDragLeave={kind === "visual" ? () => setDropActive(false) : undefined}
+      onDrop={
+        kind === "visual"
+          ? (e) => {
+              const cardId = readCardDrag(e);
+              setDropActive(false);
+              if (!cardId) return;
+              e.preventDefault();
+              e.stopPropagation();
+              onDropCard(cardId, timeAt(e.clientX));
+            }
+          : undefined
+      }
+    >
+      <span className="num absolute left-1 top-1 z-10 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+        {label}
+        {kind === "visual" ? <span className="ml-2 normal-case tracking-normal text-text-faint">drop a card here</span> : null}
+      </span>
       {edit.overlays
         .filter((o) => o.kind === kind)
         .map((o) => (
@@ -393,7 +442,7 @@ function Timeline({
               setDrag({ kind: "move", id: o.id, grabOffset: timeAt(e.clientX) - o.start });
             }}
           >
-            <span className="block truncate px-2 text-text">{o.kind === "text" ? o.text || "Text" : sourceLabel(o.source)}</span>
+            <span className="block truncate px-2 text-text">{o.kind === "text" ? o.text || "Text" : sourceLabel(o.source, names)}</span>
             <span
               className="absolute inset-y-0 left-0 w-1.5 cursor-ew-resize"
               onPointerDown={(e) => {
@@ -506,7 +555,8 @@ function TimeField({ label, value, onChange }: { label: string; value: number; o
   );
 }
 
-function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; edit: VideoEdit; onEdit: (e: VideoEdit) => void; onRemove: () => void }) {
+function EventSettings({ overlay, edit, cards, onEdit, onRemove }: { overlay: Overlay; edit: VideoEdit; cards: DraftCard[]; onEdit: (e: VideoEdit) => void; onRemove: () => void }) {
+  const names = useMemo(() => new Map(cards.map((c) => [c.id, cardName(c)])), [cards]);
   const update = (patch: Partial<Overlay>) =>
     onEdit({ ...edit, overlays: edit.overlays.map((o) => (o.id === overlay.id ? ({ ...o, ...patch } as Overlay) : o)) });
   const setStart = (t: number) => update({ start: clamp(t, 0, overlay.end - MIN_EVENT) });
@@ -556,15 +606,13 @@ function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; 
             <div className="flex flex-wrap gap-1">
               {(
                 [
-                  { type: "card", label: "Price chart · entry & target" },
-                  { type: "card", label: "Peer comparison" },
-                  { type: "card", label: "Key stats" },
+                  ...cards.map((c) => ({ type: "card", cardId: c.id, label: cardName(c) })),
                   { type: "figure", label: "Figure from the thesis", imageUrl: null },
                   { type: "chart", ticker: "NVDA" },
                   { type: "upload", label: "Uploaded image", imageUrl: null },
                 ] as VisualSource[]
               ).map((s, i) => {
-                const on = sourceLabel(overlay.source) === sourceLabel(s);
+                const on = sourceLabel(overlay.source, names) === sourceLabel(s, names);
                 return (
                   <button
                     key={i}
@@ -572,10 +620,15 @@ function EventSettings({ overlay, edit, onEdit, onRemove }: { overlay: Overlay; 
                     onClick={() => update({ source: s })}
                     className={cn("focus-ring rounded-[4px] border px-2 py-1 text-[11px]", on ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]" : "border-border text-text-mute")}
                   >
-                    {sourceLabel(s)}
+                    {sourceLabel(s, names)}
                   </button>
                 );
               })}
+              {cards.length === 0 ? (
+                <span className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
+                  Add a card in the rail to use one here
+                </span>
+              ) : null}
             </div>
           </div>
           <div>
@@ -614,14 +667,25 @@ export function VideoRung({
   initial,
   demoDurationSeconds = 90,
   onChange,
+  value,
+  cards = [],
+  chrome = true,
 }: {
   initial?: VideoEdit;
   /** Duration used for the poster stage when no file is loaded. */
   demoDurationSeconds?: number;
   onChange?: (edit: VideoEdit) => void;
+  /** Controlled edit. Given, the workspace owns the edit and can place a card
+   *  on the track from outside (the tray's Place menu on a touch screen). */
+  value?: VideoEdit;
+  /** The publication's deck, so a card overlay draws the real card. */
+  cards?: DraftCard[];
+  /** False when a module header already frames this, so the rung drops its own. */
+  chrome?: boolean;
 }) {
   const [src, setSrc] = useState<string | null>(null);
-  const [edit, setEditState] = useState<VideoEdit>(initial ?? emptyEdit(demoDurationSeconds));
+  const [internalEdit, setEditState] = useState<VideoEdit>(initial ?? value ?? emptyEdit(demoDurationSeconds));
+  const edit = value ?? internalEdit;
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -640,6 +704,27 @@ export function VideoRung({
       onChange?.(e);
     },
     [onChange],
+  );
+
+  /** A card dropped on the visual track becomes a timed overlay there. */
+  const placeCard = useCallback(
+    (cardId: string, at: number) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+      const start = clamp(at, 0, Math.max(0, edit.durationSeconds - 3));
+      const o: VisualOverlay = {
+        id: uid(),
+        kind: "visual",
+        start,
+        end: Math.min(edit.durationSeconds, start + 4),
+        source: { type: "card", cardId, label: cardName(card) },
+        mode: "inset",
+        position: 3,
+      };
+      setEdit({ ...edit, overlays: [...edit.overlays, o] });
+      setSelectedId(o.id);
+    },
+    [cards, edit, setEdit],
   );
 
   // Live preview: the real video follows the playhead; the poster stage runs a clock.
@@ -690,7 +775,15 @@ export function VideoRung({
     const o: Overlay =
       kind === "text"
         ? { ...base, kind: "text", text: "", position: 8, size: "md" }
-        : { ...base, kind: "visual", source: { type: "card", label: "Price chart · entry & target" }, mode: "inset", position: 3 };
+        : {
+            ...base,
+            kind: "visual",
+            source: cards[0]
+              ? { type: "card", cardId: cards[0].id, label: cardName(cards[0]) }
+              : { type: "chart", ticker: "NVDA" },
+            mode: "inset",
+            position: 3,
+          };
     setEdit({ ...edit, overlays: [...edit.overlays, o] });
     setSelectedId(o.id);
   };
@@ -698,13 +791,18 @@ export function VideoRung({
   const selected = useMemo(() => edit.overlays.find((o) => o.id === selectedId) ?? null, [edit.overlays, selectedId]);
 
   return (
-    <section aria-label="Video" className="mb-10 rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5">
+    <section
+      aria-label="Video"
+      className={cn(chrome && "mb-10 rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5")}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="t-eyebrow">Video</p>
-          <p className="mt-1 text-[13px] text-text-mute">The video is the seed. Call, cards and thesis are optional below.</p>
-        </div>
-        <div className="flex items-center gap-2">
+        {chrome ? (
+          <div>
+            <p className="t-eyebrow">Video</p>
+            <p className="mt-1 text-[13px] text-text-mute">The video is the seed. Call, cards and thesis are optional below.</p>
+          </div>
+        ) : null}
+        <div className="ml-auto flex items-center gap-2">
           <input
             ref={fileRef}
             type="file"
@@ -732,7 +830,7 @@ export function VideoRung({
       </div>
 
       <div className="mt-4">
-        <Stage src={src} time={time} overlays={edit.overlays} playing={playing} videoRef={videoRef} onTogglePlay={() => setPlaying((p) => !p)} faithful={faithful} />
+        <Stage src={src} time={time} overlays={edit.overlays} cards={cards} playing={playing} videoRef={videoRef} onTogglePlay={() => setPlaying((p) => !p)} faithful={faithful} />
         {!src ? (
           <p className="num mt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
             No video loaded · the stage runs a {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so overlays can be placed
@@ -822,13 +920,14 @@ export function VideoRung({
             }
           }}
         >
-          <Timeline edit={edit} time={time} zoom={zoom} selectedId={selectedId} onTime={jump} onSelect={setSelectedId} onEdit={setEdit} />
+          <Timeline edit={edit} time={time} zoom={zoom} selectedId={selectedId} cards={cards} onTime={jump} onSelect={setSelectedId} onEdit={setEdit} onDropCard={placeCard} />
         </div>
 
         {selected ? (
           <EventSettings
             overlay={selected}
             edit={edit}
+            cards={cards}
             onEdit={setEdit}
             onRemove={() => {
               setEdit({ ...edit, overlays: edit.overlays.filter((o) => o.id !== selected.id) });

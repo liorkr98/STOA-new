@@ -23,7 +23,7 @@ const SAMPLE: VideoEdit = {
   thumbnail: { type: "frame", time: 5.6 },
   overlays: [
     { id: "t1", kind: "text", start: 2, end: 8, text: "Blackwell demand into January", position: 8, size: "md" },
-    { id: "v1", kind: "visual", start: 12, end: 24, source: { type: "card", label: "Price chart · entry & target" }, mode: "cutaway", position: 5 },
+    { id: "v1", kind: "visual", start: 12, end: 24, source: { type: "card", cardId: null, label: "Price chart · entry & target" }, mode: "cutaway", position: 5 },
     { id: "t2", kind: "text", start: 14, end: 22, text: "Entry 118.40 · Target 142", position: 8, size: "sm" },
     { id: "v2", kind: "visual", start: 40, end: 52, source: { type: "chart", ticker: "NVDA" }, mode: "inset", position: 3 },
   ],
