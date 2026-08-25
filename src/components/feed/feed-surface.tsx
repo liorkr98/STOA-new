@@ -124,7 +124,10 @@ export function FeedSurface({
   return (
     <div
       ref={scrollerRef}
-      className={cn("scroll-area scroll-bare snap-y snap-mandatory overflow-y-auto overscroll-contain bg-bg", ITEM_H)}
+      className={cn(
+        "scroll-area scroll-bare snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-contain bg-bg",
+        ITEM_H,
+      )}
     >
       {publications.map((pub, i) => (
         <FeedItem
