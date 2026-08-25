@@ -391,6 +391,26 @@ scroll-snap, nothing below the fold.
   phone and on a 1440 desktop and never depends on the window's aspect ratio. The clip is panel 0
   of a horizontal track and the publication's evidence cards are the panels behind it, so sideways
   movement is movement through the publication.
+- **Two axes, one gesture at a time.** Both axes are native scroll-snap, and each container
+  scrolls on exactly one axis: the reader is `overflow-y` only, the evidence track is
+  `overflow-x` only. That single fact is what makes the gestures behave. The browser locks a
+  touch to its dominant axis by itself, so a dominant-x swipe reaches the track, a dominant-y
+  swipe reaches the reader, and a diagonal resolves to whichever won rather than doing both or
+  neither. Leave `touch-action` alone: pinning the track to `pan-x` would stop a vertical swipe
+  that starts on the video, which is most of them. `overscroll-behavior: contain` on both keeps
+  either from chaining into the page.
+- **Set `overflow-y` on the track explicitly.** With only `overflow-x` set, CSS promotes the
+  other axis to `auto` and the stage silently becomes a vertical scroller nested inside the
+  vertical reader, ready to swallow an up-swipe as soon as a card grows taller than the frame.
+- **Snap-stop is vertical only.** Each publication is a hard stop, so a fling moves one
+  publication and not five. The evidence track has none, so momentum carries across cards
+  instead of halting at every one.
+- **The track writes back.** The pager, the chevrons and the unlock tracking all read the panel
+  index, so a track the reader panned by hand updates it, read on `scrollend` rather than on
+  every scroll event. The programmatic scroll stands down when the track is already where the
+  state says it is, so a swipe and a chevron press never fight.
+- **No scrollbars.** Both use `.scroll-bare`; Tailwind's `[scrollbar-width:none]` ties with
+  `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
 - **Above the frame:** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
   in the feed at the right end. A callless publication has no ticker, so its theme tag takes that
   slot.
@@ -460,6 +480,18 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    landing lead, Explore and the Feed. Explore and the Feed only ever query
    publications that have a clip, so the question does not arise there.
 
+   **Every Today band that can carry a frame does.** The lead and Your Desk use
+   `Poster`; the three stories beside the lead, Trending Now and the tail of a
+   theme cluster use `ClipSlot` (`src/components/today/clip-slot.tsx`), which is
+   the same frame at reading-column sizes and is also the Today row's rail
+   thumbnail. In the narrow columns the frame sits **above** the headline rather
+   than beside it: at 84px beside, Trending Now's headlines came down to two
+   words a line.
+
+   Two bands deliberately carry no frame. **Verdicts** is a graded call and the
+   seal is its image; a poster beside it would compete with the stamp for the
+   same edge. **Market news** is wire copy, not Stoa video.
+
 2. **`ClipThumb` draws every clip poster**, falling back to `PlaceholderThumb`
    only for a clip whose poster frame has not been produced yet. That is a video
    with no still, which is not the same thing as a publication with no video.
@@ -467,12 +499,34 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    `Referer` and Next's image optimiser fetches server-side, so clip posters
    never go through `next/image`.
 
-**Selection is a separate question from rendering.** Today's lead is chosen
-blind to whether a publication has a clip, because Today is the reading surface
-and preferring video there is an editorial judgement on format rather than
-merit. A profile's lead still prefers the analyst's video, because a profile is
-a storefront. Both obey rule 1 when the chosen publication turns out to have no
-clip.
+**Selection is a separate question from rendering.** Where a Today band ranks
+candidates, a ready clip multiplies the score the band already computed
+(`src/lib/today/video-preference.ts`). Stoa's output is the creator's face and
+voice, so the surface should lean towards what a reader can watch.
+
+- **A lean, not an override.** The weight rides on top of the band's own score,
+  so a written report that is genuinely the strongest still leads. It settles
+  near-ties towards video and leaves a clear winner alone. This replaces an
+  earlier rule that kept the lead blind to video, which was a reaction to
+  preferring video *hard* and promoting the second-best story whenever the best
+  one happened to be written.
+- **Never the gate.** Trending Now means "gaining fastest today". The velocity
+  threshold that decides whether a publication belongs in the band at all is
+  unweighted; the lean only orders what already qualified.
+- **No band goes video-only.** The share is capped and checked at every depth
+  rather than once at the bottom, because bands get truncated: Trending Now
+  shows five of its sixteen on a phone, and a cap checked against the full
+  sixteen handed the phone five videos and called it mixed. Where only clips are
+  available the band still fills, since a short band is worse than a
+  video-heavy one.
+- **Applies to** the lead, the three stories beside it, Trending Now and the
+  theme cluster. **Your Desk** stays newest-first, because it is the reader's
+  own memberships and follows and chronology is the promise there. **Verdicts**
+  is untouched: a clip has no bearing on whether a call was right.
+
+A profile's lead still prefers the analyst's video, because a profile is a
+storefront. Every band obeys rule 1 when a chosen publication turns out to have
+no clip.
 
 ### 2.13 `<FilterPicker>` — a filter you type into
 

@@ -10,6 +10,71 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-25 — Today shows its video, and the Feed can be swiped again
+
+**For someone using the site**
+
+- **Today leans towards publications you can watch.** Where a band decides what
+  to show, a publication with a ready clip now counts for more. It is a
+  preference and not a rule: a strong written report still leads the page when
+  it is genuinely the strongest, and no band can turn into a wall of video.
+  At most 70% of any band is video, and that is checked as the band fills, not
+  just at the end, so the five items a phone shows of Trending Now are mixed
+  too rather than five videos in a row.
+- **The bands that were text-only now show the clip.** 112 publications have a
+  ready clip and most of Today was not showing them. The three stories beside
+  the lead, Trending Now, and the smaller items in a theme cluster all carry a
+  thumbnail now. The lead and Your Desk already did.
+- **A publication with no video still gets no image area at all.** Not a
+  coloured square, not an empty frame: the headline simply starts at the top,
+  the way a written report reads everywhere else. Nothing autoplays on Today.
+- **Verdicts and Market news deliberately stay without pictures.** A verdict is
+  a call the market graded and the seal is its image; the wire is not Stoa
+  video.
+- **Swiping sideways in the Feed works.** It never did on a phone. The evidence
+  cards behind each clip, up to nine of them including the unlock, could only be
+  reached through two small arrows on the frame, because the strip they live on
+  was locked. Now a finger moves through them, and up and down still moves
+  between publications.
+- **The two directions no longer get in each other's way.** A sideways swipe
+  moves through the evidence, an up-or-down swipe moves to the next publication,
+  and a slightly diagonal one goes wherever it was mostly heading instead of
+  doing nothing. Both snap cleanly and neither drags the page behind it.
+- **The scrollbars are gone from the Feed.** A thin grey bar was sitting on the
+  right edge of the reader, and a second one appeared across the video the
+  moment the cards became swipeable.
+
+**Checked on a phone-sized screen, not just built**
+
+- **Explore's ticker and sector filters with the keyboard open.** The panel
+  resizes to the space the keyboard leaves, the field stays at the top and the
+  results stay visible and scrollable underneath. Typing narrows the list and it
+  stays above the keyboard. Working as intended, no change needed.
+- **The report page's video docking.** Start a clip, scroll into the writing,
+  and it shrinks to the bottom-right corner and keeps playing, with a way back
+  to its place in the page and a way to stop it. The page does not jump, because
+  the space it left holds its height. Working as intended, no change needed.
+
+**Needs Krisi's attention**
+
+- Nothing schema-side. This batch is presentation and gesture handling only.
+
+**Deliberately not done**
+
+- **Your Desk still shows newest first.** It is the reader's own memberships and
+  follows, and reordering someone's own subscriptions by format is a different
+  kind of decision from ranking the public page. Say the word and it can take
+  the same lean as the rest.
+- **Real finger momentum on a physical phone was not exercised.** There is no
+  device or iOS simulator on this machine, and the browser used for checking
+  fires a touch-start but no touch-move, so a genuine drag could not be
+  performed. What was verified instead is the mechanism the gestures run on:
+  each container scrolls on exactly one axis, both snap exactly onto a card or
+  a publication from any partial position, panning one axis does not move the
+  other, and the pager follows a hand-panned track. Momentum and the browser's
+  own diagonal axis-lock are its behaviour, not ours, and are worth a minute on
+  a real handset before this ships.
+
 ## 2026-08-25 — Compose is a workspace, and cards belong to the publication
 
 **For someone using the site**
