@@ -15,6 +15,7 @@ import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { cachedPage } from "@/lib/cache/page";
+import { fillBand, preferVideo } from "@/lib/today/video-preference";
 import {
   medianRate,
   publicationAttention,
@@ -206,35 +207,45 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     if (it) items.set(r.id, it);
   }
 
-  // Ranking by velocity, then recency. The lead is simply the strongest item.
+  const hasClip = (reportId: string) => clipsByReport.has(reportId);
+
+  // Ranking by velocity, then recency, with a lean towards publications that
+  // carry a ready clip.
   //
-  // Deliberately blind to whether a publication carries a clip. Today is the
-  // reading surface, so leading with a written report is honest; preferring
-  // video here quietly promoted the second-best story whenever the best one
-  // happened to be text, and made an editorial judgement on format rather than
-  // on merit. The Feed is the surface where having a clip is the entry
-  // requirement.
+  // The lean is `preferVideo`, and it only ever reorders: the velocity a
+  // publication earned is still what it is ranked on, so a written report that
+  // is genuinely the strongest still leads. An earlier version of this file was
+  // deliberately blind to video because preferring it *hard* promoted the
+  // second-best story whenever the best one happened to be written. A bounded
+  // multiplier is the other thing: it settles the many near-ties in a day's
+  // pool towards the form Stoa actually publishes in, and leaves a clear
+  // winner alone.
   const ranked = [...pool]
-    .map((r) => ({ r, score: trendingScore(pubSamples.get(r.id)!, now) }))
+    .map((r) => ({ r, score: preferVideo(trendingScore(pubSamples.get(r.id)!, now), hasClip(r.id)) }))
     .sort((a, b) => b.score - a.score || Date.parse(b.r.published_at ?? b.r.created_at) - Date.parse(a.r.published_at ?? a.r.created_at))
     .map((x) => x.r);
   const leadReport = ranked.find((r) => items.has(r.id)) ?? null;
   const lead = leadReport ? items.get(leadReport.id) ?? null : null;
   const used = new Set<string>(lead ? [lead.reportId] : []);
-  const secondary: TodayItem[] = [];
-  for (const r of ranked) {
-    if (secondary.length >= 3) break;
-    if (used.has(r.id) || !items.has(r.id)) continue;
-    secondary.push(items.get(r.id)!);
-    used.add(r.id);
-  }
-  const trending: TodayItem[] = [];
-  for (const r of ranked) {
-    if (trending.length >= 16) break;
-    if (used.has(r.id) || !items.has(r.id)) continue;
-    if (trendingScore(pubSamples.get(r.id)!, now) <= 0) break;
-    trending.push(items.get(r.id)!);
-  }
+
+  const secondary = fillBand(
+    ranked.filter((r) => !used.has(r.id) && items.has(r.id)).map((r) => items.get(r.id)!),
+    3,
+    (it) => hasClip(it.reportId),
+  );
+  for (const it of secondary) used.add(it.reportId);
+
+  // The velocity gate is unweighted and is a filter, not a stopping point: the
+  // order is now the weighted one, so a publication with no velocity can sort
+  // above one that has some, and breaking out at the first zero would drop the
+  // rest of a real trending list on the floor.
+  const trending = fillBand(
+    ranked
+      .filter((r) => !used.has(r.id) && items.has(r.id) && trendingScore(pubSamples.get(r.id)!, now) > 0)
+      .map((r) => items.get(r.id)!),
+    16,
+    (it) => hasClip(it.reportId),
+  );
 
   // Your Desk: memberships and follows merged into one rail, newest first.
   const memberSet = new Set(subscribedIds);
@@ -279,7 +290,11 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
         slug: t.slug,
         name: t.name,
         publicationsThisWeek: thisWeek,
-        items: inTheme.flatMap((r) => (items.has(r.id) ? [items.get(r.id)!] : [])).slice(0, 8),
+        items: fillBand(
+          inTheme.flatMap((r) => (items.has(r.id) ? [items.get(r.id)!] : [])),
+          8,
+          (it) => hasClip(it.reportId),
+        ),
       };
     }
   }

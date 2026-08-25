@@ -27,6 +27,7 @@
     "test:engine": "node --import tsx --test src/lib/engine/score.test.ts",
     "test:valuation": "node --import tsx --test src/lib/valuation/model.test.ts",
     "test:ranking": "node --import tsx --test src/lib/ranking/score.test.ts",
+    "test:today": "node --import tsx --test src/lib/today/video-preference.test.ts",
     "test:rls": "node --import tsx --test tests/rls/rls.test.ts",
     "test:users": "npx tsx scripts/simulate-users.ts",
     "vercel:setup": "node scripts/vercel-setup.mjs",
