@@ -6,6 +6,7 @@ import { getConsentRedirectPath } from "@/app/actions/consent";
 import { TopNav } from "@/components/layout/top-nav";
 import { NavSkeleton } from "@/components/layout/nav-skeleton";
 import { PrivateSidebar, PrivateMobileNav } from "@/components/layout/private-sidebar";
+import { HideOnCompose } from "@/components/layout/compose-chrome";
 import type { Profile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -30,13 +31,17 @@ export default async function PrivateLayout({ children }: { children: React.Reac
         <PrivateNav />
       </Suspense>
       <div className="flex flex-1">
-        <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border md:block" />}>
-          <PrivateRail />
-        </Suspense>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Suspense fallback={null}>
-            <PrivateMobile />
+        <HideOnCompose>
+          <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border md:block" />}>
+            <PrivateRail />
           </Suspense>
+        </HideOnCompose>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <HideOnCompose>
+            <Suspense fallback={null}>
+              <PrivateMobile />
+            </Suspense>
+          </HideOnCompose>
           <main id="main-content" tabIndex={-1} className="gutter-x min-w-0 flex-1 py-[var(--main-pad-y)] outline-none">
             {children}
           </main>

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pencil, Eye, Pin, Megaphone, Loader2, FileText } from "lucide-react";
+import { Play, Pencil, Eye, Pin, Loader2, FileText } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { setPinnedProfileReport } from "@/app/actions/profile";
+import { PromoteDialog } from "@/components/compose/promote-dialog";
 
 export type PubState = "draft" | "scheduled" | "published" | "open" | "resolved";
 
@@ -204,7 +205,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     <Link href={p.editHref} className="flex items-center gap-1 hover:text-text"><Pencil size={13} /> Edit</Link>
                     <Link href={p.href} className="flex items-center gap-1 hover:text-text"><Eye size={13} /> View</Link>
                     <PinAction id={p.id} pinned={p.pinned} />
-                    <Link href="/studio/boost" className="flex items-center gap-1 hover:text-text"><Megaphone size={13} /> Boost</Link>
+                    <PromoteDialog title={p.title} />
                   </div>
                 </div>
 
