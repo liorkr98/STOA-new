@@ -32,6 +32,7 @@ export const AI_COST = {
   template: 0,
   audioBrief: 3,
   diagram: 1,
+  devilsAdvocate: 4,
 } as const;
 
 export type AiAction = keyof typeof AI_COST;

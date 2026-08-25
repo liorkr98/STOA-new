@@ -26,6 +26,9 @@ export const TOKEN_BUDGETS: Record<AiAction, TokenBudget> = {
   diagram: { soft: 350, hard: 600, maxOutput: 350 },
   template: { soft: 0, hard: 0, maxOutput: 0 },
   audioBrief: { soft: 800, hard: 1_200, maxOutput: 400 },
+  // Reads the whole thesis and argues against it, so it carries the largest
+  // input budget and the longest answer of any compose tool.
+  devilsAdvocate: { soft: 2_500, hard: 4_000, maxOutput: 1_100 },
 };
 
 /** +1 credit per 1k input tokens above the soft budget (after Graphify). */

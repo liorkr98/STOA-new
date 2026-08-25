@@ -174,6 +174,7 @@ export function AskPanel({
   editor,
   getEditorContext,
   onApplyTemplate,
+  seed,
 }: {
   open: boolean;
   onClose: () => void;
@@ -188,18 +189,31 @@ export function AskPanel({
     ticker?: string;
   };
   onApplyTemplate?: (templateId: string) => void | Promise<void>;
+  /** Prompt the rail asked for. Pre-filled rather than sent, so the analyst
+   *  sees what is about to be spent before a paid tool runs. */
+  seed?: string | null;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  // The seed the input was filled from, so a prompt sent from the rail lands
+  // in the box once and never overwrites what the analyst types after it.
+  const [seeded, setSeeded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [pending, start] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  if (open && seed && seed !== seeded) {
+    setSeeded(seed);
+    setInput(seed);
+  }
+
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

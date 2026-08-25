@@ -4,6 +4,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { getDraftForAuthor } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
+import { listAuthorCards } from "@/lib/db/publication-cards";
 import { listEntries, listNotebooks } from "@/lib/db/notebooks";
 import { notebookToDoc } from "@/lib/editor/notebook-seed";
 import { StudioEditor } from "@/components/editor/studio-editor";
@@ -21,12 +22,22 @@ export default async function ComposePage({
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
   const { id, onboarding, notebook } = await searchParams;
-  const [draft, wallet, plans] = await Promise.all([
+  const [draft, wallet, plans, savedCards] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),
     listActivePlans(profile.id),
+    id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
   ]);
   if (id && !draft) notFound();
+
+  // The stored row id becomes the client id, so a placement made before this
+  // save still points at the same card after it.
+  const initialCards = savedCards.map((c) => ({
+    id: c.id,
+    kind: c.kind,
+    locked: c.locked,
+    payload: c.payload,
+  }));
 
   // Compose-from-notebook (Part F): with ?notebook= and no existing draft,
   // seed the editor from the notebook's entries (snippets as cited
@@ -53,6 +64,7 @@ export default async function ComposePage({
       <StudioEditor
         analystReportPrice={profile.report_price}
         initialDraft={draft ?? seeded}
+        initialCards={initialCards}
         aiCredits={wallet?.ai_credits ?? 0}
         plans={plans}
       />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, SquaresFour } from "@phosphor-icons/react";
+import { Film, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -41,9 +42,35 @@ import {
 } from "@/lib/editor/tiptap/apply-report-template";
 import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
 import { VideoRung } from "@/components/compose/video-rung";
-import { ComposeFork, type ComposeMode } from "@/components/compose/compose-fork";
 import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
 import { UNIVERSE } from "@/lib/universe";
+import { CardTray } from "@/components/compose/card-tray";
+import { CardLibrary } from "@/components/compose/card-library";
+import { CardEditorDialog } from "@/components/compose/card-editor";
+import { AiAssistant, type AssistantAction } from "@/components/compose/ai-assistant";
+import {
+  ComposeRail,
+  ComposeRailDrawer,
+  RailOpenButton,
+} from "@/components/compose/compose-rail";
+import { ModuleHeader, AddModuleRow } from "@/components/compose/compose-modules";
+import { PromotePanel } from "@/components/compose/promote-panel";
+import {
+  blankCard,
+  cardName,
+  moveCard,
+  orderedDeck,
+  toStoredCards,
+  type CardUsage,
+  type DraftCard,
+} from "@/lib/compose/cards";
+import { setComposeDeck } from "@/lib/compose/card-store";
+import { emptyEdit, fmtTimecode, type VideoEdit } from "@/lib/compose/overlays";
+import { saveCards } from "@/app/actions/cards";
+import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
+import type { CardKind } from "@/lib/feed/card-schema";
+import type { PromoteState } from "@/lib/compose/promote";
+import { EMPTY_PROMOTE } from "@/lib/compose/promote";
 
 const types: { key: ContentType; label: string }[] = [
   { key: "research", label: "Research" },
@@ -77,14 +104,35 @@ function initialTiptap(body: string | null | undefined): JSONContent {
   return { type: "doc", content: paras.length ? paras : [{ type: "paragraph" }] };
 }
 
+/** Every card placed in the research body, by id. */
+function collectCardIds(doc: JSONContent | null | undefined): Set<string> {
+  const out = new Set<string>();
+  const walk = (n: JSONContent | undefined) => {
+    if (!n) return;
+    if (n.type === "cardNode") {
+      const id = (n.attrs as { cardId?: string } | undefined)?.cardId;
+      if (id) out.add(id);
+    }
+    (n.content ?? []).forEach(walk);
+  };
+  walk(doc ?? undefined);
+  return out;
+}
+
+/** Fixed, because the CTA is derived rather than authored. */
+const CTA_CARD_ID = "cta";
+
 export function StudioEditor({
   analystReportPrice,
   initialDraft,
+  initialCards = [],
   aiCredits = 0,
   plans = [],
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
+  /** The draft's saved deck, payloads intact (see listAuthorCards). */
+  initialCards?: DraftCard[];
   aiCredits?: number;
   plans?: Plan[];
 }) {
@@ -96,13 +144,42 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
-  // Persisted on save/publish to reports.primary_tag / secondary_tags.
-  const [tags, setTags] = useState<TagSelection>(EMPTY_TAGS);
-  // The fork. An existing draft is written work until the creator adds video;
-  // a fresh compose asks first. Switching keeps every field mounted, so nothing
-  // written is lost either way.
-  const [mode, setMode] = useState<ComposeMode | null>(initialDraft?.id ? "written" : null);
-  const [showWrittenReport, setShowWrittenReport] = useState(Boolean(initialDraft?.body));
+  // Persisted on save/publish to reports.primary_tag / secondary_tags. Seeded
+  // from the draft: without this, reopening a tagged draft showed no tags and
+  // the next save wrote the empty selection back over them.
+  const [tags, setTags] = useState<TagSelection>(() =>
+    initialDraft?.primary_tag || initialDraft?.secondary_tags?.length
+      ? {
+          primary: initialDraft.primary_tag ?? null,
+          secondary: initialDraft.secondary_tags ?? [],
+          primaryPinned: Boolean(initialDraft.primary_tag),
+        }
+      : EMPTY_TAGS,
+  );
+
+  // The publication's modules. No fork: a publication may have video,
+  // research, both or neither, and adding one is not a question asked before
+  // the creator has written anything.
+  const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(null);
+  const [hasResearch, setHasResearch] = useState(Boolean(initialDraft?.body));
+  const [videoOpen, setVideoOpen] = useState(true);
+  const [researchOpen, setResearchOpen] = useState(true);
+
+  // The deck. One pool for the whole publication, not a step inside the video.
+  // What the creator authored. The CTA is not in here: it is derived from
+  // Access below, so it can never be deleted, duplicated or left behind on a
+  // publication that stopped being gated.
+  const [cards, setCards] = useState<DraftCard[]>(() =>
+    initialCards.filter((c) => c.kind !== "unlock"),
+  );
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [researchCardIds, setResearchCardIds] = useState<Set<string>>(() => collectCardIds(initialDoc));
+  const [railCollapsed, setRailCollapsed] = useState(false);
+  const [railDrawerOpen, setRailDrawerOpen] = useState(false);
+  const [askSeed, setAskSeed] = useState<string | null>(null);
+  const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
+  const [researchDropActive, setResearchDropActive] = useState(false);
   const [direction, setDirection] = useState<Direction>("long");
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
@@ -157,6 +234,7 @@ export function StudioEditor({
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
     latestChangeRef.current = change;
     dirtyRef.current = true;
+    setResearchCardIds(collectCardIds(change.json));
     if (change.text.trim().length > 40) setShowTemplateStrip(false);
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     // Debounce parent state so keystrokes don't re-render the editor tree and
@@ -178,8 +256,160 @@ export function StudioEditor({
     setEditorReportTicker(hasCard ? ticker : undefined);
   }, [hasCard, ticker]);
 
+
+
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
+  }, []);
+
+  /* --------------------------------------------------------------- cards */
+
+  // The deck as it is shown and stored: the creator's cards, and the CTA last
+  // whenever there is something to unlock.
+  const deck = useMemo(
+    () =>
+      access === "free"
+        ? cards
+        : orderedDeck([...cards, { id: CTA_CARD_ID, kind: "unlock" as const, locked: false, payload: {} }]),
+    [cards, access],
+  );
+
+  // The cardNode views are mounted by ProseMirror, not by this tree, so the
+  // deck reaches them through the store rather than through props.
+  useEffect(() => {
+    setComposeDeck(deck);
+  }, [deck]);
+
+  const usage = useMemo(() => {
+    const map = new Map<string, CardUsage>();
+    const inVideo = new Set<string>();
+    for (const o of videoEdit?.overlays ?? []) {
+      if (o.kind === "visual" && o.source.type === "card" && o.source.cardId) inVideo.add(o.source.cardId);
+    }
+    for (const c of cards) {
+      map.set(c.id, { inVideo: inVideo.has(c.id), inResearch: researchCardIds.has(c.id) });
+    }
+    return map;
+  }, [cards, videoEdit, researchCardIds]);
+
+  const addCard = useCallback((kind: CardKind) => {
+    const card = blankCard(kind);
+    setCards((cs) => orderedDeck([...cs, card]));
+    setSelectedCardId(card.id);
+    dirtyRef.current = true;
+  }, []);
+
+  const updateCard = useCallback((next: DraftCard) => {
+    setCards((cs) => cs.map((c) => (c.id === next.id ? next : c)));
+    dirtyRef.current = true;
+  }, []);
+
+  const deleteCard = useCallback((id: string) => {
+    setCards((cs) => cs.filter((c) => c.id !== id));
+    setSelectedCardId(null);
+    dirtyRef.current = true;
+    // The placements go with it: an overlay pointing at a deleted card would
+    // render a hole, and a figure in the prose would render a placeholder.
+    setVideoEdit((e) =>
+      e
+        ? {
+            ...e,
+            overlays: e.overlays.filter(
+              (o) => !(o.kind === "visual" && o.source.type === "card" && o.source.cardId === id),
+            ),
+          }
+        : e,
+    );
+    const editor = editorRef.current;
+    if (editor) {
+      const positions: number[] = [];
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "cardNode" && node.attrs.cardId === id) positions.push(pos);
+      });
+      // Back to front, so an earlier deletion never shifts a later position.
+      for (const pos of positions.reverse()) {
+        editor.chain().deleteRange({ from: pos, to: pos + 1 }).run();
+      }
+    }
+  }, []);
+
+  const reorderCards = useCallback((cardId: string, toIndex: number) => {
+    setCards((cs) => {
+      const from = cs.findIndex((c) => c.id === cardId);
+      if (from < 0) return cs;
+      return moveCard(cs, from, toIndex);
+    });
+    dirtyRef.current = true;
+  }, []);
+
+  /** Place a card on the video's visual track, at the playhead. */
+  const placeCardInVideo = useCallback(
+    (cardId: string) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+      setVideoEdit((e) => {
+        const edit = e ?? emptyEdit(90);
+        const start = Math.max(0, Math.min(0, edit.durationSeconds - 4));
+        return {
+          ...edit,
+          overlays: [
+            ...edit.overlays,
+            {
+              id: `o_${Math.random().toString(36).slice(2, 9)}`,
+              kind: "visual" as const,
+              start,
+              end: Math.min(edit.durationSeconds, start + 4),
+              source: { type: "card" as const, cardId, label: cardName(card) },
+              mode: "inset" as const,
+              position: 3,
+            },
+          ],
+        };
+      });
+      setVideoOpen(true);
+      setRailDrawerOpen(false);
+      dirtyRef.current = true;
+      toast.success(`${cardName(card)} added to the video`);
+    },
+    [cards],
+  );
+
+  /** Place a card in the research body, as an inline figure. */
+  const placeCardInResearch = useCallback(
+    (cardId: string, at?: number) => {
+      const card = cards.find((c) => c.id === cardId);
+      const editor = editorRef.current;
+      if (!card || !editor) return;
+      const node = { type: "cardNode", attrs: { cardId } };
+      if (typeof at === "number") editor.chain().focus().insertContentAt(at, node).run();
+      else editor.chain().focus().insertContent(node).run();
+      setResearchCardIds(collectCardIds(editor.getJSON()));
+      setResearchOpen(true);
+      setRailDrawerOpen(false);
+      dirtyRef.current = true;
+      toast.success(`${cardName(card)} added to the research`);
+    },
+    [cards],
+  );
+
+  /** A card dropped anywhere in the research body lands where it was dropped. */
+  const onResearchDrop = useCallback(
+    (e: React.DragEvent) => {
+      setResearchDropActive(false);
+      const cardId = readCardDrag(e);
+      if (!cardId) return;
+      e.preventDefault();
+      const editor = editorRef.current;
+      const at = editor?.view.posAtCoords({ left: e.clientX, top: e.clientY })?.pos;
+      placeCardInResearch(cardId, at);
+    },
+    [placeCardInResearch],
+  );
+
+  const runAssistant = useCallback((action: AssistantAction) => {
+    setAskSeed(action.prompt);
+    setAskOpen(true);
+    setRailDrawerOpen(false);
   }, []);
 
   const applyTemplate = useCallback(
@@ -254,6 +484,13 @@ export function StudioEditor({
         secondary_tags: tags.secondary,
       });
       setDraftId(res.id);
+      // Cards need the report id, so they are written after the draft row
+      // exists. A card failure must not read as a lost draft: the words are
+      // already saved by this point.
+      if (res.id) {
+        const cardRes = await saveCards(res.id, toStoredCards(deck));
+        if (!cardRes.ok) toast.error(cardRes.error ?? "Could not save the cards.");
+      }
       setSaveStatus("saved");
       setError(null);
       dirtyRef.current = false;
@@ -279,6 +516,8 @@ export function StudioEditor({
     target,
     horizon,
     hasCard,
+    tags,
+    deck,
   ]);
 
   useEffect(() => {
@@ -299,15 +538,15 @@ export function StudioEditor({
   // Research may publish as overview without a ticker/locked call.
   // Calls still require a ticker so there is something to lock.
   const lockingCall = hasCard && Boolean(ticker.trim());
+  const hasVideo = videoEdit !== null;
   const publishBlockedBy: string | null = (() => {
-    if (!mode) return "Choose whether you are publishing with video.";
-    if (mode === "video") {
-      if (!title.trim()) return "Add a headline for the video.";
-      if (!tags.primary) return "Choose a primary tag.";
-    }
     if (type === "short_post") {
       return summary.trim() ? null : "Write your post first.";
     }
+    if (!title.trim()) return "Add a headline.";
+    // A video reaches the Feed and Explore, and the primary tag is what puts
+    // it somewhere, so it stays required exactly where it was before.
+    if (hasVideo && !tags.primary) return "Choose a primary tag.";
     if (type === "call" && !ticker.trim()) {
       return "Add a ticker to lock this call, or switch to Research for an overview.";
     }
@@ -350,6 +589,11 @@ export function StudioEditor({
         setCaptureStatus("Capturing charts...");
         await captureChartScreenshots(editor, id);
         setCaptureStatus("Publishing...");
+      }
+
+      if (id) {
+        const cardRes = await saveCards(id, toStoredCards(deck));
+        if (!cardRes.ok) throw new Error(cardRes.error ?? "Could not save the cards.");
       }
 
       const finalBody =
@@ -410,6 +654,8 @@ export function StudioEditor({
     horizon,
     factCheck,
     disclosure,
+    tags,
+    deck,
   ]);
 
   function onPublishClick() {
@@ -436,6 +682,70 @@ export function StudioEditor({
     }
   }
 
+  /* LEFT: what you build with. */
+  const toolbox = (
+    <>
+      <CardTray
+        cards={deck}
+        usage={usage}
+        selectedId={selectedCardId}
+        onSelect={setSelectedCardId}
+        onAdd={() => setLibraryOpen(true)}
+        onReorder={reorderCards}
+        onPlaceInVideo={placeCardInVideo}
+        onPlaceInResearch={placeCardInResearch}
+        hasVideo={hasVideo}
+        hasResearch={hasResearch}
+      />
+      <AiAssistant onRun={runAssistant} credits={credits} />
+    </>
+  );
+
+  /* RIGHT: what you publish as. */
+  const settings = (
+    <>
+      <TagPicker
+        value={tags}
+        onChange={setTags}
+        hasCall={lockingCall}
+        callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
+      />
+      <LockPublishPanel
+        hasCard={hasCard}
+        ticker={ticker}
+        onTicker={setTicker}
+        direction={direction}
+        onDirection={setDirection}
+        target={target}
+        onTarget={setTarget}
+        horizon={horizon}
+        onHorizon={setHorizon}
+        access={access}
+        onAccess={setAccess}
+        price={price}
+        onPrice={setPrice}
+        minPlanRank={minPlanRank}
+        onMinPlanRank={setMinPlanRank}
+        requiredPerks={requiredPerks}
+        onRequiredPerks={setRequiredPerks}
+        plans={plans}
+        plainText={plainText}
+        credits={credits}
+        onCreditsChange={setCredits}
+        factCheck={factCheck}
+        onFactCheck={setFactCheck}
+        disclosure={disclosure}
+        onDisclosure={setDisclosure}
+        publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
+        publishDisabledReason={publishBlockedBy}
+        onPublish={onPublishClick}
+        pending={pending}
+        error={error}
+        promote={<PromotePanel state={promote} onChange={setPromote} />}
+      />
+    </>
+  );
+
   return (
     <div className="flex min-h-[calc(var(--app-h)-1px)] flex-col">
       {/* Top bar: back, type, save status, Save draft, Publish. Nothing else. */}
@@ -447,6 +757,11 @@ export function StudioEditor({
           <ArrowLeft size={16} />
           <span className="hidden sm:inline">Studio</span>
         </Link>
+
+        <RailOpenButton
+          onClick={() => setRailDrawerOpen(true)}
+          cardCount={cards.length}
+        />
 
         <div
           role="radiogroup"
@@ -548,73 +863,120 @@ export function StudioEditor({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "mx-auto grid w-full flex-1 gap-8 px-4 py-8 md:px-6",
-          panelOpen
-            ? "max-w-[var(--w-standard)] lg:grid-cols-[minmax(0,1fr)_340px]"
-            : "max-w-[var(--w-reading)] grid-cols-1",
-        )}
-      >
-        {/* Editor column */}
-        <div className="min-w-0">
-          <ComposeFork mode={mode} onChoose={setMode} />
+      {/* LEFT is what you build with, RIGHT is what you publish as. */}
+      <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
+        <ComposeRail
+          collapsed={railCollapsed}
+          onToggle={() => setRailCollapsed((c) => !c)}
+          cardCount={cards.length}
+        >
+          {toolbox}
+        </ComposeRail>
 
-          {/* The video path. The rung stays mounted (hidden) on the written
-              path so switching back never loses a chosen clip or its overlays;
-              it is never shown as a disabled module. */}
-          <div className={mode === "video" ? "" : "hidden"} aria-hidden={mode !== "video"}>
-            <VideoRung />
-          </div>
+        {/* Canvas */}
+        <div className="min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-8 md:px-6">
+            {(type !== "short_post") && (
+              <>
+                <label htmlFor="report-title" className="sr-only">
+                  Headline
+                </label>
+                <input
+                  id="report-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Headline"
+                  className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
+                  style={{ fontFamily: "var(--font-display)" }}
+                />
+              </>
+            )}
+            <label htmlFor="report-summary" className="sr-only">
+              {type === "short_post" ? "Post text" : "Dek"}
+            </label>
+            <input
+              id="report-summary"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              placeholder={type === "short_post" ? "What's on your mind?" : "One line under the headline"}
+              className="mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+            />
 
-          {mode ? (
-            <>
-              {(mode === "video" || type !== "short_post") && (
-                <>
-                  <label htmlFor="report-title" className="sr-only">
-                    Headline
-                  </label>
-                  <input
-                    id="report-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder={mode === "video" ? "Headline (required)" : "Report title"}
-                    className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
-                    style={{ fontFamily: "var(--font-display)" }}
+            {/* VIDEO. Stays mounted once added so removing and re-adding it
+                never discards a chosen clip, its trim or its overlays. */}
+            {hasVideo ? (
+              <section aria-label="Video module" className="mb-10">
+                <ModuleHeader
+                  icon={<Film size={14} />}
+                  label="Video"
+                  state={videoEdit ? fmtTimecode(videoEdit.trimEnd - videoEdit.trimStart).replace(/\.0$/, "") : null}
+                  open={videoOpen}
+                  onToggle={() => setVideoOpen((o) => !o)}
+                  onRemove={() => setVideoEdit(null)}
+                />
+                <div className={cn("mt-4", !videoOpen && "hidden")}>
+                  <VideoRung
+                    value={videoEdit ?? undefined}
+                    onChange={setVideoEdit}
+                    cards={deck}
+                    chrome={false}
                   />
-                </>
-              )}
-              <label htmlFor="report-summary" className="sr-only">
-                {type === "short_post" && mode === "written" ? "Post text" : "Summary"}
-              </label>
-              <input
-                id="report-summary"
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                placeholder={type === "short_post" && mode === "written" ? "What's on your mind?" : "One-line summary shown in feeds"}
-                className="mb-6 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
-              />
-
-              {mode === "video" ? (
-                <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-border py-3">
-                  <span className="num text-[10px] uppercase tracking-[0.16em] text-text-mute">Required · headline and tags (in the panel)</span>
-                  <span className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">Optional · evidence cards, a written report</span>
-                  <button
-                    type="button"
-                    onClick={() => setShowWrittenReport((v) => !v)}
-                    className="num focus-ring ml-auto rounded text-[10px] uppercase tracking-[0.14em] text-text underline underline-offset-4"
-                  >
-                    {showWrittenReport ? "Hide the written report" : "Add a written report"}
-                  </button>
                 </div>
-              ) : null}
+              </section>
+            ) : null}
 
-              {(mode === "written" ? type !== "short_post" : showWrittenReport) && showTemplateStrip && (
-                <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
-              )}
+            {/* RESEARCH */}
+            {hasResearch ? (
+              <section aria-label="Research module" className="mb-10">
+                <ModuleHeader
+                  icon={<FileText size={14} />}
+                  label="Research"
+                  state={
+                    plainText.trim()
+                      ? `${plainText.trim().split(/\s+/).length.toLocaleString()} words`
+                      : null
+                  }
+                  open={researchOpen}
+                  onToggle={() => setResearchOpen((o) => !o)}
+                  onRemove={() => setHasResearch(false)}
+                />
+                <div className={cn("mt-4", !researchOpen && "hidden")}>
+                  {showTemplateStrip && (
+                    <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+                  )}
+                  <div
+                    onDragOver={(e) => {
+                      if (!isCardDrag(e)) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "copy";
+                      setResearchDropActive(true);
+                    }}
+                    onDragLeave={() => setResearchDropActive(false)}
+                    onDrop={onResearchDrop}
+                    className={cn(
+                      "rounded-[var(--radius-card)] transition-colors",
+                      researchDropActive &&
+                        "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                    )}
+                  >
+                    <TiptapEditor
+                      initialContent={initialDoc}
+                      onChange={onEditorChange}
+                      reportTicker={hasCard ? ticker || undefined : undefined}
+                      onReady={(e) => {
+                        editorRef.current = e;
+                        setEditor(e);
+                      }}
+                    />
+                  </div>
+                </div>
+              </section>
+            ) : null}
 
-              {/* The written report. Always mounted once shown so switching paths keeps the text. */}
-              <div className={(mode === "written" ? type !== "short_post" : showWrittenReport) ? "" : "hidden"}>
+            {/* The research editor stays mounted while hidden, so removing the
+                module and adding it back keeps every word. */}
+            {!hasResearch ? (
+              <div className="hidden">
                 <TiptapEditor
                   initialContent={initialDoc}
                   onChange={onEditorChange}
@@ -625,54 +987,51 @@ export function StudioEditor({
                   }}
                 />
               </div>
-            </>
-          ) : null}
+            ) : null}
+
+            {type === "short_post" ? null : (
+              <AddModuleRow
+                video={hasVideo}
+                research={hasResearch}
+                onAddVideo={() => {
+                  setVideoEdit((e) => e ?? emptyEdit(90));
+                  setVideoOpen(true);
+                }}
+                onAddResearch={() => {
+                  setHasResearch(true);
+                  setResearchOpen(true);
+                }}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Lock & Publish panel (collapsible) */}
+        {/* RIGHT: settings applied to the publication. Rendered once and
+            moved by the layout: two copies would break the radio groups and
+            the label targets inside it. Below the large breakpoint there is no
+            room for a third column, so it stacks under the canvas. */}
         {panelOpen && (
-          <aside className="scroll-area flex flex-col gap-4 self-start lg:sticky lg:top-[var(--nav-h)] lg:max-h-[calc(var(--app-h)-5rem)] lg:overflow-y-auto lg:pl-1">
-            <TagPicker
-              value={tags}
-              onChange={setTags}
-              hasCall={lockingCall}
-              callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
-            />
-            <LockPublishPanel
-              hasCard={hasCard}
-              ticker={ticker}
-              onTicker={setTicker}
-              direction={direction}
-              onDirection={setDirection}
-              target={target}
-              onTarget={setTarget}
-              horizon={horizon}
-              onHorizon={setHorizon}
-              access={access}
-              onAccess={setAccess}
-              price={price}
-              onPrice={setPrice}
-              minPlanRank={minPlanRank}
-              onMinPlanRank={setMinPlanRank}
-              requiredPerks={requiredPerks}
-              onRequiredPerks={setRequiredPerks}
-              plans={plans}
-              plainText={plainText}
-              credits={credits}
-              onCreditsChange={setCredits}
-              factCheck={factCheck}
-              onFactCheck={setFactCheck}
-              disclosure={disclosure}
-              onDisclosure={setDisclosure}
-              publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
-              publishDisabledReason={publishBlockedBy}
-              onPublish={onPublishClick}
-              pending={pending}
-              error={error}
-            />
+          <aside
+            aria-label="Publication settings"
+            className="scroll-area flex w-full shrink-0 flex-col gap-4 self-start border-t border-border p-4 lg:sticky lg:top-[var(--nav-h)] lg:max-h-[calc(var(--app-h)-var(--nav-h))] lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0"
+          >
+            {settings}
           </aside>
         )}
       </div>
+
+      <ComposeRailDrawer open={railDrawerOpen} onClose={() => setRailDrawerOpen(false)}>
+        {toolbox}
+      </ComposeRailDrawer>
+
+      <CardLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onPick={addCard} />
+
+      <CardEditorDialog
+        card={cards.find((c) => c.id === selectedCardId) ?? null}
+        onChange={updateCard}
+        onDelete={() => selectedCardId && deleteCard(selectedCardId)}
+        onClose={() => setSelectedCardId(null)}
+      />
 
       {/* Collapsed-panel affordance: reopen to set the call and publish. */}
       {!panelOpen && (
@@ -688,7 +1047,11 @@ export function StudioEditor({
 
       <AskPanel
         open={askOpen}
-        onClose={() => setAskOpen(false)}
+        seed={askSeed}
+        onClose={() => {
+          setAskOpen(false);
+          setAskSeed(null);
+        }}
         context={{ ticker, title }}
         credits={credits}
         onCreditsChange={setCredits}

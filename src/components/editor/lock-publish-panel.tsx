@@ -99,6 +99,7 @@ export function LockPublishPanel({
   onPublish,
   pending,
   error,
+  promote,
 }: {
   hasCard: boolean;
   ticker: string;
@@ -130,6 +131,8 @@ export function LockPublishPanel({
   onPublish: () => void;
   pending: boolean;
   error: string | null;
+  /** The Promote section, injected so its cost model stays pluggable. */
+  promote?: React.ReactNode;
 }) {
   // Tagged with the ticker it quotes, so clearing the field drops the price
   // during render rather than through the effect.
@@ -352,69 +355,6 @@ export function LockPublishPanel({
         </section>
       )}
 
-      {hasCard && (
-        <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
-          <FactCheckerPanel
-            text={plainText}
-            credits={credits}
-            initialResult={factCheck}
-            onCreditsChange={onCreditsChange}
-            onResult={onFactCheck}
-          />
-        </section>
-      )}
-
-      {hasCard && (
-        <section className="ledger-card p-4" aria-label="Disclosures">
-          <p className="t-eyebrow mb-3">Disclosures</p>
-          <div className="flex flex-col gap-3.5">
-            <div className="flex items-center justify-between gap-3">
-              <span id="disc-position" className="text-xs leading-snug text-text">
-                Do you hold a position in {ticker.trim() ? ticker : "this ticker"}?
-              </span>
-              <YesNo
-                idBase="disc-position"
-                value={disclosure.positionHeld}
-                onChange={(v) => onDisclosure({ ...disclosure, positionHeld: v })}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <span id="disc-comp" className="text-xs leading-snug text-text">
-                Is any compensation tied to this call?
-              </span>
-              <YesNo
-                idBase="disc-comp"
-                value={disclosure.compTied}
-                onChange={(v) => onDisclosure({ ...disclosure, compTied: v })}
-              />
-            </div>
-
-            {disclosure.compTied === true && (
-              <input
-                value={disclosure.compDetail}
-                onChange={(e) => onDisclosure({ ...disclosure, compDetail: e.target.value })}
-                className={cn(inputClass, "text-xs")}
-                placeholder="Describe the arrangement (shown to readers)"
-                maxLength={500}
-              />
-            )}
-
-            <label className="flex items-start gap-2.5 text-xs leading-snug text-text">
-              <input
-                type="checkbox"
-                checked={disclosure.viewsCertified}
-                onChange={(e) =>
-                  onDisclosure({ ...disclosure, viewsCertified: e.target.checked })
-                }
-                className="mt-0.5 accent-[var(--accent)]"
-              />
-              I certify these are my own views and the analysis is my own work.
-            </label>
-          </div>
-        </section>
-      )}
-
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
         <p className="t-eyebrow mb-2.5">Access</p>
         <div className="flex flex-col gap-1.5 text-sm">
@@ -470,6 +410,73 @@ export function LockPublishPanel({
           </>
         )}
       </section>
+
+      {promote}
+
+      {hasCard && (
+        <div className="flex flex-col gap-4" aria-label="Before publishing">
+          <p className="t-eyebrow">Before publishing</p>
+        <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
+            <FactCheckerPanel
+              text={plainText}
+              credits={credits}
+              initialResult={factCheck}
+              onCreditsChange={onCreditsChange}
+              onResult={onFactCheck}
+            />
+          </section>
+
+        <section className="ledger-card p-4" aria-label="Disclosures">
+            <p className="t-eyebrow mb-3">Disclosures</p>
+            <div className="flex flex-col gap-3.5">
+              <div className="flex items-center justify-between gap-3">
+                <span id="disc-position" className="text-xs leading-snug text-text">
+                  Do you hold a position in {ticker.trim() ? ticker : "this ticker"}?
+                </span>
+                <YesNo
+                  idBase="disc-position"
+                  value={disclosure.positionHeld}
+                  onChange={(v) => onDisclosure({ ...disclosure, positionHeld: v })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <span id="disc-comp" className="text-xs leading-snug text-text">
+                  Is any compensation tied to this call?
+                </span>
+                <YesNo
+                  idBase="disc-comp"
+                  value={disclosure.compTied}
+                  onChange={(v) => onDisclosure({ ...disclosure, compTied: v })}
+                />
+              </div>
+
+              {disclosure.compTied === true && (
+                <input
+                  value={disclosure.compDetail}
+                  onChange={(e) => onDisclosure({ ...disclosure, compDetail: e.target.value })}
+                  className={cn(inputClass, "text-xs")}
+                  placeholder="Describe the arrangement (shown to readers)"
+                  maxLength={500}
+                />
+              )}
+
+              <label className="flex items-start gap-2.5 text-xs leading-snug text-text">
+                <input
+                  type="checkbox"
+                  checked={disclosure.viewsCertified}
+                  onChange={(e) =>
+                    onDisclosure({ ...disclosure, viewsCertified: e.target.checked })
+                  }
+                  className="mt-0.5 accent-[var(--accent)]"
+                />
+                I certify these are my own views and the analysis is my own work.
+              </label>
+            </div>
+          </section>
+
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <Button size="lg" disabled={pending || publishDisabledReason != null} onClick={onPublish}>
