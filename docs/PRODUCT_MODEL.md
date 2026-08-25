@@ -62,8 +62,8 @@ Stoa is organized around five surfaces.
   arrives and stops as it leaves. Sideways moves through that publication's evidence cards.
 - **Today** — the daily editorial read. A curated, newspaper-style briefing of what matters now.
 - **Markets** — instrument exploration: stocks, ETFs, and sectors, and the Stoa coverage on each.
-- **Compose** — the authoring studio where analysts record the video and assemble the call,
-  cards, and thesis.
+- **Compose** — the authoring workspace where analysts build a publication: the video, the
+  research, the cards, and the call.
 - **Profile** — the public analyst storefront, plus one private area that covers both the
   investor sections (library, subscriptions, following) and the creator sections (publications,
   track record, audience, earnings, storefront).
@@ -90,6 +90,34 @@ velocity, not accumulated volume), **POPULAR** (established, high accumulated at
 Explore's tile sizes, Today's lists and lead, the Feed's ordering. This replaced score-based
 ranking. Thresholds live in `src/lib/lifecycle/stages.ts` as named constants; until engagement
 events are recorded, attention per day since arrival stands in for a windowed velocity.
+
+## Compose is a workspace, not a wizard
+
+There is no fork asking whether the analyst is publishing with video. A publication may have
+video, research, both, or neither beyond its headline and tags, and it finds that out as it is
+built rather than being asked up front.
+
+The screen is organised by one sentence: **left is what you build with, right is what you publish
+as.** The left rail is the toolbox (the card deck, then the AI assistant); the centre is the
+publication (headline, dek, then the video and research modules, each stating what it holds); the
+right rail is the settings applied to the publication (the call, access, promote, the publish
+gates). Anything added later goes on the side that sentence puts it on.
+
+**Cards are a shared asset pool.** They are not a step inside the video path and not a feature of
+the research. They belong to the publication, they live in the left rail, and the same card can
+be dropped onto the video's visual track (as a timed overlay) and into the research body (as an
+inline figure). A placement stores only the card's id, so editing the card once updates it
+everywhere it appears, and a placed card stays in the tray because it can be in both. Every tray
+row says where its card is currently used.
+
+The card library is organised by **intent** (make your case, prove it, compare, show the risk,
+your own), because that is the question an analyst can answer about their own publication. A
+Custom entry lists the same formats by **shape** for anyone who would rather pick a format than
+an intent. Both routes build the same card.
+
+**Promotion** is a section on the publication rather than a separate destination, reachable both
+while composing and afterwards from the published item. Its cost model is deliberately undecided
+and kept pluggable; what is fixed is that promoted content is always labelled as promoted.
 
 ## The Thesis Stack
 
@@ -127,8 +155,9 @@ Two linked features that pressure-test conviction. Neither ever touches the reco
 
 ### Devil's Advocate (a paid conviction tool in Compose)
 
-Available only on the written-thesis rung. It reads the analyst's thesis and lists **three
-counterpoint headlines** as locked teasers. The analyst spends credits to unlock one, which
+Offered in the workspace's AI assistant, alongside the tools that serve the cards and the
+research, with its credit cost shown before it runs. It reads the analyst's thesis and lists
+**three counterpoint headlines** as locked teasers. The analyst spends credits to unlock one, which
 reveals the full objection (one or two sharp sentences). The analyst then writes a **private
 rebuttal** answering it.
 

@@ -1001,58 +1001,167 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
   an unproven claim on a draft — same visual list-item pattern as the investor Notifications page
   (§5.7) for consistency across the whole product.
 
-### 6.2 Report Editor ★ — `/dashboard/reports/new` and `/dashboard/reports/[id]/edit`
+### 6.2 Compose ★ — `/studio/compose` (and `?id=` to reopen a draft)
 
-The other highest-scrutiny screen in the product — this is where the seal ritual (§1.3, §2.5)
-actually gets triggered.
+The other highest-scrutiny screen in the product, and the one where the seal ritual (§1.3, §2.5)
+gets triggered.
 
-**Layout:**
+**Compose is a workspace, not a wizard.** There is no fork asking whether the creator is
+publishing with video. A publication may have video, research, both, or neither beyond its
+headline and tags, and it finds that out as the creator builds it.
 
-- **Top bar:** draft title (inline-editable text, becomes the report headline), autosave
-  indicator (small `--text-xs`, "Saved" / "Saving..." — never a manual save button as the primary
-  save mechanism, autosave should be the default with a manual **"Save draft"** button available
-  as a secondary, explicit action for creators who want the reassurance), ticker tag selector
-  (typeahead against the `tickers` table, shows company name + current price once selected)
-- **Two-panel body:** main editor column (left, ~65%) + a **right-side "Lock & Publish" panel**
-  (~35%, persistent, not a modal you have to open) containing everything needed to actually
-  publish — this keeps the irreversible action's requirements visible the whole time someone is
-  writing, rather than surprising them with a checklist only at the very end.
+**The organising principle, which every placement decision here answers to:**
 
-**Main editor column:**
+> **LEFT is what you build WITH. RIGHT is what you publish AS.**
 
-- Rich text editor (headings, bold/italic, lists, embedded images/charts, blockquote) — standard
-  editor chrome, Plex Sans throughout (this is drafting UI, not the reading experience, so it
-  doesn't use Fraunces here)
-- **AI assist side-panel**, collapsible, docked to the editor: "Ask AI to expand this section,"
-  "Suggest supporting data for this claim," "Tighten this paragraph" — these insert suggested
-  text as a diff the creator explicitly accepts/rejects (never silently auto-writes into the
-  document), preserving the certification promise that the published words are genuinely the
-  creator's own
+Things you pull from live on the left; settings applied to the publication live on the right. A
+new panel goes on the side that sentence puts it on, and nowhere else. The AI assistant is on the
+left because everything it does is creation; Promote is on the right because it is a setting.
 
-**Right-side "Lock & Publish" panel, top to bottom:**
+**Three columns and a canvas:**
 
-1. **Price target module:** ticker (mirrors the one selected above), target price input (Plex
-   Mono), horizon date picker, current price shown for live reference with the calculated
-   upside/downside percentage updating as the target changes
-2. **Pre-publish fact-check panel:** a **"Run fact-check"** button (also auto-triggers once when a
-   creator first attempts to publish, if not already run manually) — while running, a calm
-   inline loading state ("Checking claims..."); once complete, shows the claim-by-claim
-   breakdown: count by verdict, and a scrollable mini-list of `unproven`-verdict claims
-   specifically (the ones needing action), each with an inline **"Add source"** input right there
-   so a creator can resolve it without leaving the editor, or a **"Mark as opinion"** button if
-   it's genuinely a judgment call rather than a factual claim
-3. **Disclosure checklist**, required, each a real toggle/select (not a single "I agree" checkbox
-   that hides real information): "Do you hold a position in [ticker]?" Yes/No, "Is any part of
-   your compensation tied to this call?" Yes/No (Yes reveals a detail text field), "I certify
-   these are my own views" checkbox
-4. **Publish button:** **"Publish & Lock"** — disabled until fact-check has run at least once and
-   the disclosure checklist is fully answered (not necessarily all "No"/clean — just *answered*,
-   since a Yes answer with disclosure is completely valid, an unanswered field is not)
-5. Clicking it opens `<LockConfirmModal>` (§2.5) → seal animation → the panel's price-target
-   module becomes permanently read-only with the seal icon in place of the input fields, and the
-   whole right panel visually shifts from "editing" chrome (dashed borders, muted) to "locked"
-   chrome (solid ledger-card border, matching the reading-view call block's styling) — the editor
-   should visibly change character the instant something becomes permanent.
+| Region | Width | Holds |
+|---|---|---|
+| Toolbox rail (left) | `248px` expanded, `56px` as icons | Card tray, then the AI assistant |
+| Canvas (centre) | `--w-reading`, fluid | Headline, dek, then the publication's modules |
+| Settings rail (right) | `340px` | The call, access, promote, the publish gates |
+
+The profile navigation from the `(private)` layout is **not** rendered on Compose. It is not a
+tool for making a publication and the left edge belongs to the toolbox. It is removed by wrapping
+the layout's rail slot in `<HideOnCompose>` rather than hiding it in CSS, so the streaming
+fallback does not hold an empty 240px rail open beside the workspace either.
+
+**Responsive.** Three rails plus a canvas do not fit a laptop:
+
+- `≥ lg` (1024px): all three columns. The toolbox collapses to icons on demand and expands again
+  from either icon; the card icon carries the deck count as a badge.
+- `< lg`: the toolbox becomes a drawer over the canvas, opened from a Toolbox button in the top
+  bar that also carries the deck count. The settings rail stops being a column and stacks under
+  the canvas full-width. It is **rendered once and moved by the layout**, never rendered twice
+  and hidden with CSS: two copies would break the radio groups and the `label`/`for` targets
+  inside it.
+
+#### The card tray (left, top)
+
+Cards are the publication's **shared asset pool**. They are not part of the video and not part of
+the research, and the same card can appear in both, so they live in the rail rather than inside
+either module. A creator who wants to build a deck never has to walk past the video recorder to
+reach it.
+
+Each tray row is a small draggable card showing a grip handle, the card's name, and a one-line
+summary carrying its provenance tag. Name, summary and tag are **derived from the payload**, not
+stored, so they cannot drift from the words on the card. A count sits in the section header.
+
+Every row states where the card is currently used: `VIDEO`, `RESEARCH`, both, or `NOT PLACED`. A
+card **stays in the tray after it is placed**, because the same card can be in both.
+
+`+ Add a card` opens the library, organised by intent, because "show the risk" is a question a
+creator can answer about their own publication and "kill switch" is not:
+
+- **Make your case** — Thesis
+- **Prove it** — Path to target, Checklist
+- **Compare** — Your edge
+- **Show the risk** — Kill switch, Steelman, Catalysts
+- **Your own** — Figure
+
+A **Custom** entry lists the same nine formats by shape (Statement, Steps, Checklist, Two
+columns, Conditions, Objection and answer, Timeline, Image) for the creator who already knows
+they want a timeline and does not want to be asked why. Both routes build the same card.
+
+#### Dragging a card into both
+
+This is the point of the workspace. A card dragged out of the tray can be dropped:
+
+- onto the video timeline's **VISUAL track**, becoming a timed overlay starting where it was
+  dropped;
+- into the **research body**, becoming an inline figure at that position.
+
+Drop targets highlight while a card is over them (a brass ring and tint). The drag uses a private
+MIME type, `application/x-stoa-card`, not `text/plain`, so a target can tell a card from a text
+selection *during* dragover, when `dataTransfer` values are unreadable and only the type list is.
+
+A drag needs a mouse. Every tray row therefore also carries a **Place menu** ("Place in video",
+"Insert in research") that does the same thing from a keyboard or a phone. Neither gesture is the
+fallback for the other; the menu is the only one that works at 390.
+
+Both placements store **only the card's id** (a `cardNode` in the body, a `{ type: "card",
+cardId }` visual source on the track). Editing the card once updates it everywhere it appears.
+Deleting a card removes its placements with it, rather than leaving a hole on the track and a
+placeholder in the prose.
+
+#### The canvas (centre)
+
+Headline and dek at the top, then the publication's components as stacked modules.
+
+- **VIDEO** — the player, thumbnail selection, trim, and the two-track timeline (text track and
+  visual track) with precise playhead control.
+- **RESEARCH** — the rich text editor with figures and graphs.
+
+Each module header states what it holds at a glance: `VIDEO ✓ 0:58`, `RESEARCH ✓ 1,840 words`, so
+the creator can see what the publication contains without scrolling through it. A module not yet
+added is a quiet `+ Add video` / `+ Add research` row, never a fork.
+
+Both modules **stay mounted once added**. Removing a module and adding it back keeps the clip,
+its trim, its overlays, and every word.
+
+#### The settings rail (right), top to bottom
+
+1. **The call** — ticker, direction, target, horizon. Optional: a publication may have no call.
+   Current price shown for live reference with the upside/downside updating as the target changes.
+2. **Access** — free / subscribers / paid unlock with its price.
+3. **Promote** — a "Boost on publish" switch. **The cost model is pluggable and deliberately
+   unset.** Pricing arrives as a `PromoteModel` (`src/lib/compose/promote.ts`) and the panel
+   renders whatever it is handed, including nothing; while there is none it says so plainly and
+   offers nothing selectable, so nothing can be sold at a price nobody has agreed. The old fixed
+   Boost packages are **not** wired in. The one rule that does not depend on pricing is always
+   stated: **promoted content is always labelled as promoted, wherever it appears.** Promotion
+   belongs to the publication rather than to composing it, so the same panel is reachable after
+   publish from the item in Studio.
+4. **Before publishing** — the fact-check and the disclosures, as gates.
+5. **Publish** — `Publish & Lock` when a call is being locked. Clicking it opens
+   `<LockConfirmModal>` (§2.5) → seal animation.
+
+**Pre-publish fact-check panel:** a "Run fact-check" button; while running, a calm inline loading
+state; once complete, the claim-by-claim breakdown with an inline "Add source" input on each
+`unproven` claim, or "Mark as opinion" when it is genuinely a judgment call.
+
+**Disclosure checklist**, required, each a real toggle (never a single "I agree" checkbox that
+hides real information): position held, compensation tied, views certified. Publish is disabled
+until the fact-check has run at least once and every disclosure is *answered* (a Yes with
+disclosure is completely valid; an unanswered field is not).
+
+#### The three inks (do not weaken this)
+
+Every value on a card carries its provenance, and the workspace enforces the difference rather
+than describing it:
+
+- **plain** — the creator's view. Editable.
+- **CREATOR EST.** — the creator's own number. Editable, and switchable to and from plain.
+- **AUTO** — an imported market fact. **Read-only, with no ink switch.** The only way a value
+  becomes AUTO is by being imported, and the only way it stops being AUTO is by being deleted and
+  retyped. That is what makes the tag worth anything to a reader.
+
+A card's tray tag names the strongest claim on it: AUTO outranks CREATOR EST., which outranks
+plain.
+
+#### Other invariants
+
+- Overlays burn permanently into the video at publish, so the preview must stay exactly what will
+  ship, and the processing state after publish stays.
+- Per-card free/locked control stays. The **CTA card is pinned last** and is **derived from
+  Access**, not authored, so it cannot be deleted, duplicated, or left behind on a publication
+  that stopped being gated.
+- Tags stay: one primary that drives discovery placement, up to two secondary, from the closed
+  curated list.
+- Existing drafts open in the workspace without losing anything: body, tags, access, the call,
+  and the saved deck with locked payloads intact.
+
+**AI assist (left rail, under the tray):** generate cards from the thesis, insert a metric, build
+a chart, structure my thesis, tighten this, suggest a headline, and **Devil's Advocate with its
+credit cost shown**. Each entry **seeds** the Ask panel rather than firing on click: a paid tool
+shows its price and then lets the analyst decide, and suggestions are inserted as something the
+creator accepts, never silently auto-written, preserving the certification promise that the
+published words are genuinely their own.
 
 ### 6.3 My Reports — `/dashboard/reports`
 

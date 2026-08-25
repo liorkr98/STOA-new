@@ -10,6 +10,116 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-08-25 — Compose is a workspace, and cards belong to the publication
+
+**For someone using the site**
+
+- **The question "are you publishing with video?" is gone.** Compose no longer
+  asks anything before you start. You get a headline, a dek, and two quiet rows:
+  "+ Add video" and "+ Add research". A publication can have either, both, or
+  neither.
+- **The screen has a shape you can state in one sentence: left is what you build
+  with, right is what you publish as.** The left rail holds your cards and the AI
+  assistant. The middle holds the publication. The right holds the settings that
+  get applied to it: the call, access, promote, and the checks that stand between
+  a draft and publishing.
+- **Cards are now one pool the whole publication draws on.** They were a step
+  inside the video path, so building a deck meant going through the video
+  recorder first, and a written report could not reach them at all. Now they sit
+  at the top of the left rail with a count, each showing its name, a one-line
+  summary, and its provenance tag.
+- **You drag a card onto the video timeline or into the writing.** Drop it on the
+  visual track and it becomes a timed overlay where you dropped it; drop it in
+  the research and it becomes a figure at that point. The target lights up as you
+  drag over it. The card stays in the tray afterwards, because the same card can
+  be in both places, and each row tells you where it currently is.
+- **Editing a card changes it everywhere at once.** A placement remembers which
+  card it is, not a copy of it. Delete a card and it leaves both places rather
+  than leaving a hole behind.
+- **Dragging is not the only way.** Every card has a menu with "Place in video"
+  and "Insert in research", which is what works on a phone and from a keyboard.
+- **Adding a card starts from what you are trying to do**, not from a format
+  list: make your case, prove it, compare, show the risk, your own. A Custom
+  entry lists the same cards by shape for anyone who would rather pick a
+  timeline than an intent.
+- **Each module says what it holds.** "VIDEO 0:58", "RESEARCH 1,840 words", so
+  you can see what the publication contains without scrolling through it.
+- **Promote is a new section on the right**, and it is also reachable later from
+  a publication that is already out, so promoting is not a decision you have to
+  make at the moment of publishing.
+- **The profile navigation is no longer on Compose.** It is not a tool for making
+  a publication, and the left edge is now the toolbox.
+- **On a narrow screen the toolbox is a drawer** opened from a button in the top
+  bar that carries the card count, and the settings stack under the writing
+  instead of being a third column there is no room for. On a laptop the toolbox
+  collapses to icons.
+
+**What it was before**
+
+A fork, then a wizard. The first thing on the screen was "Are you publishing with
+video?" with two answers, and the answer decided the shape of everything after
+it. Video work got a rung containing the player, the trim, the timeline and,
+inside that, the visual-overlay picker. Cards were reachable only from there.
+
+They were not really reachable even then: the picker offered three fixed labels
+("Price chart · entry & target", "Peer comparison", "Key stats") that looked like
+cards and were strings. Nothing in Compose could create a card. The table, the
+validation and the player's renderer all existed and had since the card engine
+landed; the authoring end was never built, so `saveCards` had no caller.
+
+**Two bugs found on the way, both losing data**
+
+Tags were never read back from a draft. Compose started with an empty tag
+selection whatever the draft actually held, so reopening a tagged publication
+showed no tags, and the next save wrote that emptiness over the real ones. It is
+now seeded from the draft.
+
+The autosave saved stale tags. The save function read the current tag selection
+but did not list it among the things that should rebuild the function, so the
+thirty-second autosave kept writing whichever selection had been current earlier
+in the session. Both are fixed.
+
+**The part that usually breaks**
+
+Reopening a draft could have shown the creator empty cards where their own gated
+words used to be. The existing card reader deliberately strips the payload off
+any locked card, which is exactly right for a reader without entitlement and
+exactly wrong for the person who wrote it. Compose uses a separate author-side
+read that keeps the payload, with an ownership check on top of the row-level
+policy that already allows it.
+
+The other one is the settings rail. On a narrow screen it stops being a column
+and stacks under the writing, and it is moved by the layout rather than rendered
+a second time. Two copies would have meant two sets of radio buttons sharing a
+name and two labels pointing at the same field.
+
+**For Krisi**
+
+- **Promotion pricing is still undecided, and nothing here decides it.** The
+  switch, the always-labelled rule and the after-publish entry point are built;
+  the cost model is injected as a `PromoteModel` and the panel renders whatever
+  it is handed, including nothing. Right now it says the price is not set and
+  offers nothing selectable, so nothing can be sold at a price nobody has agreed.
+  The four old fixed Boost packages are deliberately not wired in.
+- **No migration.** Cards store what `publication_cards` already stores. A card's
+  name, summary and provenance tag are derived from the payload rather than
+  stored, so they cannot drift from the words on the card and no column was
+  added.
+- **Overlays still do not persist, and there is still no burn-in pipeline.** That
+  was true before this batch and is unchanged: the workspace holds them in
+  memory. The video module opens on an existing draft when that report has a
+  clip, but its trim and overlays start empty. This is the same decision the
+  build spec has open, and it is the main thing standing between the workspace
+  and a publication whose overlays survive a reload.
+- **The AI assistant's entries seed the Ask panel rather than calling dedicated
+  pipelines.** Clicking one fills the prompt and leaves sending to the analyst,
+  which is deliberate for anything that costs credits. "Generate cards from the
+  thesis" in particular has no card-producing action behind it yet: the compose
+  agent's action list can insert blocks into the document but cannot build a
+  card. Devil's Advocate is priced at 4 credits with its own token budget.
+
+---
+
 ## 2026-08-24 (later) — Explore's filters are searchable
 
 **For someone using the site**
