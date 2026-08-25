@@ -94,6 +94,43 @@ export async function listCardsForReport(reportId: string): Promise<FeedCard[]> 
 }
 
 /**
+ * The author's own deck, for Compose. Deliberately not `listCardsForReport`:
+ * that one strips the payload off every locked row, which is right for a
+ * reader and wrong for the person who wrote it -- reopening a draft would show
+ * the creator empty cards where their own gated words used to be. RLS already
+ * lets an author read their locked rows (`can_read_report_body` passes on
+ * `author_id = uid`), so the ownership check here is belt-and-braces and the
+ * payload is returned intact.
+ */
+export async function listAuthorCards(
+  reportId: string,
+  authorId: string,
+): Promise<{ id: string; kind: FeedCard["kind"]; locked: boolean; payload: Record<string, unknown> }[]> {
+  const supabase = await createClient();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("author_id")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (!report || (report as { author_id: string }).author_id !== authorId) return [];
+
+  const { data, error } = await supabase
+    .from("publication_cards")
+    .select(CARD_COLUMNS)
+    .eq("report_id", reportId)
+    .order("position", { ascending: true });
+  if (error || !data) return [];
+
+  return (data as PublicationCardRow[]).map((row) => ({
+    id: row.id,
+    kind: row.kind,
+    locked: row.locked,
+    payload: row.payload ?? {},
+  }));
+}
+
+/**
  * Which of these publications have an evidence stack, for the content badge.
  * Presence only, so it stays one indexed query and never fetches payloads.
  *
