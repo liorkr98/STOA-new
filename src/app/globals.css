@@ -444,6 +444,24 @@ body {
   overscroll-behavior: contain;
 }
 
+/*
+ * A scroll area with no bar at all, for surfaces that are panned rather than
+ * read: the Feed's vertical reader and the evidence track inside its frame,
+ * where a bar drawn across the analyst's face is chrome nobody asked for.
+ *
+ * A class rather than Tailwind's `[scrollbar-width:none]`, which lands in the
+ * same layer as `.scroll-area` at the same specificity and loses to it. That
+ * went unnoticed while the track could not scroll sideways at all; the moment
+ * it could, a bar appeared across the stage.
+ */
+.scroll-bare {
+  scrollbar-width: none;
+}
+
+.scroll-bare::-webkit-scrollbar {
+  display: none;
+}
+
 /* ------------------------------------------------------------------ *
  * Scroll-driven state (progressive enhancement -- browsers without
  * animation-timeline simply never show these; nothing breaks).

@@ -124,7 +124,7 @@ export function FeedSurface({
   return (
     <div
       ref={scrollerRef}
-      className={cn("scroll-area snap-y snap-mandatory overflow-y-auto overscroll-contain bg-bg [scrollbar-width:none]", ITEM_H)}
+      className={cn("scroll-area scroll-bare snap-y snap-mandatory overflow-y-auto overscroll-contain bg-bg", ITEM_H)}
     >
       {publications.map((pub, i) => (
         <FeedItem
@@ -412,13 +412,56 @@ const FeedItem = function FeedItem({
     const el = trackRef.current;
     const child = el?.children[card] as HTMLElement | undefined;
     if (!el || !child) return;
+    const left = child.offsetLeft - el.offsetLeft;
+    // The reader's own swipe is what set `card` here, and the track is already
+    // where it asked for. Scrolling again would fight the gesture that has just
+    // finished settling.
+    if (Math.abs(el.scrollLeft - left) <= 1) return;
     // A smooth scroll never completes in a hidden document, which leaves the
     // track stranded between two cards while the pager says it moved.
-    el.scrollTo({
-      left: child.offsetLeft - el.offsetLeft,
-      behavior: document.hidden ? "auto" : "smooth",
-    });
+    el.scrollTo({ left, behavior: document.hidden ? "auto" : "smooth" });
   }, [card]);
+
+  /**
+   * A track the reader panned by hand has to write back to `card`.
+   *
+   * The pager, the chevrons and the unlock tracking all read it, so a swipe
+   * that moved the track without moving the state would leave the frame saying
+   * one thing and the controls another.
+   *
+   * Read once the scrolling settles rather than on every event: mid-gesture the
+   * nearest panel flips back and forth across each boundary, and every flip
+   * would re-render the publication. `scrollend` says exactly this and is used
+   * where it exists; the timer is the fallback where it does not.
+   */
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const settled = () => {
+      const width = el.clientWidth;
+      if (width <= 0) return;
+      const i = Math.max(0, Math.min(panelCount - 1, Math.round(el.scrollLeft / width)));
+      setCard((c) => (c === i ? c : i));
+    };
+    // Checked on `window` rather than on the element: `in` on `el` narrows it
+    // away and the cleanup can no longer see it as an element at all.
+    const hasScrollEnd = "onscrollend" in window;
+    const onScroll = () => {
+      if (hasScrollEnd) return;
+      clearTimeout(timer);
+      timer = setTimeout(settled, 120);
+    };
+
+    if (hasScrollEnd) el.addEventListener("scrollend", settled);
+    else el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scrollend", settled);
+      el.removeEventListener("scroll", onScroll);
+      clearTimeout(timer);
+    };
+  }, [panelCount]);
 
   const goCard = useCallback(
     (d: number) => setCard((c) => Math.max(0, Math.min(panelCount - 1, c + d))),
@@ -542,7 +585,7 @@ const FeedItem = function FeedItem({
           <div className="relative mx-auto h-full max-h-full overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--ink)] text-[var(--paper)] [aspect-ratio:9/16]">
             <div
               ref={trackRef}
-              className="scroll-area flex h-full snap-x snap-mandatory overflow-x-hidden [scrollbar-width:none]"
+              className="scroll-area scroll-bare flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">
