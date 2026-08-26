@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { fraunces, plexSans, plexMono } from "./fonts";
+import { fraunces, plexSans, plexHebrew, plexMono } from "./fonts";
 import { Providers } from "./providers";
 import { SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
@@ -32,7 +32,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plexSans.variable} ${fraunces.variable} ${plexMono.variable}`}
+      className={`${plexSans.variable} ${plexHebrew.variable} ${fraunces.variable} ${plexMono.variable}`}
     >
       <body>
         <Providers>{children}</Providers>

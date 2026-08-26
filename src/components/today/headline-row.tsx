@@ -42,8 +42,8 @@ export function HeadlineRow({
         </div>
 
         <Link href={href} className="group focus-ring block rounded-[var(--radius-btn)]">
-          <h4 className="today-headline">{item.headline}</h4>
-          {item.deck ? <p className="today-deck">{item.deck}</p> : null}
+          <h4 className="today-headline" dir="auto">{item.headline}</h4>
+          {item.deck ? <p className="today-deck" dir="auto">{item.deck}</p> : null}
         </Link>
 
         <div className="today-byline">
@@ -52,7 +52,7 @@ export function HeadlineRow({
             className="focus-ring inline-flex items-center gap-2.5 rounded-[var(--radius-btn)]"
           >
             <Avatar src={item.author.avatarUrl} name={item.author.displayName} size="sm" />
-            <span className="text-[0.8125rem] font-semibold text-text">
+            <span dir="auto" className="user-copy text-[0.8125rem] font-semibold text-text">
               {item.author.displayName}
             </span>
           </Link>

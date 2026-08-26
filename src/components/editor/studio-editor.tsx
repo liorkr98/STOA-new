@@ -891,7 +891,8 @@ export function StudioEditor({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Headline"
-                  className="mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
+                  dir="auto"
+                  className="user-copy mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
                   style={{ fontFamily: "var(--font-display)" }}
                 />
               </>
@@ -904,7 +905,8 @@ export function StudioEditor({
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder={type === "short_post" ? "What's on your mind?" : "One line under the headline"}
-              className="mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+              dir="auto"
+              className="user-copy mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
             />
 
             {/* VIDEO. Stays mounted once added so removing and re-adding it

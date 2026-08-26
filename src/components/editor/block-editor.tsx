@@ -27,14 +27,15 @@ export function BlockEditor({
 
   if (block.type === "heading") {
     if (readOnly) {
-      return <h2 className="t-h2 font-semibold">{String(c.text ?? "")}</h2>;
+      return <h2 className="t-h2 font-semibold" dir="auto">{String(c.text ?? "")}</h2>;
     }
     return (
       <input
         value={String(c.text ?? "")}
         onChange={(e) => onChange({ ...c, text: e.target.value })}
         placeholder="Section heading"
-        className="t-h2 w-full bg-transparent font-semibold placeholder:text-text-mute focus:outline-none"
+        dir="auto"
+        className="t-h2 user-copy w-full bg-transparent font-semibold placeholder:text-text-mute focus:outline-none"
       />
     );
   }
@@ -58,7 +59,8 @@ export function BlockEditor({
         onChange={(e) => onChange({ ...c, text: e.target.value })}
         rows={5}
         placeholder="Write your analysis..."
-        className={cn(inputClass, "resize-y leading-relaxed")}
+        dir="auto"
+        className={cn(inputClass, "user-copy resize-y leading-relaxed")}
       />
     );
   }
@@ -68,13 +70,14 @@ export function BlockEditor({
     return (
       <div className="rounded-[var(--radius-btn)] border border-accent/30 bg-accent-weak/50 p-4">
         {readOnly ? (
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>
+          <p className="user-copy whitespace-pre-wrap text-sm leading-relaxed" dir="auto">{text}</p>
         ) : (
           <textarea
             value={text}
             onChange={(e) => onChange({ ...c, text: e.target.value })}
             rows={3}
-            className="w-full resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
+            className="user-copy w-full resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
+            dir="auto"
           />
         )}
       </div>

@@ -75,15 +75,16 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
         <div className="min-w-0">
           {spotlight && tile.trending ? <div className="num mb-1 text-[10px] uppercase tracking-[0.18em] text-[var(--brass)]">Trending</div> : null}
           <h3
+            dir="auto"
             className={cn(
-              "font-display font-semibold leading-[1.15] tracking-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]",
+              "user-copy font-display font-semibold leading-[1.15] tracking-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]",
               spotlight ? "line-clamp-3 text-[1.25rem] md:text-[1.75rem]" : "line-clamp-2 text-[0.8125rem] md:text-[0.9375rem]",
             )}
           >
             {p.headline}
           </h3>
-          {spotlight && p.deck ? <p className="mt-1 hidden line-clamp-2 text-[0.8125rem] text-white/85 md:block">{p.deck}</p> : null}
-          <div className="mt-1 truncate text-[10px] text-white/85 md:text-[11px]">{p.analyst.displayName}</div>
+          {spotlight && p.deck ? <p dir="auto" className="user-copy mt-1 hidden line-clamp-2 text-[0.8125rem] text-white/85 md:block">{p.deck}</p> : null}
+          <div dir="auto" className="user-copy mt-1 truncate text-[10px] text-white/85 md:text-[11px]">{p.analyst.displayName}</div>
         </div>
         <span className="num flex-none text-[10px] text-white/85">{dur}</span>
       </div>
