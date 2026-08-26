@@ -6,12 +6,10 @@ import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { price as fmtPrice } from "@/lib/format";
 import type { AccessType, Direction } from "@/lib/types";
-import type { FactCheckResult } from "@/lib/ai/fact-check";
 import type { Plan } from "@/lib/db/plans";
 import { attestPrice, type AttestedPriceData } from "@/services/price-attestation";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
-import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
 import { PriceAttestationCard } from "@/components/ui/price-attestation-card";
 
@@ -89,11 +87,6 @@ export function LockPublishPanel({
   requiredPerks,
   onRequiredPerks,
   plans,
-  plainText,
-  credits,
-  onCreditsChange,
-  factCheck,
-  onFactCheck,
   disclosure,
   onDisclosure,
   publishLabel,
@@ -123,11 +116,6 @@ export function LockPublishPanel({
   requiredPerks: string[];
   onRequiredPerks: (v: string[]) => void;
   plans: Plan[];
-  plainText: string;
-  credits: number;
-  onCreditsChange: (n: number) => void;
-  factCheck: FactCheckResult | null;
-  onFactCheck: (r: FactCheckResult) => void;
   disclosure: DisclosureState;
   onDisclosure: (d: DisclosureState) => void;
   publishLabel: string;
@@ -432,20 +420,7 @@ export function LockPublishPanel({
 
       {promote}
 
-      {hasCard && (
-        <div className="flex flex-col gap-4" aria-label="Before publishing">
-          <p className="t-eyebrow">Before publishing</p>
-        <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
-            <FactCheckerPanel
-              text={plainText}
-              credits={credits}
-              initialResult={factCheck}
-              onCreditsChange={onCreditsChange}
-              onResult={onFactCheck}
-            />
-          </section>
-
-        <section className="ledger-card p-4" aria-label="Disclosures">
+      <section className="ledger-card p-4" aria-label="Disclosures">
             <p className="t-eyebrow mb-3">Disclosures</p>
             <div className="flex flex-col gap-3.5">
               <div className="flex items-center justify-between gap-3">
@@ -494,9 +469,6 @@ export function LockPublishPanel({
             </div>
           </section>
 
-        </div>
-      )}
-
       <div className="flex flex-col gap-2">
         <Button size="lg" disabled={pending || publishDisabledReason != null} onClick={onPublish}>
           <Lock size={18} aria-hidden />
@@ -507,7 +479,7 @@ export function LockPublishPanel({
         )}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
         <p className="t-meta text-center text-[11px] text-text-faint">
-          Once this report is locked, add a short video teaser from your reports in Studio.
+          A locked call cannot be edited. Access and tags can still be changed from Studio.
         </p>
       </div>
     </div>

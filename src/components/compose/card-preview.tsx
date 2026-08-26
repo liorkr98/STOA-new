@@ -3,6 +3,7 @@
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { InkTag } from "@/components/feed/feed-cards";
+import { CardChart } from "@/components/compose/card-chart";
 import { cardName, cardSummary, type DraftCard } from "@/lib/compose/cards";
 import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
 
@@ -110,6 +111,15 @@ function Body({ card }: { card: DraftCard }) {
         <img src={String(p.imageUrl)} alt={String(p.caption ?? "")} className="max-h-40 w-full rounded-[4px] object-contain" />
       ) : (
         <p className="text-[0.8125rem] text-text-faint">No image yet</p>
+      );
+    case "chart":
+      return (
+        <CardChart
+          ticker={String(p.ticker ?? "")}
+          engine={p.engine === "tradingview" ? "tradingview" : "yahoo"}
+          caption={String(p.caption ?? "")}
+          compact
+        />
       );
     case "steelman":
       return (

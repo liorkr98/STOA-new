@@ -15,6 +15,8 @@ export interface TradingViewChartProps {
   studies?: string[];
   className?: string;
   height?: number;
+  /** Card and video overlay: hide drawing chrome, keep the tape. */
+  compact?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export function TradingViewChart({
   studies = [],
   className = "",
   height = 480,
+  compact = false,
 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
@@ -58,12 +61,12 @@ export function TradingViewChart({
       allow_symbol_change: false,
       calendar: false,
       support_host: "https://www.tradingview.com",
-      withdateranges: true,
-      hide_side_toolbar: false,
-      hide_top_toolbar: false,
-      hide_legend: false,
-      save_image: true,
-      details: true,
+      withdateranges: !compact,
+      hide_side_toolbar: compact,
+      hide_top_toolbar: compact,
+      hide_legend: compact,
+      save_image: !compact,
+      details: !compact,
       hotlist: false,
       backgroundColor: theme === "light" ? "rgba(255, 255, 255, 1)" : "rgba(15, 15, 18, 1)",
       gridColor: theme === "light" ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.06)",
@@ -83,7 +86,7 @@ export function TradingViewChart({
       script.remove();
       widgetHost.innerHTML = "";
     };
-  }, [mounted, ticker, range, resolvedTheme, studiesKey]);
+  }, [mounted, ticker, range, resolvedTheme, studiesKey, compact]);
 
   if (!mounted) {
     return (
