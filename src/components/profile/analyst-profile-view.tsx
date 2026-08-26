@@ -258,7 +258,7 @@ function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string 
       <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo className="aspect-video rounded-[10px]" />
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
-        <h3 className="font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
+        <h3 dir="auto" className="user-copy font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
         {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
       </div>
       <ViewsMeta p={p} />

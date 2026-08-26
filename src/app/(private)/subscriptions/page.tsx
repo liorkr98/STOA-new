@@ -143,7 +143,7 @@ export default async function SubscriptionsPage() {
                 <div className="text-text-mute">
                   {u.unlockedAt ? format(new Date(u.unlockedAt), "MMM d, yyyy").toUpperCase() : "—"}
                 </div>
-                <div className="font-sans text-[14.5px]">{u.report.title ?? "Untitled"}</div>
+                <div dir="auto" className="user-copy font-sans text-[14.5px]">{u.report.title ?? "Untitled"}</div>
                 <div className="text-text-mute">{u.report.author?.display_name ?? "—"}</div>
                 <div className="md:text-right">{u.price != null ? usd(u.price) : "—"}</div>
               </div>

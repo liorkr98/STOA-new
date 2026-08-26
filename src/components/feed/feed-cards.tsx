@@ -55,7 +55,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame>
           <CardHead label="The case" />
-          <h3 className="mt-2 font-display text-[1.25rem] font-semibold leading-[1.2] tracking-tight">{card.title}</h3>
+          <h3 className="user-copy mt-2 font-display text-[1.25rem] font-semibold leading-[1.2] tracking-tight" dir="auto">{card.title}</h3>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-text-mute">{card.body}</p>
         </CardFrame>
       );

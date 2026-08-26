@@ -70,11 +70,11 @@ export function FeedDiscussion({
       <Avatar src={c.author.avatarUrl} name={c.author.displayName} size="sm" className="mt-0.5" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="text-[0.8125rem] font-semibold text-text">{c.author.displayName}</span>
+          <span dir="auto" className="user-copy text-[0.8125rem] font-semibold text-text">{c.author.displayName}</span>
           {c.author.isAuthor ? <span className="num rounded-[var(--radius-tag)] border border-[var(--ink)] px-1 text-[10px] uppercase tracking-[0.14em] text-text">Author</span> : null}
           <span className="num text-[10px] uppercase tracking-[0.1em] text-text-faint">{sinceLabel(c.createdAt)}</span>
         </div>
-        <p className="mt-1 text-[0.9375rem] leading-relaxed text-text">
+        <p dir="auto" className="user-copy mt-1 text-[0.9375rem] leading-relaxed text-text">
           {c.replyingTo ? <span className="text-text-mute">@{c.replyingTo} </span> : null}
           {c.text}
         </p>
@@ -130,11 +130,12 @@ export function FeedDiscussion({
           ) : null}
           <div className="flex gap-2">
             <input
+              dir="auto"
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
               placeholder={replyTo ? "Write a reply" : "Ask the analyst, or add to the discussion"}
-              className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text focus-ring"
+              className="user-copy min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text focus-ring"
             />
             <button
               type="button"

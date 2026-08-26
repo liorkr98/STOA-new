@@ -126,8 +126,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </span>
       </div>
 
-      <h1 className="t-h1 mt-3">{headline}</h1>
-      {dek && <p className="t-body mt-3 text-lg">{dek}</p>}
+      <h1 className="t-h1 mt-3" dir="auto">{headline}</h1>
+      {dek && <p className="t-body mt-3 text-lg" dir="auto">{dek}</p>}
 
       {author && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">

@@ -53,6 +53,7 @@ export const TiptapEditor = memo(function TiptapEditor({
         attributes: {
           class: "stoa-prose focus:outline-none",
           spellcheck: "true",
+          dir: "auto",
         },
         handleDrop(view, event) {
           const raw = (event as DragEvent).dataTransfer?.getData("application/stoa-node");

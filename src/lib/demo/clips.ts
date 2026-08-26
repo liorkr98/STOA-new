@@ -11,8 +11,8 @@ export const DEMO_CLIP_COUNT = 8;
 export function demoClipPath(index: number): { src: string; poster: string } {
   const n = String((Math.abs(index) % DEMO_CLIP_COUNT) + 1).padStart(2, "0");
   return {
-    src: `/demo/clips/clip-${n}.mp4`,
-    poster: `/demo/clips/clip-${n}.jpg`,
+    src: `/demo/clips/clip-${n}.mp4?v=3`,
+    poster: `/demo/clips/clip-${n}.jpg?v=3`,
   };
 }
 

@@ -690,7 +690,7 @@ const FeedItem = function FeedItem({
                       className="!border-white/30"
                     />
                     <span className="min-w-0">
-                      <span className="block truncate text-[0.875rem] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+                      <span dir="auto" className="user-copy block truncate text-[0.875rem] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
                         {pub.analyst.displayName}
                       </span>
                       <span className="num block truncate text-[10px] uppercase tracking-[0.14em] text-white/75">
@@ -758,7 +758,7 @@ const FeedItem = function FeedItem({
         </div>
 
         {/* The headline sits under the frame, where it does not crowd the face. */}
-        <h2 className="line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight">
+        <h2 dir="auto" className="user-copy line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight">
           {pub.headline}
         </h2>
 
@@ -892,7 +892,7 @@ function DiscussionPanel({
             <span className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">
               Discussion{pub.ticker ? ` · ${pub.ticker}` : ""}
             </span>
-            <p className="mt-1 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-tight">
+            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-tight">
               {pub.headline}
             </p>
           </div>

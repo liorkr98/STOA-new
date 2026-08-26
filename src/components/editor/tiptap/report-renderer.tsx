@@ -39,7 +39,7 @@ export function TiptapReportRenderer({
     extensions,
     content: json,
     editorProps: {
-      attributes: { class: "stoa-prose stoa-prose--read focus:outline-none" },
+      attributes: { class: "stoa-prose stoa-prose--read focus:outline-none", dir: "auto" },
     },
   });
 
