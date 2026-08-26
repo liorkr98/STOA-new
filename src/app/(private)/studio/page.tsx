@@ -7,15 +7,14 @@ import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listClipsByCreator } from "@/lib/db/video-clips";
 import { formatDuration } from "@/lib/profile/build-profile-view";
 import { compact, pct } from "@/lib/format";
+import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Prediction, Report } from "@/lib/types";
 import { PublicationsView, type Publication, type PubState } from "@/components/studio/publications-view";
 
 export const metadata: Metadata = { title: "Publications" };
 
 function typeLabel(type: Report["type"]): string {
-  if (type === "research") return "RESEARCH";
-  if (type === "short_post") return "NOTE";
-  return "CALL";
+  return publicTypeLabel(type);
 }
 /** Only what is stored: a ready clip, a locked call, a written thesis. */
 function badgeFor(r: Report, hasVideo: boolean, hasCall: boolean): string {

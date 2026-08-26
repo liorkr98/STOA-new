@@ -599,6 +599,7 @@ const FeedItem = function FeedItem({
                     muted={muted}
                     paused={paused}
                     title={pub.headline}
+                    previewSeconds={pub.feedPreviewSeconds}
                     onProgress={(ratio) => {
                       if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
                       lastRatioRef.current = ratio;

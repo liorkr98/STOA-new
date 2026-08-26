@@ -18,7 +18,7 @@ export function ReportAccessEditor({
   report,
   plans,
 }: {
-  report: Pick<Report, "id" | "access" | "price" | "min_plan_rank" | "required_perks">;
+  report: Pick<Report, "id" | "access" | "price" | "min_plan_rank" | "required_perks" | "members_included">;
   plans: Plan[];
 }) {
   const [open, setOpen] = useState(false);
@@ -26,6 +26,7 @@ export function ReportAccessEditor({
   const [minPlanRank, setMinPlanRank] = useState(report.min_plan_rank ?? 0);
   const [requiredPerks, setRequiredPerks] = useState<string[]>(report.required_perks ?? []);
   const [price, setPrice] = useState(report.price ?? 7);
+  const [membersIncluded, setMembersIncluded] = useState(Boolean(report.members_included));
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +37,7 @@ export function ReportAccessEditor({
         id: report.id,
         access,
         price: access === "paid" ? price : null,
+        members_included: access === "paid" ? membersIncluded : false,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
       });
@@ -95,16 +97,27 @@ export function ReportAccessEditor({
             ))}
           </div>
           {access === "paid" && (
-            <label className="mt-2 block text-xs text-text-mute">
-              Price
-              <input
-                type="number"
-                min={1}
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                className={cn(inputClass, "num mt-1")}
-              />
-            </label>
+            <>
+              <label className="mt-2 block text-xs text-text-mute">
+                Price
+                <input
+                  type="number"
+                  min={1}
+                  value={price}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  className={cn(inputClass, "num mt-1")}
+                />
+              </label>
+              <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-text">
+                <input
+                  type="checkbox"
+                  checked={membersIncluded}
+                  onChange={(e) => setMembersIncluded(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>Members can open this without paying</span>
+              </label>
+            </>
           )}
           {access === "subscribers" && (
             <>

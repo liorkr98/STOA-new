@@ -33,6 +33,7 @@ import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
+import { publicTypeLabel } from "@/lib/compose/modes";
 
 export async function generateMetadata({
   params,
@@ -63,7 +64,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   const [unlocked, subscribed, liked, saved, wallet, comments, clip] = await Promise.all([
     userId && report.access === "paid" ? hasUnlocked(userId, id) : Promise.resolve(false),
-    userId && report.access === "subscribers"
+    userId &&
+      (report.access === "subscribers" || (report.access === "paid" && report.members_included))
       ? isSubscribed(userId, report.author_id)
       : Promise.resolve(false),
     userId ? hasLiked(userId, id) : Promise.resolve(false),
@@ -114,7 +116,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <ViewTracker reportId={id} />
 
       <div className="flex flex-wrap items-center gap-3">
-        <Tag>{report.type === "short_post" ? "Post" : report.type === "call" ? "Call" : "Research"}</Tag>
+        <Tag>{publicTypeLabel(report.type)}</Tag>
         {report.ticker && <TickerChip ticker={report.ticker} />}
         <span className="t-meta">
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}

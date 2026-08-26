@@ -49,7 +49,9 @@ export interface FeedPublication {
   durationSeconds: number;
   headline: string;
   deck: string | null;
-  typeLabel: "CALL" | "RESEARCH" | "NOTE";
+  typeLabel: "CALL" | "RESEARCH" | "NOTE" | "VIDEO";
+  /** When set, the Feed loops only this many seconds of the clip. */
+  feedPreviewSeconds: number | null;
   ticker: string | null;
   direction: Direction | null;
   themeTag: string | null;

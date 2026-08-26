@@ -46,7 +46,7 @@ export function MiniChart({ ticker }: { ticker: string }) {
           <Line
             type="monotone"
             dataKey="p"
-            stroke="var(--accent)"
+            stroke="var(--ink)"
             strokeWidth={2}
             dot={false}
           />

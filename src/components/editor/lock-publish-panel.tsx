@@ -82,6 +82,8 @@ export function LockPublishPanel({
   onAccess,
   price,
   onPrice,
+  membersIncluded,
+  onMembersIncluded,
   minPlanRank,
   onMinPlanRank,
   requiredPerks,
@@ -114,6 +116,8 @@ export function LockPublishPanel({
   onAccess: (v: AccessType) => void;
   price: number;
   onPrice: (v: number) => void;
+  membersIncluded: boolean;
+  onMembersIncluded: (v: boolean) => void;
   minPlanRank: number;
   onMinPlanRank: (v: number) => void;
   requiredPerks: string[];
@@ -256,8 +260,7 @@ export function LockPublishPanel({
             </span>
           </div>
           <p className="t-meta mb-3 text-[11px] leading-relaxed">
-            Add a ticker to lock a call at publish. Leave blank for overview research. Press Enter or
-            leave the ticker field to run attestation.
+            Add a ticker to lock a call at publish. Leave blank if this piece has no target.
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -387,6 +390,7 @@ export function LockPublishPanel({
           ))}
         </div>
         {access === "paid" && (
+          <>
           <label className="mt-2.5 block text-xs font-medium text-text-mute">
             Price (you keep 90%)
             <div className="relative mt-1">
@@ -402,6 +406,21 @@ export function LockPublishPanel({
               />
             </div>
           </label>
+          <label className="mt-2.5 flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={membersIncluded}
+              onChange={(e) => onMembersIncluded(e.target.checked)}
+              className="mt-0.5 accent-[var(--ink)]"
+            />
+            <span>
+              <span className="font-medium">Members can open this without paying</span>
+              <span className="t-meta mt-0.5 block text-[11px]">
+                Anyone subscribed to you is entitled, same as a buyer.
+              </span>
+            </span>
+          </label>
+          </>
         )}
         {access === "subscribers" && (
           <>

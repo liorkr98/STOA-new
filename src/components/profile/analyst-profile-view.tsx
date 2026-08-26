@@ -20,7 +20,7 @@ export interface ProfilePublication {
   href: string;
   /** "video" when a ready clip exists; "written" renders as a typographic tile. */
   kind: "video" | "written";
-  typeLabel: "CALL" | "RESEARCH" | "NOTE";
+  typeLabel: "CALL" | "RESEARCH" | "NOTE" | "VIDEO";
   /** Set only when the publication carries a locked call (anchoring rule). */
   ticker: string | null;
   direction: Direction | null;

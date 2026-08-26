@@ -15,6 +15,7 @@ export function NativeClip({
   title,
   className,
   onProgress,
+  previewSeconds,
 }: {
   src: string;
   poster?: string | null;
@@ -23,6 +24,8 @@ export function NativeClip({
   title: string;
   className?: string;
   onProgress?: (ratio: number) => void;
+  /** Loop only this many seconds when the publication is a long clip. */
+  previewSeconds?: number | null;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -42,12 +45,17 @@ export function NativeClip({
   useEffect(() => {
     const el = ref.current;
     if (!el || !onProgress) return;
+    const cap = previewSeconds && previewSeconds > 0 ? previewSeconds : null;
     const onTime = () => {
-      if (el.duration > 0) onProgress(Math.min(1, el.currentTime / el.duration));
+      if (cap && el.currentTime >= cap) {
+        el.currentTime = 0;
+      }
+      const denom = cap ? cap : el.duration;
+      if (denom > 0) onProgress(Math.min(1, el.currentTime / denom));
     };
     el.addEventListener("timeupdate", onTime);
     return () => el.removeEventListener("timeupdate", onTime);
-  }, [onProgress]);
+  }, [onProgress, previewSeconds]);
 
   return (
     <video

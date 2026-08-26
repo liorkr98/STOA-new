@@ -3,16 +3,11 @@ import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, Heart, Lock, Eye, BadgeCheck } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { compact } from "@/lib/format";
+import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { Tag } from "./ui/tag";
 import { PredictionCard } from "./prediction-card";
-
-const typeLabel: Record<Report["type"], string> = {
-  research: "Research",
-  call: "Call",
-  short_post: "Post",
-};
 
 export function ReportCard({ report, promoted = false }: { report: Report; promoted?: boolean }) {
   const author = report.author;
@@ -51,7 +46,7 @@ export function ReportCard({ report, promoted = false }: { report: Report; promo
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Tag>{typeLabel[report.type]}</Tag>
+          <Tag>{publicTypeLabel(report.type)}</Tag>
         </div>
       </div>
 

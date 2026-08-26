@@ -56,6 +56,9 @@ async function saveDraftBody(
     summary: input.summary ?? null,
     access: input.access,
     price: input.access === "paid" ? (input.price ?? null) : null,
+    members_included: input.access === "paid" ? Boolean(input.members_included) : false,
+    linked_report_id: input.linked_report_id ?? null,
+    feed_preview_seconds: input.feed_preview_seconds ?? null,
     min_plan_rank:
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
     required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
@@ -161,7 +164,7 @@ export async function validateAndPublishReport(
     .eq("author_id", userId);
   if (pubErr) throw new PublishReportError(pubErr.message, 400);
 
-  const wantsPrediction = input.type !== "short_post" && input.ticker && input.direction;
+  const wantsPrediction = Boolean(input.ticker && input.direction);
   let hashTargetPrice: number | null = null;
   let hashHorizonDate: string | null = null;
 

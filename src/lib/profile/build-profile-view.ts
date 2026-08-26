@@ -10,6 +10,7 @@ import { isFollowing, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
 import { pct, compact, usd } from "@/lib/format";
+import { publicTypeLabel } from "@/lib/compose/modes";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
@@ -33,9 +34,7 @@ function initialsOf(name: string) {
 }
 
 function typeLabel(type: Report["type"]): ProfilePublication["typeLabel"] {
-  if (type === "research") return "RESEARCH";
-  if (type === "short_post") return "NOTE";
-  return "CALL";
+  return publicTypeLabel(type);
 }
 
 export function formatDuration(seconds: number): string {

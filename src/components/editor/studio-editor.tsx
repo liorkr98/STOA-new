@@ -17,7 +17,7 @@ import {
   parseTiptapDoc,
   tiptapPlainText,
 } from "@/lib/editor/tiptap/serialize";
-import type { AccessType, ContentType, Direction, Report } from "@/lib/types";
+import type { AccessType, Direction, Report } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
 import { TiptapEditor } from "@/components/editor/tiptap/tiptap-editor";
 import { captureChartScreenshots } from "@/lib/editor/tiptap/nodes/chart-capture";
@@ -71,12 +71,17 @@ import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import type { CardKind } from "@/lib/feed/card-schema";
 import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
+import { CompanionPicker } from "@/components/compose/companion-picker";
+import {
+  COMPOSE_MODES,
+  FEED_PREVIEW_LONG_SECONDS,
+  POST_MAX_CHARS,
+  modeFromType,
+  typeFromMode,
+  type ComposeMode,
+} from "@/lib/compose/modes";
 
-const types: { key: ContentType; label: string }[] = [
-  { key: "research", label: "Research" },
-  { key: "call", label: "Call" },
-  { key: "short_post", label: "Post" },
-];
+const types = COMPOSE_MODES;
 
 /**
  * Bring an existing draft into the Tiptap editor. New drafts are already
@@ -141,7 +146,14 @@ export function StudioEditor({
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
-  const [type, setType] = useState<ContentType>(initialDraft?.type ?? "research");
+  const [mode, setMode] = useState<ComposeMode>(() => modeFromType(initialDraft?.type));
+  const type = typeFromMode(mode);
+
+  function chooseMode(next: ComposeMode) {
+    setMode(next);
+    if (next === "video") setVideoEdit((e) => e ?? emptyEdit(90));
+    if (next === "research") setHasResearch(true);
+  }
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
@@ -164,9 +176,11 @@ export function StudioEditor({
   // research, both or neither, and adding one is not a question asked before
   // the creator has written anything.
   const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() =>
-    hasVideoClip ? emptyEdit(90) : null,
+    hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null,
   );
-  const [hasResearch, setHasResearch] = useState(Boolean(initialDraft?.body));
+  const [hasResearch, setHasResearch] = useState(
+    () => modeFromType(initialDraft?.type) === "research" || Boolean(initialDraft?.body),
+  );
   const [videoOpen, setVideoOpen] = useState(true);
   const [researchOpen, setResearchOpen] = useState(true);
 
@@ -189,6 +203,11 @@ export function StudioEditor({
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
+  const [membersIncluded, setMembersIncluded] = useState(Boolean(initialDraft?.members_included));
+  const [linkedReportId, setLinkedReportId] = useState<string | null>(initialDraft?.linked_report_id ?? null);
+  const [videoLength, setVideoLength] = useState<"short" | "long">(
+    initialDraft?.feed_preview_seconds ? "long" : "short",
+  );
   const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
   const [requiredPerks, setRequiredPerks] = useState<string[]>(initialDraft?.required_perks ?? []);
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
@@ -233,7 +252,7 @@ export function StudioEditor({
   // over a row publishReport just (or is concurrently) flipping to "published".
   const isPublishingRef = useRef(false);
 
-  const hasCard = type !== "short_post";
+  const hasCard = true;
   const bodyJson = useMemo(() => JSON.stringify(docJson), [docJson]);
 
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
@@ -302,7 +321,7 @@ export function StudioEditor({
     setCards((cs) => orderedDeck([...cs, card]));
     setSelectedCardId(card.id);
     dirtyRef.current = true;
-  }, []);
+  }, [setSelectedCardId]);
 
   const updateCard = useCallback((next: DraftCard) => {
     setCards((cs) => cs.map((c) => (c.id === next.id ? next : c)));
@@ -394,7 +413,7 @@ export function StudioEditor({
       dirtyRef.current = true;
       toast.success(`${cardName(card)} added to the research`);
     },
-    [cards],
+    [cards, setResearchOpen, setRailDrawerOpen],
   );
 
   /** A card dropped anywhere in the research body lands where it was dropped. */
@@ -408,14 +427,14 @@ export function StudioEditor({
       const at = editor?.view.posAtCoords({ left: e.clientX, top: e.clientY })?.pos;
       placeCardInResearch(cardId, at);
     },
-    [placeCardInResearch],
+    [placeCardInResearch, setResearchDropActive],
   );
 
   const runAssistant = useCallback((action: AssistantAction) => {
     setAskSeed(action.prompt);
     setAskOpen(true);
     setRailDrawerOpen(false);
-  }, []);
+  }, [setAskSeed, setAskOpen, setRailDrawerOpen]);
 
   const applyTemplate = useCallback(
     async (templateId: string) => {
@@ -475,16 +494,20 @@ export function StudioEditor({
         id: draftId,
         type,
         title: type === "short_post" ? undefined : title,
-        summary: summary || plainText.slice(0, 280),
+        summary: summary || (type === "short_post" ? "" : plainText.slice(0, 280)),
         body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
         access,
         price: access === "paid" ? Number(price) : null,
+        members_included: membersIncluded,
+        linked_report_id: linkedReportId,
+        feed_preview_seconds:
+          mode === "video" && videoLength === "long" ? FEED_PREVIEW_LONG_SECONDS : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
-        ticker: hasCard ? ticker : null,
-        direction: hasCard ? direction : undefined,
-        target_price: hasCard && target ? Number(target) : null,
-        horizon_days: hasCard ? horizon : undefined,
+        ticker: ticker.trim() ? ticker : null,
+        direction: ticker.trim() ? direction : undefined,
+        target_price: ticker.trim() && target ? Number(target) : null,
+        horizon_days: ticker.trim() ? horizon : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
       });
@@ -520,7 +543,10 @@ export function StudioEditor({
     direction,
     target,
     horizon,
-    hasCard,
+    membersIncluded,
+    linkedReportId,
+    videoLength,
+    mode,
     tags,
     deck,
   ]);
@@ -542,20 +568,25 @@ export function StudioEditor({
   // server-side enforcement in publishReport.
   // Research may publish as overview without a ticker/locked call.
   // Calls still require a ticker so there is something to lock.
-  const lockingCall = hasCard && Boolean(ticker.trim());
+  const lockingCall = Boolean(ticker.trim());
   const hasVideo = videoEdit !== null;
+  const showThesisTools = mode === "research";
+  const showToolboxRail = mode === "research";
+  const feedPreviewSeconds = mode === "video" && videoLength === "long" ? FEED_PREVIEW_LONG_SECONDS : null;
+
   const publishBlockedBy: string | null = (() => {
-    if (type === "short_post") {
-      return summary.trim() ? null : "Write your post first.";
+    if (mode === "short_post") {
+      const text = summary.trim();
+      if (!text) return "Write your post first.";
+      if (text.length > POST_MAX_CHARS) return `Posts are ${POST_MAX_CHARS} characters.`;
+      if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
+      return null;
     }
-    if (!title.trim()) return "Add a headline.";
-    // A video reaches the Feed and Explore, and the primary tag is what puts
-    // it somewhere, so it stays required exactly where it was before.
+    if (mode === "video" && !hasVideo) return "Add a video.";
+    if (mode !== "video" && !title.trim()) return "Add a headline.";
+    if (mode === "video" && !title.trim() && !summary.trim()) return "Add a headline or a one-line dek.";
     if (hasVideo && !tags.primary) return "Choose a primary tag.";
-    if (type === "call" && !ticker.trim()) {
-      return "Add a ticker to lock this call, or switch to Research for an overview.";
-    }
-    if (plainText.trim() && !factCheck) return "Run the fact-check on your draft.";
+    if (hasResearch && plainText.trim() && !factCheck) return "Run the fact-check on your draft.";
     if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
     return null;
   })();
@@ -564,6 +595,11 @@ export function StudioEditor({
     setError(null);
     isPublishingRef.current = true;
     const editor = editorRef.current;
+    const extras = {
+      members_included: membersIncluded,
+      linked_report_id: linkedReportId,
+      feed_preview_seconds: feedPreviewSeconds,
+    };
     try {
       let id = draftId;
       // Screenshot every chart between "Lock it in" and the publish call, so
@@ -580,7 +616,8 @@ export function StudioEditor({
             access,
             price: access === "paid" ? Number(price) : null,
             min_plan_rank: access === "subscribers" ? minPlanRank : 0,
-        required_perks: access === "subscribers" ? requiredPerks : [],
+            required_perks: access === "subscribers" ? requiredPerks : [],
+            ...extras,
             ticker: lockingCall ? ticker : null,
             direction: lockingCall ? direction : undefined,
             target_price: lockingCall && target ? Number(target) : null,
@@ -614,6 +651,7 @@ export function StudioEditor({
         price: access === "paid" ? Number(price) : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
+        ...extras,
         ticker: lockingCall ? ticker : null,
         direction: lockingCall ? direction : undefined,
         target_price: lockingCall && target ? Number(target) : null,
@@ -661,6 +699,13 @@ export function StudioEditor({
     disclosure,
     tags,
     deck,
+    membersIncluded,
+    linkedReportId,
+    feedPreviewSeconds,
+    setConfirmOpen,
+    setError,
+    setDraftId,
+    setCaptureStatus,
   ]);
 
   function onPublishClick() {
@@ -715,6 +760,12 @@ export function StudioEditor({
         hasCall={lockingCall}
         callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
       />
+      <CompanionPicker
+        currentId={draftId}
+        mode={mode}
+        value={linkedReportId}
+        onChange={setLinkedReportId}
+      />
       <LockPublishPanel
         hasCard={hasCard}
         ticker={ticker}
@@ -729,6 +780,8 @@ export function StudioEditor({
         onAccess={setAccess}
         price={price}
         onPrice={setPrice}
+        membersIncluded={membersIncluded}
+        onMembersIncluded={setMembersIncluded}
         minPlanRank={minPlanRank}
         onMinPlanRank={setMinPlanRank}
         requiredPerks={requiredPerks}
@@ -763,14 +816,16 @@ export function StudioEditor({
           <span className="hidden sm:inline">Studio</span>
         </Link>
 
+        {showToolboxRail ? (
         <RailOpenButton
           onClick={() => setRailDrawerOpen(true)}
           cardCount={cards.length}
         />
+        ) : null}
 
         <div
           role="radiogroup"
-          aria-label="Report type"
+          aria-label="Publication format"
           className="inline-flex shrink-0 rounded-[var(--radius-btn)] border border-border bg-surface p-0.5"
         >
           {types.map((t) => (
@@ -778,11 +833,11 @@ export function StudioEditor({
               key={t.key}
               type="button"
               role="radio"
-              aria-checked={type === t.key}
-              onClick={() => setType(t.key)}
+              aria-checked={mode === t.key}
+              onClick={() => chooseMode(t.key)}
               className={cn(
                 "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors focus-ring",
-                type === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
+                mode === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
               )}
             >
               {t.label}
@@ -800,39 +855,39 @@ export function StudioEditor({
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {hasCard && (
-            <>
-              {editor && (
-                <VisualizeSelectionMenu
-                  editor={editor}
-                  reportTicker={ticker || undefined}
-                  variant="button"
-                />
+          {showThesisTools && editor ? (
+            <VisualizeSelectionMenu
+              editor={editor}
+              reportTicker={ticker || undefined}
+              variant="button"
+            />
+          ) : null}
+          {showThesisTools ? (
+            <button
+              type="button"
+              aria-label="Report templates"
+              onClick={() => setTemplateOpen(true)}
+              className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+            >
+              <SquaresFour size={15} />
+              <span className="hidden sm:inline">Templates</span>
+            </button>
+          ) : null}
+          {showThesisTools ? (
+            <button
+              type="button"
+              aria-label="Ask AI"
+              aria-pressed={askOpen}
+              onClick={() => setAskOpen((o) => !o)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
+                askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
               )}
-              <button
-                type="button"
-                aria-label="Report templates"
-                onClick={() => setTemplateOpen(true)}
-                className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
-              >
-                <SquaresFour size={15} />
-                <span className="hidden sm:inline">Templates</span>
-              </button>
-              <button
-                type="button"
-                aria-label="Ask AI"
-                aria-pressed={askOpen}
-                onClick={() => setAskOpen((o) => !o)}
-                className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
-                  askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
-                )}
-              >
-                <Sparkle size={15} weight="fill" />
-                <span className="hidden sm:inline">Ask AI</span>
-              </button>
-            </>
-          )}
+            >
+              <Sparkle size={15} weight="fill" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </button>
+          ) : null}
           <Button
             variant="secondary"
             size="sm"
@@ -870,6 +925,7 @@ export function StudioEditor({
 
       {/* LEFT is what you build with, RIGHT is what you publish as. */}
       <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
+        {showToolboxRail ? (
         <ComposeRail
           collapsed={railCollapsed}
           onToggle={() => setRailCollapsed((c) => !c)}
@@ -877,6 +933,7 @@ export function StudioEditor({
         >
           {toolbox}
         </ComposeRail>
+        ) : null}
 
         {/* Canvas */}
         <div className="min-w-0 flex-1">
@@ -900,14 +957,32 @@ export function StudioEditor({
             <label htmlFor="report-summary" className="sr-only">
               {type === "short_post" ? "Post text" : "Dek"}
             </label>
+            {type === "short_post" ? (
+              <>
+                <textarea
+                  id="report-summary"
+                  value={summary}
+                  maxLength={POST_MAX_CHARS}
+                  onChange={(e) => setSummary(e.target.value.slice(0, POST_MAX_CHARS))}
+                  placeholder="A short take. Ticker and target sit on the right."
+                  rows={5}
+                  dir="auto"
+                  className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
+                />
+                <p className="num mb-8 text-[11px] uppercase tracking-[0.12em] text-text-faint">
+                  {summary.trim().length} / {POST_MAX_CHARS}
+                </p>
+              </>
+            ) : (
             <input
               id="report-summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder={type === "short_post" ? "What's on your mind?" : "One line under the headline"}
+              placeholder="One line under the headline"
               dir="auto"
               className="user-copy mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
             />
+            )}
 
             {/* VIDEO. Stays mounted once added so removing and re-adding it
                 never discards a chosen clip, its trim or its overlays. */}
@@ -922,11 +997,49 @@ export function StudioEditor({
                   onRemove={() => setVideoEdit(null)}
                 />
                 <div className={cn("mt-4", !videoOpen && "hidden")}>
+                  {mode === "video" ? (
+                    <div className="mb-4 flex gap-1.5" role="radiogroup" aria-label="Clip length">
+                      {(["short", "long"] as const).map((len) => (
+                        <button
+                          key={len}
+                          type="button"
+                          role="radio"
+                          aria-checked={videoLength === len}
+                          onClick={() => setVideoLength(len)}
+                          className={cn(
+                            "rounded-[var(--radius-btn)] border px-3 py-1.5 text-xs font-medium focus-ring",
+                            videoLength === len
+                              ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+                              : "border-border text-text-mute hover:text-text",
+                          )}
+                        >
+                          {len === "short" ? "Short · full clip in the Feed" : "Long · 45 second Feed preview"}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                   <VideoRung
                     value={videoEdit ?? undefined}
                     onChange={setVideoEdit}
                     cards={deck}
                     chrome={false}
+                    ticker={ticker.trim() || undefined}
+                    toolbox={
+                      mode === "video" ? (
+                        <CardTray
+                          cards={deck}
+                          usage={usage}
+                          selectedId={selectedCardId}
+                          onSelect={setSelectedCardId}
+                          onAdd={() => setLibraryOpen(true)}
+                          onReorder={reorderCards}
+                          onPlaceInVideo={placeCardInVideo}
+                          onPlaceInResearch={placeCardInResearch}
+                          hasVideo={hasVideo}
+                          hasResearch={false}
+                        />
+                      ) : undefined
+                    }
                   />
                 </div>
               </section>
@@ -996,7 +1109,7 @@ export function StudioEditor({
               </div>
             ) : null}
 
-            {type === "short_post" ? null : (
+            {mode === "research" ? (
               <AddModuleRow
                 video={hasVideo}
                 research={hasResearch}
@@ -1009,7 +1122,7 @@ export function StudioEditor({
                   setResearchOpen(true);
                 }}
               />
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -1027,9 +1140,11 @@ export function StudioEditor({
         )}
       </div>
 
+      {showToolboxRail ? (
       <ComposeRailDrawer open={railDrawerOpen} onClose={() => setRailDrawerOpen(false)}>
         {toolbox}
       </ComposeRailDrawer>
+      ) : null}
 
       <CardLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onPick={addCard} />
 

@@ -32,6 +32,7 @@ const TYPE_LABEL: Record<string, string> = {
   call: "CALL",
   research: "RESEARCH",
   short_post: "NOTE",
+  video: "VIDEO",
 };
 
 export function typeLabel(type: string): string {
