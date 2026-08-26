@@ -384,6 +384,48 @@ export function CardEditor({
         </>
       ) : null}
 
+      {card.kind === "chart" ? (
+        <>
+          <Field label="Ticker">
+            <input
+              value={String(p.ticker ?? "")}
+              onChange={(e) => set({ ticker: e.target.value.toUpperCase() })}
+              placeholder="NVDA"
+              className={cn(inputClass, "num")}
+            />
+          </Field>
+          <Field label="Source">
+            <div className="flex gap-1" role="radiogroup" aria-label="Chart source">
+              {(["yahoo", "tradingview"] as const).map((eng) => (
+                <button
+                  key={eng}
+                  type="button"
+                  role="radio"
+                  aria-checked={p.engine === eng}
+                  onClick={() => set({ engine: eng })}
+                  className={cn(
+                    "rounded-[var(--radius-btn)] border px-2 py-1.5 text-[11px] focus-ring",
+                    p.engine === eng
+                      ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+                      : "border-border text-text-mute hover:text-text",
+                  )}
+                >
+                  {eng === "yahoo" ? "Yahoo Finance" : "TradingView"}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Caption">
+            <input
+              value={String(p.caption ?? "")}
+              onChange={(e) => set({ caption: e.target.value })}
+              placeholder="What the tape is showing"
+              className={inputClass}
+            />
+          </Field>
+        </>
+      ) : null}
+
       {card.kind === "steelman" ? (
         <>
           <Field label="The best case against you">
@@ -410,7 +452,7 @@ export function CardEditor({
       {card.kind === "unlock" ? (
         <p className="text-[0.8125rem] leading-snug text-text-mute">
           The call to action. It is always last and always free, because it is what sells the rest.
-          Its price comes from Access in the right rail.
+          Its price comes from Access when you publish.
         </p>
       ) : null}
 

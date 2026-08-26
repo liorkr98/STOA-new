@@ -4,11 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, SidebarSimple, RocketLaunch, Sparkle, SquaresFour } from "@phosphor-icons/react";
-import { Film, FileText } from "lucide-react";
+import { ArrowLeft, FloppyDisk, RocketLaunch, SquaresFour } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
-import { Button, buttonClass } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
 import { documentPlainText, parseDocument } from "@/lib/editor/document";
 import {
@@ -53,7 +52,6 @@ import {
   ComposeRailDrawer,
   RailOpenButton,
 } from "@/components/compose/compose-rail";
-import { ModuleHeader, AddModuleRow } from "@/components/compose/compose-modules";
 import { PromotePanel } from "@/components/compose/promote-panel";
 import {
   blankCard,
@@ -65,13 +63,16 @@ import {
   type DraftCard,
 } from "@/lib/compose/cards";
 import { setComposeDeck } from "@/lib/compose/card-store";
-import { emptyEdit, fmtTimecode, type VideoEdit } from "@/lib/compose/overlays";
+import { emptyEdit, type VideoEdit } from "@/lib/compose/overlays";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import type { CardKind } from "@/lib/feed/card-schema";
 import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
 import { CompanionPicker } from "@/components/compose/companion-picker";
+import { PublishDetailsDialog } from "@/components/compose/publish-details";
+import { CardPreview } from "@/components/compose/card-preview";
+import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import {
   COMPOSE_MODES,
   FEED_PREVIEW_LONG_SECONDS,
@@ -152,7 +153,6 @@ export function StudioEditor({
   function chooseMode(next: ComposeMode) {
     setMode(next);
     if (next === "video") setVideoEdit((e) => e ?? emptyEdit(90));
-    if (next === "research") setHasResearch(true);
   }
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
@@ -178,11 +178,6 @@ export function StudioEditor({
   const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() =>
     hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null,
   );
-  const [hasResearch, setHasResearch] = useState(
-    () => modeFromType(initialDraft?.type) === "research" || Boolean(initialDraft?.body),
-  );
-  const [videoOpen, setVideoOpen] = useState(true);
-  const [researchOpen, setResearchOpen] = useState(true);
 
   // The deck. One pool for the whole publication, not a step inside the video.
   // What the creator authored. The CTA is not in here: it is derived from
@@ -224,7 +219,7 @@ export function StudioEditor({
     compDetail: "",
     viewsCertified: false,
   });
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [showTemplateStrip, setShowTemplateStrip] = useState(() =>
@@ -390,7 +385,6 @@ export function StudioEditor({
           ],
         };
       });
-      setVideoOpen(true);
       setRailDrawerOpen(false);
       dirtyRef.current = true;
       toast.success(`${cardName(card)} added to the video`);
@@ -408,12 +402,11 @@ export function StudioEditor({
       if (typeof at === "number") editor.chain().focus().insertContentAt(at, node).run();
       else editor.chain().focus().insertContent(node).run();
       setResearchCardIds(collectCardIds(editor.getJSON()));
-      setResearchOpen(true);
       setRailDrawerOpen(false);
       dirtyRef.current = true;
       toast.success(`${cardName(card)} added to the research`);
     },
-    [cards, setResearchOpen, setRailDrawerOpen],
+    [cards, setRailDrawerOpen],
   );
 
   /** A card dropped anywhere in the research body lands where it was dropped. */
@@ -569,27 +562,33 @@ export function StudioEditor({
   // Research may publish as overview without a ticker/locked call.
   // Calls still require a ticker so there is something to lock.
   const lockingCall = Boolean(ticker.trim());
-  const hasVideo = videoEdit !== null;
-  const showThesisTools = mode === "research";
-  const showToolboxRail = mode === "research";
+  const showVideo = mode === "video";
+  const showResearch = mode === "research";
+  const hasVideo = showVideo && videoEdit !== null;
+  const showToolboxRail = true;
   const feedPreviewSeconds = mode === "video" && videoLength === "long" ? FEED_PREVIEW_LONG_SECONDS : null;
 
-  const publishBlockedBy: string | null = (() => {
+  const contentBlockedBy: string | null = (() => {
     if (mode === "short_post") {
       const text = summary.trim();
       if (!text) return "Write your post first.";
       if (text.length > POST_MAX_CHARS) return `Posts are ${POST_MAX_CHARS} characters.`;
-      if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
       return null;
     }
     if (mode === "video" && !hasVideo) return "Add a video.";
     if (mode !== "video" && !title.trim()) return "Add a headline.";
     if (mode === "video" && !title.trim() && !summary.trim()) return "Add a headline or a one-line dek.";
-    if (hasVideo && !tags.primary) return "Choose a primary tag.";
-    if (hasResearch && plainText.trim() && !factCheck) return "Run the fact-check on your draft.";
+    return null;
+  })();
+
+  const detailsBlockedBy: string | null = (() => {
+    if (mode === "video" && !tags.primary) return "Choose a primary tag.";
+    if (showResearch && plainText.trim() && !factCheck) return "Run the fact-check in Assistant.";
     if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
     return null;
   })();
+
+  const publishBlockedBy = contentBlockedBy ?? detailsBlockedBy;
 
   const doPublish = useCallback(async () => {
     setError(null);
@@ -708,12 +707,22 @@ export function StudioEditor({
     setCaptureStatus,
   ]);
 
+  function onDetailsClick() {
+    if (contentBlockedBy) {
+      toast.message(contentBlockedBy);
+      return;
+    }
+    setPanelOpen(true);
+  }
+
   function onPublishClick() {
-    // The publish requirements live in the panel; if anything is missing,
-    // open the panel so the author sees exactly what is left.
-    if (publishBlockedBy) {
+    if (contentBlockedBy) {
+      toast.message(contentBlockedBy);
+      return;
+    }
+    if (detailsBlockedBy) {
       setPanelOpen(true);
-      toast.message(publishBlockedBy);
+      toast.message(detailsBlockedBy);
       return;
     }
     if (lockingCall) {
@@ -732,22 +741,60 @@ export function StudioEditor({
     }
   }
 
-  /* LEFT: what you build with. */
+  /* LEFT: Assistant, plus the card deck on Research. */
   const toolbox = (
     <>
-      <CardTray
-        cards={deck}
-        usage={usage}
-        selectedId={selectedCardId}
-        onSelect={setSelectedCardId}
-        onAdd={() => setLibraryOpen(true)}
-        onReorder={reorderCards}
-        onPlaceInVideo={placeCardInVideo}
-        onPlaceInResearch={placeCardInResearch}
-        hasVideo={hasVideo}
-        hasResearch={hasResearch}
-      />
-      <AiAssistant onRun={runAssistant} credits={credits} />
+      {showResearch ? (
+        <CardTray
+          cards={deck}
+          usage={usage}
+          selectedId={selectedCardId}
+          onSelect={setSelectedCardId}
+          onAdd={() => setLibraryOpen(true)}
+          onReorder={reorderCards}
+          onPlaceInVideo={placeCardInVideo}
+          onPlaceInResearch={placeCardInResearch}
+          hasVideo={false}
+          hasResearch
+        />
+      ) : null}
+      <AiAssistant
+        onRun={runAssistant}
+        credits={credits}
+        askOpen={askOpen}
+        onAsk={() => {
+          setAskOpen(true);
+          setRailDrawerOpen(false);
+        }}
+      >
+        {showResearch ? (
+          <FactCheckerPanel
+            text={plainText}
+            credits={credits}
+            initialResult={factCheck}
+            onCreditsChange={setCredits}
+            onResult={setFactCheck}
+          />
+        ) : null}
+        {showResearch && editor ? (
+          <VisualizeSelectionMenu
+            editor={editor}
+            reportTicker={ticker || undefined}
+            variant="button"
+          />
+        ) : null}
+        {showResearch ? (
+          <button
+            type="button"
+            aria-label="Report templates"
+            onClick={() => setTemplateOpen(true)}
+            className="flex h-8 w-full items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+          >
+            <SquaresFour size={15} />
+            Templates
+          </button>
+        ) : null}
+      </AiAssistant>
     </>
   );
 
@@ -787,11 +834,6 @@ export function StudioEditor({
         requiredPerks={requiredPerks}
         onRequiredPerks={setRequiredPerks}
         plans={plans}
-        plainText={plainText}
-        credits={credits}
-        onCreditsChange={setCredits}
-        factCheck={factCheck}
-        onFactCheck={setFactCheck}
         disclosure={disclosure}
         onDisclosure={setDisclosure}
         publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
@@ -855,39 +897,6 @@ export function StudioEditor({
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {showThesisTools && editor ? (
-            <VisualizeSelectionMenu
-              editor={editor}
-              reportTicker={ticker || undefined}
-              variant="button"
-            />
-          ) : null}
-          {showThesisTools ? (
-            <button
-              type="button"
-              aria-label="Report templates"
-              onClick={() => setTemplateOpen(true)}
-              className="flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
-            >
-              <SquaresFour size={15} />
-              <span className="hidden sm:inline">Templates</span>
-            </button>
-          ) : null}
-          {showThesisTools ? (
-            <button
-              type="button"
-              aria-label="Ask AI"
-              aria-pressed={askOpen}
-              onClick={() => setAskOpen((o) => !o)}
-              className={cn(
-                "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 text-xs font-medium transition-colors focus-ring",
-                askOpen ? "border-accent/40 bg-accent-weak text-accent" : "border-border text-text-mute hover:text-text",
-              )}
-            >
-              <Sparkle size={15} weight="fill" />
-              <span className="hidden sm:inline">Ask AI</span>
-            </button>
-          ) : null}
           <Button
             variant="secondary"
             size="sm"
@@ -897,29 +906,10 @@ export function StudioEditor({
             <FloppyDisk size={16} />
             <span className="hidden sm:inline">Save draft</span>
           </Button>
-          <Button size="sm" disabled={pending} onClick={onPublishClick} className="shrink-0">
+          <Button size="sm" disabled={pending} onClick={onDetailsClick} className="shrink-0">
             <RocketLaunch size={15} weight="fill" />
-            {pending ? "Publishing..." : lockingCall ? (
-              <>
-                <span className="sm:hidden">Lock</span>
-                <span className="hidden sm:inline">Publish & Lock</span>
-              </>
-            ) : (
-              "Publish"
-            )}
+            {pending ? "Publishing..." : "Publish"}
           </Button>
-          <button
-            type="button"
-            aria-label={panelOpen ? "Hide publish panel" : "Show publish panel"}
-            aria-pressed={panelOpen}
-            onClick={() => setPanelOpen((o) => !o)}
-            className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] border transition-colors focus-ring",
-              panelOpen ? "border-border-strong bg-surface-2 text-text" : "border-border text-text-mute hover:text-text",
-            )}
-          >
-            <SidebarSimple size={16} />
-          </button>
         </div>
       </div>
 
@@ -964,7 +954,7 @@ export function StudioEditor({
                   value={summary}
                   maxLength={POST_MAX_CHARS}
                   onChange={(e) => setSummary(e.target.value.slice(0, POST_MAX_CHARS))}
-                  placeholder="A short take. Ticker and target sit on the right."
+                  placeholder="A short take."
                   rows={5}
                   dir="auto"
                   className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
@@ -984,118 +974,112 @@ export function StudioEditor({
             />
             )}
 
-            {/* VIDEO. Stays mounted once added so removing and re-adding it
-                never discards a chosen clip, its trim or its overlays. */}
-            {hasVideo ? (
-              <section aria-label="Video module" className="mb-10">
-                <ModuleHeader
-                  icon={<Film size={14} />}
-                  label="Video"
-                  state={videoEdit ? fmtTimecode(videoEdit.trimEnd - videoEdit.trimStart).replace(/\.0$/, "") : null}
-                  open={videoOpen}
-                  onToggle={() => setVideoOpen((o) => !o)}
-                  onRemove={() => setVideoEdit(null)}
+            {/* VIDEO format only. Research and Post are text. */}
+            {showVideo ? (
+              <section aria-label="Video" className="mb-10">
+                <div className="mb-4 flex gap-1.5" role="radiogroup" aria-label="Clip length">
+                  {(["short", "long"] as const).map((len) => (
+                    <button
+                      key={len}
+                      type="button"
+                      role="radio"
+                      aria-checked={videoLength === len}
+                      onClick={() => setVideoLength(len)}
+                      className={cn(
+                        "rounded-[var(--radius-btn)] border px-3 py-1.5 text-xs font-medium focus-ring",
+                        videoLength === len
+                          ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+                          : "border-border text-text-mute hover:text-text",
+                      )}
+                    >
+                      {len === "short" ? "Short · full clip in the Feed" : "Long · 45 second Feed preview"}
+                    </button>
+                  ))}
+                </div>
+                <VideoRung
+                  value={videoEdit ?? undefined}
+                  onChange={setVideoEdit}
+                  cards={deck}
+                  chrome={false}
+                  ticker={ticker.trim() || undefined}
+                  toolbox={
+                    <CardTray
+                      cards={deck}
+                      usage={usage}
+                      selectedId={selectedCardId}
+                      onSelect={setSelectedCardId}
+                      onAdd={() => setLibraryOpen(true)}
+                      onReorder={reorderCards}
+                      onPlaceInVideo={placeCardInVideo}
+                      onPlaceInResearch={placeCardInResearch}
+                      hasVideo
+                      hasResearch={false}
+                    />
+                  }
                 />
-                <div className={cn("mt-4", !videoOpen && "hidden")}>
-                  {mode === "video" ? (
-                    <div className="mb-4 flex gap-1.5" role="radiogroup" aria-label="Clip length">
-                      {(["short", "long"] as const).map((len) => (
-                        <button
-                          key={len}
-                          type="button"
-                          role="radio"
-                          aria-checked={videoLength === len}
-                          onClick={() => setVideoLength(len)}
-                          className={cn(
-                            "rounded-[var(--radius-btn)] border px-3 py-1.5 text-xs font-medium focus-ring",
-                            videoLength === len
-                              ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
-                              : "border-border text-text-mute hover:text-text",
-                          )}
-                        >
-                          {len === "short" ? "Short · full clip in the Feed" : "Long · 45 second Feed preview"}
-                        </button>
-                      ))}
+              </section>
+            ) : null}
+
+            {showResearch ? (
+              <section aria-label="Research" className="mb-10">
+                {cards.filter((c) => c.kind !== "unlock").length > 0 ? (
+                  <div className="mb-8">
+                    <p className="t-eyebrow">Preview</p>
+                    <p className="mt-1 text-[0.8125rem] leading-snug text-text-mute">
+                      Cards are the short version of the thesis. The full text is below.
+                    </p>
+                    <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+                      {cards
+                        .filter((c) => c.kind !== "unlock")
+                        .map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => setSelectedCardId(c.id)}
+                            className="w-[220px] shrink-0 text-left focus-ring rounded-[var(--radius-card)]"
+                          >
+                            <CardPreview card={c} compact />
+                          </button>
+                        ))}
                     </div>
-                  ) : null}
-                  <VideoRung
-                    value={videoEdit ?? undefined}
-                    onChange={setVideoEdit}
-                    cards={deck}
-                    chrome={false}
-                    ticker={ticker.trim() || undefined}
-                    toolbox={
-                      mode === "video" ? (
-                        <CardTray
-                          cards={deck}
-                          usage={usage}
-                          selectedId={selectedCardId}
-                          onSelect={setSelectedCardId}
-                          onAdd={() => setLibraryOpen(true)}
-                          onReorder={reorderCards}
-                          onPlaceInVideo={placeCardInVideo}
-                          onPlaceInResearch={placeCardInResearch}
-                          hasVideo={hasVideo}
-                          hasResearch={false}
-                        />
-                      ) : undefined
-                    }
+                  </div>
+                ) : (
+                  <p className="mb-6 text-[0.8125rem] leading-snug text-text-mute">
+                    Cards in the Assistant rail are the preview of this thesis. Add one, then write the full argument here.
+                  </p>
+                )}
+                {showTemplateStrip && (
+                  <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+                )}
+                <div
+                  onDragOver={(e) => {
+                    if (!isCardDrag(e)) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "copy";
+                    setResearchDropActive(true);
+                  }}
+                  onDragLeave={() => setResearchDropActive(false)}
+                  onDrop={onResearchDrop}
+                  className={cn(
+                    "rounded-[var(--radius-card)] transition-colors",
+                    researchDropActive &&
+                      "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                  )}
+                >
+                  <TiptapEditor
+                    initialContent={initialDoc}
+                    onChange={onEditorChange}
+                    reportTicker={hasCard ? ticker || undefined : undefined}
+                    onReady={(e) => {
+                      editorRef.current = e;
+                      setEditor(e);
+                    }}
                   />
                 </div>
               </section>
             ) : null}
 
-            {/* RESEARCH */}
-            {hasResearch ? (
-              <section aria-label="Research module" className="mb-10">
-                <ModuleHeader
-                  icon={<FileText size={14} />}
-                  label="Research"
-                  state={
-                    plainText.trim()
-                      ? `${plainText.trim().split(/\s+/).length.toLocaleString()} words`
-                      : null
-                  }
-                  open={researchOpen}
-                  onToggle={() => setResearchOpen((o) => !o)}
-                  onRemove={() => setHasResearch(false)}
-                />
-                <div className={cn("mt-4", !researchOpen && "hidden")}>
-                  {showTemplateStrip && (
-                    <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
-                  )}
-                  <div
-                    onDragOver={(e) => {
-                      if (!isCardDrag(e)) return;
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "copy";
-                      setResearchDropActive(true);
-                    }}
-                    onDragLeave={() => setResearchDropActive(false)}
-                    onDrop={onResearchDrop}
-                    className={cn(
-                      "rounded-[var(--radius-card)] transition-colors",
-                      researchDropActive &&
-                        "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
-                    )}
-                  >
-                    <TiptapEditor
-                      initialContent={initialDoc}
-                      onChange={onEditorChange}
-                      reportTicker={hasCard ? ticker || undefined : undefined}
-                      onReady={(e) => {
-                        editorRef.current = e;
-                        setEditor(e);
-                      }}
-                    />
-                  </div>
-                </div>
-              </section>
-            ) : null}
-
-            {/* The research editor stays mounted while hidden, so removing the
-                module and adding it back keeps every word. */}
-            {!hasResearch ? (
+            {!showResearch ? (
               <div className="hidden">
                 <TiptapEditor
                   initialContent={initialDoc}
@@ -1108,36 +1092,8 @@ export function StudioEditor({
                 />
               </div>
             ) : null}
-
-            {mode === "research" ? (
-              <AddModuleRow
-                video={hasVideo}
-                research={hasResearch}
-                onAddVideo={() => {
-                  setVideoEdit((e) => e ?? emptyEdit(90));
-                  setVideoOpen(true);
-                }}
-                onAddResearch={() => {
-                  setHasResearch(true);
-                  setResearchOpen(true);
-                }}
-              />
-            ) : null}
           </div>
         </div>
-
-        {/* RIGHT: settings applied to the publication. Rendered once and
-            moved by the layout: two copies would break the radio groups and
-            the label targets inside it. Below the large breakpoint there is no
-            room for a third column, so it stacks under the canvas. */}
-        {panelOpen && (
-          <aside
-            aria-label="Publication settings"
-            className="scroll-area flex w-full shrink-0 flex-col gap-4 self-start border-t border-border p-4 lg:sticky lg:top-[var(--nav-h)] lg:max-h-[calc(var(--app-h)-var(--nav-h))] lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0"
-          >
-            {settings}
-          </aside>
-        )}
       </div>
 
       {showToolboxRail ? (
@@ -1155,17 +1111,9 @@ export function StudioEditor({
         onClose={() => setSelectedCardId(null)}
       />
 
-      {/* Collapsed-panel affordance: reopen to set the call and publish. */}
-      {!panelOpen && (
-        <button
-          type="button"
-          onClick={() => setPanelOpen(true)}
-          className={buttonClass("secondary", "sm", "fixed bottom-5 right-5 z-40 shadow-[var(--shadow-card)]")}
-        >
-          <SidebarSimple size={15} />
-          Lock &amp; Publish
-        </button>
-      )}
+      <PublishDetailsDialog open={panelOpen} onOpenChange={setPanelOpen}>
+        {settings}
+      </PublishDetailsDialog>
 
       <AskPanel
         open={askOpen}

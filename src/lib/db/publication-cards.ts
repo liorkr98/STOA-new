@@ -51,6 +51,8 @@ function emptyCard(id: string, kind: FeedCard["kind"]): FeedCard {
       return { kind, id, locked: true, rows: [] };
     case "figure":
       return { kind, id, locked: true, caption: "", imageUrl: null, source: "creator" };
+    case "chart":
+      return { kind, id, locked: true, ticker: "", engine: "yahoo", caption: "" };
     case "steelman":
       return { kind, id, locked: true, objection: "", answer: "" };
     case "unlock":

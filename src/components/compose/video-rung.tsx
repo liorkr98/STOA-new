@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { ChevronLeft, ChevronRight, Film, ImagePlus, Pause, Play, Type, Upload, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
-import { CardPreview } from "@/components/compose/card-preview";
-import { MiniChart } from "@/components/editor/mini-chart";
+import { OverlayChartFields, OverlayVisualBody, OverlayVisualizeFields } from "@/components/compose/overlay-visual";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import { cardName, type DraftCard } from "@/lib/compose/cards";
 import {
@@ -56,31 +55,7 @@ function Poster({ className }: { className?: string }) {
 /* ---------- the stage: video + live overlays ---------- */
 
 function VisualBody({ source, cards, className, ticker }: { source: VisualSource; cards: DraftCard[]; className?: string; ticker?: string }) {
-  const card = source.type === "card" && source.cardId ? cards.find((c) => c.id === source.cardId) ?? null : null;
-  return (
-    <div className={cn("relative flex items-center justify-center overflow-hidden rounded-[6px] border border-white/20 bg-[color-mix(in_srgb,var(--paper)_92%,black)] text-[var(--ink)]", className)}>
-      {card ? (
-        <CardPreview card={card} compact className="h-full w-full overflow-hidden border-0 bg-transparent" />
-      ) : source.type === "chart" ? (
-        <MiniChart ticker={source.ticker || ticker || "SPY"} />
-      ) : source.type === "figure" || source.type === "upload" ? (
-        source.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={source.imageUrl} alt="" className="h-full w-full object-contain" />
-        ) : (
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-mute">{sourceLabel(source)}</span>
-        )
-      ) : (
-        <div className="flex h-full w-full flex-col p-3">
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-mute">{sourceLabel(source)}</span>
-          <svg viewBox="0 0 200 80" className="mt-2 h-full w-full" preserveAspectRatio="none" aria-hidden>
-            <polyline points="0,60 30,55 60,62 90,40 120,44 150,25 180,30 200,18" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-            <line x1="0" y1="22" x2="200" y2="22" stroke="var(--brass)" strokeDasharray="3 3" strokeWidth="1" />
-          </svg>
-        </div>
-      )}
-    </div>
-  );
+  return <OverlayVisualBody source={source} cards={cards} className={className} ticker={ticker} />;
 }
 
 function Stage({
@@ -611,10 +586,11 @@ function EventSettings({ overlay, edit, cards, ticker, onEdit, onRemove }: { ove
             <div className="flex flex-wrap gap-1">
               {(
                 [
-                  ...cards.map((c) => ({ type: "card", cardId: c.id, label: cardName(c) })),
-                  { type: "figure", label: "Figure from the thesis", imageUrl: null },
-                  { type: "chart", ticker: ticker || "SPY" },
-                  { type: "upload", label: "Uploaded image", imageUrl: null },
+                  ...cards.map((c) => ({ type: "card" as const, cardId: c.id, label: cardName(c) })),
+                  { type: "chart" as const, ticker: ticker || "SPY", engine: "yahoo" as const },
+                  { type: "diagram" as const, prompt: "", imageUrl: null },
+                  { type: "figure" as const, label: "Figure from the thesis", imageUrl: null },
+                  { type: "upload" as const, label: "Uploaded image", imageUrl: null },
                 ] as VisualSource[]
               ).map((s, i) => {
                 const on = sourceLabel(overlay.source, names) === sourceLabel(s, names);
@@ -635,6 +611,21 @@ function EventSettings({ overlay, edit, cards, ticker, onEdit, onRemove }: { ove
                 </span>
               ) : null}
             </div>
+            {overlay.source.type === "chart" ? (
+              <OverlayChartFields
+                ticker={overlay.source.ticker}
+                engine={overlay.source.engine ?? "yahoo"}
+                fallbackTicker={ticker}
+                onChange={(next) => update({ source: { type: "chart", ticker: next.ticker, engine: next.engine } })}
+              />
+            ) : null}
+            {overlay.source.type === "diagram" ? (
+              <OverlayVisualizeFields
+                prompt={overlay.source.prompt}
+                imageUrl={overlay.source.imageUrl}
+                onChange={(next) => update({ source: { type: "diagram", prompt: next.prompt, imageUrl: next.imageUrl } })}
+              />
+            ) : null}
           </div>
           <div>
             <div className="num mb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">Display</div>
@@ -790,7 +781,7 @@ export function VideoRung({
             kind: "visual",
             source: cards[0]
               ? { type: "card", cardId: cards[0].id, label: cardName(cards[0]) }
-              : { type: "chart", ticker: "NVDA" },
+              : { type: "chart", ticker: ticker || "NVDA", engine: "yahoo" },
             mode: "inset",
             position: 3,
           };
@@ -905,6 +896,26 @@ export function VideoRung({
           </Button>
           <Button variant="secondary" size="sm" onClick={() => addOverlay("visual")}>
             <Film size={14} /> Add visual overlay
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              const start = clamp(time, 0, edit.durationSeconds - 3);
+              const o: VisualOverlay = {
+                id: uid(),
+                kind: "visual",
+                start,
+                end: Math.min(edit.durationSeconds, start + 4),
+                source: { type: "diagram", prompt: "", imageUrl: null },
+                mode: "inset",
+                position: 3,
+              };
+              setEdit({ ...edit, overlays: [...edit.overlays, o] });
+              setSelectedId(o.id);
+            }}
+          >
+            Visualize
           </Button>
           <span className="num ml-auto text-[10px] uppercase tracking-[0.12em] text-text-faint">
             Trim {fmtTimecode(edit.trimStart)} → {fmtTimecode(edit.trimEnd)} · ←/→ step a frame when the timeline has focus
