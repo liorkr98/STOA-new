@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Sparkles, Swords } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { AI_COST } from "@/lib/ai/credits";
@@ -67,9 +68,15 @@ export const DEVILS_ADVOCATE: AssistantAction = {
 export function AiAssistant({
   onRun,
   credits,
+  onAsk,
+  askOpen = false,
+  children,
 }: {
   onRun: (action: AssistantAction) => void;
   credits: number;
+  onAsk: () => void;
+  askOpen?: boolean;
+  children?: ReactNode;
 }) {
   const canAfford = credits >= (DEVILS_ADVOCATE.cost ?? 0);
 
@@ -81,6 +88,21 @@ export function AiAssistant({
           {credits} credits
         </span>
       </div>
+
+      <button
+        type="button"
+        onClick={onAsk}
+        aria-pressed={askOpen}
+        className={cn(
+          "focus-ring mt-2 flex w-full items-center gap-2 rounded-[var(--radius-btn)] border px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors",
+          askOpen
+            ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+            : "border-border bg-surface text-text hover:border-border-strong",
+        )}
+      >
+        <Sparkles size={13} className="shrink-0" aria-hidden />
+        <span className="min-w-0 flex-1 truncate">Ask AI</span>
+      </button>
 
       <ul className="mt-2 space-y-1">
         {ASSISTANT_ACTIONS.map((a) => (
@@ -120,6 +142,7 @@ export function AiAssistant({
           Not enough credits · top up in Wallet
         </p>
       )}
+      {children ? <div className="mt-4 space-y-4 border-t border-border pt-4">{children}</div> : null}
     </section>
   );
 }

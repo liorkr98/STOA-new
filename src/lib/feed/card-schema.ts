@@ -57,6 +57,11 @@ export const CARD_PAYLOADS = {
     imageUrl: z.string().url().nullable(),
     source: z.enum(["creator", "auto"]),
   }),
+  chart: z.object({
+    ticker: z.string().max(16),
+    engine: z.enum(["yahoo", "tradingview"]),
+    caption: z.string().max(400),
+  }),
   steelman: z.object({
     objection: z.string().max(2000),
     answer: z.string().max(2000),

@@ -87,7 +87,8 @@ export const CARD_INTENTS: CardIntent[] = [
     key: "own",
     label: "Your own",
     kinds: [
-      { kind: "figure", label: "Figure", blurb: "A chart or image of your own.", shape: "Image" },
+      { kind: "figure", label: "Figure", blurb: "A still image of your own.", shape: "Image" },
+      { kind: "chart", label: "Chart", blurb: "Live tape from Yahoo Finance or TradingView.", shape: "Chart" },
     ],
   },
 ];
@@ -119,6 +120,8 @@ export function blankCard(kind: CardKind): DraftCard {
       return { id, kind, locked: false, payload: { rows: [] } };
     case "figure":
       return { id, kind, locked: false, payload: { caption: "", imageUrl: null, source: "creator" } };
+    case "chart":
+      return { id, kind, locked: false, payload: { ticker: "", engine: "yahoo", caption: "" } };
     case "steelman":
       return { id, kind, locked: false, payload: { objection: "", answer: "" } };
     case "unlock":
@@ -136,6 +139,7 @@ const KIND_LABEL: Record<CardKind, string> = {
   catalyst_timeline: "Catalysts",
   checklist: "Checklist",
   figure: "Figure",
+  chart: "Chart",
   steelman: "Steelman",
   unlock: "Unlock",
 };
@@ -161,6 +165,8 @@ export function cardName(card: DraftCard): string {
       return str(p.title).trim() || KIND_LABEL.thesis;
     case "figure":
       return str(p.caption).trim() || KIND_LABEL.figure;
+    case "chart":
+      return str(p.ticker).trim().toUpperCase() || KIND_LABEL.chart;
     case "steelman":
       return str(p.objection).trim().slice(0, 60) || KIND_LABEL.steelman;
     default:
@@ -200,6 +206,11 @@ export function cardSummary(card: DraftCard): string {
     }
     case "figure":
       return p.imageUrl ? "Image attached" : "No image yet";
+    case "chart": {
+      const engine = str(p.engine) === "tradingview" ? "TradingView" : "Yahoo Finance";
+      const t = str(p.ticker).trim().toUpperCase();
+      return t ? `${engine} · ${t}` : "No ticker yet";
+    }
     case "steelman": {
       const answer = str(p.answer).trim();
       return answer ? answer.slice(0, 90) : "Not answered yet";
@@ -242,6 +253,9 @@ export function cardInk(card: DraftCard): ProvenanceInk {
       break;
     case "figure":
       if (p.source === "auto") inks.push("auto");
+      break;
+    case "chart":
+      inks.push("auto");
       break;
     default:
       break;

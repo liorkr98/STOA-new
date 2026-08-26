@@ -24,6 +24,7 @@ export type FeedCard =
   | { kind: "catalyst_timeline"; id: string; locked: boolean; events: { dateISO: string; label: string; past: boolean }[] }
   | { kind: "checklist"; id: string; locked: boolean; rows: { label: string; status: "done" | "pending" | "failed"; ink: ProvenanceInk }[] }
   | { kind: "figure"; id: string; locked: boolean; caption: string; imageUrl: string | null; source: "creator" | "auto" }
+  | { kind: "chart"; id: string; locked: boolean; ticker: string; engine: "yahoo" | "tradingview"; caption: string }
   | { kind: "steelman"; id: string; locked: boolean; objection: string; answer: string }
   | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers" | "free" };
 

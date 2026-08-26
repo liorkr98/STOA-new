@@ -4,6 +4,7 @@ import { Lock, Check, Minus, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/design/cn";
 import { TickerChart } from "@/components/feed/ticker-chart";
+import { CardChart } from "@/components/compose/card-chart";
 import type { FeedCard, InkValue, ProvenanceInk } from "@/lib/feed/types";
 
 /**
@@ -204,6 +205,15 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
             >
               {card.source === "auto" ? "Auto" : "Creator chart"}
             </span>
+          </div>
+        </CardFrame>
+      );
+    case "chart":
+      return (
+        <CardFrame>
+          <CardHead label={card.caption || "The tape"} />
+          <div className="mt-3 min-h-0 flex-1">
+            <CardChart ticker={card.ticker} engine={card.engine} caption={card.caption} />
           </div>
         </CardFrame>
       );
