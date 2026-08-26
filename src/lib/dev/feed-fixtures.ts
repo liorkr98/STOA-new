@@ -114,6 +114,7 @@ export function fixturePublications(): FeedPublication[] {
       playbackUrl: clip.src,
       thumbnailUrl: clip.poster,
       durationSeconds: s.secs,
+      feedPreviewSeconds: null,
       headline: s.headline,
       deck: s.deck ?? null,
       typeLabel: s.type,

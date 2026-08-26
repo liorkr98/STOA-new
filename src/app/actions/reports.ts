@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { deleteChartSnapshotsForReport } from "@/lib/reports/chart-storage";
 import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
 import { normalizeTags } from "@/lib/tags/validate";
-import type { ComposeInput, AccessType } from "@/lib/types";
+import type { ComposeInput, AccessType, ContentType } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -29,6 +29,9 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     summary: input.summary ?? null,
     access: input.access,
     price: input.access === "paid" ? (input.price ?? null) : null,
+    members_included: input.access === "paid" ? Boolean(input.members_included) : false,
+    linked_report_id: input.linked_report_id ?? null,
+    feed_preview_seconds: input.feed_preview_seconds ?? null,
     min_plan_rank:
       input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
     required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
@@ -187,6 +190,7 @@ export async function updateReportAccess(input: {
   id: string;
   access: AccessType;
   price?: number | null;
+  members_included?: boolean;
   min_plan_rank?: number;
   required_perks?: string[];
 }): Promise<{ ok: boolean; error?: string }> {
@@ -204,6 +208,7 @@ export async function updateReportAccess(input: {
     .update({
       access: input.access,
       price: input.access === "paid" ? (input.price ?? null) : null,
+      members_included: input.access === "paid" ? Boolean(input.members_included) : false,
       min_plan_rank: input.access === "subscribers" ? Math.max(0, input.min_plan_rank ?? 0) : 0,
       required_perks: input.access === "subscribers" ? (input.required_perks ?? []) : [],
     })
@@ -318,4 +323,16 @@ export async function postNote(body: string): Promise<{ ok?: boolean; error?: st
   revalidatePath("/home");
   revalidatePath("/feed");
   return { ok: true };
+}
+
+export async function listLinkablePublications(input: {
+  excludeId?: string;
+  types: ContentType[];
+}): Promise<{ id: string; title: string | null; summary: string | null; type: ContentType; status: string; ticker: string | null }[]> {
+  const { userId } = await requireUser();
+  const { listLinkableByAuthor } = await import("@/lib/db/reports");
+  return listLinkableByAuthor(userId, {
+    excludeId: input.excludeId,
+    types: input.types,
+  });
 }

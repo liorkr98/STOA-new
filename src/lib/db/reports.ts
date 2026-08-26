@@ -253,6 +253,25 @@ export async function listByAuthor(
   return asReportRows(data).map(normalize);
 }
 
+/** Drafts and published work the author can attach as a companion piece. */
+export async function listLinkableByAuthor(
+  authorId: string,
+  opts: { excludeId?: string; types: ContentType[]; limit?: number } = { types: [] },
+): Promise<Pick<Report, "id" | "title" | "summary" | "type" | "status" | "ticker">[]> {
+  const supabase = await createClient();
+  let q = supabase
+    .from("reports")
+    .select("id, title, summary, type, status, ticker")
+    .eq("author_id", authorId)
+    .in("status", ["draft", "published", "resolution_pending_review"])
+    .in("type", opts.types)
+    .order("updated_at", { ascending: false })
+    .limit(opts.limit ?? 40);
+  if (opts.excludeId) q = q.neq("id", opts.excludeId);
+  const { data } = await q;
+  return (data ?? []) as Pick<Report, "id" | "title" | "summary" | "type" | "status" | "ticker">[];
+}
+
 /** Newest publicly visible publications platform-wide, with author and prediction. */
 export async function listRecentPublished(limit = 80): Promise<Report[]> {
   return cachedPage(`reports:recent:${limit}`, 20, async () => {

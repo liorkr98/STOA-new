@@ -8,6 +8,7 @@ import { listCardsForReports } from "@/lib/db/publication-cards";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
+import { publicTypeLabel } from "@/lib/compose/modes";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { isDirectVideoUrl } from "@/lib/video/direct";
 
@@ -23,7 +24,7 @@ import { isDirectVideoUrl } from "@/lib/video/direct";
  */
 
 function typeLabel(t: Report["type"]): FeedPublication["typeLabel"] {
-  return t === "research" ? "RESEARCH" : t === "short_post" ? "NOTE" : "CALL";
+  return publicTypeLabel(t);
 }
 
 export function contentBadgeFor(report: Report, hasVideo: boolean): string {
@@ -119,6 +120,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       }
     }
     const hasCall = Boolean(r.prediction);
+    const preview = r.feed_preview_seconds ?? null;
+    const duration = preview && preview > 0 ? Math.min(c.duration_seconds, preview) : c.duration_seconds;
     const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
     const sector = sym ? sectorByTicker.get(sym) ?? null : null;
     const p = r.prediction;
@@ -129,7 +132,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       embedUrl,
       playbackUrl: native ? media.src : null,
       thumbnailUrl: media.poster,
-      durationSeconds: c.duration_seconds,
+      durationSeconds: duration,
+      feedPreviewSeconds: preview,
       headline: storyHeadline(r),
       deck: storyDek(r),
       typeLabel: typeLabel(r.type),

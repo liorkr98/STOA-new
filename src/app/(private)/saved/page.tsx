@@ -5,6 +5,7 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { listSavedReports } from "@/lib/db/saved";
 import { listUnlockedReports } from "@/lib/db/library";
 import { subscribedAnalystIds } from "@/lib/db/social";
+import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Report } from "@/lib/types";
 import { LibraryView, type LibraryItem } from "@/components/library/library-view";
 
@@ -14,13 +15,12 @@ function initialsOf(name: string): string {
   return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 }
 function typeLabel(type: Report["type"]): string {
-  if (type === "research") return "RESEARCH";
-  if (type === "short_post") return "NOTE";
-  return "CALL";
+  return publicTypeLabel(type);
 }
 function badgeFor(type: Report["type"]): string {
   if (type === "research") return "VIDEO · THESIS";
   if (type === "short_post") return "VIDEO · NOTE";
+  if (type === "video") return "VIDEO";
   return "VIDEO · CALL";
 }
 

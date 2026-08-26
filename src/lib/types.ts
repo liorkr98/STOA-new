@@ -6,7 +6,7 @@
 import type { ProfileConfig } from "@/lib/editor/types";
 
 export type Role = "user" | "analyst" | "admin";
-export type ContentType = "research" | "call" | "short_post";
+export type ContentType = "research" | "call" | "short_post" | "video";
 export type ReportStatus = "draft" | "published" | "archived" | "resolution_pending_review";
 export type Direction = "long" | "short" | "hold";
 export type Outcome = "open" | "hit" | "near" | "partial" | "miss" | "neutral";
@@ -68,6 +68,12 @@ export interface Report {
   status: ReportStatus;
   access: AccessType;
   price: number | null;
+  /** When access is paid, active subscribers may open this without buying. */
+  members_included?: boolean;
+  /** Companion publication (video <-> research/post). */
+  linked_report_id?: string | null;
+  /** Feed plays this many seconds; null means the full clip. */
+  feed_preview_seconds?: number | null;
   /** Minimum subscription plan rank required when access is subscribers. */
   min_plan_rank?: number;
   /** Perk slugs required on the subscriber's plan (see plans.perks). */
@@ -216,6 +222,9 @@ export interface ComposeInput {
   body?: string;
   access: AccessType;
   price?: number | null;
+  members_included?: boolean;
+  linked_report_id?: string | null;
+  feed_preview_seconds?: number | null;
   /** Minimum plan rank when access is subscribers (0 = any subscriber). */
   min_plan_rank?: number;
   /** Required perk slugs when access is subscribers. */

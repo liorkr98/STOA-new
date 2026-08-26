@@ -14,7 +14,7 @@ export function scoreReportForDispatch(report: Report, cycleStart: Date, cycleEn
   const inWindow = inCycle(published, cycleStart, cycleEnd);
 
   if (inWindow) score += 40;
-  if (report.type === "call") score += 25;
+  if (report.type === "call" || report.prediction) score += 25;
   if (p?.target_price) score += 20;
   score += Math.min(report.likes ?? 0, 30);
   score += Math.min(report.comment_count ?? 0, 20) * 2;

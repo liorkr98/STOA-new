@@ -2,13 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { planHasRequiredPerks } from "@/lib/perks";
 
 /**
- * Server-side entitlement gate for report bodies (Part C). Mirrors the
- * report_bodies RLS policy so server code (report serving, signed media tokens,
- * export) can check access without leaning on a table read failing. RLS remains
- * the hard backstop; this is the readable, reusable front check.
+ * Server-side entitlement gate for report bodies. Mirrors can_read_report_body
+ * in Postgres. RLS is the hard backstop.
  *
- * Access ladder: author -> published + (free | unlocked | active sub whose plan
- * rank meets min_plan_rank and includes required_perks).
+ * Ladder: author -> published + (free | unlock | members-included paid | active
+ * sub that meets rank and perks).
  */
 export async function canReadReport(reportId: string): Promise<boolean> {
   const supabase = await createClient();
@@ -18,7 +16,7 @@ export async function canReadReport(reportId: string): Promise<boolean> {
 
   const { data: report } = await supabase
     .from("reports")
-    .select("author_id, status, access, min_plan_rank, required_perks")
+    .select("author_id, status, access, min_plan_rank, required_perks, members_included")
     .eq("id", reportId)
     .maybeSingle();
   if (!report) return false;
@@ -35,7 +33,9 @@ export async function canReadReport(reportId: string): Promise<boolean> {
       .eq("report_id", reportId)
       .eq("user_id", user.id)
       .maybeSingle();
-    return !!data;
+    if (data) return true;
+    if (!report.members_included) return false;
+    return isActiveSubscriber(supabase, report.author_id, user.id);
   }
 
   if (report.access === "subscribers") {
@@ -57,6 +57,22 @@ export async function canReadReport(reportId: string): Promise<boolean> {
   }
 
   return false;
+}
+
+async function isActiveSubscriber(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  analystId: string,
+  userId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("renews_at, status")
+    .eq("analyst_id", analystId)
+    .eq("subscriber_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!data?.renews_at) return false;
+  return new Date(data.renews_at as string) > new Date();
 }
 
 /**
