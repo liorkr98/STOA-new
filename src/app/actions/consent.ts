@@ -9,6 +9,7 @@ import {
   hasAgeAttestation,
   recordUserConsents,
   setAgeAttestation,
+  setMarketingPreference,
 } from "@/lib/db/legal";
 import { SIGNUP_CONSENT_TYPES } from "@/lib/legal/constants";
 
@@ -49,11 +50,18 @@ export async function acceptConsents(
     ip,
   );
 
+  if (formData.get("marketing_opt_in") === "on") {
+    await setMarketingPreference(user.id, true, ip);
+  }
+
   redirect("/home");
 }
 
 /** Record signup consents + age attestation after email registration. */
-export async function recordSignupCompliance(userId: string): Promise<{ error?: string } | null> {
+export async function recordSignupCompliance(
+  userId: string,
+  opts?: { marketingOptIn?: boolean },
+): Promise<{ error?: string } | null> {
   const docs = await getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES);
   const ip = await clientIp();
   await recordUserConsents(
@@ -62,6 +70,9 @@ export async function recordSignupCompliance(userId: string): Promise<{ error?: 
     ip,
   );
   await setAgeAttestation(userId);
+  if (opts?.marketingOptIn) {
+    await setMarketingPreference(userId, true, ip);
+  }
   return null;
 }
 
@@ -77,4 +88,10 @@ export async function getConsentRedirectPath(
   ]);
   if (pending.length > 0 || needsAge) return "/consent-required";
   return null;
+}
+
+/** Opt-in only. Leaving the box unchecked never turns marketing off. */
+export async function recordMarketingOptInIfChecked(userId: string, formData: FormData): Promise<void> {
+  if (formData.get("marketing_opt_in") !== "on") return;
+  await setMarketingPreference(userId, true, await clientIp());
 }

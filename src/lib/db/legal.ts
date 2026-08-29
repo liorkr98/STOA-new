@@ -92,3 +92,37 @@ export async function hasAgeAttestation(userId: string): Promise<boolean> {
     .maybeSingle();
   return Boolean(data?.age_attested_at);
 }
+
+export async function getMarketingOptIn(userId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("marketing_opt_in")
+    .eq("id", userId)
+    .maybeSingle();
+  return Boolean(data?.marketing_opt_in);
+}
+
+/** Persist marketing preference. Opt-in also records the marketing notice version. */
+export async function setMarketingPreference(
+  userId: string,
+  optIn: boolean,
+  ipAddress?: string | null,
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      marketing_opt_in: optIn,
+      marketing_opt_in_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+  if (error) throw error;
+  if (!optIn) return;
+  const docs = await getCurrentLegalDocuments(["marketing"]);
+  await recordUserConsents(
+    userId,
+    docs.map((d) => d.id),
+    ipAddress,
+  );
+}

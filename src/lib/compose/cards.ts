@@ -88,7 +88,7 @@ export const CARD_INTENTS: CardIntent[] = [
     label: "Your own",
     kinds: [
       { kind: "figure", label: "Figure", blurb: "A still image of your own.", shape: "Image" },
-      { kind: "chart", label: "Chart", blurb: "Live tape from Yahoo Finance or TradingView.", shape: "Chart" },
+      { kind: "chart", label: "Chart", blurb: "Live tape for the ticker you enter.", shape: "Chart" },
     ],
   },
 ];
@@ -121,7 +121,7 @@ export function blankCard(kind: CardKind): DraftCard {
     case "figure":
       return { id, kind, locked: false, payload: { caption: "", imageUrl: null, source: "creator" } };
     case "chart":
-      return { id, kind, locked: false, payload: { ticker: "", engine: "yahoo", caption: "" } };
+      return { id, kind, locked: false, payload: { ticker: "", caption: "", compareTicker: "" } };
     case "steelman":
       return { id, kind, locked: false, payload: { objection: "", answer: "" } };
     case "unlock":
@@ -207,9 +207,10 @@ export function cardSummary(card: DraftCard): string {
     case "figure":
       return p.imageUrl ? "Image attached" : "No image yet";
     case "chart": {
-      const engine = str(p.engine) === "tradingview" ? "TradingView" : "Yahoo Finance";
       const t = str(p.ticker).trim().toUpperCase();
-      return t ? `${engine} · ${t}` : "No ticker yet";
+      const cmp = str(p.compareTicker).trim().toUpperCase();
+      if (!t) return "No ticker yet";
+      return cmp ? `${t} · ${cmp}` : t;
     }
     case "steelman": {
       const answer = str(p.answer).trim();
@@ -266,13 +267,51 @@ export function cardInk(card: DraftCard): ProvenanceInk {
   return "plain";
 }
 
+/** Filled sample used in the library preview before a card is added. */
+export function sampleCard(kind: CardKind): DraftCard {
+  const id = `preview_${kind}`;
+  switch (kind) {
+    case "thesis":
+      return { id, kind, locked: false, payload: { title: "The claim", body: "Margins expand as mix shifts to software. Street still prices a hardware cycle." } };
+    case "edge":
+      return {
+        id,
+        kind,
+        locked: false,
+        payload: {
+          street: [{ text: "Street: 22x forward", ink: "auto" }],
+          mine: [{ text: "I use 18x on mix-adjusted EBIT", ink: "creator_est" }],
+        },
+      };
+    case "path_to_target":
+      return {
+        id,
+        kind,
+        locked: false,
+        payload: {
+          steps: [{ label: "Gross margin", value: { text: "+180 bps", ink: "creator_est" } }],
+          result: { text: "$142", ink: "creator_est" },
+        },
+      };
+    case "kill_switch":
+      return { id, kind, locked: false, payload: { conditions: [{ text: "Gross margin stalls two quarters", ink: "plain" }] } };
+    case "catalyst_timeline":
+      return { id, kind, locked: false, payload: { events: [{ dateISO: "2026-09", label: "Next print", past: false }] } };
+    case "checklist":
+      return { id, kind, locked: false, payload: { rows: [{ label: "Filings match the mix story", status: "done", ink: "plain" }] } };
+    case "figure":
+      return { id, kind, locked: false, payload: { caption: "Your chart or still", imageUrl: null, source: "creator" } };
+    case "chart":
+      return { id, kind, locked: false, payload: { ticker: "NVDA", caption: "Last 90 sessions", compareTicker: "" } };
+    case "steelman":
+      return { id, kind, locked: false, payload: { objection: "The multiple already prices the mix shift.", answer: "Only if software stays at 18% of revenue." } };
+    case "unlock":
+      return { id, kind, locked: false, payload: {} };
+  }
+}
+
 /* ------------------------------------------------------------------- deck */
 
-/**
- * The deck as it is stored: the creator's order, with the unlock card pinned
- * last. Pinning happens here rather than in the tray so every save path gets
- * it, including a publish that never touched the tray.
- */
 export function orderedDeck(cards: DraftCard[]): DraftCard[] {
   const body = cards.filter((c) => c.kind !== "unlock");
   const cta = cards.filter((c) => c.kind === "unlock");

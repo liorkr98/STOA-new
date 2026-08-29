@@ -178,7 +178,7 @@ export function AskPanel({
 }: {
   open: boolean;
   onClose: () => void;
-  context: { title?: string; ticker?: string };
+  context: { title?: string; dek?: string; ticker?: string };
   credits: number;
   onCreditsChange?: (n: number) => void;
   onInsertNode: (node: JSONContent) => void;
@@ -186,34 +186,25 @@ export function AskPanel({
   getEditorContext: () => ComposeEditorContext & {
     documentExcerpt?: string;
     title?: string;
+    dek?: string;
     ticker?: string;
   };
   onApplyTemplate?: (templateId: string) => void | Promise<void>;
-  /** Prompt the rail asked for. Pre-filled rather than sent, so the analyst
-   *  sees what is about to be spent before a paid tool runs. */
+  /** Prompt from the toolbox. Sent as soon as the panel opens. */
   seed?: string | null;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  // The seed the input was filled from, so a prompt sent from the rail lands
-  // in the box once and never overwrites what the analyst types after it.
-  const [seeded, setSeeded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [pending, start] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  if (open && seed && seed !== seeded) {
-    setSeeded(seed);
-    setInput(seed);
-  }
+  const seedRun = useRef<string | null>(null);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
-
-
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -252,6 +243,7 @@ export function AskPanel({
             context: {
               ticker: context.ticker ?? editorCtx.reportTicker,
               title: context.title ?? editorCtx.title,
+              dek: context.dek ?? editorCtx.dek,
               documentExcerpt: editorCtx.documentExcerpt,
               selection: editorCtx.selection,
             },
@@ -334,6 +326,19 @@ export function AskPanel({
       }
     });
   }
+
+  useEffect(() => {
+    if (!open) {
+      seedRun.current = null;
+      return;
+    }
+    if (!seed || pending) return;
+    if (seedRun.current === seed) return;
+    seedRun.current = seed;
+    send(seed);
+    // send closes over the latest panel state; seed/open are the triggers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- auto-run toolbox prompts once per seed
+  }, [open, seed, pending]);
 
   const quick = [
     "Apply equity factsheet template",

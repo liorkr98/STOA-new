@@ -13,8 +13,20 @@ export const COMPOSE_MODES: { key: ComposeMode; label: string }[] = [
   { key: "short_post", label: "Post" },
 ];
 
-/** Long clips send this many seconds to the Feed. The rest lives on the page. */
+/** Clips longer than this send a Feed preview. The full clip is on Explore and profile. */
 export const FEED_PREVIEW_LONG_SECONDS = 45;
+
+export function clipPlayableSeconds(trimStart: number, trimEnd: number, durationSeconds: number): number {
+  const start = Math.max(0, trimStart);
+  const end = Math.min(durationSeconds, trimEnd);
+  return Math.max(0, end - start);
+}
+
+/** Null means play the full clip in the Feed. */
+export function feedPreviewSecondsForClip(clipSeconds: number): number | null {
+  if (clipSeconds > FEED_PREVIEW_LONG_SECONDS) return FEED_PREVIEW_LONG_SECONDS;
+  return null;
+}
 
 /** Hard cap on a Post. */
 export const POST_MAX_CHARS = 300;

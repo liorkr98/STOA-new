@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CardChart, type ChartEngine } from "@/components/compose/card-chart";
+import { CardChart } from "@/components/compose/card-chart";
 import { CardPreview } from "@/components/compose/card-preview";
 import { cn } from "@/lib/design/cn";
 import { NAPKIN_DEFAULT_STYLE_ID } from "@/lib/napkin/styles";
@@ -38,7 +38,7 @@ export function OverlayVisualBody({
         <div className="h-full w-full p-3">
           <CardChart
             ticker={source.ticker || ticker || ""}
-            engine={source.engine ?? "yahoo"}
+            compareTicker={source.compareTicker}
             compact
             className="h-full"
           />
@@ -129,14 +129,14 @@ export function OverlayVisualizeFields({
 
 export function OverlayChartFields({
   ticker,
-  engine,
+  compareTicker,
   fallbackTicker,
   onChange,
 }: {
   ticker: string;
-  engine: ChartEngine;
+  compareTicker?: string;
   fallbackTicker?: string;
-  onChange: (next: { ticker: string; engine: ChartEngine }) => void;
+  onChange: (next: { ticker: string; compareTicker: string }) => void;
 }) {
   return (
     <div className="mt-3 flex flex-wrap items-end gap-2">
@@ -144,30 +144,20 @@ export function OverlayChartFields({
         Ticker
         <input
           value={ticker}
-          onChange={(e) => onChange({ ticker: e.target.value.toUpperCase(), engine })}
+          onChange={(e) => onChange({ ticker: e.target.value.toUpperCase(), compareTicker: compareTicker ?? "" })}
           placeholder={fallbackTicker || "NVDA"}
           className="num mt-1 block w-24 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
         />
       </label>
-      <div className="flex gap-1" role="radiogroup" aria-label="Chart source">
-        {(["yahoo", "tradingview"] as const).map((eng) => (
-          <button
-            key={eng}
-            type="button"
-            role="radio"
-            aria-checked={engine === eng}
-            onClick={() => onChange({ ticker: ticker || fallbackTicker || "SPY", engine: eng })}
-            className={cn(
-              "rounded-[var(--radius-btn)] border px-2 py-1.5 text-[11px] focus-ring",
-              engine === eng
-                ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
-                : "border-border text-text-mute hover:text-text",
-            )}
-          >
-            {eng === "yahoo" ? "Yahoo Finance" : "TradingView"}
-          </button>
-        ))}
-      </div>
+      <label className="text-[11px] text-text-mute">
+        Compare line
+        <input
+          value={compareTicker ?? ""}
+          onChange={(e) => onChange({ ticker: ticker || fallbackTicker || "SPY", compareTicker: e.target.value.toUpperCase() })}
+          placeholder="Optional, e.g. SPY"
+          className="num mt-1 block w-28 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
+        />
+      </label>
     </div>
   );
 }

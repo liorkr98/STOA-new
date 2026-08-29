@@ -52,7 +52,7 @@ function emptyCard(id: string, kind: FeedCard["kind"]): FeedCard {
     case "figure":
       return { kind, id, locked: true, caption: "", imageUrl: null, source: "creator" };
     case "chart":
-      return { kind, id, locked: true, ticker: "", engine: "yahoo", caption: "" };
+      return { kind, id, locked: true, ticker: "", caption: "" };
     case "steelman":
       return { kind, id, locked: true, objection: "", answer: "" };
     case "unlock":

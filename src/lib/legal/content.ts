@@ -131,6 +131,7 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
     title: "Information We Collect",
     bullets: [
       "Account data: email, display name, profile information at signup",
+      "Marketing preference: whether you asked to receive product and research emails (off unless you opt in)",
       "Identity and payout data: PayPal onboarding signals (payments receivable, email confirmation)",
       "Content: published reports, locked calls, debate threads, and related metadata",
       "Usage data: session tokens, preferences, subscription and purchase history",
@@ -141,12 +142,26 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
     title: "How We Use Information",
     paragraphs: [
       "We use personal data to operate the marketplace, authenticate users, process payments, grade locked calls, display public track records, enforce fact-checking and disclosure requirements, and comply with legal obligations.",
+      "We send product and research emails only if you opt in at sign-up, sign-in, or in Settings. You can withdraw that consent at any time. Transactional mail (sign-in, receipts, required notices) is separate and is not marketing.",
     ],
   },
   {
     title: "Legal Bases (GDPR)",
     paragraphs: [
       "[Pending legal draft — counsel to map processing activities to GDPR Articles 6 and 9 bases, including contract performance, legitimate interests, and consent where applicable.]",
+      "Marketing emails use consent (GDPR Article 6(1)(a)). They are optional, off by default, and not bundled into the required Terms or Privacy acceptance.",
+    ],
+  },
+  {
+    title: "Marketing Emails",
+    paragraphs: [
+      "If you tick the marketing box at sign-up or sign-in, or turn it on in Settings, Stoa may email you about new research, product updates, and invitations. This is separate from required account mail.",
+      "Consent is recorded against a versioned notice. Withdrawing it in Settings stops future marketing mail. It does not delete your account, change required legal consents, or erase the audit row that you previously opted in.",
+    ],
+    bullets: [
+      "Off unless you opt in. Creating an account does not imply marketing consent.",
+      "Withdraw anytime in Settings, or use the unsubscribe link in a marketing email.",
+      "We do not sell email lists.",
     ],
   },
   {
@@ -165,6 +180,7 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
     title: "Your Rights",
     paragraphs: [
       "Depending on your jurisdiction, you may have rights to access, correct, export, or delete personal data. You can export your account data from Settings.",
+      "You can withdraw marketing-email consent at any time in Settings. That withdrawal does not affect the required Terms of Service or Privacy Policy acceptance.",
       "Erasure vs. immutable ledger: GDPR Article 17 gives EU individuals a right to erasure. Stoa's core product promise is that locked calls (linked to analyst identity for track-record accountability) cannot be deleted. The proposed engineering approach — pending legal sign-off — is to pseudonymize personally identifying fields in profiles (name, avatar, bio, email) on verified deletion requests while leaving locked reports, claims, and MOAT score snapshots intact under an anonymized handle. The public ledger entry survives; the link to real-world identity does not.",
     ],
     bullets: [
@@ -214,6 +230,7 @@ export const COOKIES_CONTENT: LegalSectionContent[] = [
     title: "Your Choices",
     paragraphs: [
       "Use the cookie banner to accept or decline non-essential cookies. You can also clear cookies through your browser settings, though this may sign you out.",
+      "Marketing emails are not cookies. That preference lives in Settings and on the sign-in and sign-up forms.",
     ],
   },
   {

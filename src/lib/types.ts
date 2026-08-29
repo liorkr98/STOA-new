@@ -54,6 +54,9 @@ export interface Profile {
   referred_by?: string | null;
   /** When the user attested they are 18+ at signup. */
   age_attested_at?: string | null;
+  /** Product and research emails. Off unless the user opts in. */
+  marketing_opt_in?: boolean;
+  marketing_opt_in_at?: string | null;
   profile_config?: ProfileConfig | null;
 }
 
