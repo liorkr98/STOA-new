@@ -25,6 +25,8 @@ import { trackEngagement } from "@/lib/engagement/track-client";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
+import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
+import { prefersReducedMotion } from "@/lib/motion/reduced";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { isDirectVideoUrl } from "@/lib/video/direct";
@@ -43,10 +45,8 @@ import type { FeedComment, FeedPublication } from "@/lib/feed/types";
  * own momentum and a trackpad's inertia both behave the way the reader expects,
  * and the browser handles the physics.
  *
- * Only the publication in view mounts an iframe. That is the autoplay rule and
- * the performance rule at once: a clip starts because it came into view and
- * stops because it left, and a hundred-publication feed never holds a hundred
- * players.
+ * Only the publication in view plays. Neighbors keep a paused player so the
+ * next flick does not start from a black frame.
  */
 
 /**
@@ -75,6 +75,8 @@ export function FeedSurface({
   canAct = false,
   onPost,
   sessionId,
+  embedded = false,
+  onBack,
 }: {
   publications: FeedPublication[];
   startIndex?: number;
@@ -82,6 +84,9 @@ export function FeedSurface({
   canAct?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
   sessionId?: string;
+  /** Full-viewport overlay (Explore). Height does not subtract the top nav. */
+  embedded?: boolean;
+  onBack?: () => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
@@ -109,47 +114,95 @@ export function FeedSurface({
     return () => io.disconnect();
   }, [publications.length]);
 
+  const snapH = embedded ? "feed-snap-overlay" : ITEM_H;
+
+  useEffect(() => {
+    const pub = publications[active];
+    const next = publications[active + 1];
+    const prev = publications[active - 1];
+    for (const p of [pub, next, prev]) {
+      if (!p) continue;
+      warmVideoConnections(p.playbackUrl, p.embedUrl);
+      void prefetchVideoStart(p.playbackUrl);
+    }
+  }, [active, publications]);
+
   // Land on the requested publication without animating past everything above
   // it, which is what Explore's tiles need when they open the Feed part-way in.
   useEffect(() => {
-    if (!startIndex) return;
-    itemRefs.current[startIndex]?.scrollIntoView({ block: "start", behavior: "auto" });
-  }, [startIndex]);
+    const root = scrollerRef.current;
+    const target = itemRefs.current[startIndex];
+    if (!root || !target) return;
+    const id = requestAnimationFrame(() => {
+      root.scrollTo({ top: target.offsetTop, behavior: "auto" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [startIndex, publications.length]);
 
   const goTo = useCallback((i: number) => {
+    const root = scrollerRef.current;
     const target = itemRefs.current[i];
-    if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, []);
+    if (!root || !target || i < 0 || i >= publications.length) return;
+    root.scrollTo({
+      top: target.offsetTop,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  }, [publications.length]);
+
+  useEffect(() => {
+    if (!onBack) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (discussing) return;
+      onBack();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack, discussing]);
 
   return (
-    <div
-      ref={scrollerRef}
-      className={cn(
-        "scroll-area scroll-bare snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-contain bg-bg",
-        ITEM_H,
-      )}
-    >
-      {publications.map((pub, i) => (
-        <FeedItem
-          key={pub.id}
-          ref={(el) => {
-            itemRefs.current[i] = el;
-          }}
-          pub={pub}
-          index={i}
-          total={publications.length}
-          isActive={i === active}
-          muted={muted}
-          onMutedChange={setMuted}
-          canAct={canAct}
-          onPrev={() => goTo(i - 1)}
-          onNext={() => goTo(i + 1)}
-          onDiscuss={() => setDiscussing(pub.id)}
-          sessionId={sessionId}
-        />
-      ))}
+    <div className={cn("relative", snapH)}>
+      {onBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back to Explore"
+          className="focus-ring absolute left-[max(0.75rem,var(--safe-left))] top-[max(0.75rem,var(--safe-top))] z-20 flex h-9 w-9 items-center justify-center rounded-[var(--radius-btn)] border border-border bg-paper text-text"
+        >
+          <ChevronLeft size={18} strokeWidth={1.6} />
+        </button>
+      ) : null}
+      <div
+        ref={scrollerRef}
+        className={cn(
+          "scroll-area scroll-bare snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-contain bg-bg",
+          snapH,
+        )}
+      >
+        {publications.map((pub, i) => (
+          <FeedItem
+            key={pub.id}
+            ref={(el) => {
+              itemRefs.current[i] = el;
+            }}
+            pub={pub}
+            index={i}
+            total={publications.length}
+            isActive={i === active}
+            near={Math.abs(i - active) <= 1}
+            snapClass={snapH}
+            muted={muted}
+            onMutedChange={setMuted}
+            canAct={canAct}
+            onPrev={() => goTo(i - 1)}
+            onNext={() => goTo(i + 1)}
+            onDiscuss={() => setDiscussing(pub.id)}
+            sessionId={sessionId}
+          />
+        ))}
 
-      <EndOfFeed />
+        <EndOfFeed snapClass={snapH} />
+      </div>
 
       {discussing ? (
         <DiscussionPanel
@@ -174,6 +227,8 @@ const FeedItem = function FeedItem({
   index,
   total,
   isActive,
+  near,
+  snapClass,
   muted,
   onMutedChange,
   canAct,
@@ -187,6 +242,8 @@ const FeedItem = function FeedItem({
   index: number;
   total: number;
   isActive: boolean;
+  near: boolean;
+  snapClass: string;
   muted: boolean;
   onMutedChange: (m: boolean) => void;
   canAct: boolean;
@@ -240,10 +297,10 @@ const FeedItem = function FeedItem({
   // effect: resetting from an effect schedules a second render pass over the
   // whole item every time one scrolls out of view, and this is the case React
   // supports adjusting for directly.
-  const [wasActive, setWasActive] = useState(isActive);
-  if (wasActive !== isActive) {
-    setWasActive(isActive);
-    if (!isActive) {
+  const [wasNear, setWasNear] = useState(near);
+  if (wasNear !== near) {
+    setWasNear(near);
+    if (!near) {
       setCard(0);
       setPaused(false);
       setProgress(0);
@@ -422,7 +479,10 @@ const FeedItem = function FeedItem({
     if (Math.abs(el.scrollLeft - left) <= 1) return;
     // A smooth scroll never completes in a hidden document, which leaves the
     // track stranded between two cards while the pager says it moved.
-    el.scrollTo({ left, behavior: document.hidden ? "auto" : "smooth" });
+    el.scrollTo({
+      left,
+      behavior: document.hidden || prefersReducedMotion() ? "auto" : "smooth",
+    });
   }, [card]);
 
   /**
@@ -568,8 +628,8 @@ const FeedItem = function FeedItem({
       data-feed-item={index}
       aria-label={pub.headline}
       className={cn(
-        "flex snap-start snap-always flex-col items-center justify-center py-3 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))]",
-        ITEM_H,
+        "feed-item-shell flex snap-start snap-always flex-col items-center justify-center py-3 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))]",
+        snapClass,
       )}
     >
       <div className="flex h-full w-full max-w-[420px] flex-col justify-center gap-2">
@@ -592,20 +652,25 @@ const FeedItem = function FeedItem({
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">
-                {isActive && isDirectVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
+                {near && isDirectVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
                   <NativeClip
                     src={pub.playbackUrl}
                     poster={pub.thumbnailUrl}
                     muted={muted}
-                    paused={paused}
+                    paused={!isActive || paused}
                     title={pub.headline}
                     previewSeconds={pub.feedPreviewSeconds}
-                    onProgress={(ratio) => {
-                      if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
-                      lastRatioRef.current = ratio;
-                      setProgress(ratio);
-                      if (ratio > 0) setStarted(true);
-                    }}
+                    preload={isActive ? "auto" : "metadata"}
+                    onProgress={
+                      isActive
+                        ? (ratio) => {
+                            if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
+                            lastRatioRef.current = ratio;
+                            setProgress(ratio);
+                            if (ratio > 0) setStarted(true);
+                          }
+                        : undefined
+                    }
                   />
                 ) : isActive && pub.embedUrl ? (
                   <iframe
@@ -626,7 +691,7 @@ const FeedItem = function FeedItem({
                 <div
                   aria-hidden
                   className={cn(
-                    "pointer-events-none absolute inset-0 transition-opacity duration-500",
+                    "pointer-events-none absolute inset-0 transition-opacity duration-[var(--dur-3)] ease-[var(--ease-out)]",
                     started ? "opacity-0" : "opacity-100",
                   )}
                 >
@@ -634,10 +699,10 @@ const FeedItem = function FeedItem({
                 </div>
 
                 {/* Progress. */}
-                <div className="absolute inset-x-0 top-0 z-10 h-[3px] bg-white/20">
+                <div className="absolute inset-x-0 top-0 z-10 h-[3px] overflow-hidden bg-[color-mix(in_srgb,var(--paper)_20%,transparent)]">
                   <div
-                    className="h-full bg-white/90 transition-[width] duration-300 ease-linear"
-                    style={{ width: `${Math.round(progress * 100)}%` }}
+                    className="h-full origin-left bg-[color-mix(in_srgb,var(--paper)_90%,transparent)]"
+                    style={{ transform: `scaleX(${progress})` }}
                   />
                 </div>
 
@@ -718,15 +783,17 @@ const FeedItem = function FeedItem({
               </div>
 
               {/* Panels 1..n: the evidence, in the same frame. */}
-              {cards.map((c) => (
-                <div key={c.id} className="h-full w-full flex-none snap-center bg-bg p-3 text-text">
-                  <FeedCardView
-                    card={c}
-                    ticker={pub.ticker}
-                    onSealedTap={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
-                  />
-                </div>
-              ))}
+              {near
+                ? cards.map((c) => (
+                    <div key={c.id} className="h-full w-full flex-none snap-center bg-bg p-3 text-text">
+                      <FeedCardView
+                        card={c}
+                        ticker={pub.ticker}
+                        onSealedTap={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
+                      />
+                    </div>
+                  ))
+                : null}
             </div>
 
             {/* Sideways controls, on the frame. */}
@@ -838,9 +905,9 @@ const FeedItem = function FeedItem({
   );
 };
 
-function EndOfFeed() {
+function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
-    <section className={cn("flex snap-start items-center justify-center px-4", ITEM_H)} aria-label="End of feed">
+    <section className={cn("flex snap-start items-center justify-center px-4", snapClass)} aria-label="End of feed">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[var(--radius-card)] border border-border p-9 text-center">
         <span className="num text-[10px] uppercase tracking-[0.22em] text-text-mute">End of feed</span>
         <p className="font-display text-[1.75rem] font-semibold leading-tight">You are caught up.</p>
@@ -885,7 +952,7 @@ function DiscussionPanel({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
+    <div className="fixed inset-0 z-[60] flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
       <button type="button" aria-label="Close discussion" onClick={onClose} className="absolute inset-0 md:static md:flex-1" />
       <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-[var(--radius-card)] bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
         <div className="mb-3 flex items-start justify-between gap-3">

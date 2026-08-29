@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ExploreWall } from "@/components/explore/explore-wall";
+import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
 import { recordRankingImpressions } from "@/lib/db/ranking";
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ticker?: string; sector?: string }>;
+  searchParams: Promise<{ ticker?: string; sector?: string; watch?: string }>;
 }) {
   const [{ ticker, sector }, userId, clips, viewer] = await Promise.all([
     searchParams,
@@ -90,6 +91,8 @@ export default async function ExplorePage({
           ticker={ticker?.toUpperCase() ?? null}
           sector={sector ?? null}
           dateline={formatDispatchDateline(getCycleWindow().dateIso)}
+          canAct={Boolean(userId)}
+          onPost={userId ? postFeedComment : undefined}
         />
       </div>
     </Suspense>

@@ -141,6 +141,20 @@
   height: calc(var(--app-h) - var(--nav-h));
 }
 
+.feed-snap-overlay {
+  height: 100dvh;
+}
+
+.feed-item-shell {
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h));
+}
+
+.feed-snap-overlay .feed-item-shell {
+  contain-intrinsic-size: auto 100dvh;
+}
+
 .safe-bottom {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
@@ -2497,6 +2511,7 @@ body {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--space-5);
   padding-top: var(--space-5);
   padding-bottom: var(--space-2);
   padding-right: var(--page-gutter);
@@ -2557,6 +2572,7 @@ body {
 .explore-tile {
   grid-column: var(--c3);
   grid-row: var(--r3);
+  contain: paint;
 }
 @media (min-width: 768px) {
   .explore-grid {

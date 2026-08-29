@@ -16,6 +16,7 @@ export function NativeClip({
   className,
   onProgress,
   previewSeconds,
+  preload = "auto",
 }: {
   src: string;
   poster?: string | null;
@@ -26,6 +27,7 @@ export function NativeClip({
   onProgress?: (ratio: number) => void;
   /** Loop only this many seconds when the publication is a long clip. */
   previewSeconds?: number | null;
+  preload?: "none" | "metadata" | "auto";
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -66,6 +68,7 @@ export function NativeClip({
       playsInline
       loop
       muted={muted}
+      preload={preload}
       autoPlay={!paused}
       className={cn("absolute inset-0 h-full w-full object-cover", className)}
     />

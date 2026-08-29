@@ -13,6 +13,8 @@
  * parsed, and fail soft to a bare warm-up fetch if the CDN blocks it.
  */
 
+import { isDirectVideoUrl } from "@/lib/video/direct";
+
 const PREFETCH_SECONDS = 5;
 const MAX_SEGMENTS = 6;
 
@@ -68,6 +70,23 @@ export async function prefetchVideoStart(playbackUrl: string | null | undefined)
   if (!playbackUrl || prefetchedStreams.has(playbackUrl)) return;
   prefetchedStreams.add(playbackUrl);
   warmVideoConnections(playbackUrl);
+
+  if (isDirectVideoUrl(playbackUrl)) {
+    try {
+      await fetch(playbackUrl, {
+        mode: "cors",
+        credentials: "omit",
+        headers: { Range: "bytes=0-262143" },
+      });
+    } catch {
+      try {
+        await fetch(playbackUrl, { mode: "no-cors", credentials: "omit" });
+      } catch {
+        /* ignore */
+      }
+    }
+    return;
+  }
 
   const master = await fetchText(playbackUrl);
   if (!master) return;
