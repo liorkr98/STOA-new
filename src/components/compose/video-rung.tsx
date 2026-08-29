@@ -483,7 +483,10 @@ function Timeline({
           />
         ))}
         {/* Playhead */}
-        <div className="pointer-events-none absolute inset-y-0 z-30 w-px bg-[var(--rust)]" style={{ left: time * pxPerSec }}>
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 z-30 w-px bg-[var(--rust)]"
+          style={{ transform: `translateX(${time * pxPerSec}px)` }}
+        >
           <span className="absolute -left-1.5 -top-0.5 h-3 w-3 rounded-full bg-[var(--rust)]" />
         </div>
       </div>
@@ -830,21 +833,22 @@ export function VideoRung({
         </div>
       </div>
 
-      <div className="mt-4">
-        <Stage src={src} time={time} overlays={edit.overlays} cards={cards} playing={playing} videoRef={videoRef} onTogglePlay={() => setPlaying((p) => !p)} faithful={faithful} ticker={ticker} />
-        {!src ? (
-          <p className="num mt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-            No video loaded · the stage runs a {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so overlays can be placed
-          </p>
-        ) : null}
-      </div>
+      <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+        <div className="md:sticky md:top-[calc(var(--nav-h)+0.75rem)] md:self-start">
+          <Stage src={src} time={time} overlays={edit.overlays} cards={cards} playing={playing} videoRef={videoRef} onTogglePlay={() => setPlaying((p) => !p)} faithful={faithful} ticker={ticker} />
+          {!src ? (
+            <p className="num mt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+              No video loaded · the stage runs a {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so overlays can be placed
+            </p>
+          ) : null}
+          <ThumbnailPicker src={src} edit={edit} onChange={(t) => setEdit({ ...edit, thumbnail: t })} />
+        </div>
 
-      <ThumbnailPicker src={src} edit={edit} onChange={(t) => setEdit({ ...edit, thumbnail: t })} />
-
-      {toolbox ? <div className="mt-5">{toolbox}</div> : null}
+        <div>
+          {toolbox ? <div className="mt-5 lg:mt-0">{toolbox}</div> : null}
 
       {/* The editor */}
-      <div className="mt-6" ref={timelineWrap}>
+      <div className={cn("mt-6", !toolbox && "lg:mt-0")} ref={timelineWrap}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="t-eyebrow">Editor</h3>
           <div className="flex flex-wrap items-center gap-2">
@@ -959,6 +963,8 @@ export function VideoRung({
             }}
           />
         ) : null}
+      </div>
+        </div>
       </div>
 
       {/* Faithful preview */}

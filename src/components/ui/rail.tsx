@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { prefersReducedMotion } from "@/lib/motion/reduced";
 
 /**
  * A band that scrolls horizontally on its own: serif section header, a mono
@@ -49,16 +50,21 @@ export function Rail({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     el.addEventListener("scroll", measure, { passive: true });
+    if ("onscrollend" in window) el.addEventListener("scrollend", measure);
     return () => {
       ro.disconnect();
       el.removeEventListener("scroll", measure);
+      el.removeEventListener("scrollend", measure);
     };
   }, [measure]);
 
   const step = (dir: 1 | -1) => {
     const el = trackRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * Math.max(240, el.clientWidth * 0.9), behavior: "smooth" });
+    el.scrollBy({
+      left: dir * Math.max(240, el.clientWidth * 0.9),
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
   };
 
   return (

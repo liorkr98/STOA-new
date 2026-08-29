@@ -86,6 +86,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 | **Skeleton → content** | Crossfade with 2px blur→0 on incoming content. Skeletons never pop out. | `--dur-2` |
 | **StatusChip change** | Old chip fades/scales out, new one in — never text morphing. | `--dur-1` out, `--dur-2` in |
 | **Notifications list** | New unread item: single y 6px→0 + opacity on arrival. Existing items never re-animate. | `--dur-2` |
+| **Feed clip progress** | Fill via `transform: scaleX` with `origin-left`. Never animate `width`. | driven by timeupdate |
 
 ### A.4 Explicitly do NOT animate
 

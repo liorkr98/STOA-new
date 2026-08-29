@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Play } from "lucide-react";
@@ -9,7 +10,10 @@ import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { FilterPicker } from "@/components/explore/filter-picker";
+import { FeedSurface } from "@/components/feed/feed-surface";
+import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { cn } from "@/lib/design/cn";
+import type { FeedComment } from "@/lib/feed/types";
 
 /**
  * Explore: a wall of faces the reader scans and chooses from. Six columns on
@@ -32,7 +36,17 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   );
 }
 
-function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Placed | null; three: Placed | null }; onOpen: () => void }) {
+function Tile({
+  tile,
+  placed,
+  onOpen,
+  onWarm,
+}: {
+  tile: ExploreTile;
+  placed: { six: Placed | null; three: Placed | null };
+  onOpen: () => void;
+  onWarm: () => void;
+}) {
   const p = tile.pub;
   const spotlight = (placed.six?.size ?? placed.three?.size) === "spotlight";
   const style = {
@@ -47,6 +61,7 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
     <button
       type="button"
       onClick={onOpen}
+      onPointerDown={onWarm}
       style={style}
       className={cn(
         "explore-tile group relative overflow-hidden bg-[var(--ink)] text-left text-white focus-ring",
@@ -55,11 +70,7 @@ function Tile({ tile, placed, onOpen }: { tile: ExploreTile; placed: { six: Plac
       )}
       aria-label={`${p.headline} by ${p.analyst.displayName}`}
     >
-      <ClipThumb
-        src={p.thumbnailUrl}
-        seed={p.analyst.id}
-        className="transition-transform duration-300 group-hover:scale-[1.02]"
-      />
+      <ClipThumb src={p.thumbnailUrl} seed={p.analyst.id} />
       {/* Scrim: transparent at ~60% height, ~55% black at the base. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-[linear-gradient(to_top,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,transparent)]" />
 
@@ -101,6 +112,8 @@ export function ExploreWall({
   sector,
   dateline,
   basePath = "/explore",
+  canAct = false,
+  onPost,
 }: {
   tiles: ExploreTile[];
   tickers: string[];
@@ -109,17 +122,45 @@ export function ExploreWall({
   sector: string | null;
   dateline: string;
   basePath?: string;
+  canAct?: boolean;
+  onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const watchId = search.get("watch");
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const portalReady = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  const setQuery = (mutate: (q: URLSearchParams) => void) => {
+    const q = new URLSearchParams(search.toString());
+    mutate(q);
+    router.replace(`${basePath}${q.toString() ? `?${q}` : ""}`, { scroll: false });
+  };
 
   const setFilter = (key: "ticker" | "sector", v: string | null) => {
-    const q = new URLSearchParams(search.toString());
-    if (v) q.set(key, v);
-    else q.delete(key);
-    if (key === "ticker") q.delete("sector");
-    if (key === "sector") q.delete("ticker");
-    router.push(`${basePath}${q.toString() ? `?${q}` : ""}`, { scroll: false });
+    setQuery((q) => {
+      if (v) q.set(key, v);
+      else q.delete(key);
+      if (key === "ticker") q.delete("sector");
+      if (key === "sector") q.delete("ticker");
+      q.delete("watch");
+    });
+  };
+
+  const openWatch = (id: string) => {
+    setQuery((q) => {
+      q.set("watch", id);
+    });
+  };
+
+  const closeWatch = () => {
+    setQuery((q) => {
+      q.delete("watch");
+    });
   };
 
   // The main wall is strict: sized by trending, gap-free, complete last row.
@@ -134,9 +175,41 @@ export function ExploreWall({
   }, [tiles, filtered]);
 
   const shown = tiles.filter((t) => layouts.six.has(t.pub.id) || layouts.three.has(t.pub.id));
+  const publications = useMemo(() => shown.map((t) => t.pub), [shown]);
+  const startIndex = Math.max(0, publications.findIndex((p) => p.id === watchId));
+  const overlayOpen = Boolean(watchId && publications.some((p) => p.id === watchId));
+
+  useEffect(() => {
+    if (!overlayOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [overlayOpen]);
+
+  const overlay =
+    portalReady && overlayOpen ? (
+      createPortal(
+        <div className="fixed inset-0 z-[70] bg-bg">
+          <FeedSurface
+            key={watchId}
+            publications={publications}
+            startIndex={startIndex}
+            canAct={canAct}
+            onPost={onPost}
+            sessionId={sessionId}
+            embedded
+            onBack={closeWatch}
+          />
+        </div>,
+        document.body,
+      )
+    ) : null;
 
   return (
     <div>
+      {overlay}
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-[var(--ink)] pb-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -191,13 +264,16 @@ export function ExploreWall({
                 key={t.pub.id}
                 tile={t}
                 placed={{ six: layouts.six.get(t.pub.id) ?? null, three: layouts.three.get(t.pub.id) ?? null }}
-                onOpen={() => router.push(`/feed?at=${encodeURIComponent(t.pub.id)}`)}
+                onOpen={() => openWatch(t.pub.id)}
+                onWarm={() => {
+                  warmVideoConnections(t.pub.playbackUrl, t.pub.embedUrl);
+                  void prefetchVideoStart(t.pub.playbackUrl);
+                }}
               />
             ))}
           </div>
         </div>
       )}
-
     </div>
   );
 }
