@@ -151,18 +151,6 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
       {open && (
         <div className="max-h-[calc(var(--app-h)-var(--nav-h))] overflow-y-auto border-t border-border bg-surface py-3 pb-[max(0.75rem,var(--safe-bottom))] md:hidden">
           <nav className="flex flex-col gap-1">
-            {items.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  prefetch
-                  onClick={() => setOpen(false)}
-                  className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:bg-surface-2 hover:text-text"
-                >
-                {item.label}
-              </Link>
-            ))}
-            <div className="my-2 h-px bg-border" />
             {profile ? (
               <>
                 <Link href={isAnalyst ? "/studio/compose" : "/become-analyst"} onClick={() => setOpen(false)} className={buttonClass("primary", "sm", "w-full justify-center")}>

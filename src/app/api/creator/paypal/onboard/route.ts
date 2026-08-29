@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createOnboardingLink } from "@/lib/paypal/partner";
 import { isPayPalConfigured } from "@/lib/paypal/client";
+import { appUrl } from "@/lib/pwa/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     const result = await createOnboardingLink({
       userId: user.id,
       email: user.email,
-      returnUrl: `${origin}/settings/payouts?onboarding=complete`,
+      returnUrl: appUrl(origin, "/settings/payouts?onboarding=complete"),
     });
     return NextResponse.json(result);
   } catch (e) {

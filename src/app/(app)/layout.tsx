@@ -4,6 +4,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { unreadNotificationCount } from "@/lib/db/notifications";
 import { TopNav } from "@/components/layout/top-nav";
 import { NavSkeleton } from "@/components/layout/nav-skeleton";
+import { AppTabs } from "@/components/layout/app-tabs";
 import { InstrumentSheetProvider } from "@/components/markets/instrument-sheet";
 import { getConsentRedirectPath } from "@/app/actions/consent";
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <InstrumentSheetProvider>
-      <div className="flex min-h-[var(--app-h)] min-w-0 flex-col">
+      <div className="has-app-tabs flex min-h-[var(--app-h)] min-w-0 flex-col">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
@@ -34,6 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           {children}
         </main>
+        <AppTabs />
       </div>
     </InstrumentSheetProvider>
   );

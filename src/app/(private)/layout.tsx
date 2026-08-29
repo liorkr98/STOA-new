@@ -7,6 +7,7 @@ import { TopNav } from "@/components/layout/top-nav";
 import { NavSkeleton } from "@/components/layout/nav-skeleton";
 import { PrivateSidebar, PrivateMobileNav } from "@/components/layout/private-sidebar";
 import { HideOnCompose } from "@/components/layout/compose-chrome";
+import { AppTabs } from "@/components/layout/app-tabs";
 import type { Profile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
   if (!userId) redirect("/sign-in");
 
   return (
-    <div className="flex min-h-[var(--app-h)] min-w-0 flex-col">
+    <div className="has-app-tabs flex min-h-[var(--app-h)] min-w-0 flex-col">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
@@ -47,6 +48,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
           </main>
         </div>
       </div>
+      <AppTabs />
     </div>
   );
 }

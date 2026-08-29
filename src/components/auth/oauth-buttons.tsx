@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/design/cn";
+import { sameOriginPath } from "@/lib/pwa/urls";
 
 /**
  * Social sign-in (Google / Apple / LinkedIn / X) via Supabase OAuth. Each
@@ -65,7 +66,7 @@ export function OAuthButtons({ next = "/home", refHandle }: { next?: string; ref
     setPending(provider);
     setError(null);
     const supabase = createClient();
-    const params = new URLSearchParams({ next });
+    const params = new URLSearchParams({ next: sameOriginPath(next, "/home") });
     if (refHandle) params.set("ref", refHandle);
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider,

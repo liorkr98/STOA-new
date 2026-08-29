@@ -46,6 +46,8 @@ export async function createReportUnlockOrder(params: {
         },
       ],
       application_context: {
+        // Callers must pass same-origin URLs (see appUrl in src/lib/pwa/urls.ts)
+        // so a PWA return from PayPal does not strand the session in a new tab.
         return_url: params.returnUrl,
         cancel_url: params.cancelUrl,
       },

@@ -94,6 +94,7 @@
 
   /* Sticky top nav is h-14 plus the status-bar inset when present. */
   --nav-h: calc(3.5rem + var(--safe-top));
+  --tab-h: 0px;
   --main-pad-y: 1.25rem;
   --app-h: 100dvh;
 
@@ -138,7 +139,7 @@
 }
 
 .feed-snap {
-  height: calc(var(--app-h) - var(--nav-h));
+  height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
 }
 
 .feed-snap-overlay {
@@ -148,11 +149,22 @@
 .feed-item-shell {
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h));
+  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h) - var(--tab-h));
 }
 
 .feed-snap-overlay .feed-item-shell {
   contain-intrinsic-size: auto 100dvh;
+}
+
+@media (max-width: 767px) {
+  .has-app-tabs {
+    --tab-h: calc(3.25rem + var(--safe-bottom));
+  }
+}
+
+.app-tabs {
+  flex: none;
+  padding-bottom: var(--safe-bottom);
 }
 
 .safe-bottom {
