@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { useState, type ReactNode } from "react";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
+import { InstallHint } from "@/components/layout/install-hint";
+import { PwaRegister } from "@/components/layout/pwa-register";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -25,6 +27,8 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={client}>
         {children}
         <CookieConsentBanner />
+        <InstallHint />
+        <PwaRegister />
         <Toaster
           position="bottom-center"
           aria-live="polite"

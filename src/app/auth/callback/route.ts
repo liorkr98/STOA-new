@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ProfileConfig } from "@/lib/editor/types";
 import { getConsentRedirectPath } from "@/app/actions/consent";
+import { sameOriginPath } from "@/lib/pwa/urls";
 
 /**
  * OAuth callback. Supabase redirects here with a PKCE code after Google /
@@ -14,7 +15,8 @@ export async function GET(req: Request) {
   const code = url.searchParams.get("code");
   const next = url.searchParams.get("next");
   const refHandle = url.searchParams.get("ref")?.trim().toLowerCase().replace(/^@/, "");
-  const explicitNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+  const explicitNext = sameOriginPath(next, "");
+  const safeNext = explicitNext || null;
 
   if (!code) {
     return NextResponse.redirect(new URL("/sign-in", url.origin));
@@ -47,8 +49,8 @@ export async function GET(req: Request) {
     }
   }
 
-  let dest = explicitNext ?? "/home";
-  if (!explicitNext && user) {
+  let dest = safeNext ?? "/home";
+  if (!safeNext && user) {
     const consentPath = await getConsentRedirectPath(user.id);
     if (consentPath) {
       dest = consentPath;

@@ -214,8 +214,10 @@ not discovered once.
 state: skeleton pill for avatar only, nav renders instantly (never block the whole nav on auth
 resolution).
 
-**Mobile (< 768px):** collapses to logo + hamburger. Hamburger opens a full-height drawer with the
-same items stacked, role switcher pinned at the top of the drawer.
+**Mobile (< 768px):** logo + search + avatar + overflow menu at the top. **Feed, Today, Explore,
+and Markets live in a bottom tab bar** (`AppTabs`) so a home-screen install feels like a phone
+app. The overflow menu is Compose, Inbox, Settings, and sign-in, not a second copy of the four
+surfaces. Desktop is unchanged: those four stay in the top row.
 
 ### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
 

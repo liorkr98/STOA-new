@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   },
   description:
     "A marketplace for independent stock research with a verified, public track record on every call.",
+  appleWebApp: {
+    capable: true,
+    title: "Stoa",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({
