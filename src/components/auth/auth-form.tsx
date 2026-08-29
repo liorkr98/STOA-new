@@ -140,7 +140,36 @@ export function AuthForm({
               />
               <span id="age-signup">I am 18 years of age or older</span>
             </label>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                name="marketing_opt_in"
+                className="mt-0.5 h-4 w-4 rounded border-border focus-ring"
+                aria-describedby="marketing-signup"
+              />
+              <span id="marketing-signup">
+                Send me product and research emails. Optional. You can stop anytime in{" "}
+                <Link href="/privacy#section-marketing-emails" target="_blank" rel="noopener noreferrer" className="underline">
+                  Privacy
+                </Link>
+                .
+              </span>
+            </label>
           </div>
+        )}
+
+        {mode === "sign-in" && (
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              name="marketing_opt_in"
+              className="mt-0.5 h-4 w-4 rounded border-border focus-ring"
+              aria-describedby="marketing-signin"
+            />
+            <span id="marketing-signin">
+              Send me product and research emails. Optional, and you can turn this off in Settings.
+            </span>
+          </label>
         )}
 
         <SubmitButton label={mode === "sign-in" ? "Sign in" : "Create account"} />

@@ -59,8 +59,9 @@ export const CARD_PAYLOADS = {
   }),
   chart: z.object({
     ticker: z.string().max(16),
-    engine: z.enum(["yahoo", "tradingview"]),
     caption: z.string().max(400),
+    compareTicker: z.string().max(16).optional(),
+    engine: z.enum(["yahoo", "tradingview"]).optional(),
   }),
   steelman: z.object({
     objection: z.string().max(2000),

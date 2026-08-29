@@ -1,7 +1,7 @@
 /** Legal document types tracked in legal_documents / user_consents. */
-export type LegalDocType = "terms" | "terms_creator" | "privacy" | "cookies";
+export type LegalDocType = "terms" | "terms_creator" | "privacy" | "cookies" | "marketing";
 
-/** Required at signup for all users. */
+/** Required at signup for all users. Marketing email opt-in is never required. */
 export const SIGNUP_CONSENT_TYPES: LegalDocType[] = ["terms", "privacy"];
 
 export const LEGAL_DOC_LABELS: Record<LegalDocType, string> = {
@@ -9,6 +9,7 @@ export const LEGAL_DOC_LABELS: Record<LegalDocType, string> = {
   terms_creator: "Creator Terms",
   privacy: "Privacy Policy",
   cookies: "Cookie Policy",
+  marketing: "Marketing emails",
 };
 
 export const LEGAL_DOC_PATHS: Record<LegalDocType, string> = {
@@ -16,6 +17,7 @@ export const LEGAL_DOC_PATHS: Record<LegalDocType, string> = {
   terms_creator: "/terms/creators",
   privacy: "/privacy",
   cookies: "/cookies",
+  marketing: "/privacy#section-marketing-emails",
 };
 
 /** Structural placeholders — not legal copy. */
@@ -46,6 +48,7 @@ export const PLACEHOLDER_SECTIONS: Record<string, string[]> = {
     "Information We Collect",
     "How We Use Information",
     "Legal Bases (GDPR)",
+    "Marketing Emails",
     "Sharing & Subprocessors",
     "Retention",
     "Your Rights",
@@ -59,6 +62,11 @@ export const PLACEHOLDER_SECTIONS: Record<string, string[]> = {
     "Analytics Cookies (if enabled)",
     "Your Choices",
     "Contact",
+  ],
+  marketing: [
+    "Optional product and research emails",
+    "How to withdraw",
+    "Not bundled with required Terms",
   ],
   not_advice: [
     "Publisher, Not Adviser",

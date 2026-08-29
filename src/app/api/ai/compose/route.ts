@@ -161,7 +161,11 @@ function heuristicActions(
   if (/table/i.test(lower) && !actions.some((a) => a.action === "insert_compare")) {
     actions.push({ action: "insert_table" });
   }
-  if (/heading|outline|section/i.test(lower) && actions.length === 0) {
+  if (/headline|standfirst|\bdek\b/i.test(lower)) {
+    return actions.slice(0, 10);
+  }
+
+  if (/\b(headings?|outline|sections?)\b/i.test(lower) && actions.length === 0) {
     actions.push({
       action: "insert_heading",
       text: t ? `${t} investment thesis` : "Investment thesis",
@@ -241,6 +245,7 @@ export async function POST(req: Request) {
     messages: ChatMessage[];
     context?: {
       title?: string;
+      dek?: string;
       ticker?: string;
       type?: string;
       documentExcerpt?: string;
@@ -258,6 +263,7 @@ export async function POST(req: Request) {
 
   const preparedContext = prepareComposeContext({
     title: body.context?.title ? normalizePromptInput(body.context.title, 120) : undefined,
+    dek: body.context?.dek ? normalizePromptInput(body.context.dek, 280) : undefined,
     ticker: body.context?.ticker
       ? normalizePromptInput(body.context.ticker, 12).toUpperCase()
       : undefined,
@@ -414,7 +420,15 @@ ${preparedContext.selection ? `<selection>${escapePromptTagContent(preparedConte
 
   const lower = lastUser.toLowerCase();
   let reply: string;
-  if (lower.includes("outline") || lower.includes("structure") || skill === "initiating-coverage") {
+  if (/headline|standfirst|\bdek\b/i.test(lower)) {
+    const working = preparedContext.meta.title?.trim();
+    reply = working
+      ? `Working from the headline “${working}”. Set DEEPSEEK_API_KEY for three rewritten options in your voice.`
+      : "I can see the headline field (it is empty) and the dek in context. Set DEEPSEEK_API_KEY for three headline options from your draft.";
+  } else if (/devil|steelman|argue against|counter[- ]?case/i.test(lower)) {
+    reply =
+      "I will argue against the thesis in your document. Set DEEPSEEK_API_KEY so Research AI can run the counter-case.";
+  } else if (lower.includes("outline") || lower.includes("structure") || skill === "initiating-coverage") {
     reply =
       "Applied initiating-coverage scaffold when possible. Set DEEPSEEK_API_KEY for full Research AI drafting.";
   } else if (market?.news.length || market?.filings.length) {

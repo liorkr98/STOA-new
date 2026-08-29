@@ -71,12 +71,14 @@ import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
 import { CompanionPicker } from "@/components/compose/companion-picker";
 import { PublishDetailsDialog } from "@/components/compose/publish-details";
+import { PublishPreviewDialog } from "@/components/compose/publish-preview";
 import { CardPreview } from "@/components/compose/card-preview";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import {
   COMPOSE_MODES,
-  FEED_PREVIEW_LONG_SECONDS,
   POST_MAX_CHARS,
+  clipPlayableSeconds,
+  feedPreviewSecondsForClip,
   modeFromType,
   typeFromMode,
   type ComposeMode,
@@ -200,9 +202,6 @@ export function StudioEditor({
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
   const [membersIncluded, setMembersIncluded] = useState(Boolean(initialDraft?.members_included));
   const [linkedReportId, setLinkedReportId] = useState<string | null>(initialDraft?.linked_report_id ?? null);
-  const [videoLength, setVideoLength] = useState<"short" | "long">(
-    initialDraft?.feed_preview_seconds ? "long" : "short",
-  );
   const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
   const [requiredPerks, setRequiredPerks] = useState<string[]>(initialDraft?.required_perks ?? []);
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
@@ -220,6 +219,7 @@ export function StudioEditor({
     viewsCertified: false,
   });
   const [panelOpen, setPanelOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [showTemplateStrip, setShowTemplateStrip] = useState(() =>
@@ -473,11 +473,18 @@ export function StudioEditor({
     return {
       reportTicker: hasCard ? ticker : undefined,
       title,
+      dek: summary,
       ticker: hasCard ? ticker : undefined,
       documentExcerpt: excerpt || undefined,
       selection: selection || undefined,
     };
-  }, [hasCard, ticker, title]);
+  }, [hasCard, ticker, title, summary]);
+
+  const clipSeconds =
+    mode === "video" && videoEdit
+      ? clipPlayableSeconds(videoEdit.trimStart, videoEdit.trimEnd, videoEdit.durationSeconds)
+      : 0;
+  const feedPreviewSeconds = mode === "video" ? feedPreviewSecondsForClip(clipSeconds) : null;
 
   const persistDraft = useCallback(async () => {
     if (isPublishingRef.current) return;
@@ -493,8 +500,7 @@ export function StudioEditor({
         price: access === "paid" ? Number(price) : null,
         members_included: membersIncluded,
         linked_report_id: linkedReportId,
-        feed_preview_seconds:
-          mode === "video" && videoLength === "long" ? FEED_PREVIEW_LONG_SECONDS : null,
+        feed_preview_seconds: mode === "video" ? feedPreviewSeconds : null,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
         ticker: ticker.trim() ? ticker : null,
@@ -538,10 +544,10 @@ export function StudioEditor({
     horizon,
     membersIncluded,
     linkedReportId,
-    videoLength,
     mode,
     tags,
     deck,
+    feedPreviewSeconds,
   ]);
 
   useEffect(() => {
@@ -566,7 +572,6 @@ export function StudioEditor({
   const showResearch = mode === "research";
   const hasVideo = showVideo && videoEdit !== null;
   const showToolboxRail = true;
-  const feedPreviewSeconds = mode === "video" && videoLength === "long" ? FEED_PREVIEW_LONG_SECONDS : null;
 
   const contentBlockedBy: string | null = (() => {
     if (mode === "short_post") {
@@ -801,6 +806,16 @@ export function StudioEditor({
   /* RIGHT: what you publish as. */
   const settings = (
     <>
+      <button
+        type="button"
+        onClick={() => {
+          setPanelOpen(false);
+          setPreviewOpen(true);
+        }}
+        className="mb-4 w-full rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)] focus-ring"
+      >
+        Preview publication
+      </button>
       <TagPicker
         value={tags}
         onChange={setTags}
@@ -906,6 +921,13 @@ export function StudioEditor({
             <FloppyDisk size={16} />
             <span className="hidden sm:inline">Save draft</span>
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setPreviewOpen(true)}
+          >
+            Preview
+          </Button>
           <Button size="sm" disabled={pending} onClick={onDetailsClick} className="shrink-0">
             <RocketLaunch size={15} weight="fill" />
             {pending ? "Publishing..." : "Publish"}
@@ -977,25 +999,15 @@ export function StudioEditor({
             {/* VIDEO format only. Research and Post are text. */}
             {showVideo ? (
               <section aria-label="Video" className="mb-10">
-                <div className="mb-4 flex gap-1.5" role="radiogroup" aria-label="Clip length">
-                  {(["short", "long"] as const).map((len) => (
-                    <button
-                      key={len}
-                      type="button"
-                      role="radio"
-                      aria-checked={videoLength === len}
-                      onClick={() => setVideoLength(len)}
-                      className={cn(
-                        "rounded-[var(--radius-btn)] border px-3 py-1.5 text-xs font-medium focus-ring",
-                        videoLength === len
-                          ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
-                          : "border-border text-text-mute hover:text-text",
-                      )}
-                    >
-                      {len === "short" ? "Short · full clip in the Feed" : "Long · 45 second Feed preview"}
-                    </button>
-                  ))}
-                </div>
+                {clipSeconds > 0 && feedPreviewSeconds ? (
+                  <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
+                    This clip is longer than the Feed budget. The Feed will play the first {feedPreviewSeconds} seconds. The full video stays on Explore and your profile.
+                  </p>
+                ) : clipSeconds > 0 ? (
+                  <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
+                    This clip fits the Feed. Readers will see the whole thing there.
+                  </p>
+                ) : null}
                 <VideoRung
                   value={videoEdit ?? undefined}
                   onChange={setVideoEdit}
@@ -1115,6 +1127,16 @@ export function StudioEditor({
         {settings}
       </PublishDetailsDialog>
 
+      <PublishPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={title}
+        dek={summary}
+        cards={cards}
+        clipSeconds={mode === "video" ? clipSeconds : null}
+        feedPreviewSeconds={feedPreviewSeconds}
+      />
+
       <AskPanel
         open={askOpen}
         seed={askSeed}
@@ -1122,7 +1144,7 @@ export function StudioEditor({
           setAskOpen(false);
           setAskSeed(null);
         }}
-        context={{ ticker, title }}
+        context={{ ticker, title, dek: summary }}
         credits={credits}
         onCreditsChange={setCredits}
         onInsertNode={insertNode}

@@ -45,18 +45,20 @@ export function prepareComposeContext(input: {
   documentExcerpt?: string;
   selection?: string;
   title?: string;
+  dek?: string;
   ticker?: string;
   type?: string;
 }): {
   document?: string;
   selection?: string;
-  meta: { title?: string; ticker?: string; type?: string };
+  meta: { title?: string; dek?: string; ticker?: string; type?: string };
   graphify: { document?: GraphifyResult; selection?: GraphifyResult };
   inputTokens: number;
   quote: TokenUsageQuote;
 } {
   const meta = {
     title: input.title,
+    dek: input.dek,
     ticker: input.ticker,
     type: input.type,
   };
@@ -78,7 +80,7 @@ export function prepareComposeContext(input: {
     graphifyMeta.document = g;
   }
 
-  const payload = [document, selection, meta.title, meta.ticker, meta.type].filter(Boolean).join("\n");
+  const payload = [document, selection, meta.title, meta.dek, meta.ticker, meta.type].filter(Boolean).join("\n");
   const inputTokens = estimateTokens(payload);
   const quote = quoteCredits("chat", inputTokens);
 

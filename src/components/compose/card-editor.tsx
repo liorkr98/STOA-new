@@ -7,6 +7,7 @@ import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { cardName, kindSpec, type DraftCard } from "@/lib/compose/cards";
 import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
+import { CardPreview } from "@/components/compose/card-preview";
 
 /**
  * Editing one card.
@@ -394,26 +395,13 @@ export function CardEditor({
               className={cn(inputClass, "num")}
             />
           </Field>
-          <Field label="Source">
-            <div className="flex gap-1" role="radiogroup" aria-label="Chart source">
-              {(["yahoo", "tradingview"] as const).map((eng) => (
-                <button
-                  key={eng}
-                  type="button"
-                  role="radio"
-                  aria-checked={p.engine === eng}
-                  onClick={() => set({ engine: eng })}
-                  className={cn(
-                    "rounded-[var(--radius-btn)] border px-2 py-1.5 text-[11px] focus-ring",
-                    p.engine === eng
-                      ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
-                      : "border-border text-text-mute hover:text-text",
-                  )}
-                >
-                  {eng === "yahoo" ? "Yahoo Finance" : "TradingView"}
-                </button>
-              ))}
-            </div>
+          <Field label="Compare line (optional)">
+            <input
+              value={String(p.compareTicker ?? "")}
+              onChange={(e) => set({ compareTicker: e.target.value.toUpperCase() })}
+              placeholder="SPY"
+              className={cn(inputClass, "num")}
+            />
           </Field>
           <Field label="Caption">
             <input
@@ -423,6 +411,10 @@ export function CardEditor({
               className={inputClass}
             />
           </Field>
+          <div className="rounded-[var(--radius-card)] border border-border bg-paper p-3">
+            <p className="num mb-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">Preview</p>
+            <CardPreview card={card} compact />
+          </div>
         </>
       ) : null}
 

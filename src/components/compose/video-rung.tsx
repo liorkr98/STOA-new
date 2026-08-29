@@ -587,7 +587,7 @@ function EventSettings({ overlay, edit, cards, ticker, onEdit, onRemove }: { ove
               {(
                 [
                   ...cards.map((c) => ({ type: "card" as const, cardId: c.id, label: cardName(c) })),
-                  { type: "chart" as const, ticker: ticker || "SPY", engine: "yahoo" as const },
+                  { type: "chart" as const, ticker: ticker || "SPY" },
                   { type: "diagram" as const, prompt: "", imageUrl: null },
                   { type: "figure" as const, label: "Figure from the thesis", imageUrl: null },
                   { type: "upload" as const, label: "Uploaded image", imageUrl: null },
@@ -614,9 +614,9 @@ function EventSettings({ overlay, edit, cards, ticker, onEdit, onRemove }: { ove
             {overlay.source.type === "chart" ? (
               <OverlayChartFields
                 ticker={overlay.source.ticker}
-                engine={overlay.source.engine ?? "yahoo"}
+                compareTicker={overlay.source.compareTicker}
                 fallbackTicker={ticker}
-                onChange={(next) => update({ source: { type: "chart", ticker: next.ticker, engine: next.engine } })}
+                onChange={(next) => update({ source: { type: "chart", ticker: next.ticker, compareTicker: next.compareTicker } })}
               />
             ) : null}
             {overlay.source.type === "diagram" ? (
@@ -781,7 +781,7 @@ export function VideoRung({
             kind: "visual",
             source: cards[0]
               ? { type: "card", cardId: cards[0].id, label: cardName(cards[0]) }
-              : { type: "chart", ticker: ticker || "NVDA", engine: "yahoo" },
+              : { type: "chart", ticker: ticker || "NVDA" },
             mode: "inset",
             position: 3,
           };

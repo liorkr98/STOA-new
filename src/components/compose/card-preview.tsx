@@ -116,7 +116,7 @@ function Body({ card }: { card: DraftCard }) {
       return (
         <CardChart
           ticker={String(p.ticker ?? "")}
-          engine={p.engine === "tradingview" ? "tradingview" : "yahoo"}
+          compareTicker={String(p.compareTicker ?? "")}
           caption={String(p.caption ?? "")}
           compact
         />

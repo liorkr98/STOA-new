@@ -3,20 +3,19 @@
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Shapes, ArrowLeft } from "lucide-react";
-import { CARD_INTENTS, LIBRARY_KINDS, type CardKindSpec } from "@/lib/compose/cards";
+import { CARD_INTENTS, LIBRARY_KINDS, sampleCard, type CardKindSpec } from "@/lib/compose/cards";
 import type { CardKind } from "@/lib/feed/card-schema";
+import { CardPreview } from "@/components/compose/card-preview";
 
-/**
- * The card library.
- *
- * Organised by intent, because "show the risk" is a question a creator can
- * answer about their own publication and "kill switch" is not. The Custom
- * entry is the same nine formats listed by shape, for the creator who already
- * knows they want a timeline and does not want to be asked why. Both routes
- * build the same card.
- */
-
-function KindButton({ spec, onPick, showShape }: { spec: CardKindSpec; onPick: (k: CardKind) => void; showShape?: boolean }) {
+function KindButton({
+  spec,
+  onPick,
+  showShape,
+}: {
+  spec: CardKindSpec;
+  onPick: (k: CardKind) => void;
+  showShape?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -43,18 +42,27 @@ export function CardLibrary({
   onPick: (kind: CardKind) => void;
 }) {
   const [byShape, setByShape] = useState(false);
+  const [previewKind, setPreviewKind] = useState<CardKind | null>(null);
 
-  function pick(kind: CardKind) {
+  function reset() {
+    setByShape(false);
+    setPreviewKind(null);
+  }
+
+  function addThisKind(kind: CardKind) {
     onPick(kind);
     onOpenChange(false);
+    reset();
   }
+
+  const previewSpec = previewKind ? LIBRARY_KINDS.find((s) => s.kind === previewKind) : null;
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(o) => {
         onOpenChange(o);
-        if (!o) setByShape(false);
+        if (!o) reset();
       }}
     >
       <Dialog.Portal>
@@ -63,12 +71,14 @@ export function CardLibrary({
           <div className="flex items-start justify-between gap-3">
             <div>
               <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
-                {byShape ? "Pick a format" : "Add a card"}
+                {previewSpec ? previewSpec.label : byShape ? "Pick a format" : "Add a card"}
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-[0.8125rem] text-text-mute">
-                {byShape
-                  ? "The same cards, listed by the shape they take."
-                  : "Cards belong to the publication. The same card can go in the video and in the research."}
+                {previewSpec
+                  ? "This is how the card reads. You can fill it after you add it."
+                  : byShape
+                    ? "The same cards, listed by the shape they take."
+                    : "Cards belong to the publication. Preview one before you add it."}
               </Dialog.Description>
             </div>
             <Dialog.Close
@@ -79,11 +89,33 @@ export function CardLibrary({
             </Dialog.Close>
           </div>
 
-          {byShape ? (
+          {previewKind && previewSpec ? (
+            <>
+              <div className="mt-4">
+                <CardPreview card={sampleCard(previewKind)} />
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => addThisKind(previewKind)}
+                  className="focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[13px] font-medium text-[var(--paper)]"
+                >
+                  Use this card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewKind(null)}
+                  className="num focus-ring flex items-center gap-1.5 rounded text-[10px] uppercase tracking-[0.14em] text-text-mute hover:text-text"
+                >
+                  <ArrowLeft size={12} /> Back
+                </button>
+              </div>
+            </>
+          ) : byShape ? (
             <>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {LIBRARY_KINDS.map((spec) => (
-                  <KindButton key={spec.kind} spec={spec} onPick={pick} showShape />
+                  <KindButton key={spec.kind} spec={spec} onPick={setPreviewKind} showShape />
                 ))}
               </div>
               <button
@@ -101,7 +133,7 @@ export function CardLibrary({
                   <h3 className="t-eyebrow">{intent.label}</h3>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {intent.kinds.map((spec) => (
-                      <KindButton key={spec.kind} spec={spec} onPick={pick} />
+                      <KindButton key={spec.kind} spec={spec} onPick={setPreviewKind} />
                     ))}
                   </div>
                 </section>

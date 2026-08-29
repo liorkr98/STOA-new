@@ -79,6 +79,22 @@ export function ConsentForm({
           </label>
         )}
 
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="marketing_opt_in"
+            className={inputClass}
+            aria-describedby="marketing-desc"
+          />
+          <span id="marketing-desc">
+            Send me product and research emails. Optional. See the{" "}
+            <Link href="/privacy#section-marketing-emails" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+              marketing notice
+            </Link>
+            . You can withdraw this in Settings.
+          </span>
+        </label>
+
         {state?.error && (
           <p role="alert" className="text-sm text-[var(--down)]" id="consent-error">
             {state.error}

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { DensityToggle } from "@/components/settings/density-toggle";
 import { PrivacyToggle } from "@/components/settings/privacy-toggle";
+import { MarketingOptInToggle } from "@/components/settings/marketing-opt-in-toggle";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
 
@@ -84,6 +85,8 @@ export default async function SettingsPage() {
         <SectionLabel>Privacy</SectionLabel>
         <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-6">
           <PrivacyToggle label="Show who I follow on my public page" defaultOn={false} />
+          <div className="h-px bg-border" />
+          <MarketingOptInToggle defaultOn={Boolean(profile.marketing_opt_in)} />
           <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
             Your purchases and library are always private.
           </p>

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
-import { getConsentRedirectPath, recordSignupCompliance } from "@/app/actions/consent";
+import { getConsentRedirectPath, recordMarketingOptInIfChecked, recordSignupCompliance } from "@/app/actions/consent";
 import { alertNewSignup } from "@/lib/slack/alerts";
 
 /** New investors without interests go to onboarding; everyone else to Today. */
@@ -59,6 +59,8 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     }
   }
 
+  await recordMarketingOptInIfChecked(user.id, formData);
+
   redirect(await postAuthPath(supabase, user.id));
 }
 
@@ -91,7 +93,9 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (data.session && data.user) {
     await supabase.rpc("ensure_user_profile");
 
-    const complianceError = await recordSignupCompliance(data.user.id);
+    const complianceError = await recordSignupCompliance(data.user.id, {
+      marketingOptIn: formData.get("marketing_opt_in") === "on",
+    });
     if (complianceError?.error) return complianceError;
 
     if (refHandle) {

@@ -29,7 +29,7 @@ export type VisualSource =
    *  when the card has been deleted out from under the placement. */
   | { type: "card"; cardId: string | null; label: string }
   | { type: "figure"; label: string; imageUrl: string | null }
-  | { type: "chart"; ticker: string; engine?: "yahoo" | "tradingview" }
+  | { type: "chart"; ticker: string; compareTicker?: string }
   | { type: "diagram"; prompt: string; imageUrl: string | null }
   | { type: "upload"; label: string; imageUrl: string | null };
 
@@ -102,7 +102,7 @@ export function sourceLabel(s: VisualSource, names?: Map<string, string>): strin
     case "figure":
       return `Figure · ${s.label}`;
     case "chart":
-      return `${s.engine === "tradingview" ? "TradingView" : "Yahoo"} · ${s.ticker}`;
+      return `Chart · ${s.ticker}${s.compareTicker ? ` · ${s.compareTicker}` : ""}`;
     case "diagram":
       return `Visualize · ${s.prompt.trim() || "Napkin"}`;
     case "upload":

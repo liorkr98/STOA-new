@@ -12,8 +12,8 @@ import { AI_COST } from "@/lib/ai/credits";
  * and it works on the research. Nothing it does is a setting, so it does not
  * belong on the publish side of the screen.
  *
- * Each entry seeds the Ask panel rather than firing on click. A paid tool
- * should show its price and then let the analyst decide, not spend first.
+ * Each entry opens Ask AI and runs the prompt. The analyst can still edit
+ * the reply; paid tools still spend credits on send, which is now immediate.
  */
 
 export interface AssistantAction {
@@ -53,7 +53,7 @@ export const ASSISTANT_ACTIONS: AssistantAction[] = [
   {
     key: "headline",
     label: "Suggest a headline",
-    prompt: "Suggest three headlines for this publication, in my voice.",
+    prompt: "Read the working headline in context.title, the dek in context.dek, and the thesis in the document. Suggest three headlines in my voice. If those fields are empty, say so and still offer three directions from whatever is in the document.",
   },
 ];
 
@@ -61,7 +61,7 @@ export const DEVILS_ADVOCATE: AssistantAction = {
   key: "devils-advocate",
   label: "Devil's Advocate",
   prompt:
-    "Argue against my thesis as hard as you can. Give me the strongest case that I am wrong, with the evidence that would support it.",
+    "Read my current headline (context.title), dek (context.dek), and thesis in the document. Argue against that thesis as hard as you can. Give the strongest case that I am wrong, with the evidence that would support it. Do not write a replacement call or price target.",
   cost: AI_COST.devilsAdvocate,
 };
 
