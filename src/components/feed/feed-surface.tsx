@@ -622,19 +622,45 @@ const FeedItem = function FeedItem({
 
   const onClip = card === 0;
 
+  const actions = [
+    {
+      key: "like",
+      label: liked ? "Liked" : "Like",
+      Icon: Heart,
+      on: () => act(setLiked, liked, () => toggleLike(pub.id), (r) => r.liked),
+      active: liked,
+    },
+    { key: "discuss", label: "Discuss", Icon: MessageSquare, on: onDiscuss, active: false },
+    {
+      key: "save",
+      label: saved ? "Saved" : "Save",
+      Icon: Bookmark,
+      on: () => act(setSaved, saved, () => toggleSave(pub.id), (r) => r.saved),
+      active: saved,
+    },
+    {
+      key: "share",
+      label: shared ? "Copied" : "Share",
+      Icon: Share2,
+      on: onShare,
+      active: shared,
+    },
+  ] as const;
+
   return (
     <section
       ref={ref}
       data-feed-item={index}
       aria-label={pub.headline}
       className={cn(
-        "feed-item-shell flex snap-start snap-always flex-col items-center justify-center py-3 pl-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))]",
+        "feed-item-shell flex snap-start snap-always flex-col items-center justify-center",
+        "py-0 pl-0 pr-0 md:py-3 md:pl-[max(1rem,var(--safe-left))] md:pr-[max(1rem,var(--safe-right))]",
         snapClass,
       )}
     >
-      <div className="flex h-full w-full max-w-[420px] flex-col justify-center gap-2">
-        {/* The dateline strip, above the frame. */}
-        <div className="flex items-center justify-between gap-3">
+      <div className="flex h-full w-full max-w-none flex-col justify-center gap-0 md:max-w-[420px] md:gap-2">
+        {/* The dateline strip, above the frame on desktop. On a phone it sits on the picture. */}
+        <div className="hidden items-center justify-between gap-3 md:flex">
           <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-text-mute">
             {dateline}
           </span>
@@ -643,9 +669,14 @@ const FeedItem = function FeedItem({
           </span>
         </div>
 
-        {/* The stage: 9:16, height-bound so it never outgrows the viewport. */}
+        {/* Phone: the stage is the viewport. Desktop: 9:16 card, height-bound. */}
         <div className="relative min-h-0 flex-1">
-          <div className="relative mx-auto h-full max-h-full overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--ink)] text-[var(--paper)] [aspect-ratio:9/16]">
+          <div
+            className={cn(
+              "relative h-full w-full overflow-hidden bg-[var(--ink)] text-[var(--paper)]",
+              "md:mx-auto md:max-h-full md:rounded-[var(--radius-card)] md:border md:border-border md:[aspect-ratio:9/16]",
+            )}
+          >
             <div
               ref={trackRef}
               className="scroll-area scroll-bare flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
@@ -682,12 +713,6 @@ const FeedItem = function FeedItem({
                     className="absolute inset-0 h-full w-full border-0"
                   />
                 ) : null}
-                {/*
-                  The poster covers the player until the player is genuinely
-                  playing, and the iframe is opaque black while an HLS stream
-                  starts. Putting it behind would hide it exactly when it is
-                  needed, so it sits on top and steps aside on the first frame.
-                */}
                 <div
                   aria-hidden
                   className={cn(
@@ -706,13 +731,21 @@ const FeedItem = function FeedItem({
                   />
                 </div>
 
-                {/* Ticker and direction top-left; the seal top-right. A callless
-                    publication shows neither, and anchors on its theme instead. */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.5),transparent)] p-3 pt-5">
-                  <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
-                    {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
-                    {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
-                    {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} /> : null}
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.5),transparent)] p-3 pt-4 md:pt-5">
+                  <div className="min-w-0">
+                    <div className="mb-1.5 flex items-center justify-between gap-3 md:hidden">
+                      <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-white/80">
+                        {dateline}
+                      </span>
+                      <span className="num flex-none text-[10px] uppercase tracking-[0.16em] text-white/55">
+                        {index + 1} / {total}
+                      </span>
+                    </div>
+                    <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
+                      {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
+                      {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
+                      {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} /> : null}
+                    </div>
                   </div>
                   <div className="pointer-events-auto flex flex-none items-start gap-2">
                     {pub.seal ? (
@@ -729,12 +762,11 @@ const FeedItem = function FeedItem({
                   </div>
                 </div>
 
-                {/* Tap the picture to pause, the way a video expects to behave. */}
                 <button
                   type="button"
                   onClick={() => setPaused((p) => !p)}
                   aria-label={paused ? "Play (Space)" : "Pause (Space)"}
-                  className="absolute inset-x-0 top-14 bottom-20 w-full cursor-default"
+                  className="absolute inset-x-0 top-16 bottom-36 w-full cursor-default md:bottom-20"
                 >
                   {paused ? (
                     <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
@@ -743,46 +775,80 @@ const FeedItem = function FeedItem({
                   ) : null}
                 </button>
 
-                {/* The lower third: the identity band on the picture itself. */}
-                <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-[linear-gradient(to_top,rgba(0,0,0,0.75),transparent)] px-3 pb-3 pt-10">
-                  <Link
-                    href={`/analyst/${pub.analyst.handle}`}
-                    className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded"
+                <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-3 pt-12">
+                  <h2
+                    dir="auto"
+                    className="user-copy mb-2 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
                   >
-                    <Avatar
-                      src={pub.analyst.avatarUrl}
-                      name={pub.analyst.displayName}
-                      size="md"
-                      className="!border-white/30"
-                    />
-                    <span className="min-w-0">
-                      <span dir="auto" className="user-copy block truncate text-[0.875rem] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
-                        {pub.analyst.displayName}
+                    {pub.headline}
+                  </h2>
+                  <div className="mb-3 flex items-center justify-between gap-3 md:hidden" role="group" aria-label="Actions">
+                    <div className="flex items-center gap-2.5">
+                      {actions.map(({ key, label, Icon, on, active }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={on}
+                          aria-label={label}
+                          aria-pressed={key === "like" || key === "save" ? active : undefined}
+                          className="focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white"
+                        >
+                          <Icon
+                            size={14}
+                            strokeWidth={1.6}
+                            fill={active && (key === "like" || key === "save") ? "currentColor" : "none"}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
+                      aria-label={`Panel ${card + 1} of ${panelCount}`}
+                      className="num focus-ring flex-none rounded text-[11px] tracking-[0.12em] text-white/80"
+                    >
+                      {card + 1} / {panelCount}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/analyst/${pub.analyst.handle}`}
+                      className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded"
+                    >
+                      <Avatar
+                        src={pub.analyst.avatarUrl}
+                        name={pub.analyst.displayName}
+                        size="md"
+                        className="!border-white/30"
+                      />
+                      <span className="min-w-0">
+                        <span dir="auto" className="user-copy block truncate text-[0.875rem] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+                          {pub.analyst.displayName}
+                        </span>
+                        <span className="num block truncate text-[10px] uppercase tracking-[0.14em] text-white/75">
+                          @{pub.analyst.handle}
+                        </span>
                       </span>
-                      <span className="num block truncate text-[10px] uppercase tracking-[0.14em] text-white/75">
-                        @{pub.analyst.handle}
-                      </span>
-                    </span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      act(setFollowing, following, () => toggleFollow(pub.analyst.id), (r) => r.following)
-                    }
-                    aria-pressed={following}
-                    className={cn(
-                      "num focus-ring flex-none rounded-[var(--radius-tag)] border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] transition-colors",
-                      following
-                        ? "border-white/70 bg-white/15 text-white"
-                        : "border-white/45 text-white/90 hover:border-white hover:text-white",
-                    )}
-                  >
-                    {following ? "Following" : "Follow"}
-                  </button>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        act(setFollowing, following, () => toggleFollow(pub.analyst.id), (r) => r.following)
+                      }
+                      aria-pressed={following}
+                      className={cn(
+                        "num focus-ring flex-none rounded-[var(--radius-tag)] border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] transition-colors",
+                        following
+                          ? "border-white/70 bg-white/15 text-white"
+                          : "border-white/45 text-white/90 hover:border-white hover:text-white",
+                      )}
+                    >
+                      {following ? "Following" : "Follow"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Panels 1..n: the evidence, in the same frame. */}
               {near
                 ? cards.map((c) => (
                     <div key={c.id} className="h-full w-full flex-none snap-center bg-bg p-3 text-text">
@@ -796,7 +862,6 @@ const FeedItem = function FeedItem({
                 : null}
             </div>
 
-            {/* Sideways controls, on the frame. */}
             {card > 0 ? (
               <button
                 type="button"
@@ -822,43 +887,24 @@ const FeedItem = function FeedItem({
                 <ChevronRight size={16} strokeWidth={1.6} />
               </button>
             ) : null}
+
+            {!onClip ? (
+              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-3 pt-8 md:hidden">
+                <p dir="auto" className="user-copy line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] text-white">
+                  {pub.headline}
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* The headline sits under the frame, where it does not crowd the face. */}
-        <h2 dir="auto" className="user-copy line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight">
+        <h2 dir="auto" className="user-copy hidden line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight md:block">
           {pub.headline}
         </h2>
 
-        {/* The editorial action bar, and the pager at its right end. */}
-        <div className="flex items-center justify-between gap-3 border-y border-border py-2.5">
+        <div className="hidden items-center justify-between gap-3 border-y border-border py-2.5 md:flex">
           <div className="flex items-center gap-3 sm:gap-4" role="group" aria-label="Actions">
-            {(
-              [
-                {
-                  key: "like",
-                  label: liked ? "Liked" : "Like",
-                  Icon: Heart,
-                  on: () => act(setLiked, liked, () => toggleLike(pub.id), (r) => r.liked),
-                  active: liked,
-                },
-                { key: "discuss", label: "Discuss", Icon: MessageSquare, on: onDiscuss, active: false },
-                {
-                  key: "save",
-                  label: saved ? "Saved" : "Save",
-                  Icon: Bookmark,
-                  on: () => act(setSaved, saved, () => toggleSave(pub.id), (r) => r.saved),
-                  active: saved,
-                },
-                {
-                  key: "share",
-                  label: shared ? "Copied" : "Share",
-                  Icon: Share2,
-                  on: onShare,
-                  active: shared,
-                },
-              ] as const
-            ).map(({ key, label, Icon, on, active }) => (
+            {actions.map(({ key, label, Icon, on, active }) => (
               <button
                 key={key}
                 type="button"

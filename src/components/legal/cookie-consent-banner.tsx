@@ -36,7 +36,8 @@ export function CookieConsentBanner() {
     <div
       role="region"
       aria-label="Cookie consent"
-      className="fixed inset-x-0 bottom-0 z-[100] border-t border-border bg-surface/95 pl-[max(1.25rem,var(--safe-left))] pr-[max(1.25rem,var(--safe-right))] pt-3 pb-[max(0.75rem,var(--safe-bottom))] backdrop-blur-sm"
+      className="fixed inset-x-0 z-[100] border-t border-border bg-surface/95 pl-[max(1.25rem,var(--safe-left))] pr-[max(1.25rem,var(--safe-right))] pt-3 pb-[max(0.75rem,var(--safe-bottom))] backdrop-blur-sm"
+      style={{ bottom: "var(--tab-h, 0px)" }}
     >
       <div className="mx-auto flex max-w-[var(--w-wide)] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-text-mute">

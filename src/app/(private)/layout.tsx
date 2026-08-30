@@ -21,7 +21,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
   if (!userId) redirect("/sign-in");
 
   return (
-    <div className="has-app-tabs flex min-h-[var(--app-h)] min-w-0 flex-col">
+    <div className="has-app-tabs flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
@@ -31,19 +31,19 @@ export default async function PrivateLayout({ children }: { children: React.Reac
       <Suspense fallback={<NavSkeleton />}>
         <PrivateNav />
       </Suspense>
-      <div className="flex flex-1">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <HideOnCompose>
           <Suspense fallback={<div className="hidden w-60 shrink-0 border-r border-border md:block" />}>
             <PrivateRail />
           </Suspense>
         </HideOnCompose>
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <HideOnCompose>
             <Suspense fallback={null}>
               <PrivateMobile />
             </Suspense>
           </HideOnCompose>
-          <main id="main-content" tabIndex={-1} className="gutter-x min-w-0 flex-1 py-[var(--main-pad-y)] outline-none">
+          <main id="main-content" tabIndex={-1} className="gutter-x min-h-0 min-w-0 flex-1 overflow-y-auto py-[var(--main-pad-y)] outline-none">
             {children}
           </main>
         </div>
