@@ -139,7 +139,8 @@
 }
 
 .feed-snap {
-  height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
+  height: 100%;
+  min-height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
 }
 
 .feed-snap-overlay {
@@ -149,7 +150,7 @@
 .feed-item-shell {
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h) - var(--tab-h));
+  contain-intrinsic-size: auto 100%;
 }
 
 .feed-snap-overlay .feed-item-shell {
@@ -158,13 +159,18 @@
 
 @media (max-width: 767px) {
   .has-app-tabs {
-    --tab-h: calc(3.25rem + var(--safe-bottom));
+    /* Extra floor so Chrome on Android (often 0 safe-area) does not sit the
+       bar on the system nav. */
+    --tab-h: calc(3.25rem + max(0.5rem, var(--safe-bottom)));
   }
 }
 
 .app-tabs {
   flex: none;
-  padding-bottom: var(--safe-bottom);
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  padding-bottom: max(0.5rem, var(--safe-bottom));
 }
 
 .safe-bottom {
