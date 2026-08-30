@@ -30,7 +30,7 @@ import { prefersReducedMotion } from "@/lib/motion/reduced";
 import { useStoredValue } from "@/lib/hooks/use-stored-value";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
-import { isDirectVideoUrl } from "@/lib/video/direct";
+import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { FeedComment, FeedPublication } from "@/lib/feed/types";
 
 /**
@@ -297,6 +297,13 @@ const FeedItem = function FeedItem({
   const trackedPlayRef = useRef(false);
   const clickTrackedRef = useRef(false);
   const marksSentRef = useRef(0);
+  /**
+   * Set when our own player cannot play the stream (a pull zone that refuses
+   * the manifest, a dead file). The provider's embed authenticates itself, so
+   * it is the fallback rather than an error state.
+   */
+  const [streamFailed, setStreamFailed] = useState(false);
+  const onUnplayable = useCallback(() => setStreamFailed(true), []);
 
   /**
    * Report how far the reader actually got, at fixed checkpoints.
@@ -739,7 +746,7 @@ const FeedItem = function FeedItem({
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">
-                {near && isDirectVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
+                {near && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
                   <NativeClip
                     src={pub.playbackUrl}
                     poster={pub.thumbnailUrl}
@@ -749,6 +756,7 @@ const FeedItem = function FeedItem({
                     previewSeconds={pub.feedPreviewSeconds}
                     preload={isActive ? "auto" : "metadata"}
                     captionUrl={pub.captionUrl}
+                    onUnplayable={onUnplayable}
                     onProgress={
                       isActive
                         ? (ratio) => {

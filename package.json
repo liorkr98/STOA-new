@@ -74,6 +74,7 @@
     "culori": "^4.0.1",
     "date-fns": "^4.1.0",
     "decimal.js": "^10.4.3",
+    "hls.js": "^1.7.1",
     "katex": "^0.18.4",
     "ldrs": "^1.1.9",
     "lightweight-charts": "^5.2.1",

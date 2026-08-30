@@ -169,6 +169,13 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
 - **The Feed lives at `/feed`.** It used to live at `/discover` under the label "Feed"; Discover
   is retired as a surface, a route and a name, and `/discover` is a permanent redirect to `/feed`.
   Today is `/home`; there is no `/today` route. Explore is `/explore`.
+- **Watching requires an account.** `/feed` and Explore's watch overlay redirect signed-out
+  visitors to sign-in, because streaming is the highest per-view cost in the product. Explore's
+  posters, Today, publication pages and profiles stay open; the root's lead clip plays on a
+  press, not on arrival. Rationale and the accepted tradeoff: `docs/GROWTH_RESEARCH.md` §6.2.
+- **Video is adaptive HLS**, played by `NativeClip` (native on Safari, hls.js elsewhere, loaded
+  on demand), with the Bunny iframe as an automatic fallback when a manifest is refused. The
+  local demo MP4s are a walkthrough tool behind `STOA_DEMO_CLIPS=1`, never a delivery path.
 - Content types: **CALL / RESEARCH / NOTE** (see the content model above). A publication is a
   video, optionally carrying a locked call, cards, and a thesis.
 - The score: **Track Score**, internal and private. Never shown publicly; the public sees the
