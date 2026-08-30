@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { Play } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { TickerChip } from "@/components/ui/ticker-chip";
@@ -9,40 +8,32 @@ import { DirectionTag } from "@/components/ui/tag";
 import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
 import { pct } from "@/lib/format";
-import { ClipThumb } from "@/components/ui/clip-thumb";
-import { NativeClip } from "@/components/video/native-clip";
+import { LandingLeadClip } from "@/components/landing/landing-lead-clip";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
 
 /**
  * The signed-out root. Two constraints held together: show without giving
- * away (headlines and previews only), and feel alive (the running tape, the
- * lead autoplaying muted, seals arriving as they scroll into view, a live
- * activity line, a wall of faces, and restrained scroll reveals driven by
- * the reader's own scroll position rather than a timer).
+ * away (headlines and posters only, and the lead plays on a press rather than
+ * on arrival), and feel alive (the running tape, seals arriving as they scroll
+ * into view, a live activity line, a wall of faces, and restrained scroll
+ * reveals driven by the reader's own scroll position rather than a timer).
  */
 
 /**
- * Watching comes first, and needs no account.
+ * Signing up is the only door to the Feed.
  *
- * A stranger who has seen an analyst make an argument has a reason to sign up;
- * a stranger looking at a signup form does not. The Feed is already open to
- * signed-out readers, so the only thing missing was the door.
+ * Watching is the expensive thing this product does per view, so it sits
+ * behind an account. What a stranger gets instead is proof: today's
+ * headlines, resolved calls with their seals, and the wall of analysts.
  */
 const ACTIONS = (
   <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
-    <Link href="/feed" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
-      <Play size={16} fill="currentColor" strokeWidth={0} />
-      Watch the Feed
-    </Link>
-    <Link href="/sign-up" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
+    <Link href="/sign-up" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
       Sign up
     </Link>
-    <Link
-      href="/sign-in"
-      className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:text-text"
-    >
+    <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
       Log in
     </Link>
   </div>
@@ -70,7 +61,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
           Independent analysts publish their research on video. Every call locks at publish and is graded by the market, hits and misses alike.
         </p>
         <div className="mt-8">{ACTIONS}</div>
-        <p className="mt-4 text-[0.8125rem] text-text-mute">No account needed to watch.</p>
+        <p className="mt-4 text-[0.8125rem] text-text-mute">Free to join. Watching needs an account.</p>
         <p className="num mt-6 text-[11px] uppercase tracking-[0.18em] text-text-mute">{activity.toUpperCase()}</p>
         <p className="num mt-10 text-[10px] uppercase tracking-[0.18em] text-text-faint">or scroll to see today ↓</p>
       </div>
@@ -120,29 +111,13 @@ function TodayLite({ data }: { data: LandingPayload }) {
               */}
               {lead.playbackUrl || lead.embedUrl || lead.thumbnailUrl ? (
                 <div className="relative aspect-video overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
-                  {lead.playbackUrl ? (
-                    <NativeClip
-                      src={lead.playbackUrl}
-                      poster={lead.thumbnailUrl}
-                      muted
-                      paused={false}
-                      title={lead.headline}
-                    />
-                  ) : lead.embedUrl ? (
-                    <iframe
-                      src={lead.embedUrl}
-                      title={lead.headline}
-                      allow="autoplay; encrypted-media"
-                      className="absolute inset-0 h-full w-full border-0"
-                    />
-                  ) : (
-                    <>
-                      <ClipThumb src={lead.thumbnailUrl} seed={lead.analystId} />
-                      <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
-                        <Play size={20} fill="currentColor" strokeWidth={0} className="ml-0.5" />
-                      </span>
-                    </>
-                  )}
+                  <LandingLeadClip
+                    playbackUrl={lead.playbackUrl}
+                    embedUrl={lead.embedUrl}
+                    thumbnailUrl={lead.thumbnailUrl}
+                    headline={lead.headline}
+                    analystId={lead.analystId}
+                  />
                 </div>
               ) : null}
               <div className="today-kicker mt-5">The lead · {lead.kicker}</div>

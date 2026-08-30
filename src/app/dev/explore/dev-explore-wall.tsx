@@ -21,5 +21,5 @@ export function DevExploreWall(props: {
     likes: 0,
   });
 
-  return <ExploreWall {...props} basePath="/dev/explore" canAct onPost={onPost} />;
+  return <ExploreWall {...props} basePath="/dev/explore" canAct canWatch onPost={onPost} />;
 }

@@ -92,6 +92,7 @@ export default async function ExplorePage({
           sector={sector ?? null}
           dateline={formatDispatchDateline(getCycleWindow().dateIso)}
           canAct={Boolean(userId)}
+          canWatch={Boolean(userId)}
           onPost={userId ? postFeedComment : undefined}
         />
       </div>
