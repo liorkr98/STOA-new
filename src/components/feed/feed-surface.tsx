@@ -27,6 +27,7 @@ import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { prefersReducedMotion } from "@/lib/motion/reduced";
+import { useStoredValue } from "@/lib/hooks/use-stored-value";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { isDirectVideoUrl } from "@/lib/video/direct";
@@ -55,6 +56,24 @@ import type { FeedComment, FeedPublication } from "@/lib/feed/types";
  * a little further off than the last.
  */
 const ITEM_H = "feed-snap";
+
+/**
+ * The reader's sound choice, remembered.
+ *
+ * Muted autoplay is correct (and required by every mobile browser), but a
+ * reader who deliberately turned sound on should not have to do it again on
+ * the next clip, the next navigation or tomorrow. Re-muting forever is a tax
+ * paid on every session.
+ */
+const SOUND_KEY = "stoa_feed_sound";
+const SOUND_EVENT = "stoa-feed-sound";
+
+function parseMuted(raw: string | null): boolean {
+  return raw !== "on";
+}
+
+/** Retention checkpoints. The curve is what tells us whether a clip held. */
+const PROGRESS_MARKS = [0.25, 0.5, 0.75, 0.95] as const;
 
 function fmt(seconds: number) {
   const s = Math.max(0, Math.round(seconds));
@@ -91,7 +110,15 @@ export function FeedSurface({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const [active, setActive] = useState(Math.min(startIndex, Math.max(0, publications.length - 1)));
-  const [muted, setMuted] = useState(true);
+  const muted = useStoredValue(SOUND_KEY, parseMuted, true, SOUND_EVENT);
+  const setMuted = useCallback((next: boolean) => {
+    try {
+      localStorage.setItem(SOUND_KEY, next ? "off" : "on");
+      window.dispatchEvent(new Event(SOUND_EVENT));
+    } catch {
+      // Private mode: the toggle still works for this view.
+    }
+  }, []);
   const [discussing, setDiscussing] = useState<string | null>(null);
 
   // Which publication is on screen. `rootMargin` collapses the observation box
@@ -269,6 +296,33 @@ const FeedItem = function FeedItem({
   const loopedRef = useRef(false);
   const trackedPlayRef = useRef(false);
   const clickTrackedRef = useRef(false);
+  const marksSentRef = useRef(0);
+
+  /**
+   * Report how far the reader actually got, at fixed checkpoints.
+   *
+   * Sent as quartiles rather than continuously: the useful output is a
+   * drop-off curve, and one event per timeupdate would be hundreds of events
+   * per clip. Each mark fires once per visit to the publication.
+   */
+  const trackProgress = useCallback(
+    (ratio: number) => {
+      while (
+        marksSentRef.current < PROGRESS_MARKS.length &&
+        ratio >= PROGRESS_MARKS[marksSentRef.current]
+      ) {
+        const mark = PROGRESS_MARKS[marksSentRef.current];
+        marksSentRef.current += 1;
+        trackEngagement({
+          reportId: pub.id,
+          kind: "watch_progress",
+          value: Math.round(mark * 100),
+          surface: "feed",
+        });
+      }
+    },
+    [pub.id],
+  );
 
   /**
    * Hand the stage from the poster to the player a beat after the publication
@@ -322,6 +376,7 @@ const FeedItem = function FeedItem({
         trackedPlayRef.current = true;
         loopedRef.current = false;
         lastRatioRef.current = 0;
+        marksSentRef.current = 0;
         trackVideoEvent(pub.clipId, {
           watchedSeconds: 0,
           sessionId,
@@ -416,6 +471,7 @@ const FeedItem = function FeedItem({
           if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
           lastRatioRef.current = ratio;
           setProgress(ratio);
+          trackProgress(ratio);
         }
       }
     };
@@ -440,7 +496,7 @@ const FeedItem = function FeedItem({
       clearInterval(retry);
       clearTimeout(giveUp);
     };
-  }, [isActive, muted]);
+  }, [isActive, muted, trackProgress]);
 
   /**
    * The bar advances on a local clock and every `timeupdate` snaps it back to
@@ -661,12 +717,14 @@ const FeedItem = function FeedItem({
                     title={pub.headline}
                     previewSeconds={pub.feedPreviewSeconds}
                     preload={isActive ? "auto" : "metadata"}
+                    captionUrl={pub.captionUrl}
                     onProgress={
                       isActive
                         ? (ratio) => {
                             if (lastRatioRef.current > 0.85 && ratio < 0.15) loopedRef.current = true;
                             lastRatioRef.current = ratio;
                             setProgress(ratio);
+                            trackProgress(ratio);
                             if (ratio > 0) setStarted(true);
                           }
                         : undefined

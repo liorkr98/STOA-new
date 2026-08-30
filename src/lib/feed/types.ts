@@ -47,6 +47,8 @@ export interface FeedPublication {
   /** Direct mp4/webm when the clip is a file the browser can play. */
   playbackUrl: string | null;
   thumbnailUrl: string | null;
+  /** WebVTT captions. The Feed plays muted, so this is how most readers follow it. */
+  captionUrl: string | null;
   durationSeconds: number;
   headline: string;
   deck: string | null;

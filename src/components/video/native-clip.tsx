@@ -17,6 +17,7 @@ export function NativeClip({
   onProgress,
   previewSeconds,
   preload = "auto",
+  captionUrl,
 }: {
   src: string;
   poster?: string | null;
@@ -28,6 +29,8 @@ export function NativeClip({
   /** Loop only this many seconds when the publication is a long clip. */
   previewSeconds?: number | null;
   preload?: "none" | "metadata" | "auto";
+  /** WebVTT track. Most phone viewers never turn sound on, so this carries the argument. */
+  captionUrl?: string | null;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -37,12 +40,26 @@ export function NativeClip({
     el.muted = muted;
   }, [muted]);
 
+  /**
+   * Autoplay with sound is rejected unless the browser thinks the reader has
+   * earned it, and a rejected play() leaves a frozen poster rather than an
+   * error. So a remembered sound-on preference falls back to muted playback
+   * instead of showing nothing: a silent clip is recoverable, a dead frame is
+   * not. The mute control still reflects what the reader asked for.
+   */
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (paused) el.pause();
-    else void el.play().catch(() => undefined);
-  }, [paused, src]);
+    if (paused) {
+      el.pause();
+      return;
+    }
+    void el.play().catch(() => {
+      if (el.muted) return;
+      el.muted = true;
+      void el.play().catch(() => undefined);
+    });
+  }, [paused, src, muted]);
 
   useEffect(() => {
     const el = ref.current;
@@ -59,6 +76,24 @@ export function NativeClip({
     return () => el.removeEventListener("timeupdate", onTime);
   }, [onProgress, previewSeconds]);
 
+  /**
+   * Captions default to showing, because a feed clip plays muted and a silent
+   * face makes no argument. Set from script rather than markup: `default` on a
+   * `<track>` is only honored on first load, so a track that arrives with a
+   * later src (or a remount) would stay hidden.
+   */
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !captionUrl) return;
+    const show = () => {
+      const track = el.textTracks[0];
+      if (track) track.mode = "showing";
+    };
+    show();
+    el.textTracks.addEventListener("addtrack", show);
+    return () => el.textTracks.removeEventListener("addtrack", show);
+  }, [captionUrl]);
+
   return (
     <video
       ref={ref}
@@ -70,7 +105,12 @@ export function NativeClip({
       muted={muted}
       preload={preload}
       autoPlay={!paused}
+      crossOrigin={captionUrl ? "anonymous" : undefined}
       className={cn("absolute inset-0 h-full w-full object-cover", className)}
-    />
+    >
+      {captionUrl ? (
+        <track kind="captions" src={captionUrl} srcLang="en" label="English" default />
+      ) : null}
+    </video>
   );
 }

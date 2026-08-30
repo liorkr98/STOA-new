@@ -23,12 +23,26 @@ import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing
  * the reader's own scroll position rather than a timer).
  */
 
+/**
+ * Watching comes first, and needs no account.
+ *
+ * A stranger who has seen an analyst make an argument has a reason to sign up;
+ * a stranger looking at a signup form does not. The Feed is already open to
+ * signed-out readers, so the only thing missing was the door.
+ */
 const ACTIONS = (
   <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
-    <Link href="/sign-up" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
+    <Link href="/feed" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
+      <Play size={16} fill="currentColor" strokeWidth={0} />
+      Watch the Feed
+    </Link>
+    <Link href="/sign-up" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
       Sign up
     </Link>
-    <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
+    <Link
+      href="/sign-in"
+      className="focus-ring rounded-[var(--radius-btn)] px-3 py-2 text-sm text-text-mute hover:text-text"
+    >
       Log in
     </Link>
   </div>
@@ -56,6 +70,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
           Independent analysts publish their research on video. Every call locks at publish and is graded by the market, hits and misses alike.
         </p>
         <div className="mt-8">{ACTIONS}</div>
+        <p className="mt-4 text-[0.8125rem] text-text-mute">No account needed to watch.</p>
         <p className="num mt-6 text-[11px] uppercase tracking-[0.18em] text-text-mute">{activity.toUpperCase()}</p>
         <p className="num mt-10 text-[10px] uppercase tracking-[0.18em] text-text-faint">or scroll to see today ↓</p>
       </div>
