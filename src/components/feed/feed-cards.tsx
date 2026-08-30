@@ -2,10 +2,16 @@
 
 import { Lock, Check, Minus, X } from "lucide-react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/design/cn";
 import { TickerChart } from "@/components/feed/ticker-chart";
-import { CardChart } from "@/components/compose/card-chart";
 import type { FeedCard, InkValue, ProvenanceInk } from "@/lib/feed/types";
+
+// The chart engine is far larger than this card stack, and a reader reaches a
+// chart card only by swiping sideways. Load it then, not on every Feed open.
+const CardChart = dynamic(() => import("@/components/compose/card-chart").then((m) => m.CardChart), {
+  ssr: false,
+});
 
 /**
  * Evidence cards in the editorial paper styling. Every value carries its

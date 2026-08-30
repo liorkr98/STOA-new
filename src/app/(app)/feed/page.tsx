@@ -16,6 +16,9 @@ import type { FeedComment } from "@/lib/feed/types";
 
 export const metadata: Metadata = { title: "Feed" };
 
+/** Newest comments sent with the first HTML, per publication. */
+const FEED_COMMENT_PREVIEW = 8;
+
 /**
  * The Feed: the only video discovery surface in the product.
  *
@@ -65,7 +68,12 @@ export default async function FeedPage({
   });
 
   if (publications.length > 0) {
-    const commentsByReport = await listCommentsForReports(publications.map((p) => p.id));
+    // A small cap on purpose: this is serialized into the first HTML for every
+    // publication in the feed, and the panel shows the newest first anyway.
+    const commentsByReport = await listCommentsForReports(
+      publications.map((p) => p.id),
+      FEED_COMMENT_PREVIEW,
+    );
     for (const pub of publications) {
       const authorHandle = pub.analyst.handle;
       pub.comments = (commentsByReport.get(pub.id) ?? []).map(

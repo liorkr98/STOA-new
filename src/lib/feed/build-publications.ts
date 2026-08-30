@@ -132,6 +132,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       embedUrl,
       playbackUrl: native ? media.src : null,
       thumbnailUrl: media.poster,
+      // Only for the direct-file path: the Bunny embed carries its own captions.
+      captionUrl: native ? c.caption_vtt_url : null,
       durationSeconds: duration,
       feedPreviewSeconds: preview,
       headline: storyHeadline(r),

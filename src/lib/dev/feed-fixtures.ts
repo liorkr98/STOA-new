@@ -113,6 +113,7 @@ export function fixturePublications(): FeedPublication[] {
       embedUrl: null,
       playbackUrl: clip.src,
       thumbnailUrl: clip.poster,
+      captionUrl: null,
       durationSeconds: s.secs,
       feedPreviewSeconds: null,
       headline: s.headline,
