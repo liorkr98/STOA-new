@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <InstrumentSheetProvider>
-      <div className="has-app-tabs flex min-h-[var(--app-h)] min-w-0 flex-col">
+      <div className="has-app-tabs flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="gutter-x w-full min-w-0 flex-1 py-[var(--main-pad-y)] outline-none"
+          className="gutter-x w-full min-h-0 min-w-0 flex-1 overflow-y-auto py-[var(--main-pad-y)] outline-none"
         >
           {children}
         </main>

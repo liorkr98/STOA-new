@@ -389,10 +389,10 @@ to change the other**, then regenerate and re-upload the clips.
 The only video discovery surface. Full-screen: one publication per viewport, native vertical
 scroll-snap, nothing below the fold.
 
-- **Stage:** 9:16, height-bound and centred on `--paper`, so the frame is the same shape on a
-  phone and on a 1440 desktop and never depends on the window's aspect ratio. The clip is panel 0
-  of a horizontal track and the publication's evidence cards are the panels behind it, so sideways
-  movement is movement through the publication.
+- **Stage:** On a phone the clip fills the space between the top nav and the tab bar (object-cover,
+  chrome overlaid on the picture). On desktop it stays a 9:16 height-bound card centred on `--paper`.
+  The clip is panel 0 of a horizontal track and the publication's evidence cards are the panels
+  behind it, so sideways movement is movement through the publication.
 - **Two axes, one gesture at a time.** Both axes are native scroll-snap, and each container
   scrolls on exactly one axis: the reader is `overflow-y` only, the evidence track is
   `overflow-x` only. That single fact is what makes the gestures behave. The browser locks a
@@ -413,13 +413,15 @@ scroll-snap, nothing below the fold.
   state says it is, so a swipe and a chevron press never fight.
 - **No scrollbars.** Both use `.scroll-bare`; Tailwind's `[scrollbar-width:none]` ties with
   `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
-- **Above the frame:** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
+- **On a phone:** dateline, headline, and actions sit on the picture (lower third), so the face
+  is not squeezed by a second column of chrome. Desktop still uses the paper strip beneath the frame.
+- **Above the frame (desktop):** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
   in the feed at the right end. A callless publication has no ticker, so its theme tag takes that
   slot.
 - **On the picture:** ticker and direction chips top-left, the resolution seal top-right when the
   call is resolved, the mute control beside it, a progress bar along the top edge, and the
   analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
-- **Beneath the frame:** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
+- **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
   SHARE as small outlined icons with mono uppercase letterspaced labels), then the pager (`1 / 7`)
   at the right end. The pager is a button: it jumps to the unlock card.
 - **Callless publications show no ticker, no direction chip and no seal.** They anchor on a theme
