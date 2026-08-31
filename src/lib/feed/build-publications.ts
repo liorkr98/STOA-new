@@ -27,6 +27,11 @@ function typeLabel(t: Report["type"]): FeedPublication["typeLabel"] {
   return publicTypeLabel(t);
 }
 
+/** Same-origin caption URL, so the video never needs a CORS request. */
+function captionProxyUrl(vttUrl: string): string {
+  return `/api/captions?src=${encodeURIComponent(vttUrl)}`;
+}
+
 export function contentBadgeFor(report: Report, hasVideo: boolean): string {
   const parts: string[] = [];
   if (hasVideo) parts.push("VIDEO");
@@ -137,7 +142,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       playbackUrl: native ? media.src : null,
       thumbnailUrl: media.poster,
       // Only for the direct-file path: the Bunny embed carries its own captions.
-      captionUrl: native ? c.caption_vtt_url : null,
+      // Proxied so the track is same-origin; see app/api/captions/route.ts.
+      captionUrl: native && c.caption_vtt_url ? captionProxyUrl(c.caption_vtt_url) : null,
       durationSeconds: duration,
       feedPreviewSeconds: preview,
       headline: storyHeadline(r),

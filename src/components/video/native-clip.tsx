@@ -34,7 +34,12 @@ export function NativeClip({
   /** Loop only this many seconds when the publication is a long clip. */
   previewSeconds?: number | null;
   preload?: "none" | "metadata" | "auto";
-  /** WebVTT track. Most phone viewers never turn sound on, so this carries the argument. */
+  /**
+   * WebVTT track, and most phone viewers never turn sound on, so this carries
+   * the argument. Must be same-origin: a cross-origin track would require
+   * `crossOrigin` on the element, which makes the media request itself a CORS
+   * request and fails the video outright on a CDN that does not answer it.
+   */
   captionUrl?: string | null;
   /** The stream could not be played at all. Let the caller fall back to an embed. */
   onUnplayable?: () => void;
@@ -139,9 +144,13 @@ export function NativeClip({
       if (hlsJsActive.current) return;
       onUnplayable();
     };
+    // A source the browser rejects outright fails during commit, before this
+    // effect can subscribe, and that event is never replayed. Reading the
+    // element's current error catches the failure that already happened.
+    if (el.error && !hlsJsActive.current) onUnplayable();
     el.addEventListener("error", onError);
     return () => el.removeEventListener("error", onError);
-  }, [onUnplayable]);
+  }, [onUnplayable, src]);
 
   /**
    * Captions default to showing, because a feed clip plays muted and a silent
@@ -172,7 +181,6 @@ export function NativeClip({
       muted={muted}
       preload={preload}
       autoPlay={!paused}
-      crossOrigin={captionUrl ? "anonymous" : undefined}
       className={cn("absolute inset-0 h-full w-full object-cover", className)}
     >
       {captionUrl ? (
