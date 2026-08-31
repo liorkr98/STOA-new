@@ -113,6 +113,7 @@ export function ExploreWall({
   dateline,
   basePath = "/explore",
   canAct = false,
+  canWatch = false,
   onPost,
 }: {
   tiles: ExploreTile[];
@@ -123,6 +124,8 @@ export function ExploreWall({
   dateline: string;
   basePath?: string;
   canAct?: boolean;
+  /** Signed in. Playback costs money per view, so it is account-gated. */
+  canWatch?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
 }) {
   const router = useRouter();
@@ -151,7 +154,18 @@ export function ExploreWall({
     });
   };
 
+  /**
+   * The overlay is the Feed player, so it follows the Feed's rule: watching
+   * needs an account. Scanning the wall does not, because posters are cheap
+   * and the catalogue is what makes a stranger want an account in the first
+   * place.
+   */
   const openWatch = (id: string) => {
+    if (!canWatch) {
+      const back = `${basePath}?${new URLSearchParams({ watch: id })}`;
+      router.push(`/sign-in?next=${encodeURIComponent(back)}`);
+      return;
+    }
     setQuery((q) => {
       q.set("watch", id);
     });
@@ -177,7 +191,7 @@ export function ExploreWall({
   const shown = tiles.filter((t) => layouts.six.has(t.pub.id) || layouts.three.has(t.pub.id));
   const publications = useMemo(() => shown.map((t) => t.pub), [shown]);
   const startIndex = Math.max(0, publications.findIndex((p) => p.id === watchId));
-  const overlayOpen = Boolean(watchId && publications.some((p) => p.id === watchId));
+  const overlayOpen = Boolean(canWatch && watchId && publications.some((p) => p.id === watchId));
 
   useEffect(() => {
     if (!overlayOpen) return;
@@ -266,6 +280,8 @@ export function ExploreWall({
                 placed={{ six: layouts.six.get(t.pub.id) ?? null, three: layouts.three.get(t.pub.id) ?? null }}
                 onOpen={() => openWatch(t.pub.id)}
                 onWarm={() => {
+                  // Pointless for a visitor headed to sign-in, and it is their data.
+                  if (!canWatch) return;
                   warmVideoConnections(t.pub.playbackUrl, t.pub.embedUrl);
                   void prefetchVideoStart(t.pub.playbackUrl);
                 }}
