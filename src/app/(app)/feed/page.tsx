@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Clapperboard } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
@@ -33,6 +34,11 @@ const FEED_COMMENT_PREVIEW = 8;
  *
  * Order comes from the Feed ranker (likes, comments, completion, click-through,
  * watchlist, recency; MOAT is a light gate). Not recency alone.
+ *
+ * **Signed in only.** Streaming video is the most expensive thing the product
+ * does per view, and an anonymous scroll spends that money with no account to
+ * show for it. Strangers get the catalogue: Explore's posters, Today, and a
+ * publication's own page. Watching is what an account is for.
  */
 export default async function FeedPage({
   searchParams,
@@ -40,13 +46,17 @@ export default async function FeedPage({
   searchParams: Promise<{ at?: string }>;
 }) {
   const sessionId = crypto.randomUUID();
-  const [atParams, userId, clips, viewer] = await Promise.all([
-    searchParams,
-    getSessionUserId(),
-    listVideoClipCards(72),
-    loadViewerContext(),
-  ]);
+  const [atParams, userId] = await Promise.all([searchParams, getSessionUserId()]);
   const { at } = atParams;
+
+  if (!userId) {
+    const next = at ? `/feed?at=${encodeURIComponent(at)}` : "/feed";
+    redirect(`/sign-in?next=${encodeURIComponent(next)}`);
+  }
+
+  // Deliberately after the gate: no ranking, clip listing or comment fetch runs
+  // for a visitor who is about to be redirected.
+  const [clips, viewer] = await Promise.all([listVideoClipCards(72), loadViewerContext()]);
 
   const ranked = await rankClips(clips, viewer, "feed");
   const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
@@ -120,8 +130,8 @@ export default async function FeedPage({
       <FeedSurface
         publications={publications}
         startIndex={startIndex}
-        canAct={Boolean(userId)}
-        onPost={userId ? postFeedComment : undefined}
+        canAct
+        onPost={postFeedComment}
         sessionId={sessionId}
       />
     </div>

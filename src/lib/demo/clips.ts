@@ -1,9 +1,13 @@
-import { isDirectVideoUrl } from "@/lib/video/direct";
+import { isPlayableVideoUrl } from "@/lib/video/direct";
 
 /**
- * Short playable stand-ins for investor demos. Live Bunny rows currently point
- * at empty ~24MB objects that 403 on the CDN; the Feed mapper swaps those for
- * these clips so the room is not a black rectangle.
+ * Short playable stand-ins for investor demos.
+ *
+ * These are multi-megabyte progressive MP4s with no bitrate ladder, so they
+ * are a demo tool and not a delivery path: on a phone connection they cost
+ * more than every other optimization on the surface combined. Real rows play
+ * their own HLS; this only fills in when a row has nothing playable, or when
+ * `STOA_DEMO_CLIPS=1` forces it for a walkthrough.
  */
 
 export const DEMO_CLIP_COUNT = 8;
@@ -16,13 +20,21 @@ export function demoClipPath(index: number): { src: string; poster: string } {
   };
 }
 
-/** Use a stored mp4 when we have one; otherwise a local demo clip. */
+/** Server-only switch, so a demo never leaks into a production bundle. */
+export function demoClipsForced(): boolean {
+  return process.env.STOA_DEMO_CLIPS === "1";
+}
+
+/**
+ * Play what the row actually has. HLS counts as playable, which is the whole
+ * point: it is the adaptive path and it is what Bunny produces.
+ */
 export function resolveClipPlayback(input: {
   playbackUrl: string | null | undefined;
   thumbnailUrl: string | null | undefined;
   index: number;
 }): { src: string; poster: string | null } {
-  if (isDirectVideoUrl(input.playbackUrl)) {
+  if (!demoClipsForced() && isPlayableVideoUrl(input.playbackUrl)) {
     return { src: input.playbackUrl!, poster: input.thumbnailUrl ?? null };
   }
   const demo = demoClipPath(input.index);

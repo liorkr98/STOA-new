@@ -10,7 +10,7 @@ import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { resolveClipPlayback } from "@/lib/demo/clips";
-import { isDirectVideoUrl } from "@/lib/video/direct";
+import { isPlayableVideoUrl } from "@/lib/video/direct";
 
 /**
  * Server-side mapper from published video clips (with their joined report,
@@ -110,14 +110,18 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       thumbnailUrl: c.thumbnail_url,
       index,
     });
-    const native = isDirectVideoUrl(media.src);
+    const native = isPlayableVideoUrl(media.src);
+    /**
+     * The embed is always built when a Bunny video exists, even when we intend
+     * to play the stream ourselves. If the CDN refuses the manifest (token auth
+     * or referer rules on the pull zone) the player degrades to Bunny's own
+     * iframe, which authenticates itself, rather than to a black rectangle.
+     */
     let embedUrl: string | null = null;
-    if (!native) {
-      try {
-        embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true, chrome: false });
-      } catch {
-        embedUrl = c.playback_url || null;
-      }
+    try {
+      embedUrl = bunnyEmbedUrl(c.bunny_video_guid, { autoplay: true, muted: true, chrome: false });
+    } catch {
+      embedUrl = native ? null : c.playback_url || null;
     }
     const hasCall = Boolean(r.prediction);
     const preview = r.feed_preview_seconds ?? null;
