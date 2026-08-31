@@ -1,13 +1,21 @@
 /**
  * HLS attachment for `<video>`.
  *
- * Safari and iOS play HLS natively, so they never download hls.js. Everything
- * else loads it on demand, the first time an HLS clip actually plays, which
- * keeps it out of the Feed's initial payload.
- *
  * Adaptive bitrate is the reason this exists: a phone on a slow connection
  * should get a low rendition and a picture, not a full-quality stall.
+ *
+ * Which engine plays the stream is decided by Media Source Extensions, not by
+ * `canPlayType`. Chrome answers "maybe" to the HLS mime types (it answers
+ * "maybe" to almost everything) while being unable to play a manifest, so
+ * trusting it there hands Chrome a stream it cannot decode and skips hls.js
+ * entirely. MSE is the honest signal, and it also keeps iOS lean: iPhone has no
+ * plain `MediaSource`, so it takes the native path and never downloads hls.js.
  */
+
+/** Present on Chrome, Firefox, Edge and desktop Safari; absent on iPhone. */
+function hasMediaSource(): boolean {
+  return typeof window !== "undefined" && "MediaSource" in window;
+}
 
 export function canPlayHlsNatively(video: HTMLVideoElement): boolean {
   return (
@@ -32,10 +40,16 @@ export async function attachHls(
   src: string,
   onFatalError: () => void,
 ): Promise<HlsAttachment | null> {
-  if (canPlayHlsNatively(video)) return null;
+  // No MSE means iPhone, where the element is the only player available.
+  if (!hasMediaSource()) {
+    if (canPlayHlsNatively(video)) return null;
+    onFatalError();
+    return null;
+  }
 
   const { default: Hls } = await import("hls.js");
   if (!Hls.isSupported()) {
+    if (canPlayHlsNatively(video)) return null;
     onFatalError();
     return null;
   }
