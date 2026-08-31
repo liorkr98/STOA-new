@@ -41,6 +41,13 @@ export function NativeClip({
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const hls = isHlsUrl(src);
+  /**
+   * True only while hls.js is driving the element. Safari plays HLS natively,
+   * in which case the element's own `error` event is the only signal that the
+   * stream is dead; hls.js reports its own fatal errors, so double-reporting
+   * would fall back before it has tried to recover.
+   */
+  const hlsJsActive = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -58,19 +65,25 @@ export function NativeClip({
     if (!el || !hls) return;
     let cancelled = false;
     let attachment: { destroy: () => void } | null = null;
+    hlsJsActive.current = false;
 
     void attachHls(el, src, () => onUnplayable?.()).then((result) => {
       if (cancelled) {
         result?.destroy();
         return;
       }
-      if (result) attachment = result;
-      // Native HLS: the attribute is all Safari needs.
-      else el.src = src;
+      if (result) {
+        attachment = result;
+        hlsJsActive.current = true;
+      } else {
+        // Native HLS: the attribute is all Safari needs.
+        el.src = src;
+      }
     });
 
     return () => {
       cancelled = true;
+      hlsJsActive.current = false;
       attachment?.destroy();
     };
   }, [hls, src, onUnplayable]);
@@ -111,14 +124,24 @@ export function NativeClip({
     return () => el.removeEventListener("timeupdate", onTime);
   }, [onProgress, previewSeconds]);
 
-  /** A stored file that 404s or a codec the browser refuses also needs the fallback. */
+  /**
+   * A dead file, a refused manifest, or a codec the browser will not decode.
+   *
+   * This has to cover native HLS as well as stored files: on iPhone, which is
+   * the device most likely to be watching, HLS plays through the element itself
+   * and this event is the only way to learn the stream failed. Skipped only
+   * while hls.js is attached, because it raises its own fatal errors.
+   */
   useEffect(() => {
     const el = ref.current;
-    if (!el || !onUnplayable || hls) return;
-    const onError = () => onUnplayable();
+    if (!el || !onUnplayable) return;
+    const onError = () => {
+      if (hlsJsActive.current) return;
+      onUnplayable();
+    };
     el.addEventListener("error", onError);
     return () => el.removeEventListener("error", onError);
-  }, [onUnplayable, hls]);
+  }, [onUnplayable]);
 
   /**
    * Captions default to showing, because a feed clip plays muted and a silent

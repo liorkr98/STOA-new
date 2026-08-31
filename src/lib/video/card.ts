@@ -3,7 +3,7 @@ import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { VideoCardData } from "@/lib/video/card-data";
 import { resolveClipPlayback } from "@/lib/demo/clips";
-import { isDirectVideoUrl, isPlayableVideoUrl } from "@/lib/video/direct";
+import { isDirectVideoUrl } from "@/lib/video/direct";
 
 /**
  * Server-side mapper: video_clips row (+ joined report) -> client-safe card data
@@ -31,17 +31,26 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
     thumbnailUrl: card.thumbnail_url,
     index: seed,
   });
-  const playable = isPlayableVideoUrl(media.src);
+  /**
+   * Only a direct file may stand in for the embed.
+   *
+   * This card renders `embedUrl` inside an iframe whenever the media is not a
+   * direct file, so an HLS manifest must never land here: an iframe pointed at
+   * a playlist downloads a text file instead of showing a player. HLS on this
+   * surface stays with the provider's embed, which keeps its own chrome. The
+   * Feed is the surface that drives HLS itself.
+   */
+  const directFile = isDirectVideoUrl(media.src);
 
   return {
     id: card.id,
     reportId: report.id,
-    embedUrl: playable ? media.src : embedUrl,
+    embedUrl: directFile ? media.src : embedUrl,
     playbackUrl: media.src,
     thumbnailUrl: media.poster,
     // The animated webp preview is the cheap in-view teaser; a stored file has
     // none, so it stands in for itself.
-    previewUrl: isDirectVideoUrl(media.src) ? media.src : card.preview_url,
+    previewUrl: directFile ? media.src : card.preview_url,
     durationSeconds: card.duration_seconds,
     headline,
     ticker,
