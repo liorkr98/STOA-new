@@ -138,19 +138,29 @@
   margin-bottom: calc(-1 * var(--main-pad-y));
 }
 
+/**
+ * A definite length, not a percentage.
+ *
+ * `height: 100%` against an ancestor whose own height is auto computes to auto,
+ * and then every percentage-height descendant collapses with it. The clip panel
+ * holds only absolutely positioned children, so it collapses to zero and the
+ * video disappears entirely. A length keeps the stage measurable wherever the
+ * surface is mounted, with or without a fixed-height shell above it.
+ */
 .feed-snap {
-  height: 100%;
-  min-height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
+  height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
 }
 
 .feed-snap-overlay {
   height: 100dvh;
 }
 
+/* `contain-intrinsic-size` takes a length; a percentage is invalid and drops the
+ * whole declaration, which leaves skipped items with no placeholder size. */
 .feed-item-shell {
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: auto 100%;
+  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h) - var(--tab-h));
 }
 
 .feed-snap-overlay .feed-item-shell {
