@@ -289,3 +289,62 @@ export async function recordVideoViewEvent(input: {
   });
   return { ok: !error };
 }
+
+/**
+ * Promote a clip to live once Bunny reports it finished. Runs without a user
+ * session (webhook / cron / on-view reconcile), so it uses the admin client.
+ * `published_at` is only stamped when the parent publication is already public:
+ * a clip on a draft stays dark until the draft itself publishes.
+ */
+export async function markClipLiveByGuid(guid: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data: clip } = await admin
+    .from("video_clips")
+    .select("id, report_id, published_at")
+    .eq("bunny_video_guid", guid)
+    .maybeSingle();
+  if (!clip || clip.published_at) return false;
+
+  const { data: report } = await admin
+    .from("reports")
+    .select("status")
+    .eq("id", clip.report_id)
+    .maybeSingle();
+  if (report?.status !== "published") return false;
+
+  await admin
+    .from("video_clips")
+    .update({ published_at: new Date().toISOString() })
+    .eq("id", clip.id);
+  return true;
+}
+
+/** Clips Bunny may have finished while no webhook was delivered. */
+export async function listUnsettledClips(limit = 50): Promise<
+  Array<{ id: string; bunny_video_guid: string; status: string; published_at: string | null }>
+> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("video_clips")
+    .select("id, bunny_video_guid, status, published_at")
+    .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+/** An unsettled clip on a report, if one exists. Drives the on-view reconcile. */
+export async function getUnsettledClipForReport(
+  reportId: string,
+): Promise<{ bunny_video_guid: string } | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("video_clips")
+    .select("bunny_video_guid")
+    .eq("report_id", reportId)
+    .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
+}

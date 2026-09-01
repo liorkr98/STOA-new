@@ -64,7 +64,9 @@ export async function uploadToBunnyTus(
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PATCH", uploadUrl, true);
-    xhr.setRequestHeader("Tus-Resumable", "1.0.0");
+    // setRequestHeader appends to an existing header rather than replacing it,
+    // so Tus-Resumable must not be set here as well as in authHeaders: Bunny
+    // rejects the combined "1.0.0, 1.0.0" value with a 412.
     xhr.setRequestHeader("Upload-Offset", "0");
     xhr.setRequestHeader("Content-Type", "application/offset+octet-stream");
     for (const [k, v] of Object.entries(authHeaders)) xhr.setRequestHeader(k, v);
@@ -73,7 +75,7 @@ export async function uploadToBunnyTus(
     };
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed (${xhr.status}).`));
+      else reject(new Error(`Upload failed (${xhr.status}). ${xhr.responseText ?? ""}`.trim()));
     };
     xhr.onerror = () => reject(new Error("Upload failed."));
     xhr.send(file);

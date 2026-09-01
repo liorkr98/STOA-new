@@ -7,7 +7,7 @@ import { compact } from "@/lib/format";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
-import { getReadyClipForReport } from "@/lib/db/video-clips";
+import { getLiveClipForReport } from "@/lib/video/clip-for-report";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
@@ -72,7 +72,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     userId ? hasSaved(userId, id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
     listComments(id),
-    getReadyClipForReport(id),
+    getLiveClipForReport(id),
   ]);
 
   /*

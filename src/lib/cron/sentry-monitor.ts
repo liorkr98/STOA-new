@@ -4,7 +4,8 @@ type CronMonitorSlug =
   | "grade-cron"
   | "refresh-ticker-metrics-cron"
   | "slack-digest-cron"
-  | "maintenance-cron";
+  | "maintenance-cron"
+  | "video-reconcile-cron";
 
 export async function withCronMonitor<T>(
   monitorSlug: CronMonitorSlug,

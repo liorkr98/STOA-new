@@ -711,14 +711,19 @@ export function StudioEditor({
           });
           videoFileRef.current = null;
           toast.success("Published. The video is processing and appears when it is ready.");
+          window.location.href = `/report/${published.id}`;
         } catch (err) {
           // The report is already locked, so this must not read as a failed
-          // publish: the clip can be attached again from the publication.
-          toast.error(
-            err instanceof Error ? err.message : "Published, but the video upload failed.",
-          );
+          // publish: the clip can be attached again from the publication. Hold
+          // the redirect so the reason stays on screen instead of being wiped
+          // by an immediate navigation.
+          const reason =
+            err instanceof Error ? err.message : "Published, but the video upload failed.";
+          setCaptureStatus(null);
+          setError(`Published, but the video did not upload: ${reason}`);
+          toast.error(reason);
+          isPublishingRef.current = false;
         }
-        window.location.href = `/report/${published.id}`;
       }
     } catch (e) {
       if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
