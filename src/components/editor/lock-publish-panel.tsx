@@ -67,6 +67,7 @@ function YesNo({
  * locked call block is the solid ledger-card counterpart.
  */
 export function LockPublishPanel({
+  sections = "all",
   hasCard,
   ticker,
   onTicker,
@@ -125,6 +126,13 @@ export function LockPublishPanel({
   error: string | null;
   /** The Promote section, injected so its cost model stays pluggable. */
   promote?: React.ReactNode;
+  /**
+   * Which part of the panel to render. The guided sequence asks for the call
+   * in its own step and the publishing settings in the last one, so the same
+   * panel is mounted twice rather than duplicating the ticker, the live quote
+   * and the price attestation. "all" is the original single panel.
+   */
+  sections?: "call" | "publish" | "all";
 }) {
   // Tagged with the ticker it quotes, so clearing the field drops the price
   // during render rather than through the effect.
@@ -202,6 +210,9 @@ export function LockPublishPanel({
   }
 
   useEffect(() => {
+    // The publish half does not render the call fields, so it has no reason to
+    // hold a live quote for them.
+    if (sections === "publish") return;
     if (!hasCard || !ticker.trim()) return;
     const controller = new AbortController();
     const t = setTimeout(() => {
@@ -223,7 +234,7 @@ export function LockPublishPanel({
       controller.abort();
       clearTimeout(t);
     };
-  }, [ticker, hasCard]);
+  }, [ticker, hasCard, sections]);
 
   const targetNum = Number(target);
   const move =
@@ -235,7 +246,7 @@ export function LockPublishPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {hasCard && (
+      {hasCard && sections !== "publish" && (
         <section
           className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-4"
           aria-label="Price target"
@@ -346,6 +357,7 @@ export function LockPublishPanel({
         </section>
       )}
 
+      {sections !== "call" && (
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
         <p className="t-eyebrow mb-2.5">Access</p>
         <div className="flex flex-col gap-1.5 text-sm">
@@ -417,9 +429,11 @@ export function LockPublishPanel({
           </>
         )}
       </section>
+      )}
 
-      {promote}
+      {sections !== "call" ? promote : null}
 
+      {sections !== "call" && (
       <section className="ledger-card p-4" aria-label="Disclosures">
             <p className="t-eyebrow mb-3">Disclosures</p>
             <div className="flex flex-col gap-3.5">
@@ -468,7 +482,9 @@ export function LockPublishPanel({
               </label>
             </div>
           </section>
+      )}
 
+      {sections !== "call" && (
       <div className="flex flex-col gap-2">
         <Button size="lg" disabled={pending || publishDisabledReason != null} onClick={onPublish}>
           <Lock size={18} aria-hidden />
@@ -479,9 +495,11 @@ export function LockPublishPanel({
         )}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
         <p className="t-meta text-center text-[11px] text-text-faint">
-          A locked call cannot be edited. Access and tags can still be changed from Studio.
+          A locked call cannot be edited. The headline, the text and the tags can be, and
+          every edit is shown on the publication.
         </p>
       </div>
+      )}
     </div>
   );
 }

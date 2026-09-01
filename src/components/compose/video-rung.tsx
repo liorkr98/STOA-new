@@ -672,6 +672,7 @@ export function VideoRung({
   chrome = true,
   toolbox,
   ticker,
+  stage = "all",
 }: {
   initial?: VideoEdit;
   /** Duration used for the poster stage when no file is loaded. */
@@ -688,6 +689,14 @@ export function VideoRung({
   /** Card tray mounted on the editor (Video format). */
   toolbox?: ReactNode;
   ticker?: string;
+  /**
+   * Which half of the rung to show. The guided sequence asks for the clip in
+   * one step and edits it in the next, so "choose" is the picker and the
+   * stage, and "edit" adds the thumbnail, the timeline and the overlays.
+   * "all" is the original single-screen rung and stays the default, so every
+   * existing caller is unchanged.
+   */
+  stage?: "choose" | "edit" | "all";
 }) {
   const [src, setSrc] = useState<string | null>(null);
   const [internalEdit, setEditState] = useState<VideoEdit>(initial ?? value ?? emptyEdit(demoDurationSeconds));
@@ -844,9 +853,12 @@ export function VideoRung({
               No video loaded · the stage runs a {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so overlays can be placed
             </p>
           ) : null}
-          <ThumbnailPicker src={src} edit={edit} onChange={(t) => setEdit({ ...edit, thumbnail: t })} />
+          {stage === "choose" ? null : (
+            <ThumbnailPicker src={src} edit={edit} onChange={(t) => setEdit({ ...edit, thumbnail: t })} />
+          )}
         </div>
 
+        {stage === "choose" ? null : (
         <div>
           {toolbox ? <div className="mt-5 lg:mt-0">{toolbox}</div> : null}
 
@@ -968,9 +980,11 @@ export function VideoRung({
         ) : null}
       </div>
         </div>
+        )}
       </div>
 
       {/* Faithful preview */}
+      {stage === "choose" ? null : (
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <div>
           <Button variant={faithful ? "primary" : "secondary"} size="sm" onClick={() => setFaithful((f) => !f)}>
@@ -984,6 +998,7 @@ export function VideoRung({
           Overlays show in this preview but are not part of the published video yet.
         </p>
       </div>
+      )}
     </section>
   );
 }

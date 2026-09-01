@@ -47,7 +47,11 @@ import { UNIVERSE } from "@/lib/universe";
 import { CardTray } from "@/components/compose/card-tray";
 import { CardLibrary } from "@/components/compose/card-library";
 import { CardEditorDialog } from "@/components/compose/card-editor";
-import { AiAssistant, type AssistantAction } from "@/components/compose/ai-assistant";
+import {
+  AiAssistant,
+  ASSISTANT_ACTIONS,
+  type AssistantAction,
+} from "@/components/compose/ai-assistant";
 import {
   ComposeRail,
   ComposeRailDrawer,
@@ -71,10 +75,16 @@ import type { CardKind } from "@/lib/feed/card-schema";
 import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
 import { CompanionPicker } from "@/components/compose/companion-picker";
-import { PublishDetailsDialog } from "@/components/compose/publish-details";
 import { PublishPreviewDialog } from "@/components/compose/publish-preview";
 import { CardPreview } from "@/components/compose/card-preview";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
+import {
+  stepState,
+  stepsFor,
+  type StepFacts,
+  type StepKey,
+} from "@/lib/compose/steps";
+import { StepFrame, StepNav } from "@/components/compose/step-nav";
 import {
   COMPOSE_MODES,
   POST_MAX_CHARS,
@@ -167,6 +177,9 @@ export function StudioEditor({
   // locked. video_clips rows hang off a locked report, so the upload cannot
   // start until publish has returned an id.
   const videoFileRef = useRef<{ file: File; durationSeconds: number } | null>(null);
+  // The ref holds the file; this holds the fact, because the sequence has to
+  // re-render when a clip arrives (Edit video appears, Video reads as done).
+  const [videoChosen, setVideoChosen] = useState(hasVideoClip);
 
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
@@ -249,7 +262,6 @@ export function StudioEditor({
     compDetail: "",
     viewsCertified: false,
   });
-  const [panelOpen, setPanelOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
@@ -655,6 +667,48 @@ export function StudioEditor({
   const hasVideo = showVideo && videoEdit !== null;
   const showToolboxRail = true;
 
+  // ── The guided sequence ────────────────────────────────────────────────
+  // One step at a time on the first pass, every step jumpable afterwards.
+  // Editing a live publication is never a first pass: the creator already
+  // made every one of these decisions, so nothing is locked.
+  const steps = useMemo(() => stepsFor(mode, videoChosen), [mode, videoChosen]);
+  const [stepKey, setStepKey] = useState<StepKey>("write");
+  const [visited, setVisited] = useState<Set<StepKey>>(() => new Set<StepKey>(["write"]));
+  const [firstPassDone, setFirstPassDone] = useState(editingPublished);
+
+  // A step can vanish under the creator: dropping the clip removes Edit
+  // video, and switching format removes both. Derived rather than synced, so
+  // a step leaving the sequence falls back on the same render instead of
+  // painting a missing step and correcting it afterwards.
+  const currentStep = steps.find((s) => s.key === stepKey) ?? steps[0]!;
+  const stepIndex = Math.max(
+    0,
+    steps.findIndex((s) => s.key === currentStep.key),
+  );
+
+  const goStep = useCallback((key: StepKey) => {
+    setStepKey(key);
+    setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
+    // Each step is its own screen, so arriving at one should start at its top
+    // rather than halfway down the last one.
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const goNext = useCallback(() => {
+    const i = steps.findIndex((s) => s.key === stepKey);
+    const next = steps[i + 1];
+    if (next) goStep(next.key);
+    // Reaching the end is what unlocks free movement.
+    if (i + 1 >= steps.length - 1) setFirstPassDone(true);
+  }, [steps, stepKey, goStep]);
+
+  const goBack = useCallback(() => {
+    const i = steps.findIndex((s) => s.key === stepKey);
+    const prev = steps[i - 1];
+    if (prev) goStep(prev.key);
+  }, [steps, stepKey, goStep]);
+
+
   const contentBlockedBy: string | null = (() => {
     if (mode === "short_post") {
       const text = summary.trim();
@@ -676,6 +730,39 @@ export function StudioEditor({
   })();
 
   const publishBlockedBy = contentBlockedBy ?? detailsBlockedBy;
+
+  /** What each step holds right now, for the progress rail. */
+  const stepFacts: StepFacts = {
+    hasWriting: mode === "short_post" ? summary.trim().length > 0 : title.trim().length > 0,
+    hasCall: ticker.trim().length > 0,
+    cardCount: cards.length,
+    hasVideo: videoChosen,
+    hasVideoEdits: Boolean(
+      videoEdit &&
+        (videoEdit.overlays.length > 0 ||
+          videoEdit.thumbnail !== null ||
+          videoEdit.trimStart > 0 ||
+          videoEdit.trimEnd < videoEdit.durationSeconds),
+    ),
+    hasTags: Boolean(tags.primary),
+    readyToPublish: publishBlockedBy === null,
+  };
+
+  /**
+   * Leaving the video out.
+   *
+   * A Video publication with no clip cannot publish, so a bare "skip" would
+   * walk the creator into a wall three steps later. Skipping turns the piece
+   * into the written publication it now is, keeping everything already
+   * written, and says so on the button.
+   */
+  function skipVideo() {
+    setMode("research");
+    setVideoEdit(null);
+    videoFileRef.current = null;
+    setVideoChosen(false);
+    goStep("tags");
+  }
 
   const doPublish = useCallback(async () => {
     setError(null);
@@ -826,12 +913,16 @@ export function StudioEditor({
     setCaptureStatus,
   ]);
 
+  // Publish is a step now, not a drawer over the work. The top-bar button
+  // walks the creator to it rather than opening a second surface with the
+  // same controls on it.
   function onDetailsClick() {
     if (contentBlockedBy) {
       toast.message(contentBlockedBy);
       return;
     }
-    setPanelOpen(true);
+    setFirstPassDone(true);
+    goStep("publish");
   }
 
   function onPublishClick() {
@@ -840,7 +931,8 @@ export function StudioEditor({
       return;
     }
     if (detailsBlockedBy) {
-      setPanelOpen(true);
+      // The thing that is missing lives on a step, so say what it is and let
+      // the creator go and fix it rather than opening a panel over the top.
       toast.message(detailsBlockedBy);
       return;
     }
@@ -914,64 +1006,6 @@ export function StudioEditor({
           </button>
         ) : null}
       </AiAssistant>
-    </>
-  );
-
-  /* RIGHT: what you publish as. */
-  const settings = (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setPanelOpen(false);
-          setPreviewOpen(true);
-        }}
-        className="mb-4 w-full rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)] focus-ring"
-      >
-        Preview publication
-      </button>
-      <TagPicker
-        value={tags}
-        onChange={setTags}
-        hasCall={lockingCall}
-        callSector={lockingCall ? UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ?? null : null}
-      />
-      <CompanionPicker
-        currentId={draftId}
-        mode={mode}
-        value={linkedReportId}
-        onChange={setLinkedReportId}
-      />
-      <LockPublishPanel
-        hasCard={hasCard}
-        ticker={ticker}
-        onTicker={setTicker}
-        direction={direction}
-        onDirection={setDirection}
-        target={target}
-        onTarget={setTarget}
-        horizon={horizon}
-        onHorizon={setHorizon}
-        access={access}
-        onAccess={setAccess}
-        price={price}
-        onPrice={setPrice}
-        membersIncluded={membersIncluded}
-        onMembersIncluded={setMembersIncluded}
-        minPlanRank={minPlanRank}
-        onMinPlanRank={setMinPlanRank}
-        requiredPerks={requiredPerks}
-        onRequiredPerks={setRequiredPerks}
-        plans={plans}
-        disclosure={disclosure}
-        onDisclosure={setDisclosure}
-        publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
-        publishDisabledReason={publishBlockedBy}
-        onPublish={onPublishClick}
-        pending={pending}
-        error={error}
-        promote={<PromotePanel state={promote} onChange={setPromote} />}
-      />
     </>
   );
 
@@ -1092,8 +1126,18 @@ export function StudioEditor({
         </ComposeRail>
         ) : null}
 
-        {/* Canvas */}
+        {/* Canvas: the guided sequence. One step at a time, and the rail on
+            the left stays put across all of them so a card is always
+            draggable into the body and onto the timeline. */}
         <div className="min-w-0 flex-1">
+          <StepNav
+            steps={steps}
+            current={currentStep.key}
+            stateOf={(k) => stepState(k, stepFacts)}
+            reachable={(k) => firstPassDone || visited.has(k)}
+            onGo={goStep}
+          />
+
           <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-8 md:px-6">
             {/* Editing something already published is a different act from
                 writing a draft, and the creator should know what it costs
@@ -1117,163 +1161,341 @@ export function StudioEditor({
               </div>
             ) : null}
 
-            {(type !== "short_post") && (
-              <>
-                <label htmlFor="report-title" className="sr-only">
-                  Headline
-                </label>
-                <input
-                  id="report-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Headline"
-                  dir="auto"
-                  className="user-copy mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
-                  style={{ fontFamily: "var(--font-display)" }}
-                />
-              </>
-            )}
-            <label htmlFor="report-summary" className="sr-only">
-              {type === "short_post" ? "Post text" : "Dek"}
-            </label>
-            {type === "short_post" ? (
-              <>
-                <textarea
-                  id="report-summary"
-                  value={summary}
-                  maxLength={POST_MAX_CHARS}
-                  onChange={(e) => setSummary(e.target.value.slice(0, POST_MAX_CHARS))}
-                  placeholder="A short take."
-                  rows={5}
-                  dir="auto"
-                  className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
-                />
-                <p className="num mb-8 text-[11px] uppercase tracking-[0.12em] text-text-faint">
-                  {summary.trim().length} / {POST_MAX_CHARS}
-                </p>
-              </>
-            ) : (
-            <input
-              id="report-summary"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="One line under the headline"
-              dir="auto"
-              className="user-copy mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
-            />
-            )}
-
-            {/* VIDEO format only. Research and Post are text. */}
-            {showVideo ? (
-              <section aria-label="Video" className="mb-10">
-                {clipSeconds > 0 && feedPreviewSeconds ? (
-                  <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
-                    This clip is longer than the Feed budget. The Feed will play the first {feedPreviewSeconds} seconds. The full video stays on Explore and your profile.
-                  </p>
-                ) : clipSeconds > 0 ? (
-                  <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
-                    This clip fits the Feed. Readers will see the whole thing there.
-                  </p>
-                ) : null}
-                <VideoRung
-                  value={videoEdit ?? undefined}
-                  onChange={setVideoEdit}
-                  onFile={(file, durationSeconds) => {
-                    videoFileRef.current = { file, durationSeconds };
-                  }}
-                  cards={deck}
-                  chrome={false}
-                  ticker={ticker.trim() || undefined}
-                  toolbox={
-                    <CardTray
-                      cards={deck}
-                      usage={usage}
-                      selectedId={selectedCardId}
-                      onSelect={setSelectedCardId}
-                      onAdd={() => setLibraryOpen(true)}
-                      onReorder={reorderCards}
-                      onPlaceInVideo={placeCardInVideo}
-                      onPlaceInResearch={placeCardInResearch}
-                      hasVideo
-                      hasResearch={false}
+            <StepFrame
+              step={currentStep}
+              index={stepIndex}
+              total={steps.length}
+              onBack={stepIndex > 0 ? goBack : null}
+              onNext={stepIndex < steps.length - 1 ? goNext : null}
+              nextLabel={
+                currentStep.key === "cards" && cards.length === 0
+                  ? undefined
+                  : currentStep.key === "call" && !ticker.trim()
+                    ? undefined
+                    : "Continue"
+              }
+              onSkip={
+                currentStep.key === "video"
+                  ? skipVideo
+                  : currentStep.key === "call" && !ticker.trim()
+                    ? goNext
+                    : currentStep.key === "cards" && cards.length === 0
+                      ? goNext
+                      : undefined
+              }
+              skipLabel={
+                currentStep.key === "video"
+                  ? "Continue without a video"
+                  : currentStep.key === "call"
+                    ? "No call on this one"
+                    : "Skip the cards"
+              }
+            >
+              {/* WRITE. Always mounted, hidden off-step: the Tiptap instance
+                  holds the charts the publish path screenshots, and losing it
+                  on a step change would lose them. */}
+              <div className={cn(currentStep.key !== "write" && "hidden")}>
+                {type !== "short_post" && (
+                  <>
+                    <label htmlFor="report-title" className="sr-only">
+                      Headline
+                    </label>
+                    <input
+                      id="report-title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Headline"
+                      dir="auto"
+                      className="user-copy mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
+                      style={{ fontFamily: "var(--font-display)" }}
                     />
-                  }
-                />
-              </section>
-            ) : null}
-
-            {showResearch ? (
-              <section aria-label="Research" className="mb-10">
-                {cards.filter((c) => c.kind !== "unlock").length > 0 ? (
-                  <div className="mb-8">
-                    <p className="t-eyebrow">Preview</p>
-                    <p className="mt-1 text-[0.8125rem] leading-snug text-text-mute">
-                      Cards are the short version of the thesis. The full text is below.
+                  </>
+                )}
+                <label htmlFor="report-summary" className="sr-only">
+                  {type === "short_post" ? "Post text" : "Dek"}
+                </label>
+                {type === "short_post" ? (
+                  <>
+                    <textarea
+                      id="report-summary"
+                      value={summary}
+                      maxLength={POST_MAX_CHARS}
+                      onChange={(e) => setSummary(e.target.value.slice(0, POST_MAX_CHARS))}
+                      placeholder="A short take."
+                      rows={5}
+                      dir="auto"
+                      className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
+                    />
+                    <p className="num mb-8 text-[11px] uppercase tracking-[0.12em] text-text-faint">
+                      {summary.trim().length} / {POST_MAX_CHARS}
                     </p>
-                    <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-                      {cards
-                        .filter((c) => c.kind !== "unlock")
-                        .map((c) => (
+                  </>
+                ) : (
+                  <input
+                    id="report-summary"
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                    placeholder="One line under the headline"
+                    dir="auto"
+                    className="user-copy mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+                  />
+                )}
+
+                <div className={cn(!showResearch && "hidden")}>
+                  {showTemplateStrip && (
+                    <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+                  )}
+                  <div
+                    onDragOver={(e) => {
+                      if (!isCardDrag(e)) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "copy";
+                      setResearchDropActive(true);
+                    }}
+                    onDragLeave={() => setResearchDropActive(false)}
+                    onDrop={onResearchDrop}
+                    className={cn(
+                      "rounded-[var(--radius-card)] transition-colors",
+                      researchDropActive &&
+                        "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                    )}
+                  >
+                    <TiptapEditor
+                      initialContent={initialDoc}
+                      onChange={onEditorChange}
+                      reportTicker={hasCard ? ticker || undefined : undefined}
+                      onReady={(e) => {
+                        editorRef.current = e;
+                        setEditor(e);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* THE CALL. */}
+              {currentStep.key === "call" ? (
+                <LockPublishPanel
+                  sections="call"
+                  hasCard={hasCard}
+                  ticker={ticker}
+                  onTicker={setTicker}
+                  direction={direction}
+                  onDirection={setDirection}
+                  target={target}
+                  onTarget={setTarget}
+                  horizon={horizon}
+                  onHorizon={setHorizon}
+                  access={access}
+                  onAccess={setAccess}
+                  price={price}
+                  onPrice={setPrice}
+                  membersIncluded={membersIncluded}
+                  onMembersIncluded={setMembersIncluded}
+                  minPlanRank={minPlanRank}
+                  onMinPlanRank={setMinPlanRank}
+                  requiredPerks={requiredPerks}
+                  onRequiredPerks={setRequiredPerks}
+                  plans={plans}
+                  disclosure={disclosure}
+                  onDisclosure={setDisclosure}
+                  publishLabel=""
+                  publishDisabledReason={null}
+                  onPublish={() => {}}
+                  pending={false}
+                  error={null}
+                />
+              ) : null}
+
+              {/* CARDS. An invitation, not a hurdle: what a card is, what it
+                  does for the reader, and one obvious way to make one. */}
+              {currentStep.key === "cards" ? (
+                <div>
+                  {cards.length === 0 ? (
+                    <div className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-5">
+                      <p className="text-[0.9375rem] leading-relaxed text-text">
+                        A card is the claim on its own: the thesis in two lines, where your
+                        numbers differ from the street, the arithmetic that gets you to the
+                        target, or what would prove you wrong.
+                      </p>
+                      <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute">
+                        Readers see cards first, in the Feed and above the thesis, and they
+                        are what a reader remembers. They carry your provenance marks, and
+                        you decide which ones sit behind the paywall.
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setLibraryOpen(true)}
+                          className="focus-ring rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                        >
+                          Make the first card
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runAssistant(ASSISTANT_ACTIONS[0]!)}
+                          className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                        >
+                          Draft them from what I have written
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex flex-wrap gap-3">
+                        {cards.map((c) => (
                           <button
                             key={c.id}
                             type="button"
                             onClick={() => setSelectedCardId(c.id)}
-                            className="w-[220px] shrink-0 text-left focus-ring rounded-[var(--radius-card)]"
+                            className="focus-ring w-[220px] shrink-0 rounded-[var(--radius-card)] text-left"
                           >
                             <CardPreview card={c} compact />
                           </button>
                         ))}
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setLibraryOpen(true)}
+                          className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                        >
+                          Add another card
+                        </button>
+                      </div>
+                      <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-mute">
+                        Drag a card from the toolbox into your text to place it in the
+                        thesis, or onto the timeline to make it appear in the video.
+                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <p className="mb-6 text-[0.8125rem] leading-snug text-text-mute">
-                    Cards in the Assistant rail are the preview of this thesis. Add one, then write the full argument here.
-                  </p>
-                )}
-                {showTemplateStrip && (
-                  <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
-                )}
+                  )}
+                </div>
+              ) : null}
+
+              {/* VIDEO and EDIT VIDEO share one rung, so the loaded clip and
+                  its object URL survive the move between the two steps. */}
+              {showVideo ? (
                 <div
-                  onDragOver={(e) => {
-                    if (!isCardDrag(e)) return;
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = "copy";
-                    setResearchDropActive(true);
-                  }}
-                  onDragLeave={() => setResearchDropActive(false)}
-                  onDrop={onResearchDrop}
                   className={cn(
-                    "rounded-[var(--radius-card)] transition-colors",
-                    researchDropActive &&
-                      "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                    currentStep.key !== "video" && currentStep.key !== "video_edit" && "hidden",
                   )}
                 >
-                  <TiptapEditor
-                    initialContent={initialDoc}
-                    onChange={onEditorChange}
-                    reportTicker={hasCard ? ticker || undefined : undefined}
-                    onReady={(e) => {
-                      editorRef.current = e;
-                      setEditor(e);
+                  {currentStep.key === "video_edit" && clipSeconds > 0 && feedPreviewSeconds ? (
+                    <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
+                      This clip is longer than the Feed budget. The Feed will play the first{" "}
+                      {feedPreviewSeconds} seconds. The full video stays on Explore and your
+                      profile.
+                    </p>
+                  ) : currentStep.key === "video_edit" && clipSeconds > 0 ? (
+                    <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
+                      This clip fits the Feed. Readers will see the whole thing there.
+                    </p>
+                  ) : null}
+                  <VideoRung
+                    stage={currentStep.key === "video" ? "choose" : "edit"}
+                    value={videoEdit ?? undefined}
+                    onChange={setVideoEdit}
+                    onFile={(file, durationSeconds) => {
+                      videoFileRef.current = { file, durationSeconds };
+                      setVideoChosen(true);
                     }}
+                    cards={deck}
+                    chrome={false}
+                    ticker={ticker.trim() || undefined}
+                    toolbox={
+                      <CardTray
+                        cards={deck}
+                        usage={usage}
+                        selectedId={selectedCardId}
+                        onSelect={setSelectedCardId}
+                        onAdd={() => setLibraryOpen(true)}
+                        onReorder={reorderCards}
+                        onPlaceInVideo={placeCardInVideo}
+                        onPlaceInResearch={placeCardInResearch}
+                        hasVideo
+                        hasResearch={false}
+                      />
+                    }
                   />
                 </div>
-              </section>
-            ) : null}
+              ) : null}
 
-            {!showResearch ? (
-              <div className="hidden">
-                <TiptapEditor
-                  initialContent={initialDoc}
-                  onChange={onEditorChange}
-                  reportTicker={hasCard ? ticker || undefined : undefined}
-                  onReady={(e) => {
-                    editorRef.current = e;
-                    setEditor(e);
-                  }}
-                />
-              </div>
-            ) : null}
+              {/* TAGS. */}
+              {currentStep.key === "tags" ? (
+                <div className="flex flex-col gap-4">
+                  <TagPicker
+                    value={tags}
+                    onChange={setTags}
+                    hasCall={lockingCall}
+                    callSector={
+                      lockingCall
+                        ? (UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ??
+                          null)
+                        : null
+                    }
+                  />
+                  <CompanionPicker
+                    currentId={draftId}
+                    mode={mode}
+                    value={linkedReportId}
+                    onChange={setLinkedReportId}
+                  />
+                </div>
+              ) : null}
+
+              {/* PUBLISH. */}
+              {currentStep.key === "publish" ? (
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewOpen(true)}
+                    className="focus-ring w-full rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)]"
+                  >
+                    Preview publication
+                  </button>
+                  {showResearch ? (
+                    <FactCheckerPanel
+                      text={plainText}
+                      credits={credits}
+                      initialResult={factCheck}
+                      onCreditsChange={setCredits}
+                      onResult={setFactCheck}
+                    />
+                  ) : null}
+                  <LockPublishPanel
+                    sections="publish"
+                    hasCard={hasCard}
+                    ticker={ticker}
+                    onTicker={setTicker}
+                    direction={direction}
+                    onDirection={setDirection}
+                    target={target}
+                    onTarget={setTarget}
+                    horizon={horizon}
+                    onHorizon={setHorizon}
+                    access={access}
+                    onAccess={setAccess}
+                    price={price}
+                    onPrice={setPrice}
+                    membersIncluded={membersIncluded}
+                    onMembersIncluded={setMembersIncluded}
+                    minPlanRank={minPlanRank}
+                    onMinPlanRank={setMinPlanRank}
+                    requiredPerks={requiredPerks}
+                    onRequiredPerks={setRequiredPerks}
+                    plans={plans}
+                    disclosure={disclosure}
+                    onDisclosure={setDisclosure}
+                    publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
+                    publishDisabledReason={publishBlockedBy}
+                    onPublish={onPublishClick}
+                    pending={pending}
+                    error={error}
+                    promote={<PromotePanel state={promote} onChange={setPromote} />}
+                  />
+                </div>
+              ) : null}
+            </StepFrame>
           </div>
         </div>
       </div>
@@ -1292,10 +1514,6 @@ export function StudioEditor({
         onDelete={() => selectedCardId && deleteCard(selectedCardId)}
         onClose={() => setSelectedCardId(null)}
       />
-
-      <PublishDetailsDialog open={panelOpen} onOpenChange={setPanelOpen}>
-        {settings}
-      </PublishDetailsDialog>
 
       <PublishPreviewDialog
         open={previewOpen}

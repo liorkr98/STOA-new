@@ -90,15 +90,21 @@ const BODY = JSON.stringify({
   ],
 });
 
-type Shape = "video" | "research" | "both";
+type Shape = "video" | "research" | "both" | "empty";
 
 const SHAPES: { key: Shape; label: string; blurb: string }[] = [
   { key: "video", label: "Video only", blurb: "A clip, no written report" },
   { key: "research", label: "Research only", blurb: "Written work, no clip" },
   { key: "both", label: "Video and research", blurb: "Both modules present" },
+  { key: "empty", label: "Nothing yet", blurb: "The guided first run" },
 ];
 
 function draftFor(shape: Shape): Report {
+  // The empty shape is the point of the guided sequence: a creator who has
+  // opened Compose and written nothing at all.
+  if (shape === "empty") {
+    return { id: "dev-empty", type: "video", access: "free" } as unknown as Report;
+  }
   return {
     id: `dev-${shape}`,
     type: "call",
@@ -208,8 +214,8 @@ export default function DevComposePage() {
           key={shape}
           analystReportPrice={null}
           initialDraft={draftFor(shape)}
-          initialCards={CARDS}
-          hasVideoClip={shape !== "research"}
+          initialCards={shape === "empty" ? [] : CARDS}
+          hasVideoClip={shape !== "research" && shape !== "empty"}
           aiCredits={40}
           plans={[]}
         />
