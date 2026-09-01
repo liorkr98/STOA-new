@@ -10,6 +10,70 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-01 — Composing a publication keeps what you wrote, and you can take one down
+
+**For someone using the site**
+
+- **A headline you type is no longer thrown away.** Publishing as a Post stores
+  no headline and no body, so switching format to Post after writing threw both
+  away on the next save, without a word. Publishing then locked that loss in.
+  The switch now names exactly what it is about to drop and waits for an answer.
+  This is what left a report reading "Untitled" with its writing gone.
+- **The video you choose in Compose is actually uploaded.** The video rung let a
+  creator pick a file, trim it, place overlays and choose a thumbnail while
+  holding nothing but a preview URL inside the browser tab. No upload was ever
+  started and no clip row was ever created, so the video could not appear on the
+  published report. Compose now locks the report, uploads the clip, and then
+  opens it. If the upload fails the report is still published and says so, rather
+  than reading as a failed publish.
+- **A Post shows its text in Publications instead of "Untitled".** The list read
+  only the headline, which a Post never has. It now falls back to the post's own
+  words, the way the public page already did.
+- **Edit no longer leads to a not-found page.** Every publication offered Edit,
+  but the compose route only ever loaded drafts, so Edit on anything published
+  returned a 404. Published reports are locked in the database and genuinely
+  cannot be edited, so Edit is now offered only on drafts, and the old URL sends
+  you to the report instead of a dead end.
+- **A publication can be archived.** There was no way to remove one at all.
+  Archiving takes it off the Feed, Explore, search and your public profile, and
+  it can be restored at any time. Archived work stays in your own Publications
+  under an ARCHIVED filter.
+- **Archiving is not a delete, and the dialog says so.** Stoa cannot delete a
+  published report: the record, its text, its timestamp and its content hash stay
+  exactly as published, and the archive is written to the audit log. **If the
+  publication has a locked call, that call stays on your track record, keeps
+  counting toward your accuracy and still resolves on its horizon date.** The
+  dialog states this outright when a call is attached, so archiving cannot be
+  mistaken for a way to bury a miss.
+
+**Worth knowing**
+
+- The three problems reported were all pre-existing, none of them caused by the
+  recent Feed and video work. The lost headline and the broken Edit both date to
+  the compose editor built on 30 June. The video was orphaned on 16 August, when
+  the Publications rebuild replaced the list that carried the working "Add video"
+  button; the rung added on 18 August looked like an uploader but was never
+  wired to one. Archiving had simply never been built.
+- The 455 seeded demo publications were written straight to the database, so
+  none of this ever showed on them. It only affected publications composed
+  through the interface.
+
+**For Krisi**
+
+- `StudioPublishedList` in `src/components/studio/studio-published-list.tsx` is
+  dead code and is the only other place that carried the video upload flow.
+  Nothing renders it. It should either come back deliberately or be deleted.
+- The archive round trip was verified read-only against production data: 321 of
+  400 sampled archived reports carry a locked call, and the track-record query
+  still returns them, including a resolved miss. Writing to production was
+  blocked by the sandbox, so the archive and restore actions themselves have not
+  been exercised against the live database.
+- `saveDraft` in `src/app/actions/reports.ts` ignores the error from its UPDATE
+  branch, so a rejected draft save reports success. Left alone here because it
+  was not one of the three reported problems, but it hides real failures.
+
+---
+
 ## 2026-08-25 — Today shows its video, and the Feed can be swiped again
 
 **For someone using the site**
