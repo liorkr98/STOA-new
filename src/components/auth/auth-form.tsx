@@ -7,6 +7,7 @@ import { signIn, signUp } from "@/app/actions/auth";
 import type { AuthState } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import type { OAuthProvider } from "@/lib/auth/providers";
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -24,10 +25,14 @@ export function AuthForm({
   mode,
   refHandle,
   oauthError,
+  oauthReason,
+  providers,
 }: {
   mode: "sign-in" | "sign-up";
   refHandle?: string;
   oauthError?: string | null;
+  oauthReason?: string | null;
+  providers?: OAuthProvider[];
 }) {
   const action = mode === "sign-in" ? signIn : signUp;
   const [state, formAction] = useActionState<AuthState, FormData>(action, null);
@@ -43,15 +48,17 @@ export function AuthForm({
 
       <div className="mt-8">
         {oauthError === "oauth" && (
-          <p
+          <div
             role="alert"
             className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
           >
-            Sign-in was cancelled or failed. If Google showed &ldquo;invalid_client&rdquo;, fix the
-            Client ID and Secret under Supabase → Authentication → Providers → Google.
-          </p>
+            <p>Sign-in did not complete, so you have not been signed in.</p>
+            {oauthReason && (
+              <p className="num mt-1.5 break-words text-[0.75rem] opacity-80">{oauthReason}</p>
+            )}
+          </div>
         )}
-        <OAuthButtons refHandle={refHandle} />
+        <OAuthButtons refHandle={refHandle} enabled={providers} />
       </div>
 
       <form action={formAction} className="mt-4 flex flex-col gap-4">

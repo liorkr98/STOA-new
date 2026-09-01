@@ -4,16 +4,14 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/design/cn";
 import { sameOriginPath } from "@/lib/pwa/urls";
+import type { OAuthProvider as Provider } from "@/lib/auth/providers";
 
 /**
- * Social sign-in (Google / Apple / LinkedIn / X) via Supabase OAuth. Each
- * provider must also be enabled in the Supabase dashboard (Authentication ->
- * Providers) with its client id/secret; until then a provider button returns
- * Supabase's "provider is not enabled" message. Session lands through
- * /auth/callback which ensures the profile row exists.
+ * Social sign-in via Supabase OAuth. Only providers the project has actually
+ * enabled are rendered (`enabled`, read from the project's auth settings), so a
+ * button can never be offered that is only capable of failing. Session lands
+ * through /auth/callback which ensures the profile row exists.
  */
-
-type Provider = "google" | "apple" | "linkedin_oidc" | "twitter";
 
 const PROVIDERS: { key: Provider; label: string; icon: React.ReactNode }[] = [
   {
@@ -58,9 +56,19 @@ const PROVIDERS: { key: Provider; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export function OAuthButtons({ next = "/home", refHandle }: { next?: string; refHandle?: string }) {
+export function OAuthButtons({
+  next = "/home",
+  refHandle,
+  enabled,
+}: {
+  next?: string;
+  refHandle?: string;
+  enabled?: Provider[];
+}) {
   const [pending, setPending] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const allow = enabled ?? ["google"];
+  const visible = PROVIDERS.filter((p) => allow.includes(p.key));
 
   async function signInWith(provider: Provider) {
     setPending(provider);
@@ -91,8 +99,8 @@ export function OAuthButtons({ next = "/home", refHandle }: { next?: string; ref
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-2">
-        {PROVIDERS.map((p) => (
+      <div className={cn("grid gap-2", visible.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+        {visible.map((p) => (
           <button
             key={p.key}
             type="button"
