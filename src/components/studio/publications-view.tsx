@@ -193,7 +193,9 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{p.typeLabel}</span>
                     {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeTag label={p.tag} />)}
-                    <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+                    {p.badge ? (
+                      <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+                    ) : null}
                     {p.state === "archived" && (
                       <span className="num rounded-[var(--radius-tag)] bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
                         Archived

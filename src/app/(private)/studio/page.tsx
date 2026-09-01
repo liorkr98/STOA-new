@@ -52,7 +52,12 @@ function toPublication(
     typeLabel: typeLabel(r.type),
     tag: r.ticker,
     tagIsTicker: Boolean(r.ticker),
-    badge: badgeFor(r, clip?.status === "ready", Boolean(pred)),
+    // The badge says what the publication contains. With nothing to list it
+    // falls back to NOTE, which the type label already says, so it is dropped
+    // rather than printed twice.
+    badge: badgeFor(r, clip?.status === "ready", Boolean(pred)) === typeLabel(r.type)
+      ? ""
+      : badgeFor(r, clip?.status === "ready", Boolean(pred)),
     title: r.title?.trim() || r.summary?.trim() || "Untitled",
     duration: clip?.status === "ready" ? formatDuration(clip.duration_seconds) : "",
     videoStatus: clip ? clip.status : null,

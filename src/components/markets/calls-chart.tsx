@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SealStamp } from "@/components/ui/seal-stamp";
@@ -22,6 +22,65 @@ const PLOT_H = H - PAD.top - PAD.bottom;
 
 const THREE_MONTHS_MS = 92 * 86_400_000;
 const MAX_SEALS = 6;
+const SEAL_PX = 32;
+// A little air between two stamps, so a fanned pair still reads as two.
+const SEAL_GAP = 4;
+
+/**
+ * Push overlapping seals apart.
+ *
+ * Calls on one instrument cluster: several resolve within days of each other,
+ * near the same price, and the stamps land on top of one another and turn into
+ * an unreadable pile. Time (x) is the meaningful axis here, so it is preserved
+ * and the stamps fan along y, which already only approximates the exit price.
+ * Measured in rendered pixels because the chart is a scaled viewBox: the same
+ * percentage is a very different distance on a phone and on a desktop.
+ */
+function fanOutSeals(
+  points: { xPct: number; yPct: number }[],
+  box: { w: number; h: number } | null,
+): { xPct: number; yPct: number }[] {
+  if (!box || box.w === 0 || box.h === 0) return points;
+  const min = SEAL_PX + SEAL_GAP;
+  const r = SEAL_PX / 2;
+  // Stay inside the plot itself: the right gutter carries the price labels.
+  const maxX = box.w * (1 - PAD.right / W) - r;
+  const minX = box.w * (PAD.left / W) + r;
+  const maxY = box.h - r;
+  const minY = r;
+
+  const placed: { x: number; y: number }[] = [];
+  const free = (x: number, y: number) =>
+    placed.every((q) => Math.hypot(q.x - x, q.y - y) >= min);
+
+  return points.map((p) => {
+    const x0 = (p.xPct / 100) * box.w;
+    const y0 = (p.yPct / 100) * box.h;
+    // Search outward from the true position and take the first clear seat that
+    // is still inside the plot. Never leave the box: a stamp parked outside the
+    // chart is worse than two stamps that touch.
+    let best = { x: x0, y: y0 };
+    let found = free(x0, y0);
+    for (let ring = 1; !found && ring <= 4; ring += 1) {
+      for (let k = 0; k < 8; k += 1) {
+        const a = (k / 8) * Math.PI * 2;
+        const x = Math.min(Math.max(x0 + Math.cos(a) * min * ring, minX), maxX);
+        const y = Math.min(Math.max(y0 + Math.sin(a) * min * ring, minY), maxY);
+        if (free(x, y)) {
+          best = { x, y };
+          found = true;
+          break;
+        }
+      }
+    }
+    best = {
+      x: Math.min(Math.max(best.x, minX), maxX),
+      y: Math.min(Math.max(best.y, minY), maxY),
+    };
+    placed.push(best);
+    return { xPct: (best.x / box.w) * 100, yPct: (best.y / box.h) * 100 };
+  });
+}
 
 type Hover =
   | { kind: "target"; call: OpenCall; xPct: number; yPct: number }
@@ -80,6 +139,24 @@ export function CallsChart({
     [candles, openCalls, showOverlay],
   );
 
+  const plotRef = useRef<HTMLDivElement>(null);
+  const [plotBox, setPlotBox] = useState<{ w: number; h: number } | null>(null);
+
+  // The chart is a scaled viewBox, so seal spacing has to be decided against
+  // the box as actually rendered rather than against viewBox units.
+  useEffect(() => {
+    const el = plotRef.current;
+    if (!el) return;
+    setPlotBox({ w: el.clientWidth, h: el.clientHeight });
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([entry]) => {
+      const r = entry.contentRect;
+      setPlotBox({ w: r.width, h: r.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (!geo) {
     return (
       <div className="calls-chart">
@@ -113,6 +190,15 @@ export function CallsChart({
         })
         .slice(0, MAX_SEALS);
 
+
+  const sealSeats = fanOutSeals(
+    seals.map((call) => ({
+      xPct: (x(new Date(call.resolvedAt).getTime() / 1000) / W) * 100,
+      yPct: (y(call.exitPrice ?? call.entryPrice) / H) * 100,
+    })),
+    plotBox,
+  );
+
   const entries = !showOverlay
     ? []
     : resolvedCalls.filter((c) => {
@@ -134,7 +220,7 @@ export function CallsChart({
         <TimeframePicker active={activeRange} from={customFrom} to={customTo} />
       </div>
 
-      <div className="relative mt-4">
+      <div ref={plotRef} className="relative mt-4">
         <svg
           viewBox={`0 0 ${W} ${H}`}
           className="w-full"
@@ -291,14 +377,13 @@ export function CallsChart({
           })}
         </svg>
 
-        {seals.map((call) => {
-          const sx = (x(new Date(call.resolvedAt).getTime() / 1000) / W) * 100;
-          const sy = (y(call.exitPrice ?? call.entryPrice) / H) * 100;
+        {seals.map((call, i) => {
+          const seat = sealSeats[i];
           return (
             <span
               key={`s-${call.reportId}`}
               className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${sx}%`, top: `${sy}%` }}
+              style={{ left: `${seat.xPct}%`, top: `${seat.yPct}%` }}
             >
               <SealStamp
                 status={call.outcome === "hit" ? "hit" : call.outcome === "miss" ? "miss" : "near"}
