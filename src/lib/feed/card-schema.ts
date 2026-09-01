@@ -54,7 +54,15 @@ export const CARD_PAYLOADS = {
   }),
   figure: z.object({
     caption: z.string().max(400),
-    imageUrl: z.string().url().nullable(),
+    // Must be a fetchable URL. A blob:/data: object URL only resolves in the
+    // tab that made it, so storing one leaves readers with a dead image.
+    imageUrl: z
+      .string()
+      .url()
+      .refine((u) => /^https?:\/\//i.test(u), {
+        message: "Re-pick the image: it was not uploaded.",
+      })
+      .nullable(),
     source: z.enum(["creator", "auto"]),
   }),
   chart: z.object({

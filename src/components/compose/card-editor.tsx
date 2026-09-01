@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, Trash2, Lock, LockOpen, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { cardName, kindSpec, type DraftCard } from "@/lib/compose/cards";
 import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
 import { CardPreview } from "@/components/compose/card-preview";
+import { nanoid } from "nanoid";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Editing one card.
@@ -115,6 +117,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+const CARD_IMAGE_BUCKET = "report-images";
+
 const inputClass =
   "w-full rounded-[4px] border border-border bg-bg px-2 py-1.5 text-[0.8125rem] text-text focus-ring";
 
@@ -128,6 +132,8 @@ export function CardEditor({
   onDelete: () => void;
 }) {
   const p = card.payload;
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const set = useCallback(
     (patch: Record<string, unknown>) => onChange({ ...card, payload: { ...card.payload, ...patch } }),
     [card, onChange],
@@ -371,12 +377,49 @@ export function CardEditor({
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              disabled={uploadingImage}
+              onChange={async (e) => {
                 const f = e.target.files?.[0];
-                if (f) set({ imageUrl: URL.createObjectURL(f), source: "creator" });
+                if (!f) return;
+                // The file has to reach storage here. A local object URL renders
+                // in this tab and nowhere else, so a card saved with one stores
+                // a dead reference that no reader can ever load.
+                setImageError(null);
+                setUploadingImage(true);
+                try {
+                  const supabase = createClient();
+                  const {
+                    data: { user },
+                  } = await supabase.auth.getUser();
+                  if (!user) {
+                    setImageError("Sign in to upload");
+                    return;
+                  }
+                  const ext = f.name.split(".").pop()?.toLowerCase() || "png";
+                  const path = `${user.id}/${nanoid(12)}.${ext}`;
+                  const { error: upErr } = await supabase.storage
+                    .from(CARD_IMAGE_BUCKET)
+                    .upload(path, f, { contentType: f.type || "image/png", upsert: true });
+                  if (upErr) {
+                    setImageError("Upload failed. Try again.");
+                    return;
+                  }
+                  const url = supabase.storage.from(CARD_IMAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+                  set({ imageUrl: url, source: "creator" });
+                } catch {
+                  setImageError("Upload failed. Try again.");
+                } finally {
+                  setUploadingImage(false);
+                }
               }}
               className="text-[0.8125rem] text-text-mute file:mr-2 file:rounded-[4px] file:border file:border-border file:bg-surface file:px-2 file:py-1 file:text-[0.8125rem] file:text-text"
             />
+            {uploadingImage ? (
+              <p className="mt-1.5 text-[0.75rem] text-text-mute">Uploading...</p>
+            ) : null}
+            {imageError ? (
+              <p className="mt-1.5 text-[0.75rem] text-rust">{imageError}</p>
+            ) : null}
             {p.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={String(p.imageUrl)} alt="" className="mt-2 max-h-32 rounded-[4px] border border-border object-contain" />

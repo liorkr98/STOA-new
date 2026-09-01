@@ -64,7 +64,14 @@ function emptyCard(id: string, kind: FeedCard["kind"]): FeedCard {
 export function toFeedCard(row: PublicationCardRow): FeedCard {
   if (row.locked && row.kind !== "unlock") return emptyCard(row.id, row.kind);
   // Payload shape is validated on write; trust it here rather than re-parsing.
-  return { ...(row.payload as object), kind: row.kind, id: row.id, locked: row.locked } as FeedCard;
+  const card = { ...(row.payload as object), kind: row.kind, id: row.id, locked: row.locked } as FeedCard;
+  // Rows written before figure images were uploaded hold a blob: object URL
+  // that resolves nowhere. Drop it so the card falls back to its placeholder
+  // instead of handing an unfetchable src to the image loader.
+  if (card.kind === "figure" && card.imageUrl && !/^https?:\/\//i.test(card.imageUrl)) {
+    return { ...card, imageUrl: null };
+  }
+  return card;
 }
 
 /** Cards for many publications in one query, never one query per card. */

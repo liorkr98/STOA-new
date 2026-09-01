@@ -8,6 +8,7 @@ import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { getLiveClipForReport } from "@/lib/video/clip-for-report";
+import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
@@ -26,6 +27,7 @@ import { ShareMenu } from "@/components/share/share-menu";
 import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
 import { ReportClip } from "@/components/report/report-clip";
+import { ReportCards } from "@/components/report/report-cards";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
 import { PriceAttestationSection } from "@/components/report/price-attestation-section";
@@ -62,7 +64,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const author = report.author;
   const isAuthor = userId === report.author_id;
 
-  const [unlocked, subscribed, liked, saved, wallet, comments, clip] = await Promise.all([
+  const [unlocked, subscribed, liked, saved, wallet, comments, clip, cards] = await Promise.all([
     userId && report.access === "paid" ? hasUnlocked(userId, id) : Promise.resolve(false),
     userId &&
       (report.access === "subscribers" || (report.access === "paid" && report.members_included))
@@ -73,6 +75,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     userId ? getWallet(userId) : Promise.resolve(null),
     listComments(id),
     getLiveClipForReport(id),
+    listCardsForReport(id),
   ]);
 
   /*
@@ -228,6 +231,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
 
         <div className="order-2 min-w-0 lg:order-1">
+          {/* Cards carry their own per-card lock, so the deck renders either
+              side of the report paywall; sealed cards blur themselves. */}
+          <ReportCards cards={cards} ticker={report.ticker} className="mb-6" />
           {canRead ? (
             <>
               <AudioBrief reportId={id} isAuthor={isAuthor} />
