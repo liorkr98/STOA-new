@@ -194,11 +194,21 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{p.typeLabel}</span>
                     {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeTag label={p.tag} />)}
                     <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+                    {p.state === "archived" && (
+                      <span className="num rounded-[var(--radius-tag)] bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
+                        Archived
+                      </span>
+                    )}
                     {p.pinned && (
                       <span className="num text-[10px] uppercase tracking-[0.14em] text-text">· PINNED TO PROFILE</span>
                     )}
                   </div>
-                  <h3 className="mt-2 font-display text-lg font-semibold leading-snug tracking-tight md:text-xl">
+                  <h3
+                    className={cn(
+                      "mt-2 font-display text-lg font-semibold leading-snug tracking-tight md:text-xl",
+                      p.state === "archived" && "text-text-mute",
+                    )}
+                  >
                     <Link href={draft ? p.editHref : p.href}>{p.title}</Link>
                   </h3>
 

@@ -28,6 +28,7 @@ import { CommentsSection } from "@/components/report/comments-section";
 import { ReportBody } from "@/components/editor/report-body";
 import { ReportClip } from "@/components/report/report-clip";
 import { ReportCards } from "@/components/report/report-cards";
+import { ArchivedBanner } from "@/components/report/archived-banner";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
 import { PriceAttestationSection } from "@/components/report/price-attestation-section";
@@ -117,6 +118,10 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="reading-progress" aria-hidden />
       <ReportSchema report={report} />
       <ViewTracker reportId={id} />
+
+      {report.status === "archived" ? (
+        <ArchivedBanner reportId={id} isAuthor={isAuthor} />
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <Tag>{publicTypeLabel(report.type)}</Tag>

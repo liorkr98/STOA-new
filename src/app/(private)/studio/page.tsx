@@ -67,7 +67,9 @@ function toPublication(
   if (clip?.status === "processing") {
     base.stateLine = `VIDEO PROCESSING · STARTED ${formatDistanceToNowStrict(new Date(clip.created_at)).toUpperCase()} AGO`;
   }
-  if (state === "draft") {
+  if (state === "archived") {
+    base.stateLine = "ARCHIVED · HIDDEN FROM THE PUBLIC · CAN BE RESTORED";
+  } else if (state === "draft") {
     base.stateLine = `DRAFT · EDITED ${formatDistanceToNowStrict(new Date(r.created_at)).toUpperCase()} AGO`;
   } else if (state === "open" && pred) {
     const days = Math.max(0, differenceInCalendarDays(new Date(pred.resolves_at), new Date()));
