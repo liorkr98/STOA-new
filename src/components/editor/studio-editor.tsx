@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { publishReport, saveDraft } from "@/app/actions/reports";
+import { uploadComposeClip } from "@/lib/video/upload-clip";
 import { documentPlainText, parseDocument } from "@/lib/editor/document";
 import {
   emptyTiptapDoc,
@@ -152,10 +153,11 @@ export function StudioEditor({
   const [mode, setMode] = useState<ComposeMode>(() => modeFromType(initialDraft?.type));
   const type = typeFromMode(mode);
 
-  function chooseMode(next: ComposeMode) {
-    setMode(next);
-    if (next === "video") setVideoEdit((e) => e ?? emptyEdit(90));
-  }
+  // The file a creator picked in the video rung, held until the report is
+  // locked. video_clips rows hang off a locked report, so the upload cannot
+  // start until publish has returned an id.
+  const videoFileRef = useRef<{ file: File; durationSeconds: number } | null>(null);
+
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
@@ -180,6 +182,25 @@ export function StudioEditor({
   const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() =>
     hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null,
   );
+
+  function chooseMode(next: ComposeMode) {
+    // Post stores neither a headline nor a body, so switching to it from a
+    // format that has them throws that writing away on the next save. It used
+    // to happen silently: ask first.
+    if (next === "short_post" && mode !== "short_post") {
+      const losing = [title.trim() && "headline", plainText.trim() && "body"].filter(Boolean);
+      if (
+        losing.length > 0 &&
+        !window.confirm(
+          `A Post has no ${losing.join(" or ")}. Switching will drop the ${losing.join(" and ")} you have written. Continue?`,
+        )
+      ) {
+        return;
+      }
+    }
+    setMode(next);
+    if (next === "video") setVideoEdit((e) => e ?? emptyEdit(90));
+  }
 
   // The deck. One pool for the whole publication, not a step inside the video.
   // What the creator authored. The CTA is not in here: it is derived from
@@ -645,7 +666,12 @@ export function StudioEditor({
       const finalBody =
         type === "short_post" ? undefined : editor ? JSON.stringify(editor.getJSON()) : bodyJson;
 
-      await publishReport({
+      // A chosen clip can only attach to a locked report, so hold the redirect,
+      // publish, upload, then navigate. Without this the clip was never sent
+      // anywhere: the rung only ever held a local object URL.
+      const pendingVideo = mode === "video" ? videoFileRef.current : null;
+
+      const published = await publishReport({
         id,
         type,
         title: type === "short_post" ? undefined : title,
@@ -671,7 +697,29 @@ export function StudioEditor({
               views_certified: disclosure.viewsCertified,
             }
           : {}),
-      });
+      }, !pendingVideo);
+
+      if (pendingVideo && published?.id) {
+        try {
+          setCaptureStatus("Uploading video...");
+          await uploadComposeClip({
+            reportId: published.id,
+            file: pendingVideo.file,
+            title: title || summary,
+            durationSeconds: pendingVideo.durationSeconds,
+            onProgress: (pct) => setCaptureStatus(`Uploading video... ${Math.round(pct)}%`),
+          });
+          videoFileRef.current = null;
+          toast.success("Published. The video is processing and appears when it is ready.");
+        } catch (err) {
+          // The report is already locked, so this must not read as a failed
+          // publish: the clip can be attached again from the publication.
+          toast.error(
+            err instanceof Error ? err.message : "Published, but the video upload failed.",
+          );
+        }
+        window.location.href = `/report/${published.id}`;
+      }
     } catch (e) {
       if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
         setError(e.message);
@@ -1011,6 +1059,9 @@ export function StudioEditor({
                 <VideoRung
                   value={videoEdit ?? undefined}
                   onChange={setVideoEdit}
+                  onFile={(file, durationSeconds) => {
+                    videoFileRef.current = { file, durationSeconds };
+                  }}
                   cards={deck}
                   chrome={false}
                   ticker={ticker.trim() || undefined}

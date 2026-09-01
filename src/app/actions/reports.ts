@@ -155,7 +155,15 @@ async function captureVersion(
  * locks the entry price from the live feed (server-side, never client-trusted),
  * captures the SPY baseline for alpha, and schedules resolution.
  */
-export async function publishReport(input: ComposeInput): Promise<{ id: string }> {
+export async function publishReport(
+  input: ComposeInput,
+  /**
+   * Compose sets this false when a chosen video still has to be uploaded: the
+   * upload route requires the report to be locked first, so the client needs
+   * the id back and navigates itself once the clip is attached.
+   */
+  redirectAfter = true,
+): Promise<{ id: string }> {
   const { supabase, userId } = await requireUser();
 
   try {
@@ -164,6 +172,7 @@ export async function publishReport(input: ComposeInput): Promise<{ id: string }
     revalidatePath("/home");
     revalidatePath("/feed");
     revalidatePath("/studio");
+    if (!redirectAfter) return { id };
     redirect(`/report/${id}`);
   } catch (e) {
     if (e instanceof PublishReportError) throw new Error(e.message);

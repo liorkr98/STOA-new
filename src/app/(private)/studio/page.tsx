@@ -51,7 +51,7 @@ function toPublication(
     tag: r.ticker,
     tagIsTicker: Boolean(r.ticker),
     badge: badgeFor(r, clip?.status === "ready", Boolean(pred)),
-    title: r.title ?? "Untitled",
+    title: r.title?.trim() || r.summary?.trim() || "Untitled",
     duration: clip?.status === "ready" ? formatDuration(clip.duration_seconds) : "",
     videoStatus: clip ? clip.status : null,
     dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),

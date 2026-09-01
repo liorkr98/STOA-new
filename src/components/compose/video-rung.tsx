@@ -666,6 +666,7 @@ export function VideoRung({
   initial,
   demoDurationSeconds = 90,
   onChange,
+  onFile,
   value,
   cards = [],
   chrome = true,
@@ -676,6 +677,7 @@ export function VideoRung({
   /** Duration used for the poster stage when no file is loaded. */
   demoDurationSeconds?: number;
   onChange?: (edit: VideoEdit) => void;
+  onFile?: (file: File, durationSeconds: number) => void;
   /** Controlled edit. Given, the workspace owns the edit and can place a card
    *  on the track from outside (the tray's Place menu on a touch screen). */
   value?: VideoEdit;
@@ -824,6 +826,7 @@ export function VideoRung({
                 const d = Number.isFinite(probe.duration) ? probe.duration : demoDurationSeconds;
                 setEdit({ ...emptyEdit(d), thumbnail: null });
                 setTime(0);
+                onFile?.(f, d);
               });
             }}
           />
