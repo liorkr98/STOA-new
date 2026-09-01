@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
 import { cachedPage } from "@/lib/cache/page";
 import type { LegalDocType } from "@/lib/legal/constants";
@@ -125,4 +126,57 @@ export async function setMarketingPreference(
     docs.map((d) => d.id),
     ipAddress,
   );
+}
+
+/**
+ * Record the consents a user gave on the signup form.
+ *
+ * Runs with the admin client on purpose. When email confirmation is on, signUp
+ * returns a user but no session, so the RLS policies on `user_consents` and
+ * `profiles` (which key off auth.uid()) have nobody to match and the write is
+ * impossible from the request's own client. The attestation happened at signup
+ * and has to be stored with that moment's timestamp and IP, so it cannot simply
+ * be deferred to the first sign-in, where the ticks no longer exist.
+ *
+ * The user id comes straight from the signUp response, never from user input.
+ */
+export async function recordSignupConsentsAsAdmin(
+  userId: string,
+  input: { marketingOptIn: boolean; ipAddress?: string | null },
+): Promise<void> {
+  const { SIGNUP_CONSENT_TYPES } = await import("@/lib/legal/constants");
+  const admin = createAdminClient();
+  const ip = input.ipAddress ?? null;
+
+  const docs = await getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES);
+  if (docs.length > 0) {
+    const { error } = await admin.from("user_consents").upsert(
+      docs.map((d) => ({ user_id: userId, legal_document_id: d.id, ip_address: ip })),
+      { onConflict: "user_id,legal_document_id", ignoreDuplicates: false },
+    );
+    if (error) throw error;
+  }
+
+  const { error: ageError } = await admin
+    .from("profiles")
+    .update({ age_attested_at: new Date().toISOString() })
+    .eq("id", userId)
+    .is("age_attested_at", null);
+  if (ageError) throw ageError;
+
+  if (!input.marketingOptIn) return;
+
+  const { error: mktError } = await admin
+    .from("profiles")
+    .update({ marketing_opt_in: true, marketing_opt_in_at: new Date().toISOString() })
+    .eq("id", userId);
+  if (mktError) throw mktError;
+
+  const marketingDocs = await getCurrentLegalDocuments(["marketing"]);
+  if (marketingDocs.length === 0) return;
+  const { error: mktConsentError } = await admin.from("user_consents").upsert(
+    marketingDocs.map((d) => ({ user_id: userId, legal_document_id: d.id, ip_address: ip })),
+    { onConflict: "user_id,legal_document_id", ignoreDuplicates: false },
+  );
+  if (mktConsentError) throw mktConsentError;
 }

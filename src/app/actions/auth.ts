@@ -4,8 +4,17 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
-import { getConsentRedirectPath, recordMarketingOptInIfChecked, recordSignupCompliance } from "@/app/actions/consent";
+import { getConsentRedirectPath, recordMarketingOptInIfChecked } from "@/app/actions/consent";
+import { recordSignupConsentsAsAdmin } from "@/lib/db/legal";
 import { alertNewSignup } from "@/lib/slack/alerts";
+import { headers } from "next/headers";
+
+async function signupIp(): Promise<string | null> {
+  const h = await headers();
+  const forwarded = h.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]?.trim() ?? null;
+  return h.get("x-real-ip");
+}
 
 /** New investors without interests go to onboarding; everyone else to Today. */
 async function postAuthPath(
@@ -88,15 +97,26 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   });
   if (error) return { error: error.message };
 
-  // Session is set on the server when email confirmation is off. If confirmation is
-  // required, data.session is null — profile bootstrap runs on first sign-in instead.
+  // The consents were ticked on this form, so they are recorded here whether or
+  // not a session came back. With email confirmation on, data.session is null
+  // and the request has no auth.uid(), so this write has to go through the admin
+  // client; gating it on the session (as it used to be) silently discarded every
+  // confirmed signup's consent and stopped the user at the consent wall on their
+  // first sign-in, having already agreed.
+  if (data.user) {
+    try {
+      await recordSignupConsentsAsAdmin(data.user.id, {
+        marketingOptIn: formData.get("marketing_opt_in") === "on",
+        ipAddress: await signupIp(),
+      });
+    } catch {
+      // The account exists; the consent gate will ask again on first sign-in
+      // rather than stranding the signup.
+    }
+  }
+
   if (data.session && data.user) {
     await supabase.rpc("ensure_user_profile");
-
-    const complianceError = await recordSignupCompliance(data.user.id, {
-      marketingOptIn: formData.get("marketing_opt_in") === "on",
-    });
-    if (complianceError?.error) return complianceError;
 
     if (refHandle) {
       const { data: referrer } = await supabase
