@@ -21,7 +21,7 @@ export default async function PrivateLayout({ children }: { children: React.Reac
   if (!userId) redirect("/sign-in");
 
   return (
-    <div className="has-app-tabs flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden">
+    <div data-app-shell className="has-app-tabs flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-btn)] focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:text-text focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"

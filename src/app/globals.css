@@ -170,17 +170,60 @@
 @media (max-width: 767px) {
   .has-app-tabs {
     /* Extra floor so Chrome on Android (often 0 safe-area) does not sit the
-       bar on the system nav. */
-    --tab-h: calc(3.25rem + max(0.5rem, var(--safe-bottom)));
+       bar on the system nav. Includes the pill's inset from the bottom edge. */
+    --tab-h: calc(3.5rem + max(0.625rem, var(--safe-bottom)));
   }
-}
 
-.app-tabs {
-  flex: none;
-  position: sticky;
-  bottom: 0;
-  z-index: 40;
-  padding-bottom: max(0.5rem, var(--safe-bottom));
+  /* The pill floats over the page, so the scroller reserves its own clearance.
+     Without this the last row of any list sits underneath the bar. A descendant
+     selector, not a child one: the private shell nests main inside the sidebar
+     columns, and a child selector silently missed every studio screen. */
+  .has-app-tabs main {
+    padding-bottom: calc(var(--main-pad-y) + var(--tab-h));
+  }
+
+  /* The floating tab pill. Fixed rather than a flex sibling so the page reads
+   * behind and around it. Scoped to the phone on purpose: these declarations
+   * are unlayered and would otherwise beat the element's own `md:hidden`
+   * utility and leave the pill floating over the desktop layout. */
+  .app-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(0.625rem, var(--safe-bottom));
+    z-index: 40;
+    display: flex;
+    justify-content: center;
+    padding-left: max(1rem, var(--safe-left));
+    padding-right: max(1rem, var(--safe-right));
+    pointer-events: none;
+  }
+
+  .app-tabs-pill {
+    width: 100%;
+    max-width: 26rem;
+    pointer-events: auto;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--paper);
+    box-shadow: var(--shadow-card);
+    padding: 0.125rem 0.25rem;
+    transform-origin: bottom center;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  .app-tabs[data-shrunk] .app-tabs-pill {
+    transform: scale(0.8);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-tabs-pill {
+      transition: none;
+    }
+    .app-tabs[data-shrunk] .app-tabs-pill {
+      transform: none;
+    }
+  }
 }
 
 .safe-bottom {
