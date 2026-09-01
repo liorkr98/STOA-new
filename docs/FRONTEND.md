@@ -214,10 +214,31 @@ not discovered once.
 state: skeleton pill for avatar only, nav renders instantly (never block the whole nav on auth
 resolution).
 
-**Mobile (< 768px):** logo + search + avatar + overflow menu at the top. **Feed, Today, Explore,
-and Markets live in a bottom tab bar** (`AppTabs`) so a home-screen install feels like a phone
-app. The overflow menu is Compose, Inbox, Settings, and sign-in, not a second copy of the four
-surfaces. Desktop is unchanged: those four stay in the top row.
+**Mobile (< 768px):** wordmark on the left, then search, Compose (pencil), Inbox (unread dot)
+and the avatar on the right. **There is no overflow menu.** Feed, Today, Explore and Markets
+live in the bottom tab bar (`AppTabs`), and Settings and Sign out live in the Account group of
+the profile area, which the avatar leads to, so a drawer had nothing of its own left to hold.
+Signed out, Sign in and Join sit in the bar directly. Desktop is unchanged: the four surfaces
+stay in the top row and the right zone keeps its full-width Compose button and bell.
+
+**`AppTabs` — the bottom tab bar.** A rounded pill, inset from the bottom and sides, floating
+over the page rather than welded to the edge, capped at `26rem` and centred. Four destinations,
+always labelled.
+
+- **Shrink on scroll.** Scrolling down scales the pill to `0.8` about its bottom edge; scrolling
+  up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
+  size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
+  asked for by name; nothing else in the nav animates.
+- **Never flickers.** The direction decision is `src/lib/nav/scroll-shrink.ts`, a pure function
+  with tests. Movement accumulates in one direction and only flips the bar past an 18px
+  threshold, so a resting thumb cannot flutter it; a reversal restarts the count rather than
+  netting off, and the top 24px always restores full size.
+- **Never covers content.** Because the pill overlays the page, the scroller reserves the
+  clearance: `.has-app-tabs main` carries `--main-pad-y + --tab-h` as bottom padding on phones.
+  A page that cancels main's padding to break out must cancel the **top** only; cancelling the
+  bottom eats this clearance and puts the last row under the bar.
+- The pill's own rules live inside the `max-width: 767px` block. They are unlayered, so at
+  desktop widths they would otherwise beat the element's `md:hidden` utility.
 
 ### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
 
@@ -917,6 +938,18 @@ filter row showing.
 This is the highest-scrutiny page in the product — every element here exists to answer "can I
 trust this specific claim, right now."
 
+**Evidence cards (`<ReportCards>`).** The publication's card stack renders here as a horizontal
+strip above the thesis, reusing the Feed's `FeedCardView` so a card looks identical in both
+places. Per-card locks still apply, so the strip sits either side of the report paywall and
+sealed cards blur themselves. Profile and Today deliberately show only the `CARDS` content
+badge, not the deck. A `figure` card's image must be a stored `http(s)` URL: the schema rejects
+anything else, and a stored value that is not fetchable falls back to the card's own
+"Figure not available" placeholder rather than being handed to the image loader.
+
+**Archived publications (`<ArchivedBanner>`).** An archived publication opens with a solid-ink
+ARCHIVED chip above the headline, saying it is hidden from the public, with Restore inline for
+the author. An archived publication must never be indistinguishable from a live one.
+
 **Full layout, desktop (two-column, ledger sidebar sticky on scroll):**
 
 ```
@@ -1224,6 +1257,11 @@ published words are genuinely their own.
 ### 6.3 My Reports — `/dashboard/reports`
 
 Three tabs: **Drafts** / **Locked (open)** / **Resolved**.
+
+**Archived rows** carry a solid-ink ARCHIVED chip beside the content badge, dim the headline so
+they read differently while scanning, and spell the state out on the status line: hidden from
+the public, and restorable. The content badge lists what the publication contains and is
+dropped entirely when it would only repeat the type label.
 
 - Drafts: title, last-edited timestamp, `<StatusChip>` "Draft," row actions: Edit, Delete (confirm
   modal, since drafts genuinely can be deleted — only locked reports can't)

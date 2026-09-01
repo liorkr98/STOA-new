@@ -10,6 +10,72 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-01 — A published video actually arrives, cards reach the reader, and the phone chrome is rebuilt
+
+**For someone using the site**
+
+- **A video chosen in Compose now actually reaches the host.** Every upload from
+  the UI has been failing silently. The browser set one header twice and the
+  host rejected the transfer, so the video record was created with zero bytes
+  behind it and the publication had nothing to play. The error that would have
+  said so was wiped by an immediate redirect. Fixed, verified against the host
+  from a real browser, and a failed upload now stays on screen and says why.
+- **A finished video goes live on its own.** Nothing was promoting a clip once
+  the host finished processing it: only one provider webhook has ever reached
+  us, and every clip that ever went live was promoted by hand. A clip is now
+  reconciled by the webhook, by a five-minute sweep, and by the publication page
+  itself when it is opened, so no single missed delivery can strand a video. A
+  clip that lands ready under a published report is also marked live, which the
+  compose path never did.
+- **Evidence cards appear on the publication.** They were stored correctly and
+  the page simply never rendered them. They now read as a strip above the
+  thesis, and look the same as they do in the Feed. Profile and Today keep
+  showing the CARDS badge, which is by design.
+- **An image on a card is now uploaded.** The picker only made a preview that
+  lived inside the tab that created it, so the card saved a link to nothing.
+  This is why cards appeared to save correctly and then showed no picture.
+- **An archived publication says it is archived**, in the Publications list and
+  on the publication itself, with Restore where the bad news is. It used to look
+  identical to a live one.
+- **The phone top bar carries actions instead of a hamburger.** Wordmark, then
+  search, Compose, Inbox with an unread dot, and the avatar. Nothing became
+  unreachable: the four surfaces were already in the bottom bar, and Settings
+  and Sign out are in the Account group the avatar leads to.
+- **The bottom bar is a floating pill** inset from the edges, with the page
+  visible behind and around it, and it shrinks to 80% as you scroll down and
+  comes back as you scroll up. It cannot flicker on a resting thumb, and page
+  bottoms now reserve room so the last row is never underneath it.
+- **Two overlaps found auditing every surface at 390.** Resolved-call seals on
+  an instrument chart stacked into an unreadable pile when calls resolved close
+  together; they now take the nearest clear seat inside the plot. The
+  Publications list printed NOTE twice.
+
+**What needs Krisi's attention**
+
+- **The Bunny webhook is still not registered.** Only one delivery has ever been
+  processed, back on 22 August. The reconcile sweep means a video no longer
+  depends on it, but it is a five-minute delay rather than seconds, and the
+  sweep costs an API call per unsettled clip. Registering the webhook against
+  `/api/webhooks/bunny-stream?secret=...` makes it immediate again.
+- **The reported Feed overlap was not a layout fault.** With the video hidden,
+  the dateline and the chips sit cleanly apart and the DOM holds exactly one
+  chip pair. The second pair is inside the demo clips, which show a trading UI
+  with their own tickers and LONG/SHORT chips in the same corner and style as
+  ours. The scrim is stronger so ours reads as chrome, but real analyst video
+  will carry whatever it carries, and this is worth knowing before reading a
+  screenshot as a bug.
+- **The demo clips are misleading in screenshots** for the same reason. Any
+  review of Feed, Explore or Today layout using them should assume tickers and
+  chips in the frame are the video, not the product.
+- **Bar's own stuck video is not recoverable**: zero bytes reached the host, so
+  the file only ever existed on his device. It needs re-uploading.
+- **Left unfixed, deliberately:** the studio Publications list does not include
+  CARDS in its content badge the way Profile and Today do (it would need a
+  cards query per row), and `docs/MOTION.md` §A.4 still says nav must not
+  animate, which the shrink-on-scroll bar is now a named exception to.
+
+---
+
 ## 2026-09-01 — Composing a publication keeps what you wrote, and you can take one down
 
 **For someone using the site**
