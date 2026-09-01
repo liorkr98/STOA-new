@@ -193,3 +193,17 @@ export function searchMacroInstruments(query: string): MacroInstrument[] {
       i.keywords.some((k) => k.includes(q) || q.includes(k)),
   );
 }
+
+/**
+ * How a level reads in a list beside ordinary share prices.
+ *
+ * A Treasury yield printed as a bare number next to a fund's price reads as a
+ * price, which is exactly the confusion the instrument pages go out of their
+ * way to avoid. Returns null when the symbol is not a macro instrument, so the
+ * caller keeps its usual price formatting.
+ */
+export function macroLevelLabel(symbol: string, value: number | null): string | null {
+  const inst = macroInstrument(symbol);
+  if (!inst) return null;
+  return formatMacroLevel(inst, value);
+}

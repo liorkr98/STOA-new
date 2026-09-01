@@ -8,6 +8,7 @@ import { FollowButton } from "@/components/follow-button";
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
 import { price } from "@/lib/format";
+import { macroLevelLabel } from "@/lib/markets/instruments";
 import type { ThemePayload } from "@/lib/markets/build-theme";
 
 /**
@@ -67,7 +68,13 @@ export function ThemeNames({ payload }: { payload: ThemePayload }) {
               <TickerChip ticker={n.symbol} />
               <span className="min-w-0 flex-1 truncate text-sm text-text">{n.company}</span>
             </Link>
-            <span className="num text-sm text-text">{n.price == null ? <span className="markets-pending">&ndash;&ndash;</span> : price(n.price)}</span>
+            <span className="num text-sm text-text">
+              {n.price == null ? (
+                <span className="markets-pending">&ndash;&ndash;</span>
+              ) : (
+                (macroLevelLabel(n.symbol, n.price) ?? price(n.price))
+              )}
+            </span>
             <DayChange percent={n.changePercent} />
             <span className="markets-row-meta num">
               {n.publications} {n.publications === 1 ? "publication" : "publications"}

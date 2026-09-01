@@ -7,6 +7,7 @@ import { DayChange } from "@/components/markets/day-change";
 import { FollowSector, FollowTicker } from "@/components/markets/follow-control";
 import { sinceLabel } from "@/lib/today/format";
 import { compact, price } from "@/lib/format";
+import { macroLevelLabel } from "@/lib/markets/instruments";
 import type {
   EtfBandRow,
   CoveredRow,
@@ -32,7 +33,11 @@ export function MarketTape({ quotes }: { quotes: TapeQuote[] }) {
       <>
         <span className="markets-tape-label">{q.label}</span>
         <span className="num tabular-nums text-text">
-          {q.value == null ? <span className="markets-pending">&ndash;&ndash;</span> : price(q.value)}
+          {q.value == null ? (
+            <span className="markets-pending">&ndash;&ndash;</span>
+          ) : (
+            (macroLevelLabel(q.symbol, q.value) ?? price(q.value))
+          )}
         </span>
         <DayChange percent={q.changePercent} />
       </>

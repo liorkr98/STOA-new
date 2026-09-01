@@ -25,7 +25,11 @@ export const CURATED_ETFS: CuratedEtf[] = [
   { symbol: "XLK", name: "Technology Select Sector" },
   { symbol: "SOXL", name: "Direxion Semiconductor Bull 3x" },
   { symbol: "TLT", name: "iShares 20+ Year Treasury" },
+  { symbol: "IEF", name: "iShares 7-10 Year Treasury" },
+  { symbol: "LQD", name: "iShares Investment Grade Corporate" },
+  { symbol: "HYG", name: "iShares High Yield Corporate" },
   { symbol: "GLD", name: "SPDR Gold Shares" },
+  { symbol: "GDX", name: "VanEck Gold Miners" },
   { symbol: "VXX", name: "iPath VIX Short-Term Futures" },
   { symbol: "ARKK", name: "ARK Innovation" },
 ];

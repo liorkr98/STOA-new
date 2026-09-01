@@ -10,6 +10,60 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-02 — Compose stops arguing with itself, and two more themes
+
+**For someone using the site**
+
+- **The step tracker no longer hides behind the bar above it.** It was sitting
+  in the page while the bar was pinned, so the moment you scrolled the step
+  pills slid underneath and only their bottom edges showed. The bar and the
+  tracker are now one pinned block, so the tracker is always there and always
+  whole.
+- **The Video / Research / Post tabs are gone.** They asked you to declare what
+  you were making before you had made anything, and then argued with the
+  sequence that actually decides it. What you are making is now read off the
+  work: a publication with a clip is a video, one without is written. A quiet
+  label says which, and there is nothing to set.
+- **A video can now carry a written thesis.** The tabs made those two things
+  mutually exclusive, which was never the intention. Text belongs to the write
+  step and clips to the video step, so a publication can have either, both, or
+  neither.
+- **Step 1 is no longer a nearly empty page.** In video mode it used to show a
+  headline and one line of dek on a very tall canvas, because the writing
+  surface belonged to a different tab. It is always there now.
+- **The toolbox gets out of the way.** It folds to its icons on the steps that
+  do not build anything (the call, tags, publish) and opens again where a card
+  deck or the assistant is actually useful. Open or close it yourself and it
+  stays that way until you move to another step.
+- **Two more themes in Markets.** *Gold's second life* on central bank buying
+  and the debasement trade, mixing the metal with the miners and the funds; and
+  *The long end* on term premium and what is moving yields, mixing the 5, 10 and
+  30-year with the bond funds.
+- **A yield now reads as a yield everywhere.** On the tape and in the theme
+  tables the Treasury lines print as `4.796%` rather than a bare number sitting
+  next to a fund's share price and looking like one.
+
+**Found while auditing the sequence, and fixed**
+
+- Moving between steps scrolled the window, which is not what scrolls inside
+  the app, so a new step's heading stayed tucked under the pinned header.
+- The note beside "Upload an image" could not wrap and was being squeezed into
+  a one-word-wide column.
+- On a phone the **Publish** button was pushed off the end of the bar, and the
+  headline was set at a size a 390px screen could not hold.
+- The publish gate still said "run the fact-check in Assistant" after the
+  fact-check moved onto the publish step.
+
+**What needs Krisi**
+
+- Nothing new. Migrations `0062` and `0063` from the previous batch are still
+  written and still unapplied.
+- **New Posts cannot be created from Compose any more**, because the tab was the
+  only way to start one. Existing Posts are untouched: they keep their own
+  canvas and their character limit, and nothing converts them. There is an
+  unwired `postNote()` server action that is the natural home for a quick-note
+  composer if notes are wanted back as a first-class thing.
+
 ## 2026-09-01 — Compose leads you through it, edits are shown in public, and gold and oil become things you can call
 
 **For someone using the site**

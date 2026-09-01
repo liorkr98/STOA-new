@@ -69,6 +69,22 @@ export const MARKET_THEMES: MarketTheme[] = [
     tickers: ["ETN", "GEV", "VRT", "PWR"],
   },
   {
+    slug: "gold",
+    name: "Gold's second life",
+    deck: "Bought by central banks, held as a hedge against the currency it is priced in.",
+    about:
+      "Gold stopped trading like a commodity somewhere in the last three years. The marginal buyer is no longer a jeweller or a speculator but a central bank diversifying away from reserves it has watched be frozen, and that buying does not care what the price is. The old rule, that gold falls when real yields rise, has been breaking for long enough that the exception needs its own explanation: the debasement trade, a bet less on inflation than on the willingness of governments to keep issuing. Watch the metal against the miners. Producers carry the same ounce with a cost base attached, so they move further in both directions, and the gap between the two is the cleanest read on whether this is a monetary trade or an equity one.",
+    tickers: ["XAUUSD", "GLD", "GDX", "NEM", "AEM", "FNV", "WPM", "RGLD"],
+  },
+  {
+    slug: "treasuries",
+    name: "The long end",
+    deck: "Term premium is back, and the thirty-year is asking harder questions than the ten.",
+    about:
+      "For a decade the long end of the curve did what the front end told it to. It has stopped. Yields at thirty years are now moving on things the next policy meeting cannot settle: how much debt is coming, who is left to buy it once foreign central banks and the Fed have both stepped back, and what compensation a lender wants for locking money up that long. That compensation is the term premium, and its return is the single biggest change in this market. It is why the curve can steepen while the front end is falling, and why a strong auction can matter more to equities than a soft inflation print. Every long-duration asset on the platform is priced off this, so a call on the thirty-year is a call on the multiple of everything else.",
+    tickers: ["US30Y", "US10Y", "US05Y", "TLT", "IEF", "LQD", "HYG"],
+  },
+  {
     slug: "iran-conflict",
     name: "The Iran conflict",
     deck: "Energy, defence, shipping, and the risk premium sitting under all three.",

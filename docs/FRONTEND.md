@@ -1166,15 +1166,34 @@ most: a Video publication with no clip cannot publish, so `Continue without a vi
 piece to a written publication, keeps everything already written, and says so on the button
 instead of walking the creator into a wall three steps later.
 
-**The rail does not move with the steps.** The organising principle survives the change:
+**There is no format switcher.** The Video / Research / Post tabs are gone. They asked the creator
+to declare up front the thing the sequence exists to decide, and then sat in the header competing
+with it. **The format is derived from what the publication contains**: a clip makes it a video, no
+clip makes it research. A quiet mono label in the bar states the answer; it is not a control, and
+it is hidden below `md` so the primary action fits a 390px bar.
+
+A consequence worth having: a video may now carry a written thesis. The tabs made video and
+research mutually exclusive, which the product model never said they were. Text lives on the write
+step and clips live on the video step, so a publication can have either, both, or neither.
+
+`short_post` is preserved but no longer creatable here: a draft already stored as a Post keeps its
+own canvas and its 300-character limit, and nothing in the sequence converts one. There is an
+unwired `postNote()` server action that is the natural home for creating notes.
+
+**The rail does not move with the steps, but it quietens.** The organising principle survives:
 
 > **LEFT is what you build WITH. The steps are what you publish AS.**
 
-The toolbox rail holds the card tray and the AI assistant on every step, because a card has to
-stay draggable into the body and onto the timeline from wherever the creator happens to be. The
-settings rail is gone: access, price, disclosures and promote are step 7, and the Publish details
-drawer that used to carry a second copy of them has been removed. Two surfaces holding the same
-controls was the thing this change exists to delete.
+The toolbox rail holds the card tray and the AI assistant, because a card has to stay draggable
+into the body and onto the timeline from wherever the creator happens to be. It **auto-collapses to
+its icon strip on the steps that do not build anything** (the call, tags, publish) and expands again
+on write, cards, video and edit-video. A creator who opens or closes it is obeyed until they move
+to another step, which then gets its own default back rather than inheriting a decision made about
+a different task.
+
+The settings rail is gone: access, price, disclosures and promote are step 7, and the Publish
+details drawer that used to carry a second copy of them has been removed. Two surfaces holding the
+same controls was the thing this change exists to delete.
 
 **Two components render half of themselves** rather than being split in two, so the sequence
 costs no duplicated state: `<VideoRung stage="choose" | "edit" | "all">` and
@@ -1187,8 +1206,23 @@ screenshots are never lost.
 
 | Region | Width | Holds |
 |---|---|---|
+| Sticky header (full width) | auto, measured | The bar, then the step tracker |
 | Toolbox rail (left) | `248px` expanded, `56px` as icons | Card tray, then the AI assistant |
-| Canvas (centre) | `--w-reading`, fluid | The step rail, then the current step |
+| Canvas (centre) | `--w-reading`, fluid | The current step |
+
+**The header is one sticky block.** The bar and the step tracker are a single `sticky top-0 z-30`
+element, not two. They used to be separate, the bar sticky and the tracker in the flow, so the
+tracker slid under the bar the moment the page scrolled and only its bottom edge showed. Making
+them one element makes the stacking bug unrepresentable rather than merely corrected.
+
+Its height is measured with a `ResizeObserver` and published as **`--compose-head-h`**, which the
+toolbox rail sticks under. The rail was previously pinned to `--nav-h`, the *global* nav's height,
+which matched the compose bar by coincidence and would have drifted the first time either changed.
+Anything else that needs to sit below the compose header uses this variable, never `--nav-h`.
+
+**Moving between steps scrolls the compose root into view**, not the window. Inside the app shell
+the scroller is the `<main>` element, so `window.scrollTo` did nothing and a new step's heading
+stayed sitting under the sticky header.
 
 The profile navigation from the `(private)` layout is **not** rendered on Compose. It is not a
 tool for making a publication and the left edge belongs to the toolbox. It is removed by wrapping
@@ -1451,6 +1485,17 @@ Stoa does not cover crypto generally and this table is not the place to start.
 **A yield is not a price.** The three Treasury pages carry a brass note saying that a call for the
 level to rise is a call for bond prices to fall. Any instrument where "up" does not mean "worth
 more" needs that line, or the call block invites the opposite of what the analyst means.
+
+The same rule applies in **every list**, not just on the instrument page. `macroLevelLabel()`
+formats a macro level by its own unit and returns null for an equity, so a caller keeps its normal
+price formatting: the tape and the theme tables print `4.796%` for a yield and `$4,375.70` for
+gold, rather than a bare number sitting next to a fund's share price and reading as one.
+
+**Editorial themes carrying macro instruments.** `MARKET_THEMES` may name a macro instrument or a
+curated ETF alongside equities. Theme constituents resolve their name from the instrument table,
+then the curated universe, then the macro registry, then `CURATED_ETFS`; a symbol that resolves to
+no name is dropped rather than rendered blank. The gold and long-end themes both mix all three
+kinds, which is what makes them read as a theme rather than a single instrument with decoration.
 
 **Nothing broken is shown.** Every symbol was checked against the live provider before being
 added, and a macro row with no level is dropped from the tape rather than rendered empty. An index
