@@ -69,6 +69,27 @@ export const MARKET_THEMES: MarketTheme[] = [
     tickers: ["ETN", "GEV", "VRT", "PWR"],
   },
   {
+    slug: "iran-conflict",
+    name: "The Iran conflict",
+    deck: "Energy, defence, shipping, and the risk premium sitting under all three.",
+    about:
+      "A conflict around the Gulf is priced first in the barrel and then in everything the barrel touches. This theme follows the four places it shows up: crude, where a threat to the Strait of Hormuz moves Brent before it moves WTI; the defence primes whose order books lengthen; the tanker owners whose day rates rise with the insurance premium on the route; and gold, which absorbs the demand for somewhere safe to sit. The risk premium is the connecting thread, and it can leave these prices as quickly as it arrived.",
+    tickers: [
+      "UKOIL",
+      "USOIL",
+      "XAUUSD",
+      "XOM",
+      "CVX",
+      "SLB",
+      "LMT",
+      "RTX",
+      "NOC",
+      "FRO",
+      "STNG",
+      "ZIM",
+    ],
+  },
+  {
     slug: "memory-supercycle",
     name: "Memory's turn",
     deck: "High-bandwidth memory made a commodity business look, briefly, like a franchise.",

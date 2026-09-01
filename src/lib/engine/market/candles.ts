@@ -1,6 +1,7 @@
 import YahooFinance from "yahoo-finance2";
 import type { Candle, ChartRange } from "@/lib/market/candle-types";
 import { cached, TTL } from "@/lib/market/cache";
+import { toProviderSymbol } from "@/lib/markets/instruments";
 
 const yf = new YahooFinance({
   suppressNotices: ["yahooSurvey"],
@@ -71,7 +72,9 @@ async function loadBars(
   interval: YahooInterval,
 ): Promise<Candle[]> {
   try {
-    const history = await yf.chart(symbol.toUpperCase(), {
+    // Macro instruments carry a provider symbol the reader never sees
+    // (XAUUSD is GC=F); an equity passes through untouched.
+    const history = await yf.chart(toProviderSymbol(symbol.toUpperCase()), {
       period1: start,
       period2: end,
       interval,

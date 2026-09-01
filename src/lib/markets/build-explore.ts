@@ -4,6 +4,7 @@ import { listTickerRows } from "@/lib/db/tickers";
 import { getProfilesByIds } from "@/lib/db/profiles";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_SECTORS, MARKET_THEMES } from "@/lib/markets/themes";
+import { isMacroSymbol } from "@/lib/markets/instruments";
 import { CURATED_ETFS, ETF_BAND_SIZE } from "@/lib/markets/etfs";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { callActivity, coverageAllTime, coverageWindow, firstCallsRecent } from "@/lib/markets/coverage";
@@ -36,9 +37,15 @@ const TAPE_FIXED: { label: string; symbol: string; href: string | null }[] = [
   { label: "Russell 2000", symbol: "^RUT", href: "/markets/IWM" },
   { label: "TA-35", symbol: "TA35.TA", href: null },
   { label: "VIX", symbol: "^VIX", href: "/markets/VXX" },
-  { label: "WTI Crude", symbol: "CL=F", href: "/markets/XLE" },
-  { label: "Gold", symbol: "GC=F", href: "/markets/GLD" },
-  { label: "10Y Treasury", symbol: "^TNX", href: "/markets/TLT" },
+  // Gold, crude, the ten-year and bitcoin are tracked instruments in their own
+  // right now, so these click through to their own pages rather than to the
+  // fund that used to stand in for them.
+  { label: "WTI Crude", symbol: "USOIL", href: "/markets/USOIL" },
+  { label: "Brent Crude", symbol: "UKOIL", href: "/markets/UKOIL" },
+  { label: "Gold", symbol: "XAUUSD", href: "/markets/XAUUSD" },
+  { label: "10Y Treasury", symbol: "US10Y", href: "/markets/US10Y" },
+  { label: "30Y Treasury", symbol: "US30Y", href: "/markets/US30Y" },
+  { label: "Bitcoin", symbol: "BTCUSD", href: "/markets/BTCUSD" },
 ];
 const TAPE_COVERED = 8;
 
@@ -213,13 +220,23 @@ async function buildUncovered(
 
 function tapeFrom(quotes: Map<string, Quote>, mostCovered: string[]): TapeQuote[] {
   return [
-    ...TAPE_FIXED.map((t) => ({
-      label: t.label,
-      symbol: t.symbol,
-      href: t.href,
-      value: quotes.get(t.symbol.toUpperCase())?.price ?? null,
-      changePercent: quotes.get(t.symbol.toUpperCase())?.changePercent ?? null,
-    })),
+    ...TAPE_FIXED.flatMap((t) => {
+      const q = quotes.get(t.symbol.toUpperCase());
+      // An index keeps its slot while the provider is quiet, because the slot
+      // is the tape's shape. A macro instrument does not: Stoa claims to track
+      // it, so a level we cannot stand behind is left out rather than shown
+      // empty.
+      if (!q?.price && isMacroSymbol(t.symbol)) return [];
+      return [
+        {
+          label: t.label,
+          symbol: t.symbol,
+          href: t.href,
+          value: q?.price ?? null,
+          changePercent: q?.changePercent ?? null,
+        },
+      ];
+    }),
     ...mostCovered.map((sym) => ({
       label: sym,
       symbol: sym,

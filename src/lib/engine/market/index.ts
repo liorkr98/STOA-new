@@ -6,6 +6,7 @@
  */
 
 import { fetchQuote, fetchQuotesBatch } from "./providers/chain";
+import { toProviderSymbol } from "@/lib/markets/instruments";
 import type { Quote } from "./types";
 
 export type { CompanyFundamentals, Quote, QuoteSource } from "./types";
@@ -15,8 +16,15 @@ export { getStockSnapshot } from "./snapshot";
 
 const BENCHMARK_SYMBOL = "SPY";
 
+/**
+ * A quote for one symbol. Macro instruments (gold, crude, Treasury yields,
+ * bitcoin) are asked for under the provider's own symbol and handed back
+ * under the Stoa one, so no caller has to know that XAUUSD is GC=F.
+ */
 export async function getQuote(symbol: string): Promise<Quote> {
-  return fetchQuote(symbol);
+  const asked = symbol.toUpperCase();
+  const quote = await fetchQuote(toProviderSymbol(asked));
+  return quote.symbol === asked ? quote : { ...quote, symbol: asked };
 }
 
 export async function getQuotesBatch(
@@ -28,12 +36,25 @@ export async function getQuotesBatch(
     unique.push(BENCHMARK_SYMBOL);
   }
 
-  const map = await fetchQuotesBatch(unique);
-
+  // The result is keyed by whatever the caller asked for, not by what the
+  // provider was asked. A surface that already works in provider symbols
+  // (the tape asks for ^GSPC and CL=F directly) keeps its own keys, while a
+  // surface asking for XAUUSD gets XAUUSD back.
+  const askedFor = new Map<string, string[]>();
   for (const sym of unique) {
-    const q = map.get(sym);
-    if (!q?.available || q.price == null) {
-      map.delete(sym);
+    const provider = toProviderSymbol(sym);
+    const asked = askedFor.get(provider);
+    if (asked) asked.push(sym);
+    else askedFor.set(provider, [sym]);
+  }
+
+  const raw = await fetchQuotesBatch([...askedFor.keys()]);
+
+  const map = new Map<string, Quote>();
+  for (const [provider, quote] of raw) {
+    if (!quote?.available || quote.price == null) continue;
+    for (const asked of askedFor.get(provider) ?? [provider]) {
+      map.set(asked, asked === quote.symbol ? quote : { ...quote, symbol: asked });
     }
   }
 

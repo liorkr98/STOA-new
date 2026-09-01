@@ -6,6 +6,7 @@ import { followedAnalystIds } from "@/lib/db/social";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { UNIVERSE } from "@/lib/universe";
 import { MARKET_THEMES, type MarketTheme } from "@/lib/markets/themes";
+import { macroInstrument } from "@/lib/markets/instruments";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { cachedPage } from "@/lib/cache/page";
 import type { MarketRow } from "@/lib/markets/types";
@@ -133,8 +134,11 @@ async function assembleTheme(theme: MarketTheme): Promise<ThemePayload> {
   const bySymbol = new Map(tickerRows.map((t) => [t.symbol.toUpperCase(), t]));
   const names: ThemeName[] = symbols.flatMap((symbol) => {
     const row = bySymbol.get(symbol);
+    // A macro instrument is not in the instrument table or the curated
+    // universe, so its name comes from the registry that defines it.
+    const macro = macroInstrument(symbol);
     const fallback = UNIVERSE.find((u) => u.ticker === symbol);
-    const name = row?.name ?? fallback?.name;
+    const name = macro?.name ?? row?.name ?? fallback?.name;
     if (!name) return [];
     const q = quotes.get(symbol);
     return [

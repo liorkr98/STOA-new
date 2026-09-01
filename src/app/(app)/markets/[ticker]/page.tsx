@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getStockSnapshot } from "@/lib/engine/market";
+import { getQuote, getStockSnapshot } from "@/lib/engine/market";
 import { getCandles, getCandlesBetween } from "@/lib/engine/market/candles";
 import { listByTicker, publishedReportCount } from "@/lib/db/reports";
 import { listReportIdsWithClips } from "@/lib/db/video-clips";
@@ -22,6 +22,8 @@ import { buildStockCalls } from "@/lib/markets/build-stock";
 import { buildEtfSnapshot } from "@/lib/markets/build-etf";
 import { curatedEtf } from "@/lib/markets/etfs";
 import { EtfView } from "@/components/markets/etf-view";
+import { MacroView } from "@/components/markets/macro-view";
+import { macroInstrument } from "@/lib/markets/instruments";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import type { ChartRange } from "@/lib/market/candle-types";
 import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/call-types";
@@ -37,8 +39,9 @@ export async function generateMetadata({
   const sym = ticker.toUpperCase();
   // The instrument table is equities only, so a fund's name comes from the
   // curated list rather than falling back to the bare symbol.
-  const meta = await getTickerRow(sym);
-  const name = meta?.name ?? curatedEtf(sym)?.name ?? sym;
+  const macro = macroInstrument(sym);
+  const meta = macro ? null : await getTickerRow(sym);
+  const name = macro?.name ?? meta?.name ?? curatedEtf(sym)?.name ?? sym;
 
   // Same guard the sitemap uses (src/lib/db/reports.ts: publishedReportCount /
   // allTickerCoverage) so a page's indexability and its sitemap presence can
@@ -147,15 +150,19 @@ export default async function TickerPage({
   // right layout whether or not it is on the curated Explore list. Equity
   // snapshots start in parallel with the fund check so stocks don't wait on a
   // Yahoo round trip that will return null.
-  const knownFund = Boolean(curatedEtf(sym));
-  const featured = featuredUniverseEntry(sym);
+  // A macro instrument is neither a fund nor a company: it has no holdings and
+  // no fundamentals, so the equity snapshot and the fund probe are both
+  // skipped rather than asked to return nothing.
+  const macro = macroInstrument(sym);
+  const knownFund = !macro && Boolean(curatedEtf(sym));
+  const featured = macro ? null : featuredUniverseEntry(sym);
   const [etf, reports, calls, candles, snapshot, meta, peersEarly, coverageAll] = await Promise.all([
-    buildEtfSnapshot(sym),
+    macro ? Promise.resolve(null) : buildEtfSnapshot(sym),
     listByTicker(sym),
     buildStockCalls(sym),
     candlesFor(),
-    knownFund ? Promise.resolve(null) : getStockSnapshot(sym),
-    getTickerRow(sym),
+    macro || knownFund ? Promise.resolve(null) : getStockSnapshot(sym),
+    macro ? Promise.resolve(null) : getTickerRow(sym),
     featured?.sector ? listSectorPeers(featured.sector, sym, 6) : Promise.resolve(null),
     coverageAllTime(),
   ]);
@@ -175,6 +182,23 @@ export default async function TickerPage({
     for (const s of symbols) out[s.toUpperCase()] = coverageAll.get(s.toUpperCase()) ?? 0;
     return out;
   };
+
+  if (macro) {
+    const quote = await getQuote(macro.symbol);
+    return (
+      <MacroView
+        instrument={macro}
+        price={quote.price}
+        changePercent={quote.changePercent ?? null}
+        candles={candles}
+        calls={calls}
+        publications={publications}
+        range={range}
+        customFrom={query.from}
+        customTo={query.to}
+      />
+    );
+  }
 
   if (etf) {
     const coverage = countsFor(etf.holdings.map((h) => h.symbol));

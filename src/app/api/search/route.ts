@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { withHandler } from "@/lib/http/handler";
+import { searchMacroInstruments } from "@/lib/markets/instruments";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,29 @@ function rankTickers(rows: SearchTicker[], q: string): SearchTicker[] {
     })
     .sort((a, b) => b.boost - a.boost)
     .map((x) => x.t);
+}
+
+/**
+ * Macro instruments live in code rather than the instrument table, so they are
+ * merged into the ticker hits here. They are ranked by the same function as
+ * everything else and carry no report count of their own, so a heavily covered
+ * equity still outranks them on an ambiguous query.
+ */
+function withMacroHits(rows: SearchTicker[], q: string): SearchTicker[] {
+  const macro = searchMacroInstruments(q);
+  if (macro.length === 0) return rows;
+  const seen = new Set(rows.map((r) => r.symbol.toUpperCase()));
+  return [
+    ...rows,
+    ...macro
+      .filter((m) => !seen.has(m.symbol))
+      .map((m) => ({
+        symbol: m.symbol,
+        company_name: m.name,
+        sector: m.sector,
+        report_count: 0,
+      })),
+  ];
 }
 
 function rankCreators(rows: SearchCreator[], q: string): SearchCreator[] {
@@ -99,13 +123,16 @@ async function fallbackSearch(
   return {
     creators: rankCreators((creators as SearchCreator[] | null) ?? [], safe),
     tickers: rankTickers(
-      ((tickers as { symbol: string; name: string; sector: string | null }[] | null) ?? []).map(
-        (t) => ({
-          symbol: t.symbol,
-          company_name: t.name,
-          sector: t.sector,
-          report_count: 0,
-        }),
+      withMacroHits(
+        ((tickers as { symbol: string; name: string; sector: string | null }[] | null) ?? []).map(
+          (t) => ({
+            symbol: t.symbol,
+            company_name: t.name,
+            sector: t.sector,
+            report_count: 0,
+          }),
+        ),
+        safe,
       ),
       safe,
     ),
@@ -176,7 +203,7 @@ async function handleSearch(req: Request) {
     return NextResponse.json(
       {
         creators: rankCreators(payload.creators ?? [], q).slice(0, limit),
-        tickers: rankTickers(payload.tickers ?? [], q).slice(0, limit),
+        tickers: rankTickers(withMacroHits(payload.tickers ?? [], q), q).slice(0, limit),
         reports,
       },
       { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45" } },
