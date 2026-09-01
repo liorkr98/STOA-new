@@ -223,6 +223,62 @@ export async function archivePublication(
   return { ok: true };
 }
 
+/**
+ * Deleting a publication outright.
+ *
+ * The permanence guarantee exists to stop an analyst burying a bad call, so it
+ * applies to calls and not to everything a creator ever wrote. A publication
+ * carrying no call is content, and a creator may remove their own content.
+ *
+ * A publication carrying a call is refused here and refused again by the
+ * database (0062), which checks for a `predictions` row rather than trusting
+ * this function to have looked. Archiving stays the only option for those.
+ *
+ * This is irreversible. There is no restore, and the caller is responsible for
+ * having said so plainly before getting here.
+ */
+export async function deletePublication(
+  reportId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status")
+    .eq("id", reportId)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!report) return { ok: false, error: "Not your publication" };
+
+  const { data: call } = await supabase
+    .from("predictions")
+    .select("id")
+    .eq("report_id", reportId)
+    .maybeSingle();
+  if (call) {
+    return {
+      ok: false,
+      error: "This publication carries a locked call, so it can be archived but not deleted.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("reports")
+    .delete()
+    .eq("id", reportId)
+    .eq("author_id", userId);
+  if (error) return { ok: false, error: error.message };
+
+  await deleteChartSnapshotsForReport(supabase, userId, reportId);
+
+  revalidatePath("/");
+  revalidatePath("/home");
+  revalidatePath("/feed");
+  revalidatePath("/studio");
+  revalidatePath("/explore");
+  return { ok: true };
+}
+
 /** Undoes an archive. Archiving hides a publication; it never destroys it. */
 export async function restorePublication(
   reportId: string,

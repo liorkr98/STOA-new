@@ -11,6 +11,7 @@ import { SealStamp } from "@/components/ui/seal-stamp";
 import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
 import { ArchiveDialog } from "@/components/studio/archive-dialog";
+import { DeleteDialog } from "@/components/studio/delete-dialog";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
 
@@ -255,6 +256,11 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     ) : (
                       !draft && <ArchiveDialog id={p.id} title={p.title} hasCall={p.hasCall} />
                     )}
+                    {/* Delete is offered only where it is allowed: a
+                        publication carrying a call can be archived and
+                        nothing else, so the option is absent rather than
+                        present and refused. */}
+                    {!draft && !p.hasCall && <DeleteDialog id={p.id} title={p.title} />}
                   </div>
                 </div>
 
