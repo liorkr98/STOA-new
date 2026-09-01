@@ -30,7 +30,14 @@ export async function acceptConsents(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in to continue." };
 
-  if (formData.get("legal_consent") !== "on") {
+  // What is outstanding is decided here, not by the form. The form only renders
+  // the legal checkbox when terms or privacy are pending, so demanding that tick
+  // unconditionally locked out anyone who had already accepted them and only
+  // owed an age attestation: they were told to agree to terms with no box on the
+  // page to tick, and no way forward.
+  const pending = await getPendingConsentTypes(user.id);
+  const needsLegal = pending.length > 0;
+  if (needsLegal && formData.get("legal_consent") !== "on") {
     return { error: "You must agree to the Terms of Service and Privacy Policy." };
   }
 
@@ -42,13 +49,15 @@ export async function acceptConsents(
     await setAgeAttestation(user.id);
   }
 
-  const docs = await getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES);
   const ip = await clientIp();
-  await recordUserConsents(
-    user.id,
-    docs.map((d) => d.id),
-    ip,
-  );
+  if (needsLegal) {
+    const docs = await getCurrentLegalDocuments(SIGNUP_CONSENT_TYPES);
+    await recordUserConsents(
+      user.id,
+      docs.map((d) => d.id),
+      ip,
+    );
+  }
 
   if (formData.get("marketing_opt_in") === "on") {
     await setMarketingPreference(user.id, true, ip);
