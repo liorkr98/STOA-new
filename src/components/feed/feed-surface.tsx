@@ -797,13 +797,17 @@ const FeedItem = function FeedItem({
                   />
                 </div>
 
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.5),transparent)] p-3 pt-4 md:pt-5">
+                {/* The scrim carries Stoa's own strip over an unpredictable
+                    picture. Clips routinely contain their own tickers and
+                    chips, so this has to read as chrome rather than as another
+                    thing in the frame. */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.66),rgba(0,0,0,0.34)_58%,transparent)] p-3 pt-4 md:pt-5">
                   <div className="min-w-0">
                     <div className="mb-1.5 flex items-center justify-between gap-3 md:hidden">
-                      <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-white/80">
+                      <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-white/95">
                         {dateline}
                       </span>
-                      <span className="num flex-none text-[10px] uppercase tracking-[0.16em] text-white/55">
+                      <span className="num flex-none text-[10px] uppercase tracking-[0.16em] text-white/70">
                         {index + 1} / {total}
                       </span>
                     </div>
