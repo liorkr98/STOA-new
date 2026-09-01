@@ -38,7 +38,8 @@ function toPublication(
   pinnedId: string | null,
 ): Publication {
   let state: PubState = "published";
-  if (r.status === "draft") state = "draft";
+  if (r.status === "archived") state = "archived";
+  else if (r.status === "draft") state = "draft";
   else if (pred && pred.outcome === "open") state = "open";
   else if (pred && ["hit", "near", "miss", "partial"].includes(pred.outcome)) state = "resolved";
 
@@ -47,6 +48,7 @@ function toPublication(
     href: `/report/${r.id}`,
     editHref: `/studio/compose?id=${r.id}`,
     state,
+    hasCall: Boolean(pred),
     typeLabel: typeLabel(r.type),
     tag: r.ticker,
     tagIsTicker: Boolean(r.ticker),

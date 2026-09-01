@@ -3,21 +3,25 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pencil, Eye, Pin, Loader2, FileText } from "lucide-react";
+import { Play, Pencil, Eye, Pin, Loader2, FileText, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
+import { ArchiveDialog } from "@/components/studio/archive-dialog";
+import { restorePublication } from "@/app/actions/reports";
+import { toast } from "sonner";
 
-export type PubState = "draft" | "scheduled" | "published" | "open" | "resolved";
+export type PubState = "draft" | "scheduled" | "published" | "open" | "resolved" | "archived";
 
 export interface Publication {
   id: string;
   href: string;
   editHref: string;
   state: PubState;
+  hasCall: boolean;
   typeLabel: string;
   tag: string | null;
   tagIsTicker: boolean;
@@ -50,6 +54,7 @@ export interface Publication {
 const CHIPS: { key: "all" | PubState; label: string }[] = [
   { key: "all", label: "ALL" },
   { key: "draft", label: "DRAFTS" },
+  { key: "archived", label: "ARCHIVED" },
   { key: "scheduled", label: "SCHEDULED" },
   { key: "published", label: "PUBLISHED" },
   { key: "open", label: "OPEN CALLS" },
@@ -100,6 +105,31 @@ function PinAction({ id, pinned }: { id: string; pinned: boolean }) {
       className={cn("flex items-center gap-1 hover:text-text", pinned ? "text-text" : "text-text-mute")}
     >
       <Pin size={14} fill={pinned ? "currentColor" : "none"} /> Pin
+    </button>
+  );
+}
+
+function RestoreAction({ id }: { id: string }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          const res = await restorePublication(id);
+          if (!res.ok) {
+            toast.error(res.error ?? "Could not restore this publication.");
+            return;
+          }
+          toast.success("Restored. It is public again.");
+          router.refresh();
+        })
+      }
+      className="flex items-center gap-1 hover:text-text"
+    >
+      <RotateCcw size={13} /> {pending ? "Restoring..." : "Restore"}
     </button>
   );
 }
@@ -206,8 +236,13 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                       <Link href={p.editHref} className="flex items-center gap-1 hover:text-text"><Pencil size={13} /> Edit</Link>
                     )}
                     <Link href={p.href} className="flex items-center gap-1 hover:text-text"><Eye size={13} /> View</Link>
-                    <PinAction id={p.id} pinned={p.pinned} />
-                    <PromoteDialog title={p.title} />
+                    {p.state !== "archived" && <PinAction id={p.id} pinned={p.pinned} />}
+                    {p.state !== "archived" && <PromoteDialog title={p.title} />}
+                    {p.state === "archived" ? (
+                      <RestoreAction id={p.id} />
+                    ) : (
+                      !draft && <ArchiveDialog id={p.id} title={p.title} hasCall={p.hasCall} />
+                    )}
                   </div>
                 </div>
 

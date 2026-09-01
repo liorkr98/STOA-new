@@ -180,6 +180,79 @@ export async function publishReport(
   }
 }
 
+/**
+ * Archiving is the only removal a creator gets, and it is deliberately not a
+ * delete. The database refuses to delete anything locked (0034), so the record
+ * behind a publication is never rewritten: archiving flips status only, the
+ * trigger writes report.archived to the audit log, and the row, its body, its
+ * content hash and any locked call stay exactly as published.
+ *
+ * A locked call lives in `predictions`, which is keyed off the report but read
+ * without a status filter, so the track record keeps counting an archived
+ * call and it still resolves on schedule. Archiving cannot bury a miss.
+ */
+export async function archivePublication(
+  reportId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status")
+    .eq("id", reportId)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!report) return { ok: false, error: "Not your publication" };
+  if (report.status === "archived") return { ok: true };
+  if (report.status === "draft") {
+    return { ok: false, error: "Drafts are deleted, not archived." };
+  }
+
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: "archived" })
+    .eq("id", reportId)
+    .eq("author_id", userId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/");
+  revalidatePath("/home");
+  revalidatePath("/feed");
+  revalidatePath("/studio");
+  revalidatePath(`/report/${reportId}`);
+  return { ok: true };
+}
+
+/** Undoes an archive. Archiving hides a publication; it never destroys it. */
+export async function restorePublication(
+  reportId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status")
+    .eq("id", reportId)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!report) return { ok: false, error: "Not your publication" };
+  if (report.status !== "archived") return { ok: true };
+
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: "published" })
+    .eq("id", reportId)
+    .eq("author_id", userId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/");
+  revalidatePath("/home");
+  revalidatePath("/feed");
+  revalidatePath("/studio");
+  revalidatePath(`/report/${reportId}`);
+  return { ok: true };
+}
+
 /** Best-effort view log. Safe to call repeatedly; failures are swallowed. */
 export async function recordView(reportId: string) {
   try {
