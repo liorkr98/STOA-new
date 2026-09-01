@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
-import { getDraftForAuthor } from "@/lib/db/reports";
+import { getAuthorReportStatus, getDraftForAuthor } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
 import { listAuthorCards } from "@/lib/db/publication-cards";
@@ -30,7 +30,13 @@ export default async function ComposePage({
     id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
     id ? listVideosByReport(id) : Promise.resolve([]),
   ]);
-  if (id && !draft) notFound();
+  // A published report is locked at the database level, so there is nothing to
+  // edit: send the author to the report rather than a bare 404.
+  if (id && !draft) {
+    const status = await getAuthorReportStatus(id, profile.id);
+    if (status && status !== "draft") redirect(`/report/${id}`);
+    notFound();
+  }
 
   // The stored row id becomes the client id, so a placement made before this
   // save still points at the same card after it.

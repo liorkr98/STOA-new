@@ -202,7 +202,9 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
 
                   {/* Hover actions */}
                   <div className="num mt-3 flex items-center gap-4 text-[11px] uppercase tracking-[0.12em] text-text-mute opacity-0 transition-opacity group-hover:opacity-100">
-                    <Link href={p.editHref} className="flex items-center gap-1 hover:text-text"><Pencil size={13} /> Edit</Link>
+                    {draft && (
+                      <Link href={p.editHref} className="flex items-center gap-1 hover:text-text"><Pencil size={13} /> Edit</Link>
+                    )}
                     <Link href={p.href} className="flex items-center gap-1 hover:text-text"><Eye size={13} /> View</Link>
                     <PinAction id={p.id} pinned={p.pinned} />
                     <PromoteDialog title={p.title} />

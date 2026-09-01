@@ -224,6 +224,26 @@ export async function getDraftForAuthor(
   return report;
 }
 
+/**
+ * Status of a report the caller authored, whatever that status is. Compose uses
+ * it to tell "this is not yours / does not exist" apart from "this is yours but
+ * locked", so opening Edit on a published report explains itself instead of
+ * rendering a 404.
+ */
+export async function getAuthorReportStatus(
+  id: string,
+  authorId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("status")
+    .eq("id", id)
+    .eq("author_id", authorId)
+    .maybeSingle();
+  return (data as { status: string } | null)?.status ?? null;
+}
+
 export async function getReportsByIds(ids: string[]): Promise<Report[]> {
   if (ids.length === 0) return [];
   const supabase = createPublicClient();
