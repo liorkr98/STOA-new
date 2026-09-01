@@ -86,13 +86,14 @@ const ALL: Record<StepKey, StepDef> = {
 /**
  * The steps this publication actually has.
  *
- * A Research piece and a Post have no video module, so they are not walked
- * through two video steps only to be told there is nothing to do. Editing a
- * video appears once there is a video to edit.
+ * The video step is offered to everything except a Post, because it is now
+ * the place where having a video is decided rather than somewhere a creator
+ * arrives after declaring the format on a tab. Editing a video appears once
+ * there is a video to edit, and disappears again if the clip is dropped.
  */
 export function stepsFor(mode: ComposeMode, hasVideo: boolean): StepDef[] {
   const keys: StepKey[] = ["write", "call", "cards"];
-  if (mode === "video") {
+  if (mode !== "short_post") {
     keys.push("video");
     if (hasVideo) keys.push("video_edit");
   }

@@ -141,6 +141,9 @@ function collectCardIds(doc: JSONContent | null | undefined): Set<string> {
 /** Fixed, because the CTA is derived rather than authored. */
 const CTA_CARD_ID = "cta";
 
+/** Steps where the card tray and the assistant are actually of use. */
+const RAIL_STEPS = new Set<StepKey>(["write", "cards", "video", "video_edit"]);
+
 export function StudioEditor({
   analystReportPrice,
   initialDraft,
@@ -170,8 +173,15 @@ export function StudioEditor({
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
-  const [mode, setMode] = useState<ComposeMode>(() => modeFromType(initialDraft?.type));
-  const type = typeFromMode(mode);
+  // The format is not chosen, it is observed. A publication with a clip is a
+  // video; one without is research. The old tab strip asked the creator to
+  // declare this up front and then competed with the sequence that actually
+  // decides it, so it is gone and this reads the answer off the work instead.
+  //
+  // A draft stored as a Post keeps being one: nothing in the sequence can turn
+  // a Post into research, and silently converting somebody's saved note would
+  // throw away its shape.
+  const isPost = modeFromType(initialDraft?.type) === "short_post";
 
   // The file a creator picked in the video rung, held until the report is
   // locked. video_clips rows hang off a locked report, so the upload cannot
@@ -180,6 +190,9 @@ export function StudioEditor({
   // The ref holds the file; this holds the fact, because the sequence has to
   // re-render when a clip arrives (Edit video appears, Video reads as done).
   const [videoChosen, setVideoChosen] = useState(hasVideoClip);
+
+  const mode: ComposeMode = isPost ? "short_post" : videoChosen ? "video" : "research";
+  const type = typeFromMode(mode);
 
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
@@ -206,24 +219,6 @@ export function StudioEditor({
     hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null,
   );
 
-  function chooseMode(next: ComposeMode) {
-    // Post stores neither a headline nor a body, so switching to it from a
-    // format that has them throws that writing away on the next save. It used
-    // to happen silently: ask first.
-    if (next === "short_post" && mode !== "short_post") {
-      const losing = [title.trim() && "headline", plainText.trim() && "body"].filter(Boolean);
-      if (
-        losing.length > 0 &&
-        !window.confirm(
-          `A Post has no ${losing.join(" or ")}. Switching will drop the ${losing.join(" and ")} you have written. Continue?`,
-        )
-      ) {
-        return;
-      }
-    }
-    setMode(next);
-    if (next === "video") setVideoEdit((e) => e ?? emptyEdit(90));
-  }
 
   // The deck. One pool for the whole publication, not a step inside the video.
   // What the creator authored. The CTA is not in here: it is derived from
@@ -235,7 +230,11 @@ export function StudioEditor({
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [researchCardIds, setResearchCardIds] = useState<Set<string>>(() => collectCardIds(initialDoc));
-  const [railCollapsed, setRailCollapsed] = useState(false);
+  // Null means "follow the step". A creator who opens or closes the rail
+  // themselves is obeyed until they move, and each step then gets its own
+  // sensible default back rather than inheriting a decision made three steps
+  // ago about a different task.
+  const [railOverride, setRailOverride] = useState<boolean | null>(null);
   const [railDrawerOpen, setRailDrawerOpen] = useState(false);
   const [askSeed, setAskSeed] = useState<string | null>(null);
   const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
@@ -662,9 +661,12 @@ export function StudioEditor({
   // Research may publish as overview without a ticker/locked call.
   // Calls still require a ticker so there is something to lock.
   const lockingCall = Boolean(ticker.trim());
-  const showVideo = mode === "video";
-  const showResearch = mode === "research";
-  const hasVideo = showVideo && videoEdit !== null;
+  // A Post is text and nothing else. Everything else may carry a clip and may
+  // carry a written thesis, and no longer has to declare which of the two it
+  // is up front: the video step decides the first and the write step the
+  // second, which is what the product model always said a publication was.
+  const showVideo = !isPost;
+  const showResearch = !isPost;
   const showToolboxRail = true;
 
   // ── The guided sequence ────────────────────────────────────────────────
@@ -686,12 +688,47 @@ export function StudioEditor({
     steps.findIndex((s) => s.key === currentStep.key),
   );
 
+  /**
+   * The sticky header's real height, published as --compose-head-h.
+   *
+   * The toolbox rail sticks under the header, and the header is not a fixed
+   * size: the bar wraps at some widths, the tracker is one line or two, and
+   * the fonts land after first paint. It used to be pinned to --nav-h, which
+   * is the global nav's height and only matched the compose bar by accident.
+   * Measured, so the two can never drift apart.
+   */
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const headRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = headRef.current;
+    if (!el) return;
+    const publish = () => {
+      const h = Math.round(el.getBoundingClientRect().height);
+      el.closest<HTMLElement>("[data-compose-root]")?.style.setProperty(
+        "--compose-head-h",
+        `${h}px`,
+      );
+    };
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const goStep = useCallback((key: StepKey) => {
     setStepKey(key);
+    setRailOverride(null);
     setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
     // Each step is its own screen, so arriving at one should start at its top
     // rather than halfway down the last one.
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    //
+    // Not window.scrollTo: inside the app shell the scroller is the <main>
+    // element, not the window, so scrolling the window did nothing and the
+    // new step's heading stayed sitting under the sticky header. Scrolling
+    // the root into view lets the browser move whichever ancestor is actually
+    // scrolling, and because the header is the root's first child it lands at
+    // the top with the step directly beneath it.
+    rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const goNext = useCallback(() => {
@@ -716,20 +753,33 @@ export function StudioEditor({
       if (text.length > POST_MAX_CHARS) return `Posts are ${POST_MAX_CHARS} characters.`;
       return null;
     }
-    if (mode === "video" && !hasVideo) return "Add a video.";
-    if (mode !== "video" && !title.trim()) return "Add a headline.";
-    if (mode === "video" && !title.trim() && !summary.trim()) return "Add a headline or a one-line dek.";
+    // "Add a video" is gone: a publication is only a video once it has one, so
+    // that gate could never fire and its only effect was to strand anyone who
+    // had picked the Video tab and then had nothing to add.
+    if (!title.trim()) return "Add a headline.";
     return null;
   })();
 
   const detailsBlockedBy: string | null = (() => {
     if (mode === "video" && !tags.primary) return "Choose a primary tag.";
-    if (showResearch && plainText.trim() && !factCheck) return "Run the fact-check in Assistant.";
+    // The fact-check moved onto this step with the rest of the publishing
+    // gates, so pointing at the Assistant rail sent the creator to the wrong
+    // place.
+    if (showResearch && plainText.trim() && !factCheck) return "Run the fact-check above.";
     if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
     return null;
   })();
 
   const publishBlockedBy = contentBlockedBy ?? detailsBlockedBy;
+
+  /**
+   * The toolbox is for building things, so it is only open on the steps that
+   * build something. Choosing an access tier or answering a disclosure has
+   * nothing to do with a card deck, and an expanded rail of irrelevant tools
+   * beside a short step was most of what made the page read as empty.
+   */
+  const railUseful = RAIL_STEPS.has(currentStep.key);
+  const railCollapsed = railOverride ?? !railUseful;
 
   /** What each step holds right now, for the progress rail. */
   const stepFacts: StepFacts = {
@@ -751,13 +801,11 @@ export function StudioEditor({
   /**
    * Leaving the video out.
    *
-   * A Video publication with no clip cannot publish, so a bare "skip" would
-   * walk the creator into a wall three steps later. Skipping turns the piece
-   * into the written publication it now is, keeping everything already
-   * written, and says so on the button.
+   * Nothing needs to be declared here any more: the format follows the clip,
+   * so dropping the clip is what makes this a written publication. Everything
+   * already written is kept, and the button says what happens.
    */
   function skipVideo() {
-    setMode("research");
     setVideoEdit(null);
     videoFileRef.current = null;
     setVideoChosen(false);
@@ -1010,9 +1058,16 @@ export function StudioEditor({
   );
 
   return (
-    <div className="flex min-h-[calc(var(--app-h)-1px)] flex-col">
-      {/* Top bar: back, type, save status, Save draft, Publish. Nothing else. */}
-      <div className="sticky top-0 z-30 flex items-center gap-2 overflow-x-auto border-b border-border bg-paper px-3 py-2.5 [scrollbar-width:none] md:flex-wrap md:gap-3 md:px-6">
+    <div ref={rootRef} data-compose-root className="flex min-h-[calc(var(--app-h)-1px)] flex-col">
+      {/* The header is one sticky block: the bar and the step tracker together.
+          They used to be two, the bar sticky and the tracker in the flow, so
+          the tracker slid under the bar the moment the page scrolled and only
+          its bottom edge stayed visible. A progress tracker that disappears
+          when you scroll is not a progress tracker. Its height is measured
+          into --compose-head-h below, because the bar wraps at some widths and
+          the rail has to sit under whatever it actually is. */}
+      <div ref={headRef} className="sticky top-0 z-30 border-b border-border bg-paper">
+      <div className="flex items-center gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] md:flex-wrap md:gap-3 md:px-6">
         <Link
           href="/studio"
           className="flex items-center gap-1.5 text-sm text-text-mute transition-colors hover:text-text focus-ring rounded-[var(--radius-btn)]"
@@ -1028,35 +1083,15 @@ export function StudioEditor({
         />
         ) : null}
 
-        {/* The format is frozen after publish: a live publication cannot become
-            a different kind of thing. */}
-        {editingPublished ? (
-          <span className="num shrink-0 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-text-mute">
-            {types.find((t) => t.key === mode)?.label ?? "Publication"}
-          </span>
-        ) : (
-        <div
-          role="radiogroup"
-          aria-label="Publication format"
-          className="inline-flex shrink-0 rounded-[var(--radius-btn)] border border-border bg-surface p-0.5"
+        {/* What this publication currently is, read off its contents. Not a
+            control: the Video step is where a clip is added or left out, and a
+            second place to declare the same thing only competed with it. */}
+        <span
+          className="num hidden shrink-0 text-[10px] uppercase tracking-[0.16em] text-text-faint md:inline"
+          aria-live="polite"
         >
-          {types.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              role="radio"
-              aria-checked={mode === t.key}
-              onClick={() => chooseMode(t.key)}
-              className={cn(
-                "rounded-[4px] px-3 py-1 text-xs font-medium transition-colors focus-ring",
-                mode === t.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        )}
+          {types.find((t) => t.key === mode)?.label ?? "Draft"}
+        </span>
 
         <span className="t-meta min-w-14 text-[11px]" aria-live="polite">
           {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Draft"}
@@ -1101,6 +1136,7 @@ export function StudioEditor({
               <Button
                 variant="secondary"
                 size="sm"
+                className="hidden sm:inline-flex"
                 onClick={() => setPreviewOpen(true)}
               >
                 Preview
@@ -1114,12 +1150,21 @@ export function StudioEditor({
         </div>
       </div>
 
-      {/* LEFT is what you build with, RIGHT is what you publish as. */}
+        <StepNav
+          steps={steps}
+          current={currentStep.key}
+          stateOf={(k) => stepState(k, stepFacts)}
+          reachable={(k) => firstPassDone || visited.has(k)}
+          onGo={goStep}
+        />
+      </div>
+
+      {/* LEFT is what you build with, the sequence is what you publish as. */}
       <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
         {showToolboxRail ? (
         <ComposeRail
           collapsed={railCollapsed}
-          onToggle={() => setRailCollapsed((c) => !c)}
+          onToggle={() => setRailOverride(!railCollapsed)}
           cardCount={cards.length}
         >
           {toolbox}
@@ -1130,15 +1175,7 @@ export function StudioEditor({
             the left stays put across all of them so a card is always
             draggable into the body and onto the timeline. */}
         <div className="min-w-0 flex-1">
-          <StepNav
-            steps={steps}
-            current={currentStep.key}
-            stateOf={(k) => stepState(k, stepFacts)}
-            reachable={(k) => firstPassDone || visited.has(k)}
-            onGo={goStep}
-          />
-
-          <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-8 md:px-6">
+          <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-7 md:px-6">
             {/* Editing something already published is a different act from
                 writing a draft, and the creator should know what it costs
                 before they type. Brass, not rust: correcting yourself in the
@@ -1206,7 +1243,7 @@ export function StudioEditor({
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Headline"
                       dir="auto"
-                      className="user-copy mb-2 w-full bg-transparent text-4xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none"
+                      className="user-copy mb-2 w-full bg-transparent text-3xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none md:text-4xl"
                       style={{ fontFamily: "var(--font-display)" }}
                     />
                   </>
@@ -1226,7 +1263,7 @@ export function StudioEditor({
                       dir="auto"
                       className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
                     />
-                    <p className="num mb-8 text-[11px] uppercase tracking-[0.12em] text-text-faint">
+                    <p className="num mb-5 text-[11px] uppercase tracking-[0.12em] text-text-faint">
                       {summary.trim().length} / {POST_MAX_CHARS}
                     </p>
                   </>
@@ -1237,7 +1274,7 @@ export function StudioEditor({
                     onChange={(e) => setSummary(e.target.value)}
                     placeholder="One line under the headline"
                     dir="auto"
-                    className="user-copy mb-8 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+                    className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
                   />
                 )}
 

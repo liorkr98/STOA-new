@@ -243,7 +243,10 @@ function ThumbnailPicker({
               </button>
             ))}
           </div>
-          <div className="mt-3 flex items-center gap-2">
+          {/* Wraps: beside an expanded toolbox the canvas is narrow enough that
+              this note was being squeezed into a one-word-wide column next to
+              the button. */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <input
               ref={uploadRef}
               type="file"

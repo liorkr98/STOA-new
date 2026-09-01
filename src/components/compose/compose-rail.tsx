@@ -68,7 +68,10 @@ export function ComposeRail({
     <aside
       aria-label="Toolbox"
       className={cn(
-        "scroll-area hidden shrink-0 border-r border-border lg:block lg:sticky lg:top-[var(--nav-h)] lg:max-h-[calc(var(--app-h)-var(--nav-h))] lg:overflow-y-auto",
+        // Sticks under the compose header, whose height is measured rather
+        // than assumed: --nav-h is the global nav and only ever matched the
+        // compose bar by coincidence.
+        "scroll-area hidden shrink-0 border-r border-border lg:block lg:sticky lg:top-[var(--compose-head-h,var(--nav-h))] lg:max-h-[calc(var(--app-h)-var(--compose-head-h,var(--nav-h)))] lg:overflow-y-auto",
         collapsed ? "w-[56px]" : "w-[248px]",
       )}
     >

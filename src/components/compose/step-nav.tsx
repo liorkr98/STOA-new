@@ -127,20 +127,22 @@ export function StepFrame({
 }) {
   return (
     <section aria-label={step.label}>
-      <div className="mb-6">
+      <div className="mb-5">
         <p className="num text-[10px] uppercase tracking-[0.18em] text-text-faint">
           Step {index + 1} of {total}
           {step.optional ? " · optional" : ""}
         </p>
         <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">{step.label}</h2>
-        <p className="mt-1.5 max-w-[62ch] text-[0.875rem] leading-relaxed text-text-mute">
+        <p className="mt-1 max-w-[62ch] text-[0.875rem] leading-relaxed text-text-mute">
           {step.blurb}
         </p>
       </div>
 
       {children}
 
-      <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-border pt-5">
+      {/* The buttons sit under the work rather than at the bottom of the
+          viewport: a short step should end where its content ends. */}
+      <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-border pt-4">
         {onBack ? (
           <button
             type="button"
