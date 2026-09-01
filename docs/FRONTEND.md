@@ -581,6 +581,46 @@ Explore's ticker and sector filters. One control for both, so they behave alike.
   left the sheet rendering as a desktop popover.
 - **Keyboard:** arrows move, Enter selects, Escape closes.
 
+### 2.14 `<EditedMarker>` / `<EditedFlag>` — a publication that was revised
+
+A published report can be edited (headline, dek, thesis, cards, tags) and every edit is disclosed
+wherever the publication appears. The marker is **brass, never rust**: an analyst correcting
+themselves in the open is doing the right thing, and the interface reads that way rather than
+implying something was covered up. A pencil, not an alert.
+
+- `<EditedMarker edits={...}>` on the publication itself: a small `EDITED` chip beside the byline
+  that opens a popover of what changed and when. `w-[min(92vw,22rem)]` with collision padding, so
+  it fits a 390px screen.
+- `<EditedFlag editedAt={...}>` in a list: the same chip without the popover, carrying the
+  timestamp in its `title`. A row in a feed has neither the room for the panel nor a reader who
+  asked for it.
+
+**What it can honestly show differs by section, and the panel says so** rather than pretending to
+a uniform diff:
+
+| Section | Shown publicly |
+|---|---|
+| Headline, standfirst | Full before and after. Both are already public everywhere the publication appears. |
+| Thesis | That it changed, and when. Not the wording: the body sits behind the paywall, so quoting it publicly would leak paid content. The previous text is kept in `report_versions`, author-only. |
+| Cards, tags | That they changed, and when. Compared before writing, so a no-op save is never disclosed as a change. |
+
+The call, its entry price and its resolution can never be edited, and the panel opens by saying
+so. That sentence is the reason the rest of the marker is trustworthy.
+
+### 2.15 `<ArchiveDialog>` and `<DeleteDialog>` — one is reversible, one is not
+
+These sit one row apart in the Publications list and **must never read alike**.
+
+- **Archive** is offered on every publication. Recoverable, and its copy says so.
+- **Delete** is offered only on a publication carrying **no call**, and is absent (not present and
+  refused) otherwise. The permanence guarantee exists to stop an analyst burying a bad call; a
+  publication with no call is content, and a creator may remove their own content.
+
+The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed
+inside a **rust-bordered** block, states that archive is the reversible option, and requires the
+creator to type `DELETE` before the confirm button turns on. Rust is doing sentiment work here,
+which is exactly what rust is for.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)
@@ -1097,40 +1137,74 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
 The other highest-scrutiny screen in the product, and the one where the seal ritual (§1.3, §2.5)
 gets triggered.
 
-**Compose is a workspace, not a wizard.** There is no fork asking whether the creator is
-publishing with video. A publication may have video, research, both, or neither beyond its
-headline and tags, and it finds that out as the creator builds it.
+**Compose is a guided sequence, not a wall.** It was a workspace where everything was available
+at once, which read as freedom and behaved as neglect: the optional steps were invisible and got
+skipped, cards most of all. The canvas now presents one step at a time, in the order a creator
+actually thinks in.
 
-**The organising principle, which every placement decision here answers to:**
+| # | Step | Optional | Holds |
+|---|---|---|---|
+| 1 | Write | no | Headline, dek, and the research body when the format has one |
+| 2 | The call | yes | Ticker, direction, target, horizon, with the live quote |
+| 3 | Cards | yes | The deck, or the invitation to start one |
+| 4 | Video | yes | Choose or record a clip, or continue without |
+| 5 | Edit video | yes | Trim, thumbnail, overlays. Present only once a clip is |
+| 6 | Tags | no | Primary and secondary tags, the connected piece |
+| 7 | Publish | no | Preview, fact-check, access and price, disclosures, promote, publish |
 
-> **LEFT is what you build WITH. RIGHT is what you publish AS.**
+Steps 4 and 5 appear only on the Video format; Research and Post have no video module and are not
+walked past two steps that would have nothing in them.
 
-Things you pull from live on the left; settings applied to the publication live on the right. A
-new panel goes on the side that sentence puts it on, and nowhere else. The AI assistant is on the
-left because everything it does is creation; Promote is on the right because it is a setting.
+**The first pass guides, and only the first pass.** A step the creator has not reached is
+padlocked and not clickable. Reaching the last step unlocks all of them and the rail becomes a
+set of tabs. Each step states its own condition in the rail: a tick when it holds something,
+`OPTIONAL` when it may be left alone, `EMPTY` when it is required and is not filled in yet.
 
-**Three columns and a canvas:**
+**Skipping is an answer, not an absence.** Optional steps carry a skip button of their own rather
+than relying on the creator inferring that Continue is allowed. On the video step this matters
+most: a Video publication with no clip cannot publish, so `Continue without a video` converts the
+piece to a written publication, keeps everything already written, and says so on the button
+instead of walking the creator into a wall three steps later.
+
+**The rail does not move with the steps.** The organising principle survives the change:
+
+> **LEFT is what you build WITH. The steps are what you publish AS.**
+
+The toolbox rail holds the card tray and the AI assistant on every step, because a card has to
+stay draggable into the body and onto the timeline from wherever the creator happens to be. The
+settings rail is gone: access, price, disclosures and promote are step 7, and the Publish details
+drawer that used to carry a second copy of them has been removed. Two surfaces holding the same
+controls was the thing this change exists to delete.
+
+**Two components render half of themselves** rather than being split in two, so the sequence
+costs no duplicated state: `<VideoRung stage="choose" | "edit" | "all">` and
+`<LockPublishPanel sections="call" | "publish" | "all">`. The video rung is mounted once across
+steps 4 and 5 so the loaded clip and its object URL survive the move, and the Write step stays
+mounted (hidden) on every other step so the Tiptap instance and the charts the publish path
+screenshots are never lost.
+
+**Two columns and a canvas:**
 
 | Region | Width | Holds |
 |---|---|---|
 | Toolbox rail (left) | `248px` expanded, `56px` as icons | Card tray, then the AI assistant |
-| Canvas (centre) | `--w-reading`, fluid | Headline, dek, then the publication's modules |
-| Settings rail (right) | `340px` | The call, access, promote, the publish gates |
+| Canvas (centre) | `--w-reading`, fluid | The step rail, then the current step |
 
 The profile navigation from the `(private)` layout is **not** rendered on Compose. It is not a
 tool for making a publication and the left edge belongs to the toolbox. It is removed by wrapping
 the layout's rail slot in `<HideOnCompose>` rather than hiding it in CSS, so the streaming
 fallback does not hold an empty 240px rail open beside the workspace either.
 
-**Responsive.** Three rails plus a canvas do not fit a laptop:
+**Responsive.** Two rails plus a canvas do not fit a laptop:
 
-- `≥ lg` (1024px): all three columns. The toolbox collapses to icons on demand and expands again
+- `≥ lg` (1024px): both columns. The toolbox collapses to icons on demand and expands again
   from either icon; the card icon carries the deck count as a badge.
 - `< lg`: the toolbox becomes a drawer over the canvas, opened from a Toolbox button in the top
-  bar that also carries the deck count. The settings rail stops being a column and stacks under
-  the canvas full-width. It is **rendered once and moved by the layout**, never rendered twice
-  and hidden with CSS: two copies would break the radio groups and the `label`/`for` targets
-  inside it.
+  bar that also carries the deck count. The step rail scrolls horizontally rather than wrapping,
+  so the sequence stays one line and the page never scrolls sideways.
+
+Everything in a step is **rendered once**, never rendered twice and hidden with CSS: two copies
+would break the radio groups and the `label`/`for` targets inside them.
 
 #### The card tray (left, top)
 
@@ -1344,6 +1418,44 @@ handles the actual re-verification during their own onboarding flow, this page j
 status and a "Re-verify" button when needed), security settings (password/2FA if applicable), and
 the same notification-preference pattern as the investor Account Settings (§5.9), with
 creator-specific notification types added: new subscriber, new debate reply, report resolved.
+
+---
+
+### 6.10 Macro instruments — `/markets/[symbol]`
+
+Gold, crude, Treasury yields and bitcoin are tracked instruments with their own pages, their own
+search hits, and validity as a ticker in the call block. They render through `<MacroView>`, which
+carries the same annotated calls chart and the same Stoa activity blocks as a stock, and drops the
+company facts entirely: gold has no market cap and a Treasury yield has no earnings, so the meta
+row is replaced by what the level actually means rather than rendered with blanks.
+
+| Symbol | Instrument | Unit | Provider symbol |
+|---|---|---|---|
+| `XAUUSD` | Gold | `$ / oz` | `GC=F` |
+| `USOIL` | WTI Crude | `$ / bbl` | `CL=F` |
+| `UKOIL` | Brent Crude | `$ / bbl` | `BZ=F` |
+| `US05Y` | US 5-Year Treasury Yield | `% yield` | `^FVX` |
+| `US10Y` | US 10-Year Treasury Yield | `% yield` | `^TNX` |
+| `US30Y` | US 30-Year Treasury Yield | `% yield` | `^TYX` |
+| `BTCUSD` | Bitcoin | `$` | `BTC-USD` |
+
+**Symbols follow the TradingView convention, not the plain words.** `GOLD` and `WTI` are both real
+listed equities already in the instrument table (Gold.com and W&T Offshore), so using them here
+would shadow a company page and leave a call ambiguous about what was actually called. Search
+carries keyword aliases, so "gold", "oil", "treasuries" and "bitcoin" all reach the right
+instrument while an exact equity symbol match still outranks them.
+
+**Bitcoin is a deliberate single exception**, included because it now trades as a macro asset.
+Stoa does not cover crypto generally and this table is not the place to start.
+
+**A yield is not a price.** The three Treasury pages carry a brass note saying that a call for the
+level to rise is a call for bond prices to fall. Any instrument where "up" does not mean "worth
+more" needs that line, or the call block invites the opposite of what the analyst means.
+
+**Nothing broken is shown.** Every symbol was checked against the live provider before being
+added, and a macro row with no level is dropped from the tape rather than rendered empty. An index
+keeps its slot while the provider is quiet, because the slot is the tape's shape; a macro
+instrument does not, because Stoa claims to track it.
 
 ---
 

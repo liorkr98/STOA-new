@@ -10,6 +10,83 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-01 — Compose leads you through it, edits are shown in public, and gold and oil become things you can call
+
+**For someone using the site**
+
+- **Compose walks you through it now, one step at a time.** It used to put
+  everything on screen at once, which sounds generous and worked out as
+  neglect: the optional parts were invisible and got skipped, evidence cards
+  most of all. The order is the order you actually think in: write it, say what
+  you are claiming, show the evidence, add the clip, edit the clip, tag it,
+  send it out. The first time through it guides and a step you have not reached
+  is locked; once you reach the end you can jump anywhere. Each step says
+  whether it is done, empty, or safe to leave alone.
+- **Cards get an actual invitation.** On an empty deck the cards step explains
+  what a card is and what it does for a reader, and offers one obvious button
+  to make the first one, plus one to draft them from what you have already
+  written. This is the step that was being missed.
+- **Skipping the video is a real choice.** A video publication with no clip
+  cannot publish, so a plain skip used to walk you into a wall three steps
+  later. "Continue without a video" now turns the piece into the written
+  publication it has become, keeps everything you have written, and says so on
+  the button.
+- **Nothing was taken away.** The card tray and its library, dragging a card
+  into your text or onto the timeline, the assistant, the provenance marks, the
+  per-card locking, the burn-in warning, the format-switch warning and the
+  video upload all work as before. The Publish details drawer is gone, because
+  Publish is a step and a second panel with the same controls on it was the
+  problem.
+- **A published report can be edited, and the reader is told.** The headline,
+  the standfirst, the thesis, the cards and the tags can all be corrected after
+  publication. Every edit puts a small EDITED mark next to the byline; opening
+  it says which parts changed and when. It is brass rather than red on purpose:
+  correcting yourself in the open is the right thing to do and should not look
+  like being caught.
+- **The call still cannot be edited. Ever.** Ticker, direction, entry price,
+  target, horizon and the resolution stay exactly as published. The mark opens
+  by saying so.
+- **A publication with no call can be deleted properly.** Not just hidden. If
+  it carries a call, Delete is not offered at all and Archive is the only
+  option, with the existing copy about the call staying on the record. Delete
+  is irreversible and the confirmation says so plainly, in red, and asks you to
+  type the word.
+- **Gold, oil, Treasuries and bitcoin are now instruments you can call.** Each
+  has its own page with the annotated chart, appears in search, shows on the
+  tape, and works as a ticker in the call block. Searching "gold" or "oil" or
+  "treasuries" finds them.
+- **A new theme: the Iran conflict.** Crude, gold, the defence primes and the
+  tanker owners, with the risk premium as the thread connecting them.
+
+**What needs Krisi**
+
+- **Two migrations are written and NOT applied.** There is no Supabase CLI, no
+  access token and no SQL path to the project from this machine, so they were
+  left for him rather than forced through.
+  - `0062_delete_callless_publication.sql` permits an author to delete their own
+    published or archived report **only when no `predictions` row points at it**,
+    and lets that delete cascade to the body and the fact-check claims. It still
+    refuses to delete anything carrying a call, at any status, and does not touch
+    `prevent_prediction_delete` or any resolution.
+  - `0063_public_edit_markers.sql` adds the `report_edits` table (publicly
+    readable, insert-only, no update or delete policy at all) and loosens the
+    lock so `title`, `summary`, `content_hash` and the body can change after
+    publish. It still freezes `ticker`, `type`, `access`, `price`, `locked_at`
+    and any return to draft, and does not touch `prevent_prediction_terms_edit`,
+    so the call and its resolution stay frozen.
+  - `content_hash` is deliberately allowed to move: it attests to what is
+    actually published, and freezing it across an edit would leave it attesting
+    to text that no longer exists.
+- **Until they are applied**, the delete dialog and the edit save will be
+  refused by the database and will report that refusal; the EDITED mark has no
+  table to read and simply does not render. Nothing fails silently.
+- **The 2-year Treasury is deliberately absent.** The data provider has no clean
+  yield series for it, so it was left out rather than shown broken. Gold, WTI,
+  Brent, the 5/10/30-year yields and bitcoin were each checked against the live
+  provider and all return both quotes and chart history.
+
+---
+
 ## 2026-09-01 — A published video actually arrives, cards reach the reader, and the phone chrome is rebuilt
 
 **For someone using the site**

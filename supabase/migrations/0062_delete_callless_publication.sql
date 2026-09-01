@@ -47,7 +47,7 @@ end;
 $$;
 
 -- ============================================================
--- report_bodies — allow the cascade, still refuse a direct edit
+-- report_bodies: allow the cascade, still refuse a direct edit
 -- ============================================================
 create or replace function prevent_locked_body_edit()
 returns trigger language plpgsql as $$
@@ -67,7 +67,7 @@ end;
 $$;
 
 -- ============================================================
--- claims — same treatment, same reason
+-- claims: same treatment, same reason
 -- ============================================================
 create or replace function prevent_claim_edit_if_report_locked()
 returns trigger language plpgsql as $$
