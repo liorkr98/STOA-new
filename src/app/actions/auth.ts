@@ -45,7 +45,16 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     .replace(/^@/, "");
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error) {
+    // Supabase answers "Invalid login credentials" for a wrong password and for
+    // an address that has no account, on purpose, so the message cannot say
+    // which. Passing it through verbatim left people who had never signed up
+    // retrying a password that was never going to work.
+    const message = /invalid login credentials/i.test(error.message)
+      ? "That email and password do not match an account. If you have not signed up yet, create an account first."
+      : error.message;
+    return { error: message };
+  }
   await supabase.rpc("ensure_user_profile");
 
   const {
