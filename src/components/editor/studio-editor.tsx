@@ -8,7 +8,7 @@ import { ArrowLeft, FloppyDisk, RocketLaunch, SquaresFour } from "@phosphor-icon
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
-import { publishReport, saveDraft } from "@/app/actions/reports";
+import { publishReport, saveDraft, updatePublishedReport } from "@/app/actions/reports";
 import { uploadComposeClip } from "@/lib/video/upload-clip";
 import { documentPlainText, parseDocument } from "@/lib/editor/document";
 import {
@@ -138,6 +138,8 @@ export function StudioEditor({
   hasVideoClip = false,
   aiCredits = 0,
   plans = [],
+  editingPublished = false,
+  hasLockedCall = false,
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
@@ -147,6 +149,14 @@ export function StudioEditor({
   hasVideoClip?: boolean;
   aiCredits?: number;
   plans?: Plan[];
+  /**
+   * This publication is already out. The prose, the cards and the tags are
+   * editable and every change is disclosed; the call, the pricing and the
+   * format are frozen, so their controls are not offered.
+   */
+  editingPublished?: boolean;
+  /** The live publication carries a call, which can never be edited. */
+  hasLockedCall?: boolean;
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
@@ -571,7 +581,58 @@ export function StudioEditor({
     feedPreviewSeconds,
   ]);
 
+  /**
+   * Saving an edit to a publication that is already out.
+   *
+   * Deliberately not on the autosave timer. An autosaved edit would file a
+   * public disclosure every thirty seconds while the analyst was still
+   * thinking, which would turn the marker into noise and make the honest
+   * signal worthless. The creator saves when they mean it.
+   */
+  const persistEdit = useCallback(async () => {
+    if (!draftId) return;
+    setSaveStatus("saving");
+    try {
+      const cardRes = await saveCards(draftId, toStoredCards(deck));
+      if (!cardRes.ok) {
+        setSaveStatus("idle");
+        toast.error(cardRes.error ?? "Could not save the cards.");
+        return;
+      }
+      const res = await updatePublishedReport({
+        id: draftId,
+        title: type === "short_post" ? undefined : title,
+        summary,
+        body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
+        primary_tag: tags.primary,
+        secondary_tags: tags.secondary,
+        cardsChanged: cardRes.changed ?? false,
+      });
+      if (!res.ok) {
+        setSaveStatus("idle");
+        setError(res.error ?? "Could not save the edit.");
+        toast.error(res.error ?? "Could not save the edit.");
+        return;
+      }
+      setSaveStatus("saved");
+      setError(null);
+      dirtyRef.current = false;
+      toast.success(
+        (res.sections?.length ?? 0) > 0
+          ? "Saved. The publication now shows an EDITED marker."
+          : "Nothing had changed, so nothing was recorded.",
+      );
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (e) {
+      setSaveStatus("idle");
+      const msg = e instanceof Error ? e.message : "Could not save the edit. Try again.";
+      setError(msg);
+      toast.error(msg);
+    }
+  }, [draftId, type, title, summary, tags, deck]);
+
   useEffect(() => {
+    if (editingPublished) return;
     const t = setInterval(() => {
       if (!dirtyRef.current) return;
       const json = JSON.stringify(latestChangeRef.current.json);
@@ -582,7 +643,7 @@ export function StudioEditor({
       if (draftId || summary.trim() || plainText.trim() || hasBlocks) void persistDraft();
     }, 30_000);
     return () => clearInterval(t);
-  }, [persistDraft, summary, plainText, draftId]);
+  }, [persistDraft, summary, plainText, draftId, editingPublished]);
 
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.
@@ -933,6 +994,13 @@ export function StudioEditor({
         />
         ) : null}
 
+        {/* The format is frozen after publish: a live publication cannot become
+            a different kind of thing. */}
+        {editingPublished ? (
+          <span className="num shrink-0 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-text-mute">
+            {types.find((t) => t.key === mode)?.label ?? "Publication"}
+          </span>
+        ) : (
         <div
           role="radiogroup"
           aria-label="Publication format"
@@ -954,6 +1022,7 @@ export function StudioEditor({
             </button>
           ))}
         </div>
+        )}
 
         <span className="t-meta min-w-14 text-[11px]" aria-live="polite">
           {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Draft"}
@@ -965,26 +1034,49 @@ export function StudioEditor({
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={savingDraft}
-            onClick={() => startDraft(() => persistDraft())}
-          >
-            <FloppyDisk size={16} />
-            <span className="hidden sm:inline">Save draft</span>
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setPreviewOpen(true)}
-          >
-            Preview
-          </Button>
-          <Button size="sm" disabled={pending} onClick={onDetailsClick} className="shrink-0">
-            <RocketLaunch size={15} weight="fill" />
-            {pending ? "Publishing..." : "Publish"}
-          </Button>
+          {editingPublished ? (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setPreviewOpen(true)}
+              >
+                Preview
+              </Button>
+              <Button
+                size="sm"
+                disabled={savingDraft}
+                onClick={() => startDraft(() => persistEdit())}
+                className="shrink-0"
+              >
+                <FloppyDisk size={16} />
+                {savingDraft ? "Saving..." : "Save changes"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={savingDraft}
+                onClick={() => startDraft(() => persistDraft())}
+              >
+                <FloppyDisk size={16} />
+                <span className="hidden sm:inline">Save draft</span>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setPreviewOpen(true)}
+              >
+                Preview
+              </Button>
+              <Button size="sm" disabled={pending} onClick={onDetailsClick} className="shrink-0">
+                <RocketLaunch size={15} weight="fill" />
+                {pending ? "Publishing..." : "Publish"}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1003,6 +1095,28 @@ export function StudioEditor({
         {/* Canvas */}
         <div className="min-w-0 flex-1">
           <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-8 md:px-6">
+            {/* Editing something already published is a different act from
+                writing a draft, and the creator should know what it costs
+                before they type. Brass, not rust: correcting yourself in the
+                open is the right thing to do. */}
+            {editingPublished ? (
+              <div className="mb-6 rounded-[var(--radius-card)] border border-[var(--brass)]/50 bg-[var(--brass)]/10 p-3.5">
+                <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                  This publication is live
+                </p>
+                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text">
+                  You can change the headline, the standfirst, the thesis, the cards and
+                  the tags. Saving records an EDITED marker on the publication showing what
+                  changed and when, which readers can open.
+                </p>
+                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-mute">
+                  {hasLockedCall
+                    ? "The call and its entry price cannot change, and neither can its resolution. Those are the record."
+                    : "The format, the pricing and the access setting cannot change."}
+                </p>
+              </div>
+            ) : null}
+
             {(type !== "short_post") && (
               <>
                 <label htmlFor="report-title" className="sr-only">

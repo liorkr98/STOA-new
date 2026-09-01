@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { format, formatDistanceToNowStrict, differenceInCalendarDays } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
+import { editedAtByReport } from "@/lib/db/report-edits";
 import { listByAuthor } from "@/lib/db/reports";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listClipsByCreator } from "@/lib/db/video-clips";
@@ -36,6 +37,7 @@ function toPublication(
   pred: Prediction | undefined,
   clip: Clip | undefined,
   pinnedId: string | null,
+  editedAt: string | null,
 ): Publication {
   let state: PubState = "published";
   if (r.status === "archived") state = "archived";
@@ -49,6 +51,7 @@ function toPublication(
     editHref: `/studio/compose?id=${r.id}`,
     state,
     hasCall: Boolean(pred),
+    editedAt,
     typeLabel: typeLabel(r.type),
     tag: r.ticker,
     tagIsTicker: Boolean(r.ticker),
@@ -112,8 +115,16 @@ export default async function PublicationsPage() {
   const pinnedId = profile.profile_config?.pinned_report_id ?? null;
 
 
+  const editedAt = await editedAtByReport(reports.map((r) => r.id));
+
   const pubs: Publication[] = reports.map((r) =>
-    toPublication(r, predByReport.get(r.id), clipByReport.get(r.id), pinnedId),
+    toPublication(
+      r,
+      predByReport.get(r.id),
+      clipByReport.get(r.id),
+      pinnedId,
+      editedAt.get(r.id) ?? null,
+    ),
   );
 
   return (

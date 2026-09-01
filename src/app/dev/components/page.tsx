@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { EditedMarker } from "@/components/report/edited-marker";
+import { EditedFlag } from "@/components/report/edited-flag";
+import type { ReportEdit } from "@/lib/db/report-edits";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { StatusChip } from "@/components/ui/status-chip";
@@ -38,6 +41,28 @@ const sampleClaims: FactClaim[] = [
   },
 ];
 
+/** What the public marker can honestly show, in each of its shapes. */
+const EDITS: ReportEdit[] = [
+  {
+    id: "e2",
+    editedAt: "2026-08-29T14:32:00.000Z",
+    sections: ["headline", "thesis"],
+    titleBefore: "Blackwell demand is under-modelled into the January quarter",
+    titleAfter: "Blackwell demand is still under-modelled into the January quarter",
+    dekBefore: null,
+    dekAfter: null,
+  },
+  {
+    id: "e1",
+    editedAt: "2026-08-27T09:04:00.000Z",
+    sections: ["dek", "cards", "tags"],
+    titleBefore: null,
+    titleAfter: null,
+    dekBefore: "The supply ceiling moved.",
+    dekAfter: "The supply ceiling moved. Consensus is still modelling the old one.",
+  },
+];
+
 export default function ComponentPreviewPage() {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -54,6 +79,15 @@ export default function ComponentPreviewPage() {
         <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} sampleSize={14} size="lg" />
         <TrackScoreBadge handle="new_analyst" score={55} hitRate={0.5} sampleSize={4} size="lg" />
         <TrackScoreBadge handle="new_analyst" score={null} size="lg" />
+      </div>
+
+      <p className="t-eyebrow mb-4">EditedMarker (on the publication) and EditedFlag (in a list)</p>
+      <div className="flex flex-wrap items-center gap-6 mb-12">
+        <span className="flex items-center gap-2">
+          <span className="t-meta">@ana_petrova · 3 days ago</span>
+          <EditedMarker edits={EDITS} />
+        </span>
+        <EditedFlag editedAt="2026-08-29T14:32:00.000Z" />
       </div>
 
       <p className="t-eyebrow mb-4">StatusChip</p>

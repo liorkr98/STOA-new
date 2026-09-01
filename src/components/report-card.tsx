@@ -6,10 +6,20 @@ import { compact } from "@/lib/format";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
+import { EditedFlag } from "./report/edited-flag";
 import { Tag } from "./ui/tag";
 import { PredictionCard } from "./prediction-card";
 
-export function ReportCard({ report, promoted = false }: { report: Report; promoted?: boolean }) {
+export function ReportCard({
+  report,
+  promoted = false,
+  editedAt = null,
+}: {
+  report: Report;
+  promoted?: boolean;
+  /** When this publication was last edited, if it ever was. */
+  editedAt?: string | null;
+}) {
   const author = report.author;
   const when = report.published_at ?? report.created_at;
   const locked = report.access !== "free";
@@ -29,8 +39,11 @@ export function ReportCard({ report, promoted = false }: { report: Report; promo
                 {author.display_name}
                 {author.verified && <BadgeCheck size={13} className="text-accent" aria-label="Verified" />}
               </span>
-              <span className="t-meta">
-                @{author.handle} · {formatDistanceToNow(new Date(when), { addSuffix: true })}
+              <span className="t-meta flex items-center gap-1.5">
+                <span>
+                  @{author.handle} · {formatDistanceToNow(new Date(when), { addSuffix: true })}
+                </span>
+                {editedAt ? <EditedFlag editedAt={editedAt} /> : null}
               </span>
             </div>
           </Link>

@@ -12,6 +12,7 @@ import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
 import { ArchiveDialog } from "@/components/studio/archive-dialog";
 import { DeleteDialog } from "@/components/studio/delete-dialog";
+import { EditedFlag } from "@/components/report/edited-flag";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
 
@@ -23,6 +24,8 @@ export interface Publication {
   editHref: string;
   state: PubState;
   hasCall: boolean;
+  /** Last edited after publication, if it ever was. */
+  editedAt?: string | null;
   typeLabel: string;
   tag: string | null;
   tagIsTicker: boolean;
@@ -197,6 +200,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     {p.badge ? (
                       <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
                     ) : null}
+                    {p.editedAt ? <EditedFlag editedAt={p.editedAt} /> : null}
                     {p.state === "archived" && (
                       <span className="num rounded-[var(--radius-tag)] bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
                         Archived
@@ -245,9 +249,12 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
 
                   {/* Hover actions */}
                   <div className="num mt-3 flex items-center gap-4 text-[11px] uppercase tracking-[0.12em] text-text-mute opacity-0 transition-opacity group-hover:opacity-100">
-                    {draft && (
-                      <Link href={p.editHref} className="flex items-center gap-1 hover:text-text"><Pencil size={13} /> Edit</Link>
-                    )}
+                    {/* Editing is no longer draft-only. A live publication can
+                        be corrected, and the marker on it discloses that it
+                        was. */}
+                    <Link href={p.editHref} className="flex items-center gap-1 hover:text-text">
+                      <Pencil size={13} /> Edit
+                    </Link>
                     <Link href={p.href} className="flex items-center gap-1 hover:text-text"><Eye size={13} /> View</Link>
                     {p.state !== "archived" && <PinAction id={p.id} pinned={p.pinned} />}
                     {p.state !== "archived" && <PromoteDialog title={p.title} />}

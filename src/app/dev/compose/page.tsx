@@ -131,6 +131,7 @@ const PUBS: Publication[] = [
     unlocks: "—",
     revenue: "—",
     pinned: false,
+    editedAt: "2026-08-29T14:32:00.000Z",
     stateLine: "VIDEO PROCESSING · STARTED 2 MINUTES AGO",
   },
   {

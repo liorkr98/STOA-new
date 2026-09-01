@@ -225,6 +225,34 @@ export async function getDraftForAuthor(
 }
 
 /**
+ * A publication the caller authored that is already out, loaded for editing.
+ *
+ * Separate from getDraftForAuthor on purpose: that one is scoped to drafts, and
+ * widening it would have quietly opened every draft-only path to live
+ * publications. This is the edit path and it says so.
+ */
+export async function getPublishedForAuthor(
+  id: string,
+  authorId: string,
+): Promise<Report | null> {
+  const supabase = await createClient();
+  const [reportRes, bodyRes] = await Promise.all([
+    supabase
+      .from("reports")
+      .select(SELECT)
+      .eq("id", id)
+      .eq("author_id", authorId)
+      .in("status", ["published", "archived", "resolution_pending_review"])
+      .maybeSingle(),
+    supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
+  ]);
+  if (!reportRes.data) return null;
+  const report = normalize(asReportRow(reportRes.data));
+  report.body = (bodyRes.data as { body: string | null } | null)?.body ?? null;
+  return report;
+}
+
+/**
  * Status of a report the caller authored, whatever that status is. Compose uses
  * it to tell "this is not yours / does not exist" apart from "this is yours but
  * locked", so opening Edit on a published report explains itself instead of

@@ -168,16 +168,26 @@ export async function reportIdsWithCards(
   return out;
 }
 
+/** A stack reduced to what a reader would actually see a difference in. */
+function cardFingerprint(
+  cards: { kind: string; locked: boolean; payload: unknown }[],
+): string {
+  return JSON.stringify(cards.map((c) => [c.kind, c.locked, c.payload]));
+}
+
 /**
- * Replace a draft publication's card stack. Author-only via RLS, and blocked by
- * that policy once the report is locked, so this is a pre-publish operation.
- * Payloads are validated against their `kind` before insert, which is what makes
- * the read path safe to trust.
+ * Replace a publication's card stack. Author-only via RLS. Payloads are
+ * validated against their `kind` before insert, which is what makes the read
+ * path safe to trust.
+ *
+ * This is no longer pre-publish only: the deck of a live publication can be
+ * edited, and `changed` reports whether it actually moved so the caller can
+ * disclose a real change and stay quiet about a no-op save.
  */
 export async function replaceCards(
   reportId: string,
   input: unknown,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; changed?: boolean }> {
   let cards: ValidatedCard[];
   try {
     cards = validateCards(input);
@@ -187,13 +197,27 @@ export async function replaceCards(
 
   const supabase = await createClient();
 
+  // Read before writing, so an edit to a live publication can say whether the
+  // deck actually moved. A delete-and-reinsert of an identical stack must not
+  // be disclosed as a change the reader can see, because it is not one.
+  const { data: existing } = await supabase
+    .from("publication_cards")
+    .select("kind, locked, payload")
+    .eq("report_id", reportId)
+    .order("position", { ascending: true });
+  const before = cardFingerprint(
+    ((existing as { kind: string; locked: boolean; payload: unknown }[] | null) ?? []),
+  );
+  const after = cardFingerprint(cards);
+  const changed = before !== after;
+
   const { error: delError } = await supabase
     .from("publication_cards")
     .delete()
     .eq("report_id", reportId);
   if (delError) return { ok: false, error: delError.message };
 
-  if (cards.length === 0) return { ok: true };
+  if (cards.length === 0) return { ok: true, changed };
 
   const rows = cards.map((c, i) => ({
     report_id: reportId,
@@ -205,5 +229,5 @@ export async function replaceCards(
 
   const { error } = await supabase.from("publication_cards").insert(rows);
   if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return { ok: true, changed };
 }

@@ -61,6 +61,141 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
   return { id: reportId };
 }
 
+/**
+ * Editing a publication that is already out.
+ *
+ * The headline, the dek, the thesis, the cards and the tags may all change.
+ * The call may not, and neither may its resolution: those are frozen on the
+ * `predictions` row by a trigger this never touches, so there is nothing to
+ * check for here beyond not sending them.
+ *
+ * Every edit writes a `report_edits` row before anything else, because that
+ * row is the disclosure and a silent edit is the one outcome that would
+ * undermine the platform. The previous prose is snapshotted into
+ * report_versions so the author keeps their own history.
+ *
+ * `cardsChanged` is passed by the caller rather than diffed here: cards are
+ * saved through their own action, so this function is told that they moved
+ * rather than guessing from a stale read.
+ */
+export async function updatePublishedReport(input: {
+  id: string;
+  title?: string | null;
+  summary?: string | null;
+  body?: string | null;
+  primary_tag?: string | null;
+  secondary_tags?: string[];
+  cardsChanged?: boolean;
+}): Promise<{ ok: boolean; error?: string; sections?: string[] }> {
+  const { supabase, userId } = await requireUser();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("id, author_id, status, title, summary, primary_tag, secondary_tags")
+    .eq("id", input.id)
+    .eq("author_id", userId)
+    .maybeSingle();
+  if (!report) return { ok: false, error: "Not your publication" };
+  if (report.status === "draft") {
+    return { ok: false, error: "This is still a draft. Save it as one." };
+  }
+
+  const { data: bodyRow } = await supabase
+    .from("report_bodies")
+    .select("body")
+    .eq("report_id", input.id)
+    .maybeSingle();
+
+  const oldTitle = (report.title as string | null) ?? null;
+  const oldDek = (report.summary as string | null) ?? null;
+  const oldBody = (bodyRow?.body as string | null) ?? null;
+  const oldPrimary = (report.primary_tag as string | null) ?? null;
+  const oldSecondary = ((report.secondary_tags as string[] | null) ?? []).join(",");
+
+  const newTitle = input.title === undefined ? oldTitle : (input.title ?? null);
+  const newDek = input.summary === undefined ? oldDek : (input.summary ?? null);
+  const newBody = input.body === undefined ? oldBody : (input.body ?? null);
+
+  const sections: string[] = [];
+  if (newTitle !== oldTitle) sections.push("headline");
+  if (newDek !== oldDek) sections.push("dek");
+  if (newBody !== oldBody) sections.push("thesis");
+  if (input.cardsChanged) sections.push("cards");
+
+  const tagsGiven = input.primary_tag !== undefined || input.secondary_tags !== undefined;
+  let tagUpdate: { primary_tag: string | null; secondary_tags: string[] } | null = null;
+  if (tagsGiven) {
+    const normalized = await normalizeTags(supabase, {
+      primary_tag: input.primary_tag ?? oldPrimary,
+      secondary_tags: input.secondary_tags ?? ((report.secondary_tags as string[] | null) ?? []),
+    } as ComposeInput);
+    const nextSecondary = (normalized.secondary_tags ?? []).join(",");
+    if (normalized.primary_tag !== oldPrimary || nextSecondary !== oldSecondary) {
+      sections.push("tags");
+      tagUpdate = {
+        primary_tag: normalized.primary_tag,
+        secondary_tags: normalized.secondary_tags ?? [],
+      };
+    }
+  }
+
+  // Nothing moved: do not write an edit record for a save that changed nothing.
+  if (sections.length === 0) return { ok: true, sections: [] };
+
+  // The author's own history of the prose, before it is overwritten.
+  if (sections.includes("headline") || sections.includes("thesis")) {
+    await supabase.from("report_versions").insert({
+      report_id: input.id,
+      author_id: userId,
+      title: oldTitle,
+      body: oldBody,
+    });
+  }
+
+  const { error: logError } = await supabase.from("report_edits").insert({
+    report_id: input.id,
+    author_id: userId,
+    sections,
+    title_before: sections.includes("headline") ? oldTitle : null,
+    title_after: sections.includes("headline") ? newTitle : null,
+    dek_before: sections.includes("dek") ? oldDek : null,
+    dek_after: sections.includes("dek") ? newDek : null,
+  });
+  // The disclosure is not optional. If it cannot be written the edit does not
+  // happen, because an undisclosed edit is worse than a refused one.
+  if (logError) {
+    return {
+      ok: false,
+      error:
+        "The edit was not saved because the public record of it could not be written. Nothing was changed.",
+    };
+  }
+
+  const reportPatch: Record<string, unknown> = {};
+  if (sections.includes("headline")) reportPatch.title = newTitle;
+  if (sections.includes("dek")) reportPatch.summary = newDek;
+  if (tagUpdate) Object.assign(reportPatch, tagUpdate);
+
+  if (Object.keys(reportPatch).length > 0) {
+    const { error } = await supabase.from("reports").update(reportPatch).eq("id", input.id);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  if (sections.includes("thesis")) {
+    const { error } = await supabase
+      .from("report_bodies")
+      .upsert({ report_id: input.id, body: newBody }, { onConflict: "report_id" });
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/home");
+  revalidatePath("/feed");
+  revalidatePath("/studio");
+  revalidatePath(`/report/${input.id}`);
+  return { ok: true, sections };
+}
+
 /** List versions for the history panel (author-only via RLS). */
 export async function listVersionsAction(reportId: string) {
   const { listVersions } = await import("@/lib/db/report-versions");

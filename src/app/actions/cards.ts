@@ -5,14 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 import { replaceCards } from "@/lib/db/publication-cards";
 
 /**
- * Save a draft publication's evidence-card stack (backend brief item 2).
- * Author-only and pre-publish: RLS on `publication_cards` rejects a write from
- * anyone else, and the same policy stops edits once the report is locked.
+ * Save a publication's evidence-card stack (backend brief item 2).
+ * Author-only: RLS on `publication_cards` rejects a write from anyone else.
+ * The deck of a live publication may be edited; `changed` says whether it
+ * actually moved, so the caller can record a real edit and not a no-op.
  */
 export async function saveCards(
   reportId: string,
   cards: unknown,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; changed?: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,7 +25,7 @@ export async function saveCards(
 
   revalidatePath(`/report/${reportId}`);
   revalidatePath("/feed");
-  return { ok: true };
+  return { ok: true, changed: result.changed ?? false };
 }
 
 /**

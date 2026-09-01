@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
-import { getAuthorReportStatus, getDraftForAuthor } from "@/lib/db/reports";
+import {
+  getAuthorReportStatus,
+  getDraftForAuthor,
+  getPublishedForAuthor,
+} from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
 import { listAuthorCards } from "@/lib/db/publication-cards";
@@ -30,12 +34,15 @@ export default async function ComposePage({
     id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
     id ? listVideosByReport(id) : Promise.resolve([]),
   ]);
-  // A published report is locked at the database level, so there is nothing to
-  // edit: send the author to the report rather than a bare 404.
+  // A published report used to be a dead end here, because the database
+  // refused every edit. Editing is allowed now and disclosed when it happens,
+  // so the author lands in the editor rather than being bounced to the report.
+  let published: Report | null = null;
   if (id && !draft) {
     const status = await getAuthorReportStatus(id, profile.id);
-    if (status && status !== "draft") redirect(`/report/${id}`);
-    notFound();
+    if (!status) notFound();
+    published = await getPublishedForAuthor(id, profile.id);
+    if (!published) redirect(`/report/${id}`);
   }
 
   // The stored row id becomes the client id, so a placement made before this
@@ -71,7 +78,9 @@ export default async function ComposePage({
       )}
       <StudioEditor
         analystReportPrice={profile.report_price}
-        initialDraft={draft ?? seeded}
+        initialDraft={draft ?? published ?? seeded}
+        editingPublished={Boolean(published)}
+        hasLockedCall={Boolean(published?.prediction)}
         initialCards={initialCards}
         hasVideoClip={clips.length > 0}
         aiCredits={wallet?.ai_credits ?? 0}

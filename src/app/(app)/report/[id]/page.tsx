@@ -29,6 +29,8 @@ import { ReportBody } from "@/components/editor/report-body";
 import { ReportClip } from "@/components/report/report-clip";
 import { ReportCards } from "@/components/report/report-cards";
 import { ArchivedBanner } from "@/components/report/archived-banner";
+import { EditedMarker } from "@/components/report/edited-marker";
+import { listReportEdits } from "@/lib/db/report-edits";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
 import { PriceAttestationSection } from "@/components/report/price-attestation-section";
@@ -60,7 +62,11 @@ export async function generateMetadata({
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [report, userId] = await Promise.all([getReport(id), getSessionUserId()]);
+  const [report, userId, edits] = await Promise.all([
+    getReport(id),
+    getSessionUserId(),
+    listReportEdits(id),
+  ]);
   if (!report) notFound();
   const author = report.author;
   const isAuthor = userId === report.author_id;
@@ -134,6 +140,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <span className="num">{compact(report.views)}</span>
           <span className="text-text-faint">views</span>
         </span>
+        <EditedMarker edits={edits} />
       </div>
 
       <h1 className="t-h1 mt-3" dir="auto">{headline}</h1>
