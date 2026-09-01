@@ -18,6 +18,18 @@ export async function GET(req: Request) {
   const explicitNext = sameOriginPath(next, "");
   const safeNext = explicitNext || null;
 
+  // Supabase reports a failed provider exchange by redirecting here with an
+  // error instead of a code. Dropping it (as this used to) made every OAuth
+  // failure look like nothing had happened: the user landed back on sign-in
+  // with no explanation, and the actual reason was never seen by anyone.
+  const providerError = url.searchParams.get("error_description") ?? url.searchParams.get("error");
+  if (providerError) {
+    const back = new URL("/sign-in", url.origin);
+    back.searchParams.set("error", "oauth");
+    back.searchParams.set("reason", providerError.slice(0, 300));
+    return NextResponse.redirect(back);
+  }
+
   if (!code) {
     return NextResponse.redirect(new URL("/sign-in", url.origin));
   }
@@ -25,7 +37,10 @@ export async function GET(req: Request) {
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
-    return NextResponse.redirect(new URL("/sign-in?error=oauth", url.origin));
+    const back = new URL("/sign-in", url.origin);
+    back.searchParams.set("error", "oauth");
+    back.searchParams.set("reason", error.message.slice(0, 300));
+    return NextResponse.redirect(back);
   }
 
   await supabase.rpc("ensure_user_profile");
