@@ -8,9 +8,14 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Safety net for clips Bunny finished without a webhook reaching us. Bunny
- * webhook delivery is not guaranteed and is currently not arriving, so without
- * this a publication's video stays invisible forever. Protected by CRON_SECRET.
+ * Daily backstop for clips Bunny finished without a webhook reaching us.
+ *
+ * Deliberately daily: a sub-daily schedule is rejected at config validation on
+ * this Vercel plan and fails the whole deployment. That makes this the slow
+ * safety net, not the working path. The working path is the publication page,
+ * which reconciles on view (`getLiveClipForReport`), so a creator opening their
+ * own publication promotes a finished clip immediately. Registering the Bunny
+ * webhook makes both redundant. Protected by CRON_SECRET.
  */
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCron(request)) {

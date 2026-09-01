@@ -23,8 +23,9 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 - **A finished video goes live on its own.** Nothing was promoting a clip once
   the host finished processing it: only one provider webhook has ever reached
   us, and every clip that ever went live was promoted by hand. A clip is now
-  reconciled by the webhook, by a five-minute sweep, and by the publication page
-  itself when it is opened, so no single missed delivery can strand a video. A
+  reconciled by the publication page itself when it is opened, by the webhook,
+  and by a daily sweep behind both, so no single missed delivery can strand a
+  video. A
   clip that lands ready under a published report is also marked live, which the
   compose path never did.
 - **Evidence cards appear on the publication.** They were stored correctly and
@@ -54,9 +55,12 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 - **The Bunny webhook is still not registered.** Only one delivery has ever been
   processed, back on 22 August. The reconcile sweep means a video no longer
-  depends on it, but it is a five-minute delay rather than seconds, and the
-  sweep costs an API call per unsettled clip. Registering the webhook against
-  `/api/webhooks/bunny-stream?secret=...` makes it immediate again.
+  depends on it, but the work is now carried by the reconcile-on-view path,
+  with only a daily sweep behind it: a sub-daily cron is rejected on this
+  Vercel plan and fails the deployment outright. So a clip nobody opens can sit
+  unpromoted for up to a day. Registering the webhook against
+  `/api/webhooks/bunny-stream?secret=...` makes it immediate and makes both
+  fallbacks redundant.
 - **The reported Feed overlap was not a layout fault.** With the video hidden,
   the dateline and the chips sit cleanly apart and the DOM holds exactly one
   chip pair. The second pair is inside the demo clips, which show a trading UI

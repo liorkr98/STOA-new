@@ -25,7 +25,8 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  *
  * The Bunny webhook is the intended trigger for this, but delivery is not
  * guaranteed (and is currently not arriving at all), so the same logic is
- * reachable from a cron sweep and from the publication page. Idempotent:
+ * reachable from the publication page, which reconciles on view and is what
+ * actually promotes clips today, and from a daily cron behind it. Idempotent:
  * re-running on a settled clip is a no-op.
  *
  * Bunny video.status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding,
