@@ -15,6 +15,10 @@ import { cn } from "@/lib/design/cn";
  * icons and expands on demand; below the large breakpoint it becomes a
  * drawer over the canvas instead, because at that width there is no rail to
  * shrink into.
+ *
+ * The rail is a column of the compose frame and scrolls on its own. It is
+ * not sticky and is not offset from any header: it starts where the header
+ * ends because that is where the frame puts it.
  */
 
 export function RailIcons({
@@ -68,10 +72,7 @@ export function ComposeRail({
     <aside
       aria-label="Toolbox"
       className={cn(
-        // Sticks under the compose header, whose height is measured rather
-        // than assumed: --nav-h is the global nav and only ever matched the
-        // compose bar by coincidence.
-        "scroll-area hidden shrink-0 border-r border-border lg:block lg:sticky lg:top-[var(--compose-head-h,var(--nav-h))] lg:max-h-[calc(var(--app-h)-var(--compose-head-h,var(--nav-h)))] lg:overflow-y-auto",
+        "scroll-area hidden min-h-0 shrink-0 overflow-y-auto border-r border-border lg:block",
         collapsed ? "w-[56px]" : "w-[248px]",
       )}
     >

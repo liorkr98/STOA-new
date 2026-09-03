@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
@@ -69,6 +69,7 @@ import {
 } from "@/lib/compose/cards";
 import { setComposeDeck } from "@/lib/compose/card-store";
 import { emptyEdit, type VideoEdit } from "@/lib/compose/overlays";
+import { frameHeight, scrollParent } from "@/lib/compose/frame";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import type { CardKind } from "@/lib/feed/card-schema";
@@ -689,46 +690,48 @@ export function StudioEditor({
   );
 
   /**
-   * The sticky header's real height, published as --compose-head-h.
+   * The workbench frame.
    *
-   * The toolbox rail sticks under the header, and the header is not a fixed
-   * size: the bar wraps at some widths, the tracker is one line or two, and
-   * the fonts land after first paint. It used to be pinned to --nav-h, which
-   * is the global nav's height and only matched the compose bar by accident.
-   * Measured, so the two can never drift apart.
+   * Compose fills whatever is scrolling it, and nothing inside is pinned to
+   * anything else's height. The header sits in the flow; under it the toolbox
+   * rail and the canvas are two columns that scroll on their own. The frame's
+   * height is measured off the scroll parent (the app shell's <main>, or the
+   * document on a fixture page), never assumed from the nav.
+   *
+   * The previous shape, a sticky header with the rail stuck under it at the
+   * header's measured height, broke inside the shell: a sticky offset is taken
+   * from the scroller's padding-inset edge, so the header sat 2rem below the
+   * nav and over the top of the rail. Measuring the header did not help, since
+   * where it sat was wrong, not how tall it was. A frame has no offsets to get
+   * wrong, so the class of bug has nowhere to live.
    */
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const headRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const el = headRef.current;
-    if (!el) return;
-    const publish = () => {
-      const h = Math.round(el.getBoundingClientRect().height);
-      el.closest<HTMLElement>("[data-compose-root]")?.style.setProperty(
-        "--compose-head-h",
-        `${h}px`,
-      );
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const scroller = scrollParent(root);
+    const fit = () => {
+      root.style.height = `${frameHeight(root, scroller)}px`;
     };
-    publish();
-    const ro = new ResizeObserver(publish);
-    ro.observe(el);
-    return () => ro.disconnect();
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(scroller);
+    window.addEventListener("resize", fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
   }, []);
 
   const goStep = useCallback((key: StepKey) => {
     setStepKey(key);
     setRailOverride(null);
     setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
-    // Each step is its own screen, so arriving at one should start at its top
-    // rather than halfway down the last one.
-    //
-    // Not window.scrollTo: inside the app shell the scroller is the <main>
-    // element, not the window, so scrolling the window did nothing and the
-    // new step's heading stayed sitting under the sticky header. Scrolling
-    // the root into view lets the browser move whichever ancestor is actually
-    // scrolling, and because the header is the root's first child it lands at
-    // the top with the step directly beneath it.
-    rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Each step is its own screen, so arriving at one starts at its top rather
+    // than halfway down the last one. The canvas is the scroller, so it is
+    // the canvas that moves.
+    canvasRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const goNext = useCallback(() => {
@@ -1058,15 +1061,16 @@ export function StudioEditor({
   );
 
   return (
-    <div ref={rootRef} data-compose-root className="flex min-h-[calc(var(--app-h)-1px)] flex-col">
-      {/* The header is one sticky block: the bar and the step tracker together.
-          They used to be two, the bar sticky and the tracker in the flow, so
-          the tracker slid under the bar the moment the page scrolled and only
-          its bottom edge stayed visible. A progress tracker that disappears
-          when you scroll is not a progress tracker. Its height is measured
-          into --compose-head-h below, because the bar wraps at some widths and
-          the rail has to sit under whatever it actually is. */}
-      <div ref={headRef} className="sticky top-0 z-30 border-b border-border bg-paper">
+    // The class height is only the guess for the server-rendered paint; the
+    // effect above measures the real room and overrides it before first paint.
+    <div
+      ref={rootRef}
+      data-compose-root
+      className="flex h-[calc(var(--app-h)-var(--nav-h))] min-h-0 flex-col overflow-hidden"
+    >
+      {/* The header is one block in the flow: the bar, then the step tracker.
+          Nothing sticks. The columns under it scroll, so it never has to. */}
+      <div className="shrink-0 border-b border-border bg-paper">
       <div className="flex items-center gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] md:flex-wrap md:gap-3 md:px-6">
         <Link
           href="/studio"
@@ -1160,7 +1164,7 @@ export function StudioEditor({
       </div>
 
       {/* LEFT is what you build with, the sequence is what you publish as. */}
-      <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1">
         {showToolboxRail ? (
         <ComposeRail
           collapsed={railCollapsed}
@@ -1174,7 +1178,10 @@ export function StudioEditor({
         {/* Canvas: the guided sequence. One step at a time, and the rail on
             the left stays put across all of them so a card is always
             draggable into the body and onto the timeline. */}
-        <div className="min-w-0 flex-1">
+        <div
+          ref={canvasRef}
+          className="scroll-area min-h-0 min-w-0 flex-1 overflow-y-auto pb-[var(--tab-h)]"
+        >
           <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-7 md:px-6">
             {/* Editing something already published is a different act from
                 writing a draft, and the creator should know what it costs

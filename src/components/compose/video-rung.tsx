@@ -849,7 +849,9 @@ export function VideoRung({
       </div>
 
       <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-        <div className="md:sticky md:top-[calc(var(--nav-h)+0.75rem)] md:self-start">
+        {/* Sticks inside the canvas, which is the scroller; there is no header
+            above it to clear, so the offset is just breathing room. */}
+        <div className="md:sticky md:top-3 md:self-start">
           <Stage src={src} time={time} overlays={edit.overlays} cards={cards} playing={playing} videoRef={videoRef} onTogglePlay={() => setPlaying((p) => !p)} faithful={faithful} ticker={ticker} />
           {!src ? (
             <p className="num mt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">

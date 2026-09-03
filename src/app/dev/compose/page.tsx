@@ -5,15 +5,41 @@ import Link from "next/link";
 import { StudioEditor } from "@/components/editor/studio-editor";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
+import { TopNav } from "@/components/layout/top-nav";
 import type { DraftCard } from "@/lib/compose/cards";
-import type { Report } from "@/lib/types";
+import type { Profile, Report } from "@/lib/types";
 
 /**
  * Dev-only Compose fixture: the workspace on each of the three draft shapes
  * a creator can open, so the rails, the modules and the card placements can
  * be reviewed without a database. Saving and publishing fail here; everything
  * else behaves as on /studio/compose.
+ *
+ * The workspace is mounted inside a copy of the (private) app shell: the top
+ * nav, then a <main> that is the scroller, with the same padding and the same
+ * breakout. Compose measures its own frame off that scroller, and a fixture
+ * that let the window scroll instead was hiding exactly the bugs it existed
+ * to show. Keep this shell in step with src/app/(private)/layout.tsx.
  */
+
+const FIXTURE_PROFILE = {
+  id: "dev-analyst",
+  handle: "dev",
+  display_name: "Dev Analyst",
+  role: "analyst",
+  avatar_url: null,
+  cover_url: null,
+  bio: null,
+  headline: null,
+  score: 0,
+  rating: 1000,
+  tier: "",
+  followers_count: 0,
+  sub_price: null,
+  report_price: null,
+  verified: false,
+  created_at: "2026-01-01T00:00:00.000Z",
+} as Profile;
 
 const CARDS: DraftCard[] = [
   {
@@ -175,11 +201,40 @@ export default function DevComposePage() {
   const [shape, setShape] = useState<Shape>("both");
 
   return (
-    <div className="w-full py-6">
-      <div className="mx-auto w-full max-w-6xl px-5">
+    <div className="w-full">
+      <div
+        data-app-shell
+        className="flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden"
+      >
+        <TopNav profile={FIXTURE_PROFILE} unreadCount={0} />
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <main
+              id="main-content"
+              className="gutter-x min-h-0 min-w-0 flex-1 overflow-y-auto py-[var(--main-pad-y)] outline-none"
+            >
+              <div className="breakout-main">
+                <StudioEditor
+                  key={shape}
+                  analystReportPrice={null}
+                  initialDraft={draftFor(shape)}
+                  initialCards={shape === "empty" ? [] : CARDS}
+                  hasVideoClip={shape !== "research" && shape !== "empty"}
+                  aiCredits={40}
+                  plans={[]}
+                />
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      {/* The fixture's own controls sit under the shell rather than above it,
+          so the shell fills the window exactly as the real page does. */}
+      <div className="mx-auto w-full max-w-6xl px-5 pt-8">
         <h1 className="font-display text-3xl font-semibold tracking-tight">Compose fixture</h1>
         <p className="mt-1 text-sm text-text-mute">
-          The workspace on each draft shape. Left is what you build with, right is what you publish as.
+          The workspace above, on each draft shape. Left is what you build with, right is what you publish as.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Draft shape">
@@ -189,7 +244,10 @@ export default function DevComposePage() {
               type="button"
               role="radio"
               aria-checked={shape === s.key}
-              onClick={() => setShape(s.key)}
+              onClick={() => {
+                setShape(s.key);
+                window.scrollTo({ top: 0 });
+              }}
               className={
                 shape === s.key
                   ? "focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-[0.8125rem] text-[var(--paper)]"
@@ -207,18 +265,6 @@ export default function DevComposePage() {
             Reload
           </Link>
         </div>
-      </div>
-
-      <div className="mt-6 border-y border-border">
-        <StudioEditor
-          key={shape}
-          analystReportPrice={null}
-          initialDraft={draftFor(shape)}
-          initialCards={shape === "empty" ? [] : CARDS}
-          hasVideoClip={shape !== "research" && shape !== "empty"}
-          aiCredits={40}
-          plans={[]}
-        />
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-5">
