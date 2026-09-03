@@ -39,6 +39,7 @@ import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
 import { publicTypeLabel } from "@/lib/compose/modes";
+import { ScrollFrame } from "@/components/layout/scroll-frame";
 
 export async function generateMetadata({
   params,
@@ -117,14 +118,39 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const dek = report.title?.trim() ? report.summary?.trim() : null;
 
   return (
-    <article className="mx-auto max-w-[var(--w-standard)]">
-      {/* Scroll-scrubbed, like a scrollbar -- reading position, not animation,
-        * so the frequency rule does not apply. Hidden without scroll-timeline
-        * support and under reduced motion it still just mirrors scroll. */}
-      <div className="reading-progress" aria-hidden />
+    <>
       <ReportSchema report={report} />
       <ViewTracker reportId={id} />
 
+      {/*
+        Two columns: the writing on one side, the analyst's clip on the other,
+        so a reader can watch while reading instead of scrolling past the video
+        to reach the words. The page is a frame that fills the room under the
+        nav, and each column scrolls on its own, so the clip stays in view for
+        the length of the read. It used to be a sticky column pinned 80px down,
+        a nav's height that was not above it, which left a band of empty paper
+        over the clip once the page scrolled. Nothing is pinned now.
+
+        On a phone there is no room for two columns, so the frame itself is
+        the scroller and the columns are `display: contents`, which dissolves
+        them and lets the blocks be ordered against each other: the masthead,
+        then the clip, then the writing, then the trust panels, then the
+        comments. Above `lg` the columns become real boxes again.
+
+        The clip sits above the paywall branch deliberately: it is the teaser
+        and is public by design, because it is how an analyst makes their case
+        to someone who has not paid. The depth stays gated below it.
+      */}
+      <ScrollFrame className="scroll-area mx-auto w-full max-w-[var(--w-standard)] flex-col gap-6 overflow-y-auto pb-[var(--tab-h)] lg:flex-row lg:gap-8 lg:overflow-hidden lg:pb-0">
+        <article className="scroll-area contents lg:order-1 lg:flex lg:min-h-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-6 lg:overflow-y-auto">
+          {/* Scroll-scrubbed, like a scrollbar -- reading position, not
+            * animation, so the frequency rule does not apply. Hidden without
+            * scroll-timeline support and under reduced motion it still just
+            * mirrors scroll. Its timeline is the nearest scroller: the article
+            * column, or the frame on a phone. */}
+          <div className="reading-progress" aria-hidden />
+
+          <header className="order-1 lg:order-none">
       {report.status === "archived" ? (
         <ArchivedBanner reportId={id} isAuthor={isAuthor} />
       ) : null}
@@ -179,70 +205,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      {/*
-        Two columns: the writing on one side, the analyst's clip on the other,
-        so a reader can watch while reading instead of scrolling past the video
-        to reach the words. The clip is sticky within its column, so it stays in
-        view for the length of the read rather than scrolling away mid-watch.
+          </header>
 
-        On a phone there is no room for two columns, so the three blocks stack:
-        clip, then the writing, then the trust panels. The wrappers are
-        `display: contents` below `lg`, which dissolves them and lets the clip
-        and the panels be ordered independently against the body; above `lg`
-        they become real boxes again and share the right column. Without that,
-        the panels sat between the video and the first paragraph.
-
-        The clip sits above the paywall branch deliberately: it is the teaser
-        and is public by design, because it is how an analyst makes their case
-        to someone who has not paid. The depth stays gated below it.
-
-        With no clip this is the layout it always was: one column of writing
-        with the trust panels beside it.
-      */}
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]">
-        <div className="contents lg:order-2 lg:block">
-          <div className="contents lg:sticky lg:top-20 lg:block lg:space-y-5">
-            {clip ? (
-              <div className="order-1 lg:order-none">
-                <ReportClip
-                  reportId={id}
-                  embedUrl={clipEmbedUrl}
-                  playbackUrl={clipMedia?.src ?? null}
-                  thumbnailUrl={clipMedia?.poster ?? clip.thumbnail_url}
-                  analystId={report.author_id}
-                  durationSeconds={clip.duration_seconds}
-                  analystName={author?.display_name ?? "The analyst"}
-                />
-              </div>
-            ) : null}
-            <aside className="order-3 flex flex-col gap-4 lg:order-none">
-          {report.prediction && (
-            <PredictionCard
-              prediction={report.prediction}
-              hideTarget={!canRead}
-              pendingReview={report.status === "resolution_pending_review"}
-            />
-          )}
-          {report.prediction && report.ticker && canRead && (
-            <PriceAttestationSection ticker={report.ticker} />
-          )}
-          <DisclosureBlock
-            holdsPosition={report.position_held ?? false}
-            compensationTied={report.compensation_tied ?? false}
-            compensationDetail={report.compensation_detail ?? undefined}
-          />
-          <DyorBar />
-          {claims.length > 0 && (
-            <FactCheckLayer
-              claims={claims}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--radius-card)] border border-border bg-surface px-3 py-3 t-meta"
-            />
-          )}
-            </aside>
-          </div>
-        </div>
-
-        <div className="order-2 min-w-0 lg:order-1">
+          <div className="order-3 min-w-0 lg:order-none">
           {/* Cards carry their own per-card lock, so the deck renders either
               side of the report paywall; sealed cards blur themselves. */}
           <ReportCards cards={cards} ticker={report.ticker} className="mb-6" />
@@ -270,10 +235,54 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             />
           )}
 
-          <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+          </div>
+
+          <div className="order-5 lg:order-none">
+            <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+          </div>
+        </article>
+
+        <div className="scroll-area contents lg:order-2 lg:flex lg:w-[380px] lg:min-h-0 lg:shrink-0 lg:flex-col lg:gap-5 lg:overflow-y-auto">
+            {clip ? (
+              <div className="order-2 lg:order-none">
+                <ReportClip
+                  reportId={id}
+                  embedUrl={clipEmbedUrl}
+                  playbackUrl={clipMedia?.src ?? null}
+                  thumbnailUrl={clipMedia?.poster ?? clip.thumbnail_url}
+                  analystId={report.author_id}
+                  durationSeconds={clip.duration_seconds}
+                  analystName={author?.display_name ?? "The analyst"}
+                />
+              </div>
+            ) : null}
+            <aside className="order-4 flex flex-col gap-4 lg:order-none">
+          {report.prediction && (
+            <PredictionCard
+              prediction={report.prediction}
+              hideTarget={!canRead}
+              pendingReview={report.status === "resolution_pending_review"}
+            />
+          )}
+          {report.prediction && report.ticker && canRead && (
+            <PriceAttestationSection ticker={report.ticker} />
+          )}
+          <DisclosureBlock
+            holdsPosition={report.position_held ?? false}
+            compensationTied={report.compensation_tied ?? false}
+            compensationDetail={report.compensation_detail ?? undefined}
+          />
+          <DyorBar />
+          {claims.length > 0 && (
+            <FactCheckLayer
+              claims={claims}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--radius-card)] border border-border bg-surface px-3 py-3 t-meta"
+            />
+          )}
+            </aside>
         </div>
-      </div>
-    </article>
+      </ScrollFrame>
+    </>
   );
 }
 

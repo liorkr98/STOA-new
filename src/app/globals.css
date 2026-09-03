@@ -592,7 +592,9 @@ body {
   .reading-progress {
     display: block;
     animation: reading-progress-grow linear both;
-    animation-timeline: scroll(root);
+    /* The nearest scroller, not the document: inside the app shell the
+       document never scrolls, so a root timeline never moved. */
+    animation-timeline: scroll(nearest);
   }
 }
 
