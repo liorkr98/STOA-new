@@ -8,6 +8,9 @@ import {
   TodayThemeRail,
   TodayVerdictsRail,
 } from "@/components/today/today-front";
+import { ScrollFrame } from "@/components/layout/scroll-frame";
+import { SCROLL_COLUMN } from "@/lib/layout/frame";
+import { cn } from "@/lib/design/cn";
 import type { TodayPagePayload } from "@/lib/today/types";
 import type { ReactNode } from "react";
 
@@ -15,16 +18,22 @@ import type { ReactNode } from "react";
  * Today (/home): Stoa's daily newspaper. A persistent left sidebar of grouped
  * lists beside the main column; a masthead; a split lead; then bands that
  * each scroll horizontally on their own; a quiet wire-news list last.
+ *
+ * The page is a frame that fills the room under the nav, and the sidebar and
+ * the main column scroll on their own inside it. The sidebar used to be a
+ * sticky column pinned 80px down, a nav's height that was not above it (the
+ * nav sits outside the scrolling column), so it sat a band lower than it
+ * should have. Nothing here is pinned to anything now.
  */
 export function TodayPage({ data, news }: { data: TodayPagePayload; news?: ReactNode }) {
   const hasAnything =
     data.lead || data.trending.length || data.desk.length || data.verdicts.length || data.theme || data.news.length;
 
   return (
-    <div className="dispatch-page dispatch-page--home grid gap-8 md:grid-cols-[248px_minmax(0,1fr)] md:gap-10">
+    <ScrollFrame className="dispatch-page dispatch-page--home flex-col gap-4 md:flex-row md:gap-10">
       <TodaySidebar data={data.sidebar} />
 
-      <article className="min-w-0 py-2 sm:py-4">
+      <article className={cn(SCROLL_COLUMN, "flex-1 py-2 sm:py-4")}>
         <DispatchMasthead
           issueNumber={data.issue.issueNumber}
           dateIso={data.issue.dateISO}
@@ -55,6 +64,6 @@ export function TodayPage({ data, news }: { data: TodayPagePayload; news?: React
           </p>
         </footer>
       </article>
-    </div>
+    </ScrollFrame>
   );
 }

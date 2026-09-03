@@ -14,6 +14,7 @@ import { useInstrumentSheet } from "@/components/markets/instrument-sheet";
 import { useWatchlist } from "@/lib/watchlist";
 import { price as fmtPrice } from "@/lib/format";
 import { cn } from "@/lib/design/cn";
+import { SCROLL_COLUMN } from "@/lib/layout/frame";
 import type { TodayCreatorRow, TodaySidebarPayload, TodayTicker, TodayTickerRow } from "@/lib/today/types";
 
 /**
@@ -219,12 +220,15 @@ export function TodaySidebarLists({ data }: { data: TodaySidebarPayload }) {
   );
 }
 
-/** Desktop: persistent sticky column. Mobile: a drawer behind a control. */
+/**
+ * Desktop: a column of the Today frame that scrolls on its own, starting
+ * where the frame starts. Mobile: a drawer behind a control.
+ */
 export function TodaySidebar({ data }: { data: TodaySidebarPayload }) {
   return (
     <>
       <aside
-        className="hidden md:block md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto scroll-area md:pr-2"
+        className={cn("hidden md:block md:w-[248px] md:shrink-0 md:pr-2", SCROLL_COLUMN)}
         aria-label="Today lists"
       >
         <TodaySidebarLists data={data} />
@@ -234,7 +238,7 @@ export function TodaySidebar({ data }: { data: TodaySidebarPayload }) {
           <button
             type="button"
             className={cn(
-              "focus-ring inline-flex w-max items-center gap-2 justify-self-start rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-text md:hidden",
+              "focus-ring inline-flex w-max shrink-0 items-center gap-2 self-start rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-text md:hidden",
             )}
             aria-label="Open Today lists"
           >
