@@ -1,6 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 import Link from "next/link";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
@@ -60,6 +69,7 @@ import {
 import { PromotePanel } from "@/components/compose/promote-panel";
 import {
   blankCard,
+  cardIsEmpty,
   cardName,
   moveCard,
   orderedDeck,
@@ -80,6 +90,7 @@ import { PublishPreviewDialog } from "@/components/compose/publish-preview";
 import { CardPreview } from "@/components/compose/card-preview";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import {
+  advanceFor,
   stepState,
   stepsFor,
   type StepFacts,
@@ -141,6 +152,17 @@ function collectCardIds(doc: JSONContent | null | undefined): Set<string> {
 
 /** Fixed, because the CTA is derived rather than authored. */
 const CTA_CARD_ID = "cta";
+
+/** Remembers that the creator took the template helper down. */
+const TEMPLATES_DISMISSED_KEY = "stoa.compose.templates";
+const noSubscription = () => () => {};
+function readTemplatesDismissed() {
+  try {
+    return localStorage.getItem(TEMPLATES_DISMISSED_KEY) === "off";
+  } catch {
+    return false;
+  }
+}
 
 /** Size a textarea to its words, so it reads as a growing line, not a box. */
 function fitTextarea(el: HTMLTextAreaElement | null) {
@@ -280,6 +302,23 @@ export function StudioEditor({
   const [showTemplateStrip, setShowTemplateStrip] = useState(() =>
     isDocMostlyEmpty(null, initialDoc),
   );
+  // The helper is an offer, and a creator who has taken it down once should
+  // not have to take it down on every new draft. Read as an external store:
+  // the server has no localStorage, so its snapshot is "not dismissed" and
+  // the client corrects it on hydration without a state write in an effect.
+  const templatesDismissed = useSyncExternalStore(
+    noSubscription,
+    readTemplatesDismissed,
+    () => false,
+  );
+  const dismissTemplates = useCallback(() => {
+    setShowTemplateStrip(false);
+    try {
+      localStorage.setItem(TEMPLATES_DISMISSED_KEY, "off");
+    } catch {
+      // Same: without storage it comes back next time, which is harmless.
+    }
+  }, []);
   const [confirmOpen, setConfirmOpen] = useState(false);
   // Stamped when the confirm modal opens, not read during render: the analyst
   // is confirming the horizon they saw, and render has to stay pure.
@@ -687,6 +726,9 @@ export function StudioEditor({
   // made every one of these decisions, so nothing is locked.
   const steps = useMemo(() => stepsFor(mode, videoChosen), [mode, videoChosen]);
   const [stepKey, setStepKey] = useState<StepKey>("write");
+  // What the forward button said when it refused to move. Shown beside the
+  // button, and only while it is still the reason.
+  const [blockedNote, setBlockedNote] = useState<string | null>(null);
   const [visited, setVisited] = useState<Set<StepKey>>(() => new Set<StepKey>(["write"]));
   const [firstPassDone, setFirstPassDone] = useState(editingPublished);
 
@@ -738,6 +780,7 @@ export function StudioEditor({
   const goStep = useCallback((key: StepKey) => {
     setStepKey(key);
     setRailOverride(null);
+    setBlockedNote(null);
     setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
     // Each step is its own screen, so arriving at one starts at its top rather
     // than halfway down the last one. The canvas is the scroller, so it is
@@ -816,17 +859,56 @@ export function StudioEditor({
   };
 
   /**
-   * Leaving the video out.
+   * Taking the video out.
    *
-   * Nothing needs to be declared here any more: the format follows the clip,
-   * so dropping the clip is what makes this a written publication. Everything
-   * already written is kept, and the button says what happens.
+   * Nothing needs to be declared: the format follows the clip, so dropping
+   * the clip is what makes this a written publication. Everything already
+   * written is kept. Offered on the video step beside Replace, not as a
+   * second forward button.
    */
-  function skipVideo() {
+  function removeVideo() {
     setVideoEdit(null);
     videoFileRef.current = null;
     setVideoChosen(false);
-    goStep("tags");
+  }
+
+  /** The one forward button, and what it will do. */
+  const advance = advanceFor(currentStep.key, {
+    isPost,
+    postMaxChars: POST_MAX_CHARS,
+    title,
+    postText: summary,
+    ticker,
+    target,
+    cards: cards.map((c) => ({ name: cardName(c), empty: cardIsEmpty(c) })),
+    hasVideo: videoChosen,
+    hasVideoEdits: stepFacts.hasVideoEdits,
+    wordlessOverlays:
+      videoEdit?.overlays.filter((o) => o.kind === "text" && !o.text.trim()).length ?? 0,
+    blankVisuals:
+      videoEdit?.overlays.filter(
+        (o) =>
+          o.kind === "visual" &&
+          o.source.type === "diagram" &&
+          !o.source.prompt.trim() &&
+          !o.source.imageUrl,
+      ).length ?? 0,
+    primaryTag: tags.primary,
+  });
+  const note = blockedNote && blockedNote === advance.blocker ? blockedNote : null;
+
+  function pressNext() {
+    if (advance.blocker) {
+      // Said beside the button, where the press happened, and left there
+      // until it is no longer true. Not a toast: a reason that fades is a
+      // reason the creator has to re-press to read again.
+      setBlockedNote(advance.blocker);
+      return;
+    }
+    setBlockedNote(null);
+    // Skipping the video is leaving it out, so the empty edit goes too.
+    if (currentStep.key === "video" && !videoChosen) setVideoEdit(null);
+    goNext();
   }
 
   const doPublish = useCallback(async () => {
@@ -1229,30 +1311,12 @@ export function StudioEditor({
               index={stepIndex}
               total={steps.length}
               onBack={stepIndex > 0 ? goBack : null}
-              onNext={stepIndex < steps.length - 1 ? goNext : null}
-              nextLabel={
-                currentStep.key === "cards" && cards.length === 0
-                  ? undefined
-                  : currentStep.key === "call" && !ticker.trim()
-                    ? undefined
-                    : "Continue"
+              next={
+                stepIndex < steps.length - 1
+                  ? { label: advance.label, onPress: pressNext }
+                  : null
               }
-              onSkip={
-                currentStep.key === "video"
-                  ? skipVideo
-                  : currentStep.key === "call" && !ticker.trim()
-                    ? goNext
-                    : currentStep.key === "cards" && cards.length === 0
-                      ? goNext
-                      : undefined
-              }
-              skipLabel={
-                currentStep.key === "video"
-                  ? "Continue without a video"
-                  : currentStep.key === "call"
-                    ? "No call on this one"
-                    : "Skip the cards"
-              }
+              note={note}
             >
               {/* WRITE. Always mounted, hidden off-step: the Tiptap instance
                   holds the charts the publish path screenshots, and losing it
@@ -1322,8 +1386,8 @@ export function StudioEditor({
                 )}
 
                 <div className={cn(!showResearch && "hidden")}>
-                  {showTemplateStrip && (
-                    <ReportTemplateStrip ticker={ticker || undefined} onApply={applyTemplate} />
+                  {showTemplateStrip && !templatesDismissed && (
+                    <ReportTemplateStrip onApply={applyTemplate} onDismiss={dismissTemplates} />
                   )}
                   <div
                     onDragOver={(e) => {
@@ -1479,6 +1543,8 @@ export function StudioEditor({
                       videoFileRef.current = { file, durationSeconds };
                       setVideoChosen(true);
                     }}
+                    hasClip={videoChosen}
+                    onRemove={removeVideo}
                     cards={deck}
                     chrome={false}
                     ticker={ticker.trim() || undefined}

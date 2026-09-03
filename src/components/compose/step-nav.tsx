@@ -99,30 +99,30 @@ export function StepNav({
 }
 
 /**
- * The heading above each step's content, and the pair of buttons under it.
+ * The heading above each step's content, and the one button under it.
  *
- * The forward button is never disabled on an optional step. Skipping is a
- * real answer, so it is a button of its own rather than an absence of one.
+ * One forward button, whose label is what pressing it will do: Skip on an
+ * optional step that holds nothing, Continue otherwise. When Continue cannot
+ * advance, the reason sits beside it in words until it is fixed, rather than
+ * the button greying out and leaving the creator to guess why.
  */
 export function StepFrame({
   step,
   index,
   total,
   onBack,
-  onNext,
-  nextLabel,
-  skipLabel,
-  onSkip,
+  next,
+  note,
   children,
 }: {
   step: StepDef;
   index: number;
   total: number;
   onBack: (() => void) | null;
-  onNext: (() => void) | null;
-  nextLabel?: string;
-  skipLabel?: string;
-  onSkip?: () => void;
+  /** The forward button. Null on the last step, which publishes instead. */
+  next: { label: string; onPress: () => void } | null;
+  /** Why the last press did not advance. Cleared once it is no longer true. */
+  note: string | null;
   children: React.ReactNode;
 }) {
   return (
@@ -152,23 +152,19 @@ export function StepFrame({
             Back
           </button>
         ) : null}
-        <div className="ml-auto flex items-center gap-2">
-          {onSkip ? (
-            <button
-              type="button"
-              onClick={onSkip}
-              className="focus-ring rounded-[var(--radius-btn)] border border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
-            >
-              {skipLabel ?? "Skip this"}
-            </button>
+        <div className="ml-auto flex min-w-0 items-center gap-3">
+          {note ? (
+            <p role="alert" className="max-w-[44ch] text-right text-[0.8125rem] leading-snug text-[var(--rust)]">
+              {note}
+            </p>
           ) : null}
-          {onNext ? (
+          {next ? (
             <button
               type="button"
-              onClick={onNext}
-              className="focus-ring rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+              onClick={next.onPress}
+              className="focus-ring shrink-0 rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
             >
-              {nextLabel ?? "Continue"}
+              {next.label}
             </button>
           ) : null}
         </div>

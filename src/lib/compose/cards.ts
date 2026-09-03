@@ -222,6 +222,40 @@ export function cardSummary(card: DraftCard): string {
 }
 
 /**
+ * True when nothing has been written on the card: it is still the blank it
+ * was made as. The cards step will not carry one of these forward, because a
+ * blank card in the Feed is a claim with nothing on it.
+ */
+export function cardIsEmpty(card: DraftCard): boolean {
+  const p = card.payload;
+  switch (card.kind) {
+    case "thesis":
+      return !str(p.title).trim() && !str(p.body).trim();
+    case "edge":
+      return inkList(p.street).length + inkList(p.mine).length === 0;
+    case "path_to_target":
+      return (
+        !(Array.isArray(p.steps) && p.steps.length > 0) &&
+        !((p.result as InkValue | undefined)?.text ?? "").trim()
+      );
+    case "kill_switch":
+      return inkList(p.conditions).length === 0;
+    case "catalyst_timeline":
+      return !(Array.isArray(p.events) && p.events.length > 0);
+    case "checklist":
+      return !(Array.isArray(p.rows) && p.rows.length > 0);
+    case "figure":
+      return !p.imageUrl && !str(p.caption).trim();
+    case "chart":
+      return !str(p.ticker).trim();
+    case "steelman":
+      return !str(p.objection).trim() && !str(p.answer).trim();
+    case "unlock":
+      return false;
+  }
+}
+
+/**
  * The card's provenance tag. A card can mix inks, so the tag names the
  * strongest claim on it: an imported market fact outranks the creator's own
  * number, which outranks their plain view. Matches the three-ink system the

@@ -132,3 +132,97 @@ export function stepState(key: StepKey, f: StepFacts): StepState {
       return f.readyToPublish ? "done" : "empty";
   }
 }
+
+/** What the one forward button on a step will do when pressed. */
+export interface Advance {
+  /** Skip when the step is optional and holds nothing; Continue otherwise. */
+  label: "Skip" | "Continue";
+  /**
+   * Why pressing will not advance, in the creator's own terms, or null when
+   * it will. Specific on purpose: "a target price needs a ticker", never
+   * "invalid input".
+   */
+  blocker: string | null;
+}
+
+/** Everything the forward button needs to know, as plain values. */
+export interface AdvanceInput {
+  isPost: boolean;
+  postMaxChars: number;
+  title: string;
+  postText: string;
+  ticker: string;
+  target: string;
+  /** Each card in the deck by name, and whether anything is written on it. */
+  cards: { name: string; empty: boolean }[];
+  hasVideo: boolean;
+  hasVideoEdits: boolean;
+  /** Text overlays with no words on them. */
+  wordlessOverlays: number;
+  /** Visualize overlays with neither a prompt nor a picture. */
+  blankVisuals: number;
+  primaryTag: string | null;
+}
+
+/**
+ * One button per step, and its label is what pressing it will do.
+ *
+ * There used to be two: Continue, and a separate skip button on the optional
+ * steps. Two buttons meant the creator had to work out which one was true
+ * for them. Now the step works it out: nothing entered on an optional step
+ * reads Skip and moves on; enough entered reads Continue and moves on;
+ * something entered but incomplete still reads Continue, but pressing it
+ * says what is missing and stays put.
+ */
+export function advanceFor(key: StepKey, s: AdvanceInput): Advance {
+  const go = (blocker: string | null = null): Advance => ({ label: "Continue", blocker });
+  const skip: Advance = { label: "Skip", blocker: null };
+  switch (key) {
+    case "write": {
+      if (s.isPost) {
+        const text = s.postText.trim();
+        if (!text) return go("Write your post first.");
+        if (text.length > s.postMaxChars) {
+          return go(`Posts are ${s.postMaxChars} characters. This one is ${text.length}.`);
+        }
+        return go();
+      }
+      return s.title.trim() ? go() : go("Add a headline first. The words can wait; the headline cannot.");
+    }
+    case "call": {
+      const ticker = s.ticker.trim();
+      const target = s.target.trim();
+      if (!ticker && !target) return skip;
+      if (!ticker) return go("A target price needs a ticker. Add the ticker, or clear the target.");
+      if (target && !(Number(target) > 0)) {
+        return go(`"${target}" is not a price. A target is a number, like 142.50.`);
+      }
+      return go();
+    }
+    case "cards": {
+      if (s.cards.length === 0) return skip;
+      const blank = s.cards.find((c) => c.empty);
+      if (blank) return go(`The ${blank.name} card has nothing on it yet. Write it, or delete it.`);
+      return go();
+    }
+    case "video":
+      return s.hasVideo ? go() : skip;
+    case "video_edit": {
+      if (s.wordlessOverlays > 0) {
+        return go(
+          s.wordlessOverlays === 1
+            ? "A text overlay has no words on it yet. Type them, or remove it."
+            : `${s.wordlessOverlays} text overlays have no words on them yet.`,
+        );
+      }
+      if (s.blankVisuals > 0) {
+        return go("A Visualize overlay has nothing to show yet. Describe the diagram, or remove it.");
+      }
+      return s.hasVideoEdits ? go() : skip;
+    }
+    case "tags":
+      return s.primaryTag ? go() : go("Choose a primary tag. It is where this sits in Explore.");
+    case "publish":
+      return go();
+  }
+}

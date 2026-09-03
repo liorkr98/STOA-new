@@ -212,11 +212,12 @@ export function ReportTemplatePicker({
 
 /** Compact strip shown on empty compose drafts */
 export function ReportTemplateStrip({
-  ticker,
   onApply,
+  onDismiss,
 }: {
-  ticker?: string;
   onApply: (templateId: string) => void | Promise<void>;
+  /** The scaffolding is an offer. A creator who does not want it can take it down. */
+  onDismiss: () => void;
 }) {
   const reduced = useReducedMotion();
   const featured = TIPTAP_REPORT_TEMPLATES.filter((t) =>
@@ -230,11 +231,24 @@ export function ReportTemplateStrip({
       transition={{ duration: reduced ? 0.08 : 0.2, ease: [0.23, 1, 0.32, 1] }}
       className="mb-6 rounded-[var(--radius-card)] border border-border bg-surface-2 p-4"
     >
-      <p className="t-eyebrow mb-1 text-[10px]">Start from a template</p>
-      <p className="mb-3 text-sm text-text-mute">
-        Institutional layouts with live charts, financials, and valuation blocks. You edit every
-        section after applying.
-      </p>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="t-eyebrow mb-1 text-[10px]">Start from a template</p>
+          <p className="text-sm text-text-mute">
+            Institutional layouts with live charts, financials, and valuation blocks. You edit
+            every section after applying. Templates stay under Assistant if you want one later.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss the templates"
+          title="Dismiss"
+          className="focus-ring shrink-0 rounded p-1 text-text-faint hover:text-text"
+        >
+          <X size={15} />
+        </button>
+      </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {featured.map((t, i) => (
           <TemplateCard

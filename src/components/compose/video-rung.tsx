@@ -676,6 +676,8 @@ export function VideoRung({
   toolbox,
   ticker,
   stage = "all",
+  hasClip = false,
+  onRemove,
 }: {
   initial?: VideoEdit;
   /** Duration used for the poster stage when no file is loaded. */
@@ -692,6 +694,10 @@ export function VideoRung({
   /** Card tray mounted on the editor (Video format). */
   toolbox?: ReactNode;
   ticker?: string;
+  /** The publication already has a clip (saved, or chosen here). */
+  hasClip?: boolean;
+  /** Take the clip out. Offered beside Replace, never as a forward button. */
+  onRemove?: () => void;
   /**
    * Which half of the rung to show. The guided sequence asks for the clip in
    * one step and edits it in the next, so "choose" is the picker and the
@@ -843,8 +849,21 @@ export function VideoRung({
             }}
           />
           <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
-            <Upload size={14} /> {src ? "Replace video" : "Choose a video"}
+            <Upload size={14} /> {src || hasClip ? "Replace video" : "Choose a video"}
           </Button>
+          {(src || hasClip) && onRemove ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSrc(null);
+                setEditState(emptyEdit(demoDurationSeconds));
+                onRemove();
+              }}
+            >
+              Remove video
+            </Button>
+          ) : null}
         </div>
       </div>
 
