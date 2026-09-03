@@ -69,7 +69,7 @@ export function ProfilePreview({
       : `/analyst/${profile.handle}`;
 
   return (
-    <div className="sticky top-6 flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <p className="t-eyebrow">Live preview</p>
         <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5 text-[11px]">

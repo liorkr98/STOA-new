@@ -27,6 +27,7 @@ import { PROFILE_THEMES } from "@/lib/profile/themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
+import { ScrollFrame } from "@/components/layout/scroll-frame";
 import { CoverUpload } from "@/components/profile/cover-upload";
 import { ProfilePreview } from "@/components/profile/profile-preview";
 import { BrandAnalyzerPanel } from "@/components/profile/brand-analyzer-panel";
@@ -180,8 +181,12 @@ export function BrandingStudio({
   const brandingTab = tab === "identity" || tab === "style" || tab === "sections";
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_360px]">
-      <div className="flex flex-col gap-6">
+    /* A frame that fills the room under the page heading. Above xl the form
+       and the live preview are two columns that scroll on their own; below
+       it the frame is the scroller and they stack. The preview used to be a
+       sticky column pinned 80px down, a nav's height that was not above it. */
+    <ScrollFrame className="scroll-area flex-col gap-8 overflow-y-auto pb-[var(--tab-h)] xl:flex-row xl:overflow-hidden xl:pb-0">
+      <div className="scroll-area flex flex-col gap-6 xl:min-h-0 xl:min-w-0 xl:flex-1 xl:overflow-y-auto xl:pr-1">
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto border-b border-border">
           {TABS.map(([key, label]) => (
@@ -397,7 +402,7 @@ export function BrandingStudio({
       </div>
 
       {/* Live preview */}
-      <div className="flex flex-col gap-3 xl:sticky xl:top-20 xl:self-start">
+      <div className="scroll-area flex flex-col gap-3 xl:min-h-0 xl:w-[360px] xl:shrink-0 xl:overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="num flex gap-1 text-[10px] uppercase tracking-[0.14em]">
             {(["desktop", "mobile"] as const).map((d) => (
@@ -417,6 +422,6 @@ export function BrandingStudio({
           />
         </div>
       </div>
-    </div>
+    </ScrollFrame>
   );
 }
