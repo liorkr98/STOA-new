@@ -142,8 +142,20 @@ function collectCardIds(doc: JSONContent | null | undefined): Set<string> {
 /** Fixed, because the CTA is derived rather than authored. */
 const CTA_CARD_ID = "cta";
 
-/** Steps where the card tray and the assistant are actually of use. */
-const RAIL_STEPS = new Set<StepKey>(["write", "cards", "video", "video_edit"]);
+/** Size a textarea to its words, so it reads as a growing line, not a box. */
+function fitTextarea(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "0px";
+  el.style.height = `${el.scrollHeight}px`;
+}
+
+/**
+ * Steps where the card tray and the assistant are actually of use: where
+ * there is a body to drop a card into, a deck to build, or a timeline to
+ * place a card on. Choosing a clip, naming a call, picking tags and
+ * publishing need neither, and on those steps the rail is not shown at all.
+ */
+const RAIL_STEPS = new Set<StepKey>(["write", "cards", "video_edit"]);
 
 export function StudioEditor({
   analystReportPrice,
@@ -668,7 +680,6 @@ export function StudioEditor({
   // second, which is what the product model always said a publication was.
   const showVideo = !isPost;
   const showResearch = !isPost;
-  const showToolboxRail = true;
 
   // ── The guided sequence ────────────────────────────────────────────────
   // One step at a time on the first pass, every step jumpable afterwards.
@@ -776,13 +787,16 @@ export function StudioEditor({
   const publishBlockedBy = contentBlockedBy ?? detailsBlockedBy;
 
   /**
-   * The toolbox is for building things, so it is only open on the steps that
-   * build something. Choosing an access tier or answering a disclosure has
-   * nothing to do with a card deck, and an expanded rail of irrelevant tools
-   * beside a short step was most of what made the page read as empty.
+   * The toolbox is for building things, so it exists only on the steps that
+   * build something. It used to fold to a strip of two icons on the other
+   * steps, which was a stub: nothing on the call, tags or publish steps needs
+   * a card deck or the assistant, so a column that only existed to be
+   * reopened was width taken from the work for no reason. On those steps
+   * there is no rail. On the building steps it opens by default and can be
+   * folded to its icons.
    */
   const railUseful = RAIL_STEPS.has(currentStep.key);
-  const railCollapsed = railOverride ?? !railUseful;
+  const railCollapsed = railOverride ?? false;
 
   /** What each step holds right now, for the progress rail. */
   const stepFacts: StepFacts = {
@@ -1080,11 +1094,8 @@ export function StudioEditor({
           <span className="hidden sm:inline">Studio</span>
         </Link>
 
-        {showToolboxRail ? (
-        <RailOpenButton
-          onClick={() => setRailDrawerOpen(true)}
-          cardCount={cards.length}
-        />
+        {railUseful ? (
+          <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
         ) : null}
 
         {/* What this publication currently is, read off its contents. Not a
@@ -1165,24 +1176,32 @@ export function StudioEditor({
 
       {/* LEFT is what you build with, the sequence is what you publish as. */}
       <div className="flex min-h-0 min-w-0 flex-1">
-        {showToolboxRail ? (
-        <ComposeRail
-          collapsed={railCollapsed}
-          onToggle={() => setRailOverride(!railCollapsed)}
-          cardCount={cards.length}
-        >
-          {toolbox}
-        </ComposeRail>
+        {railUseful ? (
+          <ComposeRail
+            collapsed={railCollapsed}
+            onToggle={() => setRailOverride(!railCollapsed)}
+            cardCount={cards.length}
+          >
+            {toolbox}
+          </ComposeRail>
         ) : null}
 
-        {/* Canvas: the guided sequence. One step at a time, and the rail on
-            the left stays put across all of them so a card is always
-            draggable into the body and onto the timeline. */}
+        {/* Canvas: the guided sequence, one step at a time. Compose is a
+            working surface, not an article, so the canvas takes the standard
+            page width rather than a reading measure: a timeline, a deck and
+            a publish panel all want the room, and a column of dead paper on
+            either side of the work was the single biggest waste on the page.
+            Only the prose keeps a measure, and that is set on the editor. */}
         <div
           ref={canvasRef}
           className="scroll-area min-h-0 min-w-0 flex-1 overflow-y-auto pb-[var(--tab-h)]"
         >
-          <div className="mx-auto w-full max-w-[var(--w-reading)] px-4 py-7 md:px-6">
+          <div
+            className={cn(
+              "mx-auto w-full px-4 py-6 md:px-8",
+              currentStep.key === "write" ? "max-w-[60rem]" : "max-w-[var(--w-standard)]",
+            )}
+          >
             {/* Editing something already published is a different act from
                 writing a draft, and the creator should know what it costs
                 before they type. Brass, not rust: correcting yourself in the
@@ -1237,20 +1256,37 @@ export function StudioEditor({
             >
               {/* WRITE. Always mounted, hidden off-step: the Tiptap instance
                   holds the charts the publish path screenshots, and losing it
-                  on a step change would lose them. */}
+                  on a step change would lose them. Prose is the one thing on
+                  the canvas that wants a measure, so the column is capped
+                  here and nowhere else. */}
               <div className={cn(currentStep.key !== "write" && "hidden")}>
                 {type !== "short_post" && (
                   <>
                     <label htmlFor="report-title" className="sr-only">
                       Headline
                     </label>
-                    <input
+                    {/* A textarea, not an input: a headline is one thought
+                        but rarely one line, and an input clips whatever a
+                        390px screen cannot hold. It grows with its words and
+                        Enter moves on rather than breaking the line. */}
+                    <textarea
                       id="report-title"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      rows={1}
+                      onChange={(e) => {
+                        setTitle(e.target.value.replace(/\n/g, " "));
+                        fitTextarea(e.currentTarget);
+                      }}
+                      ref={fitTextarea}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          document.getElementById("report-summary")?.focus();
+                        }
+                      }}
                       placeholder="Headline"
                       dir="auto"
-                      className="user-copy mb-2 w-full bg-transparent text-3xl font-semibold tracking-tight text-text placeholder:text-text-mute focus:outline-none md:text-4xl"
+                      className="user-copy mb-2 w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none md:text-4xl"
                       style={{ fontFamily: "var(--font-display)" }}
                     />
                   </>
@@ -1544,10 +1580,10 @@ export function StudioEditor({
         </div>
       </div>
 
-      {showToolboxRail ? (
-      <ComposeRailDrawer open={railDrawerOpen} onClose={() => setRailDrawerOpen(false)}>
-        {toolbox}
-      </ComposeRailDrawer>
+      {railUseful ? (
+        <ComposeRailDrawer open={railDrawerOpen} onClose={() => setRailDrawerOpen(false)}>
+          {toolbox}
+        </ComposeRailDrawer>
       ) : null}
 
       <CardLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onPick={addCard} />
