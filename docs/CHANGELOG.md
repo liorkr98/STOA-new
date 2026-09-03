@@ -10,6 +10,36 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-04 — The other three pinned columns get the same fix
+
+**For someone using the site**
+
+- **Today's lists, a report's clip column and the Storefront preview all start
+  where their page starts.** Each was pinned 80px down inside the page's
+  scrolling column, allowing for a nav that is not inside that column, so each
+  sat a band lower than the content beside it. All three now use the same
+  frame Compose got in the previous batch: the page fills the room under the
+  nav and its columns scroll on their own, so there is nothing to pin and
+  nothing to get wrong.
+- **The report page's reading-progress line now moves.** It followed the
+  document's scroll, and the document never scrolls inside the app, so it had
+  never moved. It follows the writing now.
+- **On a phone, a report keeps its reading order**: headline, clip, writing,
+  trust panels, comments.
+
+**Found while in there**
+
+- The nav's border-and-shadow-on-scroll has the same root-scroll problem as
+  the progress line (it animates on the document's scroll) and so has never
+  appeared inside the app shell. Left alone: it is cosmetic and belongs to the
+  nav, not to these pages.
+- A `/dev/branding` fixture now exists, and the private-shell copy the
+  fixtures use lives in one place.
+
+**What needs Krisi**
+
+- Nothing new.
+
 ## 2026-09-04 — Compose gets its room, one honest button, and a video editor made for analysts
 
 **For someone using the site**

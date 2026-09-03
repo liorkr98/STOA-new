@@ -652,6 +652,12 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 ### 3.1b Home — `/home` (personalized Dispatch)
 
+**Layout.** The page is a `<ScrollFrame>` filling the room under the nav: the lists column
+(`248px`) and the main column scroll on their own inside it, and the lists start level with the
+masthead. The lists used to be a sticky column pinned `top-20` inside the app's scrolling column,
+where the nav is not, so they sat a band lower than they should have. On a phone the lists are a
+drawer behind a Lists control and the main column is the only column.
+
 The signed-in home for **investors and analysts**. Same Dispatch design as `/`, but content is
 scoped to follows, subscriptions, saved reports, and recently read analysts.
 
@@ -990,7 +996,7 @@ anything else, and a stored value that is not fetchable falls back to the card's
 ARCHIVED chip above the headline, saying it is hidden from the public, with Restore inline for
 the author. An archived publication must never be indistinguishable from a live one.
 
-**Full layout, desktop (two-column, ledger sidebar sticky on scroll):**
+**Full layout, desktop (two columns inside a frame; each column scrolls on its own):**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1017,15 +1023,20 @@ the author. An archived publication must never be indistinguishable from a live 
 └─────────────────────────────────────┴─────────────────────────┘
 ```
 
-- The right column (creator strip + call block... wait, call block is left/main — correction:
-  call block sits directly under the headline in the main reading column since it's the anchor of
-  the report itself; the right rail holds creator identity + disclosure + fact-check summary) is
-  `position: sticky` on desktop so it stays visible as the reader scrolls through a long report —
-  the trust surface should never scroll out of view while someone's reading the claims it's
-  vouching for.
-- **Mobile:** right-rail content moves to a single stacked block directly beneath the headline,
-  above the report body — same content, same order, no sticky behavior (not reliable on mobile
-  viewports), but still positioned *before* the body text starts, never after.
+- The call block sits directly under the headline in the main reading column, since it is the
+  anchor of the report itself; the right column holds the clip, the call, disclosure and the
+  fact-check summary. The page is a **`<ScrollFrame>`** (`src/components/layout/scroll-frame.tsx`)
+  that fills the room under the nav; the writing scrolls in its column and the right column stays
+  in view for the length of the read, so the trust surface never scrolls away from the claims it
+  vouches for. It is **not** `position: sticky`: it used to be, pinned `top-20` inside the app's
+  scrolling column, and since the nav is not inside that column the rail sat a band lower than the
+  masthead. See §6.2 for why nothing in the app is pinned to a nav height any more.
+- **Mobile:** below `lg` the frame itself is the scroller and both columns are `display:
+  contents`, so the blocks order themselves: masthead, clip, writing, trust panels, comments. Same
+  content, same order, nothing sticky.
+- The reading-progress bar follows the nearest scroller (`animation-timeline: scroll(nearest)`),
+  which is the writing column. It used to follow the document, which never scrolls inside the app
+  shell, so it never moved.
 - Report body typography: Fraunces at a body-friendly weight/size (not the display cut used for
   the headline) — this is the one place in the product where long-form serif reading is the
   actual point, distinct from Plex Sans everywhere else.
@@ -1226,7 +1237,8 @@ want the room. Only prose wants a measure, so the write step alone caps its colu
 heading, its words and its buttons all on the same one.
 
 **Nothing on Compose is sticky, and nothing is pinned to another element's height.** The compose
-root is a frame exactly as tall as the room its scroll parent gives it, measured
+root is a frame exactly as tall as the room its scroll parent gives it (the same `<ScrollFrame>`
+that now carries Today, the report page and the branding studio), measured
 (`src/lib/layout/frame.ts`: the scroller's inner height, less whatever sits above the frame and the
 scroller's bottom padding, plus the negative margins the shell's breakout already reclaims) and re-measured on resize. The header sits in the
 flow at the top of the frame; under it the rail and the canvas are `min-h-0` flex columns that
@@ -1478,6 +1490,12 @@ dropped entirely when it would only repeat the type label.
 - Payout history table: date, amount, status
 
 ### 6.7 Page Branding — `/dashboard/branding`
+
+**Layout.** Under the page heading, the studio is a `<ScrollFrame>`: the form scrolls in its column
+and the live preview stays beside it; below `xl` the frame is the scroller and they stack. The
+preview used to be a sticky column pinned `top-20` inside the app's scrolling column, where the nav
+is not. `/dev/branding` mounts the studio inside the private-shell fixture for review without a
+session.
 
 Same two-column form-plus-live-preview pattern as onboarding Step 2 (§4.2), now as a persistent
 settings page: handle, display name, bio, avatar, banner, color theme (from the curated set
