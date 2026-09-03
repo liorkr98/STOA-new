@@ -35,6 +35,10 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   nav, not to these pages.
 - A `/dev/branding` fixture now exists, and the private-shell copy the
   fixtures use lives in one place.
+- The Storefront's share-link preview built its public link from the browser
+  address on the client and as a bare path on the server, so React reported a
+  hydration mismatch every time the page opened. It uses the site's canonical
+  origin now.
 
 **What needs Krisi**
 

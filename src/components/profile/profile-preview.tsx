@@ -5,6 +5,7 @@ import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
 import { ProfileHeader } from "@/components/profile/profile-header";
+import { absoluteUrl } from "@/lib/seo/site";
 
 type PreviewMode = "desktop" | "mobile";
 
@@ -63,10 +64,10 @@ export function ProfilePreview({
     cover_url: draft.cover_url,
   };
 
-  const publicUrl =
-    typeof window !== "undefined" && profile.handle
-      ? `${window.location.origin}/analyst/${profile.handle}`
-      : `/analyst/${profile.handle}`;
+  // The canonical origin, which the server and the browser agree on. Reading
+  // window.location.origin here rendered a bare path on the server and a
+  // full URL in the browser, and React reported the mismatch on every open.
+  const publicUrl = absoluteUrl(`/analyst/${profile.handle}`);
 
   return (
     <div className="flex flex-col gap-3">
