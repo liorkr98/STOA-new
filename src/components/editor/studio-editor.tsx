@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -79,7 +78,7 @@ import {
 } from "@/lib/compose/cards";
 import { setComposeDeck } from "@/lib/compose/card-store";
 import { emptyEdit, type VideoEdit } from "@/lib/compose/overlays";
-import { frameHeight, scrollParent } from "@/lib/compose/frame";
+import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import type { CardKind } from "@/lib/feed/card-schema";
@@ -749,7 +748,9 @@ export function StudioEditor({
    * anything else's height. The header sits in the flow; under it the toolbox
    * rail and the canvas are two columns that scroll on their own. The frame's
    * height is measured off the scroll parent (the app shell's <main>, or the
-   * document on a fixture page), never assumed from the nav.
+   * document on a fixture page), never assumed from the nav. The same frame
+   * now carries Today, the report page and the branding studio
+   * (src/lib/layout/frame.ts).
    *
    * The previous shape, a sticky header with the rail stuck under it at the
    * header's measured height, broke inside the shell: a sticky offset is taken
@@ -758,24 +759,8 @@ export function StudioEditor({
    * where it sat was wrong, not how tall it was. A frame has no offsets to get
    * wrong, so the class of bug has nowhere to live.
    */
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useFrameHeight<HTMLDivElement>();
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    const scroller = scrollParent(root);
-    const fit = () => {
-      root.style.height = `${frameHeight(root, scroller)}px`;
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(scroller);
-    window.addEventListener("resize", fit);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", fit);
-    };
-  }, []);
 
   const goStep = useCallback((key: StepKey) => {
     setStepKey(key);

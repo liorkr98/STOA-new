@@ -5,9 +5,9 @@ import Link from "next/link";
 import { StudioEditor } from "@/components/editor/studio-editor";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
-import { TopNav } from "@/components/layout/top-nav";
 import type { DraftCard } from "@/lib/compose/cards";
-import type { Profile, Report } from "@/lib/types";
+import type { Report } from "@/lib/types";
+import { DevPrivateShell } from "../_private-shell";
 
 /**
  * Dev-only Compose fixture: the workspace on each of the three draft shapes
@@ -15,31 +15,10 @@ import type { Profile, Report } from "@/lib/types";
  * be reviewed without a database. Saving and publishing fail here; everything
  * else behaves as on /studio/compose.
  *
- * The workspace is mounted inside a copy of the (private) app shell: the top
- * nav, then a <main> that is the scroller, with the same padding and the same
- * breakout. Compose measures its own frame off that scroller, and a fixture
- * that let the window scroll instead was hiding exactly the bugs it existed
- * to show. Keep this shell in step with src/app/(private)/layout.tsx.
+ * The workspace is mounted inside a copy of the (private) app shell (see
+ * ../_private-shell), because Compose measures its frame off the scroller.
  */
 
-const FIXTURE_PROFILE = {
-  id: "dev-analyst",
-  handle: "dev",
-  display_name: "Dev Analyst",
-  role: "analyst",
-  avatar_url: null,
-  cover_url: null,
-  bio: null,
-  headline: null,
-  score: 0,
-  rating: 1000,
-  tier: "",
-  followers_count: 0,
-  sub_price: null,
-  report_price: null,
-  verified: false,
-  created_at: "2026-01-01T00:00:00.000Z",
-} as Profile;
 
 const CARDS: DraftCard[] = [
   {
@@ -202,32 +181,19 @@ export default function DevComposePage() {
 
   return (
     <div className="w-full">
-      <div
-        data-app-shell
-        className="flex h-[var(--app-h)] max-h-[var(--app-h)] min-w-0 flex-col overflow-hidden"
-      >
-        <TopNav profile={FIXTURE_PROFILE} unreadCount={0} />
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <main
-              id="main-content"
-              className="gutter-x min-h-0 min-w-0 flex-1 overflow-y-auto py-[var(--main-pad-y)] outline-none"
-            >
-              <div className="breakout-main">
-                <StudioEditor
-                  key={shape}
-                  analystReportPrice={null}
-                  initialDraft={draftFor(shape)}
-                  initialCards={shape === "empty" ? [] : CARDS}
-                  hasVideoClip={shape !== "research" && shape !== "empty"}
-                  aiCredits={40}
-                  plans={[]}
-                />
-              </div>
-            </main>
-          </div>
+      <DevPrivateShell>
+        <div className="breakout-main">
+          <StudioEditor
+            key={shape}
+            analystReportPrice={null}
+            initialDraft={draftFor(shape)}
+            initialCards={shape === "empty" ? [] : CARDS}
+            hasVideoClip={shape !== "research" && shape !== "empty"}
+            aiCredits={40}
+            plans={[]}
+          />
         </div>
-      </div>
+      </DevPrivateShell>
 
       {/* The fixture's own controls sit under the shell rather than above it,
           so the shell fills the window exactly as the real page does. */}

@@ -1227,8 +1227,8 @@ heading, its words and its buttons all on the same one.
 
 **Nothing on Compose is sticky, and nothing is pinned to another element's height.** The compose
 root is a frame exactly as tall as the room its scroll parent gives it, measured
-(`src/lib/compose/frame.ts`: the scroller's inner height, less its padding, plus the negative
-margins the shell's breakout already reclaims) and re-measured on resize. The header sits in the
+(`src/lib/layout/frame.ts`: the scroller's inner height, less whatever sits above the frame and the
+scroller's bottom padding, plus the negative margins the shell's breakout already reclaims) and re-measured on resize. The header sits in the
 flow at the top of the frame; under it the rail and the canvas are `min-h-0` flex columns that
 scroll on their own. Moving between steps scrolls the canvas to its top.
 
