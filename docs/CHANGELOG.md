@@ -10,6 +10,67 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-04 — Compose gets its room, one honest button, and a video editor made for analysts
+
+**For someone using the site**
+
+- **The band under the nav is gone, and the toolbox icons are no longer
+  sliced.** Both had one cause: the compose header was pinned inside the
+  page's scrolling column, and a pinned element there sits 2rem lower than it
+  looks like it should, so the header dropped away from the nav and its
+  bottom edge covered the top of the rail. Compose is now a frame that
+  measures the room it has and fills it; the header sits at the top and the
+  rail and the canvas scroll on their own underneath. Nothing is pinned to
+  anything, so this cannot come back.
+- **The canvas is a working surface.** It takes the standard page width
+  rather than a reading measure, so the timeline, the deck and the publish
+  panel have room. Only the write step keeps a measure for the words.
+- **The toolbox exists only where it is useful.** On the call, video, tags
+  and publish steps there is no rail, not a strip of two icons. It opens on
+  write, cards and edit video, where a card can actually be dropped
+  somewhere.
+- **One button per step, and it tells the truth.** The separate skip buttons
+  are gone. Nothing entered on an optional step reads *Skip*; enough entered
+  reads *Continue*; something entered but incomplete reads *Continue* and,
+  when pressed, says what is missing beside the button ("A target price
+  needs a ticker. Add the ticker, or clear the target") and stays put.
+  Taking a clip out is its own control beside Replace.
+- **The template helper can be taken down**, and stays down on the next
+  draft. Templates remain under Assistant.
+- **The video editor is rebuilt around how CapCut, Instagram, TikTok and
+  Descript work.** One picture above one filmstrip. Trim by dragging the
+  gold ends of the strip. Drag text and cards where you want them on the
+  picture; type text on the picture. Time anything by dragging the ends of
+  its bar under the strip. Controls appear only for the thing you have
+  selected; at rest there is play, the strip, and five things to add. The
+  cover is a small folded row. Gone: the second track, the zoom slider, the
+  frame-step buttons, the always-open settings panel and the three add
+  buttons that opened it. Kept: trim, text, visuals with inset and cutaway,
+  dragging cards from the toolbox, the faithful preview, and the promise that
+  what you preview is exactly what publishes.
+- **The headline wraps on a phone** instead of clipping; Enter moves to the
+  standfirst.
+
+**Found while in there**
+
+- The dev fixture at `/dev/compose` let the window scroll, which hid the
+  pinning bug; it now mounts the workspace inside a copy of the app shell.
+- The edit-video step mounted a second card tray beside the timeline,
+  duplicating the toolbox. Gone.
+- Three other places pin a sticky column at `top-20` inside the app's
+  scrolling column, where the nav is not: the Today sidebar, the report
+  page's clip column and the branding studio. That leaves a band of 80px
+  above them when scrolled rather than clipping anything; left as they are
+  because Today's sidebar and the branding studio need a session to load,
+  and noted here.
+- On the fixture, the connected-piece picker logs a "Sign in to continue"
+  error from a server action, which is expected without a session.
+
+**What needs Krisi**
+
+- Nothing new. Overlays are still held in memory only; the burn-in pipeline
+  and storage for them remain the open item in the backend brief.
+
 ## 2026-09-02 — Compose stops arguing with itself, and two more themes
 
 **For someone using the site**

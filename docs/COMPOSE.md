@@ -53,12 +53,29 @@ A **Chart** card is a live tape:
 
 Dummy SVG is not a source.
 
-## Visual overlays on video
+## The video editor
 
-A visual overlay is a real card, a live Yahoo or TradingView tape, or a
-**Napkin** visual. Press Visualize on the timeline, type what the diagram
-should show, generate. The overlay sits on paper with a hairline, not a dummy
-line chart.
+One picture above one timeline, built the way CapCut, Instagram, TikTok and
+Descript build theirs. Trim by dragging the brass ends of the filmstrip.
+Place text and insets by dragging them on the picture; type text on the
+picture itself. Time anything by dragging the ends of its bar under the
+strip. The controls for a thing appear only while it is selected; at rest
+there is play, the strip, and five things to add: Text, Card, Chart,
+Visualize, Image. The cover is a folded row under the timeline.
+
+A visual overlay is a real card, a live Yahoo or TradingView tape, a
+**Napkin** visual (type what the diagram should show, generate), or an
+uploaded image, shown over the picture or as a full-frame cutaway while the
+audio continues. Overlays burn into the video at publish; "Preview as it will
+publish" plays exactly what ships.
+
+## One button per step
+
+Each step has one forward button whose label is what pressing it does:
+**Skip** on an optional step that holds nothing, **Continue** otherwise. When
+Continue cannot advance, the reason is said beside the button in the
+creator's terms ("A target price needs a ticker") and nothing moves until it
+is fixed. The rule lives in `advanceFor` in `src/lib/compose/steps.ts`.
 
 ## Access
 

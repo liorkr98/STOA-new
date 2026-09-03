@@ -1160,11 +1160,19 @@ padlocked and not clickable. Reaching the last step unlocks all of them and the 
 set of tabs. Each step states its own condition in the rail: a tick when it holds something,
 `OPTIONAL` when it may be left alone, `EMPTY` when it is required and is not filled in yet.
 
-**Skipping is an answer, not an absence.** Optional steps carry a skip button of their own rather
-than relying on the creator inferring that Continue is allowed. On the video step this matters
-most: a Video publication with no clip cannot publish, so `Continue without a video` converts the
-piece to a written publication, keeps everything already written, and says so on the button
-instead of walking the creator into a wall three steps later.
+**One button per step, and its label is what pressing it will do.** There is no separate skip
+button. The step works out what the forward button means (`advanceFor` in
+`src/lib/compose/steps.ts`): nothing entered on an optional step reads **Skip** and moves on;
+enough entered reads **Continue** and moves on; something entered but incomplete still reads
+**Continue**, and pressing it says what is missing, in the creator's terms, beside the button, and
+stays put. The reasons are specific ("A target price needs a ticker. Add the ticker, or clear the
+target", "The Thesis card has nothing on it yet. Write it, or delete it", "Choose a primary tag"),
+never "invalid input", and they clear the moment they stop being true. Taking a clip out is its own
+control beside Replace on the video step, not a side effect of moving on.
+
+**The template helper on the write step is dismissible.** It is an offer; a creator who does not
+want the scaffolding takes it down once and it stays down on their next draft (a localStorage
+flag, read as an external store so the server paint matches). Templates remain under Assistant.
 
 **There is no format switcher.** The Video / Research / Post tabs are gone. They asked the creator
 to declare up front the thing the sequence exists to decide, and then sat in the header competing
@@ -1185,11 +1193,12 @@ unwired `postNote()` server action that is the natural home for creating notes.
 > **LEFT is what you build WITH. The steps are what you publish AS.**
 
 The toolbox rail holds the card tray and the AI assistant, because a card has to stay draggable
-into the body and onto the timeline from wherever the creator happens to be. It **auto-collapses to
-its icon strip on the steps that do not build anything** (the call, tags, publish) and expands again
-on write, cards, video and edit-video. A creator who opens or closes it is obeyed until they move
-to another step, which then gets its own default back rather than inheriting a decision made about
-a different task.
+into the body and onto the timeline. It **exists only on the steps that build something**: write
+(a body to drop a card into), cards (a deck to build) and edit video (a timeline to place a card
+on). On the call, video, tags and publish steps there is no rail at all; it used to fold to a strip
+of two icons there, which was a stub taking width from the work for no reason. On the building
+steps it opens by default and can be folded to its icons; a creator who folds or opens it is obeyed
+until they move to another step, which then gets its own default back.
 
 The settings rail is gone: access, price, disclosures and promote are step 7, and the Publish
 details drawer that used to carry a second copy of them has been removed. Two surfaces holding the
@@ -1202,27 +1211,39 @@ steps 4 and 5 so the loaded clip and its object URL survive the move, and the Wr
 mounted (hidden) on every other step so the Tiptap instance and the charts the publish path
 screenshots are never lost.
 
-**Two columns and a canvas:**
+**A frame, a header, two scrolling columns:**
 
-| Region | Width | Holds |
+| Region | Size | Holds |
 |---|---|---|
-| Sticky header (full width) | auto, measured | The bar, then the step tracker |
-| Toolbox rail (left) | `248px` expanded, `56px` as icons | Card tray, then the AI assistant |
-| Canvas (centre) | `--w-reading`, fluid | The current step |
+| Frame | exactly the room its scroller gives it, measured | Everything below |
+| Header (full width, in the flow) | auto | The bar, then the step tracker |
+| Toolbox rail (left, scrolls) | `248px` expanded, `56px` as icons, absent on non-building steps | Card tray, then the AI assistant |
+| Canvas (centre, scrolls) | `--w-standard` (1200px), fluid; the write step keeps a `60rem` measure | The current step |
 
-**The header is one sticky block.** The bar and the step tracker are a single `sticky top-0 z-30`
-element, not two. They used to be separate, the bar sticky and the tracker in the flow, so the
-tracker slid under the bar the moment the page scrolled and only its bottom edge showed. Making
-them one element makes the stacking bug unrepresentable rather than merely corrected.
+Compose is a working surface, not an article. The canvas used to be a reading measure with a
+column of dead paper either side at any laptop width; a timeline, a deck and a publish panel all
+want the room. Only prose wants a measure, so the write step alone caps its column, with its
+heading, its words and its buttons all on the same one.
 
-Its height is measured with a `ResizeObserver` and published as **`--compose-head-h`**, which the
-toolbox rail sticks under. The rail was previously pinned to `--nav-h`, the *global* nav's height,
-which matched the compose bar by coincidence and would have drifted the first time either changed.
-Anything else that needs to sit below the compose header uses this variable, never `--nav-h`.
+**Nothing on Compose is sticky, and nothing is pinned to another element's height.** The compose
+root is a frame exactly as tall as the room its scroll parent gives it, measured
+(`src/lib/compose/frame.ts`: the scroller's inner height, less its padding, plus the negative
+margins the shell's breakout already reclaims) and re-measured on resize. The header sits in the
+flow at the top of the frame; under it the rail and the canvas are `min-h-0` flex columns that
+scroll on their own. Moving between steps scrolls the canvas to its top.
 
-**Moving between steps scrolls the compose root into view**, not the window. Inside the app shell
-the scroller is the `<main>` element, so `window.scrollTo` did nothing and a new step's heading
-stayed sitting under the sticky header.
+This replaced two earlier shapes, both of which were the same bug. First the bar was sticky and
+the tracker in the flow, so the tracker slid under the bar. Then bar and tracker were one sticky
+block whose height was measured into a variable the rail stuck under; that broke inside the app
+shell because a sticky offset is taken from the scroller's padding-inset edge, so the header sat
+2rem below the nav (an empty band) and its bottom edge covered the top of the rail (sliced icons).
+Measuring the header's height could not fix a header that was in the wrong place. A frame has no
+offsets, so the class of bug has nowhere to live. **Do not reintroduce `sticky` here, and do not
+pin anything to `--nav-h` or a measured header height.**
+
+The dev fixture (`/dev/compose`) mounts the workspace inside a copy of the `(private)` shell (top
+nav, a scrolling `<main>` with the shell's padding and breakout), because a fixture that let the
+window scroll was hiding exactly this. Keep that shell in step with `src/app/(private)/layout.tsx`.
 
 The profile navigation from the `(private)` layout is **not** rendered on Compose. It is not a
 tool for making a publication and the left edge belongs to the toolbox. It is removed by wrapping
@@ -1288,12 +1309,43 @@ cardId }` visual source on the track). Editing the card once updates it everywhe
 Deleting a card removes its placements with it, rather than leaving a hole on the track and a
 placeholder in the prose.
 
+#### The video editor
+
+Built the way the editors analysts already use are built. CapCut, Instagram's Reels editor,
+TikTok's editor and Descript are all made for people who do not think of themselves as editors, and
+they agree on a shape. This is that shape, in `src/components/compose/video-rung.tsx`:
+
+- **One picture above one timeline.** The stage (16:9, capped at under half the viewport so the
+  timeline never drops below the fold) and under it a strip of frames grabbed off the clip. No
+  second track, no zoom, no frame-step buttons.
+- **Trim by dragging the ends of the clip.** Thick brass brackets at each end of the kept region,
+  dragged inward; what is cut is dimmed; the kept range is printed on the strip while trimmed.
+- **Things are placed by dragging them on the picture.** Insets and text snap to the nine
+  `GridPosition`s the burn-in understands; the 3×3 grid shows only while something is being moved.
+  Text is typed on the picture itself (a `contentEditable` that owns its text while focused).
+- **Things are timed by dragging the ends of their bar** under the strip. Text bars are plum,
+  visual bars brass. A lane appears only once there is something in it, and a second lane only when
+  two things overlap in time. A short bar keeps a grabbable middle; its end zones shrink with it.
+- **Settings appear only while something is selected.** Selecting a bar or a thing on the picture
+  swaps the add row for that thing's controls (text and size; or over-the-picture / full-frame
+  cutaway, the card, chart or Napkin fields; from/to; Remove; Done). Nothing selected: the add row.
+- **At rest:** play, the time, the strip, and five things you can add at the playhead: Text, Card
+  (a menu of the deck), Chart, Visualize, Image. A card can also be dragged from the toolbox onto
+  the strip, or placed from the tray's Place menu.
+- **The cover** is a folded row under the timeline (the chosen frame, or "Choose"); opening it shows
+  the same frames as the strip plus an image upload. Shown at 4:5 as on Explore and the profile.
+- **The faithful preview** ("Preview as it will publish") hides every handle, ring and label and
+  plays exactly what will ship. Overlays burn in at publish, so this must never drift from the
+  published video.
+- Keyboard, when the timeline has focus: Space plays, ←/→ step a frame (Shift: ten), Delete removes
+  the selection, Escape deselects. These are not buttons.
+
 #### The canvas (centre)
 
 Headline and dek at the top, then the publication's components as stacked modules.
 
-- **VIDEO** — the player, thumbnail selection, trim, and the two-track timeline (text track and
-  visual track) with precise playhead control.
+- **VIDEO** — the stage, the filmstrip timeline with trim and overlays, and the cover. See "The
+  video editor" below.
 - **RESEARCH** — the rich text editor with figures and graphs.
 
 Each module header states what it holds at a glance: `VIDEO ✓ 0:58`, `RESEARCH ✓ 1,840 words`, so

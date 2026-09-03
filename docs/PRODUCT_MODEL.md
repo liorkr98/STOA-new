@@ -105,7 +105,7 @@ gates). Anything added later goes on the side that sentence puts it on.
 
 **Cards are a shared asset pool.** They are not a step inside the video path and not a feature of
 the research. They belong to the publication, they live in the left rail, and the same card can
-be dropped onto the video's visual track (as a timed overlay) and into the research body (as an
+be dropped onto the video's timeline (as a timed overlay) and into the research body (as an
 inline figure). A placement stores only the card's id, so editing the card once updates it
 everywhere it appears, and a placed card stays in the tray because it can be in both. Every tray
 row says where its card is currently used.
