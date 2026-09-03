@@ -1548,20 +1548,6 @@ export function StudioEditor({
                     cards={deck}
                     chrome={false}
                     ticker={ticker.trim() || undefined}
-                    toolbox={
-                      <CardTray
-                        cards={deck}
-                        usage={usage}
-                        selectedId={selectedCardId}
-                        onSelect={setSelectedCardId}
-                        onAdd={() => setLibraryOpen(true)}
-                        onReorder={reorderCards}
-                        onPlaceInVideo={placeCardInVideo}
-                        onPlaceInResearch={placeCardInResearch}
-                        hasVideo
-                        hasResearch={false}
-                      />
-                    }
                   />
                 </div>
               ) : null}
