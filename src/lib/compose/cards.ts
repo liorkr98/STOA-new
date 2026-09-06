@@ -35,7 +35,15 @@ export const newCardId = () => `c_${Math.random().toString(36).slice(2, 10)}`;
  * The library is organised by what the creator is trying to do, because that
  * is the question they can answer ("I want to show the risk"). The shape they
  * would rather pick ("I want a timeline") is the Custom entry below, and both
- * routes build the same nine formats.
+ * routes build the same formats.
+ *
+ * The Steelman is not offered. The card is an objection paired with the
+ * analyst's answer, and the system meant to supply the objection (reading the
+ * thesis and generating a real counter-case) is not finished, so the surface
+ * was shipping ahead of the thing that gives it meaning. The kind, its
+ * schema, its editor and its Feed rendering all stay, so a publication that
+ * already carries one keeps rendering and the card can come back the day
+ * the analysis works. Parked, not cancelled.
  */
 export interface CardKindSpec {
   kind: CardKind;
@@ -79,7 +87,6 @@ export const CARD_INTENTS: CardIntent[] = [
     label: "Show the risk",
     kinds: [
       { kind: "kill_switch", label: "Kill switch", blurb: "What would prove you wrong.", shape: "Conditions" },
-      { kind: "steelman", label: "Steelman", blurb: "The best case against you, answered.", shape: "Objection and answer" },
       { kind: "catalyst_timeline", label: "Catalysts", blurb: "The dates that decide it.", shape: "Timeline" },
     ],
   },
@@ -96,8 +103,17 @@ export const CARD_INTENTS: CardIntent[] = [
 /** Every buildable kind, flattened. The unlock card is excluded: it is pinned, not chosen. */
 export const LIBRARY_KINDS: CardKindSpec[] = CARD_INTENTS.flatMap((i) => i.kinds);
 
+/**
+ * Kinds that exist but are not offered. A card of one of these can still be
+ * opened and edited (a publication may already carry it); it just cannot be
+ * made new from the library.
+ */
+const PARKED_KINDS: CardKindSpec[] = [
+  { kind: "steelman", label: "Steelman", blurb: "The best case against you, answered.", shape: "Objection and answer" },
+];
+
 export function kindSpec(kind: CardKind): CardKindSpec | undefined {
-  return LIBRARY_KINDS.find((k) => k.kind === kind);
+  return LIBRARY_KINDS.find((k) => k.kind === kind) ?? PARKED_KINDS.find((k) => k.kind === kind);
 }
 
 /* ------------------------------------------------------------------ blanks */
