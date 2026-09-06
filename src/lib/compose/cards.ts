@@ -27,7 +27,22 @@ export interface CardUsage {
   inResearch: boolean;
 }
 
-export const newCardId = () => `c_${Math.random().toString(36).slice(2, 10)}`;
+/**
+ * A card's id is minted here and is the row's primary key from then on. It
+ * used to be a throwaway client id: the save deleted every row and let the
+ * database mint new keys, so a card placed in the thesis or on the timeline
+ * pointed at a dead id the next time the draft opened. A real UUID from the
+ * start means the placement, the row and the tray all name the same card
+ * across every save.
+ */
+export const newCardId = () => crypto.randomUUID();
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** True for an id that can be a row key. Fixture ids and the pinned CTA's are not. */
+export function isPersistableCardId(id: string): boolean {
+  return UUID.test(id);
+}
 
 /* ------------------------------------------------------------------ intents */
 
@@ -368,9 +383,21 @@ export function orderedDeck(cards: DraftCard[]): DraftCard[] {
   return [...body, ...cta];
 }
 
-/** The shape `saveCards` validates. */
-export function toStoredCards(cards: DraftCard[]): { kind: CardKind; locked: boolean; payload: Record<string, unknown> }[] {
-  return orderedDeck(cards).map((c) => ({ kind: c.kind, locked: c.locked, payload: c.payload }));
+/**
+ * The shape `saveCards` validates. The id travels with the card so the row
+ * keeps its key; an id that cannot be a key (the pinned CTA's constant, a
+ * fixture's) is left off and the row is minted fresh, which is harmless
+ * because nothing is ever placed by those ids.
+ */
+export function toStoredCards(
+  cards: DraftCard[],
+): { id?: string; kind: CardKind; locked: boolean; payload: Record<string, unknown> }[] {
+  return orderedDeck(cards).map((c) => ({
+    ...(isPersistableCardId(c.id) ? { id: c.id } : {}),
+    kind: c.kind,
+    locked: c.locked,
+    payload: c.payload,
+  }));
 }
 
 /** Move a card within the deck, keeping the pinned CTA last. */

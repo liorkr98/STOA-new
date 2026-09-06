@@ -88,12 +88,20 @@ export function isCardKind(value: unknown): value is CardKind {
 }
 
 export interface ValidatedCard {
+  /**
+   * The row key the client wants this card to keep, when it has one. Absent
+   * means a new row. The write path only honours an id that already belongs
+   * to the same publication, so a client cannot reach another's row with it.
+   */
+  id?: string;
   kind: CardKind;
   locked: boolean;
   payload: Record<string, unknown>;
 }
 
 export class CardValidationError extends Error {}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Max cards in one stack, matching the nine formats the player renders. */
 export const MAX_CARDS_PER_PUBLICATION = 12;
@@ -118,7 +126,11 @@ export function validateCards(input: unknown): ValidatedCard[] {
     if (!parsed.success) {
       throw new CardValidationError(`card ${i} (${kind}): ${parsed.error.issues[0]?.message ?? "invalid payload"}`);
     }
+    if (obj.id !== undefined && (typeof obj.id !== "string" || !UUID.test(obj.id))) {
+      throw new CardValidationError(`card ${i}: id is not a row key`);
+    }
     return {
+      ...(typeof obj.id === "string" ? { id: obj.id.toLowerCase() } : {}),
       kind,
       // The unlock card is never gated; it is the thing that sells the rest.
       locked: kind === "unlock" ? false : obj.locked === true,

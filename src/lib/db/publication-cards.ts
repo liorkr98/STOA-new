@@ -176,9 +176,26 @@ function cardFingerprint(
 }
 
 /**
- * Replace a publication's card stack. Author-only via RLS. Payloads are
- * validated against their `kind` before insert, which is what makes the read
- * path safe to trust.
+ * Positions are parked out of the way of the final ones for the first write
+ * of a save, so two cards swapping places never trip the (report_id,
+ * position) uniqueness on the way through.
+ */
+const PARKED_POSITION_OFFSET = 10_000;
+
+/**
+ * Save a publication's card stack. Author-only via RLS. Payloads are
+ * validated against their `kind` before the write, which is what makes the
+ * read path safe to trust.
+ *
+ * A card keeps its row. The stack used to be saved by deleting every row and
+ * inserting the deck again, so each save minted new keys and every placement
+ * (a card in the thesis, a card on the timeline, both of which store only the
+ * id) pointed at a dead one the next time the draft opened. Now a card that
+ * arrives with an id it already holds on this publication is updated in
+ * place, a card without one is inserted, and only the rows that are no longer
+ * in the deck are deleted. An id the client sends that is not one of this
+ * publication's rows is ignored and the card inserted fresh, so the key a
+ * caller can keep is only ever their own.
  *
  * This is no longer pre-publish only: the deck of a live publication can be
  * edited, and `changed` reports whether it actually moved so the caller can
@@ -197,37 +214,72 @@ export async function replaceCards(
 
   const supabase = await createClient();
 
-  // Read before writing, so an edit to a live publication can say whether the
-  // deck actually moved. A delete-and-reinsert of an identical stack must not
-  // be disclosed as a change the reader can see, because it is not one.
+  // Read before writing: for the fingerprint, and for the set of ids a card
+  // is allowed to keep.
   const { data: existing } = await supabase
     .from("publication_cards")
-    .select("kind, locked, payload")
+    .select("id, kind, locked, payload")
     .eq("report_id", reportId)
     .order("position", { ascending: true });
-  const before = cardFingerprint(
-    ((existing as { kind: string; locked: boolean; payload: unknown }[] | null) ?? []),
-  );
+  const existingRows =
+    (existing as { id: string; kind: string; locked: boolean; payload: unknown }[] | null) ?? [];
+  const before = cardFingerprint(existingRows);
   const after = cardFingerprint(cards);
   const changed = before !== after;
 
-  const { error: delError } = await supabase
+  const ownIds = new Set(existingRows.map((r) => r.id.toLowerCase()));
+  const keeping = new Set<string>();
+  const rows = cards.map((c, i) => {
+    // An id is honoured once: the first card to claim it keeps it, so a deck
+    // that somehow names one row twice cannot collapse into one row.
+    const id = c.id && ownIds.has(c.id) && !keeping.has(c.id) ? c.id : null;
+    if (id) keeping.add(id);
+    return {
+      ...(id ? { id } : {}),
+      report_id: reportId,
+      position: i,
+      kind: c.kind,
+      locked: c.locked,
+      payload: c.payload,
+    };
+  });
+
+  // Rows the deck no longer holds go first, so their positions are free.
+  const stale = existingRows.map((r) => r.id).filter((id) => !keeping.has(id.toLowerCase()));
+  if (stale.length > 0) {
+    const { error: delError } = await supabase
+      .from("publication_cards")
+      .delete()
+      .eq("report_id", reportId)
+      .in("id", stale);
+    if (delError) return { ok: false, error: delError.message };
+  }
+
+  if (rows.length === 0) return { ok: true, changed };
+
+  // Two passes over the positions: park, then place. The kept rows may have
+  // moved relative to one another, and a single pass would collide with
+  // positions they are about to vacate.
+  const parked = rows.map((r) => ({ ...r, position: r.position + PARKED_POSITION_OFFSET }));
+  const { data: written, error: parkError } = await supabase
     .from("publication_cards")
-    .delete()
-    .eq("report_id", reportId);
-  if (delError) return { ok: false, error: delError.message };
+    .upsert(parked, { onConflict: "id" })
+    .select("id, position");
+  if (parkError) return { ok: false, error: parkError.message };
 
-  if (cards.length === 0) return { ok: true, changed };
-
-  const rows = cards.map((c, i) => ({
-    report_id: reportId,
-    position: i,
-    kind: c.kind,
-    locked: c.locked,
-    payload: c.payload,
-  }));
-
-  const { error } = await supabase.from("publication_cards").insert(rows);
-  if (error) return { ok: false, error: error.message };
+  // The freshly inserted rows now have keys of their own. The parked position
+  // says which card each written row is, so the second pass names every row
+  // by key and is a pure update of positions, in one round trip.
+  const placed = ((written as { id: string; position: number }[] | null) ?? []).flatMap((w) => {
+    const row = rows[w.position - PARKED_POSITION_OFFSET];
+    return row ? [{ ...row, id: w.id }] : [];
+  });
+  if (placed.length !== rows.length) {
+    return { ok: false, error: "The cards were parked but not all came back; nothing was moved." };
+  }
+  const { error: placeError } = await supabase
+    .from("publication_cards")
+    .upsert(placed, { onConflict: "id" });
+  if (placeError) return { ok: false, error: placeError.message };
   return { ok: true, changed };
 }
