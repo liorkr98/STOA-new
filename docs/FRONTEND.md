@@ -1288,6 +1288,19 @@ fallback does not hold an empty 240px rail open beside the workspace either.
 Everything in a step is **rendered once**, never rendered twice and hidden with CSS: two copies
 would break the radio groups and the `label`/`for` targets inside them.
 
+**A failure in one step stays in that step.** Each step's content sits inside a
+`<StepErrorBoundary>` (`src/components/compose/step-boundary.tsx`), and the card editor has one
+inside its dialog. A rendering error shows a rust-bordered panel in place of that step only,
+naming the step, saying in plain words that nothing else was touched, printing the error line in
+mono, and offering **Redraw this step**. The workspace's state lives above the steps, so the
+header, the tracker, the toolbox and every other step keep their contents. Redrawing the write
+step reseeds the editor with the latest words (`editorSeed`), and the video step comes back with
+the same clip because the chosen clip's object URL is held by the workspace (`clipUrl`) and
+handed to the rung as `initialSrc`. Before this, any such error reached the route's error page,
+whose Try again remounted the whole sequence at step one. A dev-only `<DevCrash>` inside each
+boundary throws when `window.__stoaCrashStep` names the step; `/dev/compose-refresh` has buttons
+for it and for replaying a save's router refresh.
+
 #### The card tray (left, top)
 
 Cards are the publication's **shared asset pool**. They are not part of the video and not part of

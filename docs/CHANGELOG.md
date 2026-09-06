@@ -10,6 +10,56 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-06 — A failure in one compose step stays in that step
+
+**For someone using the site**
+
+- **A step that fails to draw no longer throws you back to the start.** Before this, any
+  rendering error anywhere in compose fell through to the page-level "Something broke on our
+  side" panel, and its Try again remounted the whole workspace at step one, discarding
+  everything held in memory: the chosen clip, the trim, the overlays, the call's direction and
+  target, and your place in the sequence. Each step's content now sits inside its own boundary.
+  A failure shows a panel in place of that step only, in plain words, with a **Redraw this
+  step** button; the header, the step tracker, the toolbox, the other steps and everything they
+  hold stay exactly where they were. The card editor has the same boundary inside its dialog.
+- **Redrawing keeps the work.** The write step is reseeded with the latest words rather than the
+  last save, and the video step comes back with the same clip rather than a bare poster, because
+  the chosen clip's picture is now held by the workspace rather than the step.
+
+**About the report that adding a card from the toolbox while editing the video throws the
+creator back to step one**
+
+- Not reproduced on the fixture. Every route was driven at 1440 and 390: the toolbox's Add a
+  card, the phone-width drawer, the timeline's Card button, dragging a card onto the strip,
+  and every one of the eight card kinds, each finishing with Done; then a save's router refresh
+  replayed from an async server page under a loading boundary (`/dev/compose-refresh`). The
+  step and the overlays survived all of it, with nothing in the console.
+- What the description does match is a rendering error reaching the route error page, whose
+  Try again remounts at step one. That is what the boundary above now prevents, whatever the
+  underlying error turns out to be. To find it: on the live site, the console at the moment
+  the panel appears, and the card kind and route used, are what is needed. Sentry is
+  configured in production and the boundary now reports there too.
+- The fixture cannot run a real save (no session), which is the one path the fixture could not
+  cover; the refresh it causes was replayed separately and is clean.
+
+**What is lost if compose does crash outright**
+
+- Anything not yet saved: words since the last autosave (every 30 seconds while dirty, or Save
+  draft, or Done on a card), plus everything that is never saved on a draft today: the chosen
+  clip, the trim, the overlays, the call's direction, target and horizon. The draft row keeps
+  the headline, the words, the cards, the tags and the ticker as of the last save.
+
+**Found while in there**
+
+- The fixture's `/dev` routes now have a loading boundary mirroring the private shell's, so a
+  fixture refreshes the way a real page does.
+- A dev-only crash switch (`window.__stoaCrashStep`) lets a fixture throw inside any step on
+  its next draw. It renders nothing in production.
+
+**What needs Krisi**
+
+- Nothing new. Draft call fields and overlay storage remain the open items from the batch below.
+
 ## 2026-09-06 — Compose: the call says what it found, a half-call cannot pass, cards on the video get handles
 
 **For someone using the site**

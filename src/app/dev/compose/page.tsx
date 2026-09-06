@@ -8,6 +8,7 @@ import { PublicationsView, type Publication } from "@/components/studio/publicat
 import type { DraftCard } from "@/lib/compose/cards";
 import type { Report } from "@/lib/types";
 import { DevPrivateShell } from "../_private-shell";
+import { devRefreshRoute } from "../actions";
 
 /**
  * Dev-only Compose fixture: the workspace on each of the three draft shapes
@@ -230,6 +231,17 @@ export default function DevComposePage() {
           >
             Reload
           </Link>
+          {/* A real save revalidates paths, and the router refreshes the
+              route in response. The fixture cannot save, so this presses the
+              same refresh on its own: walk to a step, press it, and the step
+              must still be there. */}
+          <button
+            type="button"
+            onClick={() => void devRefreshRoute()}
+            className="num focus-ring self-center rounded border border-dashed border-border px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-text-faint hover:text-text"
+          >
+            Simulate a save refresh
+          </button>
         </div>
       </div>
 
