@@ -1361,6 +1361,19 @@ cardId }` visual source on the track). Editing the card once updates it everywhe
 Deleting a card removes its placements with it, rather than leaving a hole on the track and a
 placeholder in the prose.
 
+**A card's id is its row key, minted on the client and kept for life.** `newCardId` makes a
+UUID; `toStoredCards` sends it with the card; `replaceCards` (`src/lib/db/publication-cards.ts`)
+updates a row the publication already holds under that id, inserts a card that has none, and
+deletes only the rows no longer in the deck. Positions are parked out of range on the first
+write and placed on the second, so two cards swapping places never collide on the
+`(report_id, position)` constraint. An id the client sends that is not one of the publication's
+own rows is ignored and the card inserted fresh. The save used to delete every row and let the
+database mint new keys, which left every placement pointing at a dead id the next time the draft
+opened; the compose page's mapping of row id onto client id (which fixed the open side) only
+ever worked until the next save. The pinned CTA card's constant id and fixture ids are not UUIDs
+and are never sent, so those rows are minted fresh on each save, which is harmless because
+nothing is placed by them.
+
 #### The video editor
 
 Built the way the editors analysts already use are built. CapCut, Instagram's Reels editor,

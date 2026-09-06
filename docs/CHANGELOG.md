@@ -10,6 +10,30 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-06 — A card keeps its identity across saves
+
+**For someone using the site**
+
+- **A card placed in the thesis or on the timeline stays placed after you come back.** Every
+  save used to delete the publication's card rows and insert the deck again, so the database
+  minted new keys each time. A placement stores only the card's key, so on the next open the
+  figure in the prose read "Card no longer in the deck" and the overlay on the track had lost its
+  card. Silent, and it hit anyone who placed a card and returned to the draft. A card's key is
+  now minted the moment the card is made and is the row's key from then on: a save updates the
+  rows the publication already holds, inserts new cards, and deletes only the ones you removed.
+- Nothing changes in what you see while editing; the fix is in what survives a save.
+
+**Found while in there**
+
+- Placements made before this change already point at keys that no longer exist, and there is
+  nothing to map them back to. Those figures and overlays have to be placed again once.
+- The pinned Unlock card is still rewritten on each save, since its id is a constant rather than
+  a key. Nothing is placed by it, so nothing is lost.
+
+**What needs Krisi**
+
+- Nothing. No schema change: the table already had the key, the save just threw it away.
+
 ## 2026-09-06 — A failure in one compose step stays in that step
 
 **For someone using the site**
