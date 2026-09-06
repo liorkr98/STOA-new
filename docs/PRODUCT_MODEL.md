@@ -181,6 +181,13 @@ while gating the full exchange inside the report.
 
 Neither Devil's Advocate nor The Steelman feeds the record.
 
+**Parked, September 2026.** The system that is meant to supply the objection, reading the thesis
+and generating a real counter-case, is not finished, and a Steelman surface without it is an
+empty box with a grand label. The card is therefore not offered in Compose's card library and
+does not appear among the formats a creator can make. Nothing was deleted: the card kind, its
+schema, its editor and its Feed rendering all remain, so any publication that already carries a
+Steelman card renders exactly as before, and the surface returns the day the analysis works.
+
 ## The Track Record Engine and the (private) Track Score
 
 The record is an analyst's reputation, and it is the moat.

@@ -1156,7 +1156,7 @@ actually thinks in.
 | # | Step | Optional | Holds |
 |---|---|---|---|
 | 1 | Write | no | Headline, dek, and the research body when the format has one |
-| 2 | The call | yes | Ticker, direction, target, horizon, with the live quote |
+| 2 | The call | yes | Ticker (looked up as typed: name and exchange, or macro instrument and unit, with the live level), direction (chosen, never defaulted), target, horizon |
 | 3 | Cards | yes | The deck, or the invitation to start one |
 | 4 | Video | yes | Choose or record a clip, or continue without |
 | 5 | Edit video | yes | Trim, thumbnail, overlays. Present only once a clip is |
@@ -1177,9 +1177,24 @@ button. The step works out what the forward button means (`advanceFor` in
 enough entered reads **Continue** and moves on; something entered but incomplete still reads
 **Continue**, and pressing it says what is missing, in the creator's terms, beside the button, and
 stays put. The reasons are specific ("A target price needs a ticker. Add the ticker, or clear the
-target", "The Thesis card has nothing on it yet. Write it, or delete it", "Choose a primary tag"),
-never "invalid input", and they clear the moment they stop being true. Taking a clip out is its own
-control beside Replace on the video step, not a side effect of moving on.
+target", "A call needs a direction. Choose long, short or hold for NVDA", "NVDAA was not found.
+Check the symbol, or clear it", "The Thesis card has nothing on it yet. Write it, or delete it",
+"Choose a primary tag"), never "invalid input", and they clear the moment they stop being true.
+Partial information never passes: Skip exists only for a step that is genuinely empty. Taking a
+clip out is its own control beside Replace on the video step, not a side effect of moving on.
+
+**The call step checks the symbol as it is typed.** A small lookup (`/api/market/resolve`, over
+the same cached quote and listing row the rest of the site reads) answers under the field: a
+verdigris tick with the company and exchange (`NVDA · NVIDIA Corporation · NASDAQ`), or the macro
+instrument and its unit (`XAUUSD · Gold · $ / oz`); a rust cross with "was not found" for a
+typo. The level beside it is stated to be the level the call locks at. A Treasury tenor is
+labelled "quoted as a yield", its target field reads *Target yield*, the move to target is in
+points rather than percent, and the instrument's direction note (up means bond prices down) is
+printed under the tick. The direction starts empty and is chosen deliberately; pressing the chosen
+one again clears it. The step's Continue and the publish button both read the lookup: a symbol
+still being checked waits, one that resolved to nothing is refused, and a ticker with no direction
+is not a call. On a live publication the call step shows the locked call as a statement, since the
+fields could only ever have pretended to be editable.
 
 **The template helper on the write step is dismissible.** It is an offer; a creator who does not
 want the scaffolding takes it down once and it stays down on their next draft (a localStorage
@@ -1293,12 +1308,24 @@ creator can answer about their own publication and "kill switch" is not:
 - **Make your case** — Thesis
 - **Prove it** — Path to target, Checklist
 - **Compare** — Your edge
-- **Show the risk** — Kill switch, Steelman, Catalysts
-- **Your own** — Figure
+- **Show the risk** — Kill switch, Catalysts
+- **Your own** — Figure, Chart
 
-A **Custom** entry lists the same nine formats by shape (Statement, Steps, Checklist, Two
-columns, Conditions, Objection and answer, Timeline, Image) for the creator who already knows
-they want a timeline and does not want to be asked why. Both routes build the same card.
+A **Custom** entry lists the same eight formats by shape (Statement, Steps, Checklist, Two
+columns, Conditions, Timeline, Image, Chart) for the creator who already knows they want a
+timeline and does not want to be asked why. Both routes build the same card.
+
+The **Steelman** (Objection and answer) is parked: not offered here until the analysis that
+supplies the objection works. Its kind, schema, editor and Feed rendering remain, so a
+publication that already carries one renders unchanged and a draft holding one can still open it
+(`PARKED_KINDS` in `src/lib/compose/cards.ts`).
+
+**Editing a card ends with Done.** The editor is a dialog; its footer carries a quiet Delete on
+the left and, on the right, one line saying what happens ("Saved with the draft. Reopen it from
+the toolbox or the Cards step any time"; on a live publication, "Press Save changes above to
+record the edit") beside a solid-ink **Done**. Every keystroke has already landed on the card, so
+Done closes and, on a draft, runs the same save the header button runs. Done means finished for
+now, never locked.
 
 #### Dragging a card into both
 
@@ -1339,8 +1366,22 @@ they agree on a shape. This is that shape, in `src/components/compose/video-rung
   visual bars brass. A lane appears only once there is something in it, and a second lane only when
   two things overlap in time. A short bar keeps a grabbable middle; its end zones shrink with it.
 - **Settings appear only while something is selected.** Selecting a bar or a thing on the picture
-  swaps the add row for that thing's controls (text and size; or over-the-picture / full-frame
-  cutaway, the card, chart or Napkin fields; from/to; Remove; Done). Nothing selected: the add row.
+  swaps the add row for that thing's controls (text and size; or over-the-picture / full-frame,
+  a Size slider for an inset, an Opacity slider, the card, chart or Napkin fields; from/to;
+  Remove; Done). Nothing selected: the add row.
+- **An inset is resized on the picture.** The selected inset carries one brass corner handle, on
+  the corner farthest from the grid anchor the box is pinned to, so dragging it outward grows the
+  box away from its spot (a centre-column box grows both ways). Width is stored as a fraction of
+  the picture (`size`, 0.20 to 0.84, default 0.46) and the height follows so the box keeps the
+  shape it has always had. The Size slider does the same from a keyboard or a phone.
+- **Opacity** (`opacity`, 0.2 to 1) applies to the visual in both modes; in full frame the video
+  shows through the card.
+- **Full frame fills the picture, with the video behind it.** The picture stays and is dimmed
+  (ink at 62%); the visual sits inside a 4% margin, scaled with the stage (`zoom`, 1 to 2, off a
+  520px reference) so a card that reads at 13px in the toolbox reads like a slide, with a soft
+  shadow. While a full-frame visual shows, insets and text on the same seconds are not painted:
+  they wait until it is gone. It used to replace the picture with a sheet of paper and let the
+  other overlays paint over the top, which was the collision the mode existed to avoid.
 - **At rest:** play, the time, the strip, and five things you can add at the playhead: Text, Card
   (a menu of the deck), Chart, Visualize, Image. A card can also be dragged from the toolbox onto
   the strip, or placed from the tray's Place menu.

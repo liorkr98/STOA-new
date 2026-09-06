@@ -10,6 +10,77 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-06 — Compose: the call says what it found, a half-call cannot pass, cards on the video get handles
+
+**For someone using the site**
+
+- **The call step tells you what it recognised.** Type a ticker and, a moment later, a tick
+  appears under the field with the company and its exchange (`NVDA · NVIDIA Corporation ·
+  NASDAQ`), and the current price is stated to be the level the call will lock at when you
+  publish. A typo gets a cross and "was not found". Gold, oil, the Treasury yields and bitcoin
+  work the same way under their own symbols (the helper line names them: XAUUSD, USOIL, UKOIL,
+  US10Y, BTCUSD); a Treasury tenor says it is quoted as a yield, its target field reads *Target
+  yield*, the move to target is in points, and it reminds you that up means bond prices down.
+- **A ticker on its own is no longer a call.** The direction used to default to long, so a ticker
+  with nothing else sailed through Continue as a complete long call, and worse, went out at
+  publish as a publication with no call at all (the server only locks a call when it gets both).
+  The direction now starts empty. Continue with a ticker and no direction stays put and says
+  "A call needs a direction"; with a symbol still being checked it says to wait; with a symbol
+  that resolved to nothing it refuses, because a call on a name that cannot be priced can never
+  be graded. The publish button reads the same verdict. Every other step already held this line:
+  Skip exists only for a step that is genuinely empty.
+- **The Steelman is parked.** The card is an objection paired with your answer, and the system
+  meant to supply the objection is not finished, so the surface was shipping ahead of the thing
+  that gives it meaning. It is no longer offered in the card library, by intent or by shape.
+  Nothing is deleted: any publication that already carries a Steelman card renders exactly as
+  before, and a draft holding one can still open it. Parked, not cancelled.
+- **Cards have a Done button.** Making or editing a card used to end nowhere: the X, Escape or
+  Delete. The editor's footer now ends in a solid **Done**, with one line beside it saying the card
+  is saved with the draft and can be reopened from the toolbox or the Cards step any time. Done
+  closes and runs the draft save. On a live publication it says to press Save changes to record
+  the edit, since saving there is a disclosed act. Delete is still there, but reads as a quiet
+  secondary rather than the way out.
+- **Cards on the video can be sized and faded.** Select an inset and it grows a brass corner
+  handle: drag it to resize, and the box keeps its shape. A Size slider and an Opacity slider sit
+  in the selected panel for keyboards and phones. Opacity applies in full frame too, where the
+  video shows through.
+- **Full frame no longer collides with anything.** It used to replace the picture with a sheet of
+  paper and then let text and insets on the same seconds paint over the top. Now the video stays,
+  dimmed, the card sits inside it with a small margin and scaled up to read like a slide, and
+  anything else on those seconds waits until the full-frame visual is gone. Inset mode is
+  unchanged, and the faithful preview shows exactly this.
+
+**Found while in there**
+
+- **A live publication's call step showed editable fields.** The ticker, direction and target
+  could be changed and the changes were silently dropped on save. The step now shows the locked
+  call as a statement.
+- **A draft keeps only its ticker.** Direction, target and horizon are not stored on a draft (the
+  `reports` row has no columns for them), so reopening a saved draft loses them and the direction
+  now comes back empty. Noted for Krisi below.
+- **Listing names carry trailing punctuation** from the exchange feed ("NVIDIA Corporation -").
+  Tidied where the call step shows them; the rows themselves are untouched.
+- **Typing GOLD finds Gold.com.** GOLD is a real NYSE listing, so the lookup says so; the metal is
+  XAUUSD, and the helper line under the field says that too. Same for WTI (W&T Offshore).
+- **The attestation card skips most of what the call step now accepts.** It only runs for a
+  symbol of one to five letters, optionally `.TA`, so BRK-B and every macro symbol get no
+  attestation. Left alone: the lookup already shows the live level, and the attestation's shape
+  belongs to the attest-price function.
+- **Devil's Advocate stays in the Assistant.** It is an Ask AI prompt that critiques the draft,
+  not the Steelman surface, so it was left in place.
+- On the fixture, pressing Done on a card runs the draft save, which reports "Sign in to
+  continue" because there is no session. Expected there, and not on the real page.
+
+**What needs Krisi**
+
+- **Draft call fields.** A draft should keep its direction, target and horizon between sessions,
+  which needs columns (or a versions read) on the draft. Today only the ticker survives.
+- **Two more numbers for the burn-in.** A visual overlay may now carry `size` (inset width as a
+  fraction of the frame width, 0.20 to 0.84, default 0.46; height at 42/46 of the width) and
+  `opacity` (0.2 to 1, default 1). Full frame means: the video dimmed under ink at 62%, the visual
+  inside a 4% margin, scaled with the frame, other overlays on the same seconds not painted.
+  Overlays are still held in memory only; the pipeline and their storage remain the open item.
+
 ## 2026-09-04 — The other three pinned columns get the same fix
 
 **For someone using the site**
