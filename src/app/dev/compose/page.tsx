@@ -96,13 +96,14 @@ const BODY = JSON.stringify({
   ],
 });
 
-type Shape = "video" | "research" | "both" | "empty";
+type Shape = "video" | "research" | "both" | "empty" | "published";
 
 const SHAPES: { key: Shape; label: string; blurb: string }[] = [
   { key: "video", label: "Video only", blurb: "A clip, no written report" },
   { key: "research", label: "Research only", blurb: "Written work, no clip" },
   { key: "both", label: "Video and research", blurb: "Both modules present" },
   { key: "empty", label: "Nothing yet", blurb: "The guided first run" },
+  { key: "published", label: "Published, editing", blurb: "A live piece with a real clip and a locked call, reopened" },
 ];
 
 function draftFor(shape: Shape): Report {
@@ -113,14 +114,18 @@ function draftFor(shape: Shape): Report {
   }
   return {
     id: `dev-${shape}`,
-    type: "call",
+    type: shape === "published" ? "video" : "call",
+    status: shape === "published" ? "published" : "draft",
     title: "Blackwell demand is still under-modelled into the January quarter",
     summary: "The supply ceiling moved. Consensus is still modelling the old one.",
     body: shape === "video" ? null : BODY,
-    access: "free",
+    access: shape === "published" ? "paid" : "free",
+    price: shape === "published" ? 9 : null,
     ticker: "NVDA",
     primary_tag: "semiconductors",
     secondary_tags: ["ai-infrastructure"],
+    locked_at: shape === "published" ? "2026-08-18T14:00:00.000Z" : null,
+    published_at: shape === "published" ? "2026-08-18T14:00:00.000Z" : null,
   } as unknown as Report;
 }
 
@@ -192,6 +197,8 @@ export default function DevComposePage() {
             hasVideoClip={shape !== "research" && shape !== "empty"}
             aiCredits={40}
             plans={[]}
+            editingPublished={shape === "published"}
+            hasLockedCall={shape === "published"}
           />
         </div>
       </DevPrivateShell>

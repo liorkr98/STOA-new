@@ -39,8 +39,15 @@ creator back to step one**
   underlying error turns out to be. To find it: on the live site, the console at the moment
   the panel appears, and the card kind and route used, are what is needed. Sentry is
   configured in production and the boundary now reports there too.
+- Then two states the fixture never had: a real clip chosen in the Video step (a short video
+  generated in the browser and handed to the file picker, so the real video element, frame
+  grabbing and cover ran), and a published piece with a clip record and a locked call reopened
+  for editing (a new "Published, editing" shape on `/dev/compose`). Adding a card, finishing
+  with Done and placing the new card on the picture were clean in both.
 - The fixture cannot run a real save (no session), which is the one path the fixture could not
-  cover; the refresh it causes was replayed separately and is clean.
+  cover; the refresh it causes was replayed separately and is clean. The two 500s seen during
+  testing were that failed save (the card's Done, then the 30-second autosave), which the client
+  catches and shows as a toast; on the live site the same call succeeds.
 
 **What is lost if compose does crash outright**
 
