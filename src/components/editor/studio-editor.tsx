@@ -1538,8 +1538,9 @@ export function StudioEditor({
                         </button>
                       </div>
                       <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-mute">
-                        Drag a card from the toolbox into your text to place it in the
-                        thesis, or onto the timeline to make it appear in the video.
+                        Click a card to open it again. Drag a card from the toolbox into your
+                        text to place it in the thesis, or onto the timeline to make it appear
+                        in the video.
                       </p>
                     </div>
                   )}
@@ -1675,6 +1676,19 @@ export function StudioEditor({
         onChange={updateCard}
         onDelete={() => selectedCardId && deleteCard(selectedCardId)}
         onClose={() => setSelectedCardId(null)}
+        // Done means "finished for now", so on a draft it also saves, the
+        // same save the header button makes. On a live publication saving is
+        // a disclosed act the creator does on purpose, so Done only closes
+        // and says where the save is.
+        onDone={() => {
+          setSelectedCardId(null);
+          if (!editingPublished) startDraft(() => persistDraft());
+        }}
+        doneNote={
+          editingPublished
+            ? "Kept, and still editable. Press Save changes above to record the edit."
+            : "Saved with the draft. Reopen it from the toolbox or the Cards step any time."
+        }
       />
 
       <PublishPreviewDialog

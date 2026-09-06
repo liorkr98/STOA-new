@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Trash2, Lock, LockOpen, X } from "lucide-react";
+import { Check, Plus, Trash2, Lock, LockOpen, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import { cardName, kindSpec, type DraftCard } from "@/lib/compose/cards";
@@ -126,10 +126,20 @@ export function CardEditor({
   card,
   onChange,
   onDelete,
+  onDone,
+  doneNote,
 }: {
   card: DraftCard;
   onChange: (card: DraftCard) => void;
   onDelete: () => void;
+  /**
+   * Finished for now. Every keystroke has already landed on the card, so
+   * Done closes the editor rather than committing anything; what it promises
+   * is that the card is kept and can be reopened.
+   */
+  onDone: () => void;
+  /** What happens to the card when Done is pressed, in one line. */
+  doneNote: string;
 }) {
   const p = card.payload;
   const [imageError, setImageError] = useState<string | null>(null);
@@ -491,15 +501,32 @@ export function CardEditor({
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between border-t border-border pt-3">
+      <div className="border-t border-border pt-3">
         <p className="num text-[10px] uppercase leading-relaxed tracking-[0.12em] text-text-faint">
           Est. is your number · Auto is imported and cannot be edited
         </p>
-        {card.kind === "unlock" ? null : (
-          <Button variant="secondary" size="sm" onClick={onDelete}>
-            <Trash2 size={13} /> Delete card
-          </Button>
-        )}
+        {/* One way out that reads as finishing, not as abandoning. Done is
+            the primary action; deleting is offered but never looks like the
+            way to close the editor. */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {card.kind === "unlock" ? null : (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] px-2 py-1.5 text-[0.8125rem] text-text-mute transition-colors hover:text-[var(--rust)]"
+            >
+              <Trash2 size={13} /> Delete card
+            </button>
+          )}
+          <div className="ml-auto flex items-center gap-3">
+            <span className="max-w-[26ch] text-right text-[11px] leading-snug text-text-mute">
+              {doneNote}
+            </span>
+            <Button size="sm" onClick={onDone}>
+              <Check size={14} /> Done
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -515,11 +542,17 @@ export function CardEditorDialog({
   onChange,
   onDelete,
   onClose,
+  onDone,
+  doneNote = "Kept with the draft. Reopen it from the toolbox or the Cards step any time.",
 }: {
   card: DraftCard | null;
   onChange: (card: DraftCard) => void;
   onDelete: () => void;
+  /** Closing by the X or by Escape. */
   onClose: () => void;
+  /** The Done button. Defaults to closing; the editor can also save on it. */
+  onDone?: () => void;
+  doneNote?: string;
 }) {
   return (
     <Dialog.Root open={Boolean(card)} onOpenChange={(o) => !o && onClose()}>
@@ -536,7 +569,15 @@ export function CardEditorDialog({
           </div>
           <Dialog.Description className="sr-only">Edit this card</Dialog.Description>
           <div className="mt-4">
-            {card ? <CardEditor card={card} onChange={onChange} onDelete={onDelete} /> : null}
+            {card ? (
+              <CardEditor
+                card={card}
+                onChange={onChange}
+                onDelete={onDelete}
+                onDone={onDone ?? onClose}
+                doneNote={doneNote}
+              />
+            ) : null}
           </div>
         </Dialog.Content>
       </Dialog.Portal>
