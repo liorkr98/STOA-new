@@ -88,7 +88,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-easy-crop": "^6.2.3",
-    "recharts": "^2.15.0",
+    "recharts": "^3.10.1",
     "roughjs": "^4.6.6",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
