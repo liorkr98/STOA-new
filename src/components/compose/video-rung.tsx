@@ -9,12 +9,18 @@ import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import { cardName, type DraftCard } from "@/lib/compose/cards";
 import {
   FRAME,
+  INSET_MAX_SIZE,
+  INSET_MIN_SIZE,
   MIN_EVENT,
+  OVERLAY_MIN_OPACITY,
   activeAt,
   clamp,
   emptyEdit,
   fmtTimecode,
   gridStyle,
+  insetBox,
+  insetSize,
+  overlayOpacity,
   parseTimecode,
   sourceLabel,
   type GridPosition,
@@ -176,6 +182,66 @@ function EditableText({
   );
 }
 
+/**
+ * The corner you drag to resize an inset. It sits on the corner farthest
+ * from the anchor the nine-point grid pins the box to, so dragging it
+ * outward grows the box away from where it is pinned rather than pulling it
+ * off its spot; a box anchored to the centre column grows both ways.
+ */
+function ResizeHandle({
+  overlay,
+  stageRef,
+  onSize,
+}: {
+  overlay: VisualOverlay;
+  stageRef: React.RefObject<HTMLDivElement | null>;
+  onSize: (size: number) => void;
+}) {
+  const dragRef = useRef<{ x: number; size: number } | null>(null);
+  const col = (overlay.position - 1) % 3;
+  const row = Math.floor((overlay.position - 1) / 3);
+  const right = col !== 2;
+  const bottom = row !== 2;
+  const sign = right ? 1 : -1;
+  const factor = col === 1 ? 2 : 1;
+  return (
+    <button
+      type="button"
+      aria-label="Resize"
+      title="Drag to resize"
+      className={cn(
+        "absolute z-10 h-4 w-4 touch-none rounded-[3px] border-2 border-[var(--paper)] bg-[var(--brass)] shadow-[0_1px_3px_rgba(0,0,0,0.5)] focus-ring",
+        right ? "-right-2" : "-left-2",
+        bottom ? "-bottom-2" : "-top-2",
+        right === bottom ? "cursor-nwse-resize" : "cursor-nesw-resize",
+      )}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragRef.current = { x: e.clientX, size: insetSize(overlay) };
+      }}
+      onPointerMove={(e) => {
+        const d = dragRef.current;
+        const stage = stageRef.current;
+        if (!d || !stage) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const w = stage.getBoundingClientRect().width || 1;
+        onSize(clamp(d.size + ((e.clientX - d.x) * sign * factor) / w, INSET_MIN_SIZE, INSET_MAX_SIZE));
+      }}
+      onPointerUp={(e) => {
+        e.stopPropagation();
+        dragRef.current = null;
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+      }}
+      onPointerCancel={(e) => {
+        dragRef.current = null;
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+      }}
+    />
+  );
+}
+
 function Stage({
   src,
   time,
@@ -189,6 +255,7 @@ function Stage({
   selectedId,
   onSelect,
   onMove,
+  onResize,
   onText,
 }: {
   src: string | null;
@@ -203,16 +270,34 @@ function Stage({
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onMove: (id: string, position: GridPosition) => void;
+  onResize: (id: string, size: number) => void;
   onText: (id: string, text: string) => void;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const pressRef = useRef<{ id: string; x: number; y: number; moved: boolean } | null>(null);
+  // The full-frame card is scaled with the picture, so a card that reads at
+  // 13px in the toolbox reads like a slide on the stage and burns in at the
+  // same proportion whatever size the stage happened to be on screen.
+  const [stageWidth, setStageWidth] = useState(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const measure = () => setStageWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const fullFrameZoom = clamp(stageWidth / 520, 1, 2);
 
   const active = activeAt(edit.overlays, time);
   const cutaway = active.find((o): o is VisualOverlay => o.kind === "visual" && o.mode === "cutaway");
-  const insets = active.filter((o): o is VisualOverlay => o.kind === "visual" && o.mode === "inset");
-  const texts = active.filter((o): o is TextOverlay => o.kind === "text");
+  // A full-frame visual owns the picture while it shows. Insets and text
+  // active at the same moment used to be painted over it, which is the
+  // collision the mode existed to avoid, so they wait until it is gone.
+  const insets = cutaway ? [] : active.filter((o): o is VisualOverlay => o.kind === "visual" && o.mode === "inset");
+  const texts = cutaway ? [] : active.filter((o): o is TextOverlay => o.kind === "text");
 
   /**
    * Press and release selects; press, move and release places. The
@@ -276,16 +361,38 @@ function Stage({
         <Poster />
       )}
 
-      {/* A cutaway hides the picture, never the sound. */}
+      {/* Full frame: the visual fills the picture, the video dimmed behind
+          it and the sound carrying on. It used to replace the picture with
+          a sheet of paper and then let insets and text paint over the top;
+          now the picture stays, the card sits in it with a margin, scaled
+          to the stage, and nothing else shows while it does. */}
       {cutaway ? (
         <div
-          className={cn("absolute inset-0 cursor-pointer bg-[color-mix(in_srgb,var(--paper)_92%,black)]", ring(cutaway.id))}
+          className={cn("absolute inset-0 cursor-pointer", ring(cutaway.id))}
           {...pressHandlers(cutaway.id, false)}
         >
-          <OverlayVisualBody source={cutaway.source} cards={cards} ticker={ticker} className="h-full w-full rounded-none border-0" />
+          <div aria-hidden className="absolute inset-0 bg-[color-mix(in_srgb,var(--ink)_62%,transparent)]" />
+          <div className="absolute inset-[4%] flex items-center justify-center">
+            <div
+              className="flex items-center justify-center"
+              style={{
+                zoom: fullFrameZoom,
+                width: `${100 / fullFrameZoom}%`,
+                height: `${100 / fullFrameZoom}%`,
+                opacity: overlayOpacity(cutaway),
+              }}
+            >
+              <OverlayVisualBody
+                source={cutaway.source}
+                cards={cards}
+                ticker={ticker}
+                className="h-full w-full shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+              />
+            </div>
+          </div>
           {!faithful ? (
             <span className="num absolute left-3 top-3 rounded bg-black/60 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white">
-              Cutaway · audio continues
+              Full frame · audio continues · other overlays wait
             </span>
           ) : null}
         </div>
@@ -294,11 +401,16 @@ function Stage({
       {insets.map((o) => (
         <div
           key={o.id}
-          className={cn("absolute h-[42%] w-[46%] touch-none", !faithful && "cursor-grab", dragging && selectedId === o.id && "cursor-grabbing", ring(o.id))}
-          style={gridStyle(o.position)}
+          className={cn("absolute touch-none", !faithful && "cursor-grab", dragging && selectedId === o.id && "cursor-grabbing", ring(o.id))}
+          style={{ ...gridStyle(o.position), ...insetBox(o) }}
           {...pressHandlers(o.id, true)}
         >
-          <OverlayVisualBody source={o.source} cards={cards} ticker={ticker} className="h-full w-full" />
+          <div className="h-full w-full" style={{ opacity: overlayOpacity(o) }}>
+            <OverlayVisualBody source={o.source} cards={cards} ticker={ticker} className="h-full w-full" />
+          </div>
+          {!faithful && selectedId === o.id ? (
+            <ResizeHandle overlay={o} stageRef={stageRef} onSize={(size) => onResize(o.id, size)} />
+          ) : null}
         </div>
       ))}
 
@@ -688,7 +800,11 @@ function Selected({
           {overlay.kind === "text" ? "Text" : sourceLabel(overlay.source, new Map(cards.map((c) => [c.id, cardName(c)])))}
         </span>
         <span className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-          Drag it on the picture to place it · drag the ends of its bar to time it
+          {overlay.kind === "visual" && overlay.mode === "inset"
+            ? "Drag it on the picture to place it · drag its gold corner to resize it · drag the ends of its bar to time it"
+            : overlay.kind === "visual"
+              ? "Fills the picture while it shows · drag the ends of its bar to time it"
+              : "Drag it on the picture to place it · drag the ends of its bar to time it"}
         </span>
         <div className="ml-auto flex items-center gap-3">
           <TimeField label="From" value={overlay.start} onChange={setStart} />
@@ -728,6 +844,43 @@ function Selected({
               </button>
             ))}
           </div>
+          {/* Size and opacity as sliders too: the corner is the direct way,
+              and this is the one that works from a keyboard or a phone. */}
+          {overlay.mode === "inset" ? (
+            <label className="flex items-center gap-2 text-[11px] text-text-mute">
+              Size
+              <input
+                type="range"
+                min={INSET_MIN_SIZE}
+                max={INSET_MAX_SIZE}
+                step={0.01}
+                value={insetSize(overlay)}
+                onChange={(e) => update({ size: Number(e.target.value) })}
+                aria-label="Size"
+                className="w-28 accent-[var(--ink)]"
+              />
+              <span className="num w-8 text-right text-[11px] text-text">{Math.round(insetSize(overlay) * 100)}%</span>
+            </label>
+          ) : null}
+          <label className="flex items-center gap-2 text-[11px] text-text-mute">
+            Opacity
+            <input
+              type="range"
+              min={OVERLAY_MIN_OPACITY}
+              max={1}
+              step={0.05}
+              value={overlayOpacity(overlay)}
+              onChange={(e) => update({ opacity: Number(e.target.value) })}
+              aria-label="Opacity"
+              className="w-28 accent-[var(--ink)]"
+            />
+            <span className="num w-8 text-right text-[11px] text-text">{Math.round(overlayOpacity(overlay) * 100)}%</span>
+          </label>
+          {overlay.mode === "cutaway" ? (
+            <span className="num w-full text-[10px] uppercase tracking-[0.12em] text-text-faint">
+              While a full-frame visual shows, text and insets on the same seconds wait for it to finish
+            </span>
+          ) : null}
           {overlay.source.type === "card" && cards.length > 0 ? (
             <label className="flex items-center gap-1.5 text-[11px] text-text-mute">
               Card
@@ -1151,6 +1304,7 @@ export function VideoRung({
           selectedId={selectedId}
           onSelect={setSelectedId}
           onMove={(id, position) => patch(id, { position })}
+          onResize={(id, size) => patch(id, { size })}
           onText={(id, text) => patch(id, { text })}
         />
         {!src ? (

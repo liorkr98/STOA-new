@@ -39,10 +39,43 @@ export interface VisualOverlay {
   start: number;
   end: number;
   source: VisualSource;
-  /** Full-frame cutaway hides the picture (audio continues); inset sits over part of the frame. */
+  /**
+   * Full frame fills the picture with the visual, the video dimmed behind it
+   * and the audio continuing; inset sits over part of the frame.
+   */
   mode: "cutaway" | "inset";
   /** Only meaningful for inset. */
   position: GridPosition;
+  /**
+   * Inset width as a fraction of the picture's width; the height follows so
+   * the box keeps its shape. Absent means the default box. Set by dragging
+   * the box's corner on the picture.
+   */
+  size?: number;
+  /** How solid the visual is, 0.2 to 1. In full frame the video shows through. */
+  opacity?: number;
+}
+
+export const INSET_DEFAULT_SIZE = 0.46;
+export const INSET_MIN_SIZE = 0.2;
+/** Large enough to dominate the frame, small enough to stay inside it from any of the nine anchors. */
+export const INSET_MAX_SIZE = 0.84;
+export const OVERLAY_MIN_OPACITY = 0.2;
+/** The box has always been 46% wide by 42% tall; a resize keeps that shape. */
+const INSET_ASPECT = 42 / 46;
+
+export function insetSize(o: VisualOverlay): number {
+  return clamp(o.size ?? INSET_DEFAULT_SIZE, INSET_MIN_SIZE, INSET_MAX_SIZE);
+}
+
+/** The inset's box, as percentages of the picture. */
+export function insetBox(o: VisualOverlay): { width: string; height: string } {
+  const w = insetSize(o);
+  return { width: `${(w * 100).toFixed(2)}%`, height: `${(w * INSET_ASPECT * 100).toFixed(2)}%` };
+}
+
+export function overlayOpacity(o: VisualOverlay): number {
+  return clamp(o.opacity ?? 1, OVERLAY_MIN_OPACITY, 1);
 }
 
 export type Overlay = TextOverlay | VisualOverlay;
