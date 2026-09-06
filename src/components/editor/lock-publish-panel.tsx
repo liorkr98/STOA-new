@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Lock } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, Lock, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
-import { price as fmtPrice } from "@/lib/format";
 import type { AccessType, Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
+import type { SymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { attestPrice, type AttestedPriceData } from "@/services/price-attestation";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
@@ -60,6 +60,69 @@ function YesNo({
 }
 
 /**
+ * What the block says under the ticker field once it has looked the symbol
+ * up. A typo and a real name look the same in the field, and until publish
+ * nothing used to tell them apart; this is the tell. The company name says
+ * "this is the one you meant", the level beside it is what the call would
+ * lock at, and a Treasury tenor says out loud that its level is a yield.
+ */
+function SymbolStatus({ lookup, onRetry }: { lookup: SymbolLookup; onRetry?: () => void }) {
+  if (lookup.status === "idle") return null;
+  if (lookup.status === "checking") {
+    return (
+      <p className="t-meta mt-2 text-[11px]" aria-live="polite">
+        Checking {lookup.symbol}...
+      </p>
+    );
+  }
+  if (lookup.status === "missing") {
+    return (
+      <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--down)]" role="alert">
+        <X size={13} aria-hidden className="mt-px shrink-0" />
+        <span>
+          <span className="num font-semibold">{lookup.symbol}</span> was not found. Check the symbol:
+          a call on a name that cannot be priced can never be graded.
+        </span>
+      </p>
+    );
+  }
+  if (lookup.status === "failed") {
+    return (
+      <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--down)]" role="alert">
+        <X size={13} aria-hidden className="mt-px shrink-0" />
+        <span>
+          Could not check {lookup.symbol} just now.{" "}
+          {onRetry ? (
+            <button type="button" onClick={onRetry} className="underline focus-ring rounded">
+              Try again
+            </button>
+          ) : null}
+        </span>
+      </p>
+    );
+  }
+  const r = lookup.resolved;
+  const what =
+    r.kind === "equity"
+      ? [r.name, r.exchange].filter(Boolean).join(" · ")
+      : [r.name, r.quotedAsYield ? "quoted as a yield" : r.unit].filter(Boolean).join(" · ");
+  return (
+    <div className="mt-2" aria-live="polite">
+      <p className="flex items-start gap-1.5 text-[11px] leading-snug text-text-mute">
+        <Check size={13} aria-hidden className="mt-px shrink-0 text-[var(--verdigris)]" />
+        <span>
+          <span className="num font-semibold text-text">{r.symbol}</span>
+          {what ? <span> · {what}</span> : <span> · recognised, priced live</span>}
+        </span>
+      </p>
+      {r.directionNote ? (
+        <p className="t-meta mt-1 pl-[19px] text-[11px] leading-snug">{r.directionNote}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * The persistent right-rail "Lock & Publish" panel (FRONTEND.md 6.2). Keeps
  * every requirement of the irreversible action visible while writing, rather
  * than surprising the author with a checklist at the end. Dashed borders on
@@ -71,6 +134,8 @@ export function LockPublishPanel({
   hasCard,
   ticker,
   onTicker,
+  lookup = { status: "idle" },
+  onRetryLookup,
   direction,
   onDirection,
   target,
@@ -100,6 +165,13 @@ export function LockPublishPanel({
   hasCard: boolean;
   ticker: string;
   onTicker: (v: string) => void;
+  /**
+   * What the editor knows about the symbol in the field. The editor owns the
+   * lookup because the step's forward button reads it too; the panel only
+   * shows it.
+   */
+  lookup?: SymbolLookup;
+  onRetryLookup?: () => void;
   direction: Direction;
   onDirection: (v: Direction) => void;
   target: string;
@@ -134,10 +206,12 @@ export function LockPublishPanel({
    */
   sections?: "call" | "publish" | "all";
 }) {
-  // Tagged with the ticker it quotes, so clearing the field drops the price
-  // during render rather than through the effect.
-  const [quote, setQuote] = useState<{ ticker: string; price: number | null } | null>(null);
-  const live = hasCard && quote?.ticker === ticker.trim() ? quote.price : null;
+  // The live level is what the call would lock at. It comes from the lookup
+  // rather than a second quote request, so the price shown and the name shown
+  // are always about the same symbol.
+  const resolved = lookup.status === "found" ? lookup.resolved : null;
+  const live = hasCard && resolved ? resolved.price : null;
+  const quotedAsYield = resolved?.quotedAsYield ?? false;
   const [committedTicker, setCommittedTicker] = useState("");
   const [attestationLoading, setAttestationLoading] = useState(false);
   const [attestationError, setAttestationError] = useState<string | null>(null);
@@ -209,38 +283,21 @@ export function LockPublishPanel({
     void attestLockedTicker(ticker);
   }
 
-  useEffect(() => {
-    // The publish half does not render the call fields, so it has no reason to
-    // hold a live quote for them.
-    if (sections === "publish") return;
-    if (!hasCard || !ticker.trim()) return;
-    const controller = new AbortController();
-    const t = setTimeout(() => {
-      fetch(`/api/market/quote?ticker=${encodeURIComponent(ticker.trim())}`, {
-        signal: controller.signal,
-      })
-        .then(async (r) => {
-          if (!r.ok) return null;
-          try {
-            return (await r.json()) as { price?: number };
-          } catch {
-            return null;
-          }
-        })
-        .then((j) => setQuote({ ticker: ticker.trim(), price: j?.price ?? null }))
-        .catch(() => setQuote({ ticker: ticker.trim(), price: null }));
-    }, 600);
-    return () => {
-      controller.abort();
-      clearTimeout(t);
-    };
-  }, [ticker, hasCard, sections]);
-
   const targetNum = Number(target);
+  // A yield is compared in points, not percent: 4.2% to 4.5% is a move of
+  // 0.30, and calling it "+7.1%" would read as a price move it is not.
   const move =
     live != null && target && Number.isFinite(targetNum) && live > 0
-      ? ((targetNum - live) / live) * 100
+      ? quotedAsYield
+        ? targetNum - live
+        : ((targetNum - live) / live) * 100
       : null;
+  const moveLabel =
+    move == null
+      ? null
+      : quotedAsYield
+        ? `${move >= 0 ? "+" : ""}${move.toFixed(2)} pts`
+        : `${move >= 0 ? "+" : ""}${move.toFixed(1)}%`;
   const moveAgreesWithCall =
     move != null && (direction === "long" ? move >= 0 : direction === "short" ? move <= 0 : true);
 
@@ -260,6 +317,8 @@ export function LockPublishPanel({
           </div>
           <p className="t-meta mb-3 text-[11px] leading-relaxed">
             Add a ticker to lock a call at publish. Leave blank if this piece has no target.
+            Stocks go by ticker; gold is XAUUSD, WTI crude USOIL, Brent UKOIL, the ten-year
+            US10Y, bitcoin BTCUSD.
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -276,23 +335,30 @@ export function LockPublishPanel({
                     (e.target as HTMLInputElement).blur();
                   }
                 }}
-                className={cn(inputClass, "num mt-1")}
+                aria-invalid={lookup.status === "missing" || undefined}
+                className={cn(
+                  inputClass,
+                  "num mt-1",
+                  lookup.status === "missing" && "border-[var(--down)]",
+                )}
                 placeholder="NVDA"
               />
             </label>
             <label className="text-xs font-medium text-text-mute">
-              Target price
+              {quotedAsYield ? "Target yield" : "Target price"}
               <input
                 value={target}
                 onChange={(e) => onTarget(e.target.value)}
                 type="number"
                 min={0}
-                step="0.01"
+                step={quotedAsYield ? "0.001" : "0.01"}
                 className={cn(inputClass, "num mt-1")}
                 placeholder="Optional"
               />
             </label>
           </div>
+
+          <SymbolStatus lookup={lookup} onRetry={onRetryLookup} />
 
           <div className="mt-2.5 flex gap-1.5">
             {(["long", "short", "hold"] as Direction[]).map((d) => (
@@ -316,23 +382,29 @@ export function LockPublishPanel({
             <HorizonPicker value={horizon} onChange={onHorizon} />
           </div>
 
-          {ticker.trim() && (
+          {resolved && (
             <div className="mt-3 border-t border-dashed border-border pt-3">
               <div className="flex items-baseline justify-between">
-                <span className="t-meta">Current</span>
-                <span className="num text-lg font-semibold">
-                  {live != null ? `$${fmtPrice(live)}` : "-"}
-                </span>
+                <span className="t-meta">{quotedAsYield ? "Current yield" : "Current"}</span>
+                <span className="num text-lg font-semibold">{resolved.priceLabel ?? "-"}</span>
               </div>
-              {move != null && (
+              {resolved.priceLabel ? (
+                <p className="t-meta mt-0.5 text-[11px]">
+                  This is the level the call locks at when you publish.
+                </p>
+              ) : (
+                <p className="t-meta mt-0.5 text-[11px]">
+                  No live level right now. Publishing locks whatever the feed says then.
+                </p>
+              )}
+              {moveLabel != null && (
                 <div className="mt-1 flex items-baseline justify-between">
                   <span className="t-meta">To target</span>
                   <span
                     className="num text-sm font-semibold"
                     style={{ color: moveAgreesWithCall ? "var(--up)" : "var(--down)" }}
                   >
-                    {move >= 0 ? "+" : ""}
-                    {move.toFixed(1)}%
+                    {moveLabel}
                   </span>
                 </div>
               )}

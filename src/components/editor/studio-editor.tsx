@@ -79,6 +79,7 @@ import {
 import { setComposeDeck } from "@/lib/compose/card-store";
 import { emptyEdit, type VideoEdit } from "@/lib/compose/overlays";
 import { useFrameHeight } from "@/components/layout/scroll-frame";
+import { useSymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import type { CardKind } from "@/lib/feed/card-schema";
@@ -233,6 +234,15 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
+  // Whether the symbol in the field is a real, priceable name. Owned here
+  // rather than in the call panel because the step's forward button has to
+  // read it: a call locked on a symbol that does not resolve can never be
+  // graded, so Continue refuses it. A live publication's call is frozen and
+  // was checked when it was locked, so nothing is looked up for it.
+  const { lookup: symbolLookup, retry: retrySymbolLookup } = useSymbolLookup(
+    ticker,
+    !editingPublished,
+  );
   // Persisted on save/publish to reports.primary_tag / secondary_tags. Seeded
   // from the draft: without this, reopening a tagged draft showed no tags and
   // the next save wrote the empty selection back over them.
@@ -1409,6 +1419,8 @@ export function StudioEditor({
                   hasCard={hasCard}
                   ticker={ticker}
                   onTicker={setTicker}
+                  lookup={symbolLookup}
+                  onRetryLookup={retrySymbolLookup}
                   direction={direction}
                   onDirection={setDirection}
                   target={target}
