@@ -1097,7 +1097,14 @@ export function VideoRung({
   stage = "all",
   hasClip = false,
   onRemove,
+  initialSrc = null,
 }: {
+  /**
+   * The chosen clip's object URL, held by the workspace. The rung makes its
+   * own when a file is picked; this is what lets it come back with the same
+   * picture after being redrawn, rather than with a bare poster.
+   */
+  initialSrc?: string | null;
   initial?: VideoEdit;
   /** Duration used for the poster stage when no file is loaded. */
   demoDurationSeconds?: number;
@@ -1122,7 +1129,7 @@ export function VideoRung({
   /** Take the clip out. Offered beside Replace, never as a forward button. */
   onRemove?: () => void;
 }) {
-  const [src, setSrc] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(initialSrc);
   const [internalEdit, setEditState] = useState<VideoEdit>(initial ?? value ?? emptyEdit(demoDurationSeconds));
   const edit = value ?? internalEdit;
   const [time, setTime] = useState(0);

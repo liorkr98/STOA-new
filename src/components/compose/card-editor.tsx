@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cardName, kindSpec, type DraftCard } from "@/lib/compose/cards";
 import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
 import { CardPreview } from "@/components/compose/card-preview";
+import { StepErrorBoundary } from "@/components/compose/step-boundary";
 import { nanoid } from "nanoid";
 import { createClient } from "@/lib/supabase/client";
 
@@ -570,13 +571,17 @@ export function CardEditorDialog({
           <Dialog.Description className="sr-only">Edit this card</Dialog.Description>
           <div className="mt-4">
             {card ? (
-              <CardEditor
-                card={card}
-                onChange={onChange}
-                onDelete={onDelete}
-                onDone={onDone ?? onClose}
-                doneNote={doneNote}
-              />
+              // A card that fails to draw fails inside its own dialog, not
+              // the whole workspace: the deck and the sequence are unaffected.
+              <StepErrorBoundary label="This card's editor">
+                <CardEditor
+                  card={card}
+                  onChange={onChange}
+                  onDelete={onDelete}
+                  onDone={onDone ?? onClose}
+                  doneNote={doneNote}
+                />
+              </StepErrorBoundary>
             ) : null}
           </div>
         </Dialog.Content>

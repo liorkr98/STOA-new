@@ -97,6 +97,7 @@ import {
   type StepKey,
 } from "@/lib/compose/steps";
 import { StepFrame, StepNav } from "@/components/compose/step-nav";
+import { DevCrash, StepErrorBoundary } from "@/components/compose/step-boundary";
 import {
   COMPOSE_MODES,
   POST_MAX_CHARS,
@@ -231,6 +232,13 @@ export function StudioEditor({
 
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
+  // What the Tiptap editor is built from. Normally the draft; after the
+  // write step has been redrawn following a failure, the latest words, so
+  // nothing typed since the last save is lost to the redraw.
+  const [editorSeed, setEditorSeed] = useState<JSONContent>(initialDoc);
+  // The chosen clip's object URL, kept here so the video step can be redrawn
+  // with the same picture. The file itself is in videoFileRef.
+  const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
@@ -894,6 +902,7 @@ export function StudioEditor({
   function removeVideo() {
     setVideoEdit(null);
     videoFileRef.current = null;
+    setClipUrl(null);
     setVideoChosen(false);
   }
 
@@ -1345,11 +1354,23 @@ export function StudioEditor({
               }
               note={note}
             >
+              {/* Each step's content sits inside its own boundary, so a
+                  step that fails to draw is redrawn on its own while the
+                  workspace above it, and everything it holds, stays put.
+                  Before this, any such failure reached the route's error
+                  page, whose Try again remounted the whole sequence at
+                  step one. */}
+
               {/* WRITE. Always mounted, hidden off-step: the Tiptap instance
                   holds the charts the publish path screenshots, and losing it
                   on a step change would lose them. Prose is the one thing on
                   the canvas that wants a measure, so the column is capped
                   here and nowhere else. */}
+              <StepErrorBoundary
+                label="Write"
+                onReset={() => setEditorSeed(latestChangeRef.current.json)}
+              >
+              <DevCrash step="write" />
               <div className={cn(currentStep.key !== "write" && "hidden")}>
                 {type !== "short_post" && (
                   <>
@@ -1432,7 +1453,7 @@ export function StudioEditor({
                     )}
                   >
                     <TiptapEditor
-                      initialContent={initialDoc}
+                      initialContent={editorSeed}
                       onChange={onEditorChange}
                       reportTicker={hasCard ? ticker || undefined : undefined}
                       onReady={(e) => {
@@ -1443,9 +1464,12 @@ export function StudioEditor({
                   </div>
                 </div>
               </div>
+              </StepErrorBoundary>
 
               {/* THE CALL. */}
               {currentStep.key === "call" ? (
+                <StepErrorBoundary label="The call">
+                <DevCrash step="call" />
                 <LockPublishPanel
                   sections="call"
                   hasCard={hasCard}
@@ -1479,11 +1503,14 @@ export function StudioEditor({
                   pending={false}
                   error={null}
                 />
+                </StepErrorBoundary>
               ) : null}
 
               {/* CARDS. An invitation, not a hurdle: what a card is, what it
                   does for the reader, and one obvious way to make one. */}
               {currentStep.key === "cards" ? (
+                <StepErrorBoundary label="Cards">
+                <DevCrash step="cards" />
                 <div>
                   {cards.length === 0 ? (
                     <div className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-5">
@@ -1545,11 +1572,14 @@ export function StudioEditor({
                     </div>
                   )}
                 </div>
+                </StepErrorBoundary>
               ) : null}
 
               {/* VIDEO and EDIT VIDEO share one rung, so the loaded clip and
                   its object URL survive the move between the two steps. */}
               {showVideo ? (
+                <StepErrorBoundary label={currentStep.key === "video_edit" ? "Edit video" : "Video"}>
+                <DevCrash step={currentStep.key === "video_edit" ? "video_edit" : "video"} />
                 <div
                   className={cn(
                     currentStep.key !== "video" && currentStep.key !== "video_edit" && "hidden",
@@ -1567,11 +1597,13 @@ export function StudioEditor({
                     </p>
                   ) : null}
                   <VideoRung
+                    initialSrc={clipUrl}
                     stage={currentStep.key === "video" ? "choose" : "edit"}
                     value={videoEdit ?? undefined}
                     onChange={setVideoEdit}
                     onFile={(file, durationSeconds) => {
                       videoFileRef.current = { file, durationSeconds };
+                      setClipUrl(URL.createObjectURL(file));
                       setVideoChosen(true);
                     }}
                     hasClip={videoChosen}
@@ -1581,10 +1613,13 @@ export function StudioEditor({
                     ticker={ticker.trim() || undefined}
                   />
                 </div>
+                </StepErrorBoundary>
               ) : null}
 
               {/* TAGS. */}
               {currentStep.key === "tags" ? (
+                <StepErrorBoundary label="Tags">
+                <DevCrash step="tags" />
                 <div className="flex flex-col gap-4">
                   <TagPicker
                     value={tags}
@@ -1604,10 +1639,13 @@ export function StudioEditor({
                     onChange={setLinkedReportId}
                   />
                 </div>
+                </StepErrorBoundary>
               ) : null}
 
               {/* PUBLISH. */}
               {currentStep.key === "publish" ? (
+                <StepErrorBoundary label="Publish">
+                <DevCrash step="publish" />
                 <div className="flex flex-col gap-4">
                   <button
                     type="button"
@@ -1657,6 +1695,7 @@ export function StudioEditor({
                     promote={<PromotePanel state={promote} onChange={setPromote} />}
                   />
                 </div>
+                </StepErrorBoundary>
               ) : null}
             </StepFrame>
           </div>
