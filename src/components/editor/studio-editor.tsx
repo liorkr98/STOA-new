@@ -283,7 +283,10 @@ export function StudioEditor({
   const [askSeed, setAskSeed] = useState<string | null>(null);
   const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
   const [researchDropActive, setResearchDropActive] = useState(false);
-  const [direction, setDirection] = useState<Direction>("long");
+  // Null until chosen. It used to default to long, which meant a ticker on
+  // its own read as a complete long call and sailed through Continue and
+  // publish without the creator ever saying which way they were calling it.
+  const [direction, setDirection] = useState<Direction | null>(null);
   const [target, setTarget] = useState("");
   const [horizon, setHorizon] = useState(30);
   const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
@@ -607,7 +610,7 @@ export function StudioEditor({
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
         ticker: ticker.trim() ? ticker : null,
-        direction: ticker.trim() ? direction : undefined,
+        direction: ticker.trim() && direction ? direction : undefined,
         target_price: ticker.trim() && target ? Number(target) : null,
         horizon_days: ticker.trim() ? horizon : undefined,
         primary_tag: tags.primary,
@@ -720,8 +723,10 @@ export function StudioEditor({
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.
   // Research may publish as overview without a ticker/locked call.
-  // Calls still require a ticker so there is something to lock.
-  const lockingCall = Boolean(ticker.trim());
+  // A call is a ticker and a direction. The server only creates the graded
+  // record when both arrive, so anything less must never reach it as if it
+  // were a call: the call step and the publish step both refuse it below.
+  const lockingCall = Boolean(ticker.trim()) && direction !== null;
   // A Post is text and nothing else. Everything else may carry a clip and may
   // carry a written thesis, and no longer has to declare which of the two it
   // is up front: the video step decides the first and the write step the
@@ -812,7 +817,32 @@ export function StudioEditor({
     return null;
   })();
 
+  /**
+   * What the call step would say if Continue were pressed on it now. Read
+   * here as well as on the step, because a half-entered call must not publish
+   * either: a ticker with no direction used to go out as a publication with
+   * no call at all, silently, and a symbol nobody has checked could lock a
+   * call that can never be graded.
+   */
+  const callBlockedBy = advanceFor("call", {
+    isPost,
+    postMaxChars: POST_MAX_CHARS,
+    title,
+    postText: summary,
+    ticker,
+    direction,
+    target,
+    symbol: editingPublished ? "frozen" : symbolLookup.status,
+    cards: [],
+    hasVideo: videoChosen,
+    hasVideoEdits: false,
+    wordlessOverlays: 0,
+    blankVisuals: 0,
+    primaryTag: tags.primary,
+  }).blocker;
+
   const detailsBlockedBy: string | null = (() => {
+    if (callBlockedBy) return callBlockedBy;
     if (mode === "video" && !tags.primary) return "Choose a primary tag.";
     // The fact-check moved onto this step with the rest of the publishing
     // gates, so pointing at the Assistant rail sent the creator to the wrong
@@ -839,7 +869,7 @@ export function StudioEditor({
   /** What each step holds right now, for the progress rail. */
   const stepFacts: StepFacts = {
     hasWriting: mode === "short_post" ? summary.trim().length > 0 : title.trim().length > 0,
-    hasCall: ticker.trim().length > 0,
+    hasCall: lockingCall && !callBlockedBy,
     cardCount: cards.length,
     hasVideo: videoChosen,
     hasVideoEdits: Boolean(
@@ -874,7 +904,9 @@ export function StudioEditor({
     title,
     postText: summary,
     ticker,
+    direction,
     target,
+    symbol: editingPublished ? "frozen" : symbolLookup.status,
     cards: cards.map((c) => ({ name: cardName(c), empty: cardIsEmpty(c) })),
     hasVideo: videoChosen,
     hasVideoEdits: stepFacts.hasVideoEdits,
@@ -934,7 +966,7 @@ export function StudioEditor({
             required_perks: access === "subscribers" ? requiredPerks : [],
             ...extras,
             ticker: lockingCall ? ticker : null,
-            direction: lockingCall ? direction : undefined,
+            direction: lockingCall && direction ? direction : undefined,
             target_price: lockingCall && target ? Number(target) : null,
             horizon_days: lockingCall ? horizon : undefined,
             primary_tag: tags.primary,
@@ -973,7 +1005,7 @@ export function StudioEditor({
         required_perks: access === "subscribers" ? requiredPerks : [],
         ...extras,
         ticker: lockingCall ? ticker : null,
-        direction: lockingCall ? direction : undefined,
+        direction: lockingCall && direction ? direction : undefined,
         target_price: lockingCall && target ? Number(target) : null,
         horizon_days: lockingCall ? horizon : undefined,
         primary_tag: tags.primary,
@@ -1421,6 +1453,7 @@ export function StudioEditor({
                   onTicker={setTicker}
                   lookup={symbolLookup}
                   onRetryLookup={retrySymbolLookup}
+                  frozen={editingPublished}
                   direction={direction}
                   onDirection={setDirection}
                   target={target}

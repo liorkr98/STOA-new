@@ -17,6 +17,7 @@
  */
 
 import type { ComposeMode } from "@/lib/compose/modes";
+import type { Direction } from "@/lib/types";
 
 export type StepKey =
   | "write"
@@ -152,7 +153,15 @@ export interface AdvanceInput {
   title: string;
   postText: string;
   ticker: string;
+  /** Null until the creator has chosen one. A call is a ticker and a direction. */
+  direction: Direction | null;
   target: string;
+  /**
+   * Whether the ticker in the field is a real, priceable name. "checking"
+   * while the answer is on its way; "frozen" for a live publication, whose
+   * call was checked when it was locked and cannot change now.
+   */
+  symbol: "idle" | "checking" | "found" | "missing" | "failed" | "frozen";
   /** Each card in the deck by name, and whether anything is written on it. */
   cards: { name: string; empty: boolean }[];
   hasVideo: boolean;
@@ -190,10 +199,34 @@ export function advanceFor(key: StepKey, s: AdvanceInput): Advance {
       return s.title.trim() ? go() : go("Add a headline first. The words can wait; the headline cannot.");
     }
     case "call": {
-      const ticker = s.ticker.trim();
+      const ticker = s.ticker.trim().toUpperCase();
       const target = s.target.trim();
-      if (!ticker && !target) return skip;
-      if (!ticker) return go("A target price needs a ticker. Add the ticker, or clear the target.");
+      const hasDirection = s.direction !== null;
+      if (!ticker && !target && !hasDirection) return skip;
+      if (s.symbol === "frozen") return go();
+      // A call is a ticker and a direction; a target is extra. Each thing
+      // that can be half-entered gets its own sentence, in the order the
+      // creator would fix them: the ticker first, because nothing else on
+      // the step means anything without it.
+      if (!ticker) {
+        return go(
+          target
+            ? "A target price needs a ticker. Add the ticker, or clear the target."
+            : "A direction needs a ticker. Add the ticker, or clear the direction.",
+        );
+      }
+      if (s.symbol === "checking") {
+        return go(`Still checking ${ticker}. Give it a second, then press Continue again.`);
+      }
+      if (s.symbol === "missing") {
+        return go(`${ticker} was not found. Check the symbol, or clear it.`);
+      }
+      if (s.symbol === "failed") {
+        return go(`${ticker} could not be checked just now. Try again in a moment.`);
+      }
+      if (!hasDirection) {
+        return go(`A call needs a direction. Choose long, short or hold for ${ticker}.`);
+      }
       if (target && !(Number(target) > 0)) {
         return go(`"${target}" is not a price. A target is a number, like 142.50.`);
       }

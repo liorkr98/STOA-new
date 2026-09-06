@@ -161,6 +161,7 @@ export function LockPublishPanel({
   pending,
   error,
   promote,
+  frozen = false,
 }: {
   hasCard: boolean;
   ticker: string;
@@ -172,8 +173,14 @@ export function LockPublishPanel({
    */
   lookup?: SymbolLookup;
   onRetryLookup?: () => void;
-  direction: Direction;
-  onDirection: (v: Direction) => void;
+  /** Null until chosen. Pressing the chosen one again clears it. */
+  direction: Direction | null;
+  onDirection: (v: Direction | null) => void;
+  /**
+   * The call belongs to a live publication and cannot change. The fields are
+   * replaced by a plain statement of what was locked.
+   */
+  frozen?: boolean;
   target: string;
   onTarget: (v: string) => void;
   horizon: number;
@@ -303,7 +310,29 @@ export function LockPublishPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {hasCard && sections !== "publish" && (
+      {hasCard && sections !== "publish" && frozen && (
+        <section
+          className="rounded-[var(--radius-card)] border border-border bg-surface p-4"
+          aria-label="The locked call"
+        >
+          <p className="t-eyebrow mb-2">The call</p>
+          {ticker.trim() ? (
+            <>
+              <p className="num text-lg font-semibold">{ticker.trim().toUpperCase()}</p>
+              <p className="t-meta mt-1 text-[11px] leading-relaxed">
+                Locked when this was published, with its entry price and horizon. It cannot
+                change, and neither can its resolution: those are the record.
+              </p>
+            </>
+          ) : (
+            <p className="t-meta text-[11px] leading-relaxed">
+              This publication went out without a call, and one cannot be added to it now.
+            </p>
+          )}
+        </section>
+      )}
+
+      {hasCard && sections !== "publish" && !frozen && (
         <section
           className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-4"
           aria-label="Price target"
@@ -360,22 +389,34 @@ export function LockPublishPanel({
 
           <SymbolStatus lookup={lookup} onRetry={onRetryLookup} />
 
-          <div className="mt-2.5 flex gap-1.5">
-            {(["long", "short", "hold"] as Direction[]).map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => onDirection(d)}
-                className={cn(
-                  "flex-1 rounded-[var(--radius-btn)] border py-1.5 text-xs font-medium capitalize transition-colors focus-ring",
-                  direction === d
-                    ? "border-accent bg-accent-weak text-accent"
-                    : "border-border text-text-mute hover:text-text",
-                )}
-              >
-                {d}
-              </button>
-            ))}
+          <div className="mt-2.5" role="radiogroup" aria-label="Direction">
+            <p className="text-xs font-medium text-text-mute">
+              Direction
+              {direction === null ? (
+                <span className="t-meta ml-1.5 text-[11px] font-normal">
+                  choose one: a call is a ticker and a direction
+                </span>
+              ) : null}
+            </p>
+            <div className="mt-1 flex gap-1.5">
+              {(["long", "short", "hold"] as Direction[]).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  role="radio"
+                  aria-checked={direction === d}
+                  onClick={() => onDirection(direction === d ? null : d)}
+                  className={cn(
+                    "flex-1 rounded-[var(--radius-btn)] border py-1.5 text-xs font-medium capitalize transition-colors focus-ring",
+                    direction === d
+                      ? "border-accent bg-accent-weak text-accent"
+                      : "border-border text-text-mute hover:text-text",
+                  )}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-2.5">
