@@ -129,10 +129,14 @@ export default async function DevTodayPage({
   // The VIDEO badge goes with it: on the real page the badge is computed from
   // whether a clip exists, so leaving it here would show a state the product
   // cannot actually produce.
+  // `?lead=processing` is the minute after publish: the clip exists and is
+  // being prepared, so the frame stays and says so rather than vanishing.
   const activeLead =
     leadMode === "written"
       ? { ...lead, thumb: null, contentBadge: lead.contentBadge.filter((b) => b !== "Video") }
-      : lead;
+      : leadMode === "processing"
+        ? { ...lead, thumb: { thumbnailUrl: null, durationSeconds: 0, processing: true } }
+        : lead;
   const news = await getMarketNews(10);
 
   const data: TodayPagePayload = {

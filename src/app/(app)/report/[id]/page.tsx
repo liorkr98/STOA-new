@@ -8,6 +8,8 @@ import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { getLiveClipForReport } from "@/lib/video/clip-for-report";
+import { getPendingClipForReport } from "@/lib/db/video-clips";
+import { ClipPendingPlayer } from "@/components/video/clip-pending";
 import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
@@ -100,7 +102,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const clipMedia = clip
     ? resolveClipPlayback({ playbackUrl: clip.playback_url, thumbnailUrl: clip.thumbnail_url, index: 0 })
     : null;
-
+  // No live clip: is one on the way? Publishing locks the report before the
+  // upload starts, so for a while the publication is real and its video is
+  // not, and that must never read as "no video". A failed clip is the
+  // creator's to fix, so only they see it.
+  const pendingRaw = clip ? null : await getPendingClipForReport(id);
+  const pendingClip = pendingRaw && (pendingRaw.status !== "failed" || isAuthor) ? pendingRaw : null;
   const clipEmbedUrl =
     clip && !clipMedia?.src.endsWith(".mp4") && isBunnyConfigured()
       ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
@@ -267,6 +274,15 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   analystName={author?.display_name ?? "The analyst"}
                   edit={readStoredVideoEdit(report.video_edit)}
                   ticker={report.ticker}
+                />
+              </div>
+            ) : pendingClip ? (
+              <div className="order-2 lg:order-none">
+                <ClipPendingPlayer
+                  status={pendingClip.status}
+                  startedAt={pendingClip.createdAt}
+                  analystName={author?.display_name ?? "The analyst"}
+                  isAuthor={isAuthor}
                 />
               </div>
             ) : null}

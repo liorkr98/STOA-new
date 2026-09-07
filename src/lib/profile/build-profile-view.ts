@@ -4,6 +4,7 @@ import { getProfileByHandle } from "@/lib/db/profiles";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
 import { listReadyClipsByCreator } from "@/lib/db/video-clips";
+import { listPendingClipsByCreator } from "@/lib/db/video-clips";
 import { listTickerRows } from "@/lib/db/tickers";
 import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, subscriberCount } from "@/lib/db/social";
@@ -80,6 +81,8 @@ export function buildPublications(input: {
   sectorByTicker: Map<string, string | null>;
   /** Publications with a stored evidence stack. Omitted by the dev fixture. */
   cardIds?: Set<string>;
+  /** Publications whose clip exists but is not live yet. */
+  pendingClipIds?: Set<string>;
 }): ProfilePublication[] {
   const predByReport = new Map<string, Prediction>();
   for (const p of input.predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
@@ -89,6 +92,7 @@ export function buildPublications(input: {
   return input.reports.map((r) => {
     const pred = predByReport.get(r.id) ?? null;
     const clip = clipByReport.get(r.id) ?? null;
+    const pending = !clip && Boolean(input.pendingClipIds?.has(r.id));
     const hasCall = Boolean(pred);
     const hasThesis = r.type === "research" || (r.body?.length ?? 0) > 600;
     const when = r.published_at ?? r.created_at;
@@ -111,13 +115,14 @@ export function buildPublications(input: {
     return {
       id: r.id,
       href: `/report/${r.id}`,
-      kind: clip ? "video" : "written",
+      kind: clip || pending ? "video" : "written",
+      processing: pending,
       typeLabel: typeLabel(r.type),
       ticker: hasCall && pred ? pred.ticker : null,
       direction: hasCall && pred ? (pred.direction as Direction) : null,
       themeTag,
       badge: contentBadge({
-        hasVideo: Boolean(clip),
+        hasVideo: Boolean(clip) || pending,
         hasCall,
         hasThesis,
         hasCards: input.cardIds?.has(r.id) ?? false,
@@ -189,10 +194,11 @@ export async function buildProfileView(
   const profile = await getProfileByHandle(handle);
   if (!profile) return null;
 
-  const [predictions, reports, clips, userId, plans] = await Promise.all([
+  const [predictions, reports, clips, pendingClips, userId, plans] = await Promise.all([
     listPredictionsByAuthor(profile.id),
     listByAuthor(profile.id, { status: "published" }),
     listReadyClipsByCreator(profile.id),
+    listPendingClipsByCreator(profile.id),
     getSessionUserId(),
     listActivePlans(profile.id),
   ]);
@@ -239,7 +245,14 @@ export async function buildProfileView(
   ].join(" · ");
 
   const cardIds = await reportIdsWithCards(reports.map((r) => r.id));
-  const publications = buildPublications({ reports, predictions, clips, sectorByTicker, cardIds });
+  const publications = buildPublications({
+    reports,
+    predictions,
+    clips,
+    sectorByTicker,
+    cardIds,
+    pendingClipIds: new Set(pendingClips.keys()),
+  });
   const tiers = tierPublications(publications, config.pinned_report_id ?? null);
 
   // Subscribe button label: "from $X/mo" using the cheapest paid plan (or legacy price).

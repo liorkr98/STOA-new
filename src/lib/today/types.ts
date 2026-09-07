@@ -18,6 +18,8 @@ export interface TodayAnalyst {
 export interface TodayThumb {
   thumbnailUrl: string | null;
   durationSeconds: number;
+  /** The clip exists but is still being prepared: the frame shows that, not a poster. */
+  processing?: boolean;
 }
 
 /** One headline row: the unit every reading-list band is built from. */
