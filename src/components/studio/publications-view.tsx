@@ -248,7 +248,9 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   )}
 
                   {/* Hover actions */}
-                  <div className="num mt-3 flex items-center gap-4 text-[11px] uppercase tracking-[0.12em] text-text-mute opacity-0 transition-opacity group-hover:opacity-100">
+                  {/* Visible on touch screens, where there is no hover to
+                      reveal them, and wrapping so six actions fit a phone. */}
+                  <div className="num mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-[0.12em] text-text-mute transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
                     {/* Editing is no longer draft-only. A live publication can
                         be corrected, and the marker on it discloses that it
                         was. */}
