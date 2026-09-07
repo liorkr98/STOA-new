@@ -119,8 +119,8 @@ async function fetchSavedIds(userId: string): Promise<Set<string>> {
   return new Set(((data as { report_id: string }[]) ?? []).map((r) => r.report_id));
 }
 
-function creatorRow(p: Profile, marker: StageMarker, suggestion = false): TodayCreatorRow {
-  return { id: p.id, handle: p.handle, displayName: p.display_name, avatarUrl: p.avatar_url, marker, suggestion };
+function creatorRow(p: Profile, marker: StageMarker, followed: boolean): TodayCreatorRow {
+  return { id: p.id, handle: p.handle, displayName: p.display_name, avatarUrl: p.avatar_url, marker, followed };
 }
 
 /**
@@ -299,7 +299,11 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     }
   }
 
-  // Sidebar lists.
+  // Sidebar lists. Every creator row says whether the reader already follows
+  // or pays the analyst, so the same row shows Follow in Trending or Popular
+  // and nothing at all once followed; the reader's own row never offers it.
+  const known = new Set(deskAuthorIds);
+  const rowFor = (p: Profile) => creatorRow(p, markerByAuthor.get(p.id) ?? null, known.has(p.id) || p.id === userId);
   const authorTrend = new Map<string, number>();
   for (const r of pool) {
     const s = trendingScore(pubSamples.get(r.id)!, now);
@@ -310,8 +314,8 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     .map(([id]) => authorPool.get(id))
     .filter((p): p is Profile => Boolean(p))
     .slice(0, 8)
-    .map((p) => creatorRow(p, markerByAuthor.get(p.id) ?? null));
-  const popularCreators = analysts.slice(0, 8).map((p) => creatorRow(p, markerByAuthor.get(p.id) ?? null));
+    .map(rowFor);
+  const popularCreators = analysts.slice(0, 8).map(rowFor);
 
   const tickerTrend = new Map<string, number>();
   const tickerPubs = new Map<string, number>();
@@ -328,24 +332,20 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     ? await getQuotesBatch(extraQuoteSyms, { fetchBenchmark: false }).catch(() => new Map())
     : new Map();
   const quotes = extraQuotes.size ? new Map([...popularQuotes, ...extraQuotes]) : popularQuotes;
-  const tickerRow = (symbol: string, suggestion = false): TodayTickerRow => ({
+  const tickerRow = (symbol: string): TodayTickerRow => ({
     symbol,
     price: quotes.get(symbol)?.price ?? null,
     changePercent: quotes.get(symbol)?.changePercent ?? null,
     publications: coverage[symbol] ?? tickerPubs.get(symbol) ?? 0,
-    suggestion,
   });
 
-  const known = new Set(deskAuthorIds);
   const sidebar: TodaySidebarPayload = {
     trendingCreators,
     popularCreators,
-    trendingTickers: trendingSyms.map((s) => tickerRow(s)),
-    popularTickers: popularSyms.map((s) => tickerRow(s)),
-    memberships: deskProfiles.filter((p) => memberSet.has(p.id)).map((p) => creatorRow(p, markerByAuthor.get(p.id) ?? null)),
-    following: deskProfiles.filter((p) => !memberSet.has(p.id)).map((p) => creatorRow(p, markerByAuthor.get(p.id) ?? null)),
-    suggestedCreators: analysts.filter((p) => !known.has(p.id) && p.id !== userId).slice(0, 6).map((p) => creatorRow(p, markerByAuthor.get(p.id) ?? null, true)),
-    suggestedTickers: popularSyms.slice(0, 6).map((s) => tickerRow(s, true)),
+    trendingTickers: trendingSyms.map(tickerRow),
+    popularTickers: popularSyms.map(tickerRow),
+    memberships: deskProfiles.filter((p) => memberSet.has(p.id)).map(rowFor),
+    following: deskProfiles.filter((p) => !memberSet.has(p.id)).map(rowFor),
     signedIn: Boolean(userId),
   };
 

@@ -7,7 +7,7 @@ import Link from "next/link";
 const ROUTES: { href: string; label: string; note: string }[] = [
   { href: "/dev/landing", label: "Landing", note: "The signed-out root with fixture headlines, verdicts and a wall of faces (tape is live)." },
   { href: "/dev/today", label: "Today", note: "The /home newspaper, signed-in state with a desk and memberships." },
-  { href: "/dev/today?state=empty", label: "Today · signed out", note: "No desk, no memberships; suggestions fill the lists." },
+  { href: "/dev/today?state=empty", label: "Today · signed out", note: "No desk, no memberships; the personal lists say so instead of being padded." },
   { href: "/dev/explore", label: "Explore", note: "The 30-tile wall; click a tile for the Feed player overlay." },
   { href: "/dev/explore?ticker=NVDA", label: "Explore · ticker filter", note: "The EVERY TAKE ON THIS NAME state." },
   { href: "/dev/explore?sector=Semiconductors", label: "Explore · sector filter", note: "Filtered by sector." },

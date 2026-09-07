@@ -56,6 +56,13 @@ function writeLocal(storageKey: string, value: string[]): void {
   }
 }
 
+/**
+ * One reconcile per key per page load. Every Follow pill and every ticker row
+ * uses this hook, so without the guard a page like Today issued twenty
+ * identical requests and twenty competing writes to the same storage key.
+ */
+const reconciled = new Set<string>();
+
 function useInstrumentFollows(storageKey: string, kind: FollowKind) {
   // Rendered straight from storage, so the server reconcile below and a second
   // tab both land without an effect copying values into state.
@@ -73,8 +80,9 @@ function useInstrumentFollows(storageKey: string, kind: FollowKind) {
   }, [raw]);
 
   useEffect(() => {
+    if (reconciled.has(storageKey)) return;
+    reconciled.add(storageKey);
     let cancelled = false;
-    const local = readLocal(storageKey);
 
     // Reconcile with the server. A guest response leaves the local list alone.
     void (async () => {
@@ -87,6 +95,9 @@ function useInstrumentFollows(storageKey: string, kind: FollowKind) {
         const remote = Array.isArray(data[kind]) ? (data[kind] as string[]) : [];
         const importedKey = `${IMPORTED_FLAG}:${storageKey}`;
         const alreadyImported = window.localStorage.getItem(importedKey) === "1";
+        // Read storage now, not at mount: a follow made while this request
+        // was in flight must survive the merge rather than be written over.
+        const local = readLocal(storageKey);
         const missing = local.filter((s) => !remote.includes(s));
 
         if (!alreadyImported && missing.length > 0) {
@@ -110,6 +121,7 @@ function useInstrumentFollows(storageKey: string, kind: FollowKind) {
 
     return () => {
       cancelled = true;
+      reconciled.delete(storageKey);
     };
   }, [storageKey, kind]);
 

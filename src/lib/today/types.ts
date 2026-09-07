@@ -126,8 +126,11 @@ export interface TodayCreatorRow {
   displayName: string;
   avatarUrl: string | null;
   marker: StageMarker;
-  /** Offered to fill an empty list; never presented as an existing relationship. */
-  suggestion?: boolean;
+  /**
+   * The reader already follows or is a member of this analyst (or is this
+   * analyst). A followed row shows no control; the absence is the signal.
+   */
+  followed: boolean;
 }
 
 /** A ticker row in the sidebar: chip, price, day-change slot. */
@@ -137,7 +140,6 @@ export interface TodayTickerRow {
   /** Null when the provider did not carry it; the slot stays reserved. */
   changePercent: number | null;
   publications: number;
-  suggestion?: boolean;
 }
 
 export interface TodaySidebarPayload {
@@ -147,10 +149,6 @@ export interface TodaySidebarPayload {
   popularTickers: TodayTickerRow[];
   memberships: TodayCreatorRow[];
   following: TodayCreatorRow[];
-  /** Fill for short Memberships / Following lists. */
-  suggestedCreators: TodayCreatorRow[];
-  /** Fill for a short Your Tickers list. */
-  suggestedTickers: TodayTickerRow[];
   signedIn: boolean;
 }
 

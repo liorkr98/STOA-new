@@ -32,7 +32,35 @@ export async function toggleFollow(analystId: string) {
     }
   }
   revalidatePath("/feed");
+  revalidatePath("/home");
   return { following: !existing };
+}
+
+/**
+ * Follow from a list row. Not a toggle: a row that still reads Follow may be
+ * stale (the reader followed from the profile page a moment ago), and the one
+ * thing a Follow button must never do is unfollow. Idempotent.
+ */
+export async function followAnalyst(analystId: string): Promise<{ following: true } | { error: string }> {
+  const { supabase, userId } = await requireUser();
+  const { data: existing } = await supabase
+    .from("follows")
+    .select("follower_id")
+    .eq("follower_id", userId)
+    .eq("analyst_id", analystId)
+    .maybeSingle();
+  if (!existing) {
+    const { error } = await supabase.from("follows").insert({ follower_id: userId, analyst_id: analystId });
+    if (error) return { error: error.message };
+    try {
+      await supabase.rpc("notify_follow", { p_analyst_id: analystId });
+    } catch {
+      // non-critical
+    }
+  }
+  revalidatePath("/feed");
+  revalidatePath("/home");
+  return { following: true };
 }
 
 export async function toggleLike(reportId: string) {
