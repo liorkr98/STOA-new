@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAuthorizedCron } from "@/lib/cron/auth";
+import { isSignedInAdmin } from "@/lib/auth/admin";
 import { getBunnyVideo, isBunnyConfigured } from "@/lib/video/bunny";
 import { listUnsettledClips } from "@/lib/db/video-clips";
 
@@ -23,7 +24,8 @@ export const maxDuration = 60;
  * Read-only: this reports, it does not reconcile, so it is safe to hit while
  * debugging. Use /api/cron/video-reconcile to actually promote.
  *
- * Auth: same CRON_SECRET bearer token as the cron routes.
+ * Auth: the same CRON_SECRET bearer token as the cron routes, or a signed-in
+ * admin, so the answer is reachable from a browser and not only a terminal.
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/admin/video-health
  */
 
@@ -39,7 +41,7 @@ const BUNNY_STATUS: Record<number, string> = {
 };
 
 export async function GET(request: NextRequest) {
-  if (!isAuthorizedCron(request)) {
+  if (!isAuthorizedCron(request) && !(await isSignedInAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
