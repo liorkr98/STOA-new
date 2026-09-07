@@ -135,7 +135,8 @@ export function FactCheckerPanel({
 
       {!result && !pending && (
         <p className="t-meta text-[11px]">
-          Required before publishing. Claims are classified and checked against live market data.
+          Optional, and worth the credits: claims are classified and checked against live market
+          data, and readers see the result on the published piece.
         </p>
       )}
 

@@ -852,10 +852,9 @@ export function StudioEditor({
   const detailsBlockedBy: string | null = (() => {
     if (callBlockedBy) return callBlockedBy;
     if (mode === "video" && !tags.primary) return "Choose a primary tag.";
-    // The fact-check moved onto this step with the rest of the publishing
-    // gates, so pointing at the Assistant rail sent the creator to the wrong
-    // place.
-    if (showResearch && plainText.trim() && !factCheck) return "Run the fact-check above.";
+    // The fact-check is offered on this step and encouraged, never required:
+    // a creator publishes without it, and its result travels with the piece
+    // when they do run it.
     if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
     return null;
   })();

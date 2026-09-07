@@ -46,9 +46,10 @@ Nothing AI belongs in the top bar.
 
 The right rail is not open while writing. Press **Publish** and a details sheet
 opens, the same idea as YouTube after an upload: tags, connected piece, price
-target, access, disclosures, then the real publish. Fact-check stays in
-Assistant; the details sheet will refuse to finish until it has been run on a
-Research thesis.
+target, access, disclosures, then the real publish. Fact-check is offered in
+Assistant and again on the publish step, and it is a bonus rather than a gate:
+publishing never waits for it, and when it has been run its result ships with
+the piece.
 
 ## Cards
 

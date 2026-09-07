@@ -42,7 +42,7 @@ export function FirstReportBanner() {
         </li>
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <Sparkle size={15} className="mt-0.5 shrink-0 text-accent" />
-          Every claim runs through the AI fact-checker before you can lock it in.
+          Run the AI fact-checker before you publish. Optional, and readers see the result.
         </li>
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <ListChecks size={15} className="mt-0.5 shrink-0 text-accent" />
