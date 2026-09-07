@@ -48,7 +48,7 @@ const comments = (id: string, author: A): FeedComment[] => [
   { id: `${id}-m1`, parentId: null, author: { handle: "reader_one", displayName: "Reader One", avatarUrl: null, isAuthor: false }, createdAt: hoursAgo(3), text: "How does the target hold up if the largest customer pushes its capex into next year?", likes: 12 },
   { id: `${id}-m2`, parentId: `${id}-m1`, author: { ...author, isAuthor: true }, createdAt: hoursAgo(2), text: "It slides a quarter, it does not break. The kill switch is lead times, not the calendar.", likes: 31 },
   { id: `${id}-m3`, parentId: `${id}-m1`, author: { handle: "reader_two", displayName: "Reader Two", avatarUrl: null, isAuthor: false }, createdAt: hoursAgo(1), text: "That is the answer I was hoping for.", likes: 4, replyingTo: author.displayName },
-  { id: `${id}-m4`, parentId: null, author: { handle: "reader_three", displayName: "Reader Three", avatarUrl: null, isAuthor: false }, createdAt: hoursAgo(6), text: "Sharp on the mix point. The Street keeps missing it.", likes: 7 },
+  { id: `${id}-m4`, parentId: null, author: { handle: "reader_three", displayName: "Reader Three", avatarUrl: null, isAuthor: false }, createdAt: hoursAgo(6), text: "Sharp on the mix point. The Street keeps missing it.", likes: 7, mine: true, likedByMe: true },
 ];
 
 interface Spec {

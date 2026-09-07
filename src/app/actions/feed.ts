@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toFeedComment } from "@/lib/feed/comments";
 import type { FeedComment } from "@/lib/feed/types";
 import type { Comment } from "@/lib/types";
 
@@ -15,9 +16,10 @@ async function requireUser() {
 }
 
 /**
- * Posts a comment or a one-level reply from the Feed, in the Feed's shape.
+ * Posts a comment or a one-level reply, in the shape every discussion renders.
  * A reply to a reply is rejected by the database trigger, so the caller should
- * pass the top-level comment's id as `parentId`.
+ * pass the top-level comment's id as `parentId`. The analyst is notified the
+ * same way from every surface.
  */
 export async function postFeedComment(reportId: string, body: string, parentId: string | null): Promise<FeedComment | null> {
   const { supabase, userId } = await requireUser();
@@ -29,22 +31,17 @@ export async function postFeedComment(reportId: string, body: string, parentId: 
     .select("*, author:profiles!comments_author_id_fkey(*)")
     .single();
   if (error || !data) return null;
-  const c = data as Comment;
   const { data: report } = await supabase.from("reports").select("author_id").eq("id", reportId).maybeSingle();
+  try {
+    await supabase.rpc("notify_report_event", { p_report_id: reportId, p_kind: "comment" });
+  } catch {
+    // A missed notification is not a failed comment.
+  }
   revalidatePath(`/report/${reportId}`);
-  return {
-    id: c.id,
-    parentId: c.parent_id ?? null,
-    author: {
-      handle: c.author?.handle ?? "",
-      displayName: c.author?.display_name ?? "Reader",
-      avatarUrl: c.author?.avatar_url ?? null,
-      isAuthor: (report as { author_id?: string } | null)?.author_id === userId,
-    },
-    createdAt: c.created_at,
-    text: c.body,
-    likes: c.likes ?? 0,
-  };
+  return toFeedComment(data as Comment, {
+    reportAuthorId: (report as { author_id?: string } | null)?.author_id ?? null,
+    viewerId: userId,
+  });
 }
 
 /**
@@ -71,4 +68,34 @@ export async function toggleCommentLike(
     .from("comment_likes")
     .upsert({ comment_id: commentId, user_id: userId }, { onConflict: "comment_id,user_id" });
   return { ok: !error, liked: error ? liked : true };
+}
+
+/**
+ * Deletes the reader's own comment. Row security only lets an author delete
+ * their own rows, so a stranger's id deletes nothing. A top-level comment that
+ * other readers have replied to is refused here: `parent_id` cascades, and a
+ * deletion must never take someone else's words with it.
+ */
+export async function deleteComment(commentId: string): Promise<{ ok: boolean; error?: string }> {
+  const { supabase, userId } = await requireUser();
+  const { data: own } = await supabase
+    .from("comments")
+    .select("id, report_id, author_id")
+    .eq("id", commentId)
+    .maybeSingle();
+  if (!own || (own as { author_id: string }).author_id !== userId) {
+    return { ok: false, error: "Only your own comment can be deleted." };
+  }
+  const { count } = await supabase
+    .from("comments")
+    .select("id", { count: "exact", head: true })
+    .eq("parent_id", commentId)
+    .neq("author_id", userId);
+  if ((count ?? 0) > 0) {
+    return { ok: false, error: "Others have replied to this comment, so it stays." };
+  }
+  const { error } = await supabase.from("comments").delete().eq("id", commentId).eq("author_id", userId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/report/${(own as { report_id: string }).report_id}`);
+  return { ok: true };
 }

@@ -12,7 +12,8 @@ import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
-import { listComments } from "@/lib/db/comments";
+import { listComments, listLikedCommentIds } from "@/lib/db/comments";
+import { toFeedComment } from "@/lib/feed/comments";
 import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
@@ -24,7 +25,7 @@ import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
-import { CommentsSection } from "@/components/report/comments-section";
+import { ReportDiscussion } from "@/components/report/report-discussion";
 import { ReportBody } from "@/components/editor/report-body";
 import { ReportClip } from "@/components/report/report-clip";
 import { ReportCards } from "@/components/report/report-cards";
@@ -115,6 +116,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   // above the dek. When the summary has to stand in as the headline it is not
   // also printed as the dek, so a reader never gets one sentence twice.
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
+
+  const likedIds = userId ? await listLikedCommentIds(userId, comments.map((c) => c.id)) : new Set<string>();
+  const discussion = comments.map((c) =>
+    toFeedComment(c, { reportAuthorId: report.author_id, viewerId: userId ?? null, likedIds }),
+  );
   const dek = report.title?.trim() ? report.summary?.trim() : null;
 
   return (
@@ -238,7 +244,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
 
           <div className="order-5 lg:order-none">
-            <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+            <ReportDiscussion
+              reportId={id}
+              comments={discussion}
+              canPost={Boolean(userId)}
+            />
           </div>
         </article>
 

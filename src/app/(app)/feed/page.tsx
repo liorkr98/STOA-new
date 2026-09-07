@@ -6,14 +6,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FeedSurface } from "@/components/feed/feed-surface";
 import { clipsToPublications } from "@/lib/feed/build-publications";
-import { listCommentsForReports } from "@/lib/db/comments";
+import { listCommentsForReports, listLikedCommentIds } from "@/lib/db/comments";
+import { toFeedComment } from "@/lib/feed/comments";
 import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
 import { recordRankingImpressions } from "@/lib/db/ranking";
 import { loadViewerContext } from "@/lib/ranking/context";
 import { rankClips } from "@/lib/ranking/rank";
-import type { FeedComment } from "@/lib/feed/types";
 
 export const metadata: Metadata = { title: "Feed" };
 
@@ -84,22 +84,15 @@ export default async function FeedPage({
       publications.map((p) => p.id),
       FEED_COMMENT_PREVIEW,
     );
+    const likedIds = userId
+      ? await listLikedCommentIds(
+          userId,
+          [...commentsByReport.values()].flat().map((c) => c.id),
+        )
+      : new Set<string>();
     for (const pub of publications) {
-      const authorHandle = pub.analyst.handle;
-      pub.comments = (commentsByReport.get(pub.id) ?? []).map(
-        (c): FeedComment => ({
-          id: c.id,
-          parentId: c.parent_id ?? null,
-          author: {
-            handle: c.author?.handle ?? "",
-            displayName: c.author?.display_name ?? "Reader",
-            avatarUrl: c.author?.avatar_url ?? null,
-            isAuthor: c.author?.handle === authorHandle,
-          },
-          createdAt: c.created_at,
-          text: c.body,
-          likes: c.likes ?? 0,
-        }),
+      pub.comments = (commentsByReport.get(pub.id) ?? []).map((c) =>
+        toFeedComment(c, { reportAuthorId: pub.analyst.id, viewerId: userId ?? null, likedIds }),
       );
     }
   }

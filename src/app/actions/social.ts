@@ -75,20 +75,3 @@ export async function toggleSave(reportId: string) {
   revalidatePath("/saved");
   return { saved: !existing };
 }
-
-export async function addComment(reportId: string, body: string) {
-  const { supabase, userId } = await requireUser();
-  const text = body.trim();
-  if (!text) return { error: "Comment is empty" };
-  const { error } = await supabase
-    .from("comments")
-    .insert({ report_id: reportId, author_id: userId, body: text });
-  if (error) return { error: error.message };
-  try {
-    await supabase.rpc("notify_report_event", { p_report_id: reportId, p_kind: "comment" });
-  } catch {
-    // non-critical
-  }
-  revalidatePath(`/report/${reportId}`);
-  return { ok: true };
-}

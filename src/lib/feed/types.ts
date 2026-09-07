@@ -37,6 +37,10 @@ export interface FeedComment {
   likes: number;
   /** Set when a reply to a reply was flattened one level up. */
   replyingTo?: string | null;
+  /** The reader wrote this comment, so they may delete it. */
+  mine?: boolean;
+  /** The reader has liked this comment. */
+  likedByMe?: boolean;
 }
 
 export interface FeedPublication {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ComponentProps } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -113,6 +113,7 @@ export function ExploreWall({
   dateline,
   basePath = "/explore",
   canAct = false,
+  discussionActions,
   canWatch = false,
   onPost,
 }: {
@@ -127,6 +128,7 @@ export function ExploreWall({
   /** Signed in. Playback costs money per view, so it is account-gated. */
   canWatch?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  discussionActions?: ComponentProps<typeof FeedSurface>["discussionActions"];
 }) {
   const router = useRouter();
   const search = useSearchParams();
@@ -212,6 +214,7 @@ export function ExploreWall({
             startIndex={startIndex}
             canAct={canAct}
             onPost={onPost}
+            discussionActions={discussionActions}
             sessionId={sessionId}
             embedded
             onBack={closeWatch}

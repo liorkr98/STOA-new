@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/server";
 import type { Comment } from "@/lib/types";
 
 export async function listComments(reportId: string, limit = 50): Promise<Comment[]> {
@@ -55,4 +56,20 @@ export async function listCommentsForReports(reportIds: string[], limitPerReport
   }
 
   return map;
+}
+
+/**
+ * Which of these comments the reader has liked, so a like renders as on.
+ * `comment_likes` is public-read, but the filter is the reader's own id, so
+ * this goes through the session client like the other per-reader reads.
+ */
+export async function listLikedCommentIds(userId: string, commentIds: string[]): Promise<Set<string>> {
+  if (commentIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .eq("user_id", userId)
+    .in("comment_id", commentIds);
+  return new Set(((data as { comment_id: string }[] | null) ?? []).map((r) => r.comment_id));
 }

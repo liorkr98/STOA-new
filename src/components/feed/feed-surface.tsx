@@ -20,7 +20,7 @@ import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
-import { FeedDiscussion } from "@/components/feed/feed-discussion";
+import { DiscussionThread, type DiscussionActions } from "@/components/discussion/discussion-thread";
 import { trackEngagement } from "@/lib/engagement/track-client";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
@@ -93,6 +93,7 @@ export function FeedSurface({
   startIndex = 0,
   canAct = false,
   onPost,
+  discussionActions,
   sessionId,
   embedded = false,
   onBack,
@@ -102,6 +103,8 @@ export function FeedSurface({
   /** Signed in: like, save and follow act; otherwise they route to sign-in. */
   canAct?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  /** Like and delete overrides; the real pages leave this out and use the server actions. */
+  discussionActions?: Partial<Omit<DiscussionActions, "post">>;
   sessionId?: string;
   /** Full-viewport overlay (Explore). Height does not subtract the top nav. */
   embedded?: boolean;
@@ -236,6 +239,7 @@ export function FeedSurface({
           pub={publications.find((p) => p.id === discussing)!}
           canPost={canAct}
           onPost={onPost}
+          discussionActions={discussionActions}
           onClose={() => setDiscussing(null)}
         />
       ) : null}
@@ -1050,15 +1054,15 @@ function DiscussionPanel({
   pub,
   canPost,
   onPost,
+  discussionActions,
   onClose,
 }: {
   pub: FeedPublication;
   canPost: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  discussionActions?: Partial<Omit<DiscussionActions, "post">>;
   onClose: () => void;
 }) {
-  const [extra, setExtra] = useState<FeedComment[]>([]);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -1084,17 +1088,14 @@ function DiscussionPanel({
             Close
           </button>
         </div>
-        <FeedDiscussion
-          comments={[...extra, ...pub.comments]}
+        <DiscussionThread
+          variant="panel"
+          comments={pub.comments}
           canPost={canPost}
-          onPost={
-            onPost
-              ? async (text, parentId) => {
-                  const posted = await onPost(pub.id, text, parentId);
-                  if (posted) setExtra((e) => [posted, ...e]);
-                }
-              : undefined
-          }
+          actions={{
+            ...discussionActions,
+            post: onPost ? (text, parentId) => onPost(pub.id, text, parentId) : undefined,
+          }}
         />
       </div>
     </div>
