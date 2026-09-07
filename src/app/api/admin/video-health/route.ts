@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAuthorizedCron } from "@/lib/cron/auth";
 import { isSignedInAdmin } from "@/lib/auth/admin";
-import { getBunnyVideo, isBunnyConfigured } from "@/lib/video/bunny";
+import { getBunnyVideo, isBunnyConfigured, isAbandonedUpload } from "@/lib/video/bunny";
 import { listUnsettledClips } from "@/lib/db/video-clips";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export const maxDuration = 60;
 /**
  * Why is nothing going live?
  *
- * There are three different faults with the same symptom, and no way to tell
+ * There are four different faults with the same symptom, and no way to tell
  * them apart from the outside:
  *
  *   1. Bunny is not transcoding (plan limit, encoding quota, suspended account).
@@ -20,6 +20,10 @@ export const maxDuration = 60;
  *      the app side but is our fault, not theirs.
  *   3. Bunny finished and we never heard (webhook not arriving). Bunny reports
  *      status 4 while our row is still `processing`, and `promotable` counts it.
+ *   4. The upload never delivered. Bunny holds the record at status 0 with
+ *      nothing stored, so there is nothing to encode and no fault on either
+ *      side. `abandonedUploads` counts it, and reading `storedBytes` is the
+ *      only way to tell it from 1, which is what made it cost a week once.
  *
  * Read-only: this reports, it does not reconcile, so it is safe to hit while
  * debugging. Use /api/cron/video-reconcile to actually promote.
@@ -66,6 +70,8 @@ export async function GET(request: NextRequest) {
           bunnyStatus: BUNNY_STATUS[video.status] ?? `unknown(${video.status})`,
           bunnyStatusCode: video.status,
           durationSeconds: video.length,
+          storedBytes: video.storageSize ?? 0,
+          abandonedUpload: isAbandonedUpload(video),
           reachable: true as const,
         };
       } catch (e) {
@@ -81,7 +87,14 @@ export async function GET(request: NextRequest) {
   );
 
   const unreachable = rows.filter((r) => !r.reachable);
-  const encoding = rows.filter((r) => r.reachable && r.bunnyStatusCode !== undefined && r.bunnyStatusCode < 4);
+  const abandoned = rows.filter((r) => r.reachable && r.abandonedUpload);
+  const encoding = rows.filter(
+    (r) =>
+      r.reachable &&
+      !r.abandonedUpload &&
+      r.bunnyStatusCode !== undefined &&
+      r.bunnyStatusCode < 4,
+  );
   const promotable = rows.filter((r) => r.reachable && r.bunnyStatusCode === 4);
   const errored = rows.filter(
     (r) => r.reachable && (r.bunnyStatusCode === 5 || r.bunnyStatusCode === 6),
@@ -100,6 +113,8 @@ export async function GET(request: NextRequest) {
       "Every clip is unreachable, so this is our side: check BUNNY_STREAM_API_KEY and BUNNY_STREAM_LIBRARY_ID on this deployment.";
   } else if (promotable.length > 0) {
     diagnosis = `${promotable.length} clip(s) finished at Bunny but are still unpromoted here, which means webhook deliveries are not arriving. Run /api/cron/video-reconcile to promote them now.`;
+  } else if (abandoned.length > 0) {
+    diagnosis = `${abandoned.length} clip(s) never delivered their bytes: Bunny holds the record with nothing stored, so there is nothing to encode and nothing wrong on Bunny's side. The upload failed in the browser and the publication needs a fresh one.`;
   } else if (encoding.length > 0) {
     diagnosis = `${encoding.length} clip(s) are still pre-finished at Bunny. If this does not move, the encoding queue is stalled on their side: check the plan's encoding allowance and the account's billing state.`;
   } else {
@@ -113,6 +128,7 @@ export async function GET(request: NextRequest) {
       unsettled: rows.length,
       stillEncodingAtBunny: encoding.length,
       finishedButUnpromoted: promotable.length,
+      abandonedUploads: abandoned.length,
       failedAtBunny: errored.length,
       unreachable: unreachable.length,
     },
