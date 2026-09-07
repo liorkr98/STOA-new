@@ -1431,7 +1431,7 @@ export function VideoRung({
 
             {!faithful ? (
               <p className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                Drag the gold ends of the strip to trim · overlays are drawn by Stoa's player, so they show here and on the site but not in a copy shared elsewhere
+                Drag the gold ends of the strip to trim · overlays are drawn by Stoa&apos;s player, so they show here and on the site but not in a copy shared elsewhere
               </p>
             ) : null}
           </div>
