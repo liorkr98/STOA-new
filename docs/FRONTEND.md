@@ -611,9 +611,12 @@ so. That sentence is the reason the rest of the marker is trustworthy.
 
 These sit one row apart in the Publications list and **must never read alike**.
 
-- **Archive** is offered on every publication. Recoverable, and its copy says so.
+- **Archive** is offered on every published publication. Recoverable, and its copy says so.
 - **Delete** is offered only on a publication carrying **no call**, and is absent (not present and
-  refused) otherwise. The permanence guarantee exists to stop an analyst burying a bad call; a
+  refused) otherwise.
+- **A draft** is different: it was never published, so there is nothing on the record to protect.
+  A draft offers Delete with a one-line confirmation and no typed word, never Archive, and never
+  Promote (there is nothing out to promote). The permanence guarantee exists to stop an analyst burying a bad call; a
   publication with no call is content, and a creator may remove their own content.
 
 The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed

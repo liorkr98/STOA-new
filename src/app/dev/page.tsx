@@ -14,6 +14,7 @@ const ROUTES: { href: string; label: string; note: string }[] = [
   { href: "/dev/feed", label: "Feed", note: "The player as a page: a call beside a callless note, sealed cards, the Steelman, discussion." },
   { href: "/dev/profile", label: "Profile", note: "An established analyst: lead, Most Watched, Everything, subject filter." },
   { href: "/dev/profile?state=new", label: "Profile · new analyst", note: "Two publications, deliberately sparse." },
+  { href: "/dev/studio", label: "Publications", note: "A creator's list with a draft, an open call, a callless note and an archived piece; hover a row for its actions." },
   { href: "/dev/compose", label: "Compose", note: "The video rung with sample overlays, tags, the processing state, the Publications row." },
   { href: "/dev/compose-refresh", label: "Compose · refresh and crash", note: "The workspace mounted from an async server page under a loading boundary, with buttons that replay a save's router refresh and crash the current step, to prove neither loses the creator's place." },
   { href: "/dev/markets", label: "Markets", note: "Markets bands with fixture coverage." },
