@@ -10,6 +10,7 @@ import {
   useTransition,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { ArrowLeft, FloppyDisk, RocketLaunch, SquaresFour } from "@phosphor-icons/react";
@@ -50,6 +51,8 @@ import {
 } from "@/lib/editor/tiptap/apply-report-template";
 import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
 import { VideoRung } from "@/components/compose/video-rung";
+import { SaveStatus } from "@/components/compose/save-status";
+import { LeaveDialog } from "@/components/compose/leave-dialog";
 import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
 import { UNIVERSE } from "@/lib/universe";
 import { CardTray } from "@/components/compose/card-tray";
@@ -310,6 +313,16 @@ export function StudioEditor({
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  // The draft's true state for the status line beside the forward button:
+  // unsaved changes, saving, saved (and when), or a failure with its reason.
+  // `dirty` mirrors dirtyRef for rendering; the ref stays the synchronous
+  // truth for the timer and the guards.
+  const [dirty, setDirty] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  // An in-app link pressed with unsaved changes, held until the creator
+  // decides whether to save, leave, or stay.
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
   const [credits, setCredits] = useState(aiCredits);
   const [factCheck, setFactCheck] = useState<FactCheckResult | null>(
     (initialDraft?.fact_check_results as FactCheckResult | null) ?? null,
@@ -359,6 +372,23 @@ export function StudioEditor({
     text: tiptapPlainText(initialDoc),
   });
   const dirtyRef = useRef(false);
+  // Counts edits, so a save that finishes after a later edit cannot mark the
+  // draft clean.
+  const editGenRef = useRef(0);
+  const markDirty = useCallback(() => {
+    dirtyRef.current = true;
+    editGenRef.current += 1;
+    setDirty(true);
+  }, []);
+  /** Wraps a setter so the change counts as unsaved work. */
+  const dirtying = useCallback(
+    <T,>(set: (v: T) => void) =>
+      (v: T) => {
+        set(v);
+        markDirty();
+      },
+    [markDirty],
+  );
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Guards the 30s autosave from firing while doPublish is in flight -- without
   // this, a tick landing mid-publish can write status:"draft" and a stale body
@@ -370,7 +400,7 @@ export function StudioEditor({
 
   const onEditorChange = useCallback((change: { json: JSONContent; text: string }) => {
     latestChangeRef.current = change;
-    dirtyRef.current = true;
+    markDirty();
     setResearchCardIds(collectCardIds(change.json));
     if (change.text.trim().length > 40) setShowTemplateStrip(false);
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -380,7 +410,7 @@ export function StudioEditor({
       setDocJson(change.json);
       setPlainText(change.text);
     }, 500);
-  }, []);
+  }, [markDirty]);
 
   useEffect(
     () => () => {
@@ -433,18 +463,18 @@ export function StudioEditor({
     const card = blankCard(kind);
     setCards((cs) => orderedDeck([...cs, card]));
     setSelectedCardId(card.id);
-    dirtyRef.current = true;
-  }, [setSelectedCardId]);
+    markDirty();
+  }, [setSelectedCardId, markDirty]);
 
   const updateCard = useCallback((next: DraftCard) => {
     setCards((cs) => cs.map((c) => (c.id === next.id ? next : c)));
-    dirtyRef.current = true;
-  }, []);
+    markDirty();
+  }, [markDirty]);
 
   const deleteCard = useCallback((id: string) => {
     setCards((cs) => cs.filter((c) => c.id !== id));
     setSelectedCardId(null);
-    dirtyRef.current = true;
+    markDirty();
     // The placements go with it: an overlay pointing at a deleted card would
     // render a hole, and a figure in the prose would render a placeholder.
     setVideoEdit((e) =>
@@ -468,7 +498,7 @@ export function StudioEditor({
         editor.chain().deleteRange({ from: pos, to: pos + 1 }).run();
       }
     }
-  }, []);
+  }, [markDirty]);
 
   const reorderCards = useCallback((cardId: string, toIndex: number) => {
     setCards((cs) => {
@@ -476,8 +506,8 @@ export function StudioEditor({
       if (from < 0) return cs;
       return moveCard(cs, from, toIndex);
     });
-    dirtyRef.current = true;
-  }, []);
+    markDirty();
+  }, [markDirty]);
 
   /** Place a card on the video's visual track, at the playhead. */
   const placeCardInVideo = useCallback(
@@ -504,10 +534,10 @@ export function StudioEditor({
         };
       });
       setRailDrawerOpen(false);
-      dirtyRef.current = true;
+      markDirty();
       toast.success(`${cardName(card)} added to the video`);
     },
-    [cards],
+    [cards, markDirty],
   );
 
   /** Place a card in the research body, as an inline figure. */
@@ -521,10 +551,10 @@ export function StudioEditor({
       else editor.chain().focus().insertContent(node).run();
       setResearchCardIds(collectCardIds(editor.getJSON()));
       setRailDrawerOpen(false);
-      dirtyRef.current = true;
+      markDirty();
       toast.success(`${cardName(card)} added to the research`);
     },
-    [cards, setRailDrawerOpen],
+    [cards, setRailDrawerOpen, markDirty],
   );
 
   /** A card dropped anywhere in the research body lands where it was dropped. */
@@ -570,7 +600,7 @@ export function StudioEditor({
       });
       if (applied) {
         setShowTemplateStrip(false);
-        dirtyRef.current = true;
+        markDirty();
         const json = e.getJSON();
         latestChangeRef.current = { json, text: tiptapPlainText(json) };
         setDocJson(json);
@@ -578,7 +608,7 @@ export function StudioEditor({
         toast.success(`${tpl.name} applied`);
       }
     },
-    [ticker],
+    [ticker, markDirty],
   );
 
   const getComposeContext = useCallback(() => {
@@ -606,7 +636,9 @@ export function StudioEditor({
 
   const persistDraft = useCallback(async () => {
     if (isPublishingRef.current) return;
+    const gen = editGenRef.current;
     setSaveStatus("saving");
+    setSaveError(null);
     try {
       const res = await saveDraft({
         id: draftId,
@@ -639,12 +671,17 @@ export function StudioEditor({
         if (!cardRes.ok) toast.error(cardRes.error ?? "Could not save the cards.");
       }
       setSaveStatus("saved");
+      setSavedAt(Date.now());
       setError(null);
-      dirtyRef.current = false;
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      // Only clean if nothing changed while the save was in flight.
+      if (editGenRef.current === gen) {
+        dirtyRef.current = false;
+        setDirty(false);
+      }
     } catch (e) {
       setSaveStatus("idle");
       const msg = e instanceof Error ? e.message : "Could not save draft. Try again.";
+      setSaveError(msg);
       setError(msg);
       toast.error(msg);
     }
@@ -681,11 +718,14 @@ export function StudioEditor({
    */
   const persistEdit = useCallback(async () => {
     if (!draftId) return;
+    const gen = editGenRef.current;
     setSaveStatus("saving");
+    setSaveError(null);
     try {
       const cardRes = await saveCards(draftId, toStoredCards(deck));
       if (!cardRes.ok) {
         setSaveStatus("idle");
+        setSaveError(cardRes.error ?? "Could not save the cards.");
         toast.error(cardRes.error ?? "Could not save the cards.");
         return;
       }
@@ -700,40 +740,97 @@ export function StudioEditor({
       });
       if (!res.ok) {
         setSaveStatus("idle");
+        setSaveError(res.error ?? "Could not save the edit.");
         setError(res.error ?? "Could not save the edit.");
         toast.error(res.error ?? "Could not save the edit.");
         return;
       }
       setSaveStatus("saved");
+      setSavedAt(Date.now());
       setError(null);
-      dirtyRef.current = false;
+      if (editGenRef.current === gen) {
+        dirtyRef.current = false;
+        setDirty(false);
+      }
       toast.success(
         (res.sections?.length ?? 0) > 0
           ? "Saved. The publication now shows an EDITED marker."
           : "Nothing had changed, so nothing was recorded.",
       );
-      setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e) {
       setSaveStatus("idle");
       const msg = e instanceof Error ? e.message : "Could not save the edit. Try again.";
+      setSaveError(msg);
       setError(msg);
       toast.error(msg);
     }
   }, [draftId, type, title, summary, tags, deck]);
 
+  // Anything a save would keep. A headline or a ticker on its own used to be
+  // ignored by the timer, which only counted words and cards.
+  const hasAnything =
+    Boolean(draftId) ||
+    Boolean(title.trim() || summary.trim() || plainText.trim() || ticker.trim() || tags.primary) ||
+    cards.length > 0 ||
+    Boolean(videoEdit && videoEdit.overlays.length > 0);
+
   useEffect(() => {
     if (editingPublished) return;
     const t = setInterval(() => {
-      if (!dirtyRef.current) return;
-      const json = JSON.stringify(latestChangeRef.current.json);
-      const hasBlocks =
-        json.includes('"chartNode"') ||
-        json.includes('"napkinNode"') ||
-        json.includes('"dataFigureNode"');
-      if (draftId || summary.trim() || plainText.trim() || hasBlocks) void persistDraft();
+      if (!dirtyRef.current || !hasAnything) return;
+      void persistDraft();
     }, 30_000);
     return () => clearInterval(t);
-  }, [persistDraft, summary, plainText, draftId, editingPublished]);
+  }, [persistDraft, hasAnything, editingPublished]);
+
+  /**
+   * Leaving without noticing. A reload, a closed tab or a typed address is
+   * stopped by the browser's own prompt while there is unsaved work; a tab
+   * going to the background saves at once, since a phone may never bring it
+   * back. Publishing navigates on purpose and is never interrupted.
+   */
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current || isPublishingRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    const onHide = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (!dirtyRef.current || isPublishingRef.current || editingPublished || !hasAnything) return;
+      void persistDraft();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [persistDraft, editingPublished, hasAnything]);
+
+  /**
+   * The same guard for the app's own links (the top nav, the phone tabs, the
+   * Studio arrow): a same-origin link pressed with unsaved work is held, and
+   * the creator chooses to save and go, go without saving, or stay. Caught
+   * in the capture phase, before Next's router sees the click.
+   */
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!dirtyRef.current || isPublishingRef.current) return;
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const target = e.target as Element | null;
+      const a = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setLeaveTo(url.pathname + url.search + url.hash);
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
 
   // First unmet publish requirement, or null when ready. Mirrors the
   // server-side enforcement in publishReport.
@@ -789,19 +886,26 @@ export function StudioEditor({
    * where it sat was wrong, not how tall it was. A frame has no offsets to get
    * wrong, so the class of bug has nowhere to live.
    */
+  const router = useRouter();
   const rootRef = useFrameHeight<HTMLDivElement>();
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
-  const goStep = useCallback((key: StepKey) => {
-    setStepKey(key);
-    setRailOverride(null);
-    setBlockedNote(null);
-    setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
-    // Each step is its own screen, so arriving at one starts at its top rather
-    // than halfway down the last one. The canvas is the scroller, so it is
-    // the canvas that moves.
-    canvasRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  const goStep = useCallback(
+    (key: StepKey) => {
+      // A step change is a natural checkpoint: whatever this step holds is
+      // written before the next one draws, so no transition can lose work.
+      if (!editingPublished && dirtyRef.current && hasAnything) void persistDraft();
+      setStepKey(key);
+      setRailOverride(null);
+      setBlockedNote(null);
+      setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
+      // Each step is its own screen, so arriving at one starts at its top rather
+      // than halfway down the last one. The canvas is the scroller, so it is
+      // the canvas that moves.
+      canvasRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [editingPublished, hasAnything, persistDraft],
+  );
 
   const goNext = useCallback(() => {
     const i = steps.findIndex((s) => s.key === stepKey);
@@ -1235,10 +1339,12 @@ export function StudioEditor({
           {types.find((t) => t.key === mode)?.label ?? "Draft"}
         </span>
 
-        <span className="t-meta min-w-14 text-[11px]" aria-live="polite">
-          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Draft"}
-        </span>
-        {error && (
+        {/* No save state here: it lives beside the step's forward button,
+            where the creator is looking, and there is no Save draft button
+            at all. The draft saves itself (every thirty seconds, on each
+            step change, when the tab hides, and before leaving); a Save
+            button in the publish row read as a publishing action. */}
+        {error && !dirty && (
           <span className="t-meta max-w-[14rem] truncate text-[11px] text-[var(--down)]" role="alert">
             {error}
           </span>
@@ -1266,15 +1372,6 @@ export function StudioEditor({
             </>
           ) : (
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={savingDraft}
-                onClick={() => startDraft(() => persistDraft())}
-              >
-                <FloppyDisk size={16} />
-                <span className="hidden sm:inline">Save draft</span>
-              </Button>
               <Button
                 variant="secondary"
                 size="sm"
@@ -1362,6 +1459,14 @@ export function StudioEditor({
                   : null
               }
               note={note}
+              status={
+                <SaveStatus
+                  dirty={dirty}
+                  saving={saveStatus === "saving" || savingDraft}
+                  savedAt={savedAt}
+                  error={saveError}
+                />
+              }
             >
               {/* Each step's content sits inside its own boundary, so a
                   step that fails to draw is redrawn on its own while the
@@ -1396,6 +1501,7 @@ export function StudioEditor({
                       rows={1}
                       onChange={(e) => {
                         setTitle(e.target.value.replace(/\n/g, " "));
+                        markDirty();
                         fitTextarea(e.currentTarget);
                       }}
                       ref={fitTextarea}
@@ -1421,7 +1527,10 @@ export function StudioEditor({
                       id="report-summary"
                       value={summary}
                       maxLength={POST_MAX_CHARS}
-                      onChange={(e) => setSummary(e.target.value.slice(0, POST_MAX_CHARS))}
+                      onChange={(e) => {
+                        setSummary(e.target.value.slice(0, POST_MAX_CHARS));
+                        markDirty();
+                      }}
                       placeholder="A short take."
                       rows={5}
                       dir="auto"
@@ -1435,7 +1544,10 @@ export function StudioEditor({
                   <input
                     id="report-summary"
                     value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
+                    onChange={(e) => {
+                      setSummary(e.target.value);
+                      markDirty();
+                    }}
                     placeholder="One line under the headline"
                     dir="auto"
                     className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
@@ -1483,26 +1595,26 @@ export function StudioEditor({
                   sections="call"
                   hasCard={hasCard}
                   ticker={ticker}
-                  onTicker={setTicker}
+                  onTicker={dirtying(setTicker)}
                   lookup={symbolLookup}
                   onRetryLookup={retrySymbolLookup}
                   frozen={editingPublished}
                   direction={direction}
-                  onDirection={setDirection}
+                  onDirection={dirtying(setDirection)}
                   target={target}
-                  onTarget={setTarget}
+                  onTarget={dirtying(setTarget)}
                   horizon={horizon}
-                  onHorizon={setHorizon}
+                  onHorizon={dirtying(setHorizon)}
                   access={access}
-                  onAccess={setAccess}
+                  onAccess={dirtying(setAccess)}
                   price={price}
-                  onPrice={setPrice}
+                  onPrice={dirtying(setPrice)}
                   membersIncluded={membersIncluded}
-                  onMembersIncluded={setMembersIncluded}
+                  onMembersIncluded={dirtying(setMembersIncluded)}
                   minPlanRank={minPlanRank}
-                  onMinPlanRank={setMinPlanRank}
+                  onMinPlanRank={dirtying(setMinPlanRank)}
                   requiredPerks={requiredPerks}
-                  onRequiredPerks={setRequiredPerks}
+                  onRequiredPerks={dirtying(setRequiredPerks)}
                   plans={plans}
                   disclosure={disclosure}
                   onDisclosure={setDisclosure}
@@ -1609,7 +1721,7 @@ export function StudioEditor({
                     initialSrc={clipUrl}
                     stage={currentStep.key === "video" ? "choose" : "edit"}
                     value={videoEdit ?? undefined}
-                    onChange={setVideoEdit}
+                    onChange={dirtying(setVideoEdit)}
                     onFile={(file, durationSeconds) => {
                       videoFileRef.current = { file, durationSeconds };
                       setClipUrl(URL.createObjectURL(file));
@@ -1632,7 +1744,7 @@ export function StudioEditor({
                 <div className="flex flex-col gap-4">
                   <TagPicker
                     value={tags}
-                    onChange={setTags}
+                    onChange={dirtying(setTags)}
                     hasCall={lockingCall}
                     callSector={
                       lockingCall
@@ -1676,23 +1788,23 @@ export function StudioEditor({
                     sections="publish"
                     hasCard={hasCard}
                     ticker={ticker}
-                    onTicker={setTicker}
+                    onTicker={dirtying(setTicker)}
                     direction={direction}
-                    onDirection={setDirection}
+                    onDirection={dirtying(setDirection)}
                     target={target}
-                    onTarget={setTarget}
+                    onTarget={dirtying(setTarget)}
                     horizon={horizon}
-                    onHorizon={setHorizon}
+                    onHorizon={dirtying(setHorizon)}
                     access={access}
-                    onAccess={setAccess}
+                    onAccess={dirtying(setAccess)}
                     price={price}
-                    onPrice={setPrice}
+                    onPrice={dirtying(setPrice)}
                     membersIncluded={membersIncluded}
-                    onMembersIncluded={setMembersIncluded}
+                    onMembersIncluded={dirtying(setMembersIncluded)}
                     minPlanRank={minPlanRank}
-                    onMinPlanRank={setMinPlanRank}
+                    onMinPlanRank={dirtying(setMinPlanRank)}
                     requiredPerks={requiredPerks}
-                    onRequiredPerks={setRequiredPerks}
+                    onRequiredPerks={dirtying(setRequiredPerks)}
                     plans={plans}
                     disclosure={disclosure}
                     onDisclosure={setDisclosure}
@@ -1771,6 +1883,48 @@ export function StudioEditor({
         ticker={ticker || undefined}
         onApply={applyTemplate}
         anchor="compose"
+      />
+
+      <LeaveDialog
+
+        href={leaveTo}
+
+        published={editingPublished}
+
+        saving={saveStatus === "saving" || savingDraft}
+
+        onStay={() => setLeaveTo(null)}
+
+        onLeave={() => {
+
+          if (!leaveTo) return;
+
+          dirtyRef.current = false;
+
+          setDirty(false);
+
+          router.push(leaveTo);
+
+        }}
+
+        onSaveAndLeave={() => {
+
+          if (!leaveTo) return;
+
+          startDraft(async () => {
+
+            if (editingPublished) await persistEdit();
+
+            else await persistDraft();
+
+            if (dirtyRef.current) return;
+
+            router.push(leaveTo);
+
+          });
+
+        }}
+
       />
 
       <LockConfirmModal

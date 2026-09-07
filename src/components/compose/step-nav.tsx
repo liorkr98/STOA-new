@@ -113,6 +113,7 @@ export function StepFrame({
   onBack,
   next,
   note,
+  status,
   children,
 }: {
   step: StepDef;
@@ -123,6 +124,8 @@ export function StepFrame({
   next: { label: string; onPress: () => void } | null;
   /** Why the last press did not advance. Cleared once it is no longer true. */
   note: string | null;
+  /** The draft's save state, in words, beside the forward button. */
+  status?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -152,6 +155,7 @@ export function StepFrame({
             Back
           </button>
         ) : null}
+        {status ? <div className="min-w-0 flex-1 basis-[10rem]">{status}</div> : null}
         <div className="ml-auto flex min-w-0 items-center gap-3">
           {note ? (
             <p role="alert" className="max-w-[44ch] text-right text-[0.8125rem] leading-snug text-[var(--rust)]">

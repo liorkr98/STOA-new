@@ -95,6 +95,28 @@ preview is exactly what plays on the site. They are not composited into the
 video file (no burn-in worker exists): a clip shared or downloaded elsewhere
 plays without them, and the editor says so under the timeline.
 
+## Saving
+
+There is no Save draft button. The draft saves itself: every thirty seconds
+while there are unsaved changes, on every step change, when the tab goes to
+the background, when a card's editor closes with Done, and before leaving
+through the dialog below. The true state sits beside each step's forward
+button, where the creator is already looking, and it never goes quiet:
+"Unsaved changes", "Saving…", "Saved just now" (then "Saved 3 min ago"), or
+"Not saved: <reason>" in rust when the server refused. Any change counts,
+not only words: the headline, the dek, the call, access and price, the tags,
+the cards and the video edit all mark the draft unsaved.
+
+Leaving with unsaved work is never silent. A reload, a closed tab or a typed
+address gets the browser's own prompt. One of the app's own links (the top
+nav, the phone tabs, the Studio arrow) opens a dialog with three choices:
+save and leave, leave without saving, or stay. Publishing navigates on
+purpose and is never interrupted.
+
+Editing a live publication is the one place a button stays: **Save changes**
+in the header, because an edit files a public EDITED marker and must be
+meant. The status line still says when edits are unsaved.
+
 ## One button per step
 
 Each step has one forward button whose label is what pressing it does:
