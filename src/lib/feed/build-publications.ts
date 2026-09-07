@@ -1,4 +1,5 @@
 import "server-only";
+import { readStoredVideoEdit } from "@/lib/compose/overlays";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { listTickerRows } from "@/lib/db/tickers";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
@@ -157,6 +158,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       // Proxied so the track is same-origin; see app/api/captions/route.ts.
       captionUrl: native && c.caption_vtt_url ? captionProxyUrl(c.caption_vtt_url) : null,
       durationSeconds: duration,
+      videoEdit: readStoredVideoEdit(r.video_edit),
       feedPreviewSeconds: preview,
       headline: storyHeadline(r),
       deck: storyDek(r),

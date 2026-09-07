@@ -25,6 +25,7 @@ import { trackEngagement } from "@/lib/engagement/track-client";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
+import { OverlayLayer } from "@/components/video/overlay-layer";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { prefersReducedMotion } from "@/lib/motion/reduced";
 import { useStoredValue } from "@/lib/hooks/use-stored-value";
@@ -292,6 +293,8 @@ const FeedItem = function FeedItem({
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const [started, setStarted] = useState(false);
+  // Playback position, only tracked when the publication carries overlays.
+  const [clipTime, setClipTime] = useState(0);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -763,6 +766,7 @@ const FeedItem = function FeedItem({
                     preload={isActive ? "auto" : "metadata"}
                     captionUrl={pub.captionUrl}
                     onUnplayable={onUnplayable}
+                    onTime={pub.videoEdit && isActive ? setClipTime : undefined}
                     onProgress={
                       isActive
                         ? (ratio) => {
@@ -784,6 +788,12 @@ const FeedItem = function FeedItem({
                     allowFullScreen
                     className="absolute inset-0 h-full w-full border-0"
                   />
+                ) : null}
+                {/* The stored edit's overlays, in time with our own player. The
+                    iframe fallback cannot carry them: nothing outside it knows
+                    the playhead. */}
+                {pub.videoEdit && started && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) ? (
+                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} />
                 ) : null}
                 <div
                   aria-hidden

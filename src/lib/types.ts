@@ -1,3 +1,4 @@
+import type { StoredVideoEdit } from "@/lib/compose/overlays";
 /**
  * Domain types shared across the engine, the data layer, and the UI.
  * These mirror the Postgres schema in supabase/migrations.
@@ -98,6 +99,8 @@ export interface Report {
   locked_at: string | null;
   created_at: string;
   fact_check_results?: Record<string, unknown> | null;
+  /** Compose video edit (trim and overlays), drawn by the player. See src/lib/compose/overlays.ts. */
+  video_edit?: Record<string, unknown> | null;
   /** Mandatory disclosure block — never optional, always shown on published content. */
   position_disclosed: boolean;
   position_held: boolean | null;
@@ -247,6 +250,12 @@ export interface ComposeInput {
   /** Future publish time. Held as a draft until the scheduler releases it. */
   scheduled_for?: string | null;
   fact_check_results?: Record<string, unknown> | null;
+  /**
+   * The clip's edit: trim and timed overlays with a snapshot of the cards
+   * they use. Stored with the draft and drawn by the player once published.
+   * Undefined leaves the stored edit alone; null clears it.
+   */
+  video_edit?: StoredVideoEdit | null;
   /** Mandatory disclosure block — publish is blocked server-side until these are answered. */
   position_held?: boolean;
   compensation_tied?: boolean;

@@ -1417,8 +1417,8 @@ they agree on a shape. This is that shape, in `src/components/compose/video-rung
 - **The cover** is a folded row under the timeline (the chosen frame, or "Choose"); opening it shows
   the same frames as the strip plus an image upload. Shown at 4:5 as on Explore and the profile.
 - **The faithful preview** ("Preview as it will publish") hides every handle, ring and label and
-  plays exactly what will ship. Overlays burn in at publish, so this must never drift from the
-  published video.
+  plays exactly what will ship. It draws the overlays through the same `OverlayLayer` the
+  player uses, so it cannot drift from the published video.
 - Keyboard, when the timeline has focus: Space plays, ←/→ step a frame (Shift: ten), Delete removes
   the selection, Escape deselects. These are not buttons.
 
@@ -1479,8 +1479,10 @@ plain.
 
 #### Other invariants
 
-- Overlays burn permanently into the video at publish, so the preview must stay exactly what will
-  ship, and the processing state after publish stays.
+- Overlays are stored with the publication (`reports.video_edit`) and drawn by Stoa's player at
+  playback, from the same renderer as the faithful preview (`src/components/video/overlay-layer.tsx`).
+  They are not composited into the file: a clip shared or downloaded elsewhere plays without them,
+  and the editor says so. The processing state after publish stays.
 - Per-card free/locked control stays. The **CTA card is pinned last** and is **derived from
   Access**, not authored, so it cannot be deleted, duplicated, or left behind on a publication
   that stopped being gated.

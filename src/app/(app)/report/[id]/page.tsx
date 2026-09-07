@@ -11,6 +11,7 @@ import { getLiveClipForReport } from "@/lib/video/clip-for-report";
 import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
+import { readStoredVideoEdit } from "@/lib/compose/overlays";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { listComments, listLikedCommentIds } from "@/lib/db/comments";
 import { toFeedComment } from "@/lib/feed/comments";
@@ -99,6 +100,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const clipMedia = clip
     ? resolveClipPlayback({ playbackUrl: clip.playback_url, thumbnailUrl: clip.thumbnail_url, index: 0 })
     : null;
+
   const clipEmbedUrl =
     clip && !clipMedia?.src.endsWith(".mp4") && isBunnyConfigured()
       ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
@@ -263,6 +265,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   analystId={report.author_id}
                   durationSeconds={clip.duration_seconds}
                   analystName={author?.display_name ?? "The analyst"}
+                  edit={readStoredVideoEdit(report.video_edit)}
+                  ticker={report.ticker}
                 />
               </div>
             ) : null}

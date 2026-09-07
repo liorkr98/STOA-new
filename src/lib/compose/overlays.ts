@@ -1,12 +1,14 @@
 /**
  * Video overlays (not "cards": cards are the separate swipeable evidence
  * stack). Timed text and visual events on two tracks over the analyst's
- * video. They burn permanently into the video at publish, so the editor's
- * preview must be exactly what will ship.
+ * video.
  *
- * OVERLAYS_PLACEHOLDER: nothing stores overlays yet and no burn-in pipeline
- * exists (DECISION REQUIRED in the build spec). The editor holds them in
- * memory; see the backend brief for what publishing them needs.
+ * They are stored with the publication (`reports.video_edit`, migration 0064)
+ * and drawn by Stoa's player at playback, from the same renderer the editor's
+ * faithful preview uses, so what the creator sees is what plays on the site.
+ * They are not composited into the video file: no burn-in worker exists. A
+ * clip shared or downloaded elsewhere plays without them, and the editor says
+ * so where the overlays are placed.
  */
 
 /** Nine-point grid position: 1 top-left ... 5 centre ... 9 bottom-right. */
@@ -121,6 +123,87 @@ export function activeAt<T extends Overlay>(overlays: T[], t: number): T[] {
 
 export function emptyEdit(durationSeconds: number): VideoEdit {
   return { durationSeconds, trimStart: 0, trimEnd: durationSeconds, thumbnail: null, overlays: [] };
+}
+
+/**
+ * What is stored on the publication. The overlays and trim as edited, plus a
+ * snapshot of the deck cards the overlays point at, so the player can draw a
+ * card overlay from the edit alone. Thumbnail choice is not stored: nothing
+ * applies it yet.
+ */
+export interface StoredVideoEdit {
+  version: 1;
+  durationSeconds: number;
+  trimStart: number;
+  trimEnd: number;
+  overlays: Overlay[];
+  cards: StoredOverlayCard[];
+}
+
+/** The card shape the player needs: the same as Compose's DraftCard. */
+export interface StoredOverlayCard {
+  id: string;
+  kind: string;
+  locked: boolean;
+  payload: Record<string, unknown>;
+}
+
+/** True when the edit holds something a viewer would see. */
+export function editHasOverlays(edit: { overlays: Overlay[] } | null | undefined): boolean {
+  return Boolean(edit && edit.overlays.length > 0);
+}
+
+/**
+ * The edit as it is stored. Null when there is nothing to store, so a
+ * publication without overlays never writes the column at all.
+ */
+export function toStoredVideoEdit(
+  edit: VideoEdit | null,
+  deck: StoredOverlayCard[],
+): StoredVideoEdit | null {
+  if (!edit || edit.overlays.length === 0) return null;
+  const wanted = new Set<string>();
+  for (const o of edit.overlays) {
+    if (o.kind === "visual" && o.source.type === "card" && o.source.cardId) wanted.add(o.source.cardId);
+  }
+  return {
+    version: 1,
+    durationSeconds: edit.durationSeconds,
+    trimStart: edit.trimStart,
+    trimEnd: edit.trimEnd,
+    overlays: edit.overlays,
+    cards: deck.filter((c) => wanted.has(c.id)).map((c) => ({ id: c.id, kind: c.kind, locked: c.locked, payload: c.payload })),
+  };
+}
+
+/** Reads a stored edit back into the editor's shape; null when absent or unreadable. */
+export function fromStoredVideoEdit(raw: unknown): VideoEdit | null {
+  if (!raw || typeof raw !== "object") return null;
+  const e = raw as Partial<StoredVideoEdit>;
+  if (!Array.isArray(e.overlays)) return null;
+  const durationSeconds = typeof e.durationSeconds === "number" && e.durationSeconds > 0 ? e.durationSeconds : 90;
+  return {
+    durationSeconds,
+    trimStart: typeof e.trimStart === "number" ? e.trimStart : 0,
+    trimEnd: typeof e.trimEnd === "number" ? e.trimEnd : durationSeconds,
+    thumbnail: null,
+    overlays: e.overlays as Overlay[],
+  };
+}
+
+/** The stored edit as the player reads it; null when absent or unreadable. */
+export function readStoredVideoEdit(raw: unknown): StoredVideoEdit | null {
+  if (!raw || typeof raw !== "object") return null;
+  const e = raw as Partial<StoredVideoEdit>;
+  if (!Array.isArray(e.overlays) || e.overlays.length === 0) return null;
+  return {
+    version: 1,
+    durationSeconds: typeof e.durationSeconds === "number" ? e.durationSeconds : 0,
+    trimStart: typeof e.trimStart === "number" ? e.trimStart : 0,
+    trimEnd: typeof e.trimEnd === "number" ? e.trimEnd : 0,
+    overlays: e.overlays as Overlay[],
+    cards: Array.isArray(e.cards) ? (e.cards as StoredOverlayCard[]) : [],
+  };
 }
 
 /**

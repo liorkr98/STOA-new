@@ -89,8 +89,11 @@ continues. An inset is resized by dragging its gold corner on the picture
 (a slider does the same from a keyboard or a phone) and given an opacity;
 full frame fills the picture with the visual, scaled to the stage, the video
 dimmed behind it, and text or insets on the same seconds wait until it is
-gone. Overlays burn into the video at publish; "Preview as it will publish"
-plays exactly what ships.
+gone. Overlays are stored with the publication and drawn by Stoa's player
+over the clip, from the same renderer as "Preview as it will publish", so the
+preview is exactly what plays on the site. They are not composited into the
+video file (no burn-in worker exists): a clip shared or downloaded elsewhere
+plays without them, and the editor says so under the timeline.
 
 ## One button per step
 

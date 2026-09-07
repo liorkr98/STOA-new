@@ -77,7 +77,7 @@ import {
   type DraftCard,
 } from "@/lib/compose/cards";
 import { setComposeDeck } from "@/lib/compose/card-store";
-import { emptyEdit, type VideoEdit } from "@/lib/compose/overlays";
+import { emptyEdit, fromStoredVideoEdit, toStoredVideoEdit, type VideoEdit } from "@/lib/compose/overlays";
 import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { useSymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { saveCards } from "@/app/actions/cards";
@@ -267,9 +267,13 @@ export function StudioEditor({
   // The publication's modules. No fork: a publication may have video,
   // research, both or neither, and adding one is not a question asked before
   // the creator has written anything.
-  const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() =>
-    hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null,
-  );
+  // Seeded from the stored edit when the draft has one, so overlays placed in
+  // an earlier session come back rather than being lost to a reload.
+  const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() => {
+    const stored = fromStoredVideoEdit(initialDraft?.video_edit);
+    if (stored) return stored;
+    return hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null;
+  });
 
 
   // The deck. One pool for the whole publication, not a step inside the video.
@@ -623,8 +627,10 @@ export function StudioEditor({
         horizon_days: ticker.trim() ? horizon : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
+        video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
       });
       setDraftId(res.id);
+      if (res.videoEditError) toast.error(res.videoEditError);
       // Cards need the report id, so they are written after the draft row
       // exists. A card failure must not read as a lost draft: the words are
       // already saved by this point.
@@ -662,6 +668,7 @@ export function StudioEditor({
     tags,
     deck,
     feedPreviewSeconds,
+    videoEdit,
   ]);
 
   /**
@@ -979,6 +986,7 @@ export function StudioEditor({
             horizon_days: lockingCall ? horizon : undefined,
             primary_tag: tags.primary,
             secondary_tags: tags.secondary,
+            video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
           });
           id = res.id;
           setDraftId(id);
@@ -1018,6 +1026,7 @@ export function StudioEditor({
         horizon_days: lockingCall ? horizon : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
+        video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {
@@ -1083,6 +1092,7 @@ export function StudioEditor({
     target,
     horizon,
     factCheck,
+    videoEdit,
     disclosure,
     tags,
     deck,

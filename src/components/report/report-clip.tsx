@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
-import { isDirectVideoUrl } from "@/lib/video/direct";
+import { OverlayLayer } from "@/components/video/overlay-layer";
+import { isPlayableVideoUrl } from "@/lib/video/direct";
+import type { StoredVideoEdit } from "@/lib/compose/overlays";
 import { trackEngagement } from "@/lib/engagement/track-client";
 import { cn } from "@/lib/design/cn";
 
@@ -25,6 +27,13 @@ import { cn } from "@/lib/design/cn";
  * holds still while the text scrolls past. On a phone there is no second column,
  * so it leads the page and then docks: once it is playing and the reader has
  * scrolled it out of sight, it shrinks to a corner and keeps going.
+ *
+ * When the publication carries a stored edit, the clip plays in our own
+ * element with the browser's controls and the overlays are drawn over it in
+ * time with playback (OverlayLayer, the same renderer as Compose's faithful
+ * preview). Bunny's iframe stays as the fallback for a stream the browser
+ * cannot play; it cannot carry overlays, since nothing outside it knows the
+ * playhead.
  */
 
 /** Below this the page is one column and the docked player applies. */
@@ -38,6 +47,8 @@ export function ReportClip({
   analystId,
   durationSeconds,
   analystName,
+  edit = null,
+  ticker,
 }: {
   reportId: string;
   embedUrl: string | null;
@@ -46,9 +57,17 @@ export function ReportClip({
   analystId: string | null;
   durationSeconds: number;
   analystName: string;
+  /** The stored Compose edit: overlays drawn by the player. Null plays the clip bare. */
+  edit?: StoredVideoEdit | null;
+  ticker?: string | null;
 }) {
   const [playing, setPlaying] = useState(false);
   const [scrolledAway, setScrolledAway] = useState(false);
+  const [time, setTime] = useState(0);
+  // A stream the browser refused: fall back to Bunny's own player.
+  const [unplayable, setUnplayable] = useState(false);
+  const onUnplayable = useCallback(() => setUnplayable(true), []);
+  const native = !unplayable && isPlayableVideoUrl(playbackUrl) && Boolean(playbackUrl);
   const slotRef = useRef<HTMLDivElement>(null);
   // The slot holds this height once the player leaves it, so the page does not
   // jump. Measured in the observer callback, at the moment docking is decided
@@ -133,14 +152,20 @@ export function ReportClip({
                 : "mx-auto w-[min(100%,18rem)] sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]",
             )}
           >
-            {playing && isDirectVideoUrl(playbackUrl) && playbackUrl ? (
-              <NativeClip
-                src={playbackUrl}
-                poster={thumbnailUrl}
-                muted={false}
-                paused={false}
-                title={`${analystName} on this publication`}
-              />
+            {playing && native && playbackUrl ? (
+              <>
+                <NativeClip
+                  src={playbackUrl}
+                  poster={thumbnailUrl}
+                  muted={false}
+                  paused={false}
+                  controls
+                  title={`${analystName} on this publication`}
+                  onTime={edit ? setTime : undefined}
+                  onUnplayable={onUnplayable}
+                />
+                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} /> : null}
+              </>
             ) : playing && embedUrl ? (
               <iframe
                 src={embedUrl}

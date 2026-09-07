@@ -1,5 +1,6 @@
 import type { Direction } from "@/lib/types";
 import type { StageMarker } from "@/lib/today/types";
+import type { StoredVideoEdit } from "@/lib/compose/overlays";
 
 /**
  * The Feed player's publication shape: one video, optionally enriched with a
@@ -57,6 +58,8 @@ export interface FeedPublication {
   /** WebVTT captions. The Feed plays muted, so this is how most readers follow it. */
   captionUrl: string | null;
   durationSeconds: number;
+  /** The stored Compose edit; the player draws its overlays over the clip. */
+  videoEdit: StoredVideoEdit | null;
   headline: string;
   deck: string | null;
   typeLabel: "CALL" | "RESEARCH" | "NOTE" | "VIDEO";

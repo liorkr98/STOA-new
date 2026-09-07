@@ -8,8 +8,8 @@ import { cn } from "@/lib/design/cn";
 /**
  * What the creator sees after hitting publish while the video is still
  * processing: the publication exists; the video is being transcoded and
- * captioned by the video host, and (once a burn-in pipeline exists) overlays
- * are being composited. It reads as progress, not a hang: what is happening,
+ * captioned by the video host. Overlays need no pass of their own: the player
+ * draws them from the stored edit. It reads as progress, not a hang: what is happening,
  * roughly how long, and that they can leave. The status is the clip's real
  * status; nothing here pretends to complete.
  */
@@ -63,7 +63,7 @@ export function ProcessingState({
           </h3>
           <p className="mt-1.5 max-w-[52ch] text-[0.875rem] text-text-mute">
             {status === "processing"
-              ? `Usually a few minutes for a 90-second clip${hasOverlays ? "; overlays add a compositing pass once that pipeline exists" : ""}. You can leave this page; the video appears on your publication when it is ready.`
+              ? `Usually a few minutes for a 90-second clip. You can leave this page; the video appears on your publication when it is ready${hasOverlays ? ", with its overlays" : ""}.`
               : status === "ready"
                 ? "The video is transcoded, captioned and playing on the report page."
                 : "Nothing was published to readers. Try the upload again from the publication."}

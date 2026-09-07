@@ -1,5 +1,7 @@
 "use client";
 
+import { OverlayLayer } from "@/components/video/overlay-layer";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff, ImagePlus, Layers, Pause, Play, Sparkles, TrendingUp, Type, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +57,10 @@ import {
  * What it keeps, all of it: trim, text overlays, visual overlays with the
  * cutaway and inset modes, dragging a card from the tray onto the timeline,
  * the faithful preview, and the promise that the preview is exactly what
- * publishes, because overlays burn permanently into the video.
+ * plays on the site: the faithful preview and the public player draw the
+ * overlays through one component (OverlayLayer). Overlays are stored with
+ * the publication, not composited into the file, so a clip shared elsewhere
+ * plays without them; the copy under the timeline says so.
  *
  * With a local file the stage plays the real video; without one (a fixture,
  * or a clip that already lives on the server) it plays a poster with a
@@ -277,7 +282,7 @@ function Stage({
   const [dragging, setDragging] = useState(false);
   const pressRef = useRef<{ id: string; x: number; y: number; moved: boolean } | null>(null);
   // The full-frame card is scaled with the picture, so a card that reads at
-  // 13px in the toolbox reads like a slide on the stage and burns in at the
+  // 13px in the toolbox reads like a slide on the stage and plays at the
   // same proportion whatever size the stage happened to be on screen.
   const [stageWidth, setStageWidth] = useState(0);
   useEffect(() => {
@@ -361,6 +366,14 @@ function Stage({
         <Poster />
       )}
 
+      {/* The faithful preview draws the overlays through the player's own
+          renderer, so it is the published rendering and not a copy of it.
+          While editing, the same overlays are drawn below with handles,
+          rings and pointer handlers on them. */}
+      {faithful ? (
+        <OverlayLayer overlays={edit.overlays} cards={cards} time={time} ticker={ticker} />
+      ) : (
+        <>
       {/* Full frame: the visual fills the picture, the video dimmed behind
           it and the sound carrying on. It used to replace the picture with
           a sheet of paper and then let insets and text paint over the top;
@@ -435,6 +448,9 @@ function Stage({
           />
         </div>
       ))}
+
+        </>
+      )}
 
       {/* The nine places a thing can sit, shown only while one is being moved. */}
       {dragging ? (
@@ -1390,7 +1406,7 @@ export function VideoRung({
 
             {faithful ? (
               <p className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                Plays exactly as it will publish. Overlays burn into the video and cannot be removed afterwards.
+                Plays exactly as it will publish. Overlays show wherever the clip plays on Stoa; a copy shared or downloaded elsewhere plays without them.
               </p>
             ) : selected ? (
               <Selected
@@ -1415,7 +1431,7 @@ export function VideoRung({
 
             {!faithful ? (
               <p className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                Drag the gold ends of the strip to trim · everything placed on the video is permanent once published
+                Drag the gold ends of the strip to trim · overlays are drawn by Stoa's player, so they show here and on the site but not in a copy shared elsewhere
               </p>
             ) : null}
           </div>

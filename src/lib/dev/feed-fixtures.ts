@@ -1,4 +1,5 @@
 import type { FeedCard, FeedComment, FeedPublication } from "@/lib/feed/types";
+import type { StoredVideoEdit } from "@/lib/compose/overlays";
 import type { AttentionSample } from "@/lib/lifecycle/stages";
 import { demoClipPath } from "@/lib/demo/clips";
 
@@ -53,6 +54,8 @@ const comments = (id: string, author: A): FeedComment[] => [
 
 interface Spec {
   id: string;
+  /** A stored Compose edit, so the player's overlay rendering can be reviewed. */
+  videoEdit?: StoredVideoEdit;
   by: A;
   type: FeedPublication["typeLabel"];
   headline: string;
@@ -70,7 +73,37 @@ interface Spec {
 }
 
 const SPECS: Spec[] = [
-  { id: "x1", by: LENA, type: "CALL", headline: "Blackwell demand is still under-modelled into the January quarter", deck: "Hyperscaler capex guides imply a supply-constrained first half.", ticker: "NVDA", dir: "long", sector: "Semiconductors", secs: 222, hours: 2, views: 4820, locked: [false, false, true, true, true, true, true, true], access: "subscribers" },
+  {
+    id: "x1",
+    videoEdit: {
+      version: 1,
+      durationSeconds: 48,
+      trimStart: 0,
+      trimEnd: 48,
+      overlays: [
+        { id: "ov-t1", kind: "text", start: 1, end: 6, text: "Lead times, not the calendar", position: 7, size: "md" },
+        {
+          id: "ov-c1",
+          kind: "visual",
+          start: 4,
+          end: 12,
+          source: { type: "card", cardId: "x1-kill", label: "Kill switch" },
+          mode: "inset",
+          position: 3,
+          size: 0.5,
+          opacity: 1,
+        },
+        { id: "ov-t2", kind: "text", start: 14, end: 20, text: "Target $160 by January", position: 8, size: "lg" },
+      ],
+      cards: [
+        {
+          id: "x1-kill",
+          kind: "kill_switch",
+          locked: false,
+          payload: { conditions: [{ text: "Lead times below 20 weeks", ink: "plain" }, { text: "Hyperscaler capex guide cut", ink: "plain" }] },
+        },
+      ],
+    }, by: LENA, type: "CALL", headline: "Blackwell demand is still under-modelled into the January quarter", deck: "Hyperscaler capex guides imply a supply-constrained first half.", ticker: "NVDA", dir: "long", sector: "Semiconductors", secs: 222, hours: 2, views: 4820, locked: [false, false, true, true, true, true, true, true], access: "subscribers" },
   { id: "x2", by: KAI, type: "CALL", headline: "The refiners nobody is modelling correctly", deck: "Crack spreads held through a quarter that should have crushed them.", ticker: "VLO", dir: "long", sector: "Energy", secs: 187, hours: 4, views: 3100 },
   { id: "x3", by: PRIYA, type: "NOTE", headline: "What the Strait of Hormuz headlines mean for crude this week", theme: "MACRO · OIL & ENERGY", sector: "Energy", secs: 95, hours: 5, views: 2210 },
   { id: "x4", by: MARCUS, type: "CALL", headline: "Shorting the last honest regional bank", ticker: "ZION", dir: "short", sector: "Financials", secs: 240, hours: 7, views: 1900, locked: [false, true, true, true, true, true, true, true], access: "paid" },
@@ -115,6 +148,7 @@ export function fixturePublications(): FeedPublication[] {
       thumbnailUrl: clip.poster,
       captionUrl: null,
       durationSeconds: s.secs,
+      videoEdit: s.videoEdit ?? null,
       feedPreviewSeconds: null,
       headline: s.headline,
       deck: s.deck ?? null,
