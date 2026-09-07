@@ -26,7 +26,10 @@ export type FeedCard =
   | { kind: "figure"; id: string; locked: boolean; caption: string; imageUrl: string | null; source: "creator" | "auto" }
   | { kind: "chart"; id: string; locked: boolean; ticker: string; caption: string; compareTicker?: string }
   | { kind: "steelman"; id: string; locked: boolean; objection: string; answer: string }
-  | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers" | "free" };
+  /** The closing card of a gated publication: what is behind the paywall and where to buy it. */
+  | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers"; href: string }
+  /** The closing card of a free publication: nothing is gated, so it simply opens the full piece. */
+  | { kind: "read"; id: string; locked: false; href: string };
 
 export interface FeedComment {
   id: string;

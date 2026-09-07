@@ -33,14 +33,14 @@ function fullStack(id: string, ticker: string, locked: boolean[]): FeedCard[] {
     { kind: "checklist", id: `${id}-c5`, locked: l(5), rows: [{ label: "Backlog growing", status: "done", ink: "auto" }, { label: "Pricing holding", status: "done", ink: "creator_est" }, { label: "Inventory days falling", status: "pending", ink: "auto" }, { label: "Insider buying", status: "failed", ink: "auto" }] },
     { kind: "figure", id: `${id}-c6`, locked: l(6), caption: "Lead times vs price, trailing 8 quarters", imageUrl: null, source: "creator" },
     { kind: "steelman", id: `${id}-c7`, locked: l(7), objection: "Capacity additions announced this year land in exactly the window your target needs supply to stay tight.", answer: "They land, but they land at trailing-edge nodes. The tightness is at the leading edge, where the announced capacity is a rounding error until 2028." },
-    { kind: "unlock", id: `${id}-unlock`, locked: false, access: "subscribers", price: null },
+    { kind: "unlock", id: `${id}-unlock`, locked: false, access: "subscribers", price: null, href: `/report/${id}` },
   ];
 }
 
 function noteStack(id: string): FeedCard[] {
   return [
     { kind: "thesis", id: `${id}-c0`, locked: false, title: "What this note covers", body: "A short read on a headline that will move the tape today. No call, no target, just context." },
-    { kind: "unlock", id: `${id}-unlock`, locked: false, access: "free", price: null },
+    { kind: "read", id: `${id}-read`, locked: false, href: `/report/${id}` },
   ];
 }
 

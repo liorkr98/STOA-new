@@ -353,7 +353,9 @@ const FeedItem = function FeedItem({
   }, [isActive]);
 
   const cards = useMemo(() => pub.cards ?? [], [pub]);
-  const unlockIndex = cards.findIndex((c) => c.kind === "unlock");
+  // The closing card: the unlock card on a gated piece, the read card on a
+  // free one. The page counter and a sealed card's tap both jump to it.
+  const unlockIndex = cards.findIndex((c) => c.kind === "unlock" || c.kind === "read");
   // The clip is the first panel of the track; the evidence follows it.
   const panelCount = cards.length + 1;
 
