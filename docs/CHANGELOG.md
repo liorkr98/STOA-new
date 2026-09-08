@@ -10,6 +10,46 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-08 — The Feed scrolls again in Chrome and Safari
+
+**For someone using the site**
+
+- **The Feed moves past the first video.** In Chrome and Safari (desktop and phone), a wheel
+  or a swipe that started on the video went nowhere when the publication carried evidence
+  cards; the reader had to scroll from the paper beside the card, or use Firefox. The cause was
+  one CSS rule: the sideways evidence track was told not to chain scrolling on either axis,
+  and those two browsers honour that on the vertical axis even though the track cannot scroll
+  vertically, so the gesture died in the track instead of reaching the reader. Whether a given
+  person hit it depended on which publication their personalised order put first: one with
+  cards stuck at once, one without scrolled until the next publication with cards. The track
+  is now contained sideways only.
+- **The Feed's height is measured, not assumed.** It used to be computed from the viewport
+  and the nav and tab-bar tokens, which were a pixel off (the nav's border) and can be wrong
+  in other ways on other devices. The surface now measures the room its scroller gives it,
+  the way Compose and Today already do, and keeps the computed height only as the first
+  paint's guess and as the fallback when a measurement is too small to be a reader. In a
+  browser that lacks the small-viewport unit the shell used to have no height at all; it now
+  falls back to the plain viewport.
+- **Not the cause, ruled out:** the service worker. It caches only content-hashed static
+  files and fetches every page from the network, so it cannot serve a stale build.
+
+**Found while in there**
+
+- The same "contain both axes" rule sat under four other sideways scrollers: the Markets
+  tables, the statement and estimates tables in the editor, and the overlay strip in Compose.
+  A wheel or swipe over a wide table would not scroll the page in Chrome or Safari. All four
+  use the new `.scroll-area-x`.
+- `/dev/feed` mounted the Feed bare in a scrolling window, so it could not show how the Feed
+  and the page's scroller relate. It now mounts inside a copy of the app shell
+  (`src/app/dev/_app-shell.tsx`), like the real page.
+
+**What needs Krisi**
+
+- Nothing: no schema, no dashboard. If anyone still sees the old behaviour after the deploy,
+  a hard reload is enough; there is no stale build to clear.
+
+---
+
 ## 2026-09-07 — Eleven fixes: sign-in after confirming, the discussion, drafts, overlays, saving
 
 **For someone using the site**

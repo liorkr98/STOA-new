@@ -420,8 +420,26 @@ scroll-snap, nothing below the fold.
   touch to its dominant axis by itself, so a dominant-x swipe reaches the track, a dominant-y
   swipe reaches the reader, and a diagonal resolves to whichever won rather than doing both or
   neither. Leave `touch-action` alone: pinning the track to `pan-x` would stop a vertical swipe
-  that starts on the video, which is most of them. `overscroll-behavior: contain` on both keeps
-  either from chaining into the page.
+  that starts on the video, which is most of them.
+- **Contain each container on its own axis only.** The reader is `.scroll-area` (contained
+  both ways: it is the vertical scroller, and nothing should chain out of it into the page).
+  The track is `.scroll-area-x`: contained sideways, open vertically. Never `.scroll-area` on
+  the track. Chrome and WebKit cut the scroll chain on any axis marked `contain`, whether or
+  not the element can scroll on that axis, so a contained track swallows every vertical wheel
+  or swipe that starts over the video and the Feed sits on its first publication. Firefox
+  chains regardless, which is why the bug showed for some readers and not others: it needed
+  Chrome or Safari and a first publication that has evidence cards (a track with one panel is
+  not a scroller, so a card-less publication scrolled fine). The same rule applies to every
+  sideways scroller inside a page: wide tables, strips and rails use `.scroll-area-x`.
+- **The height is measured, the token is the guess.** `.feed-snap` reads `--feed-h`, which
+  `<FeedSurface>` writes from `useFrameHeight` (the room its scroller gives it, the same
+  measure as every other frame), and falls back to the calc from `--app-h`, `--nav-h` and
+  `--tab-h` for the server paint and whenever the measurement is too small to be a reader.
+  The tokens alone are one pixel off (the nav's border is not in `--nav-h`), enough to give
+  `<main>` a pixel of scroll under the Feed, and a token can be wrong in ways a measurement
+  is not. `--app-h` itself is `100vh` first and only then `100dvh`/`100svh` where supported,
+  so the shell always has a definite height. The Explore overlay keeps its class height:
+  it is the viewport.
 - **Set `overflow-y` on the track explicitly.** With only `overflow-x` set, CSS promotes the
   other axis to `auto` and the stage silently becomes a vertical scroller nested inside the
   vertical reader, ready to swallow an up-swipe as soon as a card grows taller than the frame.
