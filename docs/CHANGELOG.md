@@ -10,6 +10,19 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-08 — The Write headline can be typed after Video
+
+**For someone using the site**
+
+- **The headline field on Write is usable.** On a Video publication the first step
+  is the clip, and Write is the second. The headline box was being sized while
+  it was still hidden, which set its height to nothing, so tapping it did
+  nothing. The line under it (the dek) still worked, which made it look as if
+  only the second headline could be written. The headline is measured when
+  Write actually opens.
+
+---
+
 ## 2026-09-08 — The Feed scrolls again in Chrome and Safari
 
 **For someone using the site**
