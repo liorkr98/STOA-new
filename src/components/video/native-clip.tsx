@@ -23,6 +23,8 @@ export function NativeClip({
   preload = "auto",
   captionUrl,
   onUnplayable,
+  onTime,
+  controls = false,
 }: {
   src: string;
   poster?: string | null;
@@ -43,6 +45,10 @@ export function NativeClip({
   captionUrl?: string | null;
   /** The stream could not be played at all. Let the caller fall back to an embed. */
   onUnplayable?: () => void;
+  /** Playback position in seconds, for anything drawn in time with the clip. */
+  onTime?: (seconds: number) => void;
+  /** The browser's own controls, for a page where the reader chose to watch. */
+  controls?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const hls = isHlsUrl(src);
@@ -116,18 +122,24 @@ export function NativeClip({
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || !onProgress) return;
+    if (!el || (!onProgress && !onTime)) return;
     const cap = previewSeconds && previewSeconds > 0 ? previewSeconds : null;
-    const onTime = () => {
+    const tick = () => {
       if (cap && el.currentTime >= cap) {
         el.currentTime = 0;
       }
+      onTime?.(el.currentTime);
+      if (!onProgress) return;
       const denom = cap ? cap : el.duration;
       if (denom > 0) onProgress(Math.min(1, el.currentTime / denom));
     };
-    el.addEventListener("timeupdate", onTime);
-    return () => el.removeEventListener("timeupdate", onTime);
-  }, [onProgress, previewSeconds]);
+    el.addEventListener("timeupdate", tick);
+    el.addEventListener("seeked", tick);
+    return () => {
+      el.removeEventListener("timeupdate", tick);
+      el.removeEventListener("seeked", tick);
+    };
+  }, [onProgress, onTime, previewSeconds]);
 
   /**
    * A dead file, a refused manifest, or a codec the browser will not decode.
@@ -180,6 +192,7 @@ export function NativeClip({
       loop
       muted={muted}
       preload={preload}
+      controls={controls}
       autoPlay={!paused}
       className={cn("absolute inset-0 h-full w-full object-cover", className)}
     >

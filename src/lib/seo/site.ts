@@ -4,7 +4,7 @@
  * production domain change is one env var, not a grep-and-replace.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://stoa.app"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.stoamarket.ai"
 ).replace(/\/+$/, "");
 
 export function absoluteUrl(path: string): string {

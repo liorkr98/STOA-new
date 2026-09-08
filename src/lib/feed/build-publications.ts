@@ -1,4 +1,5 @@
 import "server-only";
+import { readStoredVideoEdit } from "@/lib/compose/overlays";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { listTickerRows } from "@/lib/db/tickers";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
@@ -40,15 +41,26 @@ export function contentBadgeFor(report: Report, hasVideo: boolean): string {
   return parts.length ? parts.join(" · ") : "NOTE";
 }
 
-function unlockCard(report: Report): FeedCard {
-  const access = report.access === "paid" ? "paid" : report.access === "subscribers" ? "subscribers" : "free";
-  return {
-    kind: "unlock",
-    id: `${report.id}-unlock`,
-    locked: false,
-    access,
-    price: report.price != null ? `$${report.price}` : null,
-  };
+/**
+ * The card the stack ends on, decided by what the publication actually is.
+ * A free piece has nothing gated, so it ends on an invitation into the full
+ * report: no lock, no price. A paid or members-only piece ends on the unlock
+ * card, priced from the report's current terms. Both carry the report's
+ * address, so the button at the end of the stack always goes somewhere.
+ */
+function closingCard(report: Report): FeedCard {
+  const href = `/report/${report.id}`;
+  if (report.access === "paid" || report.access === "subscribers") {
+    return {
+      kind: "unlock",
+      id: `${report.id}-unlock`,
+      locked: false,
+      access: report.access,
+      price: report.access === "paid" && report.price != null ? `$${report.price}` : null,
+      href,
+    };
+  }
+  return { kind: "read", id: `${report.id}-read`, locked: false, href };
 }
 
 /**
@@ -60,19 +72,20 @@ function defaultCards(report: Report): FeedCard[] {
   const cards: FeedCard[] = [];
   const deck = report.summary?.trim();
   if (deck) cards.push({ kind: "thesis", id: `${report.id}-case`, locked: false, title: storyHeadline(report), body: deck });
-  cards.push(unlockCard(report));
+  cards.push(closingCard(report));
   return cards;
 }
 
 /**
- * Stored cards win when present. The unlock card is appended here rather than
- * stored, so its price and access always reflect the report's current terms.
+ * Stored cards win when present. The closing card is decided here rather than
+ * stored, so a free piece never ends on a lock and a priced one always shows
+ * the report's current terms.
  */
 function cardsFor(report: Report, stored: FeedCard[] | undefined, ticker: string | null): FeedCard[] {
   const base =
     !stored || stored.length === 0
       ? defaultCards(report)
-      : [...stored.filter((c) => c.kind !== "unlock"), unlockCard(report)];
+      : [...stored.filter((c) => c.kind !== "unlock" && c.kind !== "read"), closingCard(report)];
   if (!ticker || base.some((c) => c.kind === "figure")) return base;
   const tape: FeedCard = {
     kind: "figure",
@@ -145,6 +158,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       // Proxied so the track is same-origin; see app/api/captions/route.ts.
       captionUrl: native && c.caption_vtt_url ? captionProxyUrl(c.caption_vtt_url) : null,
       durationSeconds: duration,
+      videoEdit: readStoredVideoEdit(r.video_edit),
       feedPreviewSeconds: preview,
       headline: storyHeadline(r),
       deck: storyDek(r),

@@ -17,8 +17,11 @@ async function requireUser() {
   return { supabase, userId: user.id };
 }
 
-/** Saves a draft. Returns the report id so the editor can keep autosaving. */
-export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
+/**
+ * Saves a draft. Returns the report id so the editor can keep autosaving, and
+ * a reason when the clip's overlays specifically could not be stored.
+ */
+export async function saveDraft(input: ComposeInput): Promise<{ id: string; videoEditError?: string }> {
   const { supabase, userId } = await requireUser();
   // A draft may be untagged; publish is where the primary tag becomes mandatory.
   const tags = await normalizeTags(supabase, input);
@@ -56,9 +59,33 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string }> {
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
+  const videoEditError = await storeVideoEdit(supabase, reportId, input);
+
   await captureVersion(supabase, reportId, userId, input);
 
-  return { id: reportId };
+  return { id: reportId, videoEditError };
+}
+
+/**
+ * The clip's overlays, written in their own statement after the draft row so
+ * a failure here can never read as a lost draft: the words are saved by this
+ * point. Until migration 0064 is applied the column does not exist, and this
+ * returns that reason instead of throwing.
+ */
+async function storeVideoEdit(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reportId: string,
+  input: Pick<ComposeInput, "video_edit">,
+): Promise<string | undefined> {
+  if (input.video_edit === undefined) return undefined;
+  const { error } = await supabase
+    .from("reports")
+    .update({ video_edit: input.video_edit })
+    .eq("id", reportId);
+  if (!error) return undefined;
+  return /video_edit/.test(error.message)
+    ? "Overlays could not be saved: the database does not have a place for them yet."
+    : `Overlays could not be saved: ${error.message}`;
 }
 
 /**

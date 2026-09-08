@@ -11,7 +11,7 @@ import { SealStamp } from "@/components/ui/seal-stamp";
 import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
 import { ArchiveDialog } from "@/components/studio/archive-dialog";
-import { DeleteDialog } from "@/components/studio/delete-dialog";
+import { DeleteDialog, DeleteDraftDialog } from "@/components/studio/delete-dialog";
 import { EditedFlag } from "@/components/report/edited-flag";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
@@ -246,7 +246,9 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   )}
 
                   {/* Hover actions */}
-                  <div className="num mt-3 flex items-center gap-4 text-[11px] uppercase tracking-[0.12em] text-text-mute opacity-0 transition-opacity group-hover:opacity-100">
+                  {/* Visible on touch screens, where there is no hover to
+                      reveal them, and wrapping so six actions fit a phone. */}
+                  <div className="num mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-[0.12em] text-text-mute transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
                     {/* Editing is no longer draft-only. A live publication can
                         be corrected, and the marker on it discloses that it
                         was. */}
@@ -255,17 +257,24 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     </Link>
                     <Link href={p.href} className="flex items-center gap-1 hover:text-text"><Eye size={13} /> View</Link>
                     {p.state !== "archived" && <PinAction id={p.id} pinned={p.pinned} />}
-                    {p.state !== "archived" && <PromoteDialog title={p.title} />}
+                    {/* Promote puts a publication in front of more readers,
+                        so it has nothing to do until the piece is out. */}
+                    {p.state !== "archived" && !draft && <PromoteDialog title={p.title} />}
                     {p.state === "archived" ? (
                       <RestoreAction id={p.id} />
                     ) : (
                       !draft && <ArchiveDialog id={p.id} title={p.title} hasCall={p.hasCall} />
                     )}
-                    {/* Delete is offered only where it is allowed: a
-                        publication carrying a call can be archived and
-                        nothing else, so the option is absent rather than
-                        present and refused. */}
-                    {!draft && !p.hasCall && <DeleteDialog id={p.id} title={p.title} />}
+                    {/* Delete is offered only where it is allowed. A draft was
+                        never published, so it deletes outright after a plain
+                        question. A published piece carrying a call can be
+                        archived and nothing else, so the option is absent
+                        rather than present and refused. */}
+                    {draft ? (
+                      <DeleteDraftDialog id={p.id} title={p.title} />
+                    ) : (
+                      !p.hasCall && <DeleteDialog id={p.id} title={p.title} />
+                    )}
                   </div>
                 </div>
 

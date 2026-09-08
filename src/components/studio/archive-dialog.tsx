@@ -68,9 +68,8 @@ export function ArchiveDialog({
                 opening a link to it will no longer find it.
               </p>
               <p className="text-text-mute">
-                This is not a delete. Stoa cannot delete a published report: the record,
-                its text and its timestamp stay exactly as you published them, and the
-                archive is written to your audit log.
+                This is not a delete. The record, its text and its timestamp stay exactly
+                as you published them, and the archive is written to your audit log.
               </p>
               {hasCall && (
                 <p className="rounded-[var(--radius-card)] border border-[var(--brass)]/40 bg-[var(--brass)]/10 p-3">

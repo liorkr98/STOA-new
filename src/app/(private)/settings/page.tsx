@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/db/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +50,13 @@ export default async function SettingsPage() {
           <div className="flex items-center justify-between gap-4 text-sm">
             <span className="text-text-mute">Email</span>
             <span className="num">{email}</span>
+          </div>
+          <div className="h-px bg-border" />
+          <div className="flex items-center justify-between gap-4 text-sm">
+            <span>Password</span>
+            <Link href="/reset-password" className={buttonClass("secondary", "sm")}>
+              Change password
+            </Link>
           </div>
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4 text-sm">

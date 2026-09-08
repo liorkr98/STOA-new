@@ -111,11 +111,11 @@ const theme = {
   items: [lead, trending[1], trending[4], trending[5], trending[10], trending[11]],
 };
 
-const creator = (a: TodayAnalyst, marker: TodayCreatorRow["marker"] = null, suggestion = false): TodayCreatorRow => ({
-  id: `fx-${a.handle}`, handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, suggestion,
+const creator = (a: TodayAnalyst, marker: TodayCreatorRow["marker"] = null, followed = false): TodayCreatorRow => ({
+  id: `fx-${a.handle}`, handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, followed,
 });
-const tick = (symbol: string, price: number, publications: number, suggestion = false): TodayTickerRow => ({
-  symbol, price, changePercent: null, publications, suggestion,
+const tick = (symbol: string, price: number, publications: number): TodayTickerRow => ({
+  symbol, price, changePercent: null, publications,
 });
 
 export default async function DevTodayPage({
@@ -129,10 +129,14 @@ export default async function DevTodayPage({
   // The VIDEO badge goes with it: on the real page the badge is computed from
   // whether a clip exists, so leaving it here would show a state the product
   // cannot actually produce.
+  // `?lead=processing` is the minute after publish: the clip exists and is
+  // being prepared, so the frame stays and says so rather than vanishing.
   const activeLead =
     leadMode === "written"
       ? { ...lead, thumb: null, contentBadge: lead.contentBadge.filter((b) => b !== "Video") }
-      : lead;
+      : leadMode === "processing"
+        ? { ...lead, thumb: { thumbnailUrl: null, durationSeconds: 0, processing: true } }
+        : lead;
   const news = await getMarketNews(10);
 
   const data: TodayPagePayload = {
@@ -146,14 +150,15 @@ export default async function DevTodayPage({
     theme,
     news,
     sidebar: {
-      trendingCreators: [creator(LENA, "TRENDING"), creator(DANA, "NEW"), creator(NOOR), creator(KAI), creator(PRIYA)],
-      popularCreators: [creator(PRIYA), creator(LENA), creator(MARCUS), creator(KAI), creator(NOOR), creator(DANA, "NEW")],
+      // Followed flags mirror the desk below: PRIYA and KAI are memberships,
+      // LENA, NOOR and MARCUS are follows, so their rows in Trending and
+      // Popular carry no button while DANA's does.
+      trendingCreators: [creator(LENA, "TRENDING", !signedOut), creator(DANA, "NEW"), creator(NOOR, null, !signedOut), creator(KAI, null, !signedOut), creator(PRIYA, null, !signedOut)],
+      popularCreators: [creator(PRIYA, null, !signedOut), creator(LENA, null, !signedOut), creator(MARCUS, null, !signedOut), creator(KAI, null, !signedOut), creator(NOOR, null, !signedOut), creator(DANA, "NEW")],
       trendingTickers: [tick("NVDA", 131.42, 14), tick("MU", 121.7, 6), tick("FCX", 48.9, 5), tick("VLO", 152.3, 4), tick("ZION", 47.9, 3), tick("SMH", 262.1, 3)],
       popularTickers: [tick("NVDA", 131.42, 41), tick("AAPL", 229.8, 27), tick("MSFT", 418.2, 22), tick("AMD", 158.9, 19), tick("TSLA", 244.6, 17), tick("AMZN", 186.1, 12), tick("META", 512.4, 11)],
-      memberships: signedOut ? [] : [creator(PRIYA), creator(KAI)],
-      following: signedOut ? [] : [creator(LENA), creator(NOOR), creator(MARCUS)],
-      suggestedCreators: [creator(DANA, "NEW", true), creator(NOOR, null, true), creator(MARCUS, null, true)],
-      suggestedTickers: [tick("NVDA", 131.42, 41, true), tick("AAPL", 229.8, 27, true), tick("MSFT", 418.2, 22, true), tick("AMD", 158.9, 19, true)],
+      memberships: signedOut ? [] : [creator(PRIYA, null, true), creator(KAI, null, true)],
+      following: signedOut ? [] : [creator(LENA, null, true), creator(NOOR, null, true), creator(MARCUS, null, true)],
       signedIn: !signedOut,
     },
   };

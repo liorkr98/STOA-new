@@ -19,7 +19,12 @@ export function DevExploreWall(props: {
     createdAt: new Date().toISOString(),
     text,
     likes: 0,
+    mine: true,
   });
+  const discussionActions = {
+    toggleLike: async (_id: string, liked: boolean) => ({ ok: true, liked: !liked }),
+    remove: async () => ({ ok: true }),
+  };
 
-  return <ExploreWall {...props} basePath="/dev/explore" canAct canWatch onPost={onPost} />;
+  return <ExploreWall {...props} basePath="/dev/explore" canAct canWatch onPost={onPost} discussionActions={discussionActions} />;
 }

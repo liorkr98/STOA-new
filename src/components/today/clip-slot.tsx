@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Play } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
+import { ClipPendingThumb } from "@/components/video/clip-pending";
 import { durationLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
@@ -15,7 +16,8 @@ import type { TodayItem } from "@/lib/today/types";
  *
  * The generated placeholder still appears inside the frame for the other case,
  * a clip whose poster frame the CDN has not produced yet. That is a video with
- * no still, not a publication with no video.
+ * no still, not a publication with no video. A clip that is still being
+ * prepared keeps the frame too, and says so in it.
  *
  * It owns its own link and its own emptiness so neither rule can be got wrong
  * at a call site: an `if` at each one would leave empty anchors and stray gaps
@@ -53,11 +55,17 @@ export function ClipSlot({
       tabIndex={-1}
       aria-hidden
     >
-      <ClipThumb src={thumb.thumbnailUrl} seed={analystId} />
-      <span className="today-thumb-play">
-        <Play size={11} fill="currentColor" strokeWidth={0} />
-      </span>
-      {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
+      {thumb.processing ? (
+        <ClipPendingThumb label={size !== "sm"} />
+      ) : (
+        <>
+          <ClipThumb src={thumb.thumbnailUrl} seed={analystId} />
+          <span className="today-thumb-play">
+            <Play size={11} fill="currentColor" strokeWidth={0} />
+          </span>
+          {duration ? <span className="today-thumb-dur num">{duration}</span> : null}
+        </>
+      )}
     </Link>
   );
 }

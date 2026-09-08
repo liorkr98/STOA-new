@@ -85,9 +85,9 @@ and TRENDING are ever displayed. The scoring *formula* is an open decision (the 
 modified Elo; the shipped engine computes a Wilson / profit-factor / alpha composite), so do not
 treat either formula as settled.
 
-**Fact-check is a feature, not a pillar.** The AI fact-checker is a **pre-publish quality gate**:
-every claim in a report is classified (fact / unproven / opinion / contradicted) before publish is
-enabled. It already exists (`src/lib/ai/fact-check.ts`, `reports.fact_check_results`) and the
+**Fact-check is a feature, not a pillar.** The AI fact-checker is a **pre-publish bonus, never a
+gate**: a creator may run it and every claim is classified (fact / unproven / opinion /
+contradicted), but publishing never waits for it. It already exists (`src/lib/ai/fact-check.ts`, `reports.fact_check_results`) and the
 frontend surfaces it inline (`FactCheckLayer`/`FactCheckedText`, `src/components/report/`). It
 improves quality; it is not one of the three trust pillars, and it never feeds the record.
 Still missing on the backend: `char_start`/`char_end` offsets on stored claims, and the

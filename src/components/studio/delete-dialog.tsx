@@ -117,3 +117,68 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
     </Dialog.Root>
   );
 }
+
+/**
+ * Deleting a draft. A draft was never published, so there is no record to
+ * protect and nothing to archive: one plain question, then it is gone.
+ */
+export function DeleteDraftDialog({ id, title }: { id: string; title: string }) {
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function confirm() {
+    startTransition(async () => {
+      const res = await deletePublication(id);
+      if (!res.ok) {
+        toast.error(res.error ?? "Could not delete this draft.");
+        return;
+      }
+      toast.success("Draft deleted.");
+      setOpen(false);
+      router.refresh();
+    });
+  }
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger className="focus-ring flex items-center gap-1 hover:text-[var(--rust)]">
+        <Trash2 size={13} aria-hidden /> Delete
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-lg md:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
+              Delete this draft?
+            </Dialog.Title>
+            <Dialog.Close className="focus-ring rounded p-1 text-text-mute hover:text-text">
+              <X size={16} aria-hidden />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+
+          <p dir="auto" className="user-copy mt-2 truncate text-sm text-text-mute">
+            {title}
+          </p>
+
+          <Dialog.Description className="mt-4 text-[13px] leading-relaxed text-text-mute">
+            It was never published, so nothing is on the record. The words, the cards and the
+            tags go with it, and it cannot be brought back.
+          </Dialog.Description>
+
+          <div className="mt-5 flex justify-end gap-2">
+            <Dialog.Close asChild>
+              <Button variant="secondary" size="sm" disabled={pending}>
+                Keep it
+              </Button>
+            </Dialog.Close>
+            <Button size="sm" onClick={confirm} disabled={pending}>
+              {pending ? "Deleting..." : "Delete draft"}
+            </Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}

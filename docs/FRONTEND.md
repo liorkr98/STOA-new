@@ -611,9 +611,12 @@ so. That sentence is the reason the rest of the marker is trustworthy.
 
 These sit one row apart in the Publications list and **must never read alike**.
 
-- **Archive** is offered on every publication. Recoverable, and its copy says so.
+- **Archive** is offered on every published publication. Recoverable, and its copy says so.
 - **Delete** is offered only on a publication carrying **no call**, and is absent (not present and
-  refused) otherwise. The permanence guarantee exists to stop an analyst burying a bad call; a
+  refused) otherwise.
+- **A draft** is different: it was never published, so there is nothing on the record to protect.
+  A draft offers Delete with a one-line confirmation and no typed word, never Archive, and never
+  Promote (there is nothing out to promote). The permanence guarantee exists to stop an analyst burying a bad call; a
   publication with no call is content, and a creator may remove their own content.
 
 The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed
@@ -1414,8 +1417,8 @@ they agree on a shape. This is that shape, in `src/components/compose/video-rung
 - **The cover** is a folded row under the timeline (the chosen frame, or "Choose"); opening it shows
   the same frames as the strip plus an image upload. Shown at 4:5 as on Explore and the profile.
 - **The faithful preview** ("Preview as it will publish") hides every handle, ring and label and
-  plays exactly what will ship. Overlays burn in at publish, so this must never drift from the
-  published video.
+  plays exactly what will ship. It draws the overlays through the same `OverlayLayer` the
+  player uses, so it cannot drift from the published video.
 - Keyboard, when the timeline has focus: Space plays, ←/→ step a frame (Shift: ten), Delete removes
   the selection, Escape deselects. These are not buttons.
 
@@ -1476,8 +1479,10 @@ plain.
 
 #### Other invariants
 
-- Overlays burn permanently into the video at publish, so the preview must stay exactly what will
-  ship, and the processing state after publish stays.
+- Overlays are stored with the publication (`reports.video_edit`) and drawn by Stoa's player at
+  playback, from the same renderer as the faithful preview (`src/components/video/overlay-layer.tsx`).
+  They are not composited into the file: a clip shared or downloaded elsewhere plays without them,
+  and the editor says so. The processing state after publish stays.
 - Per-card free/locked control stays. The **CTA card is pinned last** and is **derived from
   Access**, not authored, so it cannot be deleted, duplicated, or left behind on a publication
   that stopped being gated.

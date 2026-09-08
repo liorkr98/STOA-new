@@ -138,16 +138,20 @@ const sectorByTicker = new Map<string, string | null>([
 export default async function DevProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ state?: string; pinned?: string }>;
+  searchParams: Promise<{ state?: string; pinned?: string; clip?: string }>;
 }) {
-  const { state, pinned } = await searchParams;
+  const { state, pinned, clip: clipMode } = await searchParams;
   const isNew = state === "new";
+  // `?clip=processing` takes the lead's clip away and marks it as on the way,
+  // the state every publication is in for the minute after publish.
+  const processingId = clipMode === "processing" ? clips[0]?.report_id : undefined;
 
   const pubs = buildPublications({
     reports: isNew ? reports.slice(0, 2) : reports,
     predictions: isNew ? predictions.slice(0, 1) : predictions,
-    clips: isNew ? clips.slice(0, 1) : clips,
+    clips: (isNew ? clips.slice(0, 1) : clips).filter((c) => c.report_id !== processingId),
     sectorByTicker,
+    pendingClipIds: processingId ? new Set([processingId]) : undefined,
   });
   const tiers = tierPublications(pubs, pinned ?? null);
 

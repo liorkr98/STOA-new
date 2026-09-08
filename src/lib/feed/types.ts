@@ -1,5 +1,6 @@
 import type { Direction } from "@/lib/types";
 import type { StageMarker } from "@/lib/today/types";
+import type { StoredVideoEdit } from "@/lib/compose/overlays";
 
 /**
  * The Feed player's publication shape: one video, optionally enriched with a
@@ -26,7 +27,10 @@ export type FeedCard =
   | { kind: "figure"; id: string; locked: boolean; caption: string; imageUrl: string | null; source: "creator" | "auto" }
   | { kind: "chart"; id: string; locked: boolean; ticker: string; caption: string; compareTicker?: string }
   | { kind: "steelman"; id: string; locked: boolean; objection: string; answer: string }
-  | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers" | "free" };
+  /** The closing card of a gated publication: what is behind the paywall and where to buy it. */
+  | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers"; href: string }
+  /** The closing card of a free publication: nothing is gated, so it simply opens the full piece. */
+  | { kind: "read"; id: string; locked: false; href: string };
 
 export interface FeedComment {
   id: string;
@@ -39,6 +43,10 @@ export interface FeedComment {
   liked?: boolean;
   /** Set when a reply to a reply was flattened one level up. */
   replyingTo?: string | null;
+  /** The reader wrote this comment, so they may delete it. */
+  mine?: boolean;
+  /** The reader has liked this comment. */
+  likedByMe?: boolean;
 }
 
 export interface FeedPublication {
@@ -52,6 +60,8 @@ export interface FeedPublication {
   /** WebVTT captions. The Feed plays muted, so this is how most readers follow it. */
   captionUrl: string | null;
   durationSeconds: number;
+  /** The stored Compose edit; the player draws its overlays over the clip. */
+  videoEdit: StoredVideoEdit | null;
   headline: string;
   deck: string | null;
   typeLabel: "CALL" | "RESEARCH" | "NOTE" | "VIDEO";

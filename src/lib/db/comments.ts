@@ -58,18 +58,18 @@ export async function listCommentsForReports(reportIds: string[], limitPerReport
   return map;
 }
 
-/** Comment ids this reader has liked, for painting hearts as on. */
-export async function listLikedCommentIds(commentIds: string[]): Promise<Set<string>> {
+/**
+ * Which of these comments the reader has liked, so a like renders as on.
+ * `comment_likes` is public-read, but the filter is the reader's own id, so
+ * this goes through the session client like the other per-reader reads.
+ */
+export async function listLikedCommentIds(userId: string, commentIds: string[]): Promise<Set<string>> {
   if (commentIds.length === 0) return new Set();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return new Set();
   const { data } = await supabase
     .from("comment_likes")
     .select("comment_id")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .in("comment_id", commentIds);
-  return new Set(((data as { comment_id: string }[]) ?? []).map((r) => r.comment_id));
+  return new Set(((data as { comment_id: string }[] | null) ?? []).map((r) => r.comment_id));
 }

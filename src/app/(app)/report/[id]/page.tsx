@@ -8,11 +8,15 @@ import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
 import { getLiveClipForReport } from "@/lib/video/clip-for-report";
+import { getPendingClipForReport } from "@/lib/db/video-clips";
+import { ClipPendingPlayer } from "@/components/video/clip-pending";
 import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
+import { readStoredVideoEdit } from "@/lib/compose/overlays";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
-import { listComments } from "@/lib/db/comments";
+import { listComments, listLikedCommentIds } from "@/lib/db/comments";
+import { toFeedComment } from "@/lib/feed/comments";
 import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
@@ -24,7 +28,7 @@ import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
 import { ShareMenu } from "@/components/share/share-menu";
-import { CommentsSection } from "@/components/report/comments-section";
+import { ReportDiscussion } from "@/components/report/report-discussion";
 import { ReportBody } from "@/components/editor/report-body";
 import { ReportClip } from "@/components/report/report-clip";
 import { ReportCards } from "@/components/report/report-cards";
@@ -98,6 +102,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const clipMedia = clip
     ? resolveClipPlayback({ playbackUrl: clip.playback_url, thumbnailUrl: clip.thumbnail_url, index: 0 })
     : null;
+  // No live clip: is one on the way? Publishing locks the report before the
+  // upload starts, so for a while the publication is real and its video is
+  // not, and that must never read as "no video". A failed clip is the
+  // creator's to fix, so only they see it.
+  const pendingRaw = clip ? null : await getPendingClipForReport(id);
+  const pendingClip = pendingRaw && (pendingRaw.status !== "failed" || isAuthor) ? pendingRaw : null;
   const clipEmbedUrl =
     clip && !clipMedia?.src.endsWith(".mp4") && isBunnyConfigured()
       ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
@@ -115,6 +125,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   // above the dek. When the summary has to stand in as the headline it is not
   // also printed as the dek, so a reader never gets one sentence twice.
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
+
+  const likedIds = userId ? await listLikedCommentIds(userId, comments.map((c) => c.id)) : new Set<string>();
+  const discussion = comments.map((c) =>
+    toFeedComment(c, { reportAuthorId: report.author_id, viewerId: userId ?? null, likedIds }),
+  );
   const dek = report.title?.trim() ? report.summary?.trim() : null;
 
   return (
@@ -238,7 +253,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
 
           <div className="order-5 lg:order-none">
-            <CommentsSection reportId={id} comments={comments} isAuthed={Boolean(userId)} />
+            <ReportDiscussion
+              reportId={id}
+              comments={discussion}
+              canPost={Boolean(userId)}
+            />
           </div>
         </article>
 
@@ -253,6 +272,17 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   analystId={report.author_id}
                   durationSeconds={clip.duration_seconds}
                   analystName={author?.display_name ?? "The analyst"}
+                  edit={readStoredVideoEdit(report.video_edit)}
+                  ticker={report.ticker}
+                />
+              </div>
+            ) : pendingClip ? (
+              <div className="order-2 lg:order-none">
+                <ClipPendingPlayer
+                  status={pendingClip.status}
+                  startedAt={pendingClip.createdAt}
+                  analystName={author?.display_name ?? "The analyst"}
+                  isAuthor={isAuthor}
                 />
               </div>
             ) : null}

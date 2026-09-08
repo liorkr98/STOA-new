@@ -355,3 +355,88 @@ export async function getUnsettledClipForReport(
     .maybeSingle();
   return data ?? null;
 }
+
+/**
+ * A clip that exists but is not live yet: still processing, finished but not
+ * yet promoted (the on-view reconcile settles that), or failed. Status and
+ * age only. Read with the service role because row security hides a clip
+ * from everyone but its creator until it is ready and published, and a
+ * publication must not look video-less to a stranger while its clip is on
+ * the way.
+ */
+export interface PendingClip {
+  id: string;
+  reportId: string;
+  status: VideoClipStatus;
+  createdAt: string;
+}
+
+function pendingRows(
+  rows: { id: string; report_id: string; status: string; created_at: string }[] | null,
+): PendingClip[] {
+  return (rows ?? []).map((r) => ({
+    id: r.id,
+    reportId: r.report_id,
+    status: r.status as VideoClipStatus,
+    createdAt: r.created_at,
+  }));
+}
+
+/** The newest not-yet-live clip on a publication, including a failed one. */
+export async function getPendingClipForReport(reportId: string): Promise<PendingClip | null> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("video_clips")
+      .select("id, report_id, status, created_at")
+      .eq("report_id", reportId)
+      .or("status.eq.processing,status.eq.failed,and(status.eq.ready,published_at.is.null)")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data ? pendingRows([data])[0]! : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Publications among these whose clip is still on the way (not failed: a
+ * failed clip is the creator's to fix and is nothing a reader should wait for).
+ */
+export async function listPendingClipsForReports(reportIds: string[]): Promise<Map<string, PendingClip>> {
+  const out = new Map<string, PendingClip>();
+  if (reportIds.length === 0) return out;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("video_clips")
+      .select("id, report_id, status, created_at")
+      .in("report_id", reportIds)
+      .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
+      .order("created_at", { ascending: false });
+    for (const c of pendingRows(data)) if (!out.has(c.reportId)) out.set(c.reportId, c);
+  } catch {
+    // Without the service role there is no way to see a pending clip; the
+    // publication simply shows no video until it is live.
+  }
+  return out;
+}
+
+/** The creator's clips that are still on the way, for the profile. */
+export async function listPendingClipsByCreator(creatorId: string): Promise<Map<string, PendingClip>> {
+  const out = new Map<string, PendingClip>();
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("video_clips")
+      .select("id, report_id, status, created_at")
+      .eq("creator_id", creatorId)
+      .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
+      .order("created_at", { ascending: false });
+    for (const c of pendingRows(data)) if (!out.has(c.reportId)) out.set(c.reportId, c);
+  } catch {
+    // See listPendingClipsForReports.
+  }
+  return out;
+}

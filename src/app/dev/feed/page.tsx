@@ -23,6 +23,11 @@ export default function DevFeedPage() {
     createdAt: new Date().toISOString(),
     text,
     likes: 0,
+    mine: true,
   });
-  return <FeedSurface publications={ordered} canAct onPost={onPost} />;
+  const discussionActions = {
+    toggleLike: async (_id: string, liked: boolean) => ({ ok: true, liked: !liked }),
+    remove: async () => ({ ok: true }),
+  };
+  return <FeedSurface publications={ordered} canAct onPost={onPost} discussionActions={discussionActions} />;
 }

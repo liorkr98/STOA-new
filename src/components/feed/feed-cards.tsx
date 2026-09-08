@@ -1,6 +1,8 @@
 "use client";
 
-import { Lock, Check, Minus, X } from "lucide-react";
+import { BookOpen, Lock, Check, Minus, X } from "lucide-react";
+import Link from "next/link";
+import { buttonClass } from "@/components/ui/button";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/design/cn";
@@ -242,23 +244,37 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           </p>
         </CardFrame>
       );
+    case "read":
+      return (
+        <CardFrame className="items-center justify-center text-center">
+          <BookOpen size={20} strokeWidth={1.4} className="text-text-mute" aria-hidden />
+          <h3 className="mt-3 font-display text-[1.25rem] font-semibold leading-tight tracking-tight">
+            Read the full report
+          </h3>
+          <p className="mt-2 max-w-[28ch] text-[0.875rem] text-text-mute">
+            The thesis, the call and the disclosure, on the report page. Nothing here is behind a
+            paywall.
+          </p>
+          <Link href={card.href} className={buttonClass("primary", "md", "mt-4")}>
+            Read the full report
+          </Link>
+        </CardFrame>
+      );
     case "unlock":
       return (
         <CardFrame className="items-center justify-center text-center">
           <Lock size={20} strokeWidth={1.4} className="text-text-mute" aria-hidden />
           <h3 className="mt-3 font-display text-[1.25rem] font-semibold leading-tight tracking-tight">
-            {card.access === "free" ? "Read the full publication" : "Unlock the full stack"}
+            Unlock the full stack
           </h3>
           <p className="mt-2 max-w-[28ch] text-[0.875rem] text-text-mute">
             {card.access === "subscribers"
               ? "Members of this analyst see every card and the written thesis."
-              : card.access === "paid"
-                ? "One-time unlock for every card and the written thesis."
-                : "The thesis, the call and the disclosure, on the report page."}
+              : "One-time unlock for every card and the written thesis."}
           </p>
-          <span className="mt-4 inline-flex rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.875rem] font-medium text-[var(--paper)]">
-            {card.access === "paid" && card.price ? `Unlock · ${card.price}` : card.access === "subscribers" ? "Become a member" : "Open the report"}
-          </span>
+          <Link href={card.href} className={buttonClass("primary", "md", "mt-4")}>
+            {card.access === "paid" && card.price ? `Unlock · ${card.price}` : card.access === "paid" ? "Unlock" : "Become a member"}
+          </Link>
         </CardFrame>
       );
   }
@@ -274,7 +290,7 @@ export function FeedCardView({
   ticker?: string | null;
   onSealedTap?: () => void;
 }) {
-  if (card.kind !== "unlock" && card.locked) {
+  if (card.kind !== "unlock" && card.kind !== "read" && card.locked) {
     return (
       <button
         type="button"

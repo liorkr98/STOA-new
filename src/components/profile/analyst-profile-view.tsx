@@ -5,6 +5,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { Play, BadgeCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
+import { ClipPendingThumb } from "@/components/video/clip-pending";
 import type { Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
@@ -18,8 +19,10 @@ import { TierPickerModal } from "@/components/profile/tier-picker-modal";
 export interface ProfilePublication {
   id: string;
   href: string;
-  /** "video" when a ready clip exists; "written" renders as a typographic tile. */
+  /** "video" when a clip exists (ready or still processing); "written" renders as a typographic tile. */
   kind: "video" | "written";
+  /** The clip exists but is still being prepared; the tile keeps its media area and says so. */
+  processing?: boolean;
   typeLabel: "CALL" | "RESEARCH" | "NOTE" | "VIDEO";
   /** Set only when the publication carries a locked call (anchoring rule). */
   ticker: string | null;
@@ -110,6 +113,7 @@ function VideoThumb({
   duration,
   analystId,
   isVideo,
+  processing = false,
   className,
   glyph = "md",
 }: {
@@ -117,9 +121,19 @@ function VideoThumb({
   duration: string | null;
   analystId: string | null | undefined;
   isVideo: boolean;
+  processing?: boolean;
   className?: string;
   glyph?: "md" | "lg";
 }) {
+  if (processing) {
+    return (
+      <div className={cn("relative overflow-hidden bg-surface-2", className)}>
+        <div className="absolute inset-0">
+          <ClipPendingThumb />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={cn("relative overflow-hidden bg-surface-2", className)}>
       {src ? (
@@ -206,6 +220,7 @@ function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: strin
             duration={p.duration}
             analystId={analystId}
             isVideo
+            processing={p.processing}
             glyph="lg"
             className="-mx-4 aspect-video sm:mx-0 sm:rounded-[var(--radius-card)]"
           />
@@ -255,7 +270,7 @@ function MostWatchedTier({ items, analystId }: { items: ProfilePublication[]; an
 function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string }) {
   return (
     <Link href={p.href} className="group flex flex-col focus-ring">
-      <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo className="aspect-video rounded-[10px]" />
+      <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo processing={p.processing} className="aspect-video rounded-[10px]" />
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
         <h3 dir="auto" className="user-copy font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>

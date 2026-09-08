@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { ProfileConfig } from "@/lib/editor/types";
-import { getConsentRedirectPath } from "@/app/actions/consent";
 import { sameOriginPath } from "@/lib/pwa/urls";
+import { postAuthPath } from "@/lib/auth/post-auth";
 
 /**
  * OAuth callback. Supabase redirects here with a PKCE code after Google /
  * Apple / LinkedIn / X sign-in; we exchange it for a session, make sure the
  * profile + wallet rows exist (OAuth users skip the signup trigger path), and
  * honor a referral handle -- same behavior as the email sign-in action.
+ *
+ * Also the landing for Supabase's default confirmation email, which redirects
+ * here with a code once the address is verified; the exchange signs the
+ * person in. Stoa's own email templates use /auth/confirm instead, which
+ * does not need the sign-up tab's code verifier and so works from any device.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -64,23 +68,6 @@ export async function GET(req: Request) {
     }
   }
 
-  let dest = safeNext ?? "/home";
-  if (!safeNext && user) {
-    const consentPath = await getConsentRedirectPath(user.id);
-    if (consentPath) {
-      dest = consentPath;
-    } else {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, profile_config")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (profile && profile.role !== "analyst" && profile.role !== "admin") {
-        const interests = (profile.profile_config as ProfileConfig | null)?.interests;
-        if (!interests || interests.length === 0) dest = "/onboarding/investor";
-      }
-    }
-  }
-
+  const dest = safeNext ?? (user ? await postAuthPath(supabase, user.id) : "/home");
   return NextResponse.redirect(new URL(dest, url.origin));
 }

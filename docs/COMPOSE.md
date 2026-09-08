@@ -46,9 +46,10 @@ Nothing AI belongs in the top bar.
 
 The right rail is not open while writing. Press **Publish** and a details sheet
 opens, the same idea as YouTube after an upload: tags, connected piece, price
-target, access, disclosures, then the real publish. Fact-check stays in
-Assistant; the details sheet will refuse to finish until it has been run on a
-Research thesis.
+target, access, disclosures, then the real publish. Fact-check is offered in
+Assistant and again on the publish step, and it is a bonus rather than a gate:
+publishing never waits for it, and when it has been run its result ships with
+the piece.
 
 ## Cards
 
@@ -88,8 +89,33 @@ continues. An inset is resized by dragging its gold corner on the picture
 (a slider does the same from a keyboard or a phone) and given an opacity;
 full frame fills the picture with the visual, scaled to the stage, the video
 dimmed behind it, and text or insets on the same seconds wait until it is
-gone. Overlays burn into the video at publish; "Preview as it will publish"
-plays exactly what ships.
+gone. Overlays are stored with the publication and drawn by Stoa's player
+over the clip, from the same renderer as "Preview as it will publish", so the
+preview is exactly what plays on the site. They are not composited into the
+video file (no burn-in worker exists): a clip shared or downloaded elsewhere
+plays without them, and the editor says so under the timeline.
+
+## Saving
+
+There is no Save draft button. The draft saves itself: every thirty seconds
+while there are unsaved changes, on every step change, when the tab goes to
+the background, when a card's editor closes with Done, and before leaving
+through the dialog below. The true state sits beside each step's forward
+button, where the creator is already looking, and it never goes quiet:
+"Unsaved changes", "Saving…", "Saved just now" (then "Saved 3 min ago"), or
+"Not saved: <reason>" in rust when the server refused. Any change counts,
+not only words: the headline, the dek, the call, access and price, the tags,
+the cards and the video edit all mark the draft unsaved.
+
+Leaving with unsaved work is never silent. A reload, a closed tab or a typed
+address gets the browser's own prompt. One of the app's own links (the top
+nav, the phone tabs, the Studio arrow) opens a dialog with three choices:
+save and leave, leave without saving, or stay. Publishing navigates on
+purpose and is never interrupted.
+
+Editing a live publication is the one place a button stays: **Save changes**
+in the header, because an edit files a public EDITED marker and must be
+meant. The status line still says when edits are unsaved.
 
 ## One button per step
 

@@ -15,17 +15,18 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toggleFollow, toggleLike, toggleSave } from "@/app/actions/social";
-import { loadFeedComments, toggleCommentLike } from "@/app/actions/feed";
+import { loadFeedComments } from "@/app/actions/feed";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
-import { FeedDiscussion } from "@/components/feed/feed-discussion";
+import { DiscussionThread, type DiscussionActions } from "@/components/discussion/discussion-thread";
 import { trackEngagement } from "@/lib/engagement/track-client";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
+import { OverlayLayer } from "@/components/video/overlay-layer";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { prefersReducedMotion } from "@/lib/motion/reduced";
 import { useStoredValue } from "@/lib/hooks/use-stored-value";
@@ -94,6 +95,7 @@ export function FeedSurface({
   startIndex = 0,
   canAct = false,
   onPost,
+  discussionActions,
   sessionId,
   embedded = false,
   onBack,
@@ -103,6 +105,8 @@ export function FeedSurface({
   /** Signed in: like, save and follow act; otherwise they route to sign-in. */
   canAct?: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  /** Like and delete overrides; the real pages leave this out and use the server actions. */
+  discussionActions?: Partial<Omit<DiscussionActions, "post">>;
   sessionId?: string;
   /** Full-viewport overlay (Explore). Height does not subtract the top nav. */
   embedded?: boolean;
@@ -237,6 +241,7 @@ export function FeedSurface({
           pub={publications.find((p) => p.id === discussing)!}
           canPost={canAct}
           onPost={onPost}
+          discussionActions={discussionActions}
           onClose={() => setDiscussing(null)}
         />
       ) : null}
@@ -287,6 +292,8 @@ const FeedItem = function FeedItem({
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const [started, setStarted] = useState(false);
+  // Playback position, only tracked when the publication carries overlays.
+  const [clipTime, setClipTime] = useState(0);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -348,7 +355,9 @@ const FeedItem = function FeedItem({
   }, [isActive]);
 
   const cards = useMemo(() => pub.cards ?? [], [pub]);
-  const unlockIndex = cards.findIndex((c) => c.kind === "unlock");
+  // The closing card: the unlock card on a gated piece, the read card on a
+  // free one. The page counter and a sealed card's tap both jump to it.
+  const unlockIndex = cards.findIndex((c) => c.kind === "unlock" || c.kind === "read");
   // The clip is the first panel of the track; the evidence follows it.
   const panelCount = cards.length + 1;
 
@@ -753,6 +762,7 @@ const FeedItem = function FeedItem({
                     preload={isActive ? "auto" : "metadata"}
                     captionUrl={pub.captionUrl}
                     onUnplayable={onUnplayable}
+                    onTime={pub.videoEdit && isActive ? setClipTime : undefined}
                     onProgress={
                       isActive
                         ? (ratio) => {
@@ -774,6 +784,12 @@ const FeedItem = function FeedItem({
                     allowFullScreen
                     className="absolute inset-0 h-full w-full border-0"
                   />
+                ) : null}
+                {/* The stored edit's overlays, in time with our own player. The
+                    iframe fallback cannot carry them: nothing outside it knows
+                    the playhead. */}
+                {pub.videoEdit && started && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) ? (
+                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} />
                 ) : null}
                 <div
                   aria-hidden
@@ -1004,11 +1020,13 @@ function DiscussionPanel({
   pub,
   canPost,
   onPost,
+  discussionActions,
   onClose,
 }: {
   pub: FeedPublication;
   canPost: boolean;
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
+  discussionActions?: Partial<Omit<DiscussionActions, "post">>;
   onClose: () => void;
 }) {
   const seeded = pub.comments.length > 0;
@@ -1025,7 +1043,7 @@ function DiscussionPanel({
   useEffect(() => {
     if (seeded) return;
     let cancelled = false;
-    void loadFeedComments(pub.id, pub.analyst.handle)
+    void loadFeedComments(pub.id, pub.analyst.id)
       .then((rows) => {
         if (!cancelled) setComments(rows);
       })
@@ -1035,7 +1053,7 @@ function DiscussionPanel({
     return () => {
       cancelled = true;
     };
-  }, [pub.id, pub.analyst.handle, seeded]);
+  }, [pub.id, pub.analyst.id, seeded]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
@@ -1057,18 +1075,20 @@ function DiscussionPanel({
         {comments === null ? (
           <p className="mt-8 text-sm text-text-mute">Loading discussion.</p>
         ) : (
-          <FeedDiscussion
+          <DiscussionThread
+            variant="panel"
             comments={comments}
             canPost={canPost}
-            onLike={canPost ? toggleCommentLike : undefined}
-            onPost={
-              onPost
+            actions={{
+              ...discussionActions,
+              post: onPost
                 ? async (text, parentId) => {
                     const posted = await onPost(pub.id, text, parentId);
                     if (posted) setComments((e) => [posted, ...(e ?? [])]);
+                    return posted;
                   }
-                : undefined
-            }
+                : undefined,
+            }}
           />
         )}
       </div>

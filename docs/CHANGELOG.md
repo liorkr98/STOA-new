@@ -10,6 +10,77 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-07 — Eleven fixes: sign-in after confirming, the discussion, drafts, overlays, saving
+
+**For someone using the site**
+
+- **Confirming your email signs you in.** The confirmation link now lands on Today with a
+  session, from any browser or device. Before, the app never told Supabase where to send
+  people and had no route that could turn the link into a session, so someone who had just
+  proved they own the address and chosen a password had to sign in again. The page after
+  sign-up now says to check the inbox instead of saying "Welcome back".
+- **Auth emails in Stoa's voice.** Two templates in `docs/email-templates/` (confirmation,
+  password reset) with the paste-in instructions in the README there: table layout, inline
+  styles, wordmark, serif headline, mono labels, one button. Their links go straight to
+  Stoa's own confirm route with a one-time token, so they work without the sign-up tab.
+- **A password can be reset.** There was no way at all: no "Forgot password?" link, no page
+  to set a new one, a disabled button in Settings. `/forgot-password` sends the link,
+  `/reset-password` sets the password while signed in, and Settings' button now goes there.
+- **One discussion everywhere.** The discussion under a publication has what the Feed's
+  had: reply one level deep, like (shown as on when it is yours), delete your own comment
+  after a one-line confirmation, and the AUTHOR tag on the analyst's own words. Both are one
+  component now. The backend already allowed likes and self-deletion; the like action existed
+  and was wired to nothing. A comment other readers have replied to cannot be deleted, so a
+  deletion never takes someone else's words with it.
+- **Google sign-in: no code change.** The string Google needs is
+  `https://cqhenicrfdkbsshyszex.supabase.co/auth/v1/callback`; the app sends Supabase
+  `https://www.stoamarket.ai/auth/callback?next=%2Fhome`. Details in the batch report.
+- **Drafts delete, they do not promote.** A draft row offers Delete with a plain confirmation
+  and no typed word; Promote and Archive stay on published work. The archive dialog no longer
+  claims Stoa cannot delete a published report.
+- **The fact-check is a bonus.** Publish no longer waits for it; the panel and its result stay.
+- **Overlays reach the published video.** Confirmed: they lived only in the browser tab. The
+  edit is now stored with the publication and drawn by Stoa's player, from the same renderer
+  as "Preview as it will publish". The editor says plainly that they show on Stoa and not in a
+  copy shared elsewhere; the "permanent once published" promise is gone.
+- **An uploading clip never reads as no video.** The report page, Today and the profile show a
+  processing frame in the video's place, with how long it has been and that you can leave.
+- **Saving looks after itself.** No Save draft button. A status line beside each step's
+  Continue always says the truth: unsaved changes, saving, saved (and when), or not saved and
+  why. Any change counts, including the headline, the call, the tags and the video edit, which
+  the timer used to ignore. The draft also saves on every step change and when the tab hides.
+  Leaving with unsaved work gets the browser's own prompt on a reload or close, and a dialog
+  (save and leave, leave without saving, stay) on any of the app's own links.
+- **The Feed's closing card is honest and works.** A free publication ends on "Read the full
+  report" with no lock; a paid or members-only one keeps the unlock card. Both are real links
+  to the report page. The old button was a styled span that went nowhere for everyone.
+- **Today's sidebar follows work.** Follow shows on any creator or ticker you do not follow, in
+  Trending and Popular, and never on Memberships, Following or Your tickers. A follow sticks,
+  the row stays in place, and the ticker list no longer empties on a follow. Unfollow is a tap
+  on a ticker's chip (its sheet) or the analyst's profile.
+
+**Found while in there**
+
+- Feed comments never notified the analyst; the AUTHOR tag was decided by handle on one
+  surface and by id on the other. The Publications row's actions did not fit a phone and only
+  appeared on hover. The list row's follow was a toggle, so a stale row could unfollow. The
+  watchlist reconcile ran once per row on the page and could write a fresh follow away. The
+  site's fallback URL was `stoa.app`, which does not resolve; it is `www.stoamarket.ai` now.
+
+**What needs Krisi**
+
+- **Migration 0064** adds `reports.video_edit`. Until it is applied a draft still saves (the
+  overlays are written in their own statement and the failure is reported in a toast), and a
+  publish that carries overlays is refused with a plain reason rather than shipped bare.
+- **Supabase dashboard**: paste the two email templates, set Site URL to
+  `https://www.stoamarket.ai`, and add the `/auth/callback` and `/auth/confirm` redirect URLs
+  (see `docs/email-templates/README.md`). Register the Google redirect URI above in Google
+  Cloud. Check that Vercel's `NEXT_PUBLIC_SITE_URL` is `https://www.stoamarket.ai`.
+- **Comment deletion is a hard delete** (there is no tombstone column). A parent with others'
+  replies is refused for that reason; a `deleted_at` column would let it be greyed instead.
+
+---
+
 ## 2026-09-06 — A card keeps its identity across saves
 
 **For someone using the site**

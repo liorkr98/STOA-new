@@ -3,11 +3,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "@/lib/types";
-import type { ProfileConfig } from "@/lib/editor/types";
-import { getConsentRedirectPath, recordMarketingOptInIfChecked } from "@/app/actions/consent";
+import { recordMarketingOptInIfChecked } from "@/app/actions/consent";
 import { recordSignupConsentsAsAdmin } from "@/lib/db/legal";
 import { alertNewSignup } from "@/lib/slack/alerts";
 import { headers } from "next/headers";
+import { SITE_URL } from "@/lib/seo/site";
+import { postAuthPath } from "@/lib/auth/post-auth";
 
 async function signupIp(): Promise<string | null> {
   const h = await headers();
@@ -16,24 +17,17 @@ async function signupIp(): Promise<string | null> {
   return h.get("x-real-ip");
 }
 
-/** New investors without interests go to onboarding; everyone else to Today. */
-async function postAuthPath(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-): Promise<string> {
-  const consentPath = await getConsentRedirectPath(userId);
-  if (consentPath) return consentPath;
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("role, profile_config")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!data) return "/home";
-  if (data.role === "analyst" || data.role === "admin") return "/home";
-  const interests = (data.profile_config as ProfileConfig | null)?.interests;
-  if (!interests || interests.length === 0) return "/onboarding/investor";
-  return "/home";
+/**
+ * This request's own origin, for the links Supabase puts in its emails and
+ * redirects. The request's host rather than a configured site URL, so a
+ * preview deploy and localhost each get links that come back to themselves.
+ */
+async function requestOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host) return SITE_URL;
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
 }
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -102,7 +96,16 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { display_name: displayName } },
+    options: {
+      data: { display_name: displayName },
+      // Where the confirmation link comes back to. Without this the link was
+      // governed entirely by the dashboard's Site URL and never reached a
+      // route that could turn it into a session, so a person who had just
+      // proved they own the address had to sign in again. Supabase's default
+      // template lands here with a code; Stoa's own template goes straight
+      // to /auth/confirm with a token hash and needs no redirect at all.
+      emailRedirectTo: `${await requestOrigin()}/auth/callback?next=%2Fhome`,
+    },
   });
   if (error) return { error: error.message };
 
@@ -167,4 +170,34 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+/**
+ * Forgot password: send the recovery email. The answer is the same whether
+ * or not the address has an account, so the form cannot be used to find out.
+ */
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Enter the email you signed up with." };
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${await requestOrigin()}/auth/callback?next=%2Freset-password`,
+  });
+  redirect("/forgot-password?sent=1");
+}
+
+/** Set a new password for the signed-in person (after a recovery link, or from Settings). */
+export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  if (password.length < 6) return { error: "Use at least 6 characters." };
+  if (password !== confirm) return { error: "The two passwords do not match." };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in?error=confirm&reason=That%20link%20has%20expired.%20Request%20a%20new%20one%20below.");
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+  redirect(await postAuthPath(supabase, user.id));
 }

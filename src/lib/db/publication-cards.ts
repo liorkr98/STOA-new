@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
-import { validateCards, type ValidatedCard } from "@/lib/feed/card-schema";
+import { validateCards, type CardKind, type ValidatedCard } from "@/lib/feed/card-schema";
 import type { FeedCard } from "@/lib/feed/types";
 
 /**
@@ -24,7 +24,7 @@ export interface PublicationCardRow {
   id: string;
   report_id: string;
   position: number;
-  kind: FeedCard["kind"];
+  kind: CardKind;
   locked: boolean;
   payload: Record<string, unknown>;
 }
@@ -35,7 +35,7 @@ const CARD_COLUMNS = "id, report_id, position, kind, locked, payload";
  * Empty-but-valid payloads. A locked card must still satisfy the discriminated
  * union so the player can render its sealed state without special-casing.
  */
-function emptyCard(id: string, kind: FeedCard["kind"]): FeedCard {
+function emptyCard(id: string, kind: Exclude<CardKind, "unlock">): FeedCard {
   switch (kind) {
     case "thesis":
       return { kind, id, locked: true, title: "", body: "" };
@@ -55,14 +55,17 @@ function emptyCard(id: string, kind: FeedCard["kind"]): FeedCard {
       return { kind, id, locked: true, ticker: "", caption: "" };
     case "steelman":
       return { kind, id, locked: true, objection: "", answer: "" };
-    case "unlock":
-      return { kind, id, locked: false, price: null, access: "free" };
   }
 }
 
 /** Map a stored row to the player's card shape, stripping locked payloads. */
-export function toFeedCard(row: PublicationCardRow): FeedCard {
-  if (row.locked && row.kind !== "unlock") return emptyCard(row.id, row.kind);
+export function toFeedCard(row: PublicationCardRow): FeedCard | null {
+  // Compose stores its pinned CTA as an unlock row. The closing card a reader
+  // sees is decided from the report's live terms (build-publications), never
+  // from this row, so it is dropped here rather than rendered with a stale
+  // or empty payload.
+  if (row.kind === "unlock") return null;
+  if (row.locked) return emptyCard(row.id, row.kind);
   // Payload shape is validated on write; trust it here rather than re-parsing.
   const card = { ...(row.payload as object), kind: row.kind, id: row.id, locked: row.locked } as FeedCard;
   // Rows written before figure images were uploaded hold a blob: object URL
@@ -91,8 +94,10 @@ export async function listCardsForReports(
   if (error || !data) return out;
 
   for (const row of data as PublicationCardRow[]) {
+    const card = toFeedCard(row);
+    if (!card) continue;
     const list = out.get(row.report_id) ?? [];
-    list.push(toFeedCard(row));
+    list.push(card);
     out.set(row.report_id, list);
   }
   return out;
@@ -114,7 +119,7 @@ export async function listCardsForReport(reportId: string): Promise<FeedCard[]> 
 export async function listAuthorCards(
   reportId: string,
   authorId: string,
-): Promise<{ id: string; kind: FeedCard["kind"]; locked: boolean; payload: Record<string, unknown> }[]> {
+): Promise<{ id: string; kind: CardKind; locked: boolean; payload: Record<string, unknown> }[]> {
   const supabase = await createClient();
 
   const { data: report } = await supabase

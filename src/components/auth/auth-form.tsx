@@ -26,12 +26,15 @@ export function AuthForm({
   refHandle,
   oauthError,
   oauthReason,
+  notice,
   providers,
 }: {
   mode: "sign-in" | "sign-up";
   refHandle?: string;
   oauthError?: string | null;
   oauthReason?: string | null;
+  /** A calm line above the form: "check your inbox", "password updated". */
+  notice?: string | null;
   providers?: OAuthProvider[];
 }) {
   const action = mode === "sign-in" ? signIn : signUp;
@@ -47,6 +50,32 @@ export function AuthForm({
       </p>
 
       <div className="mt-8">
+        {notice && (
+          <p
+            role="status"
+            className="mb-4 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text"
+          >
+            {notice}
+          </p>
+        )}
+        {oauthError === "confirm" && (
+          <div
+            role="alert"
+            className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+          >
+            <p>That link did not work, so you are not signed in. It may have expired or been used already.</p>
+            {oauthReason && (
+              <p className="num mt-1.5 break-words text-[0.75rem] opacity-80">{oauthReason}</p>
+            )}
+            <p className="mt-1.5">
+              Sign in below, or{" "}
+              <Link href="/forgot-password" className="underline">
+                request a new password link
+              </Link>
+              .
+            </p>
+          </div>
+        )}
         {oauthError === "oauth" && (
           <div
             role="alert"
@@ -91,9 +120,16 @@ export function AuthForm({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
+          <div className="flex items-baseline justify-between gap-3">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            {mode === "sign-in" && (
+              <Link href="/forgot-password" className="text-sm text-text-mute hover:text-text hover:underline">
+                Forgot password?
+              </Link>
+            )}
+          </div>
           <input
             id="password"
             name="password"
