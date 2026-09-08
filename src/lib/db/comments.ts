@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/server";
 import type { Comment } from "@/lib/types";
 
 export async function listComments(reportId: string, limit = 50): Promise<Comment[]> {
@@ -55,4 +56,20 @@ export async function listCommentsForReports(reportIds: string[], limitPerReport
   }
 
   return map;
+}
+
+/** Comment ids this reader has liked, for painting hearts as on. */
+export async function listLikedCommentIds(commentIds: string[]): Promise<Set<string>> {
+  if (commentIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return new Set();
+  const { data } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .eq("user_id", user.id)
+    .in("comment_id", commentIds);
+  return new Set(((data as { comment_id: string }[]) ?? []).map((r) => r.comment_id));
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { format, isThisMonth } from "date-fns";
+import { format } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import { countReferrals } from "@/lib/db/profiles";
 import { listAnalystSubscribers } from "@/lib/db/subscriptions";
@@ -36,8 +36,6 @@ export default async function StudioAudiencePage() {
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   const referralLink = host ? `${protocol}://${host}/sign-up?ref=${profile.handle}` : `/sign-up?ref=${profile.handle}`;
 
-  const newThisMonth = subs.filter((s) => isThisMonth(new Date(s.started_at))).length;
-
   const rows: SubscriberRowVM[] = subs.map((s) => {
     const name = s.subscriber?.display_name ?? "Subscriber";
     const cancelling = s.status === "cancelled";
@@ -45,7 +43,6 @@ export default async function StudioAudiencePage() {
       id: s.subscriber_id,
       name,
       initials: initialsOf(name),
-      tier: "—", // no tier name on subscriptions yet (placeholder)
       joined: format(new Date(s.started_at), "MMM d, yyyy"),
       statusLabel: cancelling ? `Cancelling · until ${format(new Date(s.renews_at), "MMM d")}` : "Active",
       statusTone: cancelling ? "muted" : "active",
@@ -76,29 +73,6 @@ export default async function StudioAudiencePage() {
         ))}
       </div>
 
-      {/* Growth (chart is a placeholder -- no subscriber time series stored yet) */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
-          <SectionLabel>Growth</SectionLabel>
-        </div>
-        <div className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <div className="num flex gap-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
-              <span className="rounded-full border border-[var(--ink)] px-2.5 py-1 text-text">30D</span>
-              <span className="rounded-full border border-border px-2.5 py-1">90D</span>
-              <span className="rounded-full border border-border px-2.5 py-1">1Y</span>
-            </div>
-            <span className="num text-[11px] uppercase tracking-[0.14em] text-[var(--verdigris)]">
-              +{newThisMonth} this month
-            </span>
-          </div>
-          <div className="mt-4 flex h-32 items-center justify-center rounded-[var(--radius-btn)] border border-dashed border-border">
-            <p className="t-meta">Subscriber growth over time — not stored yet.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Referral link */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Referral link</SectionLabel>
         <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-5 sm:flex-row sm:items-center">

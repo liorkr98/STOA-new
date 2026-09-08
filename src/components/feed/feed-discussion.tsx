@@ -21,12 +21,15 @@ import type { FeedComment } from "@/lib/feed/types";
 export function FeedDiscussion({
   comments,
   onPost,
+  onLike,
   canPost,
   className,
 }: {
   comments: FeedComment[];
   /** Posts a comment, or a one-level reply when parentId is a top-level comment. */
   onPost?: (text: string, parentId: string | null) => Promise<void>;
+  /** Toggle this reader's like. `liked` is the current painted state. */
+  onLike?: (commentId: string, liked: boolean) => Promise<{ ok: boolean; liked: boolean }>;
   canPost: boolean;
   className?: string;
 }) {
@@ -79,9 +82,7 @@ export function FeedDiscussion({
           {c.text}
         </p>
         <div className="mt-1.5 flex items-center gap-4">
-          <span className="num inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-text-faint">
-            <Heart size={11} strokeWidth={1.6} aria-hidden /> {c.likes}
-          </span>
+          <CommentLike c={c} canPost={canPost} onLike={onLike} />
           {canPost ? (
             <button
               type="button"
@@ -161,5 +162,56 @@ export function FeedDiscussion({
         ))}
       </div>
     </section>
+  );
+}
+
+function CommentLike({
+  c,
+  canPost,
+  onLike,
+}: {
+  c: FeedComment;
+  canPost: boolean;
+  onLike?: (commentId: string, liked: boolean) => Promise<{ ok: boolean; liked: boolean }>;
+}) {
+  const [liked, setLiked] = useState(Boolean(c.liked));
+  const [likes, setLikes] = useState(c.likes);
+  const [pending, start] = useTransition();
+
+  if (!canPost || !onLike) {
+    return (
+      <span className="num inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-text-faint">
+        <Heart size={11} strokeWidth={1.6} aria-hidden /> {c.likes}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      aria-pressed={liked}
+      aria-label={liked ? "Unlike comment" : "Like comment"}
+      onClick={() => {
+        const was = liked;
+        setLiked(!was);
+        setLikes((n) => n + (was ? -1 : 1));
+        start(async () => {
+          const r = await onLike(c.id, was);
+          if (!r.ok) {
+            setLiked(was);
+            setLikes(c.likes);
+            return;
+          }
+          setLiked(r.liked);
+        });
+      }}
+      className={cn(
+        "num focus-ring inline-flex items-center gap-1 rounded text-[10px] uppercase tracking-[0.1em]",
+        liked ? "text-text" : "text-text-faint hover:text-text",
+      )}
+    >
+      <Heart size={11} strokeWidth={1.6} fill={liked ? "currentColor" : "none"} aria-hidden /> {likes}
+    </button>
   );
 }

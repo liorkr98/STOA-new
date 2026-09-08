@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Play } from "lucide-react";
@@ -10,10 +11,14 @@ import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { FilterPicker } from "@/components/explore/filter-picker";
-import { FeedSurface } from "@/components/feed/feed-surface";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { cn } from "@/lib/design/cn";
 import type { FeedComment } from "@/lib/feed/types";
+
+const FeedSurface = dynamic(
+  () => import("@/components/feed/feed-surface").then((m) => ({ default: m.FeedSurface })),
+  { ssr: false },
+);
 
 /**
  * Explore: a wall of faces the reader scans and chooses from. Six columns on

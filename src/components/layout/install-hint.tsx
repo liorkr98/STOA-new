@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
 import { isIosSafari, isStandaloneDisplay } from "@/lib/pwa/display";
 import { buttonClass } from "@/components/ui/button";
+import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY } from "@/components/legal/cookie-consent-banner";
 
 const STORAGE_KEY = "stoa_install_hint";
 const EVENT = "stoa-install-hint";
@@ -37,9 +38,10 @@ function parseDismissed(raw: string | null): boolean {
 export function InstallHint() {
   const hydrated = useHydrated();
   const dismissed = useStoredValue(STORAGE_KEY, parseDismissed, false, EVENT);
+  const cookieChosen = useStoredValue(COOKIE_CONSENT_KEY, (raw) => raw === "essential" || raw === "all", false, COOKIE_CONSENT_EVENT);
   const prompt = useSyncExternalStore(subscribePrompt, getPrompt, () => null);
 
-  if (!hydrated || dismissed || isStandaloneDisplay()) return null;
+  if (!hydrated || dismissed || isStandaloneDisplay() || !cookieChosen) return null;
 
   const ios = isIosSafari();
   if (!ios && !prompt) return null;

@@ -6,19 +6,17 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FeedSurface } from "@/components/feed/feed-surface";
 import { clipsToPublications } from "@/lib/feed/build-publications";
-import { listCommentsForReports } from "@/lib/db/comments";
 import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
 import { recordRankingImpressions } from "@/lib/db/ranking";
 import { loadViewerContext } from "@/lib/ranking/context";
 import { rankClips } from "@/lib/ranking/rank";
-import type { FeedComment } from "@/lib/feed/types";
 
 export const metadata: Metadata = { title: "Feed" };
 
-/** Newest comments sent with the first HTML, per publication. */
-const FEED_COMMENT_PREVIEW = 8;
+/** First page of the Feed. Comments load when Discuss opens. */
+const FEED_PAGE_SIZE = 30;
 
 /**
  * The Feed: the only video discovery surface in the product.
@@ -54,9 +52,9 @@ export default async function FeedPage({
     redirect(`/sign-in?next=${encodeURIComponent(next)}`);
   }
 
-  // Deliberately after the gate: no ranking, clip listing or comment fetch runs
-  // for a visitor who is about to be redirected.
-  const [clips, viewer] = await Promise.all([listVideoClipCards(72), loadViewerContext()]);
+  // Deliberately after the gate: no ranking or clip listing runs for a
+  // visitor who is about to be redirected. Comments wait until Discuss opens.
+  const [clips, viewer] = await Promise.all([listVideoClipCards(FEED_PAGE_SIZE), loadViewerContext()]);
 
   const ranked = await rankClips(clips, viewer, "feed");
   const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
@@ -76,33 +74,6 @@ export default async function FeedPage({
       reasons: r.reasons,
     })),
   });
-
-  if (publications.length > 0) {
-    // A small cap on purpose: this is serialized into the first HTML for every
-    // publication in the feed, and the panel shows the newest first anyway.
-    const commentsByReport = await listCommentsForReports(
-      publications.map((p) => p.id),
-      FEED_COMMENT_PREVIEW,
-    );
-    for (const pub of publications) {
-      const authorHandle = pub.analyst.handle;
-      pub.comments = (commentsByReport.get(pub.id) ?? []).map(
-        (c): FeedComment => ({
-          id: c.id,
-          parentId: c.parent_id ?? null,
-          author: {
-            handle: c.author?.handle ?? "",
-            displayName: c.author?.display_name ?? "Reader",
-            avatarUrl: c.author?.avatar_url ?? null,
-            isAuthor: c.author?.handle === authorHandle,
-          },
-          createdAt: c.created_at,
-          text: c.body,
-          likes: c.likes ?? 0,
-        }),
-      );
-    }
-  }
 
   if (publications.length === 0) {
     return (

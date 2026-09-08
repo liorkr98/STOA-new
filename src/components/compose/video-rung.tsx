@@ -1148,6 +1148,24 @@ export function VideoRung({
     [onChange],
   );
 
+  const takeFile = useCallback(
+    (f: File | undefined) => {
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      setSrc(url);
+      const probe = document.createElement("video");
+      probe.preload = "metadata";
+      probe.src = url;
+      probe.addEventListener("loadedmetadata", () => {
+        const d = Number.isFinite(probe.duration) ? probe.duration : demoDurationSeconds;
+        setEdit({ ...emptyEdit(d), thumbnail: null });
+        setTime(0);
+        onFile?.(f, d);
+      });
+    },
+    [demoDurationSeconds, onFile, setEdit],
+  );
+
   const selected = useMemo(() => edit.overlays.find((o) => o.id === selectedId) ?? null, [edit.overlays, selectedId]);
 
   // The real video follows the playhead; the poster stage runs a clock.
@@ -1252,30 +1270,20 @@ export function VideoRung({
           ) : null}
           {stage !== "edit" ? (
             <div className="ml-auto flex items-center gap-2">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  const url = URL.createObjectURL(f);
-                  setSrc(url);
-                  const probe = document.createElement("video");
-                  probe.preload = "metadata";
-                  probe.src = url;
-                  probe.addEventListener("loadedmetadata", () => {
-                    const d = Number.isFinite(probe.duration) ? probe.duration : demoDurationSeconds;
-                    setEdit({ ...emptyEdit(d), thumbnail: null });
-                    setTime(0);
-                    onFile?.(f, d);
-                  });
-                }}
-              />
-              <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
-                <Upload size={14} /> {src || hasClip ? "Replace video" : "Choose a video"}
-              </Button>
+              {src || hasClip ? (
+                <label className="inline-flex cursor-pointer items-center">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="video/*"
+                    className="text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
+                    onChange={(e) => {
+                      takeFile(e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              ) : null}
               {(src || hasClip) && onRemove ? (
                 <Button
                   variant="secondary"
@@ -1298,6 +1306,34 @@ export function VideoRung({
           drops below the fold: the picture is capped at under half the
           viewport, which is how CapCut's desktop layout splits the screen. */}
       <div className="mx-auto w-full max-w-[min(880px,calc(44vh*16/9))]">
+        {stage === "choose" && !src && !hasClip ? (
+          <label
+            className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-6 text-center"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "copy";
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              takeFile(e.dataTransfer.files[0]);
+            }}
+          >
+            <Upload size={22} strokeWidth={1.6} className="text-text-mute" />
+            <span className="text-sm text-text">Drop a clip here, or choose a file</span>
+            <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">MP4, MOV, or WebM</span>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="video/*"
+              className="mt-1 text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
+              onChange={(e) => {
+                takeFile(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        ) : (
+          <>
         <Stage
           src={src}
           time={time}
@@ -1426,6 +1462,8 @@ export function VideoRung({
             <Cover frames={frames} edit={edit} onChange={(t) => setEdit({ ...edit, thumbnail: t })} />
           </div>
         ) : null}
+          </>
+        )}
       </div>
     </section>
   );

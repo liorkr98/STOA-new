@@ -15,6 +15,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toggleFollow, toggleLike, toggleSave } from "@/app/actions/social";
+import { loadFeedComments, toggleCommentLike } from "@/app/actions/feed";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
@@ -214,7 +215,6 @@ export function FeedSurface({
             }}
             pub={pub}
             index={i}
-            total={publications.length}
             isActive={i === active}
             near={Math.abs(i - active) <= 1}
             snapClass={snapH}
@@ -233,6 +233,7 @@ export function FeedSurface({
 
       {discussing ? (
         <DiscussionPanel
+          key={discussing}
           pub={publications.find((p) => p.id === discussing)!}
           canPost={canAct}
           onPost={onPost}
@@ -252,7 +253,6 @@ const FeedItem = function FeedItem({
   ref,
   pub,
   index,
-  total,
   isActive,
   near,
   snapClass,
@@ -267,7 +267,6 @@ const FeedItem = function FeedItem({
   ref: (el: HTMLElement | null) => void;
   pub: FeedPublication;
   index: number;
-  total: number;
   isActive: boolean;
   near: boolean;
   snapClass: string;
@@ -670,11 +669,10 @@ const FeedItem = function FeedItem({
     }
   };
 
-  /** CALL · NVDA · AUG 22, 2026 · 0:58. A callless publication has no ticker,
-   * so its theme tag takes that slot and the strip still reads as a dateline. */
+  /** CALL · NVDA · AUG 22, 2026 · 0:58. Theme lives on the overlay chip, not here. */
   const dateline = [
     pub.typeLabel,
-    pub.ticker ?? pub.themeTag ?? pub.sector,
+    pub.ticker,
     new Date(pub.publishedAt)
       .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
       .toUpperCase(),
@@ -726,9 +724,6 @@ const FeedItem = function FeedItem({
         <div className="hidden items-center justify-between gap-3 md:flex">
           <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-text-mute">
             {dateline}
-          </span>
-          <span className="num flex-none text-[10px] uppercase tracking-[0.16em] text-text-faint">
-            {index + 1} / {total}
           </span>
         </div>
 
@@ -803,12 +798,9 @@ const FeedItem = function FeedItem({
                     thing in the frame. */}
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.66),rgba(0,0,0,0.34)_58%,transparent)] p-3 pt-4 md:pt-5">
                   <div className="min-w-0">
-                    <div className="mb-1.5 flex items-center justify-between gap-3 md:hidden">
+                    <div className="mb-1.5 md:hidden">
                       <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-white/95">
                         {dateline}
-                      </span>
-                      <span className="num flex-none text-[10px] uppercase tracking-[0.16em] text-white/70">
-                        {index + 1} / {total}
                       </span>
                     </div>
                     <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
@@ -836,7 +828,7 @@ const FeedItem = function FeedItem({
                   type="button"
                   onClick={() => setPaused((p) => !p)}
                   aria-label={paused ? "Play (Space)" : "Pause (Space)"}
-                  className="absolute inset-x-0 top-16 bottom-36 w-full cursor-default md:bottom-20"
+                  className="absolute inset-x-0 top-16 bottom-36 w-full cursor-default"
                 >
                   {paused ? (
                     <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
@@ -852,7 +844,7 @@ const FeedItem = function FeedItem({
                   >
                     {pub.headline}
                   </h2>
-                  <div className="mb-3 flex items-center justify-between gap-3 md:hidden" role="group" aria-label="Actions">
+                  <div className="mb-3 flex items-center justify-between gap-3" role="group" aria-label="Actions">
                     <div className="flex items-center gap-2.5">
                       {actions.map(({ key, label, Icon, on, active }) => (
                         <button
@@ -971,51 +963,6 @@ const FeedItem = function FeedItem({
         <h2 dir="auto" className="user-copy hidden line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight md:block">
           {pub.headline}
         </h2>
-
-        <div className="hidden items-center justify-between gap-3 border-y border-border py-2.5 md:flex">
-          <div className="flex items-center gap-3 sm:gap-4" role="group" aria-label="Actions">
-            {actions.map(({ key, label, Icon, on, active }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={on}
-                aria-pressed={key === "like" || key === "save" ? active : undefined}
-                className="focus-ring group flex items-center gap-1.5 rounded"
-              >
-                <span
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
-                    active
-                      ? "border-[var(--ink)] text-text"
-                      : "border-border text-text-mute group-hover:border-border-strong group-hover:text-text",
-                  )}
-                >
-                  <Icon
-                    size={13}
-                    strokeWidth={1.6}
-                    fill={active && (key === "like" || key === "save") ? "currentColor" : "none"}
-                  />
-                </span>
-                <span
-                  className={cn(
-                    "num hidden text-[10px] uppercase tracking-[0.16em] sm:inline",
-                    active ? "text-text" : "text-text-mute group-hover:text-text",
-                  )}
-                >
-                  {label}
-                </span>
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
-            aria-label={`Panel ${card + 1} of ${panelCount}`}
-            className="num focus-ring flex-none rounded text-[11px] tracking-[0.12em] text-text-mute hover:text-text"
-          >
-            {card + 1} / {panelCount}
-          </button>
-        </div>
       </div>
     </section>
   );
@@ -1057,7 +1004,7 @@ function DiscussionPanel({
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
   onClose: () => void;
 }) {
-  const [extra, setExtra] = useState<FeedComment[]>([]);
+  const [comments, setComments] = useState<FeedComment[] | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1066,6 +1013,20 @@ function DiscussionPanel({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadFeedComments(pub.id, pub.analyst.handle)
+      .then((rows) => {
+        if (!cancelled) setComments(rows.length > 0 ? rows : pub.comments);
+      })
+      .catch(() => {
+        if (!cancelled) setComments(pub.comments);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pub.id, pub.analyst.handle, pub.comments]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
@@ -1084,18 +1045,23 @@ function DiscussionPanel({
             Close
           </button>
         </div>
-        <FeedDiscussion
-          comments={[...extra, ...pub.comments]}
-          canPost={canPost}
-          onPost={
-            onPost
-              ? async (text, parentId) => {
-                  const posted = await onPost(pub.id, text, parentId);
-                  if (posted) setExtra((e) => [posted, ...e]);
-                }
-              : undefined
-          }
-        />
+        {comments === null ? (
+          <p className="mt-8 text-sm text-text-mute">Loading discussion.</p>
+        ) : (
+          <FeedDiscussion
+            comments={comments}
+            canPost={canPost}
+            onLike={canPost ? toggleCommentLike : undefined}
+            onPost={
+              onPost
+                ? async (text, parentId) => {
+                    const posted = await onPost(pub.id, text, parentId);
+                    if (posted) setComments((e) => [posted, ...(e ?? [])]);
+                  }
+                : undefined
+            }
+          />
+        )}
       </div>
     </div>
   );

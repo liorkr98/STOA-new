@@ -41,7 +41,7 @@ const FACES = [
 export default async function DevLandingPage() {
   const tape = await buildTape().catch(() => []);
   const data: LandingPayload = {
-    activity: { publicationsToday: 37, analystsToday: 14, callsResolvedToday: 6 },
+    activity: { publicationsToday: 37, analystsToday: 14, callsResolvedToday: 6, window: "today" },
     tape,
     issue: { issueNumber: 41, dateISO: "2026-08-18" },
     lead: {

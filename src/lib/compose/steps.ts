@@ -62,7 +62,7 @@ const ALL: Record<StepKey, StepDef> = {
     key: "video",
     label: "Video",
     optional: true,
-    blurb: "Record one, upload one, or carry on without.",
+    blurb: "The clip. Record one, upload one, or skip and write instead.",
   },
   video_edit: {
     key: "video_edit",
@@ -93,11 +93,11 @@ const ALL: Record<StepKey, StepDef> = {
  * there is a video to edit, and disappears again if the clip is dropped.
  */
 export function stepsFor(mode: ComposeMode, hasVideo: boolean): StepDef[] {
-  const keys: StepKey[] = ["write", "call", "cards"];
-  if (mode !== "short_post") {
-    keys.push("video");
-    if (hasVideo) keys.push("video_edit");
+  if (mode === "short_post") {
+    return (["write", "call", "tags", "publish"] as StepKey[]).map((k) => ALL[k]);
   }
+  const keys: StepKey[] = ["video", "write", "call", "cards"];
+  if (hasVideo) keys.push("video_edit");
   keys.push("tags", "publish");
   return keys.map((k) => ALL[k]);
 }

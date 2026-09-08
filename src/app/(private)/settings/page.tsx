@@ -27,7 +27,7 @@ export default async function SettingsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const email = user?.email ?? "—";
+  const email = user?.email ?? "";
 
   return (
     <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">
@@ -49,13 +49,6 @@ export default async function SettingsPage() {
           <div className="flex items-center justify-between gap-4 text-sm">
             <span className="text-text-mute">Email</span>
             <span className="num">{email}</span>
-          </div>
-          <div className="h-px bg-border" />
-          <div className="flex items-center justify-between gap-4 text-sm">
-            <span>Password</span>
-            <button type="button" disabled className={buttonClass("secondary", "sm")}>
-              Change password
-            </button>
           </div>
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4 text-sm">

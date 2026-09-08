@@ -47,8 +47,10 @@ function Reveal({ children, className }: { children: React.ReactNode; className?
 
 function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   const a = data.activity;
+  const quiet = a.publicationsToday === 0 && a.analystsToday === 0 && a.callsResolvedToday === 0;
+  const when = a.window === "week" ? "this week" : "today";
   const activity = [
-    `${a.publicationsToday} publication${a.publicationsToday === 1 ? "" : "s"} today`,
+    `${a.publicationsToday} publication${a.publicationsToday === 1 ? "" : "s"} ${when}`,
     `${a.analystsToday} analyst${a.analystsToday === 1 ? "" : "s"}`,
     `${a.callsResolvedToday} call${a.callsResolvedToday === 1 ? "" : "s"} resolved`,
   ].join(" · ");
@@ -62,7 +64,9 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
         </p>
         <div className="mt-8">{ACTIONS}</div>
         <p className="mt-4 text-[0.8125rem] text-text-mute">Free to join. Watching needs an account.</p>
-        <p className="num mt-6 text-[11px] uppercase tracking-[0.18em] text-text-mute">{activity.toUpperCase()}</p>
+        {quiet ? null : (
+          <p className="num mt-6 text-[11px] uppercase tracking-[0.18em] text-text-mute">{activity.toUpperCase()}</p>
+        )}
         <p className="num mt-10 text-[10px] uppercase tracking-[0.18em] text-text-faint">or scroll to see today ↓</p>
       </div>
       <div className="mt-8">

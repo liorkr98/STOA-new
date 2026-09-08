@@ -35,6 +35,8 @@ export interface FeedComment {
   createdAt: string;
   text: string;
   likes: number;
+  /** True when this reader has liked the comment. */
+  liked?: boolean;
   /** Set when a reply to a reply was flattened one level up. */
   replyingTo?: string | null;
 }

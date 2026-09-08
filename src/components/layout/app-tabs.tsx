@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Clapperboard, Compass, LineChart, Newspaper } from "lucide-react";
+import { Clapperboard, Compass, LineChart, Newspaper, PenLine } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { LinkPending } from "@/components/layout/link-pending";
 import { initialShrinkState, nextShrinkState } from "@/lib/nav/scroll-shrink";
@@ -11,24 +11,23 @@ import { initialShrinkState, nextShrinkState } from "@/lib/nav/scroll-shrink";
 const TABS = [
   { key: "feed", href: "/feed", label: "Feed", Icon: Clapperboard },
   { key: "today", href: "/home", label: "Today", Icon: Newspaper },
+  { key: "create", href: "/studio/compose", label: "Create", Icon: PenLine },
   { key: "explore", href: "/explore", label: "Explore", Icon: Compass },
   { key: "markets", href: "/markets", label: "Markets", Icon: LineChart },
 ] as const;
 
 function tabActive(pathname: string, href: string) {
   if (href === "/feed") return pathname === "/feed" || pathname === "/";
+  if (href === "/studio/compose") return pathname.startsWith("/studio/compose");
   return pathname.startsWith(href);
 }
 
 /**
- * Phone chrome for the four reader surfaces. Desktop keeps the top links.
- * Explore's Feed overlay portals above this bar (z-70).
+ * Phone chrome for the reader surfaces, plus Create in the middle.
+ * Desktop keeps the top links. Explore's Feed overlay portals above this bar (z-70).
  *
- * A floating pill rather than a bar welded to the edge, so the page reads
- * behind and around it. It shrinks while the reader moves down the page and
- * comes back when they move up. The scroller is the layout's `main`, not the
- * window, which is why the listener is attached to an ancestor rather than a
- * scroll event on `document`.
+ * Hidden on Compose so the editor owns the viewport. A floating pill rather
+ * than a bar welded to the edge, so the page reads behind and around it.
  */
 export function AppTabs() {
   const pathname = usePathname();
@@ -64,6 +63,8 @@ export function AppTabs() {
     };
   }, [pathname]);
 
+  if (pathname.startsWith("/studio/compose")) return null;
+
   return (
     <nav
       ref={navRef}
@@ -71,7 +72,7 @@ export function AppTabs() {
       data-shrunk={shrunk ? "" : undefined}
       className="app-tabs z-40 md:hidden"
     >
-      <ul className="app-tabs-pill grid grid-cols-4">
+      <ul className="app-tabs-pill grid grid-cols-5">
         {TABS.map(({ key, href, label, Icon }) => {
           const active = tabActive(pathname, href);
           return (
