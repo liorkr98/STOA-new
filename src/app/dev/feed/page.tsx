@@ -1,6 +1,7 @@
 "use client";
 
 import { FeedSurface } from "@/components/feed/feed-surface";
+import { DevAppShell } from "../_app-shell";
 import { fixturePublications } from "@/lib/dev/feed-fixtures";
 import type { FeedComment } from "@/lib/feed/types";
 
@@ -9,7 +10,9 @@ import type { FeedComment } from "@/lib/feed/types";
  * first items put a call (with sealed locked cards and a locked Steelman)
  * beside a callless NOTE (theme chip, no ticker, no seal) and a resolved call
  * with its seal, so both anchoring styles and both Steelman states are visible.
- * Posting a comment appends locally.
+ * Posting a comment appends locally. Mounted inside a copy of the app shell,
+ * the same way the real page is, so the scroller the Feed lives in is the one
+ * it ships in.
  */
 export default function DevFeedPage() {
   const pubs = fixturePublications();
@@ -29,5 +32,11 @@ export default function DevFeedPage() {
     toggleLike: async (_id: string, liked: boolean) => ({ ok: true, liked: !liked }),
     remove: async () => ({ ok: true }),
   };
-  return <FeedSurface publications={ordered} canAct onPost={onPost} discussionActions={discussionActions} />;
+  return (
+    <DevAppShell>
+      <div className="breakout-main h-full min-h-0">
+        <FeedSurface publications={ordered} canAct onPost={onPost} discussionActions={discussionActions} />
+      </div>
+    </DevAppShell>
+  );
 }
