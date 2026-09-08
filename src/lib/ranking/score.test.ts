@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { diversify } from "./rerank";
+import { clipPlaybackKey, diversify, pinRequestedClip, uniqueByKey } from "./rerank";
 import { bayesRate, recencyScore, scoreExplore, scoreFeed, scoreItem } from "./score";
 import type { RankingSignals, ViewerContext } from "./types";
 import { EXPLORE_WEIGHTS, FEED_WEIGHTS } from "./weights";
@@ -138,6 +138,86 @@ describe("personal relevance", () => {
     const feedStranger = scoreFeed(signals(), stranger);
     assert.ok(exploreFollowed.score < exploreStranger.score);
     assert.equal(feedFollowed.score, feedStranger.score);
+  });
+});
+
+describe("playback uniqueness", () => {
+  it("treats the same file with different query strings as one video", () => {
+    const a = clipPlaybackKey({
+      id: "c1",
+      bunny_video_guid: "guid-a",
+      playback_url: "https://cdn.example/demo/clip-01.mp4?v=pack1",
+    });
+    const b = clipPlaybackKey({
+      id: "c2",
+      bunny_video_guid: "guid-b",
+      playback_url: "https://cdn.example/demo/clip-01.mp4?v=pack2",
+    });
+    assert.equal(a, b);
+  });
+
+  it("keeps distinct files and HLS paths apart", () => {
+    const mp4 = clipPlaybackKey({
+      id: "c1",
+      playback_url: "https://cdn.example/demo/clip-01.mp4",
+    });
+    const hls = clipPlaybackKey({
+      id: "c2",
+      playback_url: "https://vz.example/da4d86d7/playlist.m3u8",
+    });
+    assert.notEqual(mp4, hls);
+  });
+
+  it("keeps the highest-scoring clip when several reports share a file", () => {
+    const scored = [
+      {
+        reportId: "low",
+        score: 0.2,
+        item: { id: "c-low", playback_url: "https://cdn.example/demo/clip-01.mp4?v=1" },
+      },
+      {
+        reportId: "high",
+        score: 0.9,
+        item: { id: "c-high", playback_url: "https://cdn.example/demo/clip-01.mp4?v=2" },
+      },
+      {
+        reportId: "other",
+        score: 0.5,
+        item: { id: "c-other", playback_url: "https://cdn.example/demo/clip-02.mp4" },
+      },
+    ].sort((a, b) => b.score - a.score);
+    const unique = uniqueByKey(scored, (c) => clipPlaybackKey(c.item));
+    assert.equal(unique.length, 2);
+    assert.equal(unique[0]?.reportId, "high");
+    assert.equal(unique[1]?.reportId, "other");
+  });
+
+  it("falls back to guid then id when there is no playback URL", () => {
+    assert.equal(
+      clipPlaybackKey({ id: "c1", bunny_video_guid: "g1", playback_url: null }),
+      "guid:g1",
+    );
+    assert.equal(clipPlaybackKey({ id: "c2", playback_url: null }), "id:c2");
+  });
+
+  it("pins a requested report and drops the sibling that plays the same file", () => {
+    const ranked = [
+      {
+        reportId: "winner",
+        item: { id: "c-win", playback_url: "https://cdn.example/demo/clip-01.mp4" },
+      },
+      {
+        reportId: "other",
+        item: { id: "c-other", playback_url: "https://cdn.example/demo/clip-02.mp4" },
+      },
+    ];
+    const pinned = pinRequestedClip(ranked, {
+      reportId: "tapped",
+      item: { id: "c-tap", playback_url: "https://cdn.example/demo/clip-01.mp4?v=pack1" },
+    });
+    assert.equal(pinned.length, 2);
+    assert.equal(pinned[0]?.reportId, "tapped");
+    assert.equal(pinned[1]?.reportId, "other");
   });
 });
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { listTickerRows } from "@/lib/db/tickers";
 import type { VideoClipCard } from "@/lib/db/video-clips";
-import { diversify } from "./rerank";
+import { clipPlaybackKey, diversify, pinRequestedClip, uniqueByKey } from "./rerank";
 import { scoreItem } from "./score";
 import type { RankingSignals, RankingSurface, ScoredClip, ViewerContext } from "./types";
 
@@ -71,5 +71,28 @@ export async function rankClips(
     return bAt - aAt;
   });
 
-  return diversify(scored);
+  const unique = uniqueByKey(scored, (c) => clipPlaybackKey(c.item));
+  return diversify(unique);
+}
+
+/** Put an Explore-handoff report at the front if uniqueness had kept a sibling file. */
+export function pinRequestedReport(
+  ranked: ScoredClip<VideoClipCard>[],
+  clips: VideoClipCard[],
+  reportId: string | undefined,
+): ScoredClip<VideoClipCard>[] {
+  if (!reportId) return ranked;
+  if (ranked.some((r) => r.reportId === reportId)) return ranked;
+  const clip = clips.find((c) => c.report_id === reportId && c.report?.author);
+  if (!clip?.report) return ranked;
+  const sibling = ranked.find((r) => clipPlaybackKey(r.item) === clipPlaybackKey(clip));
+  return pinRequestedClip(ranked, {
+    item: clip,
+    analystId: clip.report.author_id,
+    reportId: clip.report_id,
+    videoId: clip.id,
+    score: sibling?.score ?? 0,
+    reasons: sibling?.reasons ?? [],
+    parts: sibling?.parts ?? {},
+  });
 }

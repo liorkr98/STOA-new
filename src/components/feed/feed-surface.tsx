@@ -233,7 +233,7 @@ export function FeedSurface({
       >
         {publications.map((pub, i) => (
           <FeedItem
-            key={pub.id}
+            key={pub.clipId ?? pub.id}
             ref={(el) => {
               itemRefs.current[i] = el;
             }}

@@ -13,6 +13,8 @@ export const EXPLORE = {
   MEDIUM_COUNT: 4,
   /** How many tiles the wall aims for before packing trims to a clean grid. */
   TARGET_TILES: 30,
+  /** Ranker pool: larger than the wall so file-uniqueness can see the catalogue. */
+  CANDIDATE_POOL: 120,
 } as const;
 
 export interface ExploreTile {
