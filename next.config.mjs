@@ -11,6 +11,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   // Keep file tracing scoped to this app when other lockfiles exist in parent dirs.
   outputFileTracingRoot: path.join(__dirname),
+  // Cloud agents and local tools often open the app at 127.0.0.1 while `next
+  // dev` treats localhost as the origin; without this, client chunks 403 and
+  // the Feed never hydrates.
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   /**
    * Next 15+ defaults the client router cache for dynamic pages to 0s, so every
    * click waits on a full server round trip even when you just left that page.
