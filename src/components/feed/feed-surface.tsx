@@ -712,6 +712,7 @@ const FeedItem = function FeedItem({
     <section
       ref={ref}
       data-feed-item={index}
+      data-active={isActive ? "" : undefined}
       aria-label={pub.headline}
       className={cn(
         "feed-item-shell flex snap-start snap-always flex-col items-center justify-center",
@@ -828,7 +829,7 @@ const FeedItem = function FeedItem({
                   type="button"
                   onClick={() => setPaused((p) => !p)}
                   aria-label={paused ? "Play (Space)" : "Pause (Space)"}
-                  className="absolute inset-x-0 top-16 bottom-36 w-full cursor-default"
+                  className="absolute inset-x-0 top-16 bottom-[13.5rem] z-[1] w-full cursor-default"
                 >
                   {paused ? (
                     <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
@@ -837,27 +838,33 @@ const FeedItem = function FeedItem({
                   ) : null}
                 </button>
 
-                <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-3 pt-12">
+                <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-3 pt-12">
                   <h2
                     dir="auto"
                     className="user-copy mb-2 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
                   >
                     {pub.headline}
                   </h2>
-                  <div className="mb-3 flex items-center justify-between gap-3" role="group" aria-label="Actions">
+                  <div className="relative z-10 mb-3 flex items-center justify-between gap-3" role="group" aria-label="Actions">
                     <div className="flex items-center gap-2.5">
                       {actions.map(({ key, label, Icon, on, active }) => (
                         <button
                           key={key}
                           type="button"
-                          onClick={on}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            on();
+                          }}
                           aria-label={label}
                           aria-pressed={key === "like" || key === "save" ? active : undefined}
-                          className="focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white"
+                          className="focus-ring relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white"
                         >
                           <Icon
                             size={14}
                             strokeWidth={1.6}
+                            aria-hidden
+                            className="pointer-events-none"
                             fill={active && (key === "like" || key === "save") ? "currentColor" : "none"}
                           />
                         </button>
@@ -1004,7 +1011,8 @@ function DiscussionPanel({
   onPost?: (reportId: string, text: string, parentId: string | null) => Promise<FeedComment | null>;
   onClose: () => void;
 }) {
-  const [comments, setComments] = useState<FeedComment[] | null>(null);
+  const seeded = pub.comments.length > 0;
+  const [comments, setComments] = useState<FeedComment[] | null>(seeded ? pub.comments : null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1015,18 +1023,19 @@ function DiscussionPanel({
   }, [onClose]);
 
   useEffect(() => {
+    if (seeded) return;
     let cancelled = false;
     void loadFeedComments(pub.id, pub.analyst.handle)
       .then((rows) => {
-        if (!cancelled) setComments(rows.length > 0 ? rows : pub.comments);
+        if (!cancelled) setComments(rows);
       })
       .catch(() => {
-        if (!cancelled) setComments(pub.comments);
+        if (!cancelled) setComments([]);
       });
     return () => {
       cancelled = true;
     };
-  }, [pub.id, pub.analyst.handle, pub.comments]);
+  }, [pub.id, pub.analyst.handle, seeded]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
