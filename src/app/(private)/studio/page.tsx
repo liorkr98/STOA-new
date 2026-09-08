@@ -66,8 +66,6 @@ function toPublication(
     videoStatus: clip ? clip.status : null,
     dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),
     views: compact(r.views),
-    unlocks: "—", // placeholder
-    revenue: "—", // placeholder
     pinned: r.id === pinnedId,
     stateLine: null,
   };
@@ -83,8 +81,8 @@ function toPublication(
     const days = Math.max(0, differenceInCalendarDays(new Date(pred.resolves_at), new Date()));
     base.warning = days <= 3;
     base.stateLine = `OPEN · RESOLVES IN ${days} DAY${days === 1 ? "" : "S"}`;
-    base.entry = pred.lock_price?.toFixed(2) ?? "—";
-    base.target = pred.target_price?.toFixed(2) ?? "—";
+    base.entry = pred.lock_price?.toFixed(2) ?? "";
+    base.target = pred.target_price?.toFixed(2) ?? "";
     // Placeholder progress: time elapsed toward resolution (true distance-to-target needs a live price).
     const start = new Date(r.published_at ?? r.created_at).getTime();
     const end = new Date(pred.resolves_at).getTime();
@@ -92,7 +90,7 @@ function toPublication(
     base.progressPct = end > start ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
   } else if (state === "resolved" && pred) {
     base.entryExit = `${pred.lock_price?.toFixed(2)} → ${pred.resolved_price?.toFixed(2)}`;
-    base.returnPct = pred.return_pct != null ? pct(pred.return_pct) : "—";
+    base.returnPct = pred.return_pct != null ? pct(pred.return_pct) : "";
     base.returnTone = (pred.return_pct ?? 0) >= 0 ? "up" : "down";
     base.sealStatus = pred.outcome === "hit" ? "hit" : pred.outcome === "near" ? "near" : "miss";
   }

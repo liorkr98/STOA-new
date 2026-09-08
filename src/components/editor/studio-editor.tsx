@@ -851,11 +851,15 @@ export function StudioEditor({
   // Editing a live publication is never a first pass: the creator already
   // made every one of these decisions, so nothing is locked.
   const steps = useMemo(() => stepsFor(mode, videoChosen), [mode, videoChosen]);
-  const [stepKey, setStepKey] = useState<StepKey>("write");
-  // What the forward button said when it refused to move. Shown beside the
-  // button, and only while it is still the reason.
+  const [stepKey, setStepKey] = useState<StepKey>(() => {
+    if (editingPublished || isPost) return "write";
+    if (hasVideoClip) return "video_edit";
+    return "video";
+  });
   const [blockedNote, setBlockedNote] = useState<string | null>(null);
-  const [visited, setVisited] = useState<Set<StepKey>>(() => new Set<StepKey>(["write"]));
+  const [visited, setVisited] = useState<Set<StepKey>>(
+    () => new Set<StepKey>([editingPublished || isPost ? "write" : hasVideoClip ? "video_edit" : "video"]),
+  );
   const [firstPassDone, setFirstPassDone] = useState(editingPublished);
 
   // A step can vanish under the creator: dropping the clip removes Edit
@@ -1274,7 +1278,7 @@ export function StudioEditor({
           setRailDrawerOpen(false);
         }}
       >
-        {showResearch ? (
+        {mode === "research" ? (
           <FactCheckerPanel
             text={plainText}
             credits={credits}
@@ -1775,7 +1779,7 @@ export function StudioEditor({
                   >
                     Preview publication
                   </button>
-                  {showResearch ? (
+                  {mode === "research" ? (
                     <FactCheckerPanel
                       text={plainText}
                       credits={credits}

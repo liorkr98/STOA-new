@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUserId } from "@/lib/db/auth";
+import { listComments, listLikedCommentIds } from "@/lib/db/comments";
 import { toFeedComment } from "@/lib/feed/comments";
 import type { FeedComment } from "@/lib/feed/types";
 import type { Comment } from "@/lib/types";
@@ -42,6 +44,14 @@ export async function postFeedComment(reportId: string, body: string, parentId: 
     reportAuthorId: (report as { author_id?: string } | null)?.author_id ?? null,
     viewerId: userId,
   });
+}
+
+/** Newest comments for one publication, with this reader's likes painted on. */
+export async function loadFeedComments(reportId: string, authorId: string): Promise<FeedComment[]> {
+  const comments = await listComments(reportId, 50);
+  const userId = await getSessionUserId();
+  const likedIds = userId ? await listLikedCommentIds(userId, comments.map((c) => c.id)) : new Set<string>();
+  return comments.map((c) => toFeedComment(c, { reportAuthorId: authorId, viewerId: userId, likedIds }));
 }
 
 /**

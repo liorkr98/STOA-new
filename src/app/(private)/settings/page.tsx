@@ -28,7 +28,7 @@ export default async function SettingsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const email = user?.email ?? "—";
+  const email = user?.email ?? "";
 
   return (
     <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">

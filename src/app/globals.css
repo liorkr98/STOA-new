@@ -201,7 +201,7 @@
 
   .app-tabs-pill {
     width: 100%;
-    max-width: 26rem;
+    max-width: 30rem;
     pointer-events: auto;
     border: 1px solid var(--border);
     border-radius: 999px;

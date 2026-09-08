@@ -37,8 +37,6 @@ export interface Publication {
   videoStatus: "processing" | "ready" | "failed" | null;
   dateLabel: string;
   views: string;
-  unlocks: string;
-  revenue: string;
   pinned: boolean;
   // draft / scheduled
   stateLine: string | null;
@@ -284,8 +282,6 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   <div className="num text-right text-[11px] text-text-mute">{p.dateLabel}</div>
                   <div className="num mt-1 flex gap-4 text-[11px]">
                     <span className="text-text-mute">{p.views} <span className="text-text-faint">views</span></span>
-                    <span className="text-text-mute">{p.unlocks} <span className="text-text-faint">unlocks</span></span>
-                    <span className="text-text-mute">{p.revenue} <span className="text-text-faint">rev</span></span>
                   </div>
                 </div>
 

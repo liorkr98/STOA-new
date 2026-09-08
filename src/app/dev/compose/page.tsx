@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { StudioEditor } from "@/components/editor/studio-editor";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
@@ -98,6 +99,13 @@ const BODY = JSON.stringify({
 
 type Shape = "video" | "research" | "both" | "empty" | "published";
 
+function parseShape(raw: string | null): Shape {
+  if (raw === "video" || raw === "research" || raw === "both" || raw === "empty" || raw === "published") {
+    return raw;
+  }
+  return "empty";
+}
+
 const SHAPES: { key: Shape; label: string; blurb: string }[] = [
   { key: "video", label: "Video only", blurb: "A clip, no written report" },
   { key: "research", label: "Research only", blurb: "Written work, no clip" },
@@ -145,8 +153,6 @@ const PUBS: Publication[] = [
     videoStatus: "processing",
     dateLabel: "AUG 18",
     views: "0",
-    unlocks: "—",
-    revenue: "—",
     pinned: false,
     editedAt: "2026-08-29T14:32:00.000Z",
     stateLine: "VIDEO PROCESSING · STARTED 2 MINUTES AGO",
@@ -166,8 +172,6 @@ const PUBS: Publication[] = [
     videoStatus: "ready",
     dateLabel: "AUG 12",
     views: "5.6K",
-    unlocks: "—",
-    revenue: "—",
     pinned: true,
     stateLine: "OPEN · RESOLVES IN 41 DAYS",
     entry: "96.20",
@@ -183,7 +187,16 @@ const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
 const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
 
 export default function DevComposePage() {
-  const [shape, setShape] = useState<Shape>("both");
+  return (
+    <Suspense fallback={<div className="h-[var(--app-h)] bg-bg" />}>
+      <DevComposeInner />
+    </Suspense>
+  );
+}
+
+function DevComposeInner() {
+  const search = useSearchParams();
+  const [shape, setShape] = useState<Shape>(() => parseShape(search.get("shape")));
 
   return (
     <div className="w-full">
