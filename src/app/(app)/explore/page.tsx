@@ -36,7 +36,7 @@ export default async function ExplorePage({
   const [{ ticker, sector }, userId, clips, viewer] = await Promise.all([
     searchParams,
     getSessionUserId(),
-    listVideoClipCards(EXPLORE.TARGET_TILES * 3),
+    listVideoClipCards(EXPLORE.CANDIDATE_POOL),
     loadViewerContext(),
   ]);
   const sessionId = crypto.randomUUID();

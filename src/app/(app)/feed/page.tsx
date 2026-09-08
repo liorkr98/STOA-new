@@ -11,12 +11,14 @@ import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
 import { recordRankingImpressions } from "@/lib/db/ranking";
 import { loadViewerContext } from "@/lib/ranking/context";
-import { rankClips } from "@/lib/ranking/rank";
+import { pinRequestedReport, rankClips } from "@/lib/ranking/rank";
 
 export const metadata: Metadata = { title: "Feed" };
 
 /** First page of the Feed. Comments load when Discuss opens. */
 const FEED_PAGE_SIZE = 30;
+/** Ranker pool: larger than the session so scoring and file-uniqueness see more than the newest 30. */
+const FEED_CANDIDATE_POOL = 120;
 
 /**
  * The Feed: the only video discovery surface in the product.
@@ -54,9 +56,16 @@ export default async function FeedPage({
 
   // Deliberately after the gate: no ranking or clip listing runs for a
   // visitor who is about to be redirected. Comments wait until Discuss opens.
-  const [clips, viewer] = await Promise.all([listVideoClipCards(FEED_PAGE_SIZE), loadViewerContext()]);
+  const [clips, viewer] = await Promise.all([
+    listVideoClipCards(FEED_CANDIDATE_POOL),
+    loadViewerContext(),
+  ]);
 
-  const ranked = await rankClips(clips, viewer, "feed");
+  const ranked = pinRequestedReport(
+    await rankClips(clips, viewer, "feed"),
+    clips,
+    at,
+  ).slice(0, FEED_PAGE_SIZE);
   const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
   const reasonsByReport = new Map(ranked.map((r) => [r.reportId, r.reasons]));
   for (const pub of publications) pub.rankReasons = reasonsByReport.get(pub.id);
