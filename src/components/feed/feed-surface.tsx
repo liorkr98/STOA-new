@@ -747,7 +747,7 @@ const FeedItem = function FeedItem({
           >
             <div
               ref={trackRef}
-              className="scroll-area scroll-bare flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+              className="scroll-area-x scroll-bare flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">

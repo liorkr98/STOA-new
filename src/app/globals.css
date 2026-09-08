@@ -544,6 +544,24 @@ body {
 }
 
 /*
+ * A scroll region that moves sideways only (a wide table, a strip, the Feed's
+ * evidence track). Contained on its own axis, so a fling past its last column
+ * never chains into the page or the browser's back-swipe, and deliberately
+ * open on the other: Chrome and WebKit cut the scroll chain on any axis
+ * marked `contain`, whether or not the element can scroll on that axis, so
+ * `.scroll-area` on a sideways scroller swallows every vertical wheel or
+ * swipe that starts over it and the page behind it sits still. Firefox
+ * chains regardless, which is how the same page scrolls in one browser and
+ * not another.
+ */
+.scroll-area-x {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
+
+/*
  * A scroll area with no bar at all, for surfaces that are panned rather than
  * read: the Feed's vertical reader and the evidence track inside its frame,
  * where a bar drawn across the analyst's face is chrome nobody asked for.
