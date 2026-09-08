@@ -98,7 +98,7 @@ export function EstimatesNodeView({
             </div>
           </div>
         )}
-        <div className="scroll-area overflow-x-auto">
+        <div className="scroll-area-x overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead className="bg-surface">
               <tr>

@@ -1055,7 +1055,7 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
       </div>
       {open ? (
         <div className="mt-3 border-t border-border pt-3">
-          <div className="scroll-area flex gap-1.5 overflow-x-auto pb-1">
+          <div className="scroll-area-x flex gap-1.5 overflow-x-auto pb-1">
             {frames.map((f) => (
               <button
                 key={f.time}

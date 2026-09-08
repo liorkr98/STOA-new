@@ -215,7 +215,7 @@ export function StockResolvedHistory({ calls }: { calls: ResolvedCall[] }) {
 
   return (
     <Band title="Resolved history" note="What the market did with every call that has closed.">
-      <div className="overflow-x-auto scroll-area">
+      <div className="overflow-x-auto scroll-area-x">
         <table className="stock-table">
           <thead>
             <tr>

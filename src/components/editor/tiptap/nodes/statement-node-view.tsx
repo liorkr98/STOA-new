@@ -180,7 +180,7 @@ export function StatementNodeView({
     const lines = orderedLines(s);
     const visibleLines = isEditable ? lines : lines.filter((l) => !hiddenRows.includes(l.concept));
     return (
-      <div className="scroll-area overflow-x-auto">
+      <div className="scroll-area-x overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead className="sticky top-0 z-10 bg-surface">
             <tr>
