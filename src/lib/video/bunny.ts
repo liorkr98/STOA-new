@@ -126,9 +126,34 @@ interface BunnyVideo {
   title: string;
   length: number; // seconds
   status: number; // 0..5, 4 = finished
+  storageSize?: number; // bytes Bunny actually holds
+  dateUploaded?: string; // when the record was created, UTC without a suffix
   thumbnailFileName?: string;
   hasMP4Fallback?: boolean;
   captions?: { srclang: string; label: string }[];
+}
+
+/**
+ * Bunny holds a video record from the moment we ask for a GUID, so a browser
+ * upload that never delivered its bytes sits at status 0 with nothing stored.
+ * That is indistinguishable from "still encoding" unless storageSize is read,
+ * which is how an abandoned upload can look like a stalled transcoder for days.
+ *
+ * The presigned window is UPLOAD_TTL_SECONDS, after which the bytes can no
+ * longer arrive, so past a generous multiple of it the clip is not slow, it is
+ * never coming.
+ */
+const ABANDONED_UPLOAD_AFTER_MS = 6 * 60 * 60 * 1000;
+
+export function isAbandonedUpload(video: {
+  status: number;
+  storageSize?: number;
+  dateUploaded?: string;
+}): boolean {
+  if (video.status !== 0 || (video.storageSize ?? 0) > 0 || !video.dateUploaded) return false;
+  // Bunny reports UTC with no offset, which Date.parse would read as local.
+  const created = Date.parse(`${video.dateUploaded.replace(/Z$/, "")}Z`);
+  return !Number.isNaN(created) && Date.now() - created > ABANDONED_UPLOAD_AFTER_MS;
 }
 
 /** Create the video object, returning its GUID. Duration is unknown until upload finishes. */

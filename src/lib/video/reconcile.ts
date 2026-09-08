@@ -7,6 +7,7 @@ import {
   bunnyThumbnailUrl,
   bunnyPreviewUrl,
   bunnyCaptionVttUrl,
+  isAbandonedUpload,
   MAX_VIDEO_DURATION_SECONDS,
 } from "@/lib/video/bunny";
 import {
@@ -30,7 +31,9 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  * re-running on a settled clip is a no-op.
  *
  * Bunny video.status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding,
- * 4 Finished, 5 Error, 6 UploadFailed.
+ * 4 Finished, 5 Error, 6 UploadFailed. A status 0 still holding no bytes once
+ * the upload window has passed is an upload that never arrived, and settles as
+ * failed rather than claiming to be processing forever.
  */
 export async function reconcileClip(guid: string): Promise<ReconcileOutcome> {
   let video: Awaited<ReturnType<typeof getBunnyVideo>>;
@@ -41,7 +44,7 @@ export async function reconcileClip(guid: string): Promise<ReconcileOutcome> {
   }
 
   const finished = video.status === 4;
-  const failed = video.status === 5 || video.status === 6;
+  const failed = video.status === 5 || video.status === 6 || isAbandonedUpload(video);
 
   if (finished && video.length > MAX_VIDEO_DURATION_SECONDS) {
     await markVideoClipReadyByGuid(guid, {
