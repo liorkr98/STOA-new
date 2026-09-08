@@ -21,9 +21,9 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - Publish video-first research (CALL / RESEARCH / NOTE)
 - Server-side price lock + SPY benchmark at publish
 - Hourly grading cron + CLI (`npm run grade`)
-- Track Score (0-100) is the only score in the UI; the 600-1400 rating display + tiers are retired. Underlying formula is an open decision (modified Elo vs Wilson/PF/alpha composite) — see `docs/PRODUCT_MODEL.md`
+- Track Score (0-100) is private (`/studio/track-record`); the 600-1400 rating display + tiers are retired. Underlying formula is an open decision (modified Elo vs Wilson/PF/alpha composite) — see `docs/PRODUCT_MODEL.md`
 - The Feed (full-screen vertical video; Discover and its tabs are retired)
-- Analyst profiles, leaderboard, markets browser
+- Analyst profiles, Explore, markets browser
 - Wallet (simulated credits), subscribe, unlock, confirm-spend dialog
 - Comments, likes, follows, save toggle
 - Studio overview, compose, **draft resume**, **audience**
@@ -35,15 +35,15 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **FactChecker** — classify claims, Yahoo price verification, results on published reports
 - **Report templates** — one-click block structures in compose (earnings recap, deep dive, etc.)
 - **Account menu** — one tap to profile, studio, wallet, saved, subs, settings, branding
-- **Notes** — inline quick-post composer on the feed (Substack-style social layer)
+- **Notes** — Compose NOTE publications, not an inline quick-post on the Feed
 - **Newsletter fan-out** — publishing notifies followers + active subscribers
 - **Social notifications** — follow, like, comment, publication, sale, subscribe in the inbox
-- **Track record surfaced** — score breakdown, hit/near/miss, tier progress, full call ledger with alpha
+- **Track record surfaced** — private studio track record (score breakdown, hit/near/miss, equity); public surfaces show HIT / MISS / NEAR seals and entry to exit, not a score
 - **Analyst application funnel** — investors apply with a short questionnaire, admin approves/rejects at `/admin/applications`, only approved analysts get compose access
 - **PM framework backend (0018)** — horizon validation, trading-calendar resolution, `resolution_pending_review`, webhook idempotency, fact-check rate limits — see `docs/Stoa_Backend_Deep_Dive.md`
 - **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
-- **Track Score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
+- **Track Score transparency** — hit rate, profit factor, avg return, and alpha on the analyst's private `/studio/track-record` page (not a public analytics page)
 - **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
 
 ## In progress / next (high priority)

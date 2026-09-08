@@ -19,8 +19,9 @@ anywhere public, and no surface ever aggregates analysts into a verdict (no long
 average targets or consensus). Analysts appear as an avatar and a name; the one exception is the
 public profile's audience line (`4.3K FOLLOWERS · 214 MEMBERS`, members opt-in). The engine still
 computes a private Track Score and records still accrue; the analyst sees their own number in
-their private track record only. Placement across the product is driven by the lifecycle model
-below, not by score.
+their private track record only. Feed and Explore order comes from the engagement ranker below,
+not from that score. Lifecycle stages still mark NEW / TRENDING and still help Today choose
+what to lead with.
 
 ## The content model (video-first)
 
@@ -81,15 +82,68 @@ is on-demand (a wall of faces the reader scans and chooses from, each tile openi
 that publication),
 **Today** is the curated daily read.
 
+## Feed and Explore ranking
+
+Feed and Explore share one ranker (`src/lib/ranking/`). They score the same published, ready
+clips, then apply different weights because the jobs differ: Feed is "surprise me, keep
+watching"; Explore is "find someone new." Weights live in `src/lib/ranking/weights.ts` and
+sum to 1 per surface.
+
+Neither surface sorts by newest, by Track Score, or by a public rating. MOAT (the private
+Track Score) is a 3 to 4 percent bump, not the sort key.
+
+**Pipeline, both surfaces**
+
+1. Take a pool of about 120 newest published ready clips (larger than the 30 the reader will
+   see, so scoring is not stuck on whatever published last).
+2. Drop anything the viewer dismissed, and anything missing a report or author.
+3. Score with that surface's weights. Almost every term is a **rate**, Bayesian-smoothed so a
+   3-view clip with 3 likes cannot beat a 200-view clip with 40 likes. Recency fades over about
+   a week. A resolved MISS on this call multiplies the whole score by 0.85; NEAR / PARTIAL by
+   0.95.
+4. Keep **one clip per video file** (the highest-scoring copy). Identity is the playback URL
+   without query strings. Distinct Bunny guids and report ids can still point at the same MP4;
+   those do not count as different videos.
+5. Cap one analyst at 2 in a row and 4 in any 12, so a high-volume poster cannot flood the
+   session.
+6. Feed shows the top 30 in the vertical reader. Explore takes up to 30 for the wall. Tile
+   **size** on Explore is rank position (first 2 large, next 4 medium, the rest standard).
+   TRENDING is a badge on those large tiles when they have velocity; it does not re-sort the
+   wall.
+
+If an Explore tile opens Feed with `?at=<report id>` and uniqueness had kept a sibling that
+plays the same file, Feed pins the tapped publication and drops the duplicate file.
+
+**Feed weights:** completion 18%, likes 16%, comments 14%, click-through 14%, watchlist 12%,
+recency 10%, saves 5%, shares 5%, sector 3%, MOAT 3%. Feed does not boost or bury people you
+already follow. Completion is finished-plays over plays, not seconds watched.
+
+**Explore weights:** follow-proxy 16%, likes 16%, comments 16%, velocity 14%, topic match 12%,
+click-through 10%, recency 8%, MOAT 4%, saves 4%. Follow-proxy asks "would this viewer follow
+this analyst?" and **downranks already-followed analysts**. Velocity is likes plus 2× comments
+per day since publish.
+
+Saves and shares are in the formula but currently always passed as 0; they are not filled from
+data yet. Signed-out visitors never hit this ranker on Feed (redirect to sign-in). Explore
+still ranks for everyone, with an empty viewer context when signed out.
+
 ## The lifecycle model
 
 Content and creators move through five stages: **NEW** (time on platform plus publications),
 **AVERAGE** (the steady middle), **RISING** (gaining momentum), **TRENDING** (gaining fast:
 velocity, not accumulated volume), **POPULAR** (established, high accumulated attention). Only
-**NEW** and **TRENDING** are ever displayed; the rest are invisible mechanics that drive placement:
-Explore's tile sizes, Today's lists and lead, the Feed's ordering. This replaced score-based
-ranking. Thresholds live in `src/lib/lifecycle/stages.ts` as named constants; until engagement
-events are recorded, attention per day since arrival stands in for a windowed velocity.
+**NEW** and **TRENDING** are ever displayed as markers. The other stages are not a sort key
+for Feed or Explore.
+
+What lifecycle still does:
+
+- **Markers** on Today, and NEW / TRENDING labels where a publication has earned them.
+- **Today's** lead, secondary, and Trending Now lists (`src/lib/today/build-today-page.ts`).
+- A TRENDING **badge** on Explore's large tiles when velocity is high. Size and order on that
+  wall come from the ranker, not from the stage.
+
+Thresholds live in `src/lib/lifecycle/stages.ts`. Until the stored-stage job exists, attention
+per day since arrival stands in for a windowed velocity. That proxy is not the Feed order.
 
 ## Compose is a workspace, not a wizard
 

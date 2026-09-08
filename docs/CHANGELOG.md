@@ -10,6 +10,28 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-08 — Feed ranking matches the files, and the docs match the app
+
+**For someone using the site**
+
+- **The same video no longer appears twice in a session.** Feed and Explore used to treat every
+  publication as a different video even when they played the same file under a different
+  headline (the demo library reuses a handful of MP4s). The ranker now keeps one copy per
+  file, the strongest one, then the usual analyst-diversity pass. Until there are more distinct
+  uploads, the catalogue will look honestly shorter.
+- **Ranking sees more than the last 30 posts.** It scores a pool of about 120, then takes the
+  top 30 for the session, so it is not just shuffling whatever published last.
+
+**Docs, so the next person does not rebuild the old product**
+
+The markdown that agents and humans treat as current was still describing a different app:
+lifecycle stages sorting the Feed, a public Track Score next to every name, Explore as a
+research grid with a score slider, a creators leaderboard, Discover as a live route. Those
+lines now match what ships: engagement ranker, private Track Score, Explore as a wall of
+faces, no leaderboard. Dated changelog entries are left as history.
+
+---
+
 ## 2026-09-08 — The Feed scrolls again in Chrome and Safari
 
 **For someone using the site**

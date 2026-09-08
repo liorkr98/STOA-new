@@ -157,13 +157,15 @@ lacks is a reason to fire at the right moment.
    thing a signed-out visitor can be shown, so it matters more than before.
 2. **Resolution as the share moment.** When a call the reader watched resolves, that is the
    notification and the share prompt. Pre-filled text, native sheet, links to the sealed call.
-3. **A real cold start.** Signed-out ranking currently falls back to global engagement plus
-   recency. One question at first open ("which of these do you follow?") would populate
-   `sectorInterests` and make the first session relevant.
+3. **A real cold start.** Signed-out visitors never see the Feed ranker (watching is gated).
+   Explore still ranks with an empty viewer context, which is global engagement plus recency.
+   One question at first open ("which of these do you follow?") would populate
+   `sectorInterests` and make the first Explore session relevant.
 4. **Day-7 return, honestly.** The `publication` notification already fans out to followers.
    Web Push (installed PWA only on iOS) plus a resolution notification is the return loop.
    No streaks, no artificial urgency.
-5. **Feed depth.** Paginate past 72 when the catalogue justifies it.
+5. **Feed depth.** The session is 30 clips from a ranked pool of 120, unique by video file.
+   Paginate past that when the catalogue of distinct files justifies it.
 
 ---
 

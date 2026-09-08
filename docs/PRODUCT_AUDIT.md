@@ -179,7 +179,7 @@ P0, user-visible:
 7. Settings: "Saving..." and "Saved" at once.
 8. Strip em dashes from Audience and Earnings.
 9. Per-route `<title>` for Watchlist, Portfolio, Dashboard, Screener, Notebook.
-10. Following empty state should not look like a broken social graph when the account has 24.8k followers. Say "You are not following anyone yet" is fine; the zero on every tab including tickers needs a one-tap Discover.
+10. Following empty state should not look like a broken social graph when the account has 24.8k followers. Say "You are not following anyone yet" is fine; the zero on every tab including tickers needs a one-tap path to Explore.
 
 P1, quality:
 

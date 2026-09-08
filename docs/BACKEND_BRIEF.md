@@ -264,8 +264,10 @@ freshest thing on a page; do not cache. Regionality: none.
 **Today.** `src/lib/lifecycle/stages.ts` computes NEW / AVERAGE / RISING / TRENDING / POPULAR
 per request from a proxy: attention per day since arrival (`views + 5*likes + 10*comments`),
 compared with the population median of the current pool. Constants are named and grouped
-(`LIFECYCLE`, `EXPLORE`) and documented in place. This drives Explore's tile sizes, Today's
-lead/secondary/Trending Now, the sidebar's trending lists, and the NEW / TRENDING markers.
+(`LIFECYCLE`, `EXPLORE`) and documented in place. This drives Today's lead/secondary/Trending
+Now, the sidebar's trending lists, and the NEW / TRENDING markers. Explore tile **size**
+follows the Explore ranker; TRENDING is a badge on large tiles. Feed order is
+`src/lib/ranking/`, not this job.
 
 **Needed.** A job (pg_cron, every 10 to 15 min) that computes per-publication and per-creator
 attention over the last 48h against the prior 14d and writes `stage`, `trending_score`,

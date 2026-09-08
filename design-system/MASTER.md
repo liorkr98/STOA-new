@@ -124,7 +124,8 @@ Existing routes, unchanged:
 | Screen   | Route               | Purpose                                         |
 | -------- | -------------------- | -------------------------------------------------- |
 | Landing  | `/`                   | Public marketing. Trust bar + how-it-works, not just a hero. |
-| Discover | `/discover`           | Investor feed (Trending / Following / Subscribed).   |
+| Feed     | `/feed`               | Vertical video reader. Signed-in. Ranked, unique by file. |
+| Explore  | `/explore`            | Wall of video tiles. Catalogue scan.                     |
 | Markets  | `/markets`            | Ticker browser.                                       |
 | Profile  | `/analyst/[handle]`   | The analyst's public surface. Hero of the product.    |
 | Report   | `/report/[id]`        | Long-form reading view — now with the fact-check layer and the always-visible trust sidebar (call block, disclosure block, MOAT badge). |

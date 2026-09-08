@@ -257,8 +257,8 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - Auth (Supabase magic link / OAuth), profiles, wallets (simulated $100 on signup)
 - Publish research, calls, short posts via block compose editor (`/studio/compose`)
 - Server-side price lock at publish (Yahoo Finance) + SPY benchmark for alpha
-- Hourly grading cron grades open calls, recomputes score/rating/tier
-- Feed, Explore, analyst profiles, leaderboard, markets browser, search
+- Hourly grading cron grades open calls and recomputes the private Track Score
+- Feed, Explore, analyst profiles, markets browser, search
 - Wallet: top-up (demo), subscribe (90/10 split), pay-per-report unlock
 - Comments, likes, follows, saves, inbox notifications
 - Account dropdown menu, settings, profile branding (avatar/cover/sections)
@@ -268,8 +268,8 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - Social notifications (follow, like, comment, publication, sale, subscribe)
 
 #### Track record UI
-- Score breakdown, hit/near/miss counts, tier progress on analyst profiles
-- Full call ledger with alpha vs SPY on `/analyst/[handle]`
+- Private Track Score breakdown on `/studio/track-record` (not on the public profile)
+- HIT / MISS / NEAR seals and entry to exit wherever a resolved call appears
 
 #### AI features
 - AI credits economy (wallet → credits, spend on chat/outline/fact-check)

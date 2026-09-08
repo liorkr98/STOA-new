@@ -6,7 +6,9 @@ improve on it. Where something is genuinely undecided it is marked **DECISION RE
 are the only points that should interrupt the run.
 
 **Read first:** `docs/FRONTEND.md` (design tokens, the source of truth) and `docs/PRODUCT_MODEL.md`
-(the product model). Everything visual defers to FRONTEND.md.
+(the product model, including how Feed and Explore are ranked). Everything visual defers to
+FRONTEND.md. This file is the build spec the run implemented; where it still says lifecycle
+**orders** Feed or Explore, that is stale. Live order is `src/lib/ranking/`.
 
 ---
 
@@ -38,13 +40,17 @@ and analyst counts) is fine; blended opinion is not.
 **Resolved outcomes stay visible everywhere** — HIT / MISS / NEAR seals, entry → exit, return,
 alpha per call. Those are evidence, not a grade.
 
-### The lifecycle model — this replaced score-based ranking
+### The lifecycle model — markers, not the Feed sort
 Content and creators move through five stages: **NEW** (time on platform plus publications
 published), **AVERAGE** (the steady middle), **RISING** (gaining momentum), **TRENDING** (gaining
 fast — velocity, not accumulated volume), **POPULAR** (established, high accumulated attention).
 
-Only **NEW** and **TRENDING** are ever displayed to users. Average, rising and popular are invisible
-mechanics that drive placement. Nobody sees "AVERAGE" or "POPULAR" on themselves.
+Only **NEW** and **TRENDING** are ever displayed to users. Average, rising and popular are not
+labels on the product.
+
+Feed and Explore **order** is the engagement ranker (`src/lib/ranking/`), unique by video file.
+Lifecycle still marks NEW / TRENDING and still helps Today choose its lead. Explore tile **size**
+follows ranker position; TRENDING is a badge on the large tiles, not the sort.
 
 Where the thresholds between stages are not yet defined, implement the mechanism with clearly
 marked, easily-changed constants and report what you chose.
@@ -545,8 +551,9 @@ complete.
   tickerless items; no scheduling field.
 - **The lifecycle stages.** NEW / AVERAGE / RISING / TRENDING / POPULAR need computing from
   engagement events. Trending is velocity, not accumulated volume — it needs a time-windowed rate,
-  not a running total. This is what replaced score-based ranking and it now drives Explore's tile
-  sizes, Today's placement, and the Feed's ordering.
+  not a running total. Markers (NEW / TRENDING) still show; Today's lists still use this
+  proxy. Feed and Explore order is the engagement ranker in `src/lib/ranking/`, not this
+  stage. Explore tile size follows ranker position.
 - **Engagement events.** The engagement-driven ordering algorithm needs instrumentation:
   impressions, watch completion %, swipe depth (max card reached), CTA reach, unlock and subscribe
   conversions, follows from a surface.

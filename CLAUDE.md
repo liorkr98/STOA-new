@@ -5,8 +5,9 @@ map, and rules. It is the shared source of truth for every AI agent on this repo
 `AGENTS.md` directly).
 
 Read **[docs/PRODUCT_MODEL.md](./docs/PRODUCT_MODEL.md)** for the current product model — the
-video-first content model, the five surfaces, the Card Engine, the lifecycle model, and the
-Track Record Engine (private, not publicly scored). It is the reference for what Stoa is today.
+video-first content model, the five surfaces, the Card Engine, Feed/Explore ranking, the
+lifecycle markers, and the Track Record Engine (private, not publicly scored). It is the
+reference for what Stoa is today.
 
 Before any visual change, read **[docs/FRONTEND.md](./docs/FRONTEND.md)** — the design system,
 every page, every component, and the single source of truth for tokens.
@@ -30,9 +31,10 @@ Quick reminders:
   analyst opts in, members). The Track Record Engine still runs and records still accrue; resolved
   outcomes (HIT / MISS / NEAR seals, entry to exit, return) stay visible everywhere as evidence.
   Never aggregate analysts into a verdict (no long/short splits, average targets or consensus).
-  Placement is driven by the **lifecycle model** (NEW / AVERAGE / RISING / TRENDING / POPULAR;
-  only NEW and TRENDING are ever shown). The scoring formula remains an open internal decision
-  (docs describe a modified Elo; the engine computes a Wilson / profit-factor / alpha composite).
+  Feed and Explore **order** comes from the engagement ranker (`src/lib/ranking/`), unique by
+  video file; lifecycle stages mark NEW / TRENDING and help Today, they do not sort the Feed.
+  The Track Score formula remains an open internal decision (docs describe a modified Elo; the
+  engine computes a Wilson / profit-factor / alpha composite).
 - Ledger/notary palette: six tokens — ink, paper, verdigris, brass, plum, rust. Green and red
   (verdigris/rust) are the only **sentiment** colors (up/down, hit/miss); brass and plum are
   non-sentiment accents. **Primary buttons are solid ink; navy is reserved for the wordmark.** A

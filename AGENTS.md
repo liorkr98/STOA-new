@@ -7,14 +7,13 @@ editing this file and letting `CLAUDE.md` re-export it.
 **Full specs — read before any structural or visual work:**
 
 - `docs/PRODUCT_MODEL.md` — the current product model: the video-first content model, the five
-  surfaces, the Card Engine, the lifecycle model, the Track Record Engine. Read this first.
+  surfaces, the Card Engine, Feed/Explore ranking, the lifecycle markers, the Track Record
+  Engine. Read this first.
 - `docs/BUILD_SPEC.md` — the frontend build spec that this run implemented, and
   `docs/BACKEND_BRIEF.md` — the backend gap list handed to Krisi.
-- `docs/BACKEND.md` — schema, RLS, the Track Score engine, the fact-checker pipeline, payments.
-  **Does not exist yet.** No one has supplied the source content for it, so it is not being
-  fabricated here. Until it exists, `supabase/migrations/*` and `docs/BACKEND_DATA_CONTRACTS.md`
-  (gaps found and PayPal research from the frontend build) are the closest things to a backend
-  reference in this repo.
+- `docs/BACKEND.md` — a partial backend note (charts, dispatch, env). It predates the current
+  product model and is not the full schema/RLS/engine spec. Prefer `supabase/migrations/*`
+  and `docs/BACKEND_DATA_CONTRACTS.md` when they disagree.
 - `docs/FRONTEND.md` — every page, every component, the full design system.
 
 This file is the short version for day-to-day work. Those two are the long version. When they
@@ -79,11 +78,13 @@ Full model: docs/PRODUCT_MODEL.md.
 only to the analyst in their private track record (`/studio/track-record`); nothing public shows
 a score, rating, rank, percentile or leaderboard, and no surface aggregates analysts into a
 verdict. What is public is the record itself: HIT / MISS / NEAR seals, entry to exit, return and
-alpha per call, everywhere a resolved call appears. Placement is driven by the **lifecycle model**
-(`src/lib/lifecycle/stages.ts`): NEW / AVERAGE / RISING / TRENDING / POPULAR, of which only NEW
-and TRENDING are ever displayed. The scoring *formula* is an open decision (the docs describe a
-modified Elo; the shipped engine computes a Wilson / profit-factor / alpha composite), so do not
-treat either formula as settled.
+alpha per call, everywhere a resolved call appears. Feed and Explore **order** comes from the
+engagement ranker (`src/lib/ranking/`: rates for likes, comments, completion, click-through,
+plus watchlist / follow-proxy / velocity). One clip per video file; then analyst diversity.
+Lifecycle stages (`src/lib/lifecycle/stages.ts`) still mark NEW / TRENDING and still help
+Today choose its lead; they do not sort the Feed. The Track Score *formula* is an open decision
+(the docs describe a modified Elo; the shipped engine computes a Wilson / profit-factor /
+alpha composite), so do not treat either formula as settled.
 
 **Fact-check is a feature, not a pillar.** The AI fact-checker is a **pre-publish bonus, never a
 gate**: a creator may run it and every claim is classified (fact / unproven / opinion /
@@ -147,12 +148,12 @@ src/
 supabase/
   migrations/          SQL schema + RLS. Apply in order.
 docs/
-  BACKEND.md            Full backend spec — schema, engine, fact-checker, payments. Does not
-                         exist yet; see the note at the top of this file.
-  FRONTEND.md            Full frontend spec — every page, every component, design system.
+  BACKEND.md            Partial backend note (charts, dispatch, env). Predates the current
+                         product model; not the full schema spec.
+  FRONTEND.md            Design tokens and screens. Ranking / Explore-as-wall / no public
+                         Track Score: see the adaptations at the top of that file.
   BACKEND_DATA_CONTRACTS.md  Real gaps found while building the frontend, plus the PayPal
-                         research. The closest thing to a backend reference until BACKEND.md
-                         exists.
+                         research. The closest thing to a backend schema reference.
 design-system/MASTER.md  Deprecated as of this rewrite. Kept as historical reference only —
                           docs/FRONTEND.md is now the single source of truth for tokens and
                           screens. Do not add new decisions here.
@@ -173,6 +174,9 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
   visitors to sign-in, because streaming is the highest per-view cost in the product. Explore's
   posters, Today, publication pages and profiles stay open; the root's lead clip plays on a
   press, not on arrival. Rationale and the accepted tradeoff: `docs/GROWTH_RESEARCH.md` §6.2.
+- **Feed and Explore order** comes from `src/lib/ranking/` (engagement rates, then one clip per
+  video file, then analyst diversity). Not newest-first, not Track Score, not lifecycle stage.
+  Full weights: `docs/PRODUCT_MODEL.md`.
 - **Video is adaptive HLS**, played by `NativeClip` (native on Safari, hls.js elsewhere, loaded
   on demand), with the Bunny iframe as an automatic fallback when a manifest is refused. The
   local demo MP4s are a walkthrough tool behind `STOA_DEMO_CLIPS=1`, never a delivery path.

@@ -43,7 +43,7 @@ Daily editorial digest for the homepage (`/`). Server-assembled ranking — clie
 | `GET /api/dispatch` | Optional | Public dispatch issue |
 | `GET /api/dispatch?personalized=true` | Signed in | Lead/secondary/ledger scoped to followed + subscribed creators |
 
-**Response shape** (`DispatchPayload`): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (Today's Record — empty array omits UI), `leaderboard[]` (personalized only).
+**Response shape** (`DispatchPayload` / Today payload): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (Today's Record — empty array omits UI). There is no `leaderboard[]`.
 
 **Ranking** (`src/lib/dispatch/ranking.ts`): conviction + recency + Track Score. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
 

@@ -15,9 +15,10 @@ target (ticker, direction, target price, horizon date) at the moment of publicat
 paid via subscription or per-report purchase. Every locked call is enforced immutable at the
 database level — it cannot be edited or deleted after publication, including by Stoa itself.
 Locked calls are graded automatically (Hit/Miss) against real market prices on their horizon
-date, feeding a public "MOAT score" per analyst. An AI system fact-checks factual claims in each
-report before publication is allowed (classifying claims as fact/unproven/opinion/contradicted)
-but never writes or edits the analyst's thesis or price target — that's always the human
+date. The engine still computes a private Track Score; that number is **not** shown on public
+surfaces (no public "MOAT score" leaderboard). An AI system can fact-check factual claims in each
+report (classifying claims as fact/unproven/opinion/contradicted) but does not block publish
+and never writes or edits the analyst's thesis or price target — that's always the human
 analyst's own view. The platform takes a 10% fee on analyst earnings via PayPal.
 
 ---

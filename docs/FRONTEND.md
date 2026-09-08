@@ -3,7 +3,7 @@
 The full frontend specification. `AGENTS.md` is the short version for day-to-day work; when the
 two disagree, this file wins and `AGENTS.md` should be corrected to match.
 
-**Two adaptations from the original spec, both deliberate:**
+**Two adaptations from the original spec, both deliberate, plus what the app does now:**
 - **Payments are PayPal, not Stripe.** Everywhere this doc originally said Stripe Identity /
   Stripe Express, read PayPal instead: Partner Referrals API for seller onboarding (handles KYC
   itself, which is why there's no separate identity-verification onboarding step), Orders v2
@@ -15,6 +15,18 @@ two disagree, this file wins and `AGENTS.md` should be corrected to match.
   (not `/dashboard`), etc.
   This avoided conflicting with in-flight backend branches. The design system, components, and
   page content below apply within the existing URLs.
+- **Shipped screens that this spec still describes wrongly in places.** Do not reintroduce them
+  from the older sections below. Current behaviour: `docs/PRODUCT_MODEL.md`.
+  - **No public Track Score, no leaderboard.** `TrackScoreBadge` is a studio / `/dev/components`
+    piece, not something next to every analyst name. `/studio/track-record` is the only place
+    an analyst sees their number.
+  - **Explore is a wall of video tiles**, not a research-card grid with a Track Score slider.
+    Order comes from the Explore ranker; tile size follows rank position. Filters are ticker and
+    sector. A tap opens the Feed player on that clip.
+  - **Feed order is the Feed ranker**, not newest, not lifecycle stage. One clip per video file.
+    Watching requires an account.
+  - **Today (`/home`)** has no "Top creators this week" leaderboard. Today's Record is resolved
+    calls, not a ranking of analysts.
 
 Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the Track Score formula, the
 fact-checker pipeline). Nothing here invents new data — every field referenced below should
@@ -240,29 +252,16 @@ always labelled.
 - The pill's own rules live inside the `max-width: 767px` block. They are unlayered, so at
   desktop widths they would otherwise beat the element's `md:hidden` utility.
 
-### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
+### 2.2 `<TrackScoreBadge>` — private, not public
 
-Three size variants, same component, same visual language at every size. (`MoatBadge` is a
-deprecated alias that re-exports this component; do not use it in new code.)
+The component still exists (`src/components/ui/track-score-badge.tsx`) and is shown on
+`/dev/components`. It is **not** rendered next to analyst names on Feed, Explore, Today, or
+the public profile. Public surfaces show an avatar and a name; the analyst sees the number only
+on `/studio/track-record`. Do not put this badge back on a public card.
 
-- **`size="sm"`** - used inline next to a creator's name in feed cards, comments, debate
-  threads. Renders as: small ink-ring seal icon + score number in Plex Mono, e.g. `78`.
-  Tapping/clicking always opens that creator's Track Score analytics page - never just decorative.
-- **`size="md"`** - used on the report detail page's trust rail and on creator cards in
-  Explore/leaderboard. Adds hit rate when available.
-- **`size="lg"`** - used on the creator's own profile / score page. Full treatment: score, hit
-  rate, sample size, and a "View full breakdown" link, laid out as a small ledger-card itself
-  (double-ruled border per §1.4).
-
-**Score color mapping** (the number itself, not a background fill - keep it legible, not a
-traffic light): Track Score is a trust signal, not market sentiment. Use `--ink` for scored
-values and `--brass` when the sample is provisional (under 10 resolved calls). Verdigris/rust
-stay reserved for hit/miss and fact-check verdicts. Always pair the numeral with the word
-"Track" / "Track Score" at `md`/`lg` so the score is never ambiguous about what it measures.
-
-**Empty state (brand-new creator, zero resolved calls):** renders as `-` in neutral gray with a
-small "Not yet scored" tooltip on hover - never shows a fabricated "0," which would read as a
-failing score rather than an absence of data.
+If it is used in Studio, keep the original treatment: ink for a settled score, brass when the
+sample is provisional (under 10 resolved calls), never a traffic-light fill. Empty is a dash,
+not a fabricated 0.
 
 ### 2.3 `<DisclosureBlock>` — identical everywhere, creators cannot restyle this
 
@@ -692,7 +691,7 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
 
 **Secondary** — "Also in your briefing"
 
-**Today's Record** + **Top creators this week** leaderboard
+**Today's Record** (resolved calls this cycle). There is no "Top creators this week" leaderboard.
 
 **CTA:** "Browse every analyst on Explore →"
 
@@ -702,24 +701,19 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
 
 ---
 
-### 3.2 Explore — `/explore` (public, teaser mode)
+### 3.2 Explore — `/explore`
 
-**Layout:**
+A wall of analyst video tiles the reader scans and picks from. Not a research-card grid, not a
+text mosaic, not a Track Score slider.
 
-- `<TopNav>` (logged-out)
-- Page header: "Explore research" + subtext "Browse locked calls from every creator on Stoa."
-- **Filter row** (sticky beneath header on scroll): sector chips (multi-select: Tech, Biotech,
-  Small-Cap, Macro, Crypto, Dividends, Energy, Consumer — scrollable chip row on mobile), a
-  `Track Score ≥` slider (0–100, default 0), a Free/Paid toggle (All / Free only / Paid only)
-- **Results grid:** same feed-card component used in the logged-in Feed (§4.1), but every card's
-  primary CTA reads **"Read preview"** instead of "Read" — leads to the Report Public Preview
-  page (§3.4), never the full report
-- Sort control, top-right of the results grid: dropdown "Most recent" / "Highest Track Score" /
-  "Highest upside"
-- **Empty state (no results match filters):** "No research matches these filters yet." + a
-  **"Clear filters"** text button — never a dead end with no recovery action
-- Persistent bottom banner, dismissible per session (stored in a cookie, not account state): "Sign
-  up free to follow creators and unlock reports" + **"Sign up"** button
+- Order comes from the Explore ranker (`src/lib/ranking/`). Tile **size** follows that order:
+  first two spotlight, next four medium, the rest standard. TRENDING is a badge on those large
+  tiles when they have velocity; it does not re-sort the wall.
+- Filters: ticker and sector (`FilterPicker`). No Track Score floor, no Free/Paid toggle, no
+  "Highest Track Score" sort.
+- A tap opens the Feed player on that publication (signed-in: overlay; signed-out: sign-in,
+  because watching is gated). Closing returns to the same scroll position.
+- Empty: nothing to scan yet, with a way back to Today.
 
 ---
 
@@ -739,9 +733,9 @@ scoped to follows, subscriptions, saved reports, and recently read analysts.
   muted, a small verified-identity check icon with tooltip "Identity verified — not a credential
   claim"
 
-**`<TrackScoreBadge size="lg">`** — full ledger-card treatment, placed directly below the header band,
-full width on mobile / left-aligned ~40% width on desktop with the pricing card (below) filling
-the remaining space alongside it
+**`<TrackScoreBadge size="lg">`** — original spec. **Not shipped on the public profile.** The
+public storefront is an avatar and a name, plus followers (and members if the analyst opts in).
+The number stays on `/studio/track-record`.
 
 **Bio** — one line, Plex Sans `--text-base`, creator-written, max ~140 characters enforced at
 input time (Part 4, Page Branding)
@@ -965,29 +959,13 @@ beneath it, the editorial action bar and the pager. See §2.11.
 There is no browse-as-text surface. The tabs, the layout toggle and the report-card grid that
 used to live here went with Discover; scanning the catalogue is Explore's job.
 
-**Feed card component**:
+**Order** comes from the Feed ranker (`src/lib/ranking/`), not newest-first and not lifecycle
+stage. A pool of about 120 is scored, unique by video file, then diversified by analyst, then
+the session is the top 30. Watching requires an account (`/sign-in?next=/feed`).
 
-```
-┌──────────────────────────────────────────────┐
-│ [avatar] Creator Name  [TrackScoreBadge sm]         │
-│ TICKER · Company Name                          │
-│ Headline text, one line, truncated              │
-│ Target: $XX.XX  ·  by [date]  ·  ↑12% upside   │
-│ [fact-check summary chip]                       │
-│                                    [Read] [···] │
-└──────────────────────────────────────────────┘
-```
-
-- The `[···]` overflow menu: "Add to watchlist," "Share," "Not interested" (the last one dismisses
-  this specific card from the feed and is a real signal fed back into ranking, not just a visual
-  dismiss)
-- Card CTA reads "Read" if included in an active subscription, "Unlock — $X" if per-report priced
-  and not yet purchased, "Subscribe" if subscription-only and not subscribed
-
-**Empty state (brand-new investor, "Following" tab, nothing followed yet):** replaces the feed
-with a "Recommended for you" carousel — same creator-card component as the homepage's featured
-carousel, pulled from the investor's onboarding sector picks — never a blank feed with just the
-filter row showing.
+The Feed is the vertical reader (`FeedSurface`), not a list of report cards with a Track Score
+badge. Dismiss ("not interested") is a real ranking signal. There is no Following tab on this
+surface.
 
 ### 5.2 Search results — `/search?q=...`
 
@@ -1680,7 +1658,8 @@ instrument does not, because Stoa claims to track it.
   /ui                    -- Button, Input, Chip, Toast, Modal base primitives
   /shared                -- TopNav, TrackScoreBadge, DisclosureBlock, PaywallGate, LockConfirmModal,
                              FactCheckLayer, DebateThread, StatusChip  (Part 2, one file each)
-  /feed                  -- FeedCard, CreatorCard, Leaderboard
+  /feed                  -- FeedSurface
+  /explore               -- ExploreWall
 /lib
   /design-tokens.css     -- every value from §1.4, as CSS custom properties
   /tailwind.config.ts    -- maps the token file into Tailwind's theme, don't hardcode hex in components

@@ -1,8 +1,8 @@
 /**
  * The lifecycle model: content and creators move through NEW, AVERAGE, RISING,
- * TRENDING and POPULAR. Only NEW and TRENDING are ever shown to users; the rest
- * are invisible mechanics that drive placement (Explore tile sizes, Today's
- * lists, the Feed order).
+ * TRENDING and POPULAR. Only NEW and TRENDING are ever shown to users. Stages mark
+ * items and still help Today choose its lead; Feed and Explore *order* comes from
+ * `src/lib/ranking/`, not from this file.
  *
  * TRENDING is velocity, not accumulated volume: attention per day since the
  * item arrived, measured against the whole population's typical rate. POPULAR
