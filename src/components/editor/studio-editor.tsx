@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -171,6 +172,10 @@ function readTemplatesDismissed() {
 /** Size a textarea to its words, so it reads as a growing line, not a box. */
 function fitTextarea(el: HTMLTextAreaElement | null) {
   if (!el) return;
+  // Write stays mounted and hidden on other steps. Measuring a display:none
+  // field yields scrollHeight 0, which used to lock the headline at no height
+  // so only the dek underneath could be typed into.
+  if (el.offsetParent === null) return;
   el.style.height = "0px";
   el.style.height = `${el.scrollHeight}px`;
 }
@@ -893,6 +898,12 @@ export function StudioEditor({
   const router = useRouter();
   const rootRef = useFrameHeight<HTMLDivElement>();
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const titleAreaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (currentStep.key !== "write") return;
+    fitTextarea(titleAreaRef.current);
+  }, [currentStep.key, title]);
 
   const goStep = useCallback(
     (key: StepKey) => {
@@ -1508,7 +1519,7 @@ export function StudioEditor({
                         markDirty();
                         fitTextarea(e.currentTarget);
                       }}
-                      ref={fitTextarea}
+                      ref={titleAreaRef}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
@@ -1517,7 +1528,7 @@ export function StudioEditor({
                       }}
                       placeholder="Headline"
                       dir="auto"
-                      className="user-copy mb-2 w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none md:text-4xl"
+                      className="user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none md:min-h-[3.25rem] md:text-4xl"
                       style={{ fontFamily: "var(--font-display)" }}
                     />
                   </>
