@@ -96,7 +96,10 @@
   --nav-h: calc(3.5rem + var(--safe-top));
   --tab-h: 0px;
   --main-pad-y: 1.25rem;
-  --app-h: 100dvh;
+  /* The app's own height. The plain viewport here, so every browser gets a
+     definite length and the shell never collapses to auto; the dynamic and
+     small viewports replace it below where the browser knows them. */
+  --app-h: 100vh;
 
   /* Motion tokens (docs/MOTION.md A.1). Use nothing else. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -113,6 +116,12 @@
   :root {
     --page-gutter: 40px;
     --main-pad-y: 2rem;
+  }
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-h: 100dvh;
   }
 }
 
@@ -148,7 +157,10 @@
  * surface is mounted, with or without a fixed-height shell above it.
  */
 .feed-snap {
-  height: calc(var(--app-h) - var(--nav-h) - var(--tab-h));
+  /* `--feed-h` is the room the Feed measured off its own scroller (set by
+     FeedSurface); the calc is the server's guess from the tokens, and what
+     stands when a measurement fails. Both are lengths, never percentages. */
+  height: var(--feed-h, calc(var(--app-h) - var(--nav-h) - var(--tab-h)));
 }
 
 .feed-snap-overlay {
@@ -160,7 +172,7 @@
 .feed-item-shell {
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: auto calc(var(--app-h) - var(--nav-h) - var(--tab-h));
+  contain-intrinsic-size: auto var(--feed-h, calc(var(--app-h) - var(--nav-h) - var(--tab-h)));
 }
 
 .feed-snap-overlay .feed-item-shell {

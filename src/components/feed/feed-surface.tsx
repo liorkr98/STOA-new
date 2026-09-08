@@ -30,6 +30,7 @@ import { OverlayLayer } from "@/components/video/overlay-layer";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { prefersReducedMotion } from "@/lib/motion/reduced";
 import { useStoredValue } from "@/lib/hooks/use-stored-value";
+import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
@@ -53,11 +54,29 @@ import type { FeedComment, FeedPublication } from "@/lib/feed/types";
  */
 
 /**
- * The viewport minus the sticky TopNav (`h-14`). The scroller and every snap
- * section have to agree on this exactly: any disagreement and each snap lands
- * a little further off than the last.
+ * The room under the top nav. The scroller and every snap section have to
+ * agree on this exactly: any disagreement and each snap lands a little further
+ * off than the last. The class carries the server's guess from the nav and tab
+ * tokens; once mounted, the surface measures its real room off its scroller
+ * and every element in the class reads that instead (`--feed-h`).
  */
 const ITEM_H = "feed-snap";
+
+/**
+ * Anything smaller than this is not a reader, it is a measurement that went
+ * wrong (a scroller with no height of its own, a hidden document). The guess
+ * in the class stands then, so a failed measurement never sizes the Feed to
+ * nothing; the worst case is the page scrolling like any other page.
+ */
+const MIN_FEED_ROOM = 240;
+
+function applyFeedRoom(root: HTMLElement, height: number) {
+  if (height >= MIN_FEED_ROOM) root.style.setProperty("--feed-h", `${height}px`);
+  else root.style.removeProperty("--feed-h");
+}
+
+/** The Explore overlay is the viewport itself; its class height is the measure. */
+function keepClassRoom() {}
 
 /**
  * The reader's sound choice, remembered.
@@ -113,6 +132,7 @@ export function FeedSurface({
   onBack?: () => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const roomRef = useFrameHeight<HTMLDivElement>(embedded ? keepClassRoom : applyFeedRoom);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const [active, setActive] = useState(Math.min(startIndex, Math.max(0, publications.length - 1)));
   const muted = useStoredValue(SOUND_KEY, parseMuted, true, SOUND_EVENT);
@@ -193,7 +213,7 @@ export function FeedSurface({
   }, [onBack, discussing]);
 
   return (
-    <div className={cn("relative", snapH)}>
+    <div ref={roomRef} className={cn("relative", snapH)}>
       {onBack ? (
         <button
           type="button"

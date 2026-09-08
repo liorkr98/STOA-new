@@ -4,18 +4,29 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 import { cn } from "@/lib/design/cn";
 import { frameHeight, scrollParent } from "@/lib/layout/frame";
 
+const setHeight = (root: HTMLElement, height: number) => {
+  root.style.height = `${height}px`;
+};
+
 /**
  * Keeps an element exactly as tall as the room its scroller gives it. See
  * src/lib/layout/frame.ts for why this exists instead of `sticky`.
+ *
+ * `apply` receives each measurement; by default it becomes the element's
+ * height. A surface whose children need the number too (the Feed's snap
+ * sections) can write it as a custom property instead. Pass a function that
+ * does not change between renders: a new one re-measures on every render.
  */
-export function useFrameHeight<T extends HTMLElement>(): RefObject<T | null> {
+export function useFrameHeight<T extends HTMLElement>(
+  apply: (root: T, height: number) => void = setHeight,
+): RefObject<T | null> {
   const ref = useRef<T>(null);
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root) return;
     const scroller = scrollParent(root);
     const fit = () => {
-      root.style.height = `${frameHeight(root, scroller)}px`;
+      apply(root, frameHeight(root, scroller));
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -29,7 +40,7 @@ export function useFrameHeight<T extends HTMLElement>(): RefObject<T | null> {
       ro.disconnect();
       window.removeEventListener("resize", fit);
     };
-  }, []);
+  }, [apply]);
   return ref;
 }
 
