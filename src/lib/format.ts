@@ -20,6 +20,10 @@ export function pct(n: number | null, withSign = true) {
   return `${sign}${n.toFixed(1)}%`;
 }
 
+export function companyName(name: string) {
+  return name.replace(/\s*[-–—]\s*$/g, "").trim() || name;
+}
+
 export function compact(n: number) {
   return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }
