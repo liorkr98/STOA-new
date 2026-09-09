@@ -346,8 +346,15 @@
      4px-linear scale. */
 }
 
-* {
-  border-color: var(--border);
+/* The default hairline. Inside the base layer on purpose: Tailwind's
+ * utilities live in a layer, and an unlayered rule beats every layered one
+ * whatever its specificity, so the same rule written bare silently turned
+ * every `border-white`, `border-transparent` and `border-[var(--ink)]` in
+ * the app into this hairline. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 html {
