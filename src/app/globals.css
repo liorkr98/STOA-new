@@ -212,6 +212,15 @@
     padding-bottom: calc(var(--main-pad-y) + var(--tab-h));
   }
 
+  /* A measured frame (ScrollFrame) that runs underneath the floating pill,
+     the way the Feed does: it reclaims main's bottom padding, including the
+     tab clearance, and its scrolling columns carry that clearance instead
+     (SCROLL_COLUMN). Phone only: on desktop there is no bar and the shell's
+     padding is simply the page's bottom margin. */
+  .frame-under-tabs {
+    margin-bottom: calc(-1 * (var(--main-pad-y) + var(--tab-h)));
+  }
+
   /* The floating tab pill. Fixed rather than a flex sibling so the page reads
    * behind and around it. Scoped to the phone on purpose: these declarations
    * are unlayered and would otherwise beat the element's own `md:hidden`

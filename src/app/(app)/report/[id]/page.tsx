@@ -156,7 +156,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         and is public by design, because it is how an analyst makes their case
         to someone who has not paid. The depth stays gated below it.
       */}
-      <ScrollFrame className="scroll-area mx-auto w-full max-w-[var(--w-standard)] flex-col gap-6 overflow-y-auto pb-[var(--tab-h)] lg:flex-row lg:gap-8 lg:overflow-hidden lg:pb-0">
+      <ScrollFrame className="scroll-area mx-auto w-full max-w-[var(--w-standard)] flex-col gap-6 overflow-y-auto pb-[calc(var(--tab-h)+var(--main-pad-y))] lg:flex-row lg:gap-8 lg:overflow-hidden lg:pb-0">
         <article className="scroll-area contents lg:order-1 lg:flex lg:min-h-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-6 lg:overflow-y-auto">
           {/* Scroll-scrubbed, like a scrollbar -- reading position, not
             * animation, so the frequency rule does not apply. Hidden without

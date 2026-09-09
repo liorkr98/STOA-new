@@ -33,7 +33,7 @@ export function TodayPage({ data, news }: { data: TodayPagePayload; news?: React
     <ScrollFrame className="dispatch-page dispatch-page--home flex-col gap-4 md:flex-row md:gap-10">
       <TodaySidebar data={data.sidebar} />
 
-      <article className={cn(SCROLL_COLUMN, "flex-1 py-2 sm:py-4")}>
+      <article className={cn(SCROLL_COLUMN, "flex-1 pt-2 sm:pt-4")}>
         <DispatchMasthead
           issueNumber={data.issue.issueNumber}
           dateIso={data.issue.dateISO}

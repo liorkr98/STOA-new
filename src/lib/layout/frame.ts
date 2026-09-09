@@ -47,6 +47,9 @@ export function frameHeight(root: HTMLElement, scroller: HTMLElement): number {
     root.getBoundingClientRect().top + (isDocument ? window.scrollY : scroller.scrollTop);
   const above = rootTop - scrollerTop;
   let h = scroller.clientHeight - px(cs.paddingBottom) - above;
+  // The frame's own negative margin (`.frame-under-tabs`) reclaims the
+  // scroller's bottom padding for itself, so it counts here like an ancestor's.
+  h -= px(getComputedStyle(root).marginBottom);
   let node = root.parentElement;
   while (node && node !== scroller) {
     const m = getComputedStyle(node);
@@ -56,5 +59,12 @@ export function frameHeight(root: HTMLElement, scroller: HTMLElement): number {
   return Math.max(0, Math.floor(h));
 }
 
-/** A column inside a frame: it scrolls on its own and clears the phone tab bar. */
-export const SCROLL_COLUMN = "scroll-area min-h-0 min-w-0 overflow-y-auto pb-[var(--tab-h)]";
+/**
+ * A column inside a frame: it scrolls on its own and clears the phone tab bar.
+ * The frame runs underneath the floating pill (`.frame-under-tabs`), so the
+ * column carries the clearance the shell's padding used to: the bar's room
+ * plus the page's own bottom breathing space. Content passes behind the
+ * glass while scrolling; nothing ends underneath it.
+ */
+export const SCROLL_COLUMN =
+  "scroll-area min-h-0 min-w-0 overflow-y-auto pb-[calc(var(--tab-h)+var(--main-pad-y))]";

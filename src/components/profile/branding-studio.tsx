@@ -185,7 +185,7 @@ export function BrandingStudio({
        and the live preview are two columns that scroll on their own; below
        it the frame is the scroller and they stack. The preview used to be a
        sticky column pinned 80px down, a nav's height that was not above it. */
-    <ScrollFrame className="scroll-area flex-col gap-8 overflow-y-auto pb-[var(--tab-h)] xl:flex-row xl:overflow-hidden xl:pb-0">
+    <ScrollFrame className="scroll-area flex-col gap-8 overflow-y-auto pb-[calc(var(--tab-h)+var(--main-pad-y))] xl:flex-row xl:overflow-hidden xl:pb-0">
       <div className="scroll-area flex flex-col gap-6 xl:min-h-0 xl:min-w-0 xl:flex-1 xl:overflow-y-auto xl:pr-1">
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto border-b border-border">

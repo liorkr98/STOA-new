@@ -235,11 +235,19 @@ always labelled.
   opaque.
 - **Truly floating.** Nothing sits under the pill but the page. The app shell's `main` scrolls
   edge to edge to the bottom of the viewport and the pill is `position: fixed` over it; there is
-  no band. The Feed goes further: its wrapper adds `.breakout-under-tabs`, which cancels the
-  tab clearance too, so the clip runs the full height beneath the glass and the caption block
-  pads itself clear with `--tab-h`. A page may only do that when it pads its own last row.
+  no band. Surfaces that scroll in their own column run under it too: the Feed's wrapper adds
+  `.breakout-under-tabs` and every `<ScrollFrame>` carries `.frame-under-tabs`, both of which
+  cancel the shell's tab clearance so the frame reaches the bottom of the viewport. The
+  clearance then moves inside: the Feed's caption block pads `--tab-h`, `SCROLL_COLUMN` pads
+  `--tab-h + --main-pad-y`, and a frame that is its own scroller (the report page, the branding
+  studio on a phone) pads the same. Content passes behind the glass while scrolling; nothing
+  ends underneath it. `frameHeight` counts the frame's own negative margin for this.
 - **The active tab is a filled capsule** (`rounded-full`, ink fill, paper type), not a colour
-  change, so the current place reads at a glance on a busy page.
+  change. It is sized by its content, not its column: `px-2 py-1.5` around a 20px icon and a
+  10px `leading-none` label with `0.1em` tracking, inside a pill padded `0.375rem`, so the
+  capsule hugs the icon and label with the same air all round and sits inset from the glass
+  edge rather than filling the bar's height. The label must stay narrower than a fifth of the
+  pill at 390px (Markets is the widest) or the capsule would overrun its column.
 - **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
   up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
   size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
@@ -252,8 +260,9 @@ always labelled.
 - **Never covers content.** Because the pill overlays the page, the scroller reserves the
   clearance: `.has-app-tabs main` carries `--main-pad-y + --tab-h` as bottom padding on phones.
   A page that cancels main's padding to break out must cancel the **top** only; cancelling the
-  bottom eats this clearance and puts the last row under the bar. The one exception is
-  `.breakout-under-tabs` above, for a surface that carries its own clearance.
+  bottom eats this clearance and puts the last row under the bar. The exceptions are
+  `.breakout-under-tabs` and `.frame-under-tabs` above, for a surface that carries its own
+  clearance.
 - The pill's own rules live inside the `max-width: 767px` block. They are unlayered, so at
   desktop widths they would otherwise beat the element's `md:hidden` utility.
 

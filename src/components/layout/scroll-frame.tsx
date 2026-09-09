@@ -49,6 +49,12 @@ export function useFrameHeight<T extends HTMLElement>(
  * columns inside it (each `SCROLL_COLUMN`) scroll on their own. The class
  * height is only the guess for the server-rendered paint; the hook measures
  * the real room before the first client paint.
+ *
+ * On a phone the frame runs underneath the floating tab pill
+ * (`.frame-under-tabs`), so whatever scrolls inside it passes behind the
+ * glass. Every column that scrolls must then carry the clearance itself:
+ * `SCROLL_COLUMN` does, and a frame that is its own scroller pads
+ * `--tab-h + --main-pad-y` at the bottom.
  */
 export function ScrollFrame({
   className,
@@ -59,7 +65,10 @@ export function ScrollFrame({
   return (
     <div
       ref={ref}
-      className={cn("flex h-[calc(var(--app-h)-var(--nav-h))] min-h-0 overflow-hidden", className)}
+      className={cn(
+        "frame-under-tabs flex h-[calc(var(--app-h)-var(--nav-h))] min-h-0 overflow-hidden",
+        className,
+      )}
       {...rest}
     >
       {children}
