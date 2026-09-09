@@ -201,7 +201,11 @@
 }
 
 @media (max-width: 767px) {
-  .has-app-tabs {
+  /* Set on the root whenever a page carries the tab shell, not on the shell
+     itself: things that float outside it (the install hint is mounted at the
+     root, above the shell) read the same token, and used to read 0 and sit
+     on top of the bar, blocking every tab until dismissed. */
+  :root:has(.has-app-tabs) {
     /* Extra floor so Chrome on Android (often 0 safe-area) does not sit the
        bar on the system nav. Includes the pill's inset from the bottom edge. */
     --tab-h: calc(3.75rem + max(0.625rem, var(--safe-bottom)));

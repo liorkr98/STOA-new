@@ -25,10 +25,16 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   column now runs the full height and its own bottom padding keeps the last
   item clear of the bar. The same rule applies to a publication's page and
   the branding studio on a phone.
-- **More glass, wider corners.** The bar's paper fill drops from two thirds
-  to two fifths with a heavier blur behind it, so the page shows through
-  more clearly while the labels stay readable. The ends of the bar and of
-  the capsule sweep a fifth wider than a plain semicircle.
+- **The bar now copies the iOS 26 tab bar, proportions and movement.** From
+  the Investing.com recording: 22px side insets, a 60px pill, big icons over
+  small labels, and the current tab marked by a translucent grey lens that
+  hugs its item. Tap another tab and the lens slides across to it,
+  stretching on the way and settling on arrival; it sets off the moment you
+  tap, before the page has changed. Paper fill at 55% over a heavier blur.
+  Reduced motion: it jumps.
+- **The "Add to Home Screen" hint no longer covers the tab bar.** On an
+  iPhone it sat on top of the bar until dismissed, and every tab under it
+  was untappable. It now sits above the bar.
 - **The Feed already ran under the bar.** Checked in Chrome and WebKit: the
   clip reaches the bottom edge of the screen. A paper-coloured card placed
   low in a clip shows through the glass as a pale band; that is the clip,
