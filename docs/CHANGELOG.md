@@ -10,6 +10,33 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-09 — Tab bar: the capsule fits, and Today runs under the glass
+
+**For someone using the site**
+
+- **The current-tab capsule hugs its icon and label.** It was a block nearly
+  as tall as the bar with the label pressed against its sides. It is now
+  sized by what it marks, with the same air all round, and sits inset from
+  the edge of the glass, the way Instagram marks the current tab. The labels
+  are a touch smaller so the widest one, Markets, still fits its fifth of the
+  bar on a 390px phone.
+- **Today scrolls behind the bar like everything else.** Its column stopped
+  short of the bottom and left a strip of blank paper under the glass. The
+  column now runs the full height and its own bottom padding keeps the last
+  item clear of the bar. The same rule applies to a publication's page and
+  the branding studio on a phone.
+- **The Feed already ran under the bar.** Checked in Chrome and WebKit: the
+  clip reaches the bottom edge of the screen. A paper-coloured card placed
+  low in a clip shows through the glass as a pale band; that is the clip,
+  not a strip.
+
+**For Krisi**
+
+- No schema change. `frameHeight` now counts a frame's own negative bottom
+  margin, which is how `<ScrollFrame>` reclaims the tab clearance.
+
+---
+
 ## 2026-09-09 — Glass tab bar, and recording a clip in Compose
 
 **For someone using the site**
