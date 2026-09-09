@@ -8,7 +8,7 @@ import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
-import { compact, price } from "@/lib/format";
+import { compact, companyName, price } from "@/lib/format";
 import type { OpenCall, ResolvedCall, StockCoverage } from "@/lib/markets/call-types";
 import type { TodayItem } from "@/lib/today/types";
 import type { TickerRow } from "@/lib/db/tickers";
@@ -57,7 +57,7 @@ export function StockHeader({
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <h1 className="stock-name">{name}</h1>
+          <h1 className="stock-name">{companyName(name)}</h1>
           <p className="stock-sub">
             {ticker}
             {exchange ? (

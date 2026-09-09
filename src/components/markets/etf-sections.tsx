@@ -3,7 +3,7 @@ import { Band } from "@/components/ui/band";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
-import { compact, price } from "@/lib/format";
+import { compact, companyName, price } from "@/lib/format";
 import type { EtfHolding, EtfSnapshot, SectorWeight } from "@/lib/markets/build-etf";
 
 function Auto() {
@@ -39,7 +39,7 @@ export function EtfHeader({ etf }: { etf: EtfSnapshot }) {
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <h1 className="stock-name">{etf.name}</h1>
+          <h1 className="stock-name">{companyName(etf.name)}</h1>
           <p className="stock-sub">
             {etf.symbol}
             {etf.exchange ? (

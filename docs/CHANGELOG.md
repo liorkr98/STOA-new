@@ -10,6 +10,32 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-09 — Markets tape rebuilt like Yahoo Finance
+
+**For someone using the site**
+
+- **The ticker chart is one area chart, not a pile of lines.** The old SVG
+  drew a jagged ink line, a loud grid, and a dashed target for every open
+  call. Initials stacked on the same price and became unreadable. The tape is
+  now TradingView Lightweight Charts: a filled area in up/down colour, a
+  quiet horizontal grid, last price dashed on the right, and a hover that
+  shows date, open, high, low, close.
+- **HIT and MISS are small dots on the line.** HIT is verdigris, MISS rust,
+  NEAR brass. Open calls are a small ink dot at lock. Two calls on the same
+  session share a seat. The ceremonial seal stays on call cards.
+- **Advanced opens TradingView's full widget.** Same idea as Yahoo's
+  Advanced Chart: the default tape stays light; the widget is opt-in.
+- **Company names no longer trail a hyphen.** "NVIDIA Corporation -" was a
+  leftover from the quote feed.
+
+**For Krisi**
+
+- Still no Charting Library license, so custom shapes cannot be drawn inside
+  TradingView's iframe. Lightweight Charts is TradingView's public library
+  and is what can take our HIT/MISS markers. No schema change.
+
+---
+
 ## 2026-09-09 — Follow, tab bar, and TradingView tapes
 
 **For someone using the site**

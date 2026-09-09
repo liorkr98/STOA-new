@@ -1620,7 +1620,7 @@ creator-specific notification types added: new subscriber, new debate reply, rep
 
 Gold, crude, Treasury yields and bitcoin are tracked instruments with their own pages, their own
 search hits, and validity as a ticker in the call block. They render through `<MacroView>`, which
-carries the same annotated calls chart and the same Stoa activity blocks as a stock, and drops the
+carries the same Lightweight Charts tape (HIT / MISS as small dots) and the same Stoa activity blocks as a stock, and drops the
 company facts entirely: gold has no market cap and a Treasury yield has no earnings, so the meta
 row is replaced by what the level actually means rather than rendered with blanks.
 
