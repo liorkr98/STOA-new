@@ -43,6 +43,15 @@
 
   --shadow-card: 0 1px 2px rgba(20, 23, 31, 0.06), 0 4px 12px rgba(20, 23, 31, 0.04);
 
+  /* Frosted paper, for chrome that floats over the page (the phone tab bar).
+   * Paper at two thirds over a blur, so what passes beneath tints it warm
+   * rather than grey; the edge is a hairline of ink and a top highlight
+   * of the paper itself, which is what reads as a lit glass edge. */
+  --glass: color-mix(in srgb, var(--paper) 66%, transparent);
+  --glass-edge: color-mix(in srgb, var(--ink) 12%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.55);
+  --shadow-glass: 0 1px 2px rgba(20, 23, 31, 0.08), 0 10px 30px rgba(20, 23, 31, 0.14);
+
   --r-card: 12px;
   --r-btn: 6px;
   --r-tag: 6px;
@@ -147,6 +156,13 @@
   margin-bottom: calc(-1 * var(--main-pad-y));
 }
 
+/* A screen that also runs underneath the floating tab pill. Only for a surface
+   that pads its own last row clear of the bar (the Feed's caption block does);
+   any ordinary page that used this would hide its last item under the pill. */
+.breakout-under-tabs {
+  margin-bottom: calc(-1 * (var(--main-pad-y) + var(--tab-h)));
+}
+
 /**
  * A definite length, not a percentage.
  *
@@ -159,8 +175,10 @@
 .feed-snap {
   /* `--feed-h` is the room the Feed measured off its own scroller (set by
      FeedSurface); the calc is the server's guess from the tokens, and what
-     stands when a measurement fails. Both are lengths, never percentages. */
-  height: var(--feed-h, calc(var(--app-h) - var(--nav-h) - var(--tab-h)));
+     stands when a measurement fails. Both are lengths, never percentages.
+     The tab bar is not subtracted: the Feed runs the full height under the
+     floating pill, and its bottom chrome pads itself clear of it. */
+  height: var(--feed-h, calc(var(--app-h) - var(--nav-h)));
 }
 
 .feed-snap-overlay {
@@ -172,7 +190,7 @@
 .feed-item-shell {
   contain: layout paint;
   content-visibility: auto;
-  contain-intrinsic-size: auto var(--feed-h, calc(var(--app-h) - var(--nav-h) - var(--tab-h)));
+  contain-intrinsic-size: auto var(--feed-h, calc(var(--app-h) - var(--nav-h)));
 }
 
 .feed-snap-overlay .feed-item-shell {
@@ -211,17 +229,32 @@
     pointer-events: none;
   }
 
+  /* Frosted glass: the page shows through, blurred, and tints the paper. The
+   * solid paper fill is the fallback for a browser without backdrop-filter;
+   * the @supports block below swaps it for the glass. Both declared here so
+   * the bar never renders transparent on a browser that cannot blur. */
   .app-tabs-pill {
     width: 100%;
     max-width: 30rem;
     pointer-events: auto;
-    border: 1.5px solid var(--border-strong);
+    border: 1px solid var(--glass-edge);
     border-radius: 999px;
     background: var(--paper);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-glass);
     padding: 0.2rem 0.3rem;
     transform-origin: bottom center;
     transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .app-tabs-pill {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(22px) saturate(1.6);
+      backdrop-filter: blur(22px) saturate(1.6);
+      box-shadow:
+        inset 0 1px 0 var(--glass-highlight),
+        var(--shadow-glass);
+    }
   }
 
   .app-tabs[data-shrunk] .app-tabs-pill {
@@ -268,6 +301,11 @@
   --down: var(--rust);
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.24);
+
+  --glass: color-mix(in srgb, var(--paper) 62%, transparent);
+  --glass-edge: color-mix(in srgb, var(--ink) 18%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --shadow-glass: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {

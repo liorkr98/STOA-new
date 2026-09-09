@@ -222,14 +222,29 @@ Signed out, Sign in and Join sit in the bar directly. Desktop is unchanged: the 
 stay in the top row and the right zone keeps its full-width Compose button and bell.
 
 **`AppTabs` — the bottom tab bar.** A rounded pill, inset from the bottom and sides, floating
-over the page rather than welded to the edge, capped at `26rem` and centred. Four destinations,
+over the page rather than welded to the edge, capped at `30rem` and centred. Five destinations,
 always labelled.
 
+- **Frosted paper, not a band.** The pill is glass: `--glass` (paper at two thirds) over
+  `backdrop-filter: blur(22px) saturate(1.6)`, a hairline `--glass-edge` border, a one-pixel
+  `--glass-highlight` inset along the top and `--shadow-glass` beneath. The page shows through
+  it blurred and tints it, warm because the fill is paper rather than grey. The solid `--paper`
+  fill is declared first and the glass inside `@supports (backdrop-filter)`, so a browser that
+  cannot blur gets an opaque paper pill, never a transparent one. Both tokens have a `.dark`
+  value. Only chrome that floats over content may use the glass tokens; cards and sheets stay
+  opaque.
+- **Truly floating.** Nothing sits under the pill but the page. The app shell's `main` scrolls
+  edge to edge to the bottom of the viewport and the pill is `position: fixed` over it; there is
+  no band. The Feed goes further: its wrapper adds `.breakout-under-tabs`, which cancels the
+  tab clearance too, so the clip runs the full height beneath the glass and the caption block
+  pads itself clear with `--tab-h`. A page may only do that when it pads its own last row.
+- **The active tab is a filled capsule** (`rounded-full`, ink fill, paper type), not a colour
+  change, so the current place reads at a glance on a busy page.
 - **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
   up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
   size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
-  asked for by name; nothing else in the nav animates. The active tab is a filled ink chip (paper
-  type), not a hairline, so the bar stays readable on a busy page.
+  asked for by name; nothing else in the nav animates. It listens to `main`; a surface that
+  scrolls in its own column (the Feed, Today's frame) does not shrink it.
 - **Never flickers.** The direction decision is `src/lib/nav/scroll-shrink.ts`, a pure function
   with tests. Movement accumulates in one direction and only flips the bar past an 18px
   threshold, so a resting thumb cannot flutter it; a reversal restarts the count rather than
@@ -237,7 +252,8 @@ always labelled.
 - **Never covers content.** Because the pill overlays the page, the scroller reserves the
   clearance: `.has-app-tabs main` carries `--main-pad-y + --tab-h` as bottom padding on phones.
   A page that cancels main's padding to break out must cancel the **top** only; cancelling the
-  bottom eats this clearance and puts the last row under the bar.
+  bottom eats this clearance and puts the last row under the bar. The one exception is
+  `.breakout-under-tabs` above, for a surface that carries its own clearance.
 - The pill's own rules live inside the `max-width: 767px` block. They are unlayered, so at
   desktop widths they would otherwise beat the element's `md:hidden` utility.
 
@@ -411,8 +427,9 @@ to change the other**, then regenerate and re-upload the clips.
 The only video discovery surface. Full-screen: one publication per viewport, native vertical
 scroll-snap, nothing below the fold.
 
-- **Stage:** On a phone the clip fills the space between the top nav and the tab bar (object-cover,
-  chrome overlaid on the picture). On desktop it stays a 9:16 height-bound card centred on `--paper`.
+- **Stage:** On a phone the clip fills the space from the top nav to the bottom of the viewport,
+  running underneath the floating glass tab pill (object-cover, chrome overlaid on the picture;
+  the caption block pads itself clear of the pill with `--tab-h`). On desktop it stays a 9:16 height-bound card centred on `--paper`.
   The clip is panel 0 of a horizontal track and the publication's evidence cards are the panels
   behind it, so sideways movement is movement through the publication.
 - **Two axes, one gesture at a time.** Both axes are native scroll-snap, and each container

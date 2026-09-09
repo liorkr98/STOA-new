@@ -16,7 +16,9 @@ const TABS = [
   { key: "markets", href: "/markets", label: "Markets", Icon: LineChart },
 ] as const;
 
-function tabActive(pathname: string, href: string) {
+function tabActive(pathname: string, href: string, key: string) {
+  // The /dev fixture of a surface shows the surface's real chrome, active tab included.
+  if (pathname === `/dev/${key}`) return true;
   if (href === "/feed") return pathname === "/feed" || pathname === "/";
   if (href === "/studio/compose") return pathname.startsWith("/studio/compose");
   return pathname.startsWith(href);
@@ -27,7 +29,9 @@ function tabActive(pathname: string, href: string) {
  * Desktop keeps the top links. Explore's Feed overlay portals above this bar (z-70).
  *
  * Hidden on Compose so the editor owns the viewport. A floating pill rather
- * than a bar welded to the edge, so the page reads behind and around it.
+ * than a bar welded to the edge, so the page reads behind and around it. The
+ * pill is frosted paper (see `.app-tabs-pill`), so the page also reads through
+ * it; the active tab is a filled ink capsule inside the glass.
  */
 export function AppTabs() {
   const pathname = usePathname();
@@ -74,7 +78,7 @@ export function AppTabs() {
     >
       <ul className="app-tabs-pill grid grid-cols-5">
         {TABS.map(({ key, href, label, Icon }) => {
-          const active = tabActive(pathname, href);
+          const active = tabActive(pathname, href, key);
           return (
             <li key={key}>
               <Link
@@ -82,7 +86,7 @@ export function AppTabs() {
                 prefetch
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring relative mx-0.5 flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-[10px] text-[11px] font-medium uppercase tracking-[0.12em]",
+                  "focus-ring relative mx-0.5 flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium uppercase tracking-[0.12em]",
                   active ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text",
                 )}
               >

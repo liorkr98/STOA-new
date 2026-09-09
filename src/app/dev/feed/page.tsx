@@ -34,7 +34,7 @@ export default function DevFeedPage() {
   };
   return (
     <DevAppShell>
-      <div className="breakout-main h-full min-h-0">
+      <div className="breakout-main breakout-under-tabs h-full min-h-0">
         <FeedSurface publications={ordered} canAct onPost={onPost} discussionActions={discussionActions} />
       </div>
     </DevAppShell>

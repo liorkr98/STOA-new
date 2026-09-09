@@ -865,7 +865,7 @@ const FeedItem = function FeedItem({
                   type="button"
                   onClick={() => setPaused((p) => !p)}
                   aria-label={paused ? "Play (Space)" : "Pause (Space)"}
-                  className="absolute inset-x-0 top-16 bottom-[13.5rem] z-[1] w-full cursor-default"
+                  className="absolute inset-x-0 top-16 bottom-[calc(13.5rem+var(--tab-h))] z-[1] w-full cursor-default"
                 >
                   {paused ? (
                     <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
@@ -874,7 +874,9 @@ const FeedItem = function FeedItem({
                   ) : null}
                 </button>
 
-                <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-3 pt-12">
+                {/* Pads itself clear of the floating tab pill (`--tab-h`, 0 on desktop and
+                    in the Explore overlay), since the clip runs the full height beneath it. */}
+                <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-12">
                   <h2
                     dir="auto"
                     className="user-copy mb-2 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
@@ -994,7 +996,7 @@ const FeedItem = function FeedItem({
             ) : null}
 
             {!onClip ? (
-              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-3 pt-8 md:hidden">
+              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-8 md:hidden">
                 <p dir="auto" className="user-copy line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] text-white">
                   {pub.headline}
                 </p>
@@ -1013,7 +1015,7 @@ const FeedItem = function FeedItem({
 
 function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
-    <section className={cn("flex snap-start items-center justify-center px-4", snapClass)} aria-label="End of feed">
+    <section className={cn("flex snap-start items-center justify-center px-4 pb-[var(--tab-h)]", snapClass)} aria-label="End of feed">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[var(--radius-card)] border border-border p-9 text-center">
         <span className="num text-[10px] uppercase tracking-[0.22em] text-text-mute">End of feed</span>
         <p className="font-display text-[1.75rem] font-semibold leading-tight">You are caught up.</p>
