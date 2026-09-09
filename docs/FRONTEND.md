@@ -225,8 +225,9 @@ stay in the top row and the right zone keeps its full-width Compose button and b
 over the page rather than welded to the edge, capped at `30rem` and centred. Five destinations,
 always labelled. Its proportions and its motion are copied from the iOS 26 tab bar, measured
 in pixels off the Investing.com recording of 2026-09-09 (a 440pt screen at 3x): `20px` side
-insets, a `58px` pill, the row of items inset `3px` from its round ends, a `54px` highlight with
-`18px` corners that is the whole slot less a point either side, `26px` icons over `10px`
+insets, a `58px` pill, the row of items inset `3px` from its round ends, a highlight of the
+whole slot with `17px` corners (measured at 54px and the slot less a point either side, then
+taken down a twentieth by eye to `51px` and the slot less `2.5px`), `26px` icons over `10px`
 labels. Those are points, not proportions of the screen: iOS keeps them fixed on every
 phone width, and so do we.
 
@@ -250,12 +251,12 @@ phone width, and so do we.
   studio on a phone) pads the same. Content passes behind the glass while scrolling; nothing
   ends underneath it. `frameHeight` counts the frame's own negative margin for this.
 - **The current tab is marked by one travelling lens**, `.app-tabs-lens`: a translucent
-  rounded rectangle (`--glass-lens`, ink at 8%, 14% in the dark; `18px` corners, squarer than
+  rounded rectangle (`--glass-lens`, ink at 12%, 20% in the dark; `17px` corners, squarer than
   the bar's ends, which clip it) that takes the current tab's slot, the same size for every
   tab whatever its label says, so a short label like Today gets the same mark as Explore and
   the mark is always centred on its icon. Each link fills its slot with the iOS stack inside:
-  `7px`, a 26px icon, `4px`, a 10px `leading-none` label with `0.1em` tracking, `7px`, which is
-  the 54px lens exactly; the current icon draws with a heavier stroke, the type stays ink.
+  `7px`, a 26px icon, `4px`, a 10px `leading-none` label with `0.1em` tracking, `7px`, with the
+  51px lens centred on it; the current icon draws with a heavier stroke, the type stays ink.
   The lens is a single element positioned by `AppTabs` over the current slot (measured,
   re-measured on resize), not a style on each link:
   on a tap it sets off at once (the tapped tab is remembered with the path it was tapped on,

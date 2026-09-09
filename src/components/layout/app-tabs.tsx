@@ -50,7 +50,7 @@ export function AppTabs() {
   const routeKey = TABS.find((t) => tabActive(pathname, t.href, t.key))?.key ?? null;
   const activeKey = pending && pending.from === pathname ? pending.key : routeKey;
 
-  // Place the lens over the current tab's slot, inset a point either side.
+  // Place the lens over the current tab's slot, inset 2.5px either side.
   // Every slot is the same size, so the lens is too, whatever the label
   // says. The first placement is instant; every later one travels. Width is
   // set, not animated, and only transform moves.
@@ -71,8 +71,8 @@ export function AppTabs() {
       // both rects equally, so the ratio to the list's width is exact. The
       // lens is positioned from the padding edge, hence clientLeft.
       const scale = l.width / list.offsetWidth || 1;
-      const x = (r.left - l.left) / scale - list.clientLeft + 1;
-      const w = r.width / scale - 2;
+      const x = (r.left - l.left) / scale - list.clientLeft + 2.5;
+      const w = r.width / scale - 5;
       const next = `translateX(${x}px)`;
       // A real move, not a re-measure that lands a fraction of a pixel off.
       const moved = placed && Math.abs(x - Number(lens.dataset.x ?? x)) > 1;

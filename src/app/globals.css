@@ -52,7 +52,7 @@
   --glass-edge: color-mix(in srgb, var(--ink) 10%, transparent);
   --glass-highlight: rgba(255, 255, 255, 0.55);
   /* The lens that marks the current tab: a shade of ink over the glass. */
-  --glass-lens: color-mix(in srgb, var(--ink) 8%, transparent);
+  --glass-lens: color-mix(in srgb, var(--ink) 12%, transparent);
   --shadow-glass: 0 1px 2px rgba(20, 23, 31, 0.08), 0 10px 30px rgba(20, 23, 31, 0.14);
 
   --r-card: 12px;
@@ -277,11 +277,13 @@
      A.4 for the nav. */
   .app-tabs-lens {
     position: absolute;
-    top: 1px;
-    bottom: 1px;
+    /* 51px tall in the 56px inside the hairline: a twentieth under the
+       measured 54, asked for by eye once the shape was right. */
+    top: 2.5px;
+    bottom: 2.5px;
     left: 0;
     width: 0;
-    border-radius: 18px;
+    border-radius: 17px;
     background: var(--glass-lens);
     box-shadow: inset 0 1px 0 var(--glass-highlight);
     pointer-events: none;
@@ -370,7 +372,7 @@
   --glass: color-mix(in srgb, var(--paper) 55%, transparent);
   --glass-edge: color-mix(in srgb, var(--ink) 16%, transparent);
   --glass-highlight: rgba(255, 255, 255, 0.08);
-  --glass-lens: color-mix(in srgb, var(--ink) 14%, transparent);
+  --glass-lens: color-mix(in srgb, var(--ink) 20%, transparent);
   --shadow-glass: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 

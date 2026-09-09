@@ -28,8 +28,9 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 - **The bar now copies the iOS 26 tab bar, proportions and movement.** From
   the Investing.com recording, measured in pixels: 20px side insets, a 58px
   pill, big icons over small labels, and the current tab marked by a
-  translucent grey rounded rectangle that is the whole slot, the same size
-  for every tab and centred on its icon. Tap another tab and it slides across,
+  translucent grey rounded rectangle that is nearly the whole slot, the same
+  size for every tab and centred on its icon, a shade darker than the glass
+  so it reads clearly. Tap another tab and it slides across,
   stretching on the way and settling on arrival; it sets off the moment you
   tap, before the page has changed. Paper fill at 55% over a heavier blur.
   Reduced motion: it jumps.
