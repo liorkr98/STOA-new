@@ -50,27 +50,29 @@ export function AppTabs() {
   const routeKey = TABS.find((t) => tabActive(pathname, t.href, t.key))?.key ?? null;
   const activeKey = pending && pending.from === pathname ? pending.key : routeKey;
 
-  // Place the lens over the current link. The first placement is instant;
-  // every later one travels. Width is set, not animated: the capsules are
-  // within a few pixels of each other, and only transform moves.
+  // Place the lens over the current tab's slot, inset a point either side.
+  // Every slot is the same size, so the lens is too, whatever the label
+  // says. The first placement is instant; every later one travels. Width is
+  // set, not animated, and only transform moves.
   useLayoutEffect(() => {
     const list = listRef.current;
     const lens = lensRef.current;
     if (!list || !lens) return;
     let placed = lens.dataset.placed === "";
     const place = () => {
-      const link = activeKey ? list.querySelector<HTMLElement>(`[data-tab="${activeKey}"]`) : null;
-      if (!link) {
+      const slot = activeKey ? list.querySelector<HTMLElement>(`[data-tab="${activeKey}"]`) : null;
+      if (!slot) {
         lens.style.opacity = "0";
         return;
       }
       const l = list.getBoundingClientRect();
-      const r = link.getBoundingClientRect();
+      const r = slot.getBoundingClientRect();
       // Read in the list's own frame, unscaled: the shrink transform scales
-      // both rects equally, so the ratio to the list's width is exact.
+      // both rects equally, so the ratio to the list's width is exact. The
+      // lens is positioned from the padding edge, hence clientLeft.
       const scale = l.width / list.offsetWidth || 1;
-      const x = (r.left - l.left) / scale;
-      const w = r.width / scale;
+      const x = (r.left - l.left) / scale - list.clientLeft + 1;
+      const w = r.width / scale - 2;
       const next = `translateX(${x}px)`;
       // A real move, not a re-measure that lands a fraction of a pixel off.
       const moved = placed && Math.abs(x - Number(lens.dataset.x ?? x)) > 1;
@@ -140,17 +142,16 @@ export function AppTabs() {
         {TABS.map(({ key, href, label, Icon }) => {
           const active = key === activeKey;
           return (
-            <li key={key} className="relative z-[1] flex items-center justify-center">
-              {/* Sized by its content, not its column: the lens takes this
-                  link's box, so the highlight hugs the icon and label with
-                  the same air all round. */}
+            <li key={key} data-tab={key} className="relative z-[1]">
+              {/* The link fills its slot; the lens takes the slot. Inside, the
+                  iOS bar's stack: 7px, a 26px icon, 4px, a 10px label, 7px,
+                  which is the 54px lens exactly. */}
               <Link
                 href={href}
                 prefetch
-                data-tab={key}
                 aria-current={key === routeKey ? "page" : undefined}
                 onClick={() => setPending({ key, from: pathname })}
-                className="focus-ring relative inline-flex flex-col items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[10px] font-medium uppercase leading-none tracking-[0.1em] text-text"
+                className="focus-ring relative flex w-full flex-col items-center gap-1 rounded-[18px] py-[7px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] text-text"
               >
                 <Icon size={26} strokeWidth={active ? 2.3 : 1.6} aria-hidden />
                 <span>{label}</span>

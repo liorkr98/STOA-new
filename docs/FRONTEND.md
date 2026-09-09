@@ -223,9 +223,12 @@ stay in the top row and the right zone keeps its full-width Compose button and b
 
 **`AppTabs` — the bottom tab bar.** A rounded pill, inset from the bottom and sides, floating
 over the page rather than welded to the edge, capped at `30rem` and centred. Five destinations,
-always labelled. Its proportions and its motion are copied from the iOS 26 tab bar (the
-Investing.com recording of 2026-09-09): `1.375rem` side insets, a `60px` pill with `0.25rem` of
-glass around a `52px` highlight, `26px` icons over `10px` labels.
+always labelled. Its proportions and its motion are copied from the iOS 26 tab bar, measured
+in pixels off the Investing.com recording of 2026-09-09 (a 440pt screen at 3x): `20px` side
+insets, a `58px` pill, the row of items inset `3px` from its round ends, a `54px` highlight with
+`18px` corners that is the whole slot less a point either side, `26px` icons over `10px`
+labels. Those are points, not proportions of the screen: iOS keeps them fixed on every
+phone width, and so do we.
 
 - **Frosted paper, not a band.** The pill is glass: `--glass` (paper at 55%) over
   `backdrop-filter: blur(28px) saturate(1.6)`, a hairline `--glass-edge` border, a one-pixel
@@ -247,18 +250,21 @@ glass around a `52px` highlight, `26px` icons over `10px` labels.
   studio on a phone) pads the same. Content passes behind the glass while scrolling; nothing
   ends underneath it. `frameHeight` counts the frame's own negative margin for this.
 - **The current tab is marked by one travelling lens**, `.app-tabs-lens`: a translucent
-  capsule (`--glass-lens`, ink at 8%, 14% in the dark) that takes the current link's box and
-  hugs its icon and label with the same air all round. Each link is `px-2 py-1.5` around a
-  26px icon and a 10px `leading-none` label with `0.1em` tracking; the current icon draws with
-  a heavier stroke, the type stays ink. The lens is a single element positioned by
-  `AppTabs` over the current link (measured, re-measured on resize), not a style on each link:
+  rounded rectangle (`--glass-lens`, ink at 8%, 14% in the dark; `18px` corners, squarer than
+  the bar's ends, which clip it) that takes the current tab's slot, the same size for every
+  tab whatever its label says, so a short label like Today gets the same mark as Explore and
+  the mark is always centred on its icon. Each link fills its slot with the iOS stack inside:
+  `7px`, a 26px icon, `4px`, a 10px `leading-none` label with `0.1em` tracking, `7px`, which is
+  the 54px lens exactly; the current icon draws with a heavier stroke, the type stays ink.
+  The lens is a single element positioned by `AppTabs` over the current slot (measured,
+  re-measured on resize), not a style on each link:
   on a tap it sets off at once (the tapped tab is remembered with the path it was tapped on,
   so the route takes over the moment it changes) and travels to the new link over `--dur-3`
   on `--ease-out`, stretching lengthways on the way (`scale 1.35 0.94` at the midpoint) and
   settling on arrival. Only `transform` animates; the width is set instantly, and the
   capsules are within a few pixels of each other so the change is invisible. Under
-  `prefers-reduced-motion` it jumps. The label must stay narrower than a fifth of the pill at
-  390px (Markets is the widest) or the lens would overrun its column.
+  `prefers-reduced-motion` it jumps. A label must stay narrower than its slot less `16px` at
+  390px (Markets is the widest) so the lens keeps air either side of it.
 - **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
   up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
   size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
