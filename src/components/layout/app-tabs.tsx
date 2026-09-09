@@ -80,13 +80,16 @@ export function AppTabs() {
         {TABS.map(({ key, href, label, Icon }) => {
           const active = tabActive(pathname, href, key);
           return (
-            <li key={key}>
+            <li key={key} className="flex items-center justify-center">
+              {/* The capsule hugs the icon and label with the same air all
+                  round, sized by its content rather than by the column, so
+                  the active mark reads as a highlight and not a block. */}
               <Link
                 href={href}
                 prefetch
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring relative mx-0.5 flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium uppercase tracking-[0.12em]",
+                  "focus-ring relative inline-flex flex-col items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[10px] font-medium uppercase leading-none tracking-[0.1em]",
                   active ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text",
                 )}
               >
