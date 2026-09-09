@@ -4,7 +4,7 @@ import { cn } from "@/lib/design/cn";
 import { useSectorWatchlist, useWatchlist } from "@/lib/watchlist";
 
 const pill =
-  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-[0.14em] transition-colors duration-[var(--dur-1)]";
+  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] transition-colors duration-[var(--dur-1)]";
 
 /**
  * Follow as a text pill rather than a star. Reads the same browser-local
@@ -28,8 +28,8 @@ export function FollowTicker({ ticker, className }: { ticker: string; className?
       className={cn(
         pill,
         following
-          ? "border-border-strong text-text"
-          : "border-border text-text-faint hover:border-border-strong hover:text-text",
+          ? "border-border-strong bg-surface text-text"
+          : "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] hover:brightness-[1.06]",
         className,
       )}
     >
@@ -55,8 +55,8 @@ export function FollowSector({ sector, className }: { sector: string; className?
       className={cn(
         pill,
         following
-          ? "border-border-strong text-text"
-          : "border-border text-text-faint hover:border-border-strong hover:text-text",
+          ? "border-border-strong bg-surface text-text"
+          : "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] hover:brightness-[1.06]",
         className,
       )}
     >

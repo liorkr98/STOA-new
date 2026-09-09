@@ -1,4 +1,9 @@
-import type { ChartRange } from "@/lib/market/candle-types";
+import { CHART_RANGES, type ChartRange } from "@/lib/market/candle-types";
+
+/** Map a Markets/card range string onto a TradingView widget range. */
+export function toTradingViewRange(range: string): ChartRange {
+  return (CHART_RANGES as readonly string[]).includes(range) ? (range as ChartRange) : "1Y";
+}
 
 /** Map Stoa chart ranges to TradingView widget intervals. */
 export function chartRangeToTvInterval(range: ChartRange): string {
@@ -9,6 +14,7 @@ export function chartRangeToTvInterval(range: ChartRange): string {
       return "60";
     case "1M":
     case "3M":
+    case "6M":
       return "D";
     case "1Y":
       return "W";

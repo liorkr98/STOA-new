@@ -82,15 +82,12 @@ export function AppTabs() {
                 prefetch
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring relative flex min-h-[3rem] flex-col items-center justify-center gap-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]",
-                  active ? "text-text" : "text-text-mute",
+                  "focus-ring relative mx-0.5 flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-[10px] text-[11px] font-medium uppercase tracking-[0.12em]",
+                  active ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text",
                 )}
               >
-                <Icon size={18} strokeWidth={active ? 2 : 1.6} aria-hidden />
+                <Icon size={20} strokeWidth={active ? 2.2 : 1.75} aria-hidden />
                 <span>{label}</span>
-                {active ? (
-                  <span aria-hidden className="absolute top-1 h-[1.5px] w-7 bg-[var(--ink)]" />
-                ) : null}
                 <LinkPending />
               </Link>
             </li>

@@ -57,12 +57,9 @@ Cards are evidence. On **Research** they are the short preview of the full
 text. On **Video** they sit on the editor and can be dropped onto the visual
 track.
 
-A **Chart** card is a live tape:
-
-- **Yahoo Finance** via `/api/market/sparkline`
-- **TradingView** via the Advanced Chart widget
-
-Dummy SVG is not a source.
+A **Chart** card is a live tape from **TradingView** (Advanced Chart widget).
+A compare line still uses TradingView Lightweight Charts, because the widget
+cannot overlay a second symbol. Dummy SVG is not a source.
 
 Editing a card ends with **Done**: it closes the editor and, on a draft, runs
 the same save as the header button. Done means finished for now, never
@@ -82,7 +79,7 @@ strip. The controls for a thing appear only while it is selected; at rest
 there is play, the strip, and five things to add: Text, Card, Chart,
 Visualize, Image. The cover is a folded row under the timeline.
 
-A visual overlay is a real card, a live Yahoo or TradingView tape, a
+A visual overlay is a real card, a live TradingView tape, a
 **Napkin** visual (type what the diagram should show, generate), or an
 uploaded image, shown over the picture or full frame while the audio
 continues. An inset is resized by dragging its gold corner on the picture

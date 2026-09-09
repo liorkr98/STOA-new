@@ -11,6 +11,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import { cn } from "@/lib/design/cn";
+import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
 
 type SparkPoint = { t: number; v: number };
 
@@ -34,30 +35,84 @@ function toSeries(body: SparkBody | null): SparkPoint[] {
 }
 
 /**
- * Evidence-card tape. Rendering is TradingView Lightweight Charts.
- * Prices come from Yahoo Finance via /api/market/sparkline. No widget picker.
+ * Evidence-card tape. Default engine is TradingView's Advanced Chart widget.
+ * A compare line still uses Lightweight Charts (also TradingView) because the
+ * widget cannot overlay a second symbol in this embed.
  */
 export function CardChart({
   ticker,
   compareTicker,
   caption,
   compact = false,
+  engine,
   className,
 }: {
   ticker: string;
   compareTicker?: string;
   caption?: string;
   compact?: boolean;
+  engine?: "yahoo" | "tradingview";
   className?: string;
 }) {
   const symbol = ticker.trim().toUpperCase();
   const compare = compareTicker?.trim().toUpperCase() ?? "";
+  const useWidget = engine !== "yahoo" && !compare;
+
+  if (!symbol) {
+    return (
+      <div className={cn("flex h-full min-h-24 items-center justify-center border border-dashed border-border bg-surface-2", className)}>
+        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Set a ticker</span>
+      </div>
+    );
+  }
+
+  if (useWidget) {
+    return (
+      <div className={cn("flex h-full min-h-0 flex-col", className)}>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="num text-[0.8125rem] tracking-tight">{symbol}</span>
+          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">TradingView</span>
+        </div>
+        <div
+          className="mt-2 min-h-0 flex-1 overflow-hidden rounded-[var(--radius-btn)] border border-border bg-paper"
+          style={{ height: compact ? 168 : 240 }}
+        >
+          <TradingViewChart ticker={symbol} range="3M" height={compact ? 168 : 240} compact />
+        </div>
+        {caption ? <p className="mt-2 text-[0.8125rem] leading-snug text-text-mute">{caption}</p> : null}
+      </div>
+    );
+  }
+
+  return (
+    <LightweightCardChart
+      symbol={symbol}
+      compare={compare}
+      caption={caption}
+      compact={compact}
+      className={className}
+    />
+  );
+}
+
+function LightweightCardChart({
+  symbol,
+  compare,
+  caption,
+  compact,
+  className,
+}: {
+  symbol: string;
+  compare: string;
+  caption?: string;
+  compact: boolean;
+  className?: string;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "empty">(symbol ? "loading" : "empty");
+  const [status, setStatus] = useState<"loading" | "ready" | "empty">("loading");
   const [changePct, setChangePct] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!symbol) return;
     const host = hostRef.current;
     if (!host) return;
 
@@ -144,14 +199,6 @@ export function CardChart({
     };
   }, [symbol, compare]);
 
-  if (!symbol) {
-    return (
-      <div className={cn("flex h-full min-h-24 items-center justify-center border border-dashed border-border bg-surface-2", className)}>
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Set a ticker</span>
-      </div>
-    );
-  }
-
   const up = (changePct ?? 0) >= 0;
 
   return (
@@ -167,7 +214,7 @@ export function CardChart({
             {changePct.toFixed(1)}%
           </span>
         ) : (
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Yahoo Finance</span>
+          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">TradingView</span>
         )}
       </div>
       <div

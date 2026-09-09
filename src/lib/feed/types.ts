@@ -25,7 +25,7 @@ export type FeedCard =
   | { kind: "catalyst_timeline"; id: string; locked: boolean; events: { dateISO: string; label: string; past: boolean }[] }
   | { kind: "checklist"; id: string; locked: boolean; rows: { label: string; status: "done" | "pending" | "failed"; ink: ProvenanceInk }[] }
   | { kind: "figure"; id: string; locked: boolean; caption: string; imageUrl: string | null; source: "creator" | "auto" }
-  | { kind: "chart"; id: string; locked: boolean; ticker: string; caption: string; compareTicker?: string }
+  | { kind: "chart"; id: string; locked: boolean; ticker: string; caption: string; compareTicker?: string; engine?: "yahoo" | "tradingview" }
   | { kind: "steelman"; id: string; locked: boolean; objection: string; answer: string }
   /** The closing card of a gated publication: what is behind the paywall and where to buy it. */
   | { kind: "unlock"; id: string; locked: false; price: string | null; access: "paid" | "subscribers"; href: string }

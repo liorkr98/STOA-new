@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SealStamp } from "@/components/ui/seal-stamp";
+import { MarketTradingViewChartCard } from "@/components/markets/market-tradingview-chart-card";
 import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
 import type { OpenCall, ResolvedCall } from "@/lib/markets/call-types";
@@ -21,29 +21,37 @@ const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
 const THREE_MONTHS_MS = 92 * 86_400_000;
-const MAX_SEALS = 6;
-const SEAL_PX = 32;
-// A little air between two stamps, so a fanned pair still reads as two.
-const SEAL_GAP = 4;
+const MAX_MARKERS = 24;
+const MARKER_PX = 14;
+const MARKER_GAP = 4;
+
+function verdictColor(outcome: ResolvedCall["outcome"]): string {
+  if (outcome === "hit") return "var(--up)";
+  if (outcome === "miss") return "var(--down)";
+  return "var(--brass)";
+}
+
+function verdictLabel(outcome: ResolvedCall["outcome"]): string {
+  if (outcome === "hit") return "HIT";
+  if (outcome === "miss") return "MISS";
+  return "NEAR";
+}
 
 /**
- * Push overlapping seals apart.
+ * Push overlapping verdict dots apart.
  *
  * Calls on one instrument cluster: several resolve within days of each other,
- * near the same price, and the stamps land on top of one another and turn into
- * an unreadable pile. Time (x) is the meaningful axis here, so it is preserved
- * and the stamps fan along y, which already only approximates the exit price.
- * Measured in rendered pixels because the chart is a scaled viewBox: the same
- * percentage is a very different distance on a phone and on a desktop.
+ * near the same price, and the markers land on top of one another. Time (x) is
+ * preserved; they fan along y. Measured in rendered pixels because the chart is a
+ * scaled viewBox.
  */
-function fanOutSeals(
+function fanOutMarkers(
   points: { xPct: number; yPct: number }[],
   box: { w: number; h: number } | null,
 ): { xPct: number; yPct: number }[] {
   if (!box || box.w === 0 || box.h === 0) return points;
-  const min = SEAL_PX + SEAL_GAP;
-  const r = SEAL_PX / 2;
-  // Stay inside the plot itself: the right gutter carries the price labels.
+  const min = MARKER_PX + MARKER_GAP;
+  const r = MARKER_PX / 2;
   const maxX = box.w * (1 - PAD.right / W) - r;
   const minX = box.w * (PAD.left / W) + r;
   const maxY = box.h - r;
@@ -57,8 +65,7 @@ function fanOutSeals(
     const x0 = (p.xPct / 100) * box.w;
     const y0 = (p.yPct / 100) * box.h;
     // Search outward from the true position and take the first clear seat that
-    // is still inside the plot. Never leave the box: a stamp parked outside the
-    // chart is worse than two stamps that touch.
+    // is still inside the plot.
     let best = { x: x0, y: y0 };
     let found = free(x0, y0);
     for (let ring = 1; !found && ring <= 4; ring += 1) {
@@ -85,22 +92,18 @@ function fanOutSeals(
 type Hover =
   | { kind: "target"; call: OpenCall; xPct: number; yPct: number }
   | { kind: "entry"; call: ResolvedCall; xPct: number; yPct: number }
+  | { kind: "verdict"; call: ResolvedCall; xPct: number; yPct: number }
+  | { kind: "open-entry"; call: OpenCall; xPct: number; yPct: number }
   | null;
 
 /**
- * The signature element: a price line with Stoa's calls drawn on it.
+ * Price tape from TradingView, with Stoa's calls as small event dots.
  *
  * Open calls become dashed target lines labelled at the right edge with the
  * analyst's initials and target. The five most recent draw as lines; anything
  * beyond that folds into a shaded range band, low to high, so a widely covered
- * name stays readable. The band is a spread, not an average: it shows how far
- * apart the remaining targets sit, never a blended house target. Resolved calls
- * put an entry dot on the price line at publication and a HIT/MISS seal where
- * the market graded them.
- *
- * There are deliberately no per-entry text labels on the plot: detail belongs
- * to the open-calls list underneath, and the chart stays a picture rather than
- * a table.
+ * name stays readable. The band is a spread, not an average. Resolved calls put
+ * an entry dot at lock and a HIT / MISS / NEAR dot at resolution, Yahoo-style.
  */
 export function CallsChart({
   ticker,
@@ -142,7 +145,7 @@ export function CallsChart({
   const plotRef = useRef<HTMLDivElement>(null);
   const [plotBox, setPlotBox] = useState<{ w: number; h: number } | null>(null);
 
-  // The chart is a scaled viewBox, so seal spacing has to be decided against
+  // The chart is a scaled viewBox, so marker spacing has to be decided against
   // the box as actually rendered rather than against viewBox units.
   useEffect(() => {
     const el = plotRef.current;
@@ -159,9 +162,16 @@ export function CallsChart({
 
   if (!geo) {
     return (
-      <div className="calls-chart">
-        <p className="markets-empty">
-          No price history available for {ticker} right now. The calls below are unaffected.
+      <div className={compact ? "calls-chart calls-chart--compact" : "calls-chart"}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-text-mute">Tape from TradingView.</p>
+          <TimeframePicker active={activeRange} from={customFrom} to={customTo} />
+        </div>
+        <div className="mt-4">
+          <MarketTradingViewChartCard ticker={ticker} range={activeRange} compact={compact} />
+        </div>
+        <p className="markets-empty mt-4">
+          No extra price history for the call dots right now. The calls below are unaffected.
         </p>
       </div>
     );
@@ -177,22 +187,21 @@ export function CallsChart({
   const bandLow = overflow > 0 ? Math.min(...bandTargets) : null;
   const bandHigh = overflow > 0 ? Math.max(...bandTargets) : null;
 
-  // Seals thin out on long views so a busy name does not turn into a wall of
-  // stamps: from 6M up only the last three months are stamped.
-  const sealCutoff = range === "1M" || range === "1W" ? 0 : mountedAt - THREE_MONTHS_MS;
-  const seals = !showOverlay
+  // Dots thin out on long views so a busy name does not turn into a wall of
+  // labels: from 6M up only the last three months are marked.
+  const markerCutoff = range === "1M" || range === "1W" ? 0 : mountedAt - THREE_MONTHS_MS;
+  const verdicts = !showOverlay
     ? []
     : resolvedCalls
-        .filter((c) => new Date(c.resolvedAt).getTime() >= sealCutoff)
+        .filter((c) => new Date(c.resolvedAt).getTime() >= markerCutoff)
         .filter((c) => {
           const t = new Date(c.resolvedAt).getTime() / 1000;
           return t >= minTime && t <= maxTime;
         })
-        .slice(0, MAX_SEALS);
+        .slice(0, MAX_MARKERS);
 
-
-  const sealSeats = fanOutSeals(
-    seals.map((call) => ({
+  const verdictSeats = fanOutMarkers(
+    verdicts.map((call) => ({
       xPct: (x(new Date(call.resolvedAt).getTime() / 1000) / W) * 100,
       yPct: (y(call.exitPrice ?? call.entryPrice) / H) * 100,
     })),
@@ -206,6 +215,13 @@ export function CallsChart({
         return t >= minTime && t <= maxTime;
       });
 
+  const openEntries = !showOverlay
+    ? []
+    : openCalls.filter((c) => {
+        const t = new Date(c.lockedAt).getTime() / 1000;
+        return t >= minTime && t <= maxTime;
+      });
+
   const ticks = dateTicks(minTime, maxTime, compact ? 4 : 5);
   const priceLevels = priceTicks(yLo, yHi, compact ? 4 : 5);
 
@@ -214,12 +230,17 @@ export function CallsChart({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-mute">
           {showOverlay
-            ? "Analyst calls on this name, locked at publication."
-            : "Intraday price."}
+            ? "TradingView tape. Stoa calls as dots on the record below."
+            : "Intraday tape from TradingView."}
         </p>
         <TimeframePicker active={activeRange} from={customFrom} to={customTo} />
       </div>
 
+      <div className="mt-4">
+        <MarketTradingViewChartCard ticker={ticker} range={activeRange} compact={compact} />
+      </div>
+
+      {showOverlay && (
       <div ref={plotRef} className="relative mt-4">
         <svg
           viewBox={`0 0 ${W} ${H}`}
@@ -350,22 +371,23 @@ export function CallsChart({
             );
           })}
 
-          {entries.map((call) => {
+          {openEntries.map((call) => {
             const ex = x(new Date(call.lockedAt).getTime() / 1000);
             const ey = y(call.entryPrice);
+            const color = call.direction === "short" ? "var(--down)" : "var(--up)";
             return (
               <circle
-                key={`e-${call.reportId}`}
+                key={`oe-${call.reportId}`}
                 cx={ex}
                 cy={ey}
-                r={4}
-                fill="var(--paper)"
-                stroke="var(--ink)"
+                r={3.5}
+                fill={color}
+                stroke="var(--paper)"
                 strokeWidth={1.5}
                 style={{ pointerEvents: "all" }}
                 onMouseEnter={() =>
                   setHover({
-                    kind: "entry",
+                    kind: "open-entry",
                     call,
                     xPct: (ex / W) * 100,
                     yPct: (ey / H) * 100,
@@ -375,25 +397,96 @@ export function CallsChart({
               />
             );
           })}
-        </svg>
 
-        {seals.map((call, i) => {
-          const seat = sealSeats[i];
-          return (
-            <span
-              key={`s-${call.reportId}`}
-              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${seat.xPct}%`, top: `${seat.yPct}%` }}
-            >
-              <SealStamp
-                status={call.outcome === "hit" ? "hit" : call.outcome === "miss" ? "miss" : "near"}
-                date={new Date(call.resolvedAt)}
-                size="sm"
-                animateOnView
-              />
-            </span>
-          );
-        })}
+          {entries.map((call) => {
+            const ex = x(new Date(call.lockedAt).getTime() / 1000);
+            const ey = y(call.entryPrice);
+            const vx = x(new Date(call.resolvedAt).getTime() / 1000);
+            const vy = y(call.exitPrice ?? call.entryPrice);
+            const color = verdictColor(call.outcome);
+            return (
+              <g key={`e-${call.reportId}`}>
+                <line
+                  x1={ex}
+                  y1={ey}
+                  x2={vx}
+                  y2={vy}
+                  stroke={color}
+                  strokeWidth={1}
+                  strokeOpacity={0.45}
+                />
+                <circle
+                  cx={ex}
+                  cy={ey}
+                  r={3.5}
+                  fill="var(--paper)"
+                  stroke="var(--ink)"
+                  strokeWidth={1.5}
+                  style={{ pointerEvents: "all" }}
+                  onMouseEnter={() =>
+                    setHover({
+                      kind: "entry",
+                      call,
+                      xPct: (ex / W) * 100,
+                      yPct: (ey / H) * 100,
+                    })
+                  }
+                  onMouseLeave={() => setHover(null)}
+                />
+              </g>
+            );
+          })}
+
+          {verdicts.map((call, i) => {
+            const seat = verdictSeats[i];
+            const vx = (seat.xPct / 100) * W;
+            const vy = (seat.yPct / 100) * H;
+            const color = verdictColor(call.outcome);
+            const label = verdictLabel(call.outcome);
+            return (
+              <g key={`v-${call.reportId}`}>
+                <line
+                  x1={vx}
+                  y1={vy}
+                  x2={vx}
+                  y2={vy - 11}
+                  stroke={color}
+                  strokeWidth={1}
+                />
+                <circle
+                  cx={vx}
+                  cy={vy}
+                  r={4.5}
+                  fill={color}
+                  stroke="var(--paper)"
+                  strokeWidth={1.5}
+                  style={{ pointerEvents: "all" }}
+                  onMouseEnter={() =>
+                    setHover({
+                      kind: "verdict",
+                      call,
+                      xPct: seat.xPct,
+                      yPct: seat.yPct,
+                    })
+                  }
+                  onMouseLeave={() => setHover(null)}
+                />
+                <text
+                  x={vx}
+                  y={vy - 14}
+                  textAnchor="middle"
+                  fontFamily="var(--font-mono)"
+                  fontSize={9}
+                  fontWeight={600}
+                  letterSpacing="0.08em"
+                  fill={color}
+                >
+                  {label}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
 
         {hover && (
           <div
@@ -410,7 +503,7 @@ export function CallsChart({
               {hover.call.direction === "short" ? "Short" : "Long"}
             </p>
             <p className="mt-1 text-text-mute">Entry {fmtPrice(hover.call.entryPrice)}</p>
-            {hover.kind === "target" ? (
+            {hover.kind === "target" || hover.kind === "open-entry" ? (
               <>
                 <p className="text-text-mute">
                   Target {hover.call.targetPrice ? fmtPrice(hover.call.targetPrice) : "-"}
@@ -419,15 +512,17 @@ export function CallsChart({
               </>
             ) : (
               <p className="text-text-mute">
-                Resolved {hover.call.outcome} ·{" "}
+                {verdictLabel(hover.call.outcome)}
                 {hover.call.returnPct == null
-                  ? "-"
-                  : `${hover.call.returnPct >= 0 ? "+" : ""}${hover.call.returnPct.toFixed(1)}%`}
+                  ? ""
+                  : ` · ${hover.call.returnPct >= 0 ? "+" : ""}${hover.call.returnPct.toFixed(1)}%`}
               </p>
             )}
           </div>
         )}
       </div>
+
+      )}
 
       {!showOverlay ? (
         <div className="calls-chart-legend">
@@ -460,7 +555,25 @@ export function CallsChart({
           Entry
         </span>
         <span className="calls-chart-legend-key">
-          Resolved · {range === "1M" || range === "1W" ? "all in view" : "last 3 months"}
+          <svg width="10" height="10" aria-hidden>
+            <circle cx="5" cy="5" r="3.5" fill="var(--up)" stroke="var(--paper)" strokeWidth="1.5" />
+          </svg>
+          HIT
+        </span>
+        <span className="calls-chart-legend-key">
+          <svg width="10" height="10" aria-hidden>
+            <circle cx="5" cy="5" r="3.5" fill="var(--down)" stroke="var(--paper)" strokeWidth="1.5" />
+          </svg>
+          MISS
+        </span>
+        <span className="calls-chart-legend-key">
+          <svg width="10" height="10" aria-hidden>
+            <circle cx="5" cy="5" r="3.5" fill="var(--brass)" stroke="var(--paper)" strokeWidth="1.5" />
+          </svg>
+          NEAR
+        </span>
+        <span className="calls-chart-legend-key">
+          {range === "1M" || range === "1W" ? "All in view" : "Last 3 months"}
         </span>
       </div>
       )}

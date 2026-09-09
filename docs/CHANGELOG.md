@@ -10,6 +10,34 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-09 — Follow, tab bar, and TradingView tapes
+
+**For someone using the site**
+
+- **Follow is easier to see.** On the Feed it is a solid paper chip on the
+  clip, not a faint outline. On profiles, Today, and ticker pills it is a
+  solid ink button until you already follow, then a quieter Following state.
+- **The phone tab bar is easier to see.** The active tab is a filled ink chip,
+  the icons and labels are larger, the pill has a stronger border, and it
+  shrinks less when you scroll.
+- **Markets charts come from TradingView.** The ticker, fund, and macro pages
+  show TradingView's live tape. Stoa calls sit on a record strip under it as
+  small dots, like Yahoo Finance events: HIT in green, MISS in rust, NEAR in
+  brass, with the locked entry as a hollow ring. The ceremonial seal stays on
+  call cards; it no longer piles on the plot.
+- **Evidence chart cards use TradingView too.** A chart card loads the
+  TradingView widget. A compare line still uses TradingView Lightweight Charts,
+  because the widget cannot overlay a second symbol.
+
+**For Krisi**
+
+- TradingView's Charting Library (the licensed, self-hosted Advanced Charts
+  API) is not in this repo, so we cannot draw custom shapes inside their
+  iframe. The public Advanced Chart widget supplies the tape. HIT / MISS dots
+  stay on Stoa's record strip. No schema change.
+
+---
+
 ## 2026-09-08 — The Write headline can be typed after Video
 
 **For someone using the site**

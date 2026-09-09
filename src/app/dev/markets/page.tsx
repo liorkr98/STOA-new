@@ -11,7 +11,7 @@ import type { OpenCall, ResolvedCall, StockAnalyst } from "@/lib/markets/call-ty
 /**
  * Dev-only seeded stock page so the calls overlay on the chart can be reviewed
  * without a database: target lines, the range band, entry dots, and the
- * resolution seals all need predictions to exist.
+ * HIT / MISS dots all need predictions to exist.
  */
 
 const DAY = 86_400;
