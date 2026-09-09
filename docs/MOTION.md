@@ -91,7 +91,9 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 ### A.4 Explicitly do NOT animate
 
 Live prices and % changes in the ticker strip (they update constantly — frequency rule; just swap,
-tabular-nums prevents layout shift). Route/page transitions. Nav and sidebar. Filter chip
+tabular-nums prevents layout shift). Route/page transitions. Nav and sidebar (two named
+exceptions, both asked for by name and documented under `AppTabs` in `docs/FRONTEND.md`: the
+phone tab pill shrinks on scroll, and its lens travels to the tapped tab). Filter chip
 selection beyond the browser-default background transition. Feed cards mounting on scroll
 (observer-triggered reveals of any kind; the scrub-based landing reveal in law 11 is the one
 exception). Text content. Chart lines on every data refresh (animate once on first mount only).

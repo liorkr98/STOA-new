@@ -223,14 +223,15 @@ stay in the top row and the right zone keeps its full-width Compose button and b
 
 **`AppTabs` — the bottom tab bar.** A rounded pill, inset from the bottom and sides, floating
 over the page rather than welded to the edge, capped at `30rem` and centred. Five destinations,
-always labelled.
+always labelled. Its proportions and its motion are copied from the iOS 26 tab bar (the
+Investing.com recording of 2026-09-09): `1.375rem` side insets, a `60px` pill with `0.25rem` of
+glass around a `52px` highlight, `26px` icons over `10px` labels.
 
-- **Frosted paper, not a band.** The pill is glass: `--glass` (paper at two fifths) over
+- **Frosted paper, not a band.** The pill is glass: `--glass` (paper at 55%) over
   `backdrop-filter: blur(28px) saturate(1.6)`, a hairline `--glass-edge` border, a one-pixel
   `--glass-highlight` inset along the top and `--shadow-glass` beneath. The blur carries the
-  legibility, not the fill: the heavier the blur, the thinner the paper can be. The ends are
-  elliptical, `2.25rem / 1.875rem`, so the corner sweeps a fifth wider than a semicircle; the
-  capsule matches at `1.75rem / 1.4375rem`. The page shows through
+  legibility, not the fill: the heavier the blur, the thinner the paper can be. Plain round
+  ends (`999px`). The page shows through
   it blurred and tints it, warm because the fill is paper rather than grey. The solid `--paper`
   fill is declared first and the glass inside `@supports (backdrop-filter)`, so a browser that
   cannot blur gets an opaque paper pill, never a transparent one. Both tokens have a `.dark`
@@ -245,18 +246,25 @@ always labelled.
   `--tab-h + --main-pad-y`, and a frame that is its own scroller (the report page, the branding
   studio on a phone) pads the same. Content passes behind the glass while scrolling; nothing
   ends underneath it. `frameHeight` counts the frame's own negative margin for this.
-- **The active tab is a filled capsule** (`rounded-full`, ink fill, paper type), not a colour
-  change. It is sized by its content, not its column: `px-2 py-1.5` around a 20px icon and a
-  10px `leading-none` label with `0.1em` tracking, inside a pill padded `0.375rem`, with the
-  pill's elliptical ends at its own scale, so the
-  capsule hugs the icon and label with the same air all round and sits inset from the glass
-  edge rather than filling the bar's height. The label must stay narrower than a fifth of the
-  pill at 390px (Markets is the widest) or the capsule would overrun its column.
+- **The current tab is marked by one travelling lens**, `.app-tabs-lens`: a translucent
+  capsule (`--glass-lens`, ink at 8%, 14% in the dark) that takes the current link's box and
+  hugs its icon and label with the same air all round. Each link is `px-2 py-1.5` around a
+  26px icon and a 10px `leading-none` label with `0.1em` tracking; the current icon draws with
+  a heavier stroke, the type stays ink. The lens is a single element positioned by
+  `AppTabs` over the current link (measured, re-measured on resize), not a style on each link:
+  on a tap it sets off at once (the tapped tab is remembered with the path it was tapped on,
+  so the route takes over the moment it changes) and travels to the new link over `--dur-3`
+  on `--ease-out`, stretching lengthways on the way (`scale 1.35 0.94` at the midpoint) and
+  settling on arrival. Only `transform` animates; the width is set instantly, and the
+  capsules are within a few pixels of each other so the change is invisible. Under
+  `prefers-reduced-motion` it jumps. The label must stay narrower than a fifth of the pill at
+  390px (Markets is the widest) or the lens would overrun its column.
 - **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
   up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
   size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
-  asked for by name; nothing else in the nav animates. It listens to `main`; a surface that
-  scrolls in its own column (the Feed, Today's frame) does not shrink it.
+  asked for by name; the travelling lens above is the only other thing in the nav that moves.
+  It listens to `main`; a surface that scrolls in its own column (the Feed, Today's frame)
+  does not shrink it.
 - **Never flickers.** The direction decision is `src/lib/nav/scroll-shrink.ts`, a pure function
   with tests. Movement accumulates in one direction and only flips the bar past an 18px
   threshold, so a resting thumb cannot flutter it; a reversal restarts the count rather than

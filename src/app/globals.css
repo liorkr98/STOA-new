@@ -44,13 +44,15 @@
   --shadow-card: 0 1px 2px rgba(20, 23, 31, 0.06), 0 4px 12px rgba(20, 23, 31, 0.04);
 
   /* Frosted paper, for chrome that floats over the page (the phone tab bar).
-   * Paper at two fifths over a heavy blur, so what passes beneath shows
-   * through and tints it warm rather than grey; the edge is a hairline of
-   * ink and a top highlight of the paper itself, which is what reads as a
+   * Paper at a little over half over a heavy blur, so what passes beneath
+   * shows through and tints it warm rather than grey; the edge is a hairline
+   * of ink and a top highlight of the paper itself, which is what reads as a
    * lit glass edge. The blur, not the fill, is what keeps the labels legible. */
-  --glass: color-mix(in srgb, var(--paper) 40%, transparent);
-  --glass-edge: color-mix(in srgb, var(--ink) 12%, transparent);
+  --glass: color-mix(in srgb, var(--paper) 55%, transparent);
+  --glass-edge: color-mix(in srgb, var(--ink) 10%, transparent);
   --glass-highlight: rgba(255, 255, 255, 0.55);
+  /* The lens that marks the current tab: a shade of ink over the glass. */
+  --glass-lens: color-mix(in srgb, var(--ink) 8%, transparent);
   --shadow-glass: 0 1px 2px rgba(20, 23, 31, 0.08), 0 10px 30px rgba(20, 23, 31, 0.14);
 
   --r-card: 12px;
@@ -234,8 +236,8 @@
     z-index: 40;
     display: flex;
     justify-content: center;
-    padding-left: max(1rem, var(--safe-left));
-    padding-right: max(1rem, var(--safe-right));
+    padding-left: max(1.375rem, var(--safe-left));
+    padding-right: max(1.375rem, var(--safe-right));
     pointer-events: none;
   }
 
@@ -248,16 +250,48 @@
     max-width: 30rem;
     pointer-events: auto;
     border: 1px solid var(--glass-edge);
-    /* Elliptical ends: the horizontal radius a fifth wider than the vertical
-       one, so the corner sweeps wider than a plain semicircle. The vertical
-       radius is half the pill's height (0.375rem padding either side of the
-       2.875rem capsule, plus the hairline). */
-    border-radius: 2.25rem / 1.875rem;
+    border-radius: 999px;
     background: var(--paper);
     box-shadow: var(--shadow-glass);
-    padding: 0.375rem;
+    /* 60px tall, the hairline included: 3px of glass around a 52px lens. */
+    padding: calc(0.25rem - 1px);
     transform-origin: bottom center;
     transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  /* The lens over the current tab. One element for the whole bar: it takes
+     the current link's box and travels to the next one on a tap, stretching
+     lengthways on the way (a scale, so only transform animates) and settling
+     on arrival. Width is set, never animated. Asked for by name, like the
+     shrink; the second and last exception to MOTION.md A.4 for the nav. */
+  .app-tabs-lens {
+    position: absolute;
+    top: calc(0.25rem - 1px);
+    bottom: calc(0.25rem - 1px);
+    left: 0;
+    width: 0;
+    border-radius: 999px;
+    background: var(--glass-lens);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    pointer-events: none;
+    will-change: transform;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+
+  .app-tabs-lens-travel {
+    animation: app-tabs-lens-stretch var(--dur-3) var(--ease-out);
+  }
+
+  @keyframes app-tabs-lens-stretch {
+    0% {
+      scale: 1 1;
+    }
+    45% {
+      scale: 1.35 0.94;
+    }
+    100% {
+      scale: 1 1;
+    }
   }
 
   @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
@@ -281,6 +315,12 @@
     }
     .app-tabs[data-shrunk] .app-tabs-pill {
       transform: none;
+    }
+    .app-tabs-lens {
+      transition: none;
+    }
+    .app-tabs-lens-travel {
+      animation: none;
     }
   }
 }
@@ -316,9 +356,10 @@
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.24);
 
-  --glass: color-mix(in srgb, var(--paper) 38%, transparent);
-  --glass-edge: color-mix(in srgb, var(--ink) 18%, transparent);
+  --glass: color-mix(in srgb, var(--paper) 55%, transparent);
+  --glass-edge: color-mix(in srgb, var(--ink) 16%, transparent);
   --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-lens: color-mix(in srgb, var(--ink) 14%, transparent);
   --shadow-glass: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
