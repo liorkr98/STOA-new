@@ -10,6 +10,25 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-09 — Pause while recording, and the tab lens slows down
+
+**For someone using the site**
+
+- **You can pause a recording.** A pause ring sits beside stop in the
+  Compose recorder. Pausing holds the take with the camera still on and the
+  clock frozen; resume carries on in the same take, and the gap is simply
+  not in the clip. Stopping while paused ends the take at the pause.
+- **The tab bar's highlight moves at the pace of the reference.** It was
+  snapping across in a quarter of a second; it now eases out of one tab and
+  into the next in about a third, as in the recording.
+
+**For Krisi**
+
+- No schema change. Pause uses the browser's own recorder pause, which
+  Chrome, Firefox and Safari 14.1 and later all have.
+
+---
+
 ## 2026-09-09 — Tab bar: the capsule fits, and Today runs under the glass
 
 **For someone using the site**

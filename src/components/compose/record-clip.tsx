@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, RotateCcw, Square, Upload } from "lucide-react";
+import { Camera, Pause, Play, RotateCcw, Square, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { MAX_VIDEO_DURATION_SECONDS } from "@/lib/video/constants";
@@ -31,6 +31,7 @@ export type RecordPhase =
   | "starting"
   | "live"
   | "recording"
+  | "paused"
   | "review"
   | "denied"
   | "busy"
@@ -145,7 +146,11 @@ export function RecordClip({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const feedRef = useRef<{ stop: () => void } | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  // The clock: when the take started, less every pause. Paused time is not
+  // in the file, so it is not in the clock either.
   const startedAtRef = useRef(0);
+  const pausedAtRef = useRef(0);
+  const pausedRef = useRef(false);
   const timerRef = useRef(0);
 
   const releaseCamera = useCallback(() => {
@@ -175,7 +180,7 @@ export function RecordClip({
   // The live preview element only exists in the live phases, so the stream
   // is attached once the phase has rendered it.
   useEffect(() => {
-    if ((phase === "live" || phase === "recording") && streamRef.current) {
+    if ((phase === "live" || phase === "recording" || phase === "paused") && streamRef.current) {
       attachPreview(streamRef.current);
     }
   }, [phase, attachPreview]);
@@ -216,6 +221,34 @@ export function RecordClip({
     if (r && r.state !== "inactive") r.stop();
   }, []);
 
+  const tick = useCallback(() => {
+    const s = (performance.now() - startedAtRef.current) / 1000;
+    setElapsed(s);
+    if (s >= maxSeconds) stop();
+  }, [maxSeconds, stop]);
+
+  // Pause keeps the camera live and the take open; the file simply has no
+  // frames for the gap, and the clock stands still with it.
+  const pause = useCallback(() => {
+    const r = recorderRef.current;
+    if (!r || r.state !== "recording") return;
+    r.pause();
+    window.clearInterval(timerRef.current);
+    pausedAtRef.current = performance.now();
+    pausedRef.current = true;
+    setPhase("paused");
+  }, []);
+
+  const resume = useCallback(() => {
+    const r = recorderRef.current;
+    if (!r || r.state !== "paused") return;
+    startedAtRef.current += performance.now() - pausedAtRef.current;
+    pausedRef.current = false;
+    r.resume();
+    timerRef.current = window.setInterval(tick, 200);
+    setPhase("recording");
+  }, [tick]);
+
   const begin = useCallback(() => {
     const source = streamRef.current;
     const v = liveRef.current;
@@ -239,7 +272,10 @@ export function RecordClip({
       window.clearInterval(timerRef.current);
       feed.stop();
       feedRef.current = null;
-      const seconds = Math.min(maxSeconds, (performance.now() - startedAtRef.current) / 1000);
+      // Stopped while paused: the clock ended at the pause.
+      const end = pausedRef.current ? pausedAtRef.current : performance.now();
+      pausedRef.current = false;
+      const seconds = Math.min(maxSeconds, (end - startedAtRef.current) / 1000);
       const type = recorder.mimeType || mime || "video/webm";
       const blob = new Blob(chunksRef.current, { type });
       chunksRef.current = [];
@@ -252,15 +288,13 @@ export function RecordClip({
     };
     recorderRef.current = recorder;
     startedAtRef.current = performance.now();
+    pausedAtRef.current = 0;
+    pausedRef.current = false;
     setElapsed(0);
     recorder.start(250);
     setPhase("recording");
-    timerRef.current = window.setInterval(() => {
-      const s = (performance.now() - startedAtRef.current) / 1000;
-      setElapsed(s);
-      if (s >= maxSeconds) stop();
-    }, 200);
-  }, [maxSeconds, stop]);
+    timerRef.current = window.setInterval(tick, 200);
+  }, [maxSeconds, tick]);
 
   const again = useCallback(() => {
     setTake((old) => {
@@ -287,7 +321,7 @@ export function RecordClip({
   }, [stop, releaseCamera, onCancel]);
 
   const remaining = Math.max(0, maxSeconds - elapsed);
-  const showLive = phase === "live" || phase === "recording" || phase === "starting";
+  const showLive = phase === "live" || phase === "recording" || phase === "paused" || phase === "starting";
 
   return (
     <div className={cn("flex flex-col items-center gap-4", className)} aria-live="polite">
@@ -374,10 +408,15 @@ export function RecordClip({
           </Notice>
         ) : null}
 
-        {phase === "recording" ? (
+        {phase === "recording" || phase === "paused" ? (
           <div className="num absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1 text-[12px] tracking-[0.08em] text-white">
-            <span aria-hidden className="h-2 w-2 rounded-full bg-[var(--rust)]" />
-            <span>REC {mmss(elapsed)}</span>
+            <span
+              aria-hidden
+              className={cn("h-2 w-2 rounded-full", phase === "paused" ? "bg-white/70" : "bg-[var(--rust)]")}
+            />
+            <span>
+              {phase === "paused" ? "PAUSED" : "REC"} {mmss(elapsed)}
+            </span>
           </div>
         ) : null}
         {phase === "live" ? (
@@ -414,18 +453,36 @@ export function RecordClip({
           </div>
         ) : null}
 
-        {phase === "recording" ? (
+        {phase === "recording" || phase === "paused" ? (
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-4 pt-10">
-            <button
-              type="button"
-              onClick={stop}
-              aria-label="Stop recording"
-              className="focus-ring flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white bg-transparent active:scale-[0.97]"
-            >
-              <Square size={22} fill="var(--rust)" strokeWidth={0} />
-            </button>
+            {/* Stop in the middle, where the shutter was; pause beside it,
+                with a blank of the same size on the other side so stop
+                stays put. */}
+            <div className="flex w-full items-center justify-center gap-6">
+              <button
+                type="button"
+                onClick={phase === "paused" ? resume : pause}
+                aria-label={phase === "paused" ? "Resume recording" : "Pause recording"}
+                className="focus-ring flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/80 bg-black/30 text-white active:scale-[0.97]"
+              >
+                {phase === "paused" ? (
+                  <Play size={18} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+                ) : (
+                  <Pause size={18} fill="currentColor" strokeWidth={0} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={stop}
+                aria-label="Stop recording"
+                className="focus-ring flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white bg-transparent active:scale-[0.97]"
+              >
+                <Square size={22} fill="var(--rust)" strokeWidth={0} />
+              </button>
+              <span aria-hidden className="h-11 w-11" />
+            </div>
             <p className="num text-[11px] uppercase tracking-[0.14em] text-white/90">
-              {mmss(remaining)} left
+              {phase === "paused" ? "Paused" : `${mmss(remaining)} left`}
             </p>
           </div>
         ) : null}

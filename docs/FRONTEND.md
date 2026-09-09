@@ -1301,7 +1301,9 @@ same controls was the thing this change exists to delete.
 **The choose stage of the rung offers Record and Upload.** `<RecordClip>`
 (`src/components/compose/record-clip.tsx`) is a portrait black stage with fixed white-on-black
 controls (the theme's ink and paper pair would vanish on it), a rust shutter dot and square, a
-`num` REC clock, and one `Notice` layout for the explain, refused, busy and no-camera states.
+`num` REC clock (PAUSED while paused, with a smaller pause/resume ring beside stop and a blank
+of the same size on the other side so stop stays centred), and one `Notice` layout for the
+explain, refused, busy and no-camera states.
 It hands a File to the rung's `takeFile`, the same call an upload makes, so nothing downstream
 knows the clip was recorded. The rung decides after mount whether the browser can record and
 hides the Record card otherwise. See `docs/COMPOSE.md`, "Recording a clip".

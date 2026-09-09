@@ -77,8 +77,11 @@ says why the camera is needed and only asks for it on **Turn on camera**;
 refusal, a busy camera and a device with no camera each get their own plain
 message with **Try again** and **Upload a file instead**. Live, there is a
 mirrored preview, a shutter, and once recording starts a REC clock with the
-time left (the cap is the same 90 seconds as an upload). Stop lands on a
-review of the take with **Record again** or **Use this clip**. A laptop
+time left (the cap is the same 90 seconds as an upload). **Pause** beside
+stop holds the take with the camera still live; the clock stands still with
+it, the file has no frames for the gap, and **Resume** carries on in the
+same take. Stop, paused or not, lands on a review of the take with
+**Record again** or **Use this clip**. A laptop
 webcam's landscape picture is recorded through a canvas that keeps its middle
 9:16, so the file is what the preview showed.
 
