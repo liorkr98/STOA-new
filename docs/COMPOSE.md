@@ -69,6 +69,32 @@ The **Steelman** card is parked (see `docs/PRODUCT_MODEL.md`): not offered in
 the library until the analysis that supplies the objection works. Existing
 Steelman cards still render.
 
+## Recording a clip
+
+The Video step offers two ways in: **Record with your camera** and the upload
+drop zone. Record opens a portrait stage (9:16, the Feed's frame) that first
+says why the camera is needed and only asks for it on **Turn on camera**;
+refusal, a busy camera and a device with no camera each get their own plain
+message with **Try again** and **Upload a file instead**. Live, there is a
+mirrored preview, a shutter, and once recording starts a REC clock with the
+time left (the cap is the same 90 seconds as an upload). Stop lands on a
+review of the take with **Record again** or **Use this clip**. A laptop
+webcam's landscape picture is recorded through a canvas that keeps its middle
+9:16, so the file is what the preview showed.
+
+The take becomes an ordinary File and goes down the upload path from there:
+the same trim, cover, overlays and the same upload at publish. There is no
+second path. The recorder's own clock supplies the length, because a WebM
+written by the browser reports none until it has been seeked to the end.
+
+Support is `getUserMedia` plus `MediaRecorder` on a secure origin: Chrome and
+Edge, Firefox, Safari 14.1 and iOS 14.5 or later. Chrome and Firefox write
+WebM (VP9 or VP8, Opus); Safari writes MP4 (H.264, AAC); Bunny transcodes
+either. Where the browser cannot record, Record is not offered and a line
+under the drop zone says so; an old in-app browser or a plain `http://` page
+gets the upload path alone. Recording is only in Compose; the attach-a-clip
+flow on a published piece still takes a file.
+
 ## The video editor
 
 One picture above one timeline, built the way CapCut, Instagram, TikTok and

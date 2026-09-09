@@ -1269,6 +1269,14 @@ The settings rail is gone: access, price, disclosures and promote are step 7, an
 details drawer that used to carry a second copy of them has been removed. Two surfaces holding the
 same controls was the thing this change exists to delete.
 
+**The choose stage of the rung offers Record and Upload.** `<RecordClip>`
+(`src/components/compose/record-clip.tsx`) is a portrait black stage with fixed white-on-black
+controls (the theme's ink and paper pair would vanish on it), a rust shutter dot and square, a
+`num` REC clock, and one `Notice` layout for the explain, refused, busy and no-camera states.
+It hands a File to the rung's `takeFile`, the same call an upload makes, so nothing downstream
+knows the clip was recorded. The rung decides after mount whether the browser can record and
+hides the Record card otherwise. See `docs/COMPOSE.md`, "Recording a clip".
+
 **Two components render half of themselves** rather than being split in two, so the sequence
 costs no duplicated state: `<VideoRung stage="choose" | "edit" | "all">` and
 `<LockPublishPanel sections="call" | "publish" | "all">`. The video rung is mounted once across

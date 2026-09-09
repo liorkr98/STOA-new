@@ -2,9 +2,10 @@
 
 import { OverlayLayer } from "@/components/video/overlay-layer";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Eye, EyeOff, ImagePlus, Layers, Pause, Play, Sparkles, TrendingUp, Type, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Eye, EyeOff, ImagePlus, Layers, Pause, Play, Sparkles, TrendingUp, Type, Upload, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RecordClip, recordingSupported } from "@/components/compose/record-clip";
 import { cn } from "@/lib/design/cn";
 import { OverlayChartFields, OverlayVisualBody, OverlayVisualizeFields } from "@/components/compose/overlay-visual";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
@@ -1101,6 +1102,9 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
 
 /* ---------- the rung ---------- */
 
+/** Browser support never changes while the page lives, so nothing to subscribe to. */
+const subscribeNever = () => () => {};
+
 export function VideoRung({
   initial,
   demoDurationSeconds = 90,
@@ -1155,6 +1159,10 @@ export function VideoRung({
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const frames = useFrames(src, edit.durationSeconds, STRIP_FRAMES);
+  // Record or pick a file. The camera is only offered where the browser can
+  // record; the server (and the first client paint, to match it) says no.
+  const [picking, setPicking] = useState<"file" | "camera">("file");
+  const canRecord = useSyncExternalStore(subscribeNever, recordingSupported, () => false);
 
   const setEdit = useCallback(
     (e: VideoEdit) => {
@@ -1164,19 +1172,40 @@ export function VideoRung({
     [onChange],
   );
 
+  /**
+   * One path for every clip, chosen or recorded. `knownSeconds` is the
+   * recorder's own clock: a WebM written by MediaRecorder carries no length
+   * in its header, so the browser reports Infinity for it until it has been
+   * seeked to the end, and the clock is what stands if that never settles.
+   */
   const takeFile = useCallback(
-    (f: File | undefined) => {
+    (f: File | undefined, knownSeconds?: number) => {
       if (!f) return;
       const url = URL.createObjectURL(f);
       setSrc(url);
+      setPicking("file");
       const probe = document.createElement("video");
       probe.preload = "metadata";
       probe.src = url;
-      probe.addEventListener("loadedmetadata", () => {
-        const d = Number.isFinite(probe.duration) ? probe.duration : demoDurationSeconds;
+      const settle = (d: number) => {
         setEdit({ ...emptyEdit(d), thumbnail: null });
         setTime(0);
         onFile?.(f, d);
+      };
+      probe.addEventListener("loadedmetadata", () => {
+        if (Number.isFinite(probe.duration)) return settle(probe.duration);
+        // Seeking far past the end makes the browser scan the file and fill
+        // in the real length. If it does not, the recorder's clock stands.
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          settle(Number.isFinite(probe.duration) ? probe.duration : (knownSeconds ?? demoDurationSeconds));
+        };
+        probe.addEventListener("durationchange", () => Number.isFinite(probe.duration) && finish());
+        probe.addEventListener("seeked", finish, { once: true });
+        window.setTimeout(finish, 1500);
+        probe.currentTime = 1e101;
       });
     },
     [demoDurationSeconds, onFile, setEdit],
@@ -1286,6 +1315,11 @@ export function VideoRung({
           ) : null}
           {stage !== "edit" ? (
             <div className="ml-auto flex items-center gap-2">
+              {(src || hasClip) && canRecord && picking !== "camera" ? (
+                <Button variant="secondary" size="sm" onClick={() => setPicking("camera")}>
+                  <Video size={16} strokeWidth={1.6} /> Record
+                </Button>
+              ) : null}
               {src || hasClip ? (
                 <label className="inline-flex cursor-pointer items-center">
                   <input
@@ -1322,32 +1356,55 @@ export function VideoRung({
           drops below the fold: the picture is capped at under half the
           viewport, which is how CapCut's desktop layout splits the screen. */}
       <div className="mx-auto w-full max-w-[min(880px,calc(44vh*16/9))]">
-        {stage === "choose" && !src && !hasClip ? (
-          <label
-            className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-6 text-center"
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = "copy";
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              takeFile(e.dataTransfer.files[0]);
-            }}
-          >
-            <Upload size={22} strokeWidth={1.6} className="text-text-mute" />
-            <span className="text-sm text-text">Drop a clip here, or choose a file</span>
-            <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">MP4, MOV, or WebM</span>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="video/*"
-              className="mt-1 text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
-              onChange={(e) => {
-                takeFile(e.target.files?.[0]);
-                e.target.value = "";
+        {stage === "choose" && picking === "camera" ? (
+          // The camera. What it records goes through takeFile like any file.
+          <RecordClip onDone={takeFile} onCancel={() => setPicking("file")} />
+        ) : stage === "choose" && !src && !hasClip ? (
+          <div className={cn("grid gap-3", canRecord && "sm:grid-cols-2")}>
+            {canRecord ? (
+              <button
+                type="button"
+                onClick={() => setPicking("camera")}
+                className="focus-ring flex min-h-[11rem] w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-6 text-center hover:border-[var(--ink)]"
+              >
+                <Video size={22} strokeWidth={1.6} className="text-text-mute" />
+                <span className="text-sm text-text">Record with your camera</span>
+                <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+                  Portrait, up to 1:30
+                </span>
+              </button>
+            ) : null}
+            <label
+              className="flex min-h-[11rem] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-6 text-center"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
               }}
-            />
-          </label>
+              onDrop={(e) => {
+                e.preventDefault();
+                takeFile(e.dataTransfer.files[0]);
+              }}
+            >
+              <Upload size={22} strokeWidth={1.6} className="text-text-mute" />
+              <span className="text-sm text-text">Drop a clip here, or choose a file</span>
+              <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">MP4, MOV, or WebM</span>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="video/*"
+                className="mt-1 text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
+                onChange={(e) => {
+                  takeFile(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {!canRecord ? (
+              <p className="text-[13px] text-text-mute">
+                Recording is not available in this browser, so upload a clip you already have.
+              </p>
+            ) : null}
+          </div>
         ) : (
           <>
         <Stage
