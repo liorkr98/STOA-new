@@ -260,9 +260,10 @@ phone width, and so do we.
   The lens is a single element positioned by `AppTabs` over the current slot (measured,
   re-measured on resize), not a style on each link:
   on a tap it sets off at once (the tapped tab is remembered with the path it was tapped on,
-  so the route takes over the moment it changes) and travels to the new link over `--dur-3`
-  on `--ease-out`, stretching lengthways on the way (`scale 1.35 0.94` at the midpoint) and
-  settling on arrival. Only `transform` animates; the width is set instantly, and the
+  so the route takes over the moment it changes) and travels to the new slot over
+  `--dur-ceremony` on `--ease-in-out` (the recording's capsule takes about a third of a second;
+  in-out is the curve for a thing moving across the screen, law 1), stretching lengthways on
+  the way (`scale 1.35 0.94` at the midpoint) and settling on arrival. Only `transform` animates; the width is set instantly, and the
   capsules are within a few pixels of each other so the change is invisible. Under
   `prefers-reduced-motion` it jumps. A label must stay narrower than its slot less `16px` at
   390px (Markets is the widest) so the lens keeps air either side of it.

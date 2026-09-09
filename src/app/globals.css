@@ -288,18 +288,22 @@
     box-shadow: inset 0 1px 0 var(--glass-highlight);
     pointer-events: none;
     will-change: transform;
-    transition: transform var(--dur-3) var(--ease-out);
+    /* The recording's capsule takes about a third of a second slot to slot,
+       easing in and out of the move rather than snapping off the mark: the
+       in-out curve is the one MOTION.md gives to a thing moving across the
+       screen, and the ceremony length is the nearest token above it. */
+    transition: transform var(--dur-ceremony) var(--ease-in-out);
   }
 
   .app-tabs-lens-travel {
-    animation: app-tabs-lens-stretch var(--dur-3) var(--ease-out);
+    animation: app-tabs-lens-stretch var(--dur-ceremony) var(--ease-in-out);
   }
 
   @keyframes app-tabs-lens-stretch {
     0% {
       scale: 1 1;
     }
-    45% {
+    50% {
       scale: 1.35 0.94;
     }
     100% {

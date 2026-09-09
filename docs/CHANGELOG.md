@@ -30,7 +30,8 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   pill, big icons over small labels, and the current tab marked by a
   translucent grey rounded rectangle that is nearly the whole slot, the same
   size for every tab and centred on its icon, a shade darker than the glass
-  so it reads clearly. Tap another tab and it slides across,
+  so it reads clearly. Tap another tab and it slides across in about a
+  third of a second, easing out of one slot and into the next,
   stretching on the way and settling on arrival; it sets off the moment you
   tap, before the page has changed. Paper fill at 55% over a heavier blur.
   Reduced motion: it jumps.
