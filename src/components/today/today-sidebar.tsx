@@ -46,11 +46,11 @@ function SideList({ title, children, empty }: { title: string; children: ReactNo
 }
 
 const quietPill =
-  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border border-border px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-[0.14em] text-text-faint transition-colors duration-[var(--dur-1)] hover:border-border-strong hover:text-text";
+  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-[var(--radius-tag)] border border-[var(--ink)] bg-[var(--ink)] px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[var(--paper)] transition-[filter] duration-[var(--dur-1)] hover:brightness-[1.06]";
 
 /**
- * A creator the reader does not follow carries a small outlined Follow
- * control. On press the row stays exactly where it is and the button goes;
+ * A creator the reader does not follow carries a solid Follow control.
+ * On press the row stays exactly where it is and the button goes;
  * the server confirms, and a refusal brings the button back with the reason.
  * The follow is a follow, never a toggle, so a stale row cannot unfollow.
  */

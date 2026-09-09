@@ -152,7 +152,7 @@ export function blankCard(kind: CardKind): DraftCard {
     case "figure":
       return { id, kind, locked: false, payload: { caption: "", imageUrl: null, source: "creator" } };
     case "chart":
-      return { id, kind, locked: false, payload: { ticker: "", caption: "", compareTicker: "" } };
+      return { id, kind, locked: false, payload: { ticker: "", caption: "", compareTicker: "", engine: "tradingview" } };
     case "steelman":
       return { id, kind, locked: false, payload: { objection: "", answer: "" } };
     case "unlock":
@@ -367,7 +367,7 @@ export function sampleCard(kind: CardKind): DraftCard {
     case "figure":
       return { id, kind, locked: false, payload: { caption: "Your chart or still", imageUrl: null, source: "creator" } };
     case "chart":
-      return { id, kind, locked: false, payload: { ticker: "NVDA", caption: "Last 90 sessions", compareTicker: "" } };
+      return { id, kind, locked: false, payload: { ticker: "NVDA", caption: "Last 90 sessions", compareTicker: "", engine: "tradingview" } };
     case "steelman":
       return { id, kind, locked: false, payload: { objection: "The multiple already prices the mix shift.", answer: "Only if software stays at 18% of revenue." } };
     case "unlock":

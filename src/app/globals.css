@@ -183,7 +183,7 @@
   .has-app-tabs {
     /* Extra floor so Chrome on Android (often 0 safe-area) does not sit the
        bar on the system nav. Includes the pill's inset from the bottom edge. */
-    --tab-h: calc(3.5rem + max(0.625rem, var(--safe-bottom)));
+    --tab-h: calc(3.75rem + max(0.625rem, var(--safe-bottom)));
   }
 
   /* The pill floats over the page, so the scroller reserves its own clearance.
@@ -215,17 +215,17 @@
     width: 100%;
     max-width: 30rem;
     pointer-events: auto;
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border-strong);
     border-radius: 999px;
     background: var(--paper);
     box-shadow: var(--shadow-card);
-    padding: 0.125rem 0.25rem;
+    padding: 0.2rem 0.3rem;
     transform-origin: bottom center;
     transition: transform var(--dur-2) var(--ease-out);
   }
 
   .app-tabs[data-shrunk] .app-tabs-pill {
-    transform: scale(0.8);
+    transform: scale(0.92);
   }
 
   @media (prefers-reduced-motion: reduce) {

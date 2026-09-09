@@ -225,10 +225,11 @@ stay in the top row and the right zone keeps its full-width Compose button and b
 over the page rather than welded to the edge, capped at `26rem` and centred. Four destinations,
 always labelled.
 
-- **Shrink on scroll.** Scrolling down scales the pill to `0.8` about its bottom edge; scrolling
+- **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
   up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
   size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
-  asked for by name; nothing else in the nav animates.
+  asked for by name; nothing else in the nav animates. The active tab is a filled ink chip (paper
+  type), not a hairline, so the bar stays readable on a busy page.
 - **Never flickers.** The direction decision is `src/lib/nav/scroll-shrink.ts`, a pure function
   with tests. Movement accumulates in one direction and only flips the bar past an 18px
   threshold, so a resting thumb cannot flutter it; a reversal restarts the count rather than

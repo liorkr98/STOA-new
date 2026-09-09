@@ -942,10 +942,10 @@ const FeedItem = function FeedItem({
                       }
                       aria-pressed={following}
                       className={cn(
-                        "num focus-ring flex-none rounded-[var(--radius-tag)] border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] transition-colors",
+                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-[var(--radius-tag)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors",
                         following
-                          ? "border-white/70 bg-white/15 text-white"
-                          : "border-white/45 text-white/90 hover:border-white hover:text-white",
+                          ? "border border-white/80 bg-white/20 text-white"
+                          : "bg-[var(--paper)] text-[var(--ink)] hover:bg-[var(--surface)]",
                       )}
                     >
                       {following ? "Following" : "Follow"}

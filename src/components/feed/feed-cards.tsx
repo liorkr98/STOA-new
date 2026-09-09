@@ -221,7 +221,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
         <CardFrame>
           <CardHead label={card.caption || "The tape"} />
           <div className="mt-3 min-h-0 flex-1">
-            <CardChart ticker={card.ticker} compareTicker={card.compareTicker} caption={card.caption} />
+            <CardChart ticker={card.ticker} compareTicker={card.compareTicker} caption={card.caption} engine={card.engine} />
           </div>
         </CardFrame>
       );

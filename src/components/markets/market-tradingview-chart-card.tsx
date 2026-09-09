@@ -1,24 +1,30 @@
 "use client";
 
-import { ChartCandlestick } from "lucide-react";
 import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
+import { toTradingViewRange } from "@/lib/market/tradingview-symbol";
 
-export function MarketTradingViewChartCard({ ticker }: { ticker: string }) {
+/**
+ * TradingView Advanced Chart embed for Markets. HIT/MISS dots cannot be drawn
+ * inside the iframe (the licensed Charting Library is not in this repo), so
+ * the Stoa record still lives on the annotated tape beside this widget.
+ */
+export function MarketTradingViewChartCard({
+  ticker,
+  range = "1Y",
+  compact = false,
+}: {
+  ticker: string;
+  range?: string;
+  compact?: boolean;
+}) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="t-h3">Price chart</h2>
-          <p className="t-meta mt-1">Advanced TradingView chart with indicators and drawing tools.</p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2.5 py-1 text-xs text-text-mute">
-          <ChartCandlestick size={13} />
-          TradingView
-        </span>
-      </div>
-      <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--paper)]">
-        <TradingViewChart ticker={ticker} range="3M" height={520} />
-      </div>
-    </section>
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--paper)]">
+      <TradingViewChart
+        ticker={ticker}
+        range={toTradingViewRange(range)}
+        height={compact ? 240 : 440}
+        compact={compact}
+      />
+    </div>
   );
 }

@@ -118,6 +118,7 @@ function Body({ card }: { card: DraftCard }) {
           ticker={String(p.ticker ?? "")}
           compareTicker={String(p.compareTicker ?? "")}
           caption={String(p.caption ?? "")}
+          engine={p.engine === "yahoo" ? "yahoo" : "tradingview"}
           compact
         />
       );
