@@ -10,6 +10,52 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-09 — Glass tab bar, and recording a clip in Compose
+
+**For someone using the site**
+
+- **The phone tab bar is frosted glass and floats.** It used to be a solid
+  paper pill sitting on a blank strip, with the Feed stopping above it. Now
+  the page runs the full height underneath it and shows through, blurred and
+  tinted warm; on the Feed the clip itself passes beneath the bar. The tab
+  you are on is a filled ink capsule. It still shrinks when you scroll down
+  and comes back when you scroll up. A browser that cannot blur gets a solid
+  paper pill, never a see-through one. Every list still scrolls its last row
+  clear of the bar.
+- **You can record a clip in Compose, not only upload one.** The Video step
+  offers Record with your camera beside the upload box. It explains why the
+  camera is needed before asking, shows a portrait live preview, a shutter,
+  a REC clock with the time left, and a review of the take with Record again
+  or Use this clip. If you refuse the camera, or the device has none, it
+  says so and offers upload instead. The take then goes through exactly what
+  an uploaded file does: trim, cover, overlays, and the upload at publish.
+- **Where recording works.** Chrome, Edge, Firefox, and Safari 14.1 or iOS
+  14.5 and later, on the real `https://` site. Chrome and Firefox save WebM,
+  Safari saves MP4; both play once processed. A browser that cannot record
+  simply does not show the Record choice.
+- **Coloured borders that were written but never drew now draw.** A global
+  rule that sets the default hairline sat outside Tailwind's layers, which
+  let it beat every `border-white`, `border-transparent` and
+  `border-[var(--ink)]` in the app: 108 of them across 53 files were silently
+  rendering as the hairline. Found because the recorder's shutter ring came
+  out grey. The rule now lives in the base layer, so each of those borders
+  shows as its author wrote it: white rings on the Feed's action buttons, no
+  border on locked steps in Compose, ink on a hovered upload box. Worth a
+  walk through the site for anything that now looks different.
+- The dev fixture of the Feed now marks Feed as the current tab.
+
+**For Krisi**
+
+- No schema change and no new endpoint: a recorded clip uploads through the
+  existing `/api/creator/videos/upload` and Bunny TUS path, as a `.webm` or
+  `.mp4` file. Bunny transcodes both; worth a glance at the first real WebM
+  from Chrome to confirm the processing status flips to ready.
+- The Feed's snap height no longer subtracts `--tab-h`; its wrapper carries
+  `.breakout-under-tabs`. Any new full-bleed phone surface should pad its
+  own last row with `--tab-h` before using that class.
+
+---
+
 ## 2026-09-09 — Markets tape rebuilt like Yahoo Finance
 
 **For someone using the site**
