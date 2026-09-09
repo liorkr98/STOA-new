@@ -225,9 +225,12 @@ stay in the top row and the right zone keeps its full-width Compose button and b
 over the page rather than welded to the edge, capped at `30rem` and centred. Five destinations,
 always labelled.
 
-- **Frosted paper, not a band.** The pill is glass: `--glass` (paper at two thirds) over
-  `backdrop-filter: blur(22px) saturate(1.6)`, a hairline `--glass-edge` border, a one-pixel
-  `--glass-highlight` inset along the top and `--shadow-glass` beneath. The page shows through
+- **Frosted paper, not a band.** The pill is glass: `--glass` (paper at two fifths) over
+  `backdrop-filter: blur(28px) saturate(1.6)`, a hairline `--glass-edge` border, a one-pixel
+  `--glass-highlight` inset along the top and `--shadow-glass` beneath. The blur carries the
+  legibility, not the fill: the heavier the blur, the thinner the paper can be. The ends are
+  elliptical, `2.25rem / 1.875rem`, so the corner sweeps a fifth wider than a semicircle; the
+  capsule matches at `1.75rem / 1.4375rem`. The page shows through
   it blurred and tints it, warm because the fill is paper rather than grey. The solid `--paper`
   fill is declared first and the glass inside `@supports (backdrop-filter)`, so a browser that
   cannot blur gets an opaque paper pill, never a transparent one. Both tokens have a `.dark`
@@ -244,7 +247,8 @@ always labelled.
   ends underneath it. `frameHeight` counts the frame's own negative margin for this.
 - **The active tab is a filled capsule** (`rounded-full`, ink fill, paper type), not a colour
   change. It is sized by its content, not its column: `px-2 py-1.5` around a 20px icon and a
-  10px `leading-none` label with `0.1em` tracking, inside a pill padded `0.375rem`, so the
+  10px `leading-none` label with `0.1em` tracking, inside a pill padded `0.375rem`, with the
+  pill's elliptical ends at its own scale, so the
   capsule hugs the icon and label with the same air all round and sits inset from the glass
   edge rather than filling the bar's height. The label must stay narrower than a fifth of the
   pill at 390px (Markets is the widest) or the capsule would overrun its column.

@@ -25,6 +25,10 @@ backend handoff `docs/BACKEND_BRIEF.md`.
   column now runs the full height and its own bottom padding keeps the last
   item clear of the bar. The same rule applies to a publication's page and
   the branding studio on a phone.
+- **More glass, wider corners.** The bar's paper fill drops from two thirds
+  to two fifths with a heavier blur behind it, so the page shows through
+  more clearly while the labels stay readable. The ends of the bar and of
+  the capsule sweep a fifth wider than a plain semicircle.
 - **The Feed already ran under the bar.** Checked in Chrome and WebKit: the
   clip reaches the bottom edge of the screen. A paper-coloured card placed
   low in a clip shows through the glass as a pale band; that is the clip,

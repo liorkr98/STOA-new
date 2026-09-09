@@ -89,7 +89,7 @@ export function AppTabs() {
                 prefetch
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring relative inline-flex flex-col items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[10px] font-medium uppercase leading-none tracking-[0.1em]",
+                  "focus-ring relative inline-flex flex-col items-center justify-center gap-1 rounded-[1.75rem/1.4375rem] px-2 py-1.5 text-[10px] font-medium uppercase leading-none tracking-[0.1em]",
                   active ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text",
                 )}
               >
