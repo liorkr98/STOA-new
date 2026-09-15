@@ -16,6 +16,7 @@ import {
   listUnsettledClips,
 } from "@/lib/db/video-clips";
 import { enqueueOrRun } from "@/lib/jobs/client";
+import { clipDurationSeconds } from "@/lib/video/clip-duration";
 import { processReadyVideo } from "@/lib/video/process";
 
 export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable";
@@ -35,7 +36,10 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  * the upload window has passed is an upload that never arrived, and settles as
  * failed rather than claiming to be processing forever.
  */
-export async function reconcileClip(guid: string): Promise<ReconcileOutcome> {
+export async function reconcileClip(
+  guid: string,
+  opts: { process?: boolean } = {},
+): Promise<ReconcileOutcome> {
   let video: Awaited<ReturnType<typeof getBunnyVideo>>;
   try {
     video = await getBunnyVideo(guid);
@@ -43,16 +47,17 @@ export async function reconcileClip(guid: string): Promise<ReconcileOutcome> {
     return "unreachable";
   }
 
+  const durationSeconds = clipDurationSeconds(video.length);
   const finished = video.status === 4;
   const failed = video.status === 5 || video.status === 6 || isAbandonedUpload(video);
 
-  if (finished && video.length > MAX_VIDEO_DURATION_SECONDS) {
+  if (finished && durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
     await markVideoClipReadyByGuid(guid, {
       playbackUrl: bunnyPlaybackUrl(guid),
       thumbnailUrl: null,
       previewUrl: null,
       captionVttUrl: null,
-      durationSeconds: video.length,
+      durationSeconds,
       status: "failed",
     });
     await deleteBunnyVideo(guid);
@@ -66,14 +71,24 @@ export async function reconcileClip(guid: string): Promise<ReconcileOutcome> {
     thumbnailUrl: bunnyThumbnailUrl(guid),
     previewUrl: bunnyPreviewUrl(guid),
     captionVttUrl: bunnyCaptionVttUrl(guid),
-    durationSeconds: video.length,
+    durationSeconds,
     status,
   });
 
   if (!finished) return status;
 
   await markClipLiveByGuid(guid);
-  await enqueueOrRun("video-process", { guid }, () => processReadyVideo(guid));
+  // Captions/transcript are optional enrichment. The publication page used
+  // to await them; a Bunny failure there crashed the Server Component and
+  // production React reported only minified error #441.
+  try {
+    await enqueueOrRun("video-process", { guid }, () => processReadyVideo(guid), {
+      deduplicationId: `video-process-${guid}`,
+      runInline: opts.process !== false,
+    });
+  } catch {
+    // Clip is already live; captions retry on the webhook or cron.
+  }
   return "ready";
 }
 

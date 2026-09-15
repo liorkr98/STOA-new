@@ -10,7 +10,13 @@ import { ErrorPanel } from "@/components/errors/error-panel";
  * a group layout itself -- so it renders with no layout around it and has to
  * carry its own header and footer links, or the reader is stranded.
  */
-export default function RouteError({ reset }: { error: Error; reset: () => void }) {
+export default function RouteError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
       <header className="border-b border-border px-5 py-4">
@@ -19,7 +25,7 @@ export default function RouteError({ reset }: { error: Error; reset: () => void 
         </Link>
       </header>
       <main className="flex-1">
-        <ErrorPanel reset={reset} />
+        <ErrorPanel error={error} reset={reset} />
       </main>
       <footer className="border-t border-border px-5 py-4">
         <nav aria-label="Site" className="flex flex-wrap justify-center gap-x-5 gap-y-2 t-body">
