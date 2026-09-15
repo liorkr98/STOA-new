@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
 import { isIosSafari, isStandaloneDisplay } from "@/lib/pwa/display";
 import { buttonClass } from "@/components/ui/button";
@@ -40,6 +40,15 @@ export function InstallHint() {
   const dismissed = useStoredValue(STORAGE_KEY, parseDismissed, false, EVENT);
   const cookieChosen = useStoredValue(COOKIE_CONSENT_KEY, (raw) => raw === "essential" || raw === "all", false, COOKIE_CONSENT_EVENT);
   const prompt = useSyncExternalStore(subscribePrompt, getPrompt, () => null);
+
+  useEffect(() => {
+    const onInstalled = () => {
+      localStorage.setItem(STORAGE_KEY, "1");
+      window.dispatchEvent(new Event(EVENT));
+    };
+    window.addEventListener("appinstalled", onInstalled);
+    return () => window.removeEventListener("appinstalled", onInstalled);
+  }, []);
 
   if (!hydrated || dismissed || isStandaloneDisplay() || !cookieChosen) return null;
 

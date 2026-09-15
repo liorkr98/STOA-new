@@ -10,6 +10,28 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-15 — Home-screen app: icons, install, and same-origin returns
+
+**For someone using the site**
+
+- **Add to Home Screen uses real app icons.** 192 and 512 masks, plus the Apple
+  touch icon, so the home-screen tile is the colonnade on paper, not a Safari
+  screenshot.
+- **Install once, then the strip goes away.** After Chrome's install event, the
+  hint stays dismissed. It still only shows in the browser, after cookie
+  consent, never inside the installed window.
+- **An installed window uses the full screen.** The Feed height follows the
+  real viewport, not the shorter browser viewport, so the clip is not letterboxed
+  under missing chrome.
+
+**For Krisi**
+
+- No schema change. Google and Apple OAuth, and PayPal return URLs, must keep
+  listing the production HTTPS origin so a standalone window gets the session
+  back instead of a leftover Safari tab. The worker still never caches clips.
+
+---
+
 ## 2026-09-09 — Pause while recording, and the tab lens slows down
 
 **For someone using the site**

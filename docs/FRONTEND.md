@@ -286,6 +286,17 @@ phone width, and so do we.
 - The pill's own rules live inside the `max-width: 767px` block. They are unlayered, so at
   desktop widths they would otherwise beat the element's `md:hidden` utility.
 
+**Installable PWA.** The phone site is an installable app, not a native binary. Manifest
+(`src/app/manifest.ts`): name Stoa, `display: standalone`, `start_url` `/feed`, paper
+`#FAF8F4` theme, scope `/`. Icons are maskable 192 and 512 plus the Apple touch icon.
+`appleWebApp` is on the root layout. A dismissible install strip (`InstallHint`) shows
+only in the browser after cookie consent, never inside the standalone window, and sits
+above `--tab-h`. Explore's watch overlay portals at `z-70`, above the tab pill (`z-40`).
+The app-shell worker (`public/sw.js`) caches `/offline` and hashed `/_next/static`
+assets; it never intercepts HLS, mp4, Bunny, or `/demo/` clips. Google and Apple OAuth,
+and PayPal returns, stay on the production HTTPS origin so the session lands back in the
+standalone window.
+
 ### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
 
 Three size variants, same component, same visual language at every size. (`MoatBadge` is a

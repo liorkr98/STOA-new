@@ -11,6 +11,10 @@ import type { OAuthProvider as Provider } from "@/lib/auth/providers";
  * enabled are rendered (`enabled`, read from the project's auth settings), so a
  * button can never be offered that is only capable of failing. Session lands
  * through /auth/callback which ensures the profile row exists.
+ *
+ * `redirectTo` is always this page's origin so an installed PWA returns into
+ * the standalone window, not a leftover Safari tab. Google and Apple must
+ * list the production HTTPS origin (and `/auth/callback`) in their consoles.
  */
 
 const PROVIDERS: { key: Provider; label: string; icon: React.ReactNode }[] = [

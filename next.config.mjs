@@ -35,6 +35,9 @@ const nextConfig = {
   async redirects() {
     return [{ source: "/discover", destination: "/feed", permanent: true }];
   },
+  async rewrites() {
+    return [{ source: "/icon", destination: "/icon/512" }];
+  },
   async headers() {
     return [
       {

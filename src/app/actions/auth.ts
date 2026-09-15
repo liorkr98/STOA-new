@@ -9,6 +9,7 @@ import { alertNewSignup } from "@/lib/slack/alerts";
 import { headers } from "next/headers";
 import { SITE_URL } from "@/lib/seo/site";
 import { postAuthPath } from "@/lib/auth/post-auth";
+import { appUrl, originFromForwarded } from "@/lib/pwa/urls";
 
 async function signupIp(): Promise<string | null> {
   const h = await headers();
@@ -24,10 +25,11 @@ async function signupIp(): Promise<string | null> {
  */
 async function requestOrigin(): Promise<string> {
   const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  if (!host) return SITE_URL;
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
+  return originFromForwarded(
+    h.get("x-forwarded-host") ?? h.get("host"),
+    h.get("x-forwarded-proto"),
+    SITE_URL,
+  );
 }
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -104,7 +106,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       // proved they own the address had to sign in again. Supabase's default
       // template lands here with a code; Stoa's own template goes straight
       // to /auth/confirm with a token hash and needs no redirect at all.
-      emailRedirectTo: `${await requestOrigin()}/auth/callback?next=%2Fhome`,
+      emailRedirectTo: appUrl(await requestOrigin(), "/auth/callback?next=/home"),
     },
   });
   if (error) return { error: error.message };
@@ -181,7 +183,7 @@ export async function requestPasswordReset(_prev: AuthState, formData: FormData)
   if (!email) return { error: "Enter the email you signed up with." };
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${await requestOrigin()}/auth/callback?next=%2Freset-password`,
+    redirectTo: appUrl(await requestOrigin(), "/auth/callback?next=/reset-password"),
   });
   redirect("/forgot-password?sent=1");
 }

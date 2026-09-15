@@ -145,6 +145,21 @@
   }
 }
 
+/* Installed home-screen window: there is no browser chrome, so the Feed
+   should use the real dynamic viewport rather than the small one. */
+@media (display-mode: standalone) {
+  :root {
+    --app-h: 100vh;
+  }
+}
+@supports (height: 100dvh) {
+  @media (display-mode: standalone) {
+    :root {
+      --app-h: 100dvh;
+    }
+  }
+}
+
 /* Horizontal page padding that also clears the iPhone notch in landscape. */
 .gutter-x {
   padding-left: max(var(--page-gutter), var(--safe-left));
