@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     title: "Stoa",
     statusBarStyle: "default",
   },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({

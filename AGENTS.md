@@ -312,5 +312,15 @@ scripts and `README.md`; this section only records the non-obvious parts.
 - Market data uses Yahoo Finance with no key and falls back to deterministic mock prices; AI
   features (fact-check, compose assist) mock-fall back without `DEEPSEEK_API_KEY`. Neither blocks
   local dev.
-- Lint/typecheck/tests/build: see the `lint`, `typecheck`, `test:engine`, `test:valuation`, and
-  `build` scripts in `package.json`. There is no single aggregate `test` script.
+- Lint/typecheck/tests/build: see the `lint`, `typecheck`, `test:engine`, `test:valuation`,
+  `test:pwa`, and `build` scripts in `package.json`. There is no single aggregate `test` script.
+
+### PWA
+
+Phone readers Add to Home Screen (Safari / Chrome) and open a standalone window. Manifest is
+`src/app/manifest.ts` (`start_url` `/feed`, `display: standalone`). The app-shell worker is
+`public/sw.js`: never cache HLS, mp4, Bunny, or `/demo/` clips. Offline is `/offline`.
+
+Google and Apple sign-in, and PayPal return URLs, must stay on the production HTTPS origin
+(`…/auth/callback`, `…/settings/payouts`). Configure those same origins in the provider consoles.
+Standalone is not a privacy exemption; the cookie banner still applies.

@@ -7,6 +7,7 @@
 
 import { paypalFetch } from "./client";
 import { splitPlatformFee } from "./partner";
+import { requireAppUrl } from "@/lib/pwa/urls";
 
 interface CreateOrderResult {
   orderId: string;
@@ -23,11 +24,15 @@ export async function createReportUnlockOrder(params: {
   creatorMerchantId: string;
   amountUsd: number;
   reportId: string;
+  /** Request origin. Return and cancel URLs must already be absolute on this host. */
+  origin: string;
   returnUrl: string;
   cancelUrl: string;
 }): Promise<CreateOrderResult> {
   const amountCents = Math.round(params.amountUsd * 100);
   const { platformFeeCents } = splitPlatformFee(amountCents);
+  const returnUrl = requireAppUrl(params.origin, params.returnUrl);
+  const cancelUrl = requireAppUrl(params.origin, params.cancelUrl);
 
   const response = await paypalFetch<OrderResponse>("/v2/checkout/orders", {
     method: "POST",
@@ -46,10 +51,8 @@ export async function createReportUnlockOrder(params: {
         },
       ],
       application_context: {
-        // Callers must pass same-origin URLs (see appUrl in src/lib/pwa/urls.ts)
-        // so a PWA return from PayPal does not strand the session in a new tab.
-        return_url: params.returnUrl,
-        cancel_url: params.cancelUrl,
+        return_url: returnUrl,
+        cancel_url: cancelUrl,
       },
     },
   });

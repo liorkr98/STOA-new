@@ -1,10 +1,14 @@
-const CACHE = "stoa-shell-v1";
+/* App-shell worker. Keep bypass rules in sync with src/lib/pwa/cache-policy.ts.
+   Never cache HLS, mp4, Bunny, or /demo/ clips. */
+const CACHE = "stoa-shell-v2";
 const OFFLINE = "/offline";
+const PRECACHE = [OFFLINE, "/icon/192", "/icon/512", "/apple-icon"];
 
 const VIDEO_EXT = /\.(m3u8|m4s|ts|mp4|webm|mpd)$/i;
 
 function bypass(url) {
   if (VIDEO_EXT.test(url.pathname)) return true;
+  if (url.pathname.startsWith("/demo/")) return true;
   const host = url.hostname;
   return (
     host.includes("b-cdn.net") ||
@@ -18,7 +22,11 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll([OFFLINE]))
+      .then(async (cache) => {
+        await Promise.all(
+          PRECACHE.map((path) => cache.add(path).catch(() => undefined)),
+        );
+      })
       .then(() => self.skipWaiting()),
   );
 });
