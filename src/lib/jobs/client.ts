@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Client } from "@upstash/qstash";
+import { resolveJobDispatch } from "@/lib/jobs/dispatch";
 
 /**
  * QStash job publisher. `enqueueOrRun` publishes a job to QStash when
@@ -38,6 +39,12 @@ export interface EnqueueOptions {
   retries?: number;
   /** De-dupe id so the same logical job isn't queued twice within a window. */
   deduplicationId?: string;
+  /**
+   * When QStash is absent, run `inline` (the historical default). Page
+   * renders set this false so caption/transcript work cannot throw inside
+   * a Server Component.
+   */
+  runInline?: boolean;
 }
 
 /**
@@ -51,7 +58,9 @@ export async function enqueueOrRun<T>(
   opts: EnqueueOptions = {},
 ): Promise<{ queued: boolean; result?: T }> {
   const c = qstash();
-  if (!c) {
+  const dispatch = resolveJobDispatch(c !== null, opts.runInline !== false);
+  if (dispatch === "skip") return { queued: false };
+  if (dispatch === "inline" || !c) {
     const result = await inline();
     return { queued: false, result };
   }

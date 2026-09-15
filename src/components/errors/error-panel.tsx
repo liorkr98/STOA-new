@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { buttonClass } from "@/components/ui/button";
 
 /**
@@ -14,7 +16,18 @@ import { buttonClass } from "@/components/ui/button";
  * The wording matches the nav: `/feed` is labelled "Feed" there, so it is
  * called Feed here too (docs/PRODUCT_MODEL.md, "The surfaces").
  */
-export function ErrorPanel({ reset }: { reset: () => void }) {
+export function ErrorPanel({
+  error,
+  reset,
+}: {
+  error?: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    if (!error) return;
+    Sentry.captureException(error, { extra: { digest: error.digest } });
+  }, [error]);
+
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center gap-4 px-5 text-center">
       <h1 className="t-h1">Something broke on our side</h1>

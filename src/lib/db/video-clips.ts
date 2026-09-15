@@ -2,6 +2,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { cachedPage } from "@/lib/cache/page";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { clipDurationSeconds } from "@/lib/video/clip-duration";
 import type { Prediction, Report } from "@/lib/types";
 
 /**
@@ -218,7 +219,7 @@ export async function markVideoClipReadyByGuid(
       thumbnail_url: fields.thumbnailUrl,
       preview_url: fields.previewUrl,
       caption_vtt_url: fields.captionVttUrl,
-      duration_seconds: Math.round(fields.durationSeconds),
+      duration_seconds: clipDurationSeconds(fields.durationSeconds),
       status: fields.status,
     })
     .eq("bunny_video_guid", guid);
@@ -344,16 +345,21 @@ export async function listUnsettledClips(limit = 50): Promise<
 export async function getUnsettledClipForReport(
   reportId: string,
 ): Promise<{ bunny_video_guid: string } | null> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("video_clips")
-    .select("bunny_video_guid")
-    .eq("report_id", reportId)
-    .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return data ?? null;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("video_clips")
+      .select("bunny_video_guid")
+      .eq("report_id", reportId)
+      .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data ?? null;
+  } catch {
+    // Missing service role must not 441 the publication page.
+    return null;
+  }
 }
 
 /**
