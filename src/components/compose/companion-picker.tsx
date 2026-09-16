@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { listLinkablePublications } from "@/app/actions/reports";
-import { publicTypeLabel, type ComposeMode } from "@/lib/compose/modes";
+import { publicTypeLabel, type PublicationType } from "@/lib/compose/modes";
 import type { ContentType } from "@/lib/types";
 
-const TARGETS: Record<ComposeMode, ContentType[]> = {
-  video: ["research", "short_post"],
-  research: ["video", "call"],
-  short_post: ["video", "call"],
+/** What each type may be connected to: a video to written work, and back. */
+const TARGETS: Record<PublicationType, ContentType[]> = {
+  video: ["research", "short_post", "call"],
+  brief: ["video"],
+  thesis: ["video"],
+  verdict: ["video", "research", "short_post"],
 };
 
 /**
@@ -17,12 +19,12 @@ const TARGETS: Record<ComposeMode, ContentType[]> = {
  */
 export function CompanionPicker({
   currentId,
-  mode,
+  type,
   value,
   onChange,
 }: {
   currentId?: string;
-  mode: ComposeMode;
+  type: PublicationType;
   value: string | null;
   onChange: (id: string | null) => void;
 }) {
@@ -32,7 +34,7 @@ export function CompanionPicker({
 
   useEffect(() => {
     let cancelled = false;
-    listLinkablePublications({ excludeId: currentId, types: TARGETS[mode] })
+    listLinkablePublications({ excludeId: currentId, types: TARGETS[type] })
       .then((list) => {
         if (!cancelled) setRows(list);
       })
@@ -42,12 +44,12 @@ export function CompanionPicker({
     return () => {
       cancelled = true;
     };
-  }, [currentId, mode]);
+  }, [currentId, type]);
 
   const hint =
-    mode === "video"
-      ? "Optional. Attach a research note or a short post this clip belongs to."
-      : "Optional. Attach a video so this piece can play in the Feed.";
+    type === "video"
+      ? "Optional. Attach a written piece this clip belongs to."
+      : "Optional. Attach a video this piece belongs with.";
 
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">

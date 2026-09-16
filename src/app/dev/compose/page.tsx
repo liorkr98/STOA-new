@@ -15,8 +15,8 @@ import { DevPrivateShell } from "../_private-shell";
 import { devRefreshRoute } from "../actions";
 
 /**
- * Dev-only Compose fixture: the workspace on each of the three draft shapes
- * a creator can open, so the rails, the modules and the card placements can
+ * Dev-only Compose fixture: the type picker, then the workspace on a draft
+ * of each type, so the spine, the features menu and the card placements can
  * be reviewed without a database. Saving and publishing fail here; everything
  * else behaves as on /studio/compose.
  *
@@ -100,15 +100,15 @@ const BODY = JSON.stringify({
   ],
 });
 
-type Shape = "pick" | "video" | "research" | "both" | "empty" | "published";
+type Shape = "pick" | "video" | "brief" | "thesis" | "verdict" | "published";
 
 function parseShape(raw: string | null): Shape {
   if (
     raw === "pick" ||
     raw === "video" ||
-    raw === "research" ||
-    raw === "both" ||
-    raw === "empty" ||
+    raw === "brief" ||
+    raw === "thesis" ||
+    raw === "verdict" ||
     raw === "published"
   ) {
     return raw;
@@ -175,34 +175,62 @@ const PICKER_DRAFTS: PickerDraft[] = (
 
 const SHAPES: { key: Shape; label: string; blurb: string }[] = [
   { key: "pick", label: "Type picker", blurb: "The first screen, with four drafts" },
-  { key: "video", label: "Video only", blurb: "A clip, no written report" },
-  { key: "research", label: "Research only", blurb: "Written work, no clip" },
-  { key: "both", label: "Video and research", blurb: "Both modules present" },
-  { key: "empty", label: "Nothing yet", blurb: "The guided first run" },
+  { key: "video", label: "Video", blurb: "A new video: the spine from its first step" },
+  { key: "brief", label: "Brief", blurb: "A brief with its take written, no headline yet" },
+  { key: "thesis", label: "Thesis", blurb: "A thesis with words and a headline, no tags yet" },
+  { key: "verdict", label: "Verdict", blurb: "A verdict draft with its call half entered" },
   { key: "published", label: "Published, editing", blurb: "A live piece with a real clip and a locked call, reopened" },
 ];
 
-function draftFor(shape: Shape): Report {
-  // The empty shape is the point of the guided sequence: a creator who has
-  // opened Compose and written nothing at all.
-  if (shape === "empty") {
-    return { id: "dev-empty", type: "video", access: "free" } as unknown as Report;
+/** One draft per type, each stopped at a different point along its spine. */
+function draftFor(shape: Shape): Report | null {
+  switch (shape) {
+    case "video":
+      return null;
+    case "brief":
+      return {
+        id: "dev-brief",
+        type: "short_post",
+        status: "draft",
+        summary: "The supply ceiling moved. Consensus is still modelling the old one.",
+        access: "free",
+      } as unknown as Report;
+    case "thesis":
+      return {
+        id: "dev-thesis",
+        type: "research",
+        status: "draft",
+        title: "Blackwell demand is still under-modelled into the January quarter",
+        summary: "The supply ceiling moved. Consensus is still modelling the old one.",
+        body: BODY,
+        access: "free",
+      } as unknown as Report;
+    case "verdict":
+      return {
+        id: "dev-verdict",
+        type: "call",
+        status: "draft",
+        ticker: "NVDA",
+        draft_direction: "long",
+        access: "subscribers",
+      } as unknown as Report;
+    default:
+      return {
+        id: "dev-published",
+        type: "video",
+        status: "published",
+        title: "Blackwell demand is still under-modelled into the January quarter",
+        summary: "The supply ceiling moved. Consensus is still modelling the old one.",
+        body: BODY,
+        access: "paid",
+        price: 9,
+        ticker: "NVDA",
+        primary_tag: "semiconductors",
+        secondary_tags: ["ai-infrastructure"],
+        locked_at: "2026-08-18T14:00:00.000Z",
+        published_at: "2026-08-18T14:00:00.000Z",
+      } as unknown as Report;
   }
-  return {
-    id: `dev-${shape}`,
-    type: shape === "published" ? "video" : "call",
-    status: shape === "published" ? "published" : "draft",
-    title: "Blackwell demand is still under-modelled into the January quarter",
-    summary: "The supply ceiling moved. Consensus is still modelling the old one.",
-    body: shape === "video" ? null : BODY,
-    access: shape === "published" ? "paid" : "free",
-    price: shape === "published" ? 9 : null,
-    ticker: "NVDA",
-    primary_tag: "semiconductors",
-    secondary_tags: ["ai-infrastructure"],
-    locked_at: shape === "published" ? "2026-08-18T14:00:00.000Z" : null,
-    published_at: shape === "published" ? "2026-08-18T14:00:00.000Z" : null,
-  } as unknown as Report;
 }
 
 const PUBS: Publication[] = [
@@ -283,9 +311,10 @@ function DevComposeInner() {
           <StudioEditor
             key={shape}
             analystReportPrice={null}
+            initialType={shape === "published" ? "video" : shape}
             initialDraft={draftFor(shape)}
-            initialCards={shape === "empty" ? [] : CARDS}
-            hasVideoClip={shape !== "research" && shape !== "empty"}
+            initialCards={shape === "thesis" || shape === "published" ? CARDS : []}
+            hasVideoClip={shape === "published"}
             aiCredits={40}
             plans={[]}
             editingPublished={shape === "published"}

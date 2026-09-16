@@ -10,11 +10,10 @@ import {
   useSyncExternalStore,
   useTransition,
 } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Editor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
-import { ArrowLeft, FloppyDisk, RocketLaunch, SquaresFour } from "@phosphor-icons/react";
+import { FloppyDisk, SquaresFour } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
@@ -69,6 +68,7 @@ import {
   ComposeRailDrawer,
   RailOpenButton,
 } from "@/components/compose/compose-rail";
+import { ComposeHeader } from "@/components/compose/compose-header";
 import { PromotePanel } from "@/components/compose/promote-panel";
 import {
   blankCard,
@@ -95,24 +95,27 @@ import { CardPreview } from "@/components/compose/card-preview";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import {
   advanceFor,
+  roleOf,
+  spineFor,
+  stepDef,
   stepState,
-  stepsFor,
+  type AdvanceInput,
   type StepFacts,
   type StepKey,
 } from "@/lib/compose/steps";
+import { spineProgress } from "@/lib/compose/drafts";
 import { StepFrame, StepNav } from "@/components/compose/step-nav";
 import { DevCrash, StepErrorBoundary } from "@/components/compose/step-boundary";
 import {
-  COMPOSE_MODES,
-  POST_MAX_CHARS,
+  BRIEF_MAX_CHARS,
   clipPlayableSeconds,
+  contentTypeFor,
   feedPreviewSecondsForClip,
-  modeFromType,
-  typeFromMode,
-  type ComposeMode,
+  publicationTypeDef,
+  publicationTypeFrom,
+  type PublicationType,
 } from "@/lib/compose/modes";
-
-const types = COMPOSE_MODES;
+import { VERDICT_HORIZON_DEFAULT_DAYS } from "@/lib/compose/verdict";
 
 /**
  * Bring an existing draft into the Tiptap editor. New drafts are already
@@ -172,25 +175,25 @@ function readTemplatesDismissed() {
 /** Size a textarea to its words, so it reads as a growing line, not a box. */
 function fitTextarea(el: HTMLTextAreaElement | null) {
   if (!el) return;
-  // Write stays mounted and hidden on other steps. Measuring a display:none
-  // field yields scrollHeight 0, which used to lock the headline at no height
-  // so only the dek underneath could be typed into.
+  // A hidden field measures as scrollHeight 0, which would lock it at no
+  // height. Only a visible one is fitted.
   if (el.offsetParent === null) return;
   el.style.height = "0px";
   el.style.height = `${el.scrollHeight}px`;
 }
 
 /**
- * Steps where the card tray and the assistant are actually of use: where
- * there is a body to drop a card into, a deck to build, or a timeline to
- * place a card on. Choosing a clip, naming a call, picking tags and
- * publishing need neither, and on those steps the rail is not shown at all.
+ * Screens where the card tray and the assistant are of use: where there is
+ * a body to drop a card into, a deck to build, or a timeline to place a card
+ * on. Naming a call, writing a headline, picking tags and publishing need
+ * neither, and on those screens the rail is not shown at all.
  */
-const RAIL_STEPS = new Set<StepKey>(["write", "cards", "video_edit"]);
+const RAIL_STEPS = new Set<StepKey>(["thesis", "cards", "video"]);
 
 export function StudioEditor({
   analystReportPrice,
   initialDraft,
+  initialType,
   initialCards = [],
   hasVideoClip = false,
   aiCredits = 0,
@@ -200,6 +203,8 @@ export function StudioEditor({
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
+  /** The type chosen on the picker, for a publication that has no row yet. */
+  initialType?: PublicationType;
   /** The draft's saved deck, payloads intact (see listAuthorCards). */
   initialCards?: DraftCard[];
   /** The draft already has a clip, so it opens with its video module. */
@@ -209,7 +214,7 @@ export function StudioEditor({
   /**
    * This publication is already out. The prose, the cards and the tags are
    * editable and every change is disclosed; the call, the pricing and the
-   * format are frozen, so their controls are not offered.
+   * type are frozen, so their controls are not offered.
    */
   editingPublished?: boolean;
   /** The live publication carries a call, which can never be edited. */
@@ -217,42 +222,45 @@ export function StudioEditor({
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
-  // The format is not chosen, it is observed. A publication with a clip is a
-  // video; one without is research. The old tab strip asked the creator to
-  // declare this up front and then competed with the sequence that actually
-  // decides it, so it is gone and this reads the answer off the work instead.
-  //
-  // A draft stored as a Post keeps being one: nothing in the sequence can turn
-  // a Post into research, and silently converting somebody's saved note would
-  // throw away its shape.
-  const isPost = modeFromType(initialDraft?.type) === "short_post";
+  // The type was chosen on the picker and is stored with the draft. It is
+  // what the spine and the features menu are built from, and it does not
+  // change: a brief that grows into a thesis is a new thesis.
+  const pubType: PublicationType = initialDraft?.type
+    ? publicationTypeFrom(initialDraft.type)
+    : (initialType ?? "thesis");
+  const typeDef = publicationTypeDef(pubType);
+  const type = contentTypeFor(pubType);
+  const isBrief = pubType === "brief";
+  const isVerdict = pubType === "verdict";
+  // The writer (the Tiptap editor) exists on every type but a brief: it is
+  // the thesis's content step and an optional feature on the others.
+  const hasWriter = !isBrief;
+  const spine = useMemo(() => spineFor(pubType), [pubType]);
 
   // The file a creator picked in the video rung, held until the report is
   // locked. video_clips rows hang off a locked report, so the upload cannot
   // start until publish has returned an id.
   const videoFileRef = useRef<{ file: File; durationSeconds: number } | null>(null);
-  // The ref holds the file; this holds the fact, because the sequence has to
-  // re-render when a clip arrives (Edit video appears, Video reads as done).
+  // The ref holds the file; this holds the fact, because the screen has to
+  // re-render when a clip arrives (the video step reads as done).
   const [videoChosen, setVideoChosen] = useState(hasVideoClip);
 
-  const mode: ComposeMode = isPost ? "short_post" : videoChosen ? "video" : "research";
-  const type = typeFromMode(mode);
-
   const [title, setTitle] = useState(initialDraft?.title ?? "");
+  // The dek on every type but a brief, where it is the brief's own text.
   const [summary, setSummary] = useState(initialDraft?.summary ?? "");
   // What the Tiptap editor is built from. Normally the draft; after the
-  // write step has been redrawn following a failure, the latest words, so
+  // writer has been redrawn following a failure, the latest words, so
   // nothing typed since the last save is lost to the redraw.
   const [editorSeed, setEditorSeed] = useState<JSONContent>(initialDoc);
-  // The chosen clip's object URL, kept here so the video step can be redrawn
-  // with the same picture. The file itself is in videoFileRef.
+  // The chosen clip's object URL, kept here so the video screen can be
+  // redrawn with the same picture. The file itself is in videoFileRef.
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
   // Whether the symbol in the field is a real, priceable name. Owned here
-  // rather than in the call panel because the step's forward button has to
-  // read it: a call locked on a symbol that does not resolve can never be
+  // rather than in the call panel because the forward button has to read
+  // it: a call locked on a symbol that does not resolve can never be
   // graded, so Continue refuses it. A live publication's call is frozen and
   // was checked when it was locked, so nothing is looked up for it.
   const { lookup: symbolLookup, retry: retrySymbolLookup } = useSymbolLookup(
@@ -272,17 +280,13 @@ export function StudioEditor({
       : EMPTY_TAGS,
   );
 
-  // The publication's modules. No fork: a publication may have video,
-  // research, both or neither, and adding one is not a question asked before
-  // the creator has written anything.
-  // Seeded from the stored edit when the draft has one, so overlays placed in
-  // an earlier session come back rather than being lost to a reload.
+  // Seeded from the stored edit when the draft has one, so overlays placed
+  // in an earlier session come back rather than being lost to a reload.
   const [videoEdit, setVideoEdit] = useState<VideoEdit | null>(() => {
     const stored = fromStoredVideoEdit(initialDraft?.video_edit);
     if (stored) return stored;
-    return hasVideoClip || modeFromType(initialDraft?.type) === "video" ? emptyEdit(90) : null;
+    return hasVideoClip || pubType === "video" ? emptyEdit(90) : null;
   });
-
 
   // The deck. One pool for the whole publication, not a step inside the video.
   // What the creator authored. The CTA is not in here: it is derived from
@@ -294,22 +298,28 @@ export function StudioEditor({
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [researchCardIds, setResearchCardIds] = useState<Set<string>>(() => collectCardIds(initialDoc));
-  // Null means "follow the step". A creator who opens or closes the rail
-  // themselves is obeyed until they move, and each step then gets its own
-  // sensible default back rather than inheriting a decision made three steps
-  // ago about a different task.
+  // Null means "follow the screen". A creator who opens or closes the rail
+  // themselves is obeyed until they move, and each screen then gets its own
+  // sensible default back.
   const [railOverride, setRailOverride] = useState<boolean | null>(null);
   const [railDrawerOpen, setRailDrawerOpen] = useState(false);
   const [askSeed, setAskSeed] = useState<string | null>(null);
   const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
   const [researchDropActive, setResearchDropActive] = useState(false);
-  // Null until chosen. It used to default to long, which meant a ticker on
-  // its own read as a complete long call and sailed through Continue and
-  // publish without the creator ever saying which way they were calling it.
-  const [direction, setDirection] = useState<Direction | null>(null);
-  const [target, setTarget] = useState("");
-  const [horizon, setHorizon] = useState(30);
-  const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
+  // The call. Null direction until chosen: a ticker on its own is not a
+  // call. Seeded from the draft-call columns when the database has them.
+  const [direction, setDirection] = useState<Direction | null>(initialDraft?.draft_direction ?? null);
+  const [target, setTarget] = useState(
+    initialDraft?.draft_target_price != null ? String(initialDraft.draft_target_price) : "",
+  );
+  const [horizon, setHorizon] = useState(
+    initialDraft?.draft_horizon_days ?? (isVerdict ? VERDICT_HORIZON_DEFAULT_DAYS : 30),
+  );
+  // A verdict is subscribers-only while it is open; the setting is not
+  // offered on it.
+  const [access, setAccess] = useState<AccessType>(
+    isVerdict ? "subscribers" : (initialDraft?.access ?? "free"),
+  );
   const [membersIncluded, setMembersIncluded] = useState(Boolean(initialDraft?.members_included));
   const [linkedReportId, setLinkedReportId] = useState<string | null>(initialDraft?.linked_report_id ?? null);
   const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
@@ -318,10 +328,10 @@ export function StudioEditor({
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  // The draft's true state for the status line beside the forward button:
-  // unsaved changes, saving, saved (and when), or a failure with its reason.
-  // `dirty` mirrors dirtyRef for rendering; the ref stays the synchronous
-  // truth for the timer and the guards.
+  // The draft's true state for the status line: unsaved changes, saving,
+  // saved (and when), or a failure with its reason. `dirty` mirrors dirtyRef
+  // for rendering; the ref stays the synchronous truth for the timer and
+  // the guards.
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -427,8 +437,6 @@ export function StudioEditor({
   useEffect(() => {
     setEditorReportTicker(hasCard ? ticker : undefined);
   }, [hasCard, ticker]);
-
-
 
   const insertNode = useCallback((node: JSONContent) => {
     editorRef.current?.chain().focus().insertContent(node).run();
@@ -557,7 +565,7 @@ export function StudioEditor({
       setResearchCardIds(collectCardIds(editor.getJSON()));
       setRailDrawerOpen(false);
       markDirty();
-      toast.success(`${cardName(card)} added to the research`);
+      toast.success(`${cardName(card)} added to the text`);
     },
     [cards, setRailDrawerOpen, markDirty],
   );
@@ -634,10 +642,14 @@ export function StudioEditor({
   }, [hasCard, ticker, title, summary]);
 
   const clipSeconds =
-    mode === "video" && videoEdit
+    videoChosen && videoEdit
       ? clipPlayableSeconds(videoEdit.trimStart, videoEdit.trimEnd, videoEdit.durationSeconds)
       : 0;
-  const feedPreviewSeconds = mode === "video" ? feedPreviewSecondsForClip(clipSeconds) : null;
+  const feedPreviewSeconds = videoChosen ? feedPreviewSecondsForClip(clipSeconds) : null;
+
+  // The words a save sends: a brief's text is its summary; every other type
+  // has a dek and, when it has been written, a body.
+  const summaryToSave = isBrief ? summary : summary || plainText.slice(0, 280);
 
   const persistDraft = useCallback(async () => {
     if (isPublishingRef.current) return;
@@ -648,14 +660,14 @@ export function StudioEditor({
       const res = await saveDraft({
         id: draftId,
         type,
-        title: type === "short_post" ? undefined : title,
-        summary: summary || (type === "short_post" ? "" : plainText.slice(0, 280)),
-        body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
+        title,
+        summary: summaryToSave,
+        body: isBrief ? undefined : JSON.stringify(latestChangeRef.current.json),
         access,
         price: access === "paid" ? Number(price) : null,
         members_included: membersIncluded,
         linked_report_id: linkedReportId,
-        feed_preview_seconds: mode === "video" ? feedPreviewSeconds : null,
+        feed_preview_seconds: feedPreviewSeconds,
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
         ticker: ticker.trim() ? ticker : null,
@@ -664,7 +676,7 @@ export function StudioEditor({
         horizon_days: ticker.trim() ? horizon : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
-        video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
+        video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
       });
       setDraftId(res.id);
       if (res.videoEditError) toast.error(res.videoEditError);
@@ -694,8 +706,8 @@ export function StudioEditor({
     draftId,
     type,
     title,
-    summary,
-    plainText,
+    summaryToSave,
+    isBrief,
     access,
     minPlanRank,
     requiredPerks,
@@ -706,10 +718,10 @@ export function StudioEditor({
     horizon,
     membersIncluded,
     linkedReportId,
-    mode,
     tags,
     deck,
     feedPreviewSeconds,
+    videoChosen,
     videoEdit,
   ]);
 
@@ -736,9 +748,9 @@ export function StudioEditor({
       }
       const res = await updatePublishedReport({
         id: draftId,
-        title: type === "short_post" ? undefined : title,
+        title,
         summary,
-        body: type === "short_post" ? undefined : JSON.stringify(latestChangeRef.current.json),
+        body: isBrief ? undefined : JSON.stringify(latestChangeRef.current.json),
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
         cardsChanged: cardRes.changed ?? false,
@@ -769,7 +781,7 @@ export function StudioEditor({
       setError(msg);
       toast.error(msg);
     }
-  }, [draftId, type, title, summary, tags, deck]);
+  }, [draftId, title, summary, isBrief, tags, deck]);
 
   // Anything a save would keep. A headline or a ticker on its own used to be
   // ignored by the timer, which only counted words and cards.
@@ -837,45 +849,47 @@ export function StudioEditor({
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  // First unmet publish requirement, or null when ready. Mirrors the
-  // server-side enforcement in publishReport.
-  // Research may publish as overview without a ticker/locked call.
   // A call is a ticker and a direction. The server only creates the graded
   // record when both arrive, so anything less must never reach it as if it
-  // were a call: the call step and the publish step both refuse it below.
+  // were a call: the call screen and the publish screen both refuse it below.
   const lockingCall = Boolean(ticker.trim()) && direction !== null;
-  // A Post is text and nothing else. Everything else may carry a clip and may
-  // carry a written thesis, and no longer has to declare which of the two it
-  // is up front: the video step decides the first and the write step the
-  // second, which is what the product model always said a publication was.
-  const showVideo = !isPost;
-  const showResearch = !isPost;
 
-  // ── The guided sequence ────────────────────────────────────────────────
-  // One step at a time on the first pass, every step jumpable afterwards.
-  // Editing a live publication is never a first pass: the creator already
-  // made every one of these decisions, so nothing is locked.
-  const steps = useMemo(() => stepsFor(mode, videoChosen), [mode, videoChosen]);
+  // ── The spine ──────────────────────────────────────────────────────────
+  // Three steps, one at a time on the first pass, every step a tab
+  // afterwards. A reopened draft starts at the first step it has not
+  // finished; a live publication is never a first pass, so nothing is locked.
   const [stepKey, setStepKey] = useState<StepKey>(() => {
-    if (editingPublished || isPost) return "write";
-    if (hasVideoClip) return "video_edit";
-    return "video";
+    if (editingPublished) return isBrief || pubType === "thesis" ? spine[0]!.key : "headline";
+    const facts = {
+      hasContent:
+        pubType === "video"
+          ? hasVideoClip
+          : pubType === "brief"
+            ? Boolean(initialDraft?.summary?.trim())
+            : pubType === "thesis"
+              ? tiptapPlainText(initialDoc).trim().length > 0
+              : Boolean(
+                  initialDraft?.ticker?.trim() &&
+                    initialDraft.draft_direction &&
+                    initialDraft.draft_target_price != null,
+                ),
+      hasTitle: Boolean(initialDraft?.title?.trim()),
+      hasTags: Boolean(initialDraft?.primary_tag),
+    };
+    const at = spineProgress(facts).resumeAt;
+    return at === 3 ? "publish" : spine[at]!.key;
   });
   const [blockedNote, setBlockedNote] = useState<string | null>(null);
-  const [visited, setVisited] = useState<Set<StepKey>>(
-    () => new Set<StepKey>([editingPublished || isPost ? "write" : hasVideoClip ? "video_edit" : "video"]),
-  );
-  const [firstPassDone, setFirstPassDone] = useState(editingPublished);
+  const [visited, setVisited] = useState<Set<StepKey>>(() => {
+    // Everything up to where the draft resumes has been walked.
+    const idx = stepKey === "publish" ? spine.length : spine.findIndex((s) => s.key === stepKey);
+    return new Set<StepKey>(spine.slice(0, Math.max(0, idx) + 1).map((s) => s.key));
+  });
+  const [firstPassDone, setFirstPassDone] = useState(editingPublished || stepKey === "publish");
 
-  // A step can vanish under the creator: dropping the clip removes Edit
-  // video, and switching format removes both. Derived rather than synced, so
-  // a step leaving the sequence falls back on the same render instead of
-  // painting a missing step and correcting it afterwards.
-  const currentStep = steps.find((s) => s.key === stepKey) ?? steps[0]!;
-  const stepIndex = Math.max(
-    0,
-    steps.findIndex((s) => s.key === currentStep.key),
-  );
+  const role = roleOf(pubType, stepKey);
+  const current = stepDef(pubType, stepKey);
+  const spineIndex = spine.findIndex((s) => s.key === stepKey);
 
   /**
    * The workbench frame.
@@ -884,16 +898,8 @@ export function StudioEditor({
    * anything else's height. The header sits in the flow; under it the toolbox
    * rail and the canvas are two columns that scroll on their own. The frame's
    * height is measured off the scroll parent (the app shell's <main>, or the
-   * document on a fixture page), never assumed from the nav. The same frame
-   * now carries Today, the report page and the branding studio
-   * (src/lib/layout/frame.ts).
-   *
-   * The previous shape, a sticky header with the rail stuck under it at the
-   * header's measured height, broke inside the shell: a sticky offset is taken
-   * from the scroller's padding-inset edge, so the header sat 2rem below the
-   * nav and over the top of the rail. Measuring the header did not help, since
-   * where it sat was wrong, not how tall it was. A frame has no offsets to get
-   * wrong, so the class of bug has nowhere to live.
+   * document on a fixture page), never assumed from the nav. See
+   * src/lib/layout/frame.ts for why this is a frame and not a sticky header.
    */
   const router = useRouter();
   const rootRef = useFrameHeight<HTMLDivElement>();
@@ -901,149 +907,59 @@ export function StudioEditor({
   const titleAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useLayoutEffect(() => {
-    if (currentStep.key !== "write") return;
+    if (stepKey !== "headline") return;
     fitTextarea(titleAreaRef.current);
-  }, [currentStep.key, title]);
+  }, [stepKey, title]);
 
   const goStep = useCallback(
     (key: StepKey) => {
-      // A step change is a natural checkpoint: whatever this step holds is
-      // written before the next one draws, so no transition can lose work.
+      // A screen change is a natural checkpoint: whatever this screen holds
+      // is written before the next one draws, so no transition can lose work.
       if (!editingPublished && dirtyRef.current && hasAnything) void persistDraft();
       setStepKey(key);
       setRailOverride(null);
       setBlockedNote(null);
       setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
-      // Each step is its own screen, so arriving at one starts at its top rather
-      // than halfway down the last one. The canvas is the scroller, so it is
-      // the canvas that moves.
+      // Each screen is its own, so arriving at one starts at its top rather
+      // than halfway down the last one. The canvas is the scroller.
       canvasRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     },
     [editingPublished, hasAnything, persistDraft],
   );
 
   const goNext = useCallback(() => {
-    const i = steps.findIndex((s) => s.key === stepKey);
-    const next = steps[i + 1];
-    if (next) goStep(next.key);
-    // Reaching the end is what unlocks free movement.
-    if (i + 1 >= steps.length - 1) setFirstPassDone(true);
-  }, [steps, stepKey, goStep]);
+    const i = spine.findIndex((s) => s.key === stepKey);
+    const next = spine[i + 1];
+    if (next) {
+      goStep(next.key);
+      return;
+    }
+    // The end of the spine is the publish screen, and reaching it is what
+    // unlocks free movement.
+    setFirstPassDone(true);
+    goStep("publish");
+  }, [spine, stepKey, goStep]);
 
   const goBack = useCallback(() => {
-    const i = steps.findIndex((s) => s.key === stepKey);
-    const prev = steps[i - 1];
+    const i = spine.findIndex((s) => s.key === stepKey);
+    const prev = spine[i - 1];
     if (prev) goStep(prev.key);
-  }, [steps, stepKey, goStep]);
+  }, [spine, stepKey, goStep]);
 
-
-  const contentBlockedBy: string | null = (() => {
-    if (mode === "short_post") {
-      const text = summary.trim();
-      if (!text) return "Write your post first.";
-      if (text.length > POST_MAX_CHARS) return `Posts are ${POST_MAX_CHARS} characters.`;
-      return null;
-    }
-    // "Add a video" is gone: a publication is only a video once it has one, so
-    // that gate could never fire and its only effect was to strand anyone who
-    // had picked the Video tab and then had nothing to add.
-    if (!title.trim()) return "Add a headline.";
-    return null;
-  })();
-
-  /**
-   * What the call step would say if Continue were pressed on it now. Read
-   * here as well as on the step, because a half-entered call must not publish
-   * either: a ticker with no direction used to go out as a publication with
-   * no call at all, silently, and a symbol nobody has checked could lock a
-   * call that can never be graded.
-   */
-  const callBlockedBy = advanceFor("call", {
-    isPost,
-    postMaxChars: POST_MAX_CHARS,
+  /** Everything the forward button needs to know, as plain values. */
+  const advanceInput: AdvanceInput = {
     title,
-    postText: summary,
+    briefText: summary,
+    briefMaxChars: BRIEF_MAX_CHARS,
+    bodyText: plainText,
     ticker,
     direction,
     target,
+    horizon,
     symbol: editingPublished ? "frozen" : symbolLookup.status,
-    cards: [],
-    hasVideo: videoChosen,
-    hasVideoEdits: false,
-    wordlessOverlays: 0,
-    blankVisuals: 0,
-    primaryTag: tags.primary,
-  }).blocker;
-
-  const detailsBlockedBy: string | null = (() => {
-    if (callBlockedBy) return callBlockedBy;
-    if (mode === "video" && !tags.primary) return "Choose a primary tag.";
-    // The fact-check is offered on this step and encouraged, never required:
-    // a creator publishes without it, and its result travels with the piece
-    // when they do run it.
-    if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
-    return null;
-  })();
-
-  const publishBlockedBy = contentBlockedBy ?? detailsBlockedBy;
-
-  /**
-   * The toolbox is for building things, so it exists only on the steps that
-   * build something. It used to fold to a strip of two icons on the other
-   * steps, which was a stub: nothing on the call, tags or publish steps needs
-   * a card deck or the assistant, so a column that only existed to be
-   * reopened was width taken from the work for no reason. On those steps
-   * there is no rail. On the building steps it opens by default and can be
-   * folded to its icons.
-   */
-  const railUseful = RAIL_STEPS.has(currentStep.key);
-  const railCollapsed = railOverride ?? false;
-
-  /** What each step holds right now, for the progress rail. */
-  const stepFacts: StepFacts = {
-    hasWriting: mode === "short_post" ? summary.trim().length > 0 : title.trim().length > 0,
-    hasCall: lockingCall && !callBlockedBy,
-    cardCount: cards.length,
-    hasVideo: videoChosen,
-    hasVideoEdits: Boolean(
-      videoEdit &&
-        (videoEdit.overlays.length > 0 ||
-          videoEdit.thumbnail !== null ||
-          videoEdit.trimStart > 0 ||
-          videoEdit.trimEnd < videoEdit.durationSeconds),
-    ),
-    hasTags: Boolean(tags.primary),
-    readyToPublish: publishBlockedBy === null,
-  };
-
-  /**
-   * Taking the video out.
-   *
-   * Nothing needs to be declared: the format follows the clip, so dropping
-   * the clip is what makes this a written publication. Everything already
-   * written is kept. Offered on the video step beside Replace, not as a
-   * second forward button.
-   */
-  function removeVideo() {
-    setVideoEdit(null);
-    videoFileRef.current = null;
-    setClipUrl(null);
-    setVideoChosen(false);
-  }
-
-  /** The one forward button, and what it will do. */
-  const advance = advanceFor(currentStep.key, {
-    isPost,
-    postMaxChars: POST_MAX_CHARS,
-    title,
-    postText: summary,
-    ticker,
-    direction,
-    target,
-    symbol: editingPublished ? "frozen" : symbolLookup.status,
+    eligibility: null,
     cards: cards.map((c) => ({ name: cardName(c), empty: cardIsEmpty(c) })),
     hasVideo: videoChosen,
-    hasVideoEdits: stepFacts.hasVideoEdits,
     wordlessOverlays:
       videoEdit?.overlays.filter((o) => o.kind === "text" && !o.text.trim()).length ?? 0,
     blankVisuals:
@@ -1055,7 +971,64 @@ export function StudioEditor({
           !o.source.imageUrl,
       ).length ?? 0,
     primaryTag: tags.primary,
-  });
+  };
+
+  /**
+   * The first thing standing between this publication and publish, in the
+   * order the creator would fix it: the spine first, then any feature that
+   * was opened and left half done, then the disclosures. Mirrors the
+   * server-side enforcement in publishReport.
+   */
+  const spineBlockedBy =
+    spine.map((s) => advanceFor(pubType, s.key, advanceInput).blocker).find(Boolean) ?? null;
+  const featureBlockedBy =
+    (["call", "cards", "thesis", "video"] as StepKey[])
+      .filter((k) => roleOf(pubType, k) === "feature")
+      .map((k) => advanceFor(pubType, k, advanceInput).blocker)
+      .find(Boolean) ?? null;
+  const detailsBlockedBy: string | null = (() => {
+    if (featureBlockedBy) return featureBlockedBy;
+    // The fact-check is offered on this screen and encouraged, never required:
+    // a creator publishes without it, and its result travels with the piece
+    // when they do run it.
+    if (!disclosuresAnswered(disclosure)) return "Answer all three disclosures.";
+    return null;
+  })();
+  const publishBlockedBy = spineBlockedBy ?? detailsBlockedBy;
+
+  /**
+   * The toolbox is for building things, so it exists only on the screens
+   * that build something. On the others there is no rail. On the building
+   * screens it opens by default and can be folded to its icons.
+   */
+  const railUseful = RAIL_STEPS.has(stepKey);
+  const railCollapsed = railOverride ?? false;
+
+  /** What each step holds right now, for the tracker and the menu. */
+  const stepFacts: StepFacts = {
+    hasVideo: videoChosen,
+    hasBrief: summary.trim().length > 0,
+    hasThesis: plainText.trim().length > 0,
+    hasCall: lockingCall && advanceFor(pubType, "call", advanceInput).blocker === null,
+    cardCount: cards.length,
+    hasTitle: title.trim().length > 0,
+    hasTags: Boolean(tags.primary),
+    readyToPublish: publishBlockedBy === null,
+  };
+
+  /**
+   * Taking the video out. Everything already written is kept. Offered on
+   * the video screen beside Replace, not as a second forward button.
+   */
+  function removeVideo() {
+    setVideoEdit(null);
+    videoFileRef.current = null;
+    setClipUrl(null);
+    setVideoChosen(false);
+  }
+
+  /** The one forward button, and what it will do. */
+  const advance = advanceFor(pubType, stepKey, advanceInput);
   const note = blockedNote && blockedNote === advance.blocker ? blockedNote : null;
 
   function pressNext() {
@@ -1067,8 +1040,12 @@ export function StudioEditor({
       return;
     }
     setBlockedNote(null);
-    // Skipping the video is leaving it out, so the empty edit goes too.
-    if (currentStep.key === "video" && !videoChosen) setVideoEdit(null);
+    if (role === "feature") {
+      // Skipping the video is leaving it out, so the empty edit goes too.
+      if (stepKey === "video" && !videoChosen) setVideoEdit(null);
+      goStep("publish");
+      return;
+    }
     goNext();
   }
 
@@ -1092,8 +1069,8 @@ export function StudioEditor({
             id: undefined,
             type,
             title,
-            summary: summary || plainText.slice(0, 280),
-            body: JSON.stringify(editor.getJSON()),
+            summary: summaryToSave,
+            body: isBrief ? undefined : JSON.stringify(editor.getJSON()),
             access,
             price: access === "paid" ? Number(price) : null,
             min_plan_rank: access === "subscribers" ? minPlanRank : 0,
@@ -1105,7 +1082,7 @@ export function StudioEditor({
             horizon_days: lockingCall ? horizon : undefined,
             primary_tag: tags.primary,
             secondary_tags: tags.secondary,
-            video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
+            video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
           });
           id = res.id;
           setDraftId(id);
@@ -1120,19 +1097,18 @@ export function StudioEditor({
         if (!cardRes.ok) throw new Error(cardRes.error ?? "Could not save the cards.");
       }
 
-      const finalBody =
-        type === "short_post" ? undefined : editor ? JSON.stringify(editor.getJSON()) : bodyJson;
+      const finalBody = isBrief ? undefined : editor ? JSON.stringify(editor.getJSON()) : bodyJson;
 
       // A chosen clip can only attach to a locked report, so hold the redirect,
       // publish, upload, then navigate. Without this the clip was never sent
       // anywhere: the rung only ever held a local object URL.
-      const pendingVideo = mode === "video" ? videoFileRef.current : null;
+      const pendingVideo = videoChosen ? videoFileRef.current : null;
 
       const published = await publishReport({
         id,
         type,
-        title: type === "short_post" ? undefined : title,
-        summary: summary || plainText.slice(0, 280),
+        title,
+        summary: summaryToSave,
         body: finalBody,
         access,
         price: access === "paid" ? Number(price) : null,
@@ -1145,7 +1121,7 @@ export function StudioEditor({
         horizon_days: lockingCall ? horizon : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
-        video_edit: mode === "video" ? toStoredVideoEdit(videoEdit, deck) : null,
+        video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
         fact_check_results: factCheck as unknown as Record<string, unknown> | null,
         ...(hasCard
           ? {
@@ -1198,7 +1174,8 @@ export function StudioEditor({
     type,
     title,
     summary,
-    plainText,
+    summaryToSave,
+    isBrief,
     bodyJson,
     access,
     minPlanRank,
@@ -1211,6 +1188,7 @@ export function StudioEditor({
     target,
     horizon,
     factCheck,
+    videoChosen,
     videoEdit,
     disclosure,
     tags,
@@ -1224,27 +1202,11 @@ export function StudioEditor({
     setCaptureStatus,
   ]);
 
-  // Publish is a step now, not a drawer over the work. The top-bar button
-  // walks the creator to it rather than opening a second surface with the
-  // same controls on it.
-  function onDetailsClick() {
-    if (contentBlockedBy) {
-      toast.message(contentBlockedBy);
-      return;
-    }
-    setFirstPassDone(true);
-    goStep("publish");
-  }
-
   function onPublishClick() {
-    if (contentBlockedBy) {
-      toast.message(contentBlockedBy);
-      return;
-    }
-    if (detailsBlockedBy) {
-      // The thing that is missing lives on a step, so say what it is and let
-      // the creator go and fix it rather than opening a panel over the top.
-      toast.message(detailsBlockedBy);
+    if (publishBlockedBy) {
+      // The thing that is missing lives on a screen, so say what it is and
+      // let the creator go and fix it rather than opening a panel over it.
+      toast.message(publishBlockedBy);
       return;
     }
     if (lockingCall) {
@@ -1263,23 +1225,21 @@ export function StudioEditor({
     }
   }
 
-  /* LEFT: Assistant, plus the card deck on Research. */
+  /* LEFT: the deck, then the assistant. */
   const toolbox = (
     <>
-      {showResearch ? (
-        <CardTray
-          cards={deck}
-          usage={usage}
-          selectedId={selectedCardId}
-          onSelect={setSelectedCardId}
-          onAdd={() => setLibraryOpen(true)}
-          onReorder={reorderCards}
-          onPlaceInVideo={placeCardInVideo}
-          onPlaceInResearch={placeCardInResearch}
-          hasVideo={false}
-          hasResearch
-        />
-      ) : null}
+      <CardTray
+        cards={deck}
+        usage={usage}
+        selectedId={selectedCardId}
+        onSelect={setSelectedCardId}
+        onAdd={() => setLibraryOpen(true)}
+        onReorder={reorderCards}
+        onPlaceInVideo={placeCardInVideo}
+        onPlaceInResearch={placeCardInResearch}
+        hasVideo={videoChosen}
+        hasResearch={hasWriter}
+      />
       <AiAssistant
         onRun={runAssistant}
         credits={credits}
@@ -1289,7 +1249,7 @@ export function StudioEditor({
           setRailDrawerOpen(false);
         }}
       >
-        {mode === "research" ? (
+        {hasWriter ? (
           <FactCheckerPanel
             text={plainText}
             credits={credits}
@@ -1298,14 +1258,14 @@ export function StudioEditor({
             onResult={setFactCheck}
           />
         ) : null}
-        {showResearch && editor ? (
+        {hasWriter && editor ? (
           <VisualizeSelectionMenu
             editor={editor}
             reportTicker={ticker || undefined}
             variant="button"
           />
         ) : null}
-        {showResearch ? (
+        {hasWriter ? (
           <button
             type="button"
             aria-label="Report templates"
@@ -1320,6 +1280,27 @@ export function StudioEditor({
     </>
   );
 
+  /** The heading over the screen, by what kind of screen it is. */
+  const eyebrow =
+    role === "spine"
+      ? `Step ${spineIndex + 1} of ${spine.length}`
+      : role === "feature"
+        ? `Add to this ${typeDef.key} · optional`
+        : stepFacts.readyToPublish
+          ? "Ready when you are"
+          : "Almost there";
+
+  const back =
+    role === "spine"
+      ? spineIndex > 0
+        ? { label: "Back", onPress: goBack }
+        : null
+      : role === "feature"
+        ? { label: "Back to publish", onPress: () => goStep("publish") }
+        : { label: "Back", onPress: () => goStep(spine[spine.length - 1]!.key) };
+
+  const next = role === "publish" ? null : { label: advance.label, onPress: pressNext };
+
   return (
     // The class height is only the guess for the server-rendered paint; the
     // effect above measures the real room and overrides it before first paint.
@@ -1328,51 +1309,21 @@ export function StudioEditor({
       data-compose-root
       className="flex h-[calc(var(--app-h)-var(--nav-h))] min-h-0 flex-col overflow-hidden"
     >
-      {/* The header is one block in the flow: the bar, then the step tracker.
+      {/* The header is one block in the flow: the bar, then the tracker.
           Nothing sticks. The columns under it scroll, so it never has to. */}
-      <div className="shrink-0 border-b border-border bg-paper">
-      <div className="flex items-center gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] md:flex-wrap md:gap-3 md:px-6">
-        <Link
-          href="/studio"
-          className="flex items-center gap-1.5 text-sm text-text-mute transition-colors hover:text-text focus-ring rounded-[var(--radius-btn)]"
-        >
-          <ArrowLeft size={16} />
-          <span className="hidden sm:inline">Studio</span>
-        </Link>
-
-        {railUseful ? (
-          <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
-        ) : null}
-
-        {/* What this publication currently is, read off its contents. Not a
-            control: the Video step is where a clip is added or left out, and a
-            second place to declare the same thing only competed with it. */}
-        <span
-          className="num hidden shrink-0 text-[10px] uppercase tracking-[0.16em] text-text-faint md:inline"
-          aria-live="polite"
-        >
-          {types.find((t) => t.key === mode)?.label ?? "Draft"}
-        </span>
-
-        {/* No save state here: it lives beside the step's forward button,
-            where the creator is looking, and there is no Save draft button
-            at all. The draft saves itself (every thirty seconds, on each
-            step change, when the tab hides, and before leaving); a Save
-            button in the publish row read as a publishing action. */}
-        {error && !dirty && (
-          <span className="t-meta max-w-[14rem] truncate text-[11px] text-[var(--down)]" role="alert">
-            {error}
-          </span>
-        )}
-
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+      <div className="shrink-0 bg-paper">
+        <ComposeHeader crumb={typeDef.label}>
+          {railUseful ? (
+            <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
+          ) : null}
+          {error && !dirty ? (
+            <span className="t-meta max-w-[14rem] truncate text-[11px] text-[var(--down)]" role="alert">
+              {error}
+            </span>
+          ) : null}
           {editingPublished ? (
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setPreviewOpen(true)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
                 Preview
               </Button>
               <Button
@@ -1386,34 +1337,34 @@ export function StudioEditor({
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="hidden sm:inline-flex"
-                onClick={() => setPreviewOpen(true)}
-              >
-                Preview
-              </Button>
-              <Button size="sm" disabled={pending} onClick={onDetailsClick} className="shrink-0">
-                <RocketLaunch size={15} weight="fill" />
-                {pending ? "Publishing..." : "Publish"}
-              </Button>
-            </>
+            // The draft's state, where the design puts it. On a phone it
+            // sits beside the forward button instead, where there is room.
+            <span className="hidden md:inline">
+              <span className="num mr-2 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                Draft ·
+              </span>
+              <span className="inline-block align-middle">
+                <SaveStatus
+                  dirty={dirty}
+                  saving={saveStatus === "saving" || savingDraft}
+                  savedAt={savedAt}
+                  error={saveError}
+                />
+              </span>
+            </span>
           )}
-        </div>
-      </div>
+        </ComposeHeader>
 
         <StepNav
-          steps={steps}
-          current={currentStep.key}
+          steps={spine}
+          current={role === "spine" ? stepKey : null}
           stateOf={(k) => stepState(k, stepFacts)}
           reachable={(k) => firstPassDone || visited.has(k)}
           onGo={goStep}
         />
       </div>
 
-      {/* LEFT is what you build with, the sequence is what you publish as. */}
+      {/* LEFT is what you build with; the spine is what you publish as. */}
       <div className="flex min-h-0 min-w-0 flex-1">
         {railUseful ? (
           <ComposeRail
@@ -1425,20 +1376,17 @@ export function StudioEditor({
           </ComposeRail>
         ) : null}
 
-        {/* Canvas: the guided sequence, one step at a time. Compose is a
-            working surface, not an article, so the canvas takes the standard
-            page width rather than a reading measure: a timeline, a deck and
-            a publish panel all want the room, and a column of dead paper on
-            either side of the work was the single biggest waste on the page.
-            Only the prose keeps a measure, and that is set on the editor. */}
+        {/* Canvas: one screen at a time. Compose is a working surface, not
+            an article, so the canvas takes the standard page width; only the
+            prose keeps a measure, and that is set on the writer. */}
         <div
           ref={canvasRef}
           className="scroll-area min-h-0 min-w-0 flex-1 overflow-y-auto pb-[var(--tab-h)]"
         >
           <div
             className={cn(
-              "mx-auto w-full px-4 py-6 md:px-8",
-              currentStep.key === "write" ? "max-w-[60rem]" : "max-w-[var(--w-standard)]",
+              "mx-auto w-full px-4 py-6 md:px-8 md:py-10",
+              stepKey === "thesis" ? "max-w-[60rem]" : "max-w-[var(--w-standard)]",
             )}
           >
             {/* Editing something already published is a different act from
@@ -1451,58 +1399,119 @@ export function StudioEditor({
                   This publication is live
                 </p>
                 <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text">
-                  You can change the headline, the standfirst, the thesis, the cards and
+                  You can change the headline, the standfirst, the text, the cards and
                   the tags. Saving records an EDITED marker on the publication showing what
                   changed and when, which readers can open.
                 </p>
                 <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-mute">
                   {hasLockedCall
                     ? "The call and its entry price cannot change, and neither can its resolution. Those are the record."
-                    : "The format, the pricing and the access setting cannot change."}
+                    : "The type, the pricing and the access setting cannot change."}
                 </p>
               </div>
             ) : null}
 
             <StepFrame
-              step={currentStep}
-              index={stepIndex}
-              total={steps.length}
-              onBack={stepIndex > 0 ? goBack : null}
-              next={
-                stepIndex < steps.length - 1
-                  ? { label: advance.label, onPress: pressNext }
-                  : null
-              }
+              eyebrow={eyebrow}
+              title={current.label}
+              blurb={current.blurb}
+              back={back}
+              next={next}
               note={note}
               status={
-                <SaveStatus
-                  dirty={dirty}
-                  saving={saveStatus === "saving" || savingDraft}
-                  savedAt={savedAt}
-                  error={saveError}
-                />
+                <span className="md:hidden">
+                  <SaveStatus
+                    dirty={dirty}
+                    saving={saveStatus === "saving" || savingDraft}
+                    savedAt={savedAt}
+                    error={saveError}
+                  />
+                </span>
               }
             >
-              {/* Each step's content sits inside its own boundary, so a
-                  step that fails to draw is redrawn on its own while the
-                  workspace above it, and everything it holds, stays put.
-                  Before this, any such failure reached the route's error
-                  page, whose Try again remounted the whole sequence at
-                  step one. */}
+              {/* Each screen's content sits inside its own boundary, so a
+                  screen that fails to draw is redrawn on its own while the
+                  workspace above it, and everything it holds, stays put. */}
 
-              {/* WRITE. Always mounted, hidden off-step: the Tiptap instance
-                  holds the charts the publish path screenshots, and losing it
-                  on a step change would lose them. Prose is the one thing on
-                  the canvas that wants a measure, so the column is capped
-                  here and nowhere else. */}
-              <StepErrorBoundary
-                label="Write"
-                onReset={() => setEditorSeed(latestChangeRef.current.json)}
-              >
-              <DevCrash step="write" />
-              <div className={cn(currentStep.key !== "write" && "hidden")}>
-                {type !== "short_post" && (
-                  <>
+              {/* THE WRITER. Always mounted on every type that has one,
+                  hidden off-screen: the Tiptap instance holds the charts the
+                  publish path screenshots, and losing it on a screen change
+                  would lose them. Prose is the one thing on the canvas that
+                  wants a measure, so the column is capped here and nowhere
+                  else. */}
+              {hasWriter ? (
+                <StepErrorBoundary
+                  label="The report"
+                  onReset={() => setEditorSeed(latestChangeRef.current.json)}
+                >
+                  <DevCrash step="thesis" />
+                  <div className={cn(stepKey !== "thesis" && "hidden")}>
+                    {showTemplateStrip && !templatesDismissed && (
+                      <ReportTemplateStrip onApply={applyTemplate} onDismiss={dismissTemplates} />
+                    )}
+                    <div
+                      onDragOver={(e) => {
+                        if (!isCardDrag(e)) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "copy";
+                        setResearchDropActive(true);
+                      }}
+                      onDragLeave={() => setResearchDropActive(false)}
+                      onDrop={onResearchDrop}
+                      className={cn(
+                        "rounded-[var(--radius-card)] transition-colors",
+                        researchDropActive &&
+                          "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                      )}
+                    >
+                      <TiptapEditor
+                        initialContent={editorSeed}
+                        onChange={onEditorChange}
+                        reportTicker={hasCard ? ticker || undefined : undefined}
+                        onReady={(e) => {
+                          editorRef.current = e;
+                          setEditor(e);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </StepErrorBoundary>
+              ) : null}
+
+              {/* THE TAKE. A brief is its text and nothing else. */}
+              {stepKey === "brief" ? (
+                <StepErrorBoundary label="The take">
+                  <DevCrash step="brief" />
+                  <div className="max-w-[60rem]">
+                    <label htmlFor="brief-text" className="sr-only">
+                      The take
+                    </label>
+                    <textarea
+                      id="brief-text"
+                      value={summary}
+                      maxLength={BRIEF_MAX_CHARS}
+                      onChange={(e) => {
+                        setSummary(e.target.value.slice(0, BRIEF_MAX_CHARS));
+                        markDirty();
+                      }}
+                      placeholder="Say the one thing."
+                      rows={6}
+                      dir="auto"
+                      autoFocus={!editingPublished}
+                      className="user-copy w-full resize-none rounded-[var(--radius-card)] border border-border bg-surface p-4 text-[1.125rem] leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
+                    />
+                    <p className="num mt-2 text-[11px] uppercase tracking-[0.12em] text-text-faint">
+                      {summary.trim().length} / {BRIEF_MAX_CHARS}
+                    </p>
+                  </div>
+                </StepErrorBoundary>
+              ) : null}
+
+              {/* THE HEADLINE. One line that travels, and where it travels to. */}
+              {stepKey === "headline" ? (
+                <StepErrorBoundary label="Headline">
+                  <DevCrash step="headline" />
+                  <div className="max-w-[60rem]">
                     <label htmlFor="report-title" className="sr-only">
                       Headline
                     </label>
@@ -1523,87 +1532,41 @@ export function StudioEditor({
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          document.getElementById("report-summary")?.focus();
+                          if (isBrief) pressNext();
+                          else document.getElementById("report-summary")?.focus();
                         }
                       }}
                       placeholder="Headline"
                       dir="auto"
+                      autoFocus={!editingPublished}
                       className="user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none md:min-h-[3.25rem] md:text-4xl"
                       style={{ fontFamily: "var(--font-display)" }}
                     />
-                  </>
-                )}
-                <label htmlFor="report-summary" className="sr-only">
-                  {type === "short_post" ? "Post text" : "Dek"}
-                </label>
-                {type === "short_post" ? (
-                  <>
-                    <textarea
-                      id="report-summary"
-                      value={summary}
-                      maxLength={POST_MAX_CHARS}
-                      onChange={(e) => {
-                        setSummary(e.target.value.slice(0, POST_MAX_CHARS));
-                        markDirty();
-                      }}
-                      placeholder="A short take."
-                      rows={5}
-                      dir="auto"
-                      className="user-copy mb-2 w-full resize-none bg-transparent text-lg text-text placeholder:text-text-faint focus:outline-none"
-                    />
-                    <p className="num mb-5 text-[11px] uppercase tracking-[0.12em] text-text-faint">
-                      {summary.trim().length} / {POST_MAX_CHARS}
-                    </p>
-                  </>
-                ) : (
-                  <input
-                    id="report-summary"
-                    value={summary}
-                    onChange={(e) => {
-                      setSummary(e.target.value);
-                      markDirty();
-                    }}
-                    placeholder="One line under the headline"
-                    dir="auto"
-                    className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
-                  />
-                )}
-
-                <div className={cn(!showResearch && "hidden")}>
-                  {showTemplateStrip && !templatesDismissed && (
-                    <ReportTemplateStrip onApply={applyTemplate} onDismiss={dismissTemplates} />
-                  )}
-                  <div
-                    onDragOver={(e) => {
-                      if (!isCardDrag(e)) return;
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "copy";
-                      setResearchDropActive(true);
-                    }}
-                    onDragLeave={() => setResearchDropActive(false)}
-                    onDrop={onResearchDrop}
-                    className={cn(
-                      "rounded-[var(--radius-card)] transition-colors",
-                      researchDropActive &&
-                        "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                    {isBrief ? null : (
+                      <>
+                        <label htmlFor="report-summary" className="sr-only">
+                          Dek
+                        </label>
+                        <input
+                          id="report-summary"
+                          value={summary}
+                          onChange={(e) => {
+                            setSummary(e.target.value);
+                            markDirty();
+                          }}
+                          placeholder="One line under the headline. Optional."
+                          dir="auto"
+                          className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+                        />
+                      </>
                     )}
-                  >
-                    <TiptapEditor
-                      initialContent={editorSeed}
-                      onChange={onEditorChange}
-                      reportTicker={hasCard ? ticker || undefined : undefined}
-                      onReady={(e) => {
-                        editorRef.current = e;
-                        setEditor(e);
-                      }}
-                    />
+                    <HeadlineTravels title={title} dek={isBrief ? "" : summary} typeLabel={typeDef.label} ticker={ticker} />
                   </div>
-                </div>
-              </div>
-              </StepErrorBoundary>
+                </StepErrorBoundary>
+              ) : null}
 
-              {/* THE CALL. */}
-              {currentStep.key === "call" ? (
+              {/* THE CALL. The verdict's spine, or a feature on the others. */}
+              {stepKey === "call" ? (
                 <StepErrorBoundary label="The call">
                 <DevCrash step="call" />
                 <LockPublishPanel
@@ -1644,7 +1607,7 @@ export function StudioEditor({
 
               {/* CARDS. An invitation, not a hurdle: what a card is, what it
                   does for the reader, and one obvious way to make one. */}
-              {currentStep.key === "cards" ? (
+              {stepKey === "cards" ? (
                 <StepErrorBoundary label="Cards">
                 <DevCrash step="cards" />
                 <div>
@@ -1656,7 +1619,7 @@ export function StudioEditor({
                         target, or what would prove you wrong.
                       </p>
                       <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute">
-                        Readers see cards first, in the Feed and above the thesis, and they
+                        Readers see cards first, in the Feed and above the text, and they
                         are what a reader remembers. They carry your provenance marks, and
                         you decide which ones sit behind the paywall.
                       </p>
@@ -1668,13 +1631,15 @@ export function StudioEditor({
                         >
                           Make the first card
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => runAssistant(ASSISTANT_ACTIONS[0]!)}
-                          className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
-                        >
-                          Draft them from what I have written
-                        </button>
+                        {hasWriter ? (
+                          <button
+                            type="button"
+                            onClick={() => runAssistant(ASSISTANT_ACTIONS[0]!)}
+                            className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                          >
+                            Draft them from what I have written
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   ) : (
@@ -1702,8 +1667,8 @@ export function StudioEditor({
                       </div>
                       <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-mute">
                         Click a card to open it again. Drag a card from the toolbox into your
-                        text to place it in the thesis, or onto the timeline to make it appear
-                        in the video.
+                        text to place it there, or onto the timeline to make it appear in the
+                        video.
                       </p>
                     </div>
                   )}
@@ -1711,30 +1676,27 @@ export function StudioEditor({
                 </StepErrorBoundary>
               ) : null}
 
-              {/* VIDEO and EDIT VIDEO share one rung, so the loaded clip and
-                  its object URL survive the move between the two steps. */}
-              {showVideo ? (
-                <StepErrorBoundary label={currentStep.key === "video_edit" ? "Edit video" : "Video"}>
-                <DevCrash step={currentStep.key === "video_edit" ? "video_edit" : "video"} />
-                <div
-                  className={cn(
-                    currentStep.key !== "video" && currentStep.key !== "video_edit" && "hidden",
-                  )}
-                >
-                  {currentStep.key === "video_edit" && clipSeconds > 0 && feedPreviewSeconds ? (
+              {/* VIDEO. Mounted on every type that may carry a clip and hidden
+                  off-screen, so the loaded clip and its object URL survive a
+                  move to another screen and back. */}
+              {pubType === "video" || pubType === "verdict" ? (
+                <StepErrorBoundary label="Video">
+                <DevCrash step="video" />
+                <div className={cn(stepKey !== "video" && "hidden")}>
+                  {clipSeconds > 0 && feedPreviewSeconds ? (
                     <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
                       This clip is longer than the Feed budget. The Feed will play the first{" "}
                       {feedPreviewSeconds} seconds. The full video stays on Explore and your
                       profile.
                     </p>
-                  ) : currentStep.key === "video_edit" && clipSeconds > 0 ? (
+                  ) : clipSeconds > 0 && pubType === "video" ? (
                     <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
                       This clip fits the Feed. Readers will see the whole thing there.
                     </p>
                   ) : null}
                   <VideoRung
                     initialSrc={clipUrl}
-                    stage={currentStep.key === "video" ? "choose" : "edit"}
+                    stage="all"
                     value={videoEdit ?? undefined}
                     onChange={dirtying(setVideoEdit)}
                     onFile={(file, durationSeconds) => {
@@ -1753,10 +1715,10 @@ export function StudioEditor({
               ) : null}
 
               {/* TAGS. */}
-              {currentStep.key === "tags" ? (
+              {stepKey === "tags" ? (
                 <StepErrorBoundary label="Tags">
                 <DevCrash step="tags" />
-                <div className="flex flex-col gap-4">
+                <div className="flex max-w-[60rem] flex-col gap-4">
                   <TagPicker
                     value={tags}
                     onChange={dirtying(setTags)}
@@ -1768,18 +1730,12 @@ export function StudioEditor({
                         : null
                     }
                   />
-                  <CompanionPicker
-                    currentId={draftId}
-                    mode={mode}
-                    value={linkedReportId}
-                    onChange={setLinkedReportId}
-                  />
                 </div>
                 </StepErrorBoundary>
               ) : null}
 
               {/* PUBLISH. */}
-              {currentStep.key === "publish" ? (
+              {stepKey === "publish" ? (
                 <StepErrorBoundary label="Publish">
                 <DevCrash step="publish" />
                 <div className="flex flex-col gap-4">
@@ -1790,7 +1746,7 @@ export function StudioEditor({
                   >
                     Preview publication
                   </button>
-                  {mode === "research" ? (
+                  {hasWriter && plainText.trim() ? (
                     <FactCheckerPanel
                       text={plainText}
                       credits={credits}
@@ -1799,6 +1755,12 @@ export function StudioEditor({
                       onResult={setFactCheck}
                     />
                   ) : null}
+                  <CompanionPicker
+                    currentId={draftId}
+                    type={pubType}
+                    value={linkedReportId}
+                    onChange={setLinkedReportId}
+                  />
                   <LockPublishPanel
                     sections="publish"
                     hasCard={hasCard}
@@ -1823,7 +1785,7 @@ export function StudioEditor({
                     plans={plans}
                     disclosure={disclosure}
                     onDisclosure={setDisclosure}
-                    publishLabel={lockingCall ? "Publish & Lock" : "Publish"}
+                    publishLabel={isVerdict ? "Publish the verdict" : lockingCall ? "Publish & Lock" : "Publish"}
                     publishDisabledReason={publishBlockedBy}
                     onPublish={onPublishClick}
                     pending={pending}
@@ -1862,7 +1824,7 @@ export function StudioEditor({
         doneNote={
           editingPublished
             ? "Kept, and still editable. Press Save changes above to record the edit."
-            : "Saved with the draft. Reopen it from the toolbox or the Cards step any time."
+            : "Saved with the draft. Reopen it from the toolbox or the Cards screen any time."
         }
       />
 
@@ -1870,9 +1832,9 @@ export function StudioEditor({
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         title={title}
-        dek={summary}
+        dek={isBrief ? "" : summary}
         cards={cards}
-        clipSeconds={mode === "video" ? clipSeconds : null}
+        clipSeconds={videoChosen ? clipSeconds : null}
         feedPreviewSeconds={feedPreviewSeconds}
       />
 
@@ -1901,45 +1863,25 @@ export function StudioEditor({
       />
 
       <LeaveDialog
-
         href={leaveTo}
-
         published={editingPublished}
-
         saving={saveStatus === "saving" || savingDraft}
-
         onStay={() => setLeaveTo(null)}
-
         onLeave={() => {
-
           if (!leaveTo) return;
-
           dirtyRef.current = false;
-
           setDirty(false);
-
           router.push(leaveTo);
-
         }}
-
         onSaveAndLeave={() => {
-
           if (!leaveTo) return;
-
           startDraft(async () => {
-
             if (editingPublished) await persistEdit();
-
             else await persistDraft();
-
             if (dirtyRef.current) return;
-
             router.push(leaveTo);
-
           });
-
         }}
-
       />
 
       <LockConfirmModal
@@ -1951,6 +1893,60 @@ export function StudioEditor({
         busyLabel={captureStatus}
         onConfirm={doPublish}
       />
+    </div>
+  );
+}
+
+/**
+ * Where the headline goes once it leaves this screen: a Today row, a
+ * subscriber's inbox, a pasted link. Shown under the field so the creator
+ * writes for the places it will be read rather than for the field.
+ */
+function HeadlineTravels({
+  title,
+  dek,
+  typeLabel,
+  ticker,
+}: {
+  title: string;
+  dek: string;
+  typeLabel: string;
+  ticker: string;
+}) {
+  const line = title.trim() || "Your headline";
+  const empty = !title.trim();
+  const kicker = [ticker.trim().toUpperCase() || null, typeLabel.toUpperCase()].filter(Boolean).join(" · ");
+  return (
+    <div className="mt-6 grid gap-3 border-t border-border pt-5 md:grid-cols-3">
+      <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint md:col-span-3">
+        How the line travels
+      </p>
+      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
+        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Today</p>
+        <p className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-mute">{kicker}</p>
+        <p className={cn("user-copy mt-1 font-display text-[1.0625rem] font-semibold leading-snug", empty ? "text-text-faint" : "text-text")}>
+          {line}
+        </p>
+        {dek.trim() ? <p className="mt-1 text-[0.8125rem] leading-snug text-text-mute">{dek}</p> : null}
+      </div>
+      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
+        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Inbox</p>
+        <p className={cn("user-copy mt-2 truncate text-[0.9375rem] font-medium", empty ? "text-text-faint" : "text-text")}>
+          {line}
+        </p>
+        <p className="mt-1 truncate text-[0.8125rem] text-text-mute">
+          {dek.trim() || `A new ${typeLabel.toLowerCase()} from you.`}
+        </p>
+      </div>
+      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
+        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Pasted link</p>
+        <div className="mt-2 rounded-[var(--radius-btn)] border border-border bg-bg p-2.5">
+          <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">stoamarket.ai</p>
+          <p className={cn("user-copy mt-1 line-clamp-2 text-[0.875rem] font-medium leading-snug", empty ? "text-text-faint" : "text-text")}>
+            {line}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

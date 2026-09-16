@@ -1,19 +1,20 @@
 "use client";
 
-import { Check, Lock } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { StepDef, StepKey, StepState } from "@/lib/compose/steps";
 
 /**
- * The progress rail for the guided sequence.
+ * The spine's tracker: three numbered marks joined by a hairline.
  *
  * Three things have to be readable at a glance: where you are, what you have
- * already filled in, and what you are allowed to leave alone. So a done step
- * carries a tick, an optional one says so in words rather than by being
- * greyed, and a step you have not reached yet is dimmed and not clickable.
+ * already filled in, and what you have not reached. A done step carries a
+ * tick in its mark, the current one is filled ink, and a step not yet
+ * reached is dimmed and not clickable. "Not reached yet" is the whole of the
+ * guiding: after the first pass every step is a tab.
  *
- * "Not reached yet" is the whole of the guiding. After the first pass every
- * step is unlocked and this becomes a set of tabs.
+ * The publish screen and the feature editors are not on the spine, so the
+ * tracker then shows no current mark; the heading under it says where you are.
  */
 export function StepNav({
   steps,
@@ -23,21 +24,23 @@ export function StepNav({
   onGo,
 }: {
   steps: StepDef[];
-  current: StepKey;
+  /** Null off the spine (the publish screen, a feature editor). */
+  current: StepKey | null;
   stateOf: (key: StepKey) => StepState;
   /** True once the creator has been here, or has finished the first pass. */
   reachable: (key: StepKey) => boolean;
   onGo: (key: StepKey) => void;
 }) {
   return (
-    <nav aria-label="Compose steps" className="border-b border-border">
-      <ol className="flex gap-1 overflow-x-auto px-3 py-2 [scrollbar-width:none] md:px-6">
+    <nav aria-label="Steps" className="border-b border-border">
+      <ol className="flex items-center gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] md:gap-3 md:px-6">
         {steps.map((s, i) => {
           const active = s.key === current;
-          const state = stateOf(s.key);
+          const done = stateOf(s.key) === "done";
           const open = reachable(s.key);
           return (
-            <li key={s.key} className="shrink-0">
+            <li key={s.key} className="flex shrink-0 items-center gap-2 md:gap-3">
+              {i > 0 ? <span aria-hidden className="h-px w-5 bg-border md:w-8" /> : null}
               <button
                 type="button"
                 onClick={() => open && onGo(s.key)}
@@ -45,50 +48,32 @@ export function StepNav({
                 aria-current={active ? "step" : undefined}
                 title={open ? s.blurb : "Reach this step to open it"}
                 className={cn(
-                  "focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] border px-2.5 py-1.5 transition-colors",
-                  active
-                    ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
-                    : open
-                      ? "border-border text-text-mute hover:border-border-strong hover:text-text"
-                      : "cursor-not-allowed border-transparent text-text-faint",
+                  "focus-ring flex items-center gap-2 rounded-[var(--radius-btn)] py-0.5 pr-1 transition-colors",
+                  !open && "cursor-not-allowed",
                 )}
               >
                 <span
                   className={cn(
-                    "num text-[10px] tabular-nums",
-                    active ? "opacity-70" : "text-text-faint",
+                    "num flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-[10px] tabular-nums",
+                    active
+                      ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+                      : done
+                        ? "border-[var(--verdigris)] text-[var(--verdigris)]"
+                        : open
+                          ? "border-border-strong text-text-mute"
+                          : "border-border text-text-faint",
                   )}
                 >
-                  {i + 1}
+                  {done && !active ? <Check size={11} aria-hidden strokeWidth={2.4} /> : i + 1}
                 </span>
-                <span className="num text-[11px] uppercase tracking-[0.12em]">{s.label}</span>
-                {!open ? (
-                  <Lock size={10} aria-hidden className="opacity-60" />
-                ) : state === "done" ? (
-                  <Check
-                    size={12}
-                    aria-hidden
-                    className={active ? "opacity-90" : "text-[var(--verdigris)]"}
-                  />
-                ) : s.optional ? (
-                  <span
-                    className={cn(
-                      "num text-[9px] uppercase tracking-[0.1em]",
-                      active ? "opacity-70" : "text-text-faint",
-                    )}
-                  >
-                    optional
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "num text-[9px] uppercase tracking-[0.1em]",
-                      active ? "opacity-70" : "text-text-faint",
-                    )}
-                  >
-                    empty
-                  </span>
-                )}
+                <span
+                  className={cn(
+                    "num text-[11px] uppercase tracking-[0.14em]",
+                    active ? "text-text" : open ? "text-text-mute" : "text-text-faint",
+                  )}
+                >
+                  {s.label}
+                </span>
               </button>
             </li>
           );
@@ -99,28 +84,28 @@ export function StepNav({
 }
 
 /**
- * The heading above each step's content, and the one button under it.
+ * The heading above each screen's content, and the one button under it.
  *
- * One forward button, whose label is what pressing it will do: Skip on an
- * optional step that holds nothing, Continue otherwise. When Continue cannot
- * advance, the reason sits beside it in words until it is fixed, rather than
- * the button greying out and leaving the creator to guess why.
+ * One forward button, whose label is what pressing it will do. When it
+ * cannot advance, the reason sits beside it in words until it is fixed,
+ * rather than the button greying out and leaving the creator to guess why.
  */
 export function StepFrame({
-  step,
-  index,
-  total,
-  onBack,
+  eyebrow,
+  title,
+  blurb,
+  back,
   next,
   note,
   status,
   children,
 }: {
-  step: StepDef;
-  index: number;
-  total: number;
-  onBack: (() => void) | null;
-  /** The forward button. Null on the last step, which publishes instead. */
+  /** "Step 1 of 3", "Add to this verdict · optional", "Ready when you are". */
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  back: { label: string; onPress: () => void } | null;
+  /** The forward button. Null on the publish screen, which publishes instead. */
   next: { label: string; onPress: () => void } | null;
   /** Why the last press did not advance. Cleared once it is no longer true. */
   note: string | null;
@@ -129,15 +114,14 @@ export function StepFrame({
   children: React.ReactNode;
 }) {
   return (
-    <section aria-label={step.label}>
+    <section aria-label={title}>
       <div className="mb-5">
-        <p className="num text-[10px] uppercase tracking-[0.18em] text-text-faint">
-          Step {index + 1} of {total}
-          {step.optional ? " · optional" : ""}
-        </p>
-        <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">{step.label}</h2>
-        <p className="mt-1 max-w-[62ch] text-[0.875rem] leading-relaxed text-text-mute">
-          {step.blurb}
+        <p className="num text-[10px] uppercase tracking-[0.18em] text-text-faint">{eyebrow}</p>
+        <h2 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.25rem]">
+          {title}
+        </h2>
+        <p className="mt-1.5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-text-mute md:text-[1.0625rem]">
+          {blurb}
         </p>
       </div>
 
@@ -145,34 +129,36 @@ export function StepFrame({
 
       {/* The buttons sit under the work rather than at the bottom of the
           viewport: a short step should end where its content ends. */}
-      <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            className="focus-ring rounded-[var(--radius-btn)] border border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:text-text"
-          >
-            Back
-          </button>
-        ) : null}
-        {status ? <div className="min-w-0 flex-1 basis-[10rem]">{status}</div> : null}
-        <div className="ml-auto flex min-w-0 items-center gap-3">
-          {note ? (
-            <p role="alert" className="max-w-[44ch] text-right text-[0.8125rem] leading-snug text-[var(--rust)]">
-              {note}
-            </p>
-          ) : null}
-          {next ? (
+      {back || next || status ? (
+        <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+          {back ? (
             <button
               type="button"
-              onClick={next.onPress}
-              className="focus-ring shrink-0 rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+              onClick={back.onPress}
+              className="num focus-ring rounded-[var(--radius-btn)] border border-border px-3.5 py-2.5 text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:border-border-strong hover:text-text"
             >
-              {next.label}
+              {back.label}
             </button>
           ) : null}
+          {status ? <div className="min-w-0 flex-1 basis-[10rem]">{status}</div> : null}
+          <div className="ml-auto flex min-w-0 items-center gap-3">
+            {note ? (
+              <p role="alert" className="max-w-[44ch] text-right text-[0.8125rem] leading-snug text-[var(--rust)]">
+                {note}
+              </p>
+            ) : null}
+            {next ? (
+              <button
+                type="button"
+                onClick={next.onPress}
+                className="focus-ring shrink-0 rounded-[var(--radius-btn)] bg-[var(--ink)] px-5 py-2.5 text-[0.9375rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+              >
+                {next.label}
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

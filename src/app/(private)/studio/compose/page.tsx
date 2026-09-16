@@ -104,6 +104,7 @@ export default async function ComposePage({
       )}
       <StudioEditor
         analystReportPrice={profile.report_price}
+        initialType={isPublicationType(rawType) ? rawType : "thesis"}
         initialDraft={draft ?? published ?? seeded}
         editingPublished={Boolean(published)}
         hasLockedCall={Boolean(published?.prediction)}

@@ -118,30 +118,3 @@ export type PublicTypeLabel = "VIDEO" | "BRIEF" | "THESIS" | "VERDICT";
 export function publicTypeLabel(type: ContentType): PublicTypeLabel {
   return publicationTypeDef(publicationTypeFrom(type)).label.toUpperCase() as PublicTypeLabel;
 }
-
-/* ------------------------------------------------------------------------
- * Retired with the spine. The workspace still reads these until it is
- * rebuilt around the four types above; nothing new should import them.
- * ---------------------------------------------------------------------- */
-
-export type ComposeMode = "video" | "research" | "short_post";
-
-export const COMPOSE_MODES: { key: ComposeMode; label: string }[] = [
-  { key: "video", label: "Video" },
-  { key: "research", label: "Research" },
-  { key: "short_post", label: "Post" },
-];
-
-export const POST_MAX_CHARS = BRIEF_MAX_CHARS;
-
-export function modeFromType(type: ContentType | null | undefined): ComposeMode {
-  if (type === "short_post") return "short_post";
-  if (type === "research") return "research";
-  return "video";
-}
-
-export function typeFromMode(mode: ComposeMode): ContentType {
-  if (mode === "short_post") return "short_post";
-  if (mode === "research") return "research";
-  return "video";
-}
