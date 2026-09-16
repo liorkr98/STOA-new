@@ -69,6 +69,7 @@ import {
   RailOpenButton,
 } from "@/components/compose/compose-rail";
 import { ComposeHeader } from "@/components/compose/compose-header";
+import { FeaturesMenu, type FeatureRow } from "@/components/compose/features-menu";
 import { PromotePanel } from "@/components/compose/promote-panel";
 import {
   blankCard,
@@ -81,7 +82,13 @@ import {
   type DraftCard,
 } from "@/lib/compose/cards";
 import { setComposeDeck } from "@/lib/compose/card-store";
-import { emptyEdit, fromStoredVideoEdit, toStoredVideoEdit, type VideoEdit } from "@/lib/compose/overlays";
+import {
+  emptyEdit,
+  fmtTimecode,
+  fromStoredVideoEdit,
+  toStoredVideoEdit,
+  type VideoEdit,
+} from "@/lib/compose/overlays";
 import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { useSymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { saveCards } from "@/app/actions/cards";
@@ -95,6 +102,7 @@ import { CardPreview } from "@/components/compose/card-preview";
 import { FactCheckerPanel } from "@/components/editor/fact-checker-panel";
 import {
   advanceFor,
+  featuresFor,
   roleOf,
   spineFor,
   stepDef,
@@ -236,6 +244,7 @@ export function StudioEditor({
   // the thesis's content step and an optional feature on the others.
   const hasWriter = !isBrief;
   const spine = useMemo(() => spineFor(pubType), [pubType]);
+  const features = useMemo(() => featuresFor(pubType), [pubType]);
 
   // The file a creator picked in the video rung, held until the report is
   // locked. video_clips rows hang off a locked report, so the upload cannot
@@ -1016,6 +1025,38 @@ export function StudioEditor({
     readyToPublish: publishBlockedBy === null,
   };
 
+  /** The menu's rows: what each feature holds, or why it is half done. */
+  const featureRows: FeatureRow[] = features.map((def) => {
+    const blocker = advanceFor(pubType, def.key, advanceInput).blocker;
+    let added: string | null = null;
+    switch (def.key) {
+      case "call":
+        added = stepFacts.hasCall
+          ? [ticker.trim().toUpperCase(), direction, target ? `target ${target}` : null].filter(Boolean).join(" · ")
+          : null;
+        break;
+      case "cards":
+        added = cards.length > 0 ? `${cards.length} ${cards.length === 1 ? "card" : "cards"}` : null;
+        break;
+      case "thesis": {
+        const n = plainText.trim() ? plainText.trim().split(/\s+/).length : 0;
+        added = n > 0 ? `${n.toLocaleString("en-US")} words` : null;
+        break;
+      }
+      case "video":
+        added = videoChosen ? (clipSeconds > 0 ? fmtTimecode(clipSeconds) : "clip chosen") : null;
+        break;
+    }
+    return {
+      def,
+      added,
+      halfDone: blocker,
+      // A live publication's call and clip are the record; they open to
+      // be read, never to be changed, and cannot be added after the fact.
+      locked: editingPublished && (def.key === "call" || def.key === "video") && !added,
+    };
+  });
+
   /**
    * Taking the video out. Everything already written is kept. Offered on
    * the video screen beside Replace, not as a second forward button.
@@ -1755,6 +1796,7 @@ export function StudioEditor({
                       onResult={setFactCheck}
                     />
                   ) : null}
+                  <FeaturesMenu typeNoun={typeDef.key} rows={featureRows} onOpen={goStep} />
                   <CompanionPicker
                     currentId={draftId}
                     type={pubType}
