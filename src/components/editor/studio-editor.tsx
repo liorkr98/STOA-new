@@ -71,6 +71,8 @@ import {
 import { ComposeHeader } from "@/components/compose/compose-header";
 import { FeaturesMenu, type FeatureRow } from "@/components/compose/features-menu";
 import { PromotePanel } from "@/components/compose/promote-panel";
+import { VerdictCallPanel } from "@/components/compose/verdict-call-panel";
+import { VerdictVisibility } from "@/components/compose/verdict-visibility";
 import {
   blankCard,
   cardIsEmpty,
@@ -123,7 +125,12 @@ import {
   publicationTypeFrom,
   type PublicationType,
 } from "@/lib/compose/modes";
-import { VERDICT_HORIZON_DEFAULT_DAYS } from "@/lib/compose/verdict";
+import {
+  VERDICT_HORIZON_DEFAULT_DAYS,
+  verdictEligibility,
+  verdictWindow,
+  type VerdictEligibility,
+} from "@/lib/compose/verdict";
 
 /**
  * Bring an existing draft into the Tiptap editor. New drafts are already
@@ -208,11 +215,14 @@ export function StudioEditor({
   plans = [],
   editingPublished = false,
   hasLockedCall = false,
+  verdictLastPublishedAt = null,
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
   /** The type chosen on the picker, for a publication that has no row yet. */
   initialType?: PublicationType;
+  /** When the analyst's last verdict went out, for the rolling thirty-day window. */
+  verdictLastPublishedAt?: string | null;
   /** The draft's saved deck, payloads intact (see listAuthorCards). */
   initialCards?: DraftCard[];
   /** The draft already has a clip, so it opens with its video module. */
@@ -245,6 +255,9 @@ export function StudioEditor({
   const hasWriter = !isBrief;
   const spine = useMemo(() => spineFor(pubType), [pubType]);
   const features = useMemo(() => featuresFor(pubType), [pubType]);
+  // Read once, when the workspace opens: the window is a fact about the
+  // analyst's record, and render must not depend on the clock.
+  const [vWindow] = useState(() => verdictWindow(verdictLastPublishedAt));
 
   // The file a creator picked in the video rung, held until the report is
   // locked. video_clips rows hang off a locked report, so the upload cannot
@@ -344,6 +357,9 @@ export function StudioEditor({
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Said once on the call screen when the database could not keep the
+  // call's direction, target and horizon between sessions (migration 0065).
+  const [callDraftNote, setCallDraftNote] = useState<string | null>(null);
   // An in-app link pressed with unsaved changes, held until the creator
   // decides whether to save, leave, or stay.
   const [leaveTo, setLeaveTo] = useState<string | null>(null);
@@ -689,6 +705,7 @@ export function StudioEditor({
       });
       setDraftId(res.id);
       if (res.videoEditError) toast.error(res.videoEditError);
+      if (res.callDraftError && ticker.trim()) setCallDraftNote(res.callDraftError);
       // Cards need the report id, so they are written after the draft row
       // exists. A card failure must not read as a lost draft: the words are
       // already saved by this point.
@@ -955,6 +972,13 @@ export function StudioEditor({
     if (prev) goStep(prev.key);
   }, [spine, stepKey, goStep]);
 
+  // The verdict's own check on the name in the field. Owned here because
+  // the forward button and the publish button both read it.
+  const eligibility: VerdictEligibility | null =
+    isVerdict && !editingPublished && symbolLookup.status === "found"
+      ? verdictEligibility(symbolLookup.resolved)
+      : null;
+
   /** Everything the forward button needs to know, as plain values. */
   const advanceInput: AdvanceInput = {
     title,
@@ -966,7 +990,7 @@ export function StudioEditor({
     target,
     horizon,
     symbol: editingPublished ? "frozen" : symbolLookup.status,
-    eligibility: null,
+    eligibility,
     cards: cards.map((c) => ({ name: cardName(c), empty: cardIsEmpty(c) })),
     hasVideo: videoChosen,
     wordlessOverlays:
@@ -997,6 +1021,9 @@ export function StudioEditor({
       .find(Boolean) ?? null;
   const detailsBlockedBy: string | null = (() => {
     if (featureBlockedBy) return featureBlockedBy;
+    if (isVerdict && !editingPublished && !vWindow.open) {
+      return `${vWindow.line}. One verdict per rolling thirty days; this one is saved as a draft.`;
+    }
     // The fact-check is offered on this screen and encouraged, never required:
     // a creator publishes without it, and its result travels with the piece
     // when they do run it.
@@ -1607,7 +1634,32 @@ export function StudioEditor({
               ) : null}
 
               {/* THE CALL. The verdict's spine, or a feature on the others. */}
-              {stepKey === "call" ? (
+              {stepKey === "call" && isVerdict ? (
+                <StepErrorBoundary label="The call">
+                <DevCrash step="call" />
+                <VerdictCallPanel
+                  ticker={ticker}
+                  onTicker={dirtying(setTicker)}
+                  lookup={symbolLookup}
+                  onRetryLookup={retrySymbolLookup}
+                  eligibility={eligibility}
+                  direction={direction}
+                  onDirection={dirtying(setDirection)}
+                  target={target}
+                  onTarget={dirtying(setTarget)}
+                  horizon={horizon}
+                  onHorizon={dirtying(setHorizon)}
+                  window={vWindow}
+                  frozen={editingPublished}
+                />
+                {callDraftNote ? (
+                  <p className="mt-3 text-[0.8125rem] leading-snug text-[var(--brass)]" role="status">
+                    {callDraftNote}
+                  </p>
+                ) : null}
+                </StepErrorBoundary>
+              ) : null}
+              {stepKey === "call" && !isVerdict ? (
                 <StepErrorBoundary label="The call">
                 <DevCrash step="call" />
                 <LockPublishPanel
@@ -1643,6 +1695,11 @@ export function StudioEditor({
                   pending={false}
                   error={null}
                 />
+                {callDraftNote ? (
+                  <p className="mt-3 text-[0.8125rem] leading-snug text-[var(--brass)]" role="status">
+                    {callDraftNote}
+                  </p>
+                ) : null}
                 </StepErrorBoundary>
               ) : null}
 
@@ -1833,6 +1890,7 @@ export function StudioEditor({
                     pending={pending}
                     error={error}
                     promote={<PromotePanel state={promote} onChange={setPromote} />}
+                    visibility={isVerdict ? <VerdictVisibility /> : undefined}
                   />
                 </div>
                 </StepErrorBoundary>

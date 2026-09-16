@@ -319,6 +319,7 @@ function DevComposeInner() {
             plans={[]}
             editingPublished={shape === "published"}
             hasLockedCall={shape === "published"}
+            verdictLastPublishedAt={limited ? LAST_VERDICT_AT : null}
           />
           )}
         </div>

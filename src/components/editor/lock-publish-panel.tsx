@@ -161,6 +161,7 @@ export function LockPublishPanel({
   pending,
   error,
   promote,
+  visibility,
   frozen = false,
 }: {
   hasCard: boolean;
@@ -205,6 +206,11 @@ export function LockPublishPanel({
   error: string | null;
   /** The Promote section, injected so its cost model stays pluggable. */
   promote?: React.ReactNode;
+  /**
+   * Replaces the Access section when the publication's visibility is fixed
+   * by its type (a verdict), so the setting is stated rather than offered.
+   */
+  visibility?: React.ReactNode;
   /**
    * Which part of the panel to render. The guided sequence asks for the call
    * in its own step and the publishing settings in the last one, so the same
@@ -470,7 +476,9 @@ export function LockPublishPanel({
         </section>
       )}
 
-      {sections !== "call" && (
+      {sections !== "call" && visibility ? visibility : null}
+
+      {sections !== "call" && !visibility && (
       <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
         <p className="t-eyebrow mb-2.5">Access</p>
         <div className="flex flex-col gap-1.5 text-sm">

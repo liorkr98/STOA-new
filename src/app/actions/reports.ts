@@ -21,7 +21,9 @@ async function requireUser() {
  * Saves a draft. Returns the report id so the editor can keep autosaving, and
  * a reason when the clip's overlays specifically could not be stored.
  */
-export async function saveDraft(input: ComposeInput): Promise<{ id: string; videoEditError?: string }> {
+export async function saveDraft(
+  input: ComposeInput,
+): Promise<{ id: string; videoEditError?: string; callDraftError?: string }> {
   const { supabase, userId } = await requireUser();
   // A draft may be untagged; publish is where the primary tag becomes mandatory.
   const tags = await normalizeTags(supabase, input);
@@ -60,10 +62,38 @@ export async function saveDraft(input: ComposeInput): Promise<{ id: string; vide
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
   const videoEditError = await storeVideoEdit(supabase, reportId, input);
+  const callDraftError = await storeDraftCall(supabase, reportId, input);
 
   await captureVersion(supabase, reportId, userId, input);
 
-  return { id: reportId, videoEditError };
+  return { id: reportId, videoEditError, callDraftError };
+}
+
+/**
+ * The draft call's direction, target and horizon, in their own statement
+ * after the row so a missing column (migration 0065 not yet applied) costs
+ * the creator a plain sentence rather than the draft. Only the ticker is
+ * on the main row; without these three a reopened verdict draft had lost
+ * most of its call.
+ */
+async function storeDraftCall(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reportId: string,
+  input: Pick<ComposeInput, "ticker" | "direction" | "target_price" | "horizon_days">,
+): Promise<string | undefined> {
+  const hasTicker = Boolean(input.ticker?.trim());
+  const { error } = await supabase
+    .from("reports")
+    .update({
+      draft_direction: hasTicker ? (input.direction ?? null) : null,
+      draft_target_price: hasTicker ? (input.target_price ?? null) : null,
+      draft_horizon_days: hasTicker ? (input.horizon_days ?? null) : null,
+    })
+    .eq("id", reportId);
+  if (!error) return undefined;
+  return /draft_direction|draft_target_price|draft_horizon_days/.test(error.message)
+    ? "The call's direction, target and horizon stay in this tab only: the database has no place for them yet."
+    : `The call's details could not be saved: ${error.message}`;
 }
 
 /**

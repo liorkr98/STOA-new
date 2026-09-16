@@ -20,6 +20,17 @@ import {
   validateChartScreenshotUrls,
 } from "@/lib/reports/chart-screenshots";
 import { alertReportPublished } from "@/lib/slack/alerts";
+import { getTickerRow } from "@/lib/db/tickers";
+import { macroInstrument } from "@/lib/markets/instruments";
+import {
+  VERDICT_CAP_MAX_USD,
+  VERDICT_HORIZON_MAX_DAYS,
+  VERDICT_HORIZON_MIN_DAYS,
+  VERDICT_WINDOW_DAYS,
+  formatMarketCap,
+  horizonInRange,
+  verdictWindow,
+} from "@/lib/compose/verdict";
 import type { ComposeInput } from "@/lib/types";
 
 export class PublishReportError extends Error {
@@ -110,11 +121,83 @@ async function saveDraftBody(
   return reportId;
 }
 
-export async function validateAndPublishReport(
+/**
+ * The verdict's rules, enforced where they cannot be bypassed.
+ *
+ * Compose explains each of these as the analyst types; this is the same
+ * list, read again at publish so nothing the screen refused can arrive by
+ * another route. A verdict is a complete call (ticker, long or short, a
+ * target, a horizon of 7 to 180 days) on a listed equity under $2B, and an
+ * analyst publishes one per rolling thirty days. It is always
+ * subscribers-only when it goes out.
+ */
+async function enforceVerdictRules(
   supabase: SupabaseClient,
   userId: string,
   input: ComposeInput,
+): Promise<void> {
+  const ticker = input.ticker?.trim().toUpperCase();
+  if (!ticker) throw new PublishReportError("A verdict starts with a ticker.");
+  if (input.direction !== "long" && input.direction !== "short") {
+    throw new PublishReportError("A verdict is long or short. The market cannot settle a hold.");
+  }
+  if (!(Number(input.target_price) > 0)) {
+    throw new PublishReportError(`A verdict needs a target price. It is what the market settles ${ticker} against.`);
+  }
+  const horizon = input.horizon_days ?? 0;
+  if (!horizonInRange(horizon)) {
+    throw new PublishReportError(
+      `A verdict's horizon is between ${VERDICT_HORIZON_MIN_DAYS} and ${VERDICT_HORIZON_MAX_DAYS} days.`,
+    );
+  }
+  const macro = macroInstrument(ticker);
+  if (macro) {
+    throw new PublishReportError(
+      `${ticker} is ${macro.name.toLowerCase()}, a macro instrument with no market cap. A verdict is a call on a company under $2B.`,
+    );
+  }
+  const row = await getTickerRow(ticker);
+  if (!row || row.status !== "active") {
+    throw new PublishReportError(`${ticker} is not a listed equity Stoa knows. A verdict is a call on a company under $2B.`);
+  }
+  const cap = row.market_cap != null ? Number(row.market_cap) : null;
+  if (cap == null || !Number.isFinite(cap) || cap <= 0) {
+    throw new PublishReportError(
+      `Stoa has no market cap on file for ${ticker} yet, so it cannot confirm the name is under $2B.`,
+    );
+  }
+  if (cap >= VERDICT_CAP_MAX_USD) {
+    throw new PublishReportError(
+      `${ticker} is a ${formatMarketCap(cap)} company. A verdict is a call on a name under $2B.`,
+    );
+  }
+
+  const since = new Date(Date.now() - VERDICT_WINDOW_DAYS * 86_400_000).toISOString();
+  const { data: last } = await supabase
+    .from("reports")
+    .select("published_at")
+    .eq("author_id", userId)
+    .eq("type", "call")
+    .in("status", ["published", "resolution_pending_review", "archived"])
+    .gte("published_at", since)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const lastAt = (last as { published_at: string | null } | null)?.published_at ?? null;
+  const window = verdictWindow(lastAt);
+  if (!window.open) {
+    throw new PublishReportError(`${window.line}. One verdict per rolling ${VERDICT_WINDOW_DAYS} days.`);
+  }
+}
+
+export async function validateAndPublishReport(
+  supabase: SupabaseClient,
+  userId: string,
+  rawInput: ComposeInput,
 ): Promise<{ id: string }> {
+  // A verdict is subscribers-only while it is open, whatever the client sent.
+  const input: ComposeInput =
+    rawInput.type === "call" ? { ...rawInput, access: "subscribers", price: null } : rawInput;
   // The only real eligibility gate in this stack: an admin approved this
   // account as an analyst (approve_analyst_application sets profiles.role).
   // Previously enforced only by the studio compose page's client-side
@@ -134,6 +217,8 @@ export async function validateAndPublishReport(
       403,
     );
   }
+
+  if (input.type === "call") await enforceVerdictRules(supabase, userId, input);
 
   const disclosureProvided = input.views_certified !== undefined;
   if (disclosureProvided && !input.views_certified) {
