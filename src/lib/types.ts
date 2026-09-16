@@ -98,7 +98,18 @@ export interface Report {
   /** Set the instant status becomes 'published'; freezes content via a DB trigger. */
   locked_at: string | null;
   created_at: string;
+  /** Maintained by a trigger on every update; what "last touched" reads. */
+  updated_at?: string;
   fact_check_results?: Record<string, unknown> | null;
+  /**
+   * A draft call's direction, target and horizon, kept between sessions
+   * (migration 0065). Only the ticker survived a reopened draft before; a
+   * verdict is nothing without the other three. Absent until the migration
+   * is applied.
+   */
+  draft_direction?: Direction | null;
+  draft_target_price?: number | null;
+  draft_horizon_days?: number | null;
   /** Compose video edit (trim and overlays), drawn by the player. See src/lib/compose/overlays.ts. */
   video_edit?: Record<string, unknown> | null;
   /** Mandatory disclosure block — never optional, always shown on published content. */

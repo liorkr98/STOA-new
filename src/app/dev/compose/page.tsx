@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { StudioEditor } from "@/components/editor/studio-editor";
 import { ProcessingState } from "@/components/compose/processing-state";
+import { ComposePicker, type PickerDraft } from "@/components/compose/type-picker";
+import { summarizeDraft } from "@/lib/compose/drafts";
+import { verdictWindow } from "@/lib/compose/verdict";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
 import type { DraftCard } from "@/lib/compose/cards";
 import type { Report } from "@/lib/types";
@@ -97,16 +100,81 @@ const BODY = JSON.stringify({
   ],
 });
 
-type Shape = "video" | "research" | "both" | "empty" | "published";
+type Shape = "pick" | "video" | "research" | "both" | "empty" | "published";
 
 function parseShape(raw: string | null): Shape {
-  if (raw === "video" || raw === "research" || raw === "both" || raw === "empty" || raw === "published") {
+  if (
+    raw === "pick" ||
+    raw === "video" ||
+    raw === "research" ||
+    raw === "both" ||
+    raw === "empty" ||
+    raw === "published"
+  ) {
     return raw;
   }
-  return "empty";
+  return "pick";
 }
 
+/** The picker's drafts: one per type, at different points along the spine. */
+const PICKER_DRAFTS: PickerDraft[] = (
+  [
+    {
+      id: "fx-verdict",
+      type: "call",
+      title: "Photronics guided flat and the mix says otherwise",
+      summary: null,
+      body: null,
+      ticker: "PLAB",
+      primary_tag: null,
+      created_at: "2026-09-10T09:00:00Z",
+      updated_at: "2026-09-14T15:00:00Z",
+      draft_direction: "short",
+      draft_target_price: 20,
+      draft_horizon_days: 30,
+      editedLabel: "2 days ago",
+    },
+    {
+      id: "fx-thesis",
+      type: "research",
+      title: "AXT's indium phosphide ramp is mispriced by two years",
+      summary: null,
+      body: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"The ramp."}]}]}',
+      ticker: "AXTI",
+      primary_tag: null,
+      created_at: "2026-09-01T09:00:00Z",
+      updated_at: "2026-09-09T15:00:00Z",
+      editedLabel: "7 days ago",
+    },
+    {
+      id: "fx-video",
+      type: "video",
+      title: "Why the qualification matters",
+      summary: null,
+      body: null,
+      ticker: "AXTI",
+      primary_tag: "semiconductors",
+      created_at: "2026-08-30T09:00:00Z",
+      updated_at: "2026-08-30T15:00:00Z",
+      editedLabel: "17 days ago",
+    },
+    {
+      id: "fx-brief",
+      type: "short_post",
+      title: null,
+      summary: "Two lines on the print.",
+      body: null,
+      ticker: null,
+      primary_tag: null,
+      created_at: "2026-08-28T09:00:00Z",
+      updated_at: "2026-08-28T15:00:00Z",
+      editedLabel: "19 days ago",
+    },
+  ] as const
+).map(({ editedLabel, ...row }) => ({ ...summarizeDraft(row), editedLabel }));
+
 const SHAPES: { key: Shape; label: string; blurb: string }[] = [
+  { key: "pick", label: "Type picker", blurb: "The first screen, with four drafts" },
   { key: "video", label: "Video only", blurb: "A clip, no written report" },
   { key: "research", label: "Research only", blurb: "Written work, no clip" },
   { key: "both", label: "Video and research", blurb: "Both modules present" },
@@ -144,7 +212,7 @@ const PUBS: Publication[] = [
     editHref: "/studio/compose?id=p1",
     state: "published",
     hasCall: false,
-    typeLabel: "CALL",
+    typeLabel: "VERDICT",
     tag: "NVDA",
     tagIsTicker: true,
     badge: "CALL · THESIS",
@@ -163,7 +231,7 @@ const PUBS: Publication[] = [
     editHref: "/studio/compose?id=p2",
     state: "open",
     hasCall: true,
-    typeLabel: "CALL",
+    typeLabel: "VERDICT",
     tag: "MU",
     tagIsTicker: true,
     badge: "VIDEO · CALL",
@@ -185,6 +253,8 @@ const PUBS: Publication[] = [
 // render makes this page re-render impure.
 const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
 const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
+/** A verdict published 18 days ago, for the limited picker. */
+const LAST_VERDICT_AT = new Date(Date.now() - 18 * 86_400_000).toISOString();
 
 export default function DevComposePage() {
   return (
@@ -197,11 +267,19 @@ export default function DevComposePage() {
 function DevComposeInner() {
   const search = useSearchParams();
   const [shape, setShape] = useState<Shape>(() => parseShape(search.get("shape")));
+  // ?limited=1 shows the verdict card when the analyst has used this month's.
+  const limited = search.get("limited") === "1";
 
   return (
     <div className="w-full">
       <DevPrivateShell>
         <div className="breakout-main">
+          {shape === "pick" ? (
+            <ComposePicker
+              drafts={PICKER_DRAFTS}
+              verdictWindow={verdictWindow(limited ? LAST_VERDICT_AT : null)}
+            />
+          ) : (
           <StudioEditor
             key={shape}
             analystReportPrice={null}
@@ -213,6 +291,7 @@ function DevComposeInner() {
             editingPublished={shape === "published"}
             hasLockedCall={shape === "published"}
           />
+          )}
         </div>
       </DevPrivateShell>
 

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { formatDistanceToNowStrict } from "date-fns";
 import { getSessionProfile } from "@/lib/db/auth";
 import {
   getAuthorReportStatus,
   getDraftForAuthor,
   getPublishedForAuthor,
+  lastVerdictPublishedAt,
+  listDraftsForPicker,
 } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
@@ -15,6 +18,10 @@ import { notebookToDoc } from "@/lib/editor/notebook-seed";
 import { StudioEditor } from "@/components/editor/studio-editor";
 import { VersionHistory } from "@/components/editor/version-history";
 import { FirstReportBanner } from "@/components/onboarding/first-report-banner";
+import { ComposePicker, type PickerDraft } from "@/components/compose/type-picker";
+import { summarizeDraft } from "@/lib/compose/drafts";
+import { isPublicationType } from "@/lib/compose/modes";
+import { verdictWindow } from "@/lib/compose/verdict";
 import type { Report } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Compose" };
@@ -22,11 +29,30 @@ export const metadata: Metadata = { title: "Compose" };
 export default async function ComposePage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; onboarding?: string; notebook?: string }>;
+  searchParams: Promise<{ id?: string; type?: string; onboarding?: string; notebook?: string }>;
 }) {
   const profile = await getSessionProfile();
   if (!profile) redirect("/sign-in");
-  const { id, onboarding, notebook } = await searchParams;
+  const { id, type: rawType, onboarding, notebook } = await searchParams;
+
+  // Compose opens by asking what the analyst is publishing. A draft, a chosen
+  // type or a notebook to seed from skips the question.
+  if (!id && !notebook && !isPublicationType(rawType)) {
+    const [rows, lastVerdict] = await Promise.all([
+      listDraftsForPicker(profile.id),
+      lastVerdictPublishedAt(profile.id),
+    ]);
+    const drafts: PickerDraft[] = rows.map((row) => {
+      const d = summarizeDraft(row);
+      return { ...d, editedLabel: formatDistanceToNowStrict(new Date(d.touchedAt), { addSuffix: true }) };
+    });
+    return (
+      <div className="breakout-main">
+        <ComposePicker drafts={drafts} verdictWindow={verdictWindow(lastVerdict)} />
+      </div>
+    );
+  }
+
   const [draft, wallet, plans, savedCards, clips] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),

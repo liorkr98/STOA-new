@@ -28,6 +28,12 @@ export interface ResolvedSymbol {
   unit: string | null;
   /** The live level, which is what a call would lock at. */
   price: number | null;
+  /**
+   * Last refreshed market capitalisation in USD, from the listing row. Null
+   * for a macro instrument, and for a listing whose metrics have not been
+   * refreshed yet. The verdict's under-$2B rule reads it.
+   */
+  marketCap: number | null;
   /** The level printed the way the instrument is read: "$178.20", "4.215%". */
   priceLabel: string | null;
   /** Treasury tenors: the level is a yield, and "up" means bond prices fall. */
@@ -61,6 +67,7 @@ export async function resolveSymbol(raw: string): Promise<ResolvedSymbol> {
     exchange: null,
     unit: null,
     price: null,
+    marketCap: null,
     priceLabel: null,
     quotedAsYield: false,
     directionNote: null,
@@ -79,6 +86,7 @@ export async function resolveSymbol(raw: string): Promise<ResolvedSymbol> {
       exchange: null,
       unit: macro.unit,
       price,
+      marketCap: null,
       priceLabel: formatMacroLevel(macro, price),
       quotedAsYield: macro.kind === "rate",
       directionNote: macro.directionNote ?? null,
@@ -98,6 +106,9 @@ export async function resolveSymbol(raw: string): Promise<ResolvedSymbol> {
     name: tidyName(row?.name),
     exchange: row?.exchange ?? null,
     price,
+    marketCap: row?.market_cap != null && Number.isFinite(Number(row.market_cap)) && Number(row.market_cap) > 0
+      ? Number(row.market_cap)
+      : null,
     priceLabel: price != null ? `$${fmtPrice(price)}` : null,
   };
 }

@@ -8,6 +8,7 @@ import { tickersInCapBand } from "@/lib/db/tickers";
 import { coverageAllTime } from "@/lib/markets/coverage";
 import type { CapBand } from "@/lib/market/cap-bands";
 import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
+import type { DraftRow } from "@/lib/compose/drafts";
 
 const SELECT =
   "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
@@ -318,6 +319,84 @@ export async function listLinkableByAuthor(
   if (opts.excludeId) q = q.neq("id", opts.excludeId);
   const { data } = await q;
   return (data ?? []) as Pick<Report, "id" | "title" | "summary" | "type" | "status" | "ticker">[];
+}
+
+/**
+ * The author's drafts as the type picker lists them: the row plus its body,
+ * newest touched first. `*` rather than a column list so the draft-call
+ * columns (migration 0065) come along once they exist and the query does not
+ * fail while they do not.
+ */
+export async function listDraftsForPicker(authorId: string, limit = 30): Promise<DraftRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("*, bodies:report_bodies(body)")
+    .eq("author_id", authorId)
+    .eq("status", "draft")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  return asReportRows(data).map((row) => {
+    const bodies = row.bodies as { body: string | null } | { body: string | null }[] | null | undefined;
+    const body = Array.isArray(bodies) ? (bodies[0]?.body ?? null) : (bodies?.body ?? null);
+    const r = row as unknown as Report;
+    return {
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      summary: r.summary,
+      body,
+      ticker: r.ticker,
+      primary_tag: r.primary_tag ?? null,
+      created_at: r.created_at,
+      updated_at: r.updated_at ?? null,
+      draft_direction: r.draft_direction ?? null,
+      draft_target_price: r.draft_target_price ?? null,
+      draft_horizon_days: r.draft_horizon_days ?? null,
+    };
+  });
+}
+
+/**
+ * When the author's most recent verdict went out, for the rolling thirty-day
+ * window. Archived verdicts count: taking one down does not earn another.
+ */
+export async function lastVerdictPublishedAt(authorId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("published_at")
+    .eq("author_id", authorId)
+    .eq("type", "call")
+    .in("status", ["published", "resolution_pending_review", "archived"])
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as { published_at: string | null } | null)?.published_at ?? null;
+}
+
+/**
+ * How often each primary tag is used across published work, most used
+ * first. The tag search shows these before anything is typed, the same way
+ * Explore's filters lead with the most-covered names.
+ */
+export async function listTagUsage(): Promise<string[]> {
+  return cachedPage("tag-usage", 300, async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("reports")
+      .select("primary_tag")
+      .in("status", ["published", "resolution_pending_review"])
+      .not("primary_tag", "is", null)
+      .limit(2000);
+    const counts = new Map<string, number>();
+    for (const row of (data as { primary_tag: string | null }[] | null) ?? []) {
+      if (!row.primary_tag) continue;
+      counts.set(row.primary_tag, (counts.get(row.primary_tag) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([slug]) => slug);
+  });
 }
 
 /** Newest publicly visible publications platform-wide, with author and prediction. */

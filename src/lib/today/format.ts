@@ -29,14 +29,14 @@ export function durationLabel(seconds: number): string {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  call: "CALL",
-  research: "RESEARCH",
-  short_post: "NOTE",
+  call: "VERDICT",
+  research: "THESIS",
+  short_post: "BRIEF",
   video: "VIDEO",
 };
 
 export function typeLabel(type: string): string {
-  return TYPE_LABEL[type] ?? "NOTE";
+  return TYPE_LABEL[type] ?? "THESIS";
 }
 
 /** Free / $7 / Subscribers, from the report's own access setting. */
