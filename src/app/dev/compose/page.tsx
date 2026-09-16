@@ -281,6 +281,8 @@ const PUBS: Publication[] = [
 // render makes this page re-render impure.
 const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
 const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
+/** The most-used tags, as the live page reads them off published work. */
+const POPULAR_TAGS = ["semiconductors", "ai-buildout", "energy", "financials", "memory", "software"];
 /** A verdict published 18 days ago, for the limited picker. */
 const LAST_VERDICT_AT = new Date(Date.now() - 18 * 86_400_000).toISOString();
 
@@ -320,6 +322,7 @@ function DevComposeInner() {
             editingPublished={shape === "published"}
             hasLockedCall={shape === "published"}
             verdictLastPublishedAt={limited ? LAST_VERDICT_AT : null}
+            popularTags={POPULAR_TAGS}
           />
           )}
         </div>

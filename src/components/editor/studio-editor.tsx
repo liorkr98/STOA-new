@@ -216,6 +216,7 @@ export function StudioEditor({
   editingPublished = false,
   hasLockedCall = false,
   verdictLastPublishedAt = null,
+  popularTags = [],
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
@@ -223,6 +224,8 @@ export function StudioEditor({
   initialType?: PublicationType;
   /** When the analyst's last verdict went out, for the rolling thirty-day window. */
   verdictLastPublishedAt?: string | null;
+  /** Tag slugs by use across published work, most used first, for the tag search. */
+  popularTags?: string[];
   /** The draft's saved deck, payloads intact (see listAuthorCards). */
   initialCards?: DraftCard[];
   /** The draft already has a clip, so it opens with its video module. */
@@ -1820,6 +1823,7 @@ export function StudioEditor({
                   <TagPicker
                     value={tags}
                     onChange={dirtying(setTags)}
+                    popular={popularTags}
                     hasCall={lockingCall}
                     callSector={
                       lockingCall

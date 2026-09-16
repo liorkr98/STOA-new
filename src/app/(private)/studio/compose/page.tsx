@@ -8,6 +8,7 @@ import {
   getPublishedForAuthor,
   lastVerdictPublishedAt,
   listDraftsForPicker,
+  listTagUsage,
 } from "@/lib/db/reports";
 import { listActivePlans } from "@/lib/db/plans";
 import { getWallet } from "@/lib/db/wallet";
@@ -53,13 +54,14 @@ export default async function ComposePage({
     );
   }
 
-  const [draft, wallet, plans, savedCards, clips, lastVerdict] = await Promise.all([
+  const [draft, wallet, plans, savedCards, clips, lastVerdict, popularTags] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),
     listActivePlans(profile.id),
     id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
     id ? listVideosByReport(id) : Promise.resolve([]),
     lastVerdictPublishedAt(profile.id),
+    listTagUsage(),
   ]);
   // A published report used to be a dead end here, because the database
   // refused every edit. Editing is allowed now and disclosed when it happens,
@@ -110,6 +112,7 @@ export default async function ComposePage({
         editingPublished={Boolean(published)}
         hasLockedCall={Boolean(published?.prediction)}
         verdictLastPublishedAt={lastVerdict}
+        popularTags={popularTags}
         initialCards={initialCards}
         hasVideoClip={clips.length > 0}
         aiCredits={wallet?.ai_credits ?? 0}

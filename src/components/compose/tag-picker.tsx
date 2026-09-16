@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TAG_GROUPS, TAG_LIMITS, tagBySlug, tagForSector, type PublicationTag } from "@/lib/tags/taxonomy";
+import { ALL_TAGS, TAG_GROUPS, TAG_LIMITS, tagBySlug, tagForSector, type PublicationTag } from "@/lib/tags/taxonomy";
 
 export interface TagSelection {
   primary: string | null;
@@ -14,48 +14,177 @@ export interface TagSelection {
 
 export const EMPTY_TAGS: TagSelection = { primary: null, secondary: [], primaryPinned: false };
 
+/** The most-used tags, in order, as tag objects. At most this many. */
+const MOST_USED_MAX = 8;
+
 /**
- * The tag menu. Module level rather than nested in TagPicker: a component
- * declared during render is a new type on every render, so the open menu would
- * unmount and remount (losing its scroll position) on each keystroke.
+ * The tag list: type to narrow rather than scroll.
+ *
+ * Before anything is typed the most-used tags come first, then the whole
+ * list by group, so the options worth having are the ones in view. Typing
+ * narrows it to one flat list, names that begin with the query before names
+ * that merely contain it, the same way Explore's filters behave. The list
+ * is closed: when nothing matches it says so and offers the nearest, never
+ * a way to invent a tag the placement rules would not know.
+ *
+ * Module level rather than nested in TagPicker: a component declared during
+ * render is a new type on every render, so the open list would unmount and
+ * remount (losing its scroll position and its field) on each keystroke.
  */
-function TagList({
+function TagSearch({
   slot,
   primary,
   secondary,
+  popular,
   onPick,
+  onClose,
 }: {
   slot: "primary" | "secondary";
   primary: string | null;
   secondary: string[];
+  /** Slugs, most used first. */
+  popular: string[];
   onPick: (slot: "primary" | "secondary", tag: PublicationTag) => void;
+  onClose: () => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const taken = (t: PublicationTag) => t.slug === primary || secondary.includes(t.slug);
+
+  const mostUsed = useMemo(
+    () =>
+      popular
+        .map(tagBySlug)
+        .filter((t): t is PublicationTag => Boolean(t))
+        .slice(0, MOST_USED_MAX),
+    [popular],
+  );
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return null;
+    const starts: PublicationTag[] = [];
+    const contains: PublicationTag[] = [];
+    for (const t of ALL_TAGS) {
+      const label = t.label.toLowerCase();
+      if (label.startsWith(q) || t.slug.startsWith(q)) starts.push(t);
+      else if (label.includes(q) || t.slug.includes(q)) contains.push(t);
+    }
+    return [...starts, ...contains];
+  }, [query]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (!matches) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+      return;
+    }
+    const open = matches.filter((t) => !taken(t));
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActive((i) => Math.min(open.length - 1, i + 1));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActive((i) => Math.max(0, i - 1));
+        break;
+      case "Enter": {
+        e.preventDefault();
+        const pick = open[Math.min(active, open.length - 1)];
+        if (pick) onPick(slot, pick);
+        break;
+      }
+      case "Escape":
+        e.preventDefault();
+        onClose();
+        break;
+    }
+  };
+
+  const chip = (t: PublicationTag, highlighted = false) => (
+    <button
+      key={t.slug}
+      type="button"
+      role="option"
+      aria-selected={highlighted}
+      disabled={taken(t)}
+      onClick={() => onPick(slot, t)}
+      onMouseEnter={() => {
+        if (matches) setActive(matches.filter((m) => !taken(m)).indexOf(t));
+      }}
+      className={cn(
+        "focus-ring rounded-[var(--radius-tag)] border px-2 py-0.5 text-[11px]",
+        taken(t)
+          ? "border-border text-text-faint"
+          : highlighted
+            ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+            : "border-border text-text hover:border-border-strong",
+      )}
+    >
+      {t.label}
+    </button>
+  );
+
+  const openMatches = matches?.filter((t) => !taken(t)) ?? [];
+
   return (
-    <div className="menu-pop mt-2 max-h-[280px] overflow-y-auto scroll-area rounded-[var(--radius-btn)] border border-border bg-surface p-2">
-      {TAG_GROUPS.map((g) => (
-        <div key={g.key} className="mb-2 last:mb-0">
-          <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">{g.label}</div>
-          <div className="flex flex-wrap gap-1">
-            {g.tags.map((t) => {
-              const taken = t.slug === primary || secondary.includes(t.slug);
-              return (
-                <button
-                  key={t.slug}
-                  type="button"
-                  disabled={taken}
-                  onClick={() => onPick(slot, t)}
-                  className={cn(
-                    "focus-ring rounded-[var(--radius-tag)] border px-2 py-0.5 text-[11px]",
-                    taken ? "border-border text-text-faint" : "border-border text-text hover:border-border-strong",
-                  )}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+    <div className="menu-pop mt-2 rounded-[var(--radius-btn)] border border-border bg-surface p-2">
+      <input
+        ref={inputRef}
+        type="text"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setActive(0);
+        }}
+        onKeyDown={onKeyDown}
+        placeholder="Type to narrow"
+        aria-label={`Search tags for the ${slot} tag`}
+        autoComplete="off"
+        spellCheck={false}
+        className="num mb-2 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
+      />
+      <div role="listbox" aria-label="Tags" className="scroll-area max-h-[280px] overflow-y-auto">
+        {matches ? (
+          matches.length === 0 ? (
+            <p className="num px-1 py-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+              Nothing matches. Tags are a fixed list; try a sector or a theme.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-1 px-1 pb-1">
+              {matches.map((t) => chip(t, openMatches[active]?.slug === t.slug))}
+            </div>
+          )
+        ) : (
+          <>
+            {mostUsed.length > 0 ? (
+              <div className="mb-2">
+                <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                  Most used
+                </div>
+                <div className="flex flex-wrap gap-1">{mostUsed.map((t) => chip(t))}</div>
+              </div>
+            ) : null}
+            {TAG_GROUPS.map((g) => (
+              <div key={g.key} className="mb-2 last:mb-0">
+                <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                  {g.label}
+                </div>
+                <div className="flex flex-wrap gap-1">{g.tags.map((t) => chip(t))}</div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -65,19 +194,23 @@ function TagList({
  * to two SECONDARY tags that are searchable only. The primary auto-fills from
  * the call's ticker sector when a call exists (overridable in one click);
  * nothing auto-fills without a call. The two roles are visually distinct: the
- * primary is a solid ink chip, secondaries are outlined.
+ * primary is a solid ink chip, secondaries are outlined. Choosing opens a
+ * list you type into (TagSearch above) rather than one you scroll.
  */
 export function TagPicker({
   value,
   onChange,
   callSector,
   hasCall,
+  popular = [],
 }: {
   value: TagSelection;
   onChange: (v: TagSelection) => void;
   /** Sector of the call's ticker, when known. */
   callSector: string | null;
   hasCall: boolean;
+  /** Tag slugs by how often they are used across published work, most used first. */
+  popular?: string[];
 }) {
   const [open, setOpen] = useState<"primary" | "secondary" | null>(null);
 
@@ -136,7 +269,14 @@ export function TagPicker({
         <p className="num mt-1.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">Filled from the call&apos;s sector · one click to change</p>
       ) : null}
       {open === "primary" ? (
-        <TagList slot="primary" primary={value.primary} secondary={value.secondary} onPick={pick} />
+        <TagSearch
+          slot="primary"
+          primary={value.primary}
+          secondary={value.secondary}
+          popular={popular}
+          onPick={pick}
+          onClose={() => setOpen(null)}
+        />
       ) : null}
 
       <div className="num mb-1.5 mt-4 text-[10px] uppercase tracking-[0.16em] text-text-mute">
@@ -167,7 +307,14 @@ export function TagPicker({
         ) : null}
       </div>
       {open === "secondary" ? (
-        <TagList slot="secondary" primary={value.primary} secondary={value.secondary} onPick={pick} />
+        <TagSearch
+          slot="secondary"
+          primary={value.primary}
+          secondary={value.secondary}
+          popular={popular}
+          onPick={pick}
+          onClose={() => setOpen(null)}
+        />
       ) : null}
 
       <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
