@@ -10,6 +10,102 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-16 — Compose: four publication types, a three-step spine, the verdict
+
+**For someone using the site**
+
+- **Compose opens by asking what you are publishing.** Four types described
+  by what they are for, not by file format: a Video (reach people who don't
+  know you; the only type on the Feed), a Brief (stay present between big
+  pieces), a Thesis (prove you are worth paying for) and a Verdict (make a
+  call only the market can settle). Each card says who sees it. On a phone
+  all four fit on the screen without scrolling; tap one for the detail.
+- **Your drafts are on that first screen.** Type, headline, when you last
+  touched it, and how far along it is, with Resume. A draft opens at the
+  step you stopped on.
+- **Every type is three steps, then publish.** The content (a clip, a take,
+  a report, or a call), the headline, the tags. The old seven-step sequence
+  with optional steps in the middle is gone. The forward button still tells
+  the truth: Continue, and it refuses with the reason when a step is not
+  done; in an optional feature it reads Skip when empty, Done when
+  complete, and Done that names what is missing when half done.
+- **The headline shows where it travels.** Under the field: the line as a
+  Today row, an inbox line and a pasted link.
+- **Optional things are a menu on the publish screen, never steps.** A
+  video can add a call, cards and a full thesis; a brief or a thesis can add
+  a call and cards; a verdict can add cards, a video and written text. Each
+  row says whether it has been added; opening one goes into its editor and
+  Done brings you back.
+- **The verdict has its own rules, explained as you type.** Equities only,
+  under a $2B market cap: the name's market cap sits beside it, a tick says
+  it is eligible, and a name that is too large, a macro instrument (gold,
+  oil, yields, bitcoin) or a name with no market cap on file is refused in
+  plain words. Long or short, a target price, and a horizon between 7 and
+  180 days on a slider with its resolution date. One verdict per rolling
+  thirty days: once used, the picker and the call screen say when the next
+  one unlocks; the draft still saves.
+- **A verdict's visibility is stated, not offered.** Subscribers-only while
+  the call is open, public when the market resolves it, and a plain note of
+  what the site does today (below), so nothing pretends.
+- **Tags are chosen by typing.** The most-used tags come first; typing
+  narrows the list; arrows, Enter and Escape work.
+- **Type labels changed everywhere.** What was CALL, RESEARCH and NOTE on a
+  publication now reads VERDICT, THESIS and BRIEF (VIDEO is unchanged).
+- **The header on Compose** is the way back to Studio, the wordmark, the
+  type, and the draft's save state on the right. There is no Publish button
+  in it: the spine leads to the publish screen.
+
+Nothing behind the screens changed: the card tray and library, dragging a
+card into the text or onto the timeline, card identity across saves, the
+assistant, three-ink provenance, per-card locking, the recorder, the upload
+path, edit markers on published work and delete-versus-archive are as they
+were. The thesis writer, the video-to-thesis hand-off and the rebuilt video
+editor come in the next batch.
+
+**For Krisi**
+
+- **What the backend supports today, without any change from you.** The
+  four types store as the four `content_type` values already in the enum
+  (`video`, `short_post` = brief, `research` = thesis, `call` = verdict).
+  The verdict's completeness, direction, target, horizon (7 to 180),
+  equities-only and under-$2B checks and the one-per-rolling-30-days limit
+  all run at publish in `src/lib/reports/publish-report.ts`
+  (`enforceVerdictRules`), reading `tickers.market_cap` and the author's
+  own published verdicts. A verdict is forced to `access = subscribers`.
+- **Market cap has to be on file.** The under-$2B check refuses a listing
+  whose `tickers.market_cap` is null rather than guessing. That column is
+  filled by the ticker metrics refresh (`/api/cron/refresh-ticker-metrics`,
+  `npm run refresh:metrics`); please confirm it is running on a schedule
+  and covers the small caps, or every verdict on a name it has not reached
+  will be refused with "no market cap on file".
+- **The visibility flip does not exist, and the call is not gated.** Two
+  things the verdict needs and the site cannot do yet: (1) a visibility
+  state that flips from subscribers-only to public automatically when the
+  resolution engine settles the call (`gradeDuePredictions` is the place;
+  it should set the report public and the publication should then land in
+  Today's Verdicts band); (2) gating the call itself while open. Today
+  `predictions_read` (migration 0036) lets anyone read the ticker,
+  direction and target of a published report, and only `report_bodies` is
+  gated. The publish screen says both plainly. Until (1) lands, a verdict
+  stays subscribers-only after resolution unless the analyst changes it.
+- **Migration 0065** (`supabase/migrations/0065_draft_call_fields.sql`)
+  adds `reports.draft_direction`, `draft_target_price` and
+  `draft_horizon_days`. Compose writes them in their own statement after
+  the draft row and carries on if they are missing, saying so on the call
+  screen; apply it and reopened drafts keep their whole call. **Please also
+  confirm whether 0064 (`reports.video_edit`) landed**; the code still
+  degrades without it.
+- **A DB-level rate limit would be safer** than the application check: a
+  unique partial index or a trigger on `reports` for `type = 'call'`
+  published within 30 days of another by the same author. Not required for
+  the screens to work.
+- **Coming next batch, worth knowing now:** a link from a publication to a
+  thesis publication (`linked_report_id` exists; publishing a video should
+  publish an attached draft thesis with it, and link rather than copy a
+  published one).
+
+---
+
 ## 2026-09-15 — Home-screen app: icons, install, and same-origin returns
 
 **For someone using the site**

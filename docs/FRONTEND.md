@@ -1222,109 +1222,107 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
   an unproven claim on a draft — same visual list-item pattern as the investor Notifications page
   (§5.7) for consistency across the whole product.
 
-### 6.2 Compose ★ — `/studio/compose` (and `?id=` to reopen a draft)
+### 6.2 Compose ★ — `/studio/compose` (and `?id=` to reopen a draft, `?type=` to start one)
 
 The other highest-scrutiny screen in the product, and the one where the seal ritual (§1.3, §2.5)
-gets triggered.
+gets triggered. The full model is `docs/COMPOSE.md`; this section is the screens.
 
-**Compose is a guided sequence, not a wall.** It was a workspace where everything was available
-at once, which read as freedom and behaved as neglect: the optional steps were invisible and got
-skipped, cards most of all. The canvas now presents one step at a time, in the order a creator
-actually thinks in.
+**Compose is a short mandatory spine and a menu of options, not a wizard.** Instagram's
+structure: everyone walks three steps, and what a publication may add on top is a menu nobody
+has to walk past.
 
-| # | Step | Optional | Holds |
+**The type picker is the first screen.** Four types described by purpose (Video: reach people
+who don't know you; Brief: stay present between big pieces; Thesis: prove you are worth paying
+for; Verdict: make a call only the market can settle), each saying who sees it. Four cards on a
+desktop (`≥ md`); on a phone four compact rows that all fit above the fold, each a disclosure
+whose detail and Start button open on a tap. The verdict card is tinted `--surface-2` with a
+`1 PER 30 DAYS` chip, or a brass `UNLOCKS IN 12 DAYS` chip and a line saying so when the window
+is closed. Under the cards, **my drafts**: type, headline, `PLAB · SPINE 2 OF 3 · EDITED 2 DAYS
+AGO`, a hairline progress bar (`66% THERE`) and Resume; compact rows on a phone with an `ALL`
+pill to Studio. `<ComposePicker>` (`src/components/compose/type-picker.tsx`).
+
+**The spine is three steps for every type:**
+
+| Type | 1 | 2 | 3 |
 |---|---|---|---|
-| 1 | Write | no | Headline, dek, and the research body when the format has one |
-| 2 | The call | yes | Ticker (looked up as typed: name and exchange, or macro instrument and unit, with the live level), direction (chosen, never defaulted), target, horizon |
-| 3 | Cards | yes | The deck, or the invitation to start one |
-| 4 | Video | yes | Choose or record a clip, or continue without |
-| 5 | Edit video | yes | Trim, thumbnail, overlays. Present only once a clip is |
-| 6 | Tags | no | Primary and secondary tags, the connected piece |
-| 7 | Publish | no | Preview, fact-check, access and price, disclosures, promote, publish |
+| Video | Video (record or upload; the rung with its timeline) | Headline | Tags |
+| Brief | The take (a textarea, 300 characters) | Headline | Tags |
+| Thesis | The report (the Tiptap writer, with the toolbox rail) | Headline | Tags |
+| Verdict | The call (`<VerdictCallPanel>`) | Headline | Tags |
 
-Steps 4 and 5 appear only on the Video format; Research and Post have no video module and are not
-walked past two steps that would have nothing in them.
+Then the **publish screen**. The tracker (`<StepNav>`) is three numbered marks joined by a
+hairline: the current one filled ink, a done one a verdigris tick, an unreached one dimmed and
+not clickable. Off the spine (the publish screen, a feature editor) no mark is current and the
+heading says where you are. Each screen has an eyebrow (`STEP 1 OF 3`, `ADD TO THIS VERDICT ·
+OPTIONAL`, `READY WHEN YOU ARE`), a display heading and one line under it (`<StepFrame>`).
 
-**The first pass guides, and only the first pass.** A step the creator has not reached is
-padlocked and not clickable. Reaching the last step unlocks all of them and the rail becomes a
-set of tabs. Each step states its own condition in the rail: a tick when it holds something,
-`OPTIONAL` when it may be left alone, `EMPTY` when it is required and is not filled in yet.
+**The headline step** is the headline (a growing textarea in the display face; Enter moves on)
+and the dek (not on a brief, whose text is the take), then **How the line travels**: the
+headline as a Today row, an inbox line and a pasted link, so the creator writes for the places
+it is read.
 
-**One button per step, and its label is what pressing it will do.** There is no separate skip
-button. The step works out what the forward button means (`advanceFor` in
-`src/lib/compose/steps.ts`): nothing entered on an optional step reads **Skip** and moves on;
-enough entered reads **Continue** and moves on; something entered but incomplete still reads
-**Continue**, and pressing it says what is missing, in the creator's terms, beside the button, and
-stays put. The reasons are specific ("A target price needs a ticker. Add the ticker, or clear the
-target", "A call needs a direction. Choose long, short or hold for NVDA", "NVDAA was not found.
-Check the symbol, or clear it", "The Thesis card has nothing on it yet. Write it, or delete it",
-"Choose a primary tag"), never "invalid input", and they clear the moment they stop being true.
-Partial information never passes: Skip exists only for a step that is genuinely empty. Taking a
-clip out is its own control beside Replace on the video step, not a side effect of moving on.
+**One button per screen, and its label is what pressing it will do.** On the spine it reads
+**Continue**; when it cannot advance the reason sits beside it in rust, in the creator's terms
+(`advanceFor` in `src/lib/compose/steps.ts`), and clears the moment it stops being true. In a
+feature editor it reads **Skip** when nothing has been added, **Done** when the feature is
+complete, and Done that refuses and names what is missing when it is half done. Partial
+information never passes. Back on a feature editor reads **Back to publish**.
 
-**The call step checks the symbol as it is typed.** A small lookup (`/api/market/resolve`, over
-the same cached quote and listing row the rest of the site reads) answers under the field: a
-verdigris tick with the company and exchange (`NVDA · NVIDIA Corporation · NASDAQ`), or the macro
-instrument and its unit (`XAUUSD · Gold · $ / oz`); a rust cross with "was not found" for a
-typo. The level beside it is stated to be the level the call locks at. A Treasury tenor is
-labelled "quoted as a yield", its target field reads *Target yield*, the move to target is in
-points rather than percent, and the instrument's direction note (up means bond prices down) is
-printed under the tick. The direction starts empty and is chosen deliberately; pressing the chosen
-one again clears it. The step's Continue and the publish button both read the lookup: a symbol
-still being checked waits, one that resolved to nothing is refused, and a ticker with no direction
-is not a call. On a live publication the call step shows the locked call as a statement, since the
-fields could only ever have pretended to be editable.
+**The features menu** (`<FeaturesMenu>`, `src/components/compose/features-menu.tsx`) sits on
+the publish screen above Access: one row per feature the type may add (video: a call, cards, a
+full thesis; brief and thesis: a call, cards; verdict: cards, a video, written text), each with
+its icon, what it is, and `ADDED · NVDA · LONG` in verdigris, `NOT ADDED` faint, or `HALF DONE`
+in rust with the reason. Opening a row goes into that feature's editor; Done or Skip returns to
+the menu. On a live publication the call and the clip are the record: their rows open to be
+read and cannot be added.
 
-**The template helper on the write step is dismissible.** It is an offer; a creator who does not
-want the scaffolding takes it down once and it stays down on their next draft (a localStorage
-flag, read as an external store so the server paint matches). Templates remain under Assistant.
+**The verdict's call screen** (`src/components/compose/verdict-call-panel.tsx`) is one dashed
+card: the ticker (mono, wide, upper-cased) with the listing's name and `MKT CAP $380M` beside
+it, then the eligibility line (verdigris tick `ELIGIBLE. UNDER THE $2B CAP`, or a rust cross
+with the reason: too large with its size named, a macro instrument with no market cap, no
+market cap on file); a rule; then direction (LONG filled verdigris, SHORT filled rust, the one
+place in Compose the sentiment colours are chrome, because long and short *are* the
+sentiments), the read-only ENTRY (the live level the call locks at), the TARGET field, and the
+move from entry (`+37.1% FROM ENTRY · LONG`, rust when it goes against the call) over an
+italic display line; a rule; then the HORIZON slider, 7 to 180 days, with `45 DAYS` and
+`RESOLVES OCT 30, 2026`. Above the card, when the rolling window is closed, a brass box: "Your
+next verdict unlocks in 12 days. One verdict per rolling thirty days. You can write this one
+now and it saves as a draft." On a live verdict the card is a ledger statement of the locked
+call.
 
-**There is no format switcher.** The Video / Research / Post tabs are gone. They asked the creator
-to declare up front the thing the sequence exists to decide, and then sat in the header competing
-with it. **The format is derived from what the publication contains**: a clip makes it a video, no
-clip makes it research. A quiet mono label in the bar states the answer; it is not a control, and
-it is hidden below `md` so the primary action fits a 390px bar.
+**The verdict's visibility** (`<VerdictVisibility>`) replaces the Access section on its
+publish screen: a ledger card stating subscribers-only while open, public at resolution, and
+under it a brass box saying what the site does today (the text is gated, the call itself is
+readable by anyone who opens the publication, nothing flips it public yet). The publish button
+reads **Publish the verdict**.
 
-A consequence worth having: a video may now carry a written thesis. The tabs made video and
-research mutually exclusive, which the product model never said they were. Text lives on the write
-step and clips live on the video step, so a publication can have either, both, or neither.
+**Tags are typed, not scrolled.** Choose primary opens `<TagSearch>`: a mono field ("TYPE TO
+NARROW") over `MOST USED` (from published work), then every group; typing narrows to one flat
+row of chips, prefix matches first; arrows move, Enter picks, Escape closes; "Nothing matches.
+Tags are a fixed list" when it does not.
 
-`short_post` is preserved but no longer creatable here: a draft already stored as a Post keeps its
-own canvas and its 300-character limit, and nothing in the sequence converts one. There is an
-unwired `postNote()` server action that is the natural home for creating notes.
+**The header** (`<ComposeHeader>`) is the same on the picker and the workspace: `← STUDIO`,
+the STOA wordmark, `COMPOSE · VERDICT`, and on the right the draft's save state (`DRAFT ·
+SAVED JUST NOW`) at `≥ md`; on a phone the status sits beside the forward button instead. On a
+live publication the right holds Preview and Save changes. There is no Publish button in the
+header: the spine leads to the publish screen.
 
-**The rail does not move with the steps, but it quietens.** The organising principle survives:
+**A reopened draft starts at the first spine step it has not finished**, derived from what is
+stored (`spineProgress` in `src/lib/compose/drafts.ts`), and every step up to it is unlocked. A
+video draft always starts at the video step again, because a chosen clip is held in the tab
+until publish; the picker's row says "Needs the clip again".
 
-> **LEFT is what you build WITH. The steps are what you publish AS.**
-
-The toolbox rail holds the card tray and the AI assistant, because a card has to stay draggable
-into the body and onto the timeline. It **exists only on the steps that build something**: write
-(a body to drop a card into), cards (a deck to build) and edit video (a timeline to place a card
-on). On the call, video, tags and publish steps there is no rail at all; it used to fold to a strip
-of two icons there, which was a stub taking width from the work for no reason. On the building
-steps it opens by default and can be folded to its icons; a creator who folds or opens it is obeyed
-until they move to another step, which then gets its own default back.
-
-The settings rail is gone: access, price, disclosures and promote are step 7, and the Publish
-details drawer that used to carry a second copy of them has been removed. Two surfaces holding the
-same controls was the thing this change exists to delete.
-
-**The choose stage of the rung offers Record and Upload.** `<RecordClip>`
-(`src/components/compose/record-clip.tsx`) is a portrait black stage with fixed white-on-black
-controls (the theme's ink and paper pair would vanish on it), a rust shutter dot and square, a
-`num` REC clock (PAUSED while paused, with a smaller pause/resume ring beside stop and a blank
-of the same size on the other side so stop stays centred), and one `Notice` layout for the
-explain, refused, busy and no-camera states.
-It hands a File to the rung's `takeFile`, the same call an upload makes, so nothing downstream
-knows the clip was recorded. The rung decides after mount whether the browser can record and
-hides the Record card otherwise. See `docs/COMPOSE.md`, "Recording a clip".
+**The toolbox rail** (the card tray, then the assistant) exists only on the screens that build
+something: the writer, cards and the video. On the call, the take, the headline, tags and
+publish there is no rail. On the building screens it opens by default and folds to its icons;
+a creator who folds or opens it is obeyed until they move to another screen.
 
 **Two components render half of themselves** rather than being split in two, so the sequence
-costs no duplicated state: `<VideoRung stage="choose" | "edit" | "all">` and
-`<LockPublishPanel sections="call" | "publish" | "all">`. The video rung is mounted once across
-steps 4 and 5 so the loaded clip and its object URL survive the move, and the Write step stays
-mounted (hidden) on every other step so the Tiptap instance and the charts the publish path
-screenshots are never lost.
+costs no duplicated state: `<VideoRung stage="all">` on the video screen (the picker and the
+editor in one, mounted once for every type that may carry a clip and hidden off-screen so the
+loaded clip survives), and `<LockPublishPanel sections="call" | "publish">` for a non-verdict
+call and the publish settings. The writer (Tiptap) stays mounted and hidden on every other
+screen so the charts the publish path screenshots are never lost.
 
 **A frame, a header, two scrolling columns:**
 
@@ -1523,12 +1521,13 @@ added is a quiet `+ Add video` / `+ Add research` row, never a fork.
 Both modules **stay mounted once added**. Removing a module and adding it back keeps the clip,
 its trim, its overlays, and every word.
 
-#### The settings rail (right), top to bottom
+#### The publish screen, top to bottom
 
-1. **The call** — ticker, direction, target, horizon. Optional: a publication may have no call.
-   Current price shown for live reference with the upside/downside updating as the target changes.
-2. **Access** — free / subscribers / paid unlock with its price.
-3. **Promote** — a "Boost on publish" switch. **The cost model is pluggable and deliberately
+1. **Preview**, then the fact-check offer when there is a writer with words in it.
+2. **The features menu** (above), then the connected piece.
+3. **Access** — free / subscribers / paid unlock with its price. On a verdict, the visibility
+   statement instead.
+4. **Promote** — a "Boost on publish" switch. **The cost model is pluggable and deliberately
    unset.** Pricing arrives as a `PromoteModel` (`src/lib/compose/promote.ts`) and the panel
    renders whatever it is handed, including nothing; while there is none it says so plainly and
    offers nothing selectable, so nothing can be sold at a price nobody has agreed. The old fixed
@@ -1536,9 +1535,9 @@ its trim, its overlays, and every word.
    stated: **promoted content is always labelled as promoted, wherever it appears.** Promotion
    belongs to the publication rather than to composing it, so the same panel is reachable after
    publish from the item in Studio.
-4. **Before publishing** — the fact-check and the disclosures, as gates.
-5. **Publish** — `Publish & Lock` when a call is being locked. Clicking it opens
-   `<LockConfirmModal>` (§2.5) → seal animation.
+5. **Disclosures**, as a gate.
+6. **Publish** — `Publish & Lock` when a call is being locked, `Publish the verdict` on a
+   verdict. Clicking it opens `<LockConfirmModal>` (§2.5) → seal animation.
 
 **Pre-publish fact-check panel:** a "Run fact-check" button; while running, a calm inline loading
 state; once complete, the claim-by-claim breakdown with an inline "Add source" input on each

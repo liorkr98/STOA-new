@@ -52,11 +52,16 @@ A publication can be video-only commentary with no call at all (e.g. "what the I
 means for crude"). Scoring keys off one thing only: **does it carry a locked call.** Commentary is
 never graded.
 
-| Type label   | What it is                                              | Graded by the market?     |
-| ------------ | ------------------------------------------------------- | ------------------------- |
-| **CALL**     | Publication built around a locked call (video + call).  | Yes (has a call)          |
-| **RESEARCH** | A full written thesis; may or may not carry a call.     | Only if it carries a call |
-| **NOTE**     | Short video / commentary, no call.                      | No                        |
+| Type label  | What it is                                                              | Graded by the market?     |
+| ----------- | ----------------------------------------------------------------------- | ------------------------- |
+| **VIDEO**   | Reach people who don't know you. The only type on the Feed and Explore. | Only if it carries a call |
+| **BRIEF**   | A short written take for existing followers and subscribers.            | Only if it carries a call |
+| **THESIS**  | A full written report. Depth; the strongest route onto Today.           | Only if it carries a call |
+| **VERDICT** | A call subscribers get first, public when the market resolves it.       | Yes (it is a call)        |
+
+Compose is a three-step spine per type plus a features menu on the publish screen; the verdict
+has its own rules (equities under $2B, 7 to 180 days, one per rolling 30 days). See
+`docs/COMPOSE.md`.
 
 Every publication shows a **content badge** of what it contains, e.g. `VIDEO · CALL · CARDS` or
 `VIDEO · NOTE`. Publications with a call show **ticker + direction chips**; publications without a
@@ -176,7 +181,7 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
 - **Video is adaptive HLS**, played by `NativeClip` (native on Safari, hls.js elsewhere, loaded
   on demand), with the Bunny iframe as an automatic fallback when a manifest is refused. The
   local demo MP4s are a walkthrough tool behind `STOA_DEMO_CLIPS=1`, never a delivery path.
-- Content types: **CALL / RESEARCH / NOTE** (see the content model above). A publication is a
+- Content types: **VIDEO / BRIEF / THESIS / VERDICT** (see the content model above). A publication is a
   video, optionally carrying a locked call, cards, and a thesis.
 - The score: **Track Score**, internal and private. Never shown publicly; the public sees the
   record (seals, entry to exit, return). The underlying formula is an open decision — see

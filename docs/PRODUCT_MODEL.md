@@ -47,11 +47,17 @@ carries a **content badge** stating exactly what it contains (`VIDEO`, `VIDEO ·
 
 ### Type labels
 
-Every publication is one of three types:
+Every publication is one of four types, chosen when it is made and printed on it everywhere:
 
-- **CALL** — built around a locked call.
-- **RESEARCH** — a full written thesis; may or may not carry a call.
-- **NOTE** — short commentary, no call.
+- **VIDEO** — reach people who don't know you. The only type on the Feed and in Explore.
+- **BRIEF** — a short written take that keeps existing followers and subscribers engaged.
+- **THESIS** — a full written report. Depth, and the strongest route onto Today.
+- **VERDICT** — a call subscribers get first, public the moment the market resolves it. The
+  platform's proof-and-conversion mechanic: equities under $2B only, a 7 to 180 day horizon,
+  one per analyst per rolling 30 days.
+
+A video, a brief or a thesis may carry a call as an optional feature; a verdict *is* a call.
+Only a locked call is graded, whichever type carries it.
 
 ## The surfaces
 
@@ -91,17 +97,17 @@ Explore's tile sizes, Today's lists and lead, the Feed's ordering. This replaced
 ranking. Thresholds live in `src/lib/lifecycle/stages.ts` as named constants; until engagement
 events are recorded, attention per day since arrival stands in for a windowed velocity.
 
-## Compose is a workspace, not a wizard
+## Compose is a spine and a menu, not a wizard
 
-There is no fork asking whether the analyst is publishing with video. A publication may have
-video, research, both, or neither beyond its headline and tags, and it finds that out as it is
-built rather than being asked up front.
+Compose opens by asking what the analyst is trying to do: one of the four types above, described
+by purpose. Every type then walks the same three mandatory steps (the content, the headline, the
+tags) and reaches the publish screen, where what the type may add on top (a call, cards, a
+thesis, a video) is a menu nobody has to walk past. Instagram's structure. The full model is
+`docs/COMPOSE.md`.
 
-The screen is organised by one sentence: **left is what you build with, right is what you publish
-as.** The left rail is the toolbox (the card deck, then the AI assistant); the centre is the
-publication (headline, dek, then the video and research modules, each stating what it holds); the
-right rail is the settings applied to the publication (the call, access, promote, the publish
-gates). Anything added later goes on the side that sentence puts it on.
+The workspace is still organised by one sentence: **left is what you build with, the spine is
+what you publish as.** The left rail is the toolbox (the card deck, then the AI assistant), shown
+on the screens that build something; the centre is the current screen.
 
 **Cards are a shared asset pool.** They are not a step inside the video path and not a feature of
 the research. They belong to the publication, they live in the left rail, and the same card can
