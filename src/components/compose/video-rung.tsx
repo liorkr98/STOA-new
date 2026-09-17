@@ -3,7 +3,7 @@
 import { OverlayLayer } from "@/components/video/overlay-layer";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Eye, EyeOff, ImagePlus, Layers, Pause, Play, Sparkles, TrendingUp, Type, Upload, Video } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, ImagePlus, Layers, Pause, Play, Plus, Sparkles, TrendingUp, Type, Upload, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecordClip, recordingSupported } from "@/components/compose/record-clip";
 import { cn } from "@/lib/design/cn";
@@ -944,10 +944,22 @@ function Selected({
 
 /* ---------- what you can add, when nothing is selected ---------- */
 
-function AddRow({
+/**
+ * One control at rest: Add overlay. It opens a short menu of what can go on
+ * the video, and choosing one adds it at the playhead and selects it, so
+ * its settings appear only then. Five sources, never five buttons.
+ *
+ * A card is always on the menu. With cards in the deck it lists them; with
+ * none it offers to make one, which opens the card library and, once the
+ * card exists, places it at the playhead the creator was on. The Card
+ * button used to be disabled with no cards, and on the video step of a new
+ * draft there are never any yet, so cards read as missing.
+ */
+function AddOverlay({
   cards,
   onText,
   onCard,
+  onMakeCard,
   onChart,
   onVisualize,
   onImage,
@@ -955,50 +967,95 @@ function AddRow({
   cards: DraftCard[];
   onText: () => void;
   onCard: (card: DraftCard) => void;
+  onMakeCard?: () => void;
   onChart: () => void;
   onVisualize: () => void;
   onImage: (file: File) => void;
 }) {
-  const [pick, setPick] = useState(false);
+  const [open, setOpen] = useState<"root" | "card" | null>(null);
   const imageRef = useRef<HTMLInputElement>(null);
+  const item =
+    "focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-[0.8125rem] text-text hover:bg-surface-2";
+  const pick = (fn: () => void) => () => {
+    setOpen(null);
+    fn();
+  };
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="num mr-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">Add at the playhead</span>
-      <Button variant="secondary" size="sm" onClick={onText}>
-        <Type size={14} /> Text
-      </Button>
+    <div className="flex flex-wrap items-center gap-3">
       <div className="relative">
-        <Button variant="secondary" size="sm" onClick={() => setPick((p) => !p)} aria-expanded={pick} disabled={cards.length === 0} title={cards.length === 0 ? "Make a card first, on the Cards step" : undefined}>
-          <Layers size={14} /> Card
+        <Button variant="secondary" size="sm" onClick={() => setOpen((o) => (o ? null : "root"))} aria-expanded={open !== null} aria-haspopup="menu">
+          <Plus size={14} /> Add overlay
         </Button>
-        {pick ? (
+        {open ? (
           <>
-            <div className="fixed inset-0 z-10" onClick={() => setPick(false)} aria-hidden />
-            <div className="menu-pop absolute left-0 top-9 z-20 w-56 rounded-[var(--radius-btn)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]" role="menu">
-              {cards.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    onCard(c);
-                    setPick(false);
-                  }}
-                  className="focus-ring block w-full truncate rounded-[4px] px-2 py-1.5 text-left text-[0.8125rem] text-text hover:bg-surface-2"
-                >
-                  {cardName(c)}
-                </button>
-              ))}
+            <div className="fixed inset-0 z-10" onClick={() => setOpen(null)} aria-hidden />
+            <div
+              className="menu-pop absolute left-0 top-9 z-20 w-60 rounded-[var(--radius-btn)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+              role="menu"
+              aria-label={open === "card" ? "Which card" : "Add at the playhead"}
+              onKeyDown={(e) => e.key === "Escape" && setOpen(null)}
+            >
+              {open === "root" ? (
+                <>
+                  <p className="num px-2 pb-1 pt-1.5 text-[9px] uppercase tracking-[0.16em] text-text-faint">At the playhead</p>
+                  <button type="button" role="menuitem" onClick={pick(onText)} className={item}>
+                    <Type size={14} className="text-text-mute" aria-hidden /> Text
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    aria-haspopup="menu"
+                    aria-label={cards.length > 0 ? "Card" : "Card: make one"}
+                    onClick={() => (cards.length > 0 ? setOpen("card") : onMakeCard ? pick(onMakeCard)() : undefined)}
+                    className={item}
+                  >
+                    <Layers size={14} className="text-text-mute" aria-hidden />
+                    <span className="flex-1">Card</span>
+                    {cards.length > 0 ? (
+                      <ChevronRight size={13} className="text-text-faint" aria-hidden />
+                    ) : (
+                      <span className="num text-[9px] uppercase tracking-[0.12em] text-text-faint">Make one</span>
+                    )}
+                  </button>
+                  <button type="button" role="menuitem" onClick={pick(onChart)} className={item}>
+                    <TrendingUp size={14} className="text-text-mute" aria-hidden /> Chart
+                  </button>
+                  <button type="button" role="menuitem" onClick={pick(onVisualize)} className={item}>
+                    <Sparkles size={14} className="text-text-mute" aria-hidden /> Visualize
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpen(null);
+                      imageRef.current?.click();
+                    }}
+                    className={item}
+                  >
+                    <ImagePlus size={14} className="text-text-mute" aria-hidden /> Image
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => setOpen("root")} className="num focus-ring flex w-full items-center gap-1 rounded-[4px] px-2 py-1.5 text-[9px] uppercase tracking-[0.16em] text-text-faint hover:text-text">
+                    <ChevronRight size={11} className="rotate-180" aria-hidden /> Which card
+                  </button>
+                  {cards.map((c) => (
+                    <button key={c.id} type="button" role="menuitem" onClick={pick(() => onCard(c))} className={cn(item, "truncate")}>
+                      {cardName(c)}
+                    </button>
+                  ))}
+                  {onMakeCard ? (
+                    <button type="button" role="menuitem" onClick={pick(onMakeCard)} className={cn(item, "text-text-mute")}>
+                      <Plus size={13} aria-hidden /> Make a new card
+                    </button>
+                  ) : null}
+                </>
+              )}
             </div>
           </>
         ) : null}
       </div>
-      <Button variant="secondary" size="sm" onClick={onChart}>
-        <TrendingUp size={14} /> Chart
-      </Button>
-      <Button variant="secondary" size="sm" onClick={onVisualize}>
-        <Sparkles size={14} /> Visualize
-      </Button>
       <input
         ref={imageRef}
         type="file"
@@ -1010,10 +1067,7 @@ function AddRow({
           e.target.value = "";
         }}
       />
-      <Button variant="secondary" size="sm" onClick={() => imageRef.current?.click()}>
-        <ImagePlus size={14} /> Image
-      </Button>
-      <span className="num hidden w-full text-[10px] uppercase tracking-[0.12em] text-text-faint lg:block">
+      <span className="num hidden text-[10px] uppercase tracking-[0.12em] text-text-faint lg:inline">
         Or drag a card from the toolbox onto the strip
       </span>
     </div>
@@ -1117,6 +1171,7 @@ export function VideoRung({
   stage = "all",
   hasClip = false,
   onRemove,
+  onMakeCard,
   initialSrc = null,
   frozen = false,
 }: {
@@ -1149,6 +1204,11 @@ export function VideoRung({
   hasClip?: boolean;
   /** Take the clip out. Offered beside Replace, never as a forward button. */
   onRemove?: () => void;
+  /**
+   * Opens the card library. The rung remembers the playhead and, when the
+   * new card arrives in `cards`, places it there.
+   */
+  onMakeCard?: () => void;
   /**
    * A live publication's clip and what is placed on it are the record:
    * the screen opens to be read, with nothing to record, replace, remove,
@@ -1297,6 +1357,28 @@ export function VideoRung({
     },
     [cards, edit, setEdit],
   );
+
+  // Make a card from the menu: the playhead is remembered, and the first
+  // card that appears in the deck afterwards is placed there.
+  const pendingCardAtRef = useRef<number | null>(null);
+  const knownCardIdsRef = useRef<Set<string>>(new Set(cards.map((c) => c.id)));
+  useEffect(() => {
+    const at = pendingCardAtRef.current;
+    if (at != null) {
+      const fresh = cards.find((c) => !knownCardIdsRef.current.has(c.id) && c.kind !== "unlock");
+      if (fresh) {
+        pendingCardAtRef.current = null;
+        placeCard(fresh.id, at);
+      }
+    }
+    knownCardIdsRef.current = new Set(cards.map((c) => c.id));
+  }, [cards, placeCard]);
+  const makeCard = onMakeCard
+    ? () => {
+        pendingCardAtRef.current = time;
+        onMakeCard();
+      }
+    : undefined;
 
   const patch = (id: string, p: Partial<Overlay>) =>
     setEdit({ ...edit, overlays: edit.overlays.map((o) => (o.id === id ? ({ ...o, ...p } as Overlay) : o)) });
@@ -1529,10 +1611,11 @@ export function VideoRung({
                 onDone={() => setSelectedId(null)}
               />
             ) : (
-              <AddRow
+              <AddOverlay
                 cards={cards}
                 onText={addText}
                 onCard={(c) => placeCard(c.id, time)}
+                onMakeCard={makeCard}
                 onChart={() => addVisual({ type: "chart", ticker: ticker || "SPY" })}
                 onVisualize={() => addVisual({ type: "diagram", prompt: "", imageUrl: null })}
                 onImage={(f) => addVisual({ type: "upload", label: f.name, imageUrl: URL.createObjectURL(f) })}

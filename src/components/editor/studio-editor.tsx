@@ -1813,6 +1813,7 @@ export function StudioEditor({
                     }}
                     hasClip={videoChosen}
                     onRemove={editingPublished ? undefined : removeVideo}
+                    onMakeCard={editingPublished ? undefined : () => setLibraryOpen(true)}
                     frozen={editingPublished}
                     cards={deck}
                     chrome={false}
