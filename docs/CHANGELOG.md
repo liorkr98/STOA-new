@@ -10,6 +10,123 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-18 — Publishing audited end to end on the live site: seven fixes, and what is still open
+
+A signed-in functional audit of publishing on stoamarket.ai, one publication
+of each type with a different mix of features each time, then edit, archive,
+restore and delete. What was verified by doing, what broke, and what needs
+Krisi are all below. The test publications were archived afterwards (they
+carry locked calls, so they cannot be deleted; see "For Krisi").
+
+**For someone using the site**
+
+- **A trimmed clip now plays trimmed.** The brass ends of the filmstrip were
+  saved but every player ignored them: the recorded 12-second clip, trimmed to
+  8.8 seconds in Compose, played and looped over all 12 seconds on the
+  publication page, and the play button said 0:12. The report player and the
+  Feed now start at the kept region's first frame, turn back there at its end,
+  and say the kept length. A trim with no overlays used to be dropped entirely
+  (the edit was only stored when there was an overlay); it is stored now.
+- **A locked card placed on a video is sealed in the player.** The evidence
+  rail showed the Kill switch as "SEALED · TAP TO UNLOCK" to a signed-out
+  visitor while the same card's words were drawn in full over the video from
+  6 to 9.5 seconds. The overlay now draws a sealed card the way the rail
+  does; Compose's own preview still shows the author what they placed.
+- **Overlays on the Feed.** The Feed's clip query never fetched the stored
+  edit, so nothing was ever drawn over a Feed clip and no trim applied there.
+  Found by reading while fixing the trim; the Feed player in the browser
+  pane could not be driven to confirm it live.
+- **A verdict's clip stays with the verdict.** The Lifeway verdict's video,
+  and the card text beside it, turned up on the Feed for any signed-in reader
+  and on Explore for visitors, although the verdict is subscribers-only while
+  the call is open. Verdict clips are no longer Feed or Explore items.
+- **Editing only the headline no longer records "Evidence cards" as changed.**
+  Changing the video's headline produced an EDITED marker that listed the
+  cards too. Postgres stores card payloads with its own key order, so the
+  saved deck never matched what Compose sent even when nothing had moved.
+  The comparison now ignores key order.
+- **The dates beside a horizon match the record.** The lock confirmation said
+  "December 17, 2026" for a three-month call locked at 01:39 Israel time; the
+  record carries December 16, because the server counts from the exchange's
+  own day (New York) and the screen counted from the analyst's. The lock
+  modal, the horizon picker and the verdict screen now all count from the
+  exchange's day, so the date on the screen is the date on the record.
+- **No more raw error text under "Price attestation".** The call editor and
+  the publication page showed a quote library's own exception ("Unexpected
+  token 'T', \"Too Many Requests\" is not valid JSON") whenever the upstream
+  feed rate-limited. The app now turns that into a plain line ("Quote service
+  is busy...") whatever the edge function sends back.
+
+**Verified by doing, on the live site, signed in**
+
+- Video: the camera path (a synthetic camera, since the browser pane has no
+  device) with pause and resume, 12 seconds; trim; a cover frame; a text
+  overlay from 2 to 6 seconds at the top; a card inset from 1.5 to 5 seconds
+  and a locked card full-frame from 6 to 9.5 seconds; a NFLX long call; two
+  cards; a thesis; tags. Uploaded at publish, transcoded by Bunny and playing
+  as HLS in under a minute; 241 frames decoded in four seconds; overlays
+  appear at the stated times.
+- Brief: 194-character take, a gold (XAUUSD) short with a target and a
+  custom 42-day horizon, two cards (one locked), tags. Entry $4,387 locked.
+- Thesis: three headings, an uploaded figure, two inline cards (one locked),
+  a SPOT long call, subscribers-only. Signed out, the body is withheld and the
+  locked card is absent from the data as well as the page.
+- Verdict: NVDA refused ("a $4.9T company"), gold refused ("a macro
+  instrument with no market cap"), LWAY accepted at $472M; a 20-second
+  uploaded clip, then Replace with a 6-second clip and back; one card. A
+  second verdict is refused on the screen ("Your next verdict unlocks in 30
+  days. One verdict per rolling thirty days; this one is saved as a draft")
+  and by the server when the publish endpoint is called directly (400, "Your
+  next verdict unlocks in 30 days. One verdict per rolling 30 days.").
+- Tags and calls are stored exactly as entered (read back with the public
+  key). Each publication is on its report page and the profile; the video,
+  brief and thesis are on Today; the video is on the Feed and Explore.
+- Editing: the headline change saved with "Saved. The publication now shows
+  an EDITED marker", and the marker's popover shows the old and new
+  headline. The call is read-only in edit mode. Archive, restore and the
+  typed-DELETE delete of a call-less brief all work with their toasts; the
+  archived page stopped serving its content signed out; items with a call
+  offer Archive only.
+
+**Still open, not fixed here**
+
+- **The verdict's call leaks, as before.** Signed out, the verdict page shows
+  the ticker, direction and entry price (only the target is hidden), the
+  profile shows "VERDICT · LWAY · LONG", and the public key reads the whole
+  prediction row (target included), the publication's card payloads, and the
+  verdict clip's playback URL.
+- The cover frame chosen in Compose has no effect on the poster (documented:
+  the choice is not stored).
+- The rail seals a locked card for its own author too.
+- The "1 month" chip stays lit after a custom date is picked.
+- A deleted publication's address answers 200 with an empty "Report" page
+  rather than 404.
+- The draft-call fields still say "stay in this tab only" (migration 0065).
+
+**For Krisi**
+
+- **The deployed `attest-price` edge function is behind the repo.** The
+  repo's copy has hidden raw upstream errors since 10 July; production still
+  returns them. Redeploy it (`npm run supabase:functions:deploy:attest-price`).
+- **Locked cards on a free publication are readable with the public key.**
+  `publication_cards_read` grants a locked row whenever the body is readable,
+  and a free body is readable by everyone; the seal is UI only. The same
+  card's words also sit in `reports.video_edit`, which is public. Both need a
+  policy that keys on the card's lock, not the body's access.
+- The verdict leak is unchanged: `predictions_read`, `video_clips` and
+  `publication_cards` are all readable for a published subscribers-only
+  verdict. Still needs the gating and the visibility flip from 16 September.
+- Migrations 0064 and 0065: 0064 is applied (overlays saved); 0065 is not
+  (the draft-call line still shows).
+- **The audit's four test publications are archived, not deleted**, because
+  each carries a locked call and the app refuses to delete those. If you want
+  them off the record entirely they need removing from `reports`,
+  `predictions`, `publication_cards`, `video_clips` and `report_edits` by
+  hand: reports 7daaae6d (video), 697befa2 (brief), 98f31f1e (thesis),
+  aeb1fa49 (verdict), all under author 0d6fdfc7.
+
+---
+
 ## 2026-09-18 — Today's rail fits, the video screen is one screen, and abandoned drafts stay unfiled
 
 **For someone using the site**
