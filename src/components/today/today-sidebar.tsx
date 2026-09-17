@@ -24,6 +24,13 @@ import type { TodayCreatorRow, TodaySidebarPayload, TodayTicker, TodayTickerRow 
  * mobile it becomes a drawer opening from the left edge, never a chip strip.
  * Analysts are an avatar and a name only.
  *
+ * Every row is the same height (`.today-side-row`), so the lists line up
+ * with each other and a list always rests on a whole row: the list snaps
+ * to row boundaries and never scrolls sideways. A row therefore has to fit
+ * the rail's width on its own. A ticker row stacks the price over the day
+ * change in one mono block, which is what lets the symbol, the numbers and
+ * Follow share 240px with room to spare.
+ *
  * One rule for Follow everywhere in it: a row shows Follow when the reader
  * does not follow it and nothing when they do. The absence of the button is
  * the signal. Memberships, Following and Your tickers are lists of what the
@@ -80,10 +87,10 @@ function CreatorItem({ row, signedIn }: { row: TodayCreatorRow; signedIn: boolea
   };
 
   return (
-    <li className="flex items-center gap-2">
+    <li className="today-side-row flex items-center gap-2">
       <Link
         href={`/analyst/${row.handle}`}
-        className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-btn)] py-1.5 pr-1 hover:text-text"
+        className="focus-ring flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-btn)] pr-1 hover:text-text"
       >
         <Avatar src={row.avatarUrl} name={row.displayName} size="sm" />
         <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-text">{row.displayName}</span>
@@ -108,17 +115,19 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
   const { ready, has } = useWatchlist();
   const showFollow = ready && !has(row.symbol);
   return (
-    <li className="flex items-center gap-2 py-1.5">
+    <li className="today-side-row flex items-center gap-2">
       <button
         type="button"
         onClick={() => sheet?.open(row.symbol)}
-        className="focus-ring rounded-[var(--radius-tag)]"
+        className="focus-ring min-w-0 shrink-0 rounded-[var(--radius-tag)]"
         aria-label={`Open ${row.symbol}`}
       >
-        <TickerChip ticker={row.symbol} />
+        <TickerChip ticker={row.symbol} className="max-w-[7.5rem] truncate" />
       </button>
-      <span className="num ml-auto text-[0.75rem] text-text">{row.price != null ? fmtPrice(row.price) : "—"}</span>
-      <DayChange percent={row.changePercent} />
+      <span className="ml-auto flex shrink-0 flex-col items-end leading-none">
+        <span className="num text-[0.75rem] text-text">{row.price != null ? fmtPrice(row.price) : "\u2013"}</span>
+        <DayChange percent={row.changePercent} className="mt-0.5 min-w-0" />
+      </span>
       {showFollow ? <FollowTicker ticker={row.symbol} /> : null}
     </li>
   );

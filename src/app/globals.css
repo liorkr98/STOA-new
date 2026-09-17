@@ -2768,10 +2768,20 @@ body {
 }
 }
 
-/* Today front page: sidebar lists and the lead split. */
+/* Today front page: sidebar lists and the lead split. Rows are one fixed
+ * height so the lists align with each other; a list shows five whole rows,
+ * snaps to a row when scrolled, and never scrolls sideways. The row is 44px
+ * so a Follow pill's 44px tap area fits inside it instead of spilling out. */
+.today-side-row {
+  height: 44px;
+  flex: none;
+  scroll-snap-align: start;
+}
 .today-side-list {
-  max-height: 176px;
+  max-height: 220px;
+  overflow-x: hidden;
   overflow-y: auto;
+  scroll-snap-type: y mandatory;
 }
 .today-side-head {
   font-family: var(--font-mono);
