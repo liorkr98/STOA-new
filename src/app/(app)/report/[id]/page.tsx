@@ -283,6 +283,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <div className="order-2 lg:order-none">
                 <ClipPendingPlayer
                   reportId={id}
+                  title={report.title ?? undefined}
                   status={pendingClip.status}
                   startedAt={pendingClip.createdAt}
                   analystName={author?.display_name ?? "The analyst"}

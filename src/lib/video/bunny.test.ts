@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { isAbandonedUpload } from "./bunny";
+import { isAbandonedUpload, isByteLessUpload, isStuckEmptyUpload } from "./bunny";
 
 /**
  * The fault this predicate exists to name.
@@ -75,5 +75,50 @@ describe("isAbandonedUpload", () => {
     const sevenHoursAgo = bunnyDate(7 * HOUR);
     assert.equal(!sevenHoursAgo.endsWith("Z"), true, "fixture must mirror Bunny's format");
     assert.equal(isAbandonedUpload({ status: 0, storageSize: 0, dateUploaded: sevenHoursAgo }), true);
+  });
+});
+
+describe("isByteLessUpload", () => {
+  it("names the 17 September fault: Processing, hasOriginal, nothing stored", () => {
+    assert.equal(
+      isByteLessUpload({ status: 2, storageSize: 0, encodeProgress: 0, hasOriginal: true }),
+      true,
+    );
+    assert.equal(isByteLessUpload({ status: 0, storageSize: 0, encodeProgress: 0 }), true);
+  });
+
+  it("leaves a clip that is actually encoding or finished", () => {
+    assert.equal(
+      isByteLessUpload({ status: 2, storageSize: 1_024, encodeProgress: 0 }),
+      false,
+    );
+    assert.equal(
+      isByteLessUpload({ status: 3, storageSize: 0, encodeProgress: 12 }),
+      false,
+    );
+    assert.equal(isByteLessUpload({ status: 4, storageSize: 0, encodeProgress: 100 }), false);
+  });
+});
+
+describe("isStuckEmptyUpload", () => {
+  it("waits a few minutes, then names a Processing record with no bytes as failed", () => {
+    assert.equal(
+      isStuckEmptyUpload({
+        status: 2,
+        storageSize: 0,
+        encodeProgress: 0,
+        dateUploaded: bunnyDate(5 * 60 * 1000),
+      }),
+      false,
+    );
+    assert.equal(
+      isStuckEmptyUpload({
+        status: 2,
+        storageSize: 0,
+        encodeProgress: 0,
+        dateUploaded: bunnyDate(9 * 60 * 1000),
+      }),
+      true,
+    );
   });
 });

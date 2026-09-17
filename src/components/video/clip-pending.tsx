@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { ReplaceClipControl } from "@/components/video/replace-clip";
 
 /**
  * A publication whose clip exists but is not playing yet.
@@ -40,12 +41,14 @@ function useElapsedMinutes(startedAt: string): number {
  */
 export function ClipPendingPlayer({
   reportId,
+  title,
   status,
   startedAt,
   analystName,
   isAuthor,
 }: {
   reportId?: string;
+  title?: string;
   status: PendingStatus;
   startedAt: string;
   analystName: string;
@@ -109,11 +112,13 @@ export function ClipPendingPlayer({
             <p className="max-w-[26ch] text-[0.8125rem] leading-relaxed opacity-80">
               {failed
                 ? isAuthor
-                  ? "Nothing reached readers. Attach the clip again from your publications."
+                  ? "Nothing reached readers. Choose the clip again here."
                   : "The analyst has been told."
                 : "Usually a few minutes. You can leave this page; it plays here when it is ready."}
             </p>
-            {failed && isAuthor ? (
+            {failed && isAuthor && reportId ? (
+              <ReplaceClipControl reportId={reportId} title={title?.trim() || "Video"} />
+            ) : failed && isAuthor ? (
               <Link
                 href="/studio"
                 className="num focus-ring mt-1 rounded text-[10px] uppercase tracking-[0.16em] underline underline-offset-4"
