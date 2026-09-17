@@ -669,10 +669,16 @@ export function StudioEditor({
     };
   }, [hasCard, ticker, title, summary]);
 
-  const clipSeconds =
-    videoChosen && videoEdit
-      ? clipPlayableSeconds(videoEdit.trimStart, videoEdit.trimEnd, videoEdit.durationSeconds)
-      : 0;
+  // Memoized on purpose: read plainly, this value made the React Compiler
+  // give up on every memoized callback below it (lint's
+  // preserve-manual-memoization), because the features menu reads it too.
+  const clipSeconds = useMemo(
+    () =>
+      videoChosen && videoEdit
+        ? clipPlayableSeconds(videoEdit.trimStart, videoEdit.trimEnd, videoEdit.durationSeconds)
+        : 0,
+    [videoChosen, videoEdit],
+  );
   const feedPreviewSeconds = videoChosen ? feedPreviewSecondsForClip(clipSeconds) : null;
 
   // The words a save sends: a brief's text is its summary; every other type
