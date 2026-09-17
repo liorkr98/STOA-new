@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
   } else if (abandoned.length > 0) {
     diagnosis = `${abandoned.length} clip(s) never stored their bytes: Bunny may report Processing and hasOriginal while storageSize is 0 and the original file 404s. There is nothing to encode. Attach the clip again.`;
   } else if (encoding.length > 0) {
-    diagnosis = `${encoding.length} clip(s) are still pre-finished at Bunny. If this does not move, the encoding queue is stalled on their side: check the plan's encoding allowance and the account's billing state.`;
+    diagnosis = `${encoding.length} clip(s) are still pre-finished at Bunny. Follow-ups keep looking for about two hours; if this does not move, the encoding queue is stalled on their side: check the plan's encoding allowance and the account's billing state.`;
   } else {
     diagnosis = `${errored.length} clip(s) failed at Bunny.`;
   }

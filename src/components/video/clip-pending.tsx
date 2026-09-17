@@ -34,10 +34,11 @@ function useElapsedMinutes(startedAt: string): number {
 
 /**
  * The report page: fills the player's own frame while the clip is on the way.
- * When `reportId` is set it polls a serverless status route every five seconds
- * (that route is what actually asks Bunny) and refreshes only when the clip is
- * ready or has failed. Without `reportId` (dev fixture) it falls back to a
- * 15s page refresh. A failed clip is shown only to its creator.
+ * When `reportId` is set it polls a serverless status route (that route is
+ * what actually asks Bunny) and refreshes only when the clip is ready or has
+ * failed. The first minutes are every five seconds, then the gap grows so a
+ * long encode does not hammer the route. Without `reportId` (dev fixture) it
+ * falls back to a 15s page refresh. A failed clip is shown only to its creator.
  */
 export function ClipPendingPlayer({
   reportId,
@@ -66,25 +67,34 @@ export function ClipPendingPlayer({
     }
 
     let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
     const poll = async () => {
       try {
         const res = await fetch(`/api/videos/reports/${reportId}/status`, { cache: "no-store" });
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as { status?: string };
-        if (data.status === "ready" || data.status === "failed") {
-          router.refresh();
+        if (!cancelled && res.ok) {
+          const data = (await res.json()) as { status?: string };
+          if (data.status === "ready" || data.status === "failed") {
+            router.refresh();
+            return;
+          }
         }
       } catch {
         // Keep polling; a single miss must not stall the player.
       }
+      if (cancelled) return;
+      const elapsed = Date.now() - Date.parse(startedAt);
+      const wait = elapsed < 3 * 60_000 ? 5_000 : elapsed < 15 * 60_000 ? 15_000 : 30_000;
+      timeout = setTimeout(() => {
+        void poll();
+      }, wait);
     };
     void poll();
-    const id = setInterval(poll, 5_000);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      if (timeout) clearTimeout(timeout);
     };
-  }, [failed, reportId, router]);
+  }, [failed, reportId, router, startedAt]);
 
   return (
     <figure className="lg:mt-0">
@@ -114,7 +124,7 @@ export function ClipPendingPlayer({
                 ? isAuthor
                   ? "Nothing reached readers. Choose the clip again here."
                   : "The analyst has been told."
-                : "Usually a few minutes. You can leave this page; it plays here when it is ready."}
+                : "Usually a few minutes. A large phone file can take up to an hour. You can leave this page; it plays here when it is ready."}
             </p>
             {failed && isAuthor && reportId ? (
               <ReplaceClipControl reportId={reportId} title={title?.trim() || "Video"} />

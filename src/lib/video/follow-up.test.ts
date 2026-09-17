@@ -3,20 +3,33 @@ import { describe, it } from "node:test";
 import {
   CLIP_RECONCILE_FOLLOW_UP_SECONDS,
   EMPTY_UPLOAD_GIVE_UP_ATTEMPT,
+  ENCODE_FOLLOW_UP_COUNT,
+  ENCODE_FOLLOW_UP_SECONDS,
+  clipFollowUpHorizonSeconds,
   nextClipReconcileDelaySeconds,
 } from "./follow-up";
 
 describe("clip reconcile follow-up", () => {
-  it("covers more than eight minutes of waiting", () => {
+  it("covers more than eight minutes on the short ramp", () => {
     const total = CLIP_RECONCILE_FOLLOW_UP_SECONDS.reduce((sum, n) => sum + n, 0);
     assert.equal(total >= 8 * 60, true);
   });
 
-  it("returns each delay in order and then stops", () => {
+  it("keeps looking for more than two hours so a slow encode still goes live", () => {
+    assert.equal(clipFollowUpHorizonSeconds() >= 2 * 60 * 60, true);
+  });
+
+  it("returns the ramp, then five-minute looks, then stops", () => {
     for (const [i, seconds] of CLIP_RECONCILE_FOLLOW_UP_SECONDS.entries()) {
       assert.equal(nextClipReconcileDelaySeconds(i), seconds);
     }
-    assert.equal(nextClipReconcileDelaySeconds(CLIP_RECONCILE_FOLLOW_UP_SECONDS.length), null);
+    const firstExtra = CLIP_RECONCILE_FOLLOW_UP_SECONDS.length;
+    assert.equal(nextClipReconcileDelaySeconds(firstExtra), ENCODE_FOLLOW_UP_SECONDS);
+    assert.equal(
+      nextClipReconcileDelaySeconds(firstExtra + ENCODE_FOLLOW_UP_COUNT - 1),
+      ENCODE_FOLLOW_UP_SECONDS,
+    );
+    assert.equal(nextClipReconcileDelaySeconds(firstExtra + ENCODE_FOLLOW_UP_COUNT), null);
     assert.equal(nextClipReconcileDelaySeconds(-1), null);
   });
 
