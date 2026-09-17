@@ -71,6 +71,7 @@ import {
 import { ComposeHeader } from "@/components/compose/compose-header";
 import { FeaturesMenu, type FeatureRow } from "@/components/compose/features-menu";
 import { PromotePanel } from "@/components/compose/promote-panel";
+import { railFor } from "@/lib/compose/rail";
 import { VerdictCallPanel } from "@/components/compose/verdict-call-panel";
 import { VerdictVisibility } from "@/components/compose/verdict-visibility";
 import {
@@ -197,14 +198,6 @@ function fitTextarea(el: HTMLTextAreaElement | null) {
   el.style.height = `${el.scrollHeight}px`;
 }
 
-/**
- * Screens where the card tray and the assistant are of use: where there is
- * a body to drop a card into, a deck to build, or a timeline to place a card
- * on. Naming a call, writing a headline, picking tags and publishing need
- * neither, and on those screens the rail is not shown at all.
- */
-const RAIL_STEPS = new Set<StepKey>(["thesis", "cards", "video"]);
-
 export function StudioEditor({
   analystReportPrice,
   initialDraft,
@@ -323,10 +316,6 @@ export function StudioEditor({
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [researchCardIds, setResearchCardIds] = useState<Set<string>>(() => collectCardIds(initialDoc));
-  // Null means "follow the screen". A creator who opens or closes the rail
-  // themselves is obeyed until they move, and each screen then gets its own
-  // sensible default back.
-  const [railOverride, setRailOverride] = useState<boolean | null>(null);
   const [railDrawerOpen, setRailDrawerOpen] = useState(false);
   const [askSeed, setAskSeed] = useState<string | null>(null);
   const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
@@ -952,7 +941,6 @@ export function StudioEditor({
       // is written before the next one draws, so no transition can lose work.
       if (!editingPublished && dirtyRef.current && hasAnything) void persistDraft();
       setStepKey(key);
-      setRailOverride(null);
       setBlockedNote(null);
       setVisited((v) => (v.has(key) ? v : new Set(v).add(key)));
       // Each screen is its own, so arriving at one starts at its top rather
@@ -1042,12 +1030,13 @@ export function StudioEditor({
   const publishBlockedBy = spineBlockedBy ?? detailsBlockedBy;
 
   /**
-   * The toolbox is for building things, so it exists only on the screens
-   * that build something. On the others there is no rail. On the building
-   * screens it opens by default and can be folded to its icons.
+   * The toolbox exists only where the screen can take what it holds: the
+   * tray where a card can be dropped or put in order, the assistant where
+   * its reply has a writer to land in. Nowhere else, and never folded to
+   * icons (src/lib/compose/rail.ts).
    */
-  const railUseful = RAIL_STEPS.has(stepKey);
-  const railCollapsed = railOverride ?? false;
+  const rail = railFor(stepKey, { hasWriter, hasClip: videoChosen, frozen: editingPublished });
+  const railUseful = rail !== null;
 
   /** What each step holds right now, for the tracker and the menu. */
   const stepFacts: StepFacts = {
@@ -1302,58 +1291,62 @@ export function StudioEditor({
     }
   }
 
-  /* LEFT: the deck, then the assistant. */
+  /* LEFT: what this screen can take, by railFor. */
   const toolbox = (
     <>
-      <CardTray
-        cards={deck}
-        usage={usage}
-        selectedId={selectedCardId}
-        onSelect={setSelectedCardId}
-        onAdd={() => setLibraryOpen(true)}
-        onReorder={reorderCards}
-        onPlaceInVideo={placeCardInVideo}
-        onPlaceInResearch={placeCardInResearch}
-        hasVideo={videoChosen}
-        hasResearch={hasWriter}
-      />
-      <AiAssistant
-        onRun={runAssistant}
-        credits={credits}
-        askOpen={askOpen}
-        onAsk={() => {
-          setAskOpen(true);
-          setRailDrawerOpen(false);
-        }}
-      >
-        {hasWriter ? (
-          <FactCheckerPanel
-            text={plainText}
-            credits={credits}
-            initialResult={factCheck}
-            onCreditsChange={setCredits}
-            onResult={setFactCheck}
-          />
-        ) : null}
-        {hasWriter && editor ? (
-          <VisualizeSelectionMenu
-            editor={editor}
-            reportTicker={ticker || undefined}
-            variant="button"
-          />
-        ) : null}
-        {hasWriter ? (
-          <button
-            type="button"
-            aria-label="Report templates"
-            onClick={() => setTemplateOpen(true)}
-            className="flex h-8 w-full items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
-          >
-            <SquaresFour size={15} />
-            Templates
-          </button>
-        ) : null}
-      </AiAssistant>
+      {rail?.tray ? (
+        <CardTray
+          cards={deck}
+          usage={usage}
+          selectedId={selectedCardId}
+          onSelect={setSelectedCardId}
+          onAdd={() => setLibraryOpen(true)}
+          onReorder={reorderCards}
+          onPlaceInVideo={placeCardInVideo}
+          onPlaceInResearch={placeCardInResearch}
+          hasVideo={videoChosen}
+          hasResearch={hasWriter}
+        />
+      ) : null}
+      {rail?.assistant ? (
+        <AiAssistant
+          onRun={runAssistant}
+          credits={credits}
+          askOpen={askOpen}
+          onAsk={() => {
+            setAskOpen(true);
+            setRailDrawerOpen(false);
+          }}
+        >
+          {hasWriter ? (
+            <FactCheckerPanel
+              text={plainText}
+              credits={credits}
+              initialResult={factCheck}
+              onCreditsChange={setCredits}
+              onResult={setFactCheck}
+            />
+          ) : null}
+          {hasWriter && editor ? (
+            <VisualizeSelectionMenu
+              editor={editor}
+              reportTicker={ticker || undefined}
+              variant="button"
+            />
+          ) : null}
+          {hasWriter ? (
+            <button
+              type="button"
+              aria-label="Report templates"
+              onClick={() => setTemplateOpen(true)}
+              className="flex h-8 w-full items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+            >
+              <SquaresFour size={15} />
+              Templates
+            </button>
+          ) : null}
+        </AiAssistant>
+      ) : null}
     </>
   );
 
@@ -1444,13 +1437,7 @@ export function StudioEditor({
       {/* LEFT is what you build with; the spine is what you publish as. */}
       <div className="flex min-h-0 min-w-0 flex-1">
         {railUseful ? (
-          <ComposeRail
-            collapsed={railCollapsed}
-            onToggle={() => setRailOverride(!railCollapsed)}
-            cardCount={cards.length}
-          >
-            {toolbox}
-          </ComposeRail>
+          <ComposeRail>{toolbox}</ComposeRail>
         ) : null}
 
         {/* Canvas: one screen at a time. Compose is a working surface, not
