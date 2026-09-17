@@ -99,20 +99,18 @@ async function saveDraftBody(
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
-  // The clip's overlays go on the row before it locks. A publish that could
-  // not store them is refused rather than shipped bare: the creator placed
-  // them expecting them to play, and dropping them silently was the bug.
+  // Trim and overlays go on the row before it locks. A missing column used to
+  // abort the whole publish as a 500, which production React showed as #441.
+  // The clip can still attach if this write fails.
   if (input.video_edit !== undefined) {
     const { error } = await supabase
       .from("reports")
       .update({ video_edit: input.video_edit })
       .eq("id", reportId)
       .eq("author_id", userId);
-    if (error && input.video_edit !== null) {
+    if (error && input.video_edit !== null && !/video_edit/.test(error.message)) {
       throw new PublishReportError(
-        /video_edit/.test(error.message)
-          ? "The video's overlays cannot be stored yet (the database has no place for them). Remove them to publish now, or publish once storage is in place."
-          : `The video's overlays could not be stored: ${error.message}`,
+        `The video's overlays could not be stored: ${error.message}`,
         400,
       );
     }

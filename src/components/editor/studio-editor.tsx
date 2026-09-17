@@ -1199,7 +1199,17 @@ export function StudioEditor({
           : {}),
       }, !pendingVideo);
 
-      if (pendingVideo && published?.id) {
+      if (!published || "error" in published) {
+        const reason = published && "error" in published ? published.error : "Could not publish.";
+        setError(reason);
+        toast.error(reason);
+        setConfirmOpen(false);
+        setCaptureStatus(null);
+        isPublishingRef.current = false;
+        return;
+      }
+
+      if (pendingVideo && published.id) {
         try {
           setCaptureStatus("Uploading video...");
           await uploadComposeClip({
@@ -1232,7 +1242,6 @@ export function StudioEditor({
         setConfirmOpen(false);
         setCaptureStatus(null);
         isPublishingRef.current = false;
-        throw e;
       }
     }
   }, [
