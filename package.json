@@ -30,7 +30,7 @@
     "test:today": "node --import tsx --test src/lib/today/video-preference.test.ts",
     "test:cards": "node --import tsx --test src/lib/feed/card-schema.test.ts",
     "test:charts": "node --import tsx --test src/lib/markets/chart-markers.test.ts",
-    "test:video": "node --conditions=react-server --import tsx --test src/lib/video/direct.test.ts src/lib/video/card.test.ts src/lib/video/bunny.test.ts src/lib/video/clip-duration.test.ts src/lib/jobs/dispatch.test.ts",
+    "test:video": "node --conditions=react-server --import tsx --test src/lib/video/direct.test.ts src/lib/video/card.test.ts src/lib/video/bunny.test.ts src/lib/video/clip-duration.test.ts src/lib/video/follow-up.test.ts src/lib/video/tus-upload.test.ts src/lib/jobs/dispatch.test.ts",
     "test:webhooks": "node --conditions=react-server --import tsx --test src/lib/webhooks/secret.test.ts",
     "test:pwa": "node --import tsx --test src/lib/pwa/urls.test.ts src/lib/pwa/cache-policy.test.ts",
     "test:compose": "node --import tsx --test src/lib/compose/steps.test.ts src/lib/compose/verdict.test.ts src/lib/compose/drafts.test.ts src/lib/compose/rail.test.ts",

@@ -32,17 +32,20 @@ function useElapsedMinutes(startedAt: string): number {
 }
 
 /**
- * The report page: fills the player's own frame while the clip is on the way,
- * and asks the page to look again every so often, since the page is what
- * promotes a finished clip. A failed clip is shown only to its creator (the
- * page passes nothing for anyone else), with the way to attach it again.
+ * The report page: fills the player's own frame while the clip is on the way.
+ * When `reportId` is set it polls a serverless status route every five seconds
+ * (that route is what actually asks Bunny) and refreshes only when the clip is
+ * ready or has failed. Without `reportId` (dev fixture) it falls back to a
+ * 15s page refresh. A failed clip is shown only to its creator.
  */
 export function ClipPendingPlayer({
+  reportId,
   status,
   startedAt,
   analystName,
   isAuthor,
 }: {
+  reportId?: string;
   status: PendingStatus;
   startedAt: string;
   analystName: string;
@@ -54,9 +57,31 @@ export function ClipPendingPlayer({
 
   useEffect(() => {
     if (failed) return;
-    const id = setInterval(() => router.refresh(), 15_000);
-    return () => clearInterval(id);
-  }, [failed, router]);
+    if (!reportId) {
+      const id = setInterval(() => router.refresh(), 15_000);
+      return () => clearInterval(id);
+    }
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/videos/reports/${reportId}/status`, { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { status?: string };
+        if (data.status === "ready" || data.status === "failed") {
+          router.refresh();
+        }
+      } catch {
+        // Keep polling; a single miss must not stall the player.
+      }
+    };
+    void poll();
+    const id = setInterval(poll, 5_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [failed, reportId, router]);
 
   return (
     <figure className="lg:mt-0">

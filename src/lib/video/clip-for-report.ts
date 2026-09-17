@@ -2,7 +2,7 @@ import "server-only";
 
 import * as Sentry from "@sentry/nextjs";
 import { getReadyClipForReport, getUnsettledClipForReport, type VideoClip } from "@/lib/db/video-clips";
-import { reconcileClip } from "@/lib/video/reconcile";
+import { settleClipOrRetry } from "@/lib/video/reconcile";
 
 /**
  * The clip to show on a publication. If nothing is live yet but an unsettled
@@ -21,7 +21,7 @@ export async function getLiveClipForReport(reportId: string): Promise<VideoClip 
     const unsettled = await getUnsettledClipForReport(reportId);
     if (!unsettled) return null;
 
-    const outcome = await reconcileClip(unsettled.bunny_video_guid, { process: false });
+    const outcome = await settleClipOrRetry(unsettled.bunny_video_guid, 0, { process: false });
     if (outcome !== "ready") return null;
 
     return getReadyClipForReport(reportId);
