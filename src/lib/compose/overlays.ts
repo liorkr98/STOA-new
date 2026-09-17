@@ -155,13 +155,15 @@ export function editHasOverlays(edit: { overlays: Overlay[] } | null | undefined
 
 /**
  * The edit as it is stored. Null when there is nothing to store, so a
- * publication without overlays never writes the column at all.
+ * publication with no overlays and no trim never writes the column at all.
  */
 export function toStoredVideoEdit(
   edit: VideoEdit | null,
   deck: StoredOverlayCard[],
 ): StoredVideoEdit | null {
-  if (!edit || edit.overlays.length === 0) return null;
+  if (!edit) return null;
+  const trimmed = edit.trimStart > 0 || (edit.trimEnd > 0 && edit.trimEnd < edit.durationSeconds);
+  if (edit.overlays.length === 0 && !trimmed) return null;
   const wanted = new Set<string>();
   for (const o of edit.overlays) {
     if (o.kind === "visual" && o.source.type === "card" && o.source.cardId) wanted.add(o.source.cardId);
@@ -195,7 +197,7 @@ export function fromStoredVideoEdit(raw: unknown): VideoEdit | null {
 export function readStoredVideoEdit(raw: unknown): StoredVideoEdit | null {
   if (!raw || typeof raw !== "object") return null;
   const e = raw as Partial<StoredVideoEdit>;
-  if (!Array.isArray(e.overlays) || e.overlays.length === 0) return null;
+  if (!Array.isArray(e.overlays)) return null;
   return {
     version: 1,
     durationSeconds: typeof e.durationSeconds === "number" ? e.durationSeconds : 0,

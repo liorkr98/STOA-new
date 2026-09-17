@@ -779,6 +779,8 @@ const FeedItem = function FeedItem({
                     paused={!isActive || paused}
                     title={pub.headline}
                     previewSeconds={pub.feedPreviewSeconds}
+                    trimStart={pub.videoEdit?.trimStart ?? 0}
+                    trimEnd={pub.videoEdit && pub.videoEdit.trimEnd > 0 ? pub.videoEdit.trimEnd : null}
                     preload={isActive ? "auto" : "metadata"}
                     captionUrl={pub.captionUrl}
                     onUnplayable={onUnplayable}
@@ -809,7 +811,7 @@ const FeedItem = function FeedItem({
                     iframe fallback cannot carry them: nothing outside it knows
                     the playhead. */}
                 {pub.videoEdit && started && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) ? (
-                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} />
+                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} sealLocked />
                 ) : null}
                 <div
                   aria-hidden

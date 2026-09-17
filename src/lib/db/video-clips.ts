@@ -48,7 +48,7 @@ const CARD_COLUMNS =
   "id, report_id, creator_id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url, duration_seconds, status, created_at, published_at, play_count, completion_count, click_through_count";
 
 const REPORT_CARD_COLUMNS =
-  "id, author_id, type, status, title, summary, access, price, ticker, theme_tag, primary_tag, secondary_tags, feed_preview_seconds, views, likes, comment_count, published_at, created_at";
+  "id, author_id, type, status, title, summary, access, price, ticker, theme_tag, primary_tag, secondary_tags, feed_preview_seconds, video_edit, views, likes, comment_count, published_at, created_at";
 
 const CARD_SELECT = `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${REPORT_CARD_COLUMNS}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url, score), prediction:predictions(*))`;
 
@@ -193,9 +193,12 @@ export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
       .order("published_at", { ascending: false })
       .limit(limit);
     if (error || !data) return [];
+    // A verdict's clip travels with the verdict, for the people who can open
+    // it. It is never a Feed or Explore item: the verdict is subscribers-only
+    // while the call is open, and the wall is for strangers.
     return (data as Record<string, unknown>[])
       .map(normalizeCard)
-      .filter((c) => c.report && c.report.status === "published");
+      .filter((c) => c.report && c.report.status === "published" && c.report.type !== "call");
   });
 }
 

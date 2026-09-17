@@ -74,6 +74,39 @@ export function horizonDateFromDays(horizonDays: number, timeZone: string): stri
   return cursor;
 }
 
+/**
+ * The exchange calendar a symbol resolves on. Compose runs in the analyst's
+ * own timezone, which east of the Atlantic is already tomorrow while New York
+ * is still trading; every date shown beside a horizon is read from the
+ * exchange's day so it matches the date the record will carry.
+ */
+export function exchangeTimeZoneFor(symbol: string | null | undefined): string {
+  return symbol && symbol.trim().toUpperCase().endsWith(".TA") ? "Asia/Jerusalem" : "America/New_York";
+}
+
+/** The exchange's calendar date as a local Date at noon, so it formats as that day anywhere. */
+function localNoon(ymd: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0, 0);
+}
+
+/** The horizon end a call published now would carry, as a Date for display. */
+export function horizonDateFromNow(horizonDays: number, timeZone: string): Date {
+  return localNoon(horizonDateFromDays(horizonDays, timeZone));
+}
+
+/** The exchange's today, as a local Date at noon. */
+export function exchangeToday(timeZone: string): Date {
+  return localNoon(todayInTimezone(timeZone));
+}
+
+/** Days from the exchange's today to a calendar day, never less than one. */
+export function daysFromExchangeToday(date: Date, timeZone: string): number {
+  const today = exchangeToday(timeZone);
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
+  return Math.max(1, Math.round((target.getTime() - today.getTime()) / 86_400_000));
+}
+
 /** End-of-day instant for a trading date (16:00 exchange local → UTC ISO). */
 export function marketCloseIso(ymd: string, timeZone = "America/New_York"): string {
   // US equities: 4pm ET. Approximate with fixed offset; sufficient for scheduling resolves_at.

@@ -36,6 +36,7 @@ export function OverlayLayer({
   time,
   ticker,
   className,
+  sealLocked = false,
 }: {
   overlays: Overlay[];
   cards: (DraftCard | StoredOverlayCard)[];
@@ -43,6 +44,8 @@ export function OverlayLayer({
   time: number;
   ticker?: string;
   className?: string;
+  /** Locked cards drawn sealed, as a reader sees them; off in Compose's preview. */
+  sealLocked?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -82,6 +85,7 @@ export function OverlayLayer({
                 source={cutaway.source}
                 cards={deck}
                 ticker={ticker}
+                sealLocked={sealLocked}
                 className="h-full w-full shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
               />
             </div>
@@ -92,7 +96,7 @@ export function OverlayLayer({
       {insets.map((o) => (
         <div key={o.id} className="absolute" style={{ ...gridStyle(o.position), ...insetBox(o) }}>
           <div className="h-full w-full" style={{ opacity: overlayOpacity(o) }}>
-            <OverlayVisualBody source={o.source} cards={deck} ticker={ticker} className="h-full w-full" />
+            <OverlayVisualBody source={o.source} cards={deck} ticker={ticker} sealLocked={sealLocked} className="h-full w-full" />
           </div>
         </div>
       ))}

@@ -11,6 +11,7 @@ import { attestPrice, type AttestedPriceData } from "@/services/price-attestatio
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
+import { exchangeTimeZoneFor } from "@/lib/engine/trading-calendar";
 import { PriceAttestationCard } from "@/components/ui/price-attestation-card";
 
 const inputClass =
@@ -426,7 +427,7 @@ export function LockPublishPanel({
           </div>
 
           <div className="mt-2.5">
-            <HorizonPicker value={horizon} onChange={onHorizon} />
+            <HorizonPicker value={horizon} onChange={onHorizon} timeZone={exchangeTimeZoneFor(ticker)} />
           </div>
 
           {resolved && (

@@ -143,7 +143,16 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
     }
     const hasCall = Boolean(r.prediction);
     const preview = r.feed_preview_seconds ?? null;
-    const duration = preview && preview > 0 ? Math.min(c.duration_seconds, preview) : c.duration_seconds;
+    const videoEdit = readStoredVideoEdit(r.video_edit);
+    // The length a reader gets: the kept region when the clip was trimmed,
+    // shortened further by a preview cap.
+    const kept =
+      videoEdit && videoEdit.trimEnd > videoEdit.trimStart && videoEdit.trimEnd < c.duration_seconds
+        ? videoEdit.trimEnd - videoEdit.trimStart
+        : videoEdit && videoEdit.trimStart > 0
+          ? c.duration_seconds - videoEdit.trimStart
+          : c.duration_seconds;
+    const duration = preview && preview > 0 ? Math.min(kept, preview) : kept;
     const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
     const sector = sym ? sectorByTicker.get(sym) ?? null : null;
     const p = r.prediction;
@@ -158,7 +167,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       // Proxied so the track is same-origin; see app/api/captions/route.ts.
       captionUrl: native && c.caption_vtt_url ? captionProxyUrl(c.caption_vtt_url) : null,
       durationSeconds: duration,
-      videoEdit: readStoredVideoEdit(r.video_edit),
+      videoEdit,
       feedPreviewSeconds: preview,
       headline: storyHeadline(r),
       deck: storyDek(r),

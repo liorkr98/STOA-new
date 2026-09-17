@@ -78,9 +78,13 @@ export function ReportClip({
   // without a second render pass just to undo a flag.
   const docked = playing && scrolledAway;
 
+  // The kept region, when Compose trimmed the clip: what plays, and the length shown.
+  const trimStart = edit && edit.trimStart > 0 ? edit.trimStart : 0;
+  const trimEnd = edit && edit.trimEnd > trimStart && edit.trimEnd < (edit.durationSeconds || durationSeconds) ? edit.trimEnd : null;
+  const shownSeconds = trimEnd != null ? trimEnd - trimStart : trimStart > 0 && durationSeconds > 0 ? durationSeconds - trimStart : durationSeconds;
   const duration =
-    durationSeconds > 0
-      ? `${Math.floor(durationSeconds / 60)}:${String(Math.round(durationSeconds % 60)).padStart(2, "0")}`
+    shownSeconds > 0
+      ? `${Math.floor(shownSeconds / 60)}:${String(Math.round(shownSeconds % 60)).padStart(2, "0")}`
       : null;
 
   const start = () => {
@@ -163,8 +167,10 @@ export function ReportClip({
                   title={`${analystName} on this publication`}
                   onTime={edit ? setTime : undefined}
                   onUnplayable={onUnplayable}
+                  trimStart={trimStart}
+                  trimEnd={trimEnd}
                 />
-                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} /> : null}
+                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} sealLocked /> : null}
               </>
             ) : playing && embedUrl ? (
               <iframe

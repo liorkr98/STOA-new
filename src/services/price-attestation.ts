@@ -45,9 +45,27 @@ function normalizeRequest(input: AttestationPayload): AttestationPayload | null 
 
 function parseEdgeResponse(payload: EdgeAttestedPriceResponse): AttestPriceResult {
   if (!payload.success || !payload.data) {
-    return { success: false, error: payload.error ?? "Price attestation failed" };
+    return { success: false, error: readableAttestationError(payload.error) };
   }
   return { success: true, data: payload.data };
+}
+
+/**
+ * The edge function can hand back a quote library's own exception text when
+ * the upstream feed is rate limited ("Unexpected token 'T', \"Too Many
+ * Requests\" is not valid JSON"). The deployed function is meant to swallow
+ * that, but the copy in production has lagged the repo before, so the line a
+ * reader sees is decided here as well.
+ */
+function readableAttestationError(raw: string | undefined): string {
+  if (!raw) return "Price attestation failed";
+  if (/too many requests|rate limit/i.test(raw)) {
+    return "Quote service is busy. Wait a moment, then change the ticker to retry.";
+  }
+  if (/unexpected token|is not valid json|json\.parse|syntaxerror/i.test(raw)) {
+    return "Unable to attest price right now. Try again in a few seconds.";
+  }
+  return raw;
 }
 
 export async function attestPrice(input: AttestationPayload): Promise<AttestPriceResult> {

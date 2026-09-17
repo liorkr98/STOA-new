@@ -177,7 +177,26 @@ export async function reportIdsWithCards(
 function cardFingerprint(
   cards: { kind: string; locked: boolean; payload: unknown }[],
 ): string {
-  return JSON.stringify(cards.map((c) => [c.kind, c.locked, c.payload]));
+  return JSON.stringify(cards.map((c) => [c.kind, c.locked, stableJson(c.payload)]));
+}
+
+/**
+ * Object keys in a stable order at every depth. Postgres stores jsonb with
+ * its own key order, so a payload read back differs from the one the client
+ * sent by key order alone; comparing the two raw would report a change on a
+ * save that changed nothing, and the publication would carry an EDITED
+ * marker naming the cards.
+ */
+function stableJson(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stableJson);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.keys(value as Record<string, unknown>)
+        .sort()
+        .map((k) => [k, stableJson((value as Record<string, unknown>)[k])]),
+    );
+  }
+  return value;
 }
 
 /**
