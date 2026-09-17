@@ -811,7 +811,7 @@ const FeedItem = function FeedItem({
                     iframe fallback cannot carry them: nothing outside it knows
                     the playhead. */}
                 {pub.videoEdit && started && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) ? (
-                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} />
+                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} sealLocked />
                 ) : null}
                 <div
                   aria-hidden

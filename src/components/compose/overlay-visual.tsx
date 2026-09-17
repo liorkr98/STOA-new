@@ -17,13 +17,21 @@ export function OverlayVisualBody({
   cards,
   className,
   ticker,
+  sealLocked = false,
 }: {
   source: VisualSource;
   cards: DraftCard[];
   className?: string;
   ticker?: string;
+  /**
+   * Draw a locked card as sealed, the way the evidence rail shows it to a
+   * reader, instead of its words. Compose's own preview leaves this off so
+   * the author sees what they placed.
+   */
+  sealLocked?: boolean;
 }) {
   const card = source.type === "card" && source.cardId ? cards.find((c) => c.id === source.cardId) ?? null : null;
+  const sealed = Boolean(card?.locked && sealLocked);
 
   return (
     <div
@@ -32,7 +40,12 @@ export function OverlayVisualBody({
         className,
       )}
     >
-      {card ? (
+      {sealed ? (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 p-4 text-center">
+          <span className="t-eyebrow">Sealed</span>
+          <span className="t-meta text-[11px]">This card is for subscribers. Open the publication to unlock it.</span>
+        </div>
+      ) : card ? (
         <CardPreview card={card} compact className="h-full w-full overflow-hidden border-0 bg-transparent" />
       ) : source.type === "chart" ? (
         <div className="h-full w-full p-3">

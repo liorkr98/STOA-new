@@ -170,7 +170,7 @@ export function ReportClip({
                   trimStart={trimStart}
                   trimEnd={trimEnd}
                 />
-                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} /> : null}
+                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} sealLocked /> : null}
               </>
             ) : playing && embedUrl ? (
               <iframe
