@@ -151,10 +151,31 @@ and themes. One primary tag drives placement; up to two secondary tags are
 searchable only. The primary auto-fills from a call's sector, one click to
 change.
 
-## Assistant (left)
+## The rail: only where the screen can take what it holds
 
-Everything AI lives in the left **Assistant** rail, on the screens that build
-something (the writer, cards, the video):
+The left toolbox rail was built for the old workspace, where everything was
+on screen at once and cards needed a permanent home to drag from. Beside a
+three-step spine with features behind a menu, a rail that is always there
+contradicts the structure. The rule now (`railFor` in
+`src/lib/compose/rail.ts`): the rail exists only where the screen can take
+what it holds, its contents match that screen, and it is absent everywhere
+else. It never folds to a column of icons.
+
+| Screen | Rail |
+| --- | --- |
+| The report (the writer) | The card tray and the assistant |
+| Cards | The card tray (its order is set there) |
+| Video, once a clip is loaded | The card tray, for the timeline |
+| Video before a clip, a live piece's read-only clip, the take, the call, the headline, tags, publish | None; the canvas takes the full width |
+
+On a phone the same contents open as a drawer from a Toolbox button in the
+top bar, on the same screens.
+
+## Assistant
+
+Everything AI lives in the **Assistant** section of the rail, on the writer,
+because every reply it makes (a metric, a chart, a card, a tightened
+passage, a headline) lands in the writer:
 
 - Ask AI
 - Fact-check (any type with a writer)
@@ -162,8 +183,9 @@ something (the writer, cards, the video):
 - Templates
 - Generate cards, charts, structure, tighten, headlines, Devil's Advocate
 
-Nothing AI belongs in the top bar. The rail also carries the card tray, so a
-card stays draggable into the writer and onto the timeline.
+The one AI action that serves the cards screen, drafting cards from what has
+been written, is a button on that screen's canvas. Nothing AI belongs in the
+top bar.
 
 ## Cards
 

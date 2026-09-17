@@ -106,8 +106,10 @@ thesis, a video) is a menu nobody has to walk past. Instagram's structure. The f
 `docs/COMPOSE.md`.
 
 The workspace is still organised by one sentence: **left is what you build with, the spine is
-what you publish as.** The left rail is the toolbox (the card deck, then the AI assistant), shown
-on the screens that build something; the centre is the current screen.
+what you publish as.** The left rail is the toolbox, and it exists only where the screen can take
+what it holds: the card deck where a card can be dropped or ordered (the writer, the cards
+screen, the video once a clip is loaded), the AI assistant where its reply has a writer to land
+in. Everywhere else there is no rail and the current screen takes the full width.
 
 **Cards are a shared asset pool.** They are not a step inside the video path and not a feature of
 the research. They belong to the publication, they live in the left rail, and the same card can

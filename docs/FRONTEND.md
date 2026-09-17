@@ -1312,10 +1312,14 @@ stored (`spineProgress` in `src/lib/compose/drafts.ts`), and every step up to it
 video draft always starts at the video step again, because a chosen clip is held in the tab
 until publish; the picker's row says "Needs the clip again".
 
-**The toolbox rail** (the card tray, then the assistant) exists only on the screens that build
-something: the writer, cards and the video. On the call, the take, the headline, tags and
-publish there is no rail. On the building screens it opens by default and folds to its icons;
-a creator who folds or opens it is obeyed until they move to another screen.
+**The toolbox rail** exists only where the screen can take what it holds, and its contents
+match the screen (`railFor` in `src/lib/compose/rail.ts`): the writer gets the card tray and the
+assistant; the cards screen gets the tray alone (the deck's order is set there, and the one AI
+action that serves cards is a button on the canvas); the video screen gets the tray alone, and
+only once a clip is loaded, because that is when the timeline can take a drop. Before a clip,
+on a live piece's read-only clip, and on the take, the call, the headline, tags and publish
+there is no rail and the canvas takes the full width. The rail never folds to icons: the
+fold-to-icons state was a stub for a rail that was always there, and that rail is gone.
 
 **Two components render half of themselves** rather than being split in two, so the sequence
 costs no duplicated state: `<VideoRung stage="all">` on the video screen (the picker and the
@@ -1335,7 +1339,7 @@ Record, Replace, Remove, trim, toolbar or inspector, and a line saying the clip 
 |---|---|---|
 | Frame | exactly the room its scroller gives it, measured | Everything below |
 | Header (full width, in the flow) | auto | The bar, then the step tracker |
-| Toolbox rail (left, scrolls) | `248px` expanded, `56px` as icons, absent on non-building steps | Card tray, then the AI assistant |
+| Toolbox rail (left, scrolls) | `248px`, present only where the screen can take a drop or an AI reply, never folded | Card tray, and on the writer the AI assistant |
 | Canvas (centre, scrolls) | `--w-standard` (1200px), fluid; the write step keeps a `60rem` measure | The current step |
 
 Compose is a working surface, not an article. The canvas used to be a reading measure with a
@@ -1371,11 +1375,10 @@ fallback does not hold an empty 240px rail open beside the workspace either.
 
 **Responsive.** Two rails plus a canvas do not fit a laptop:
 
-- `≥ lg` (1024px): both columns. The toolbox collapses to icons on demand and expands again
-  from either icon; the card icon carries the deck count as a badge.
+- `≥ lg` (1024px): both columns on the screens that have a rail; one column everywhere else.
 - `< lg`: the toolbox becomes a drawer over the canvas, opened from a Toolbox button in the top
-  bar that also carries the deck count. The step rail scrolls horizontally rather than wrapping,
-  so the sequence stays one line and the page never scrolls sideways.
+  bar that also carries the deck count, on the same screens. The step rail scrolls horizontally
+  rather than wrapping, so the sequence stays one line and the page never scrolls sideways.
 
 Everything in a step is **rendered once**, never rendered twice and hidden with CSS: two copies
 would break the radio groups and the `label`/`for` targets inside them.

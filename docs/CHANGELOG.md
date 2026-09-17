@@ -10,6 +10,47 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-17 — Compose: the toolbox rail follows the screen
+
+**For someone using the site**
+
+- **The left rail appears only where it can be used, and holds only what
+  that screen can take.** On the writer it holds the card tray and the AI
+  assistant, because a card can be dropped into the text and every reply
+  the assistant makes lands there. On the cards screen it holds the tray
+  alone, which is where the deck's order is set; the one AI action that
+  serves cards, drafting them from what you have written, is a button on
+  the screen itself. On the video screen it holds the tray alone, and only
+  once a clip is loaded, because that is when the timeline can take a
+  card. Before a clip is chosen, on a live piece's read-only clip, and on
+  the take, the call, the headline, tags and publish there is no rail at
+  all and the screen takes the full width.
+- **The rail no longer folds to a column of icons.** That state was a stub
+  for a rail that was always there. A rail that is there now is there for
+  a reason, so there is nothing to fold.
+- **On a phone** the same contents open as a drawer from the Toolbox
+  button, on the same screens.
+
+**Why.** The rail was built for the old workspace, where everything was on
+screen at once and cards needed a permanent home to drag from. The
+four-types model is a three-step spine with features behind a menu, and a
+rail that was always present contradicted the structure beside it: an
+empty card tray sat next to the video chooser and next to a live piece's
+frozen clip. The rule lives in `src/lib/compose/rail.ts` with its tests.
+
+**Reconciliation pass.** Every Compose screen of every type was walked at
+1440 and 390 after the change: the rail and the drawer appear exactly on
+the screens in the table in `docs/COMPOSE.md`, dragging a card into the
+writer and onto the timeline still works, and the canvas spans the full
+width where the rail is absent. `AGENTS.md` now carries the standing rule
+that any batch changing structure ends with such a pass.
+
+**What needs Krisi**
+
+Nothing new.
+
+---
+
 ## 2026-09-17 — Compose: the video step's two ways in are back, and a full audit of the restructure
 
 **For someone using the site**
