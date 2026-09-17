@@ -100,8 +100,8 @@ events are recorded, attention per day since arrival stands in for a windowed ve
 ## Compose is a spine and a menu, not a wizard
 
 Compose opens by asking what the analyst is trying to do: one of the four types above, described
-by purpose. Every type then walks the same three mandatory steps (the content, the headline, the
-tags) and reaches the publish screen, where what the type may add on top (a call, cards, a
+by purpose. Every type then walks the same short mandatory spine (the content, the headline, the
+tags; a video writes its headline under the clip, so its spine is two steps) and reaches the publish screen, where what the type may add on top (a call, cards, a
 thesis, a video) is a menu nobody has to walk past. Instagram's structure. The full model is
 `docs/COMPOSE.md`.
 

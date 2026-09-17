@@ -17,7 +17,7 @@ import { VERDICT_WINDOW_DAYS, type VerdictWindow } from "@/lib/compose/verdict";
  * about today and "video" is not. On a phone all four fit above the fold as
  * compact rows whose detail opens on a tap; on a desktop they are four
  * cards. Under them, the drafts: type, headline, when it was last touched,
- * and how far along its three steps it is.
+ * and how far along its spine it is (two steps for a video, three otherwise).
  */
 
 export interface PickerDraft extends DraftSummary {
@@ -238,7 +238,7 @@ export function ComposePicker({
         </h1>
         <p className="mt-2 hidden max-w-[58ch] text-[1.0625rem] leading-relaxed text-text-mute md:block">
           Four jobs, not four file types. Pick the one that matches what you are trying to do today.
-          Everything after it is three steps.
+          Everything after it is two or three short steps.
         </p>
 
         {/* Four cards on a desktop; four compact rows on a phone, all four above the

@@ -29,27 +29,30 @@ a verdict; older `call`-type rows reopen as verdicts.
 above the fold, whose detail opens on a tap. The verdict card carries its
 one-per-30-days rule and, once this month's is used, says when the next one
 unlocks (as anticipation, not a refusal). Under the cards, every draft: type,
-headline, when it was last touched, and how far along its three steps it is
+headline, when it was last touched, and how far along its spine it is
 (`src/lib/compose/drafts.ts` derives this from what is stored, never from a
 recorded step). A draft opens at the first step it has not finished. The
 route is `/studio/compose` with nothing after it; `?type=video` starts a
 type, `?id=` reopens a draft.
 
-## The spine: never more than three steps
+## The spine: never more than three steps, and two for a video
 
 Every type walks the same short mandatory spine, then reaches the publish
 screen:
 
 | Type | Step 1 | Step 2 | Step 3 |
 | --- | --- | --- | --- |
-| Video | the video | headline | tags |
+| Video | the video, with its headline under the clip | tags | |
 | Brief | the take (short text) | headline | tags |
 | Thesis | the report (the full writer) | headline | tags |
 | Verdict | the call | headline | tags |
 
-The headline and the tags are mandatory on every type. The headline step
-shows where the line will travel (a Today row, an inbox, a pasted link) so
-the analyst writes for the places it is read. The tags step is a list you
+The headline and the tags are mandatory on every type. On a video the
+headline is written under the clip, on the video screen, and Continue asks
+for it once the clip is in; the tracker shows two steps and says so. On
+the other types the headline step shows where the line will travel (a
+Today row, an inbox, a pasted link) so the analyst writes for the places
+it is read. The tags step is a list you
 type into (below).
 
 **One button per screen, and its label is what pressing it does.** On the
@@ -232,16 +235,25 @@ says so.
 
 The video screen is one screen, not two: the two ways in while no clip is
 loaded, and the editor on the same screen the moment one is (`<VideoRung
-stage="all">`). With a clip loaded, Record, a Replace file picker and Remove
-video sit above the picture. The four-types restructure lost the two ways in
+stage="all">`), and under the editor the headline and the dek. With a clip
+loaded, Record, Replace and Remove video sit above the picture as three
+buttons that wrap on a phone (the browser's own file control used to sit
+there at its native width and made the screen scroll sideways). The four-types restructure lost the two ways in
 for a day (the chooser was wired to a stage the combined screen never sent);
 they are back, and the fixture `/dev/compose?shape=video` opens on them.
 
 ## The video editor
 
-Unchanged in this batch and rebuilt next: one picture above one timeline,
-trim by dragging the brass ends of the filmstrip, text and insets dragged
-on the picture, timed by dragging the ends of their bar. Overlays are stored
+One picture above one timeline, trim by dragging the brass ends of the
+filmstrip, text and insets dragged on the picture, timed by dragging the
+ends of their bar. At rest, under the timeline, there is one control: **Add
+overlay**. It opens a short menu (text, a card, a chart, a diagram, an
+image); choosing one adds it at the playhead and selects it, and only then
+do its settings appear. Card is always on that menu: with cards in the deck
+it lists them, with none it opens the card library and places the new card
+at the playhead the analyst was on (the old Card button was disabled with no
+cards, and on a new video draft there never are any yet, so cards read as
+missing). Overlays are stored
 with the publication (`reports.video_edit`) and drawn by Stoa's player over
 the clip, from the same renderer as "Preview as it will publish". They are
 not composited into the video file: a clip shared or downloaded elsewhere

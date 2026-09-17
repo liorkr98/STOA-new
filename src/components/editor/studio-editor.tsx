@@ -113,6 +113,7 @@ import {
   type AdvanceInput,
   type StepFacts,
   type StepKey,
+  headlineOnContent,
 } from "@/lib/compose/steps";
 import { spineProgress } from "@/lib/compose/drafts";
 import { StepFrame, StepNav } from "@/components/compose/step-nav";
@@ -251,6 +252,9 @@ export function StudioEditor({
   const hasWriter = !isBrief;
   const spine = useMemo(() => spineFor(pubType), [pubType]);
   const features = useMemo(() => featuresFor(pubType), [pubType]);
+  // A video's headline is written under the clip, on the video screen, so
+  // its spine is two steps and there is no headline screen to reach.
+  const headlineWithVideo = headlineOnContent(pubType);
   // Read once, when the workspace opens: the window is a fact about the
   // analyst's record, and render must not depend on the clock.
   const [vWindow] = useState(() => verdictWindow(verdictLastPublishedAt));
@@ -879,11 +883,11 @@ export function StudioEditor({
   const lockingCall = Boolean(ticker.trim()) && direction !== null;
 
   // ── The spine ──────────────────────────────────────────────────────────
-  // Three steps, one at a time on the first pass, every step a tab
+  // Two or three steps, one at a time on the first pass, every step a tab
   // afterwards. A reopened draft starts at the first step it has not
   // finished; a live publication is never a first pass, so nothing is locked.
   const [stepKey, setStepKey] = useState<StepKey>(() => {
-    if (editingPublished) return isBrief || pubType === "thesis" ? spine[0]!.key : "headline";
+    if (editingPublished) return isBrief || pubType === "thesis" || headlineWithVideo ? spine[0]!.key : "headline";
     const facts = {
       hasContent:
         pubType === "video"
@@ -900,8 +904,8 @@ export function StudioEditor({
       hasTitle: Boolean(initialDraft?.title?.trim()),
       hasTags: Boolean(initialDraft?.primary_tag),
     };
-    const at = spineProgress(facts).resumeAt;
-    return at === 3 ? "publish" : spine[at]!.key;
+    const at = spineProgress(facts, headlineWithVideo).resumeAt;
+    return at >= spine.length ? "publish" : spine[at]!.key;
   });
   const [blockedNote, setBlockedNote] = useState<string | null>(null);
   const [visited, setVisited] = useState<Set<StepKey>>(() => {
@@ -930,10 +934,11 @@ export function StudioEditor({
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const titleAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const headlineVisible = stepKey === "headline" || (headlineWithVideo && stepKey === "video");
   useLayoutEffect(() => {
-    if (stepKey !== "headline") return;
+    if (!headlineVisible) return;
     fitTextarea(titleAreaRef.current);
-  }, [stepKey, title]);
+  }, [headlineVisible, title]);
 
   const goStep = useCallback(
     (key: StepKey) => {
@@ -1041,6 +1046,7 @@ export function StudioEditor({
   /** What each step holds right now, for the tracker and the menu. */
   const stepFacts: StepFacts = {
     hasVideo: videoChosen,
+    headlineOnVideo: headlineWithVideo,
     hasBrief: summary.trim().length > 0,
     hasThesis: plainText.trim().length > 0,
     hasCall: lockingCall && advanceFor(pubType, "call", advanceInput).blocker === null,
@@ -1380,6 +1386,63 @@ export function StudioEditor({
 
   const next = role === "publish" ? null : { label: advance.label, onPress: pressNext };
 
+  /* The headline and the dek. A textarea, not an input: a headline is one
+     thought but rarely one line, and an input clips whatever a 390px screen
+     cannot hold. It grows with its words and Enter moves on rather than
+     breaking the line. Rendered on the headline step, or under the clip on
+     a video. */
+  const headlineFields = (
+    <>
+      <label htmlFor="report-title" className="sr-only">
+        Headline
+      </label>
+      <textarea
+        id="report-title"
+        value={title}
+        rows={1}
+        onChange={(e) => {
+          setTitle(e.target.value.replace(/\n/g, " "));
+          markDirty();
+          fitTextarea(e.currentTarget);
+        }}
+        ref={titleAreaRef}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (isBrief) pressNext();
+            else document.getElementById("report-summary")?.focus();
+          }
+        }}
+        placeholder="Headline"
+        dir="auto"
+        autoFocus={!editingPublished && stepKey === "headline"}
+        className={cn(
+          "user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none",
+          headlineWithVideo ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
+        )}
+        style={{ fontFamily: "var(--font-display)" }}
+      />
+      {isBrief ? null : (
+        <>
+          <label htmlFor="report-summary" className="sr-only">
+            Dek
+          </label>
+          <input
+            id="report-summary"
+            value={summary}
+            onChange={(e) => {
+              setSummary(e.target.value);
+              markDirty();
+            }}
+            placeholder="One line under the headline. Optional."
+            dir="auto"
+            className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+          />
+        </>
+      )}
+    </>
+  );
+
   return (
     // The class height is only the guess for the server-rendered paint; the
     // effect above measures the real room and overrides it before first paint.
@@ -1584,59 +1647,13 @@ export function StudioEditor({
                 </StepErrorBoundary>
               ) : null}
 
-              {/* THE HEADLINE. One line that travels, and where it travels to. */}
+              {/* THE HEADLINE. One line that travels, and where it travels to.
+                  On a video it sits under the clip instead (below). */}
               {stepKey === "headline" ? (
                 <StepErrorBoundary label="Headline">
                   <DevCrash step="headline" />
                   <div className="max-w-[60rem]">
-                    <label htmlFor="report-title" className="sr-only">
-                      Headline
-                    </label>
-                    {/* A textarea, not an input: a headline is one thought
-                        but rarely one line, and an input clips whatever a
-                        390px screen cannot hold. It grows with its words and
-                        Enter moves on rather than breaking the line. */}
-                    <textarea
-                      id="report-title"
-                      value={title}
-                      rows={1}
-                      onChange={(e) => {
-                        setTitle(e.target.value.replace(/\n/g, " "));
-                        markDirty();
-                        fitTextarea(e.currentTarget);
-                      }}
-                      ref={titleAreaRef}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          if (isBrief) pressNext();
-                          else document.getElementById("report-summary")?.focus();
-                        }
-                      }}
-                      placeholder="Headline"
-                      dir="auto"
-                      autoFocus={!editingPublished}
-                      className="user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none md:min-h-[3.25rem] md:text-4xl"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    />
-                    {isBrief ? null : (
-                      <>
-                        <label htmlFor="report-summary" className="sr-only">
-                          Dek
-                        </label>
-                        <input
-                          id="report-summary"
-                          value={summary}
-                          onChange={(e) => {
-                            setSummary(e.target.value);
-                            markDirty();
-                          }}
-                          placeholder="One line under the headline. Optional."
-                          dir="auto"
-                          className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
-                        />
-                      </>
-                    )}
+                    {headlineFields}
                     <HeadlineTravels title={title} dek={isBrief ? "" : summary} typeLabel={typeDef.label} ticker={ticker} />
                   </div>
                 </StepErrorBoundary>
@@ -1819,6 +1836,18 @@ export function StudioEditor({
                     chrome={false}
                     ticker={ticker.trim() || undefined}
                   />
+                  {/* The headline, under the clip. The video stays the
+                      focus: one quiet field below the editor, no preview
+                      cards, and it is asked for by Continue only once the
+                      clip is in. */}
+                  {headlineWithVideo ? (
+                    <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
+                      <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+                        Headline · the line that travels: Today, the inbox, a pasted link
+                      </p>
+                      {headlineFields}
+                    </div>
+                  ) : null}
                 </div>
                 </StepErrorBoundary>
               ) : null}

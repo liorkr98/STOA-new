@@ -21,8 +21,8 @@ const empty: AdvanceInput = {
 };
 
 describe("spineFor", () => {
-  it("is always three steps: the content, the headline, the tags", () => {
-    assert.deepEqual(spineFor("video").map((s) => s.key), ["video", "headline", "tags"]);
+  it("is the content, the headline and the tags; a video carries its headline on the clip's screen", () => {
+    assert.deepEqual(spineFor("video").map((s) => s.key), ["video", "tags"]);
     assert.deepEqual(spineFor("brief").map((s) => s.key), ["brief", "headline", "tags"]);
     assert.deepEqual(spineFor("thesis").map((s) => s.key), ["thesis", "headline", "tags"]);
     assert.deepEqual(spineFor("verdict").map((s) => s.key), ["call", "headline", "tags"]);
@@ -45,6 +45,13 @@ describe("featuresFor", () => {
 });
 
 describe("advanceFor on the spine", () => {
+  it("asks a video for its headline once the clip is in, on the same screen", () => {
+    assert.match(advanceFor("video", "video", { ...empty, hasVideo: true }).blocker ?? "", /headline under the video/);
+    assert.equal(advanceFor("video", "video", { ...empty, hasVideo: true, title: "A line" }).blocker, null);
+    // On a verdict the clip is a feature and the headline is its own step.
+    assert.equal(advanceFor("verdict", "video", { ...empty, hasVideo: true }).blocker, null);
+  });
+
   it("refuses an empty content step and names it", () => {
     assert.match(advanceFor("video", "video", empty).blocker ?? "", /Add a video/);
     assert.match(advanceFor("brief", "brief", empty).blocker ?? "", /Write the take/);

@@ -3,8 +3,9 @@
  * it was last touched, and how far along its spine it is.
  *
  * Progress is derived from what is stored, never recorded, so it cannot
- * drift. Every type walks the same three steps (the content, the headline,
- * the tags) and a draft opens at the first one it has not finished.
+ * drift. Every type walks the same short spine (the content, the headline,
+ * the tags; a video carries its headline on the clip's screen, so its spine
+ * is two steps) and a draft opens at the first one it has not finished.
  */
 
 import { isTiptapDoc, parseTiptapDoc, tiptapPlainText } from "@/lib/editor/tiptap/serialize";
@@ -49,18 +50,37 @@ export interface SpineFacts {
   hasTags: boolean;
 }
 
-export const SPINE_LENGTH = 3;
+/** How long the spine is: two steps when the headline sits on the content screen, else three. */
+export function spineLength(headlineOnContent: boolean): 2 | 3 {
+  return headlineOnContent ? 2 : 3;
+}
 
-/** Steps done, in spine order, and the first one still open. */
-export function spineProgress(f: SpineFacts): {
+/**
+ * Steps done, in spine order, and the first one still open.
+ *
+ * `headlineOnContent` is the video's shape: the headline is part of the
+ * first step, so that step is done only with the clip and the line both,
+ * and `resumeAt` counts 0 content, 1 tags, 2 when every step is done.
+ * Otherwise 0 content, 1 headline, 2 tags, 3 when every step is done.
+ */
+export function spineProgress(
+  f: SpineFacts,
+  headlineOnContent = false,
+): {
   done: number;
   total: number;
-  /** 0 content, 1 headline, 2 tags, 3 when every step is done. */
-  resumeAt: 0 | 1 | 2 | 3;
+  /** The index of the first unfinished step, or the spine's length when every step is done. */
+  resumeAt: number;
 } {
+  if (headlineOnContent) {
+    const first = f.hasContent && f.hasTitle;
+    const done = Number(first) + Number(f.hasTags);
+    const resumeAt = !first ? 0 : !f.hasTags ? 1 : 2;
+    return { done, total: 2, resumeAt };
+  }
   const done = Number(f.hasContent) + Number(f.hasTitle) + Number(f.hasTags);
-  const resumeAt: 0 | 1 | 2 | 3 = !f.hasContent ? 0 : !f.hasTitle ? 1 : !f.hasTags ? 2 : 3;
-  return { done, total: SPINE_LENGTH, resumeAt };
+  const resumeAt = !f.hasContent ? 0 : !f.hasTitle ? 1 : !f.hasTags ? 2 : 3;
+  return { done, total: 3, resumeAt };
 }
 
 /** Whether a stored body holds any words. */
@@ -130,8 +150,8 @@ export interface DraftSummary {
 }
 
 function whereLine(type: PublicationType, f: SpineFacts, row: DraftRow): string {
-  const p = spineProgress(f);
-  if (p.resumeAt === 3) return "Ready to publish";
+  const p = spineProgress(f, type === "video");
+  if (p.resumeAt === p.total) return "Ready to publish";
   if (type === "thesis" && p.resumeAt === 0 && !f.hasContent) {
     return "Report not started";
   }
@@ -145,7 +165,7 @@ function whereLine(type: PublicationType, f: SpineFacts, row: DraftRow): string 
 
 export function summarizeDraft(row: DraftRow): DraftSummary {
   const facts = draftFacts(row);
-  const p = spineProgress(facts);
+  const p = spineProgress(facts, facts.type === "video");
   const def = publicationTypeDef(facts.type);
   const title = row.title?.trim() || "";
   return {
@@ -155,7 +175,7 @@ export function summarizeDraft(row: DraftRow): DraftSummary {
     title: title || `Untitled ${def.label.toLowerCase()}`,
     untitled: !title,
     ticker: row.ticker?.trim() ? row.ticker.trim().toUpperCase() : null,
-    where: `Spine ${Math.min(p.resumeAt + 1, SPINE_LENGTH)} of ${SPINE_LENGTH} · ${whereLine(facts.type, facts, row)}`,
+    where: `Spine ${Math.min(p.resumeAt + 1, p.total)} of ${p.total} · ${whereLine(facts.type, facts, row)}`,
     done: p.done,
     total: p.total,
     percent: Math.round((p.done / p.total) * 100),

@@ -21,6 +21,12 @@ describe("spineProgress", () => {
     assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }).resumeAt, 2);
     assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }).resumeAt, 3);
   });
+
+  it("counts a video's headline inside its first step, so the spine is two", () => {
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: false, hasTags: true }, true), { done: 1, total: 2, resumeAt: 0 });
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }, true), { done: 1, total: 2, resumeAt: 1 });
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }, true), { done: 2, total: 2, resumeAt: 2 });
+  });
 });
 
 describe("draftFacts", () => {
@@ -75,6 +81,12 @@ describe("summarizeDraft", () => {
     assert.equal(s.percent, 67);
     assert.equal(s.where, "Spine 3 of 3 · No tags");
     assert.equal(s.touchedAt, "2026-09-09T00:00:00Z");
+  });
+
+  it("places a video draft on a two-step spine", () => {
+    const s = summarizeDraft({ ...base, type: "video", title: "A line", primary_tag: "semis" });
+    assert.equal(s.where, "Spine 1 of 2 · Needs the clip again");
+    assert.equal(s.total, 2);
   });
 
   it("names an untitled draft by its type", () => {

@@ -1228,7 +1228,7 @@ The other highest-scrutiny screen in the product, and the one where the seal rit
 gets triggered. The full model is `docs/COMPOSE.md`; this section is the screens.
 
 **Compose is a short mandatory spine and a menu of options, not a wizard.** Instagram's
-structure: everyone walks three steps, and what a publication may add on top is a menu nobody
+structure: everyone walks two or three steps, and what a publication may add on top is a menu nobody
 has to walk past.
 
 **The type picker is the first screen.** Four types described by purpose (Video: reach people
@@ -1241,16 +1241,16 @@ is closed. Under the cards, **my drafts**: type, headline, `PLAB · SPINE 2 OF 3
 AGO`, a hairline progress bar (`66% THERE`) and Resume; compact rows on a phone with an `ALL`
 pill to Studio. `<ComposePicker>` (`src/components/compose/type-picker.tsx`).
 
-**The spine is three steps for every type:**
+**The spine is two steps for a video and three for every other type:**
 
 | Type | 1 | 2 | 3 |
 |---|---|---|---|
-| Video | Video (record or upload; the rung with its timeline) | Headline | Tags |
+| Video | Video (record or upload; the rung with its timeline) and, under the clip, the headline | Tags | |
 | Brief | The take (a textarea, 300 characters) | Headline | Tags |
 | Thesis | The report (the Tiptap writer, with the toolbox rail) | Headline | Tags |
 | Verdict | The call (`<VerdictCallPanel>`) | Headline | Tags |
 
-Then the **publish screen**. The tracker (`<StepNav>`) is three numbered marks joined by a
+Then the **publish screen**. The tracker (`<StepNav>`) is two or three numbered marks joined by a
 hairline: the current one filled ink, a done one a verdigris tick, an unreached one dimmed and
 not clickable. Off the spine (the publish screen, a feature editor) no mark is current and the
 heading says where you are. Each screen has an eyebrow (`STEP 1 OF 3`, `ADD TO THIS VERDICT ·
@@ -1259,7 +1259,9 @@ OPTIONAL`, `READY WHEN YOU ARE`), a display heading and one line under it (`<Ste
 **The headline step** is the headline (a growing textarea in the display face; Enter moves on)
 and the dek (not on a brief, whose text is the take), then **How the line travels**: the
 headline as a Today row, an inbox line and a pasted link, so the creator writes for the places
-it is read.
+it is read. A video has no headline step: the same two fields sit under the clip on the video
+screen, with a one-line eyebrow and no preview cards, so the video stays the focus. Continue
+asks for the headline there once the clip is in.
 
 **One button per screen, and its label is what pressing it will do.** On the spine it reads
 **Continue**; when it cannot advance the reason sits beside it in rust, in the creator's terms

@@ -3,7 +3,7 @@
  *
  * The rail was built for the old workspace, where everything was on screen
  * at once and cards needed a permanent home to drag from. The four-types
- * model is a three-step spine with features behind a menu, so a rail that
+ * model is a short spine with features behind a menu, so a rail that
  * is always there contradicts the structure beside it. The rule now: the
  * rail exists only where the screen can take what it holds. The card tray
  * where a card can be dropped or put in order (the writer, the cards screen,

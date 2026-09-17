@@ -1,10 +1,12 @@
 /**
  * The spine and the features menu.
  *
- * Every publication walks a short mandatory spine of three steps: the
- * content (a clip, a take, a report, or a call, by type), then the
- * headline, then the tags. After the spine comes the publish screen, and on
- * it a menu of optional features (a call, cards, a thesis, a video) that
+ * Every publication walks a short mandatory spine: the content (a clip, a
+ * take, a report, or a call, by type), the headline, then the tags. A video
+ * carries its headline on the same screen as the clip, so its spine is two
+ * steps; the written types and the verdict keep the headline as a step of
+ * its own, so theirs is three. After the spine comes the publish screen, and
+ * on it a menu of optional features (a call, cards, a thesis, a video) that
  * nobody has to walk past: opening one goes into that feature's editor and
  * Done brings you back to the menu. Instagram's structure, not a wizard.
  *
@@ -48,7 +50,7 @@ const SPINE_STEPS: Record<Exclude<StepKey, "cards" | "publish">, StepDef> = {
   video: {
     key: "video",
     label: "Video",
-    blurb: "Record one or upload one. The Feed is where strangers find you, and this is the only type that gets there.",
+    blurb: "Record one or upload one, and give it the line that travels. The Feed is where strangers find you, and this is the only type that gets there.",
   },
   brief: {
     key: "brief",
@@ -97,10 +99,15 @@ export function contentStepFor(type: PublicationType): StepKey {
   }
 }
 
-/** The three mandatory steps, in order. Never more. */
+/** True when the type's headline lives on its content screen rather than on a step of its own. */
+export function headlineOnContent(type: PublicationType): boolean {
+  return type === "video";
+}
+
+/** The mandatory steps, in order. Two for a video, three for everything else. Never more. */
 export function spineFor(type: PublicationType): StepDef[] {
   const content = SPINE_STEPS[contentStepFor(type) as keyof typeof SPINE_STEPS];
-  return [content, SPINE_STEPS.headline, SPINE_STEPS.tags];
+  return headlineOnContent(type) ? [content, SPINE_STEPS.tags] : [content, SPINE_STEPS.headline, SPINE_STEPS.tags];
 }
 
 export interface FeatureDef {
@@ -188,6 +195,8 @@ export type StepState = "done" | "empty";
 /** What each step currently holds, for the tracker and the menu. */
 export interface StepFacts {
   hasVideo: boolean;
+  /** The headline sits on the video screen (a video publication), so that step is done only with both. */
+  headlineOnVideo: boolean;
   hasBrief: boolean;
   hasThesis: boolean;
   /** A complete call: ticker, direction, and for a verdict the target too. */
@@ -201,7 +210,7 @@ export interface StepFacts {
 export function stepState(key: StepKey, f: StepFacts): StepState {
   switch (key) {
     case "video":
-      return f.hasVideo ? "done" : "empty";
+      return f.hasVideo && (!f.headlineOnVideo || f.hasTitle) ? "done" : "empty";
     case "brief":
       return f.hasBrief ? "done" : "empty";
     case "thesis":
@@ -339,7 +348,13 @@ export function advanceFor(type: PublicationType, key: StepKey, s: AdvanceInput)
         return done(videoBlockers(s));
       }
       if (!s.hasVideo) return go("Add a video first. Record one, or upload one.");
-      return go(videoBlockers(s));
+      const clip = videoBlockers(s);
+      if (clip) return go(clip);
+      // A video publication's headline lives under the clip, on this screen.
+      if (headlineOnContent(type) && !s.title.trim()) {
+        return go("Add a headline under the video. It is the line that travels.");
+      }
+      return go();
     }
     case "brief": {
       const text = s.briefText.trim();

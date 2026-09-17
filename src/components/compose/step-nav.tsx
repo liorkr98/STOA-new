@@ -5,7 +5,7 @@ import { cn } from "@/lib/design/cn";
 import type { StepDef, StepKey, StepState } from "@/lib/compose/steps";
 
 /**
- * The spine's tracker: three numbered marks joined by a hairline.
+ * The spine's tracker: two or three numbered marks joined by a hairline.
  *
  * Three things have to be readable at a glance: where you are, what you have
  * already filled in, and what you have not reached. A done step carries a
@@ -100,7 +100,7 @@ export function StepFrame({
   status,
   children,
 }: {
-  /** "Step 1 of 3", "Add to this verdict · optional", "Ready when you are". */
+  /** "Step 1 of 2", "Step 1 of 3", "Add to this verdict · optional", "Ready when you are". */
   eyebrow: string;
   title: string;
   blurb: string;
