@@ -1356,10 +1356,10 @@ export function VideoRung({
           drops below the fold: the picture is capped at under half the
           viewport, which is how CapCut's desktop layout splits the screen. */}
       <div className="mx-auto w-full max-w-[min(880px,calc(44vh*16/9))]">
-        {stage === "choose" && picking === "camera" ? (
+        {stage !== "edit" && picking === "camera" ? (
           // The camera. What it records goes through takeFile like any file.
           <RecordClip onDone={takeFile} onCancel={() => setPicking("file")} />
-        ) : stage === "choose" && !src && !hasClip ? (
+        ) : stage !== "edit" && !src && !hasClip ? (
           <div className={cn("grid gap-3", canRecord && "sm:grid-cols-2")}>
             {canRecord ? (
               <button
