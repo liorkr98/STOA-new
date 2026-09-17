@@ -1485,7 +1485,11 @@ export function StudioEditor({
             <StepFrame
               eyebrow={eyebrow}
               title={current.label}
-              blurb={current.blurb}
+              blurb={
+                editingPublished && stepKey === "video"
+                  ? "The clip and what is placed on it are the record. They open here to be read."
+                  : current.blurb
+              }
               back={back}
               next={next}
               note={note}
@@ -1806,7 +1810,8 @@ export function StudioEditor({
                       setVideoChosen(true);
                     }}
                     hasClip={videoChosen}
-                    onRemove={removeVideo}
+                    onRemove={editingPublished ? undefined : removeVideo}
+                    frozen={editingPublished}
                     cards={deck}
                     chrome={false}
                     ticker={ticker.trim() || undefined}

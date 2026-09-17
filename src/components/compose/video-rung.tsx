@@ -1118,6 +1118,7 @@ export function VideoRung({
   hasClip = false,
   onRemove,
   initialSrc = null,
+  frozen = false,
 }: {
   /**
    * The chosen clip's object URL, held by the workspace. The rung makes its
@@ -1148,6 +1149,12 @@ export function VideoRung({
   hasClip?: boolean;
   /** Take the clip out. Offered beside Replace, never as a forward button. */
   onRemove?: () => void;
+  /**
+   * A live publication's clip and what is placed on it are the record:
+   * the screen opens to be read, with nothing to record, replace, remove,
+   * trim or place.
+   */
+  frozen?: boolean;
 }) {
   const [src, setSrc] = useState<string | null>(initialSrc);
   const [internalEdit, setEditState] = useState<VideoEdit>(initial ?? value ?? emptyEdit(demoDurationSeconds));
@@ -1298,14 +1305,16 @@ export function VideoRung({
     setSelectedId(null);
   };
 
-  const editing = stage !== "choose";
+  const editing = stage !== "choose" && !frozen;
+  // Whether a clip can be chosen or swapped here at all.
+  const choosing = stage !== "edit" && !frozen;
 
   return (
     <section
       aria-label="Video"
       className={cn(chrome && "mb-10 rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5")}
     >
-      {chrome || stage !== "edit" ? (
+      {chrome || choosing ? (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {chrome ? (
             <div>
@@ -1313,7 +1322,7 @@ export function VideoRung({
               <p className="mt-1 text-[13px] text-text-mute">The video is the seed. Call, cards and thesis are optional below.</p>
             </div>
           ) : null}
-          {stage !== "edit" ? (
+          {choosing ? (
             <div className="ml-auto flex items-center gap-2">
               {(src || hasClip) && canRecord && picking !== "camera" ? (
                 <Button variant="secondary" size="sm" onClick={() => setPicking("camera")}>
@@ -1356,10 +1365,10 @@ export function VideoRung({
           drops below the fold: the picture is capped at under half the
           viewport, which is how CapCut's desktop layout splits the screen. */}
       <div className="mx-auto w-full max-w-[min(880px,calc(44vh*16/9))]">
-        {stage !== "edit" && picking === "camera" ? (
+        {choosing && picking === "camera" ? (
           // The camera. What it records goes through takeFile like any file.
           <RecordClip onDone={takeFile} onCancel={() => setPicking("file")} />
-        ) : stage !== "edit" && !src && !hasClip ? (
+        ) : choosing && !src && !hasClip ? (
           <div className={cn("grid gap-3", canRecord && "sm:grid-cols-2")}>
             {canRecord ? (
               <button
@@ -1423,7 +1432,12 @@ export function VideoRung({
           onResize={(id, size) => patch(id, { size })}
           onText={(id, text) => patch(id, { text })}
         />
-        {!src ? (
+        {frozen ? (
+          <p className="mt-2 text-[0.8125rem] leading-snug text-text-mute">
+            {hasClip && !src ? "The saved clip plays here once it has been processed. " : null}
+            This clip and what is placed on it are the record of the publication. They cannot change.
+          </p>
+        ) : !src ? (
           <p className="num mt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
             {hasClip ? "The saved clip plays here once it has been processed" : "No video loaded"} · the stage runs a{" "}
             {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so things can still be placed on it
