@@ -17,13 +17,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const payload = (JSON.parse(rawBody || "{}") as { guid?: string; attempt?: number }) ?? {};
+  const payload = (JSON.parse(rawBody || "{}") as {
+    guid?: string;
+    attempt?: number;
+    expectBytes?: boolean;
+  }) ?? {};
   const guid = payload.guid;
   if (!guid) return NextResponse.json({ ok: true });
   const attempt = typeof payload.attempt === "number" && payload.attempt >= 0 ? payload.attempt : 0;
 
   try {
-    const outcome = await settleClipOrRetry(guid, attempt);
+    const outcome = await settleClipOrRetry(guid, attempt, {
+      expectBytes: payload.expectBytes === true,
+    });
     return NextResponse.json({ ok: true, outcome });
   } catch (e) {
     await deadLetter("video-reconcile", e, { guid, attempt });

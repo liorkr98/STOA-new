@@ -19,7 +19,10 @@ import {
 import { enqueueOrRun } from "@/lib/jobs/client";
 import { clipDurationSeconds } from "@/lib/video/clip-duration";
 import { processReadyVideo } from "@/lib/video/process";
-import { nextClipReconcileDelaySeconds } from "@/lib/video/follow-up";
+import {
+  EMPTY_UPLOAD_GIVE_UP_ATTEMPT,
+  nextClipReconcileDelaySeconds,
+} from "@/lib/video/follow-up";
 
 export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable";
 
@@ -106,7 +109,7 @@ export async function reconcileClip(
 export async function settleClipOrRetry(
   guid: string,
   attempt: number,
-  opts: { process?: boolean } = {},
+  opts: { process?: boolean; expectBytes?: boolean } = {},
 ): Promise<ReconcileOutcome> {
   let outcome: ReconcileOutcome;
   try {
@@ -117,6 +120,27 @@ export async function settleClipOrRetry(
   }
 
   if (outcome === "ready" || outcome === "failed") return outcome;
+
+  if (opts.expectBytes && outcome === "processing") {
+    try {
+      const video = await getBunnyVideo(guid);
+      const empty = video.status === 0 && (video.storageSize ?? 0) === 0;
+      if (empty && attempt >= EMPTY_UPLOAD_GIVE_UP_ATTEMPT) {
+        await markVideoClipReadyByGuid(guid, {
+          playbackUrl: bunnyPlaybackUrl(guid),
+          thumbnailUrl: null,
+          previewUrl: null,
+          captionVttUrl: null,
+          durationSeconds: 0,
+          status: "failed",
+        });
+        await deleteBunnyVideo(guid);
+        return "failed";
+      }
+    } catch (err) {
+      Sentry.captureException(err, { extra: { guid, attempt, where: "settleClipOrRetry.expectBytes" } });
+    }
+  }
 
   if (outcome === "unreachable") {
     Sentry.captureMessage("Bunny unreachable while settling clip", {
@@ -131,7 +155,7 @@ export async function settleClipOrRetry(
   try {
     await enqueueOrRun(
       "video-reconcile",
-      { guid, attempt: attempt + 1 },
+      { guid, attempt: attempt + 1, expectBytes: Boolean(opts.expectBytes) },
       () => settleClipOrRetry(guid, attempt + 1, opts),
       {
         delaySeconds,

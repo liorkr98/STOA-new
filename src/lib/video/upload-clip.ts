@@ -42,7 +42,10 @@ export async function uploadComposeClip(input: {
     input.onProgress,
   );
 
-  await fetch(`/api/creator/videos/${data.clipId}/uploaded`, { method: "POST" }).catch(() => undefined);
+  const settled = await fetch(`/api/creator/videos/${data.clipId}/uploaded`, { method: "POST" });
+  if (!settled.ok) {
+    throw new Error("The file uploaded, but processing could not start. Open the publication.");
+  }
 
   return { clipId: data.clipId };
 }

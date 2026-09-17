@@ -22,7 +22,7 @@ export const POST = withHandler<{ id: string }>(
       throw new ApiError("not_found", "not found");
     }
 
-    const outcome = await settleClipOrRetry(clip.bunny_video_guid, 0);
+    const outcome = await settleClipOrRetry(clip.bunny_video_guid, 0, { expectBytes: true });
     return NextResponse.json({ ok: true, outcome });
   },
 );

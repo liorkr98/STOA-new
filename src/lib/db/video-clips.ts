@@ -351,7 +351,7 @@ export async function getUnsettledClipForReport(
       .from("video_clips")
       .select("bunny_video_guid")
       .eq("report_id", reportId)
-      .or("status.eq.processing,status.eq.failed,and(status.eq.ready,published_at.is.null)")
+      .or("status.eq.processing,and(status.eq.ready,published_at.is.null)")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

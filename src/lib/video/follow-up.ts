@@ -11,3 +11,9 @@ export function nextClipReconcileDelaySeconds(attempt: number): number | null {
   if (attempt < 0 || attempt >= CLIP_RECONCILE_FOLLOW_UP_SECONDS.length) return null;
   return CLIP_RECONCILE_FOLLOW_UP_SECONDS[attempt]!;
 }
+
+/**
+ * After the browser said TUS finished, Bunny still sitting at status 0 with
+ * nothing stored is not a slow transcode. Four follow-ups is about 45 seconds.
+ */
+export const EMPTY_UPLOAD_GIVE_UP_ATTEMPT = 4;
