@@ -3,7 +3,8 @@
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { CalendarBlank, CaretLeft, CaretRight } from "@phosphor-icons/react";
-import { addDays, formatDistanceStrict, isSameDay, startOfDay } from "date-fns";
+import { formatDistanceStrict, isSameDay } from "date-fns";
+import { daysFromExchangeToday, exchangeToday, horizonDateFromNow } from "@/lib/engine/trading-calendar";
 import { cn } from "@/lib/design/cn";
 
 const PRESETS: { label: string; days: number }[] = [
@@ -17,10 +18,6 @@ const PRESETS: { label: string; days: number }[] = [
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
-function daysFromToday(date: Date): number {
-  const diff = Math.round((startOfDay(date).getTime() - startOfDay(new Date()).getTime()) / 86_400_000);
-  return Math.max(1, diff);
-}
 
 /**
  * The horizon control (docs Compose-Deep-Dive Part 5): preset chips for speed,
@@ -32,24 +29,27 @@ function daysFromToday(date: Date): number {
 export function HorizonPicker({
   value,
   onChange,
+  timeZone = "America/New_York",
 }: {
   value: number;
   onChange: (days: number) => void;
+  /** The exchange calendar the horizon counts on; the dates shown follow its day, not the analyst's. */
+  timeZone?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const resolveDate = addDays(startOfDay(new Date()), value);
+  const today = exchangeToday(timeZone);
+  const resolveDate = horizonDateFromNow(value, timeZone);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(resolveDate.getFullYear(), resolveDate.getMonth(), 1),
   );
 
-  const distance = formatDistanceStrict(resolveDate, startOfDay(new Date()));
+  const distance = formatDistanceStrict(resolveDate, today);
   const dateLabel = resolveDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
-  const today = startOfDay(new Date());
   const firstWeekday = viewMonth.getDay();
   const daysInMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
   const cells: (Date | null)[] = [
@@ -140,14 +140,14 @@ export function HorizonPicker({
                 ))}
                 {cells.map((date, i) => {
                   if (!date) return <span key={i} />;
-                  const disabled = date <= today;
+                  const disabled = date.getTime() <= today.getTime();
                   const selected = isSameDay(date, resolveDate);
                   return (
                     <button
                       key={i}
                       type="button"
                       disabled={disabled}
-                      onClick={() => pick(daysFromToday(date))}
+                      onClick={() => pick(daysFromExchangeToday(date, timeZone))}
                       className={cn(
                         "num flex h-7 items-center justify-center rounded-[var(--radius-btn)] text-xs transition-colors",
                         disabled && "cursor-not-allowed text-text-faint/50",

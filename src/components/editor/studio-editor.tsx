@@ -96,6 +96,7 @@ import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { useSymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
+import { exchangeTimeZoneFor, horizonDateFromNow } from "@/lib/engine/trading-calendar";
 import type { CardKind } from "@/lib/feed/card-schema";
 import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
@@ -1299,7 +1300,7 @@ export function StudioEditor({
       return;
     }
     if (lockingCall) {
-      setConfirmHorizonDate(new Date(Date.now() + horizon * 86_400_000));
+      setConfirmHorizonDate(horizonDateFromNow(horizon, exchangeTimeZoneFor(ticker)));
       setConfirmOpen(true);
     } else {
       start(async () => {

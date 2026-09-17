@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, X } from "lucide-react";
-import { addDays, startOfDay } from "date-fns";
+import { exchangeTimeZoneFor, horizonDateFromNow } from "@/lib/engine/trading-calendar";
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 import type { SymbolLookup } from "@/lib/market/use-symbol-lookup";
@@ -67,7 +67,7 @@ export function VerdictCallPanel({
       : null;
   const moveAgrees =
     move != null && (direction === "long" ? move >= 0 : direction === "short" ? move <= 0 : true);
-  const resolvesOn = addDays(startOfDay(new Date()), horizon);
+  const resolvesOn = horizonDateFromNow(horizon, exchangeTimeZoneFor(ticker));
   const resolvesLabel = resolvesOn
     .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     .toUpperCase();
