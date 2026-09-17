@@ -205,6 +205,12 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
 5. **When fixing a bug, explain what caused it in plain terms before the fix.**
 6. **Keep data wiring intact when restyling.** The data layer is `src/lib/db/*`; UI imports from
    there, never calls Supabase directly inside a component.
+7. **Any batch that changes structure — a new flow, a new model, a surface rebuilt — must end
+   with a reconciliation pass over the whole affected surface, checking that nothing still
+   assumes the old model, and reporting whatever it finds.** This has been missed three times:
+   the format tabs survived the guided sequence, the video controls were unreachable after the
+   four-types restructure, and the toolbox rail still assumed the old workspace. Each was found
+   on the live site rather than before merging.
 
 ### Design
 

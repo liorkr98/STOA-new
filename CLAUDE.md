@@ -47,3 +47,9 @@ Quick reminders:
 - The data layer in `src/lib/db/*` is the only place that talks to Supabase.
 - `npm run lint`, `npm run typecheck`, and `npm run build` must pass. No narration comments. Zero
   em-dashes.
+- **Any batch that changes structure — a new flow, a new model, a surface rebuilt — must end with
+  a reconciliation pass over the whole affected surface, checking that nothing still assumes the
+  old model, and reporting whatever it finds.** This has been missed three times: the format tabs
+  survived the guided sequence, the video controls were unreachable after the four-types
+  restructure, and the toolbox rail still assumed the old workspace. Each was found on the live
+  site rather than before merging. (Rule 7 under Process in `AGENTS.md`.)
