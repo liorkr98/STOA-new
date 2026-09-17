@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAuthorizedCron } from "@/lib/cron/auth";
 import { isSignedInAdmin } from "@/lib/auth/admin";
-import { getBunnyVideo, isBunnyConfigured, isAbandonedUpload } from "@/lib/video/bunny";
+import { getBunnyVideo, isBunnyConfigured, isAbandonedUpload, isStuckEmptyUpload } from "@/lib/video/bunny";
 import { listUnsettledClips } from "@/lib/db/video-clips";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
           bunnyStatusCode: video.status,
           durationSeconds: video.length,
           storedBytes: video.storageSize ?? 0,
-          abandonedUpload: isAbandonedUpload(video),
+          encodeProgress: video.encodeProgress ?? 0,
+          abandonedUpload: isAbandonedUpload(video) || isStuckEmptyUpload(video),
           reachable: true as const,
         };
       } catch (e) {
@@ -114,7 +115,7 @@ export async function GET(request: NextRequest) {
   } else if (promotable.length > 0) {
     diagnosis = `${promotable.length} clip(s) finished at Bunny but are still unpromoted here, which means webhook deliveries are not arriving. Run /api/cron/video-reconcile to promote them now.`;
   } else if (abandoned.length > 0) {
-    diagnosis = `${abandoned.length} clip(s) never delivered their bytes: Bunny holds the record with nothing stored, so there is nothing to encode and nothing wrong on Bunny's side. The upload failed in the browser and the publication needs a fresh one.`;
+    diagnosis = `${abandoned.length} clip(s) never stored their bytes: Bunny may report Processing and hasOriginal while storageSize is 0 and the original file 404s. There is nothing to encode. Attach the clip again.`;
   } else if (encoding.length > 0) {
     diagnosis = `${encoding.length} clip(s) are still pre-finished at Bunny. If this does not move, the encoding queue is stalled on their side: check the plan's encoding allowance and the account's billing state.`;
   } else {

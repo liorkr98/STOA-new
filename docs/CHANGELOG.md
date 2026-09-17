@@ -10,6 +10,38 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-17 — A video that never stored its bytes fails instead of processing forever
+
+**For someone using the site**
+
+- **The second Jeen Technologies clip is no longer stuck on processing.** Bunny
+  reported "Processing" and `hasOriginal: true` while storing zero bytes; the
+  original file 404s. That is the same fault as this morning's empty upload,
+  wearing a different status code. The publication now shows that the video
+  failed. Open it while signed in as the author and choose the clip again on
+  that page.
+- **The next upload will not sit on processing if Bunny stored nothing.** After
+  about 45 seconds with no bytes, or eight minutes from any other path, the
+  clip fails and you can attach it again. A missing `Upload-Offset` is no
+  longer treated as a finished transfer, and the file is sent in 4 MB windows.
+- **I could not re-upload the original file from here.** It is not on disk, not
+  in storage, and Bunny's original download 404s. A known-good demo MP4 PUT to
+  the same library also sat at Processing with zero bytes, so Bunny's encoder
+  for this library is not taking new files today. Retry the clip from the
+  publication once that clears; do not publish a stand-in.
+
+**For Krisi**
+
+- Bunny Stream library 705981 is accepting create/PUT/TUS (HTTP 200) and then
+  not storing the original (`storageSize: 0`, `encodeProgress: 0`, original
+  404). The 7 September Hebrew clip in the same library encoded fine. Check
+  encoding quota, billing, and Bunny support. The library AccessKey was pasted
+  into chat earlier today; rotate it.
+- The webhook URL is still the fastest path when Bunny does finish:
+  `https://www.stoamarket.ai/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>`.
+
+---
+
 ## 2026-09-17 — A finished video goes live in seconds, not hours
 
 **For someone using the site**

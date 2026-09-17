@@ -121,16 +121,30 @@ export function bunnyEmbedUrl(
   return `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}?${params.toString()}`;
 }
 
-interface BunnyVideo {
+export interface BunnyVideo {
   guid: string;
   title: string;
   length: number; // seconds
-  status: number; // 0..5, 4 = finished
+  status: number; // 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding, 4 Finished, 5 Error, 6 UploadFailed
   storageSize?: number; // bytes Bunny actually holds
+  encodeProgress?: number;
+  hasOriginal?: boolean;
   dateUploaded?: string; // when the record was created, UTC without a suffix
   thumbnailFileName?: string;
   hasMP4Fallback?: boolean;
   captions?: { srclang: string; label: string }[];
+}
+
+type BunnyVideoState = Pick<
+  BunnyVideo,
+  "status" | "storageSize" | "encodeProgress" | "hasOriginal" | "dateUploaded"
+>;
+
+function bunnyCreatedAtMs(dateUploaded?: string): number | null {
+  if (!dateUploaded) return null;
+  // Bunny reports UTC with no offset, which Date.parse would read as local.
+  const created = Date.parse(`${dateUploaded.replace(/Z$/, "")}Z`);
+  return Number.isNaN(created) ? null : created;
 }
 
 /**
@@ -145,15 +159,30 @@ interface BunnyVideo {
  */
 const ABANDONED_UPLOAD_AFTER_MS = 6 * 60 * 60 * 1000;
 
-export function isAbandonedUpload(video: {
-  status: number;
-  storageSize?: number;
-  dateUploaded?: string;
-}): boolean {
+/** hasOriginal can be true while original download 404s and storageSize is 0. */
+export function isByteLessUpload(video: BunnyVideoState): boolean {
+  if (video.status >= 4) return false;
+  return (video.storageSize ?? 0) === 0 && (video.encodeProgress ?? 0) === 0;
+}
+
+export function isAbandonedUpload(video: BunnyVideoState): boolean {
   if (video.status !== 0 || (video.storageSize ?? 0) > 0 || !video.dateUploaded) return false;
-  // Bunny reports UTC with no offset, which Date.parse would read as local.
-  const created = Date.parse(`${video.dateUploaded.replace(/Z$/, "")}Z`);
-  return !Number.isNaN(created) && Date.now() - created > ABANDONED_UPLOAD_AFTER_MS;
+  const created = bunnyCreatedAtMs(video.dateUploaded);
+  return created != null && Date.now() - created > ABANDONED_UPLOAD_AFTER_MS;
+}
+
+/**
+ * TUS/PUT can move the record to status 2 (Processing) with hasOriginal true
+ * and still store nothing. After eight minutes with no bytes and no encode
+ * progress there is nothing to wait for; leaving it as processing is the
+ * Jeen Technologies fault of 17 September.
+ */
+export const BYTELESS_UPLOAD_AFTER_MS = 8 * 60 * 1000;
+
+export function isStuckEmptyUpload(video: BunnyVideoState): boolean {
+  if (!isByteLessUpload(video)) return false;
+  const created = bunnyCreatedAtMs(video.dateUploaded);
+  return created != null && Date.now() - created > BYTELESS_UPLOAD_AFTER_MS;
 }
 
 /** Create the video object, returning its GUID. Duration is unknown until upload finishes. */

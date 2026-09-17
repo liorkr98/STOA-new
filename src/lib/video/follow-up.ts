@@ -13,7 +13,9 @@ export function nextClipReconcileDelaySeconds(attempt: number): number | null {
 }
 
 /**
- * After the browser said TUS finished, Bunny still sitting at status 0 with
- * nothing stored is not a slow transcode. Four follow-ups is about 45 seconds.
+ * After the browser said TUS finished, Bunny still sitting with no stored
+ * bytes and no encode progress is not a slow transcode. Status 2 with
+ * hasOriginal true is the same fault as status 0. Four follow-ups is about
+ * 45 seconds.
  */
 export const EMPTY_UPLOAD_GIVE_UP_ATTEMPT = 4;

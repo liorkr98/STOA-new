@@ -9,6 +9,8 @@ import {
   bunnyPreviewUrl,
   bunnyCaptionVttUrl,
   isAbandonedUpload,
+  isByteLessUpload,
+  isStuckEmptyUpload,
   MAX_VIDEO_DURATION_SECONDS,
 } from "@/lib/video/bunny";
 import {
@@ -37,9 +39,10 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  * re-running on a settled clip is a no-op.
  *
  * Bunny video.status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding,
- * 4 Finished, 5 Error, 6 UploadFailed. A status 0 still holding no bytes once
- * the upload window has passed is an upload that never arrived, and settles as
- * failed rather than claiming to be processing forever.
+ * 4 Finished, 5 Error, 6 UploadFailed. A record that still holds no bytes
+ * (status 0, or status 2 with hasOriginal and nothing stored) is an upload
+ * that never arrived, and settles as failed rather than claiming to be
+ * processing forever.
  */
 export async function reconcileClip(
   guid: string,
@@ -55,7 +58,11 @@ export async function reconcileClip(
 
   const durationSeconds = clipDurationSeconds(video.length);
   const finished = video.status === 4;
-  const failed = video.status === 5 || video.status === 6 || isAbandonedUpload(video);
+  const failed =
+    video.status === 5 ||
+    video.status === 6 ||
+    isAbandonedUpload(video) ||
+    isStuckEmptyUpload(video);
 
   if (finished && durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
     await markVideoClipReadyByGuid(guid, {
@@ -70,7 +77,22 @@ export async function reconcileClip(
     return "failed";
   }
 
-  const status = finished ? "ready" : failed ? "failed" : "processing";
+  if (failed) {
+    await markVideoClipReadyByGuid(guid, {
+      playbackUrl: bunnyPlaybackUrl(guid),
+      thumbnailUrl: null,
+      previewUrl: null,
+      captionVttUrl: null,
+      durationSeconds: 0,
+      status: "failed",
+    });
+    if (isAbandonedUpload(video) || isStuckEmptyUpload(video)) {
+      await deleteBunnyVideo(guid);
+    }
+    return "failed";
+  }
+
+  const status = finished ? "ready" : "processing";
 
   await markVideoClipReadyByGuid(guid, {
     playbackUrl: bunnyPlaybackUrl(guid),
@@ -124,8 +146,7 @@ export async function settleClipOrRetry(
   if (opts.expectBytes && outcome === "processing") {
     try {
       const video = await getBunnyVideo(guid);
-      const empty = video.status === 0 && (video.storageSize ?? 0) === 0;
-      if (empty && attempt >= EMPTY_UPLOAD_GIVE_UP_ATTEMPT) {
+      if (isByteLessUpload(video) && attempt >= EMPTY_UPLOAD_GIVE_UP_ATTEMPT) {
         await markVideoClipReadyByGuid(guid, {
           playbackUrl: bunnyPlaybackUrl(guid),
           thumbnailUrl: null,
