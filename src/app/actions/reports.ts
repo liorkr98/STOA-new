@@ -355,7 +355,7 @@ export async function publishReport(
    * the id back and navigates itself once the clip is attached.
    */
   redirectAfter = true,
-): Promise<{ id: string }> {
+): Promise<{ id: string } | { error: string }> {
   const { supabase, userId } = await requireUser();
 
   try {
@@ -367,7 +367,7 @@ export async function publishReport(
     if (!redirectAfter) return { id };
     redirect(`/report/${id}`);
   } catch (e) {
-    if (e instanceof PublishReportError) throw new Error(e.message);
+    if (e instanceof PublishReportError) return { error: e.message };
     throw e;
   }
 }

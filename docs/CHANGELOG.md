@@ -10,6 +10,23 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-17 — Publishing a video no longer dies as React error 441
+
+**For someone using the site**
+
+- **Locking a clip in Compose works again.** Publishing with a video was dying
+  as a blank "minified React error #441". The real reason: the database had no
+  column for the clip's trim and overlays, and the lock treated that as a
+  crash. That column is in place now. If something else is wrong at publish,
+  Compose shows the reason instead of a dead page.
+
+**For Krisi**
+
+- Applied `reports.video_edit` (jsonb) on STOA. Repo already had
+  `supabase/migrations/0064_video_edit.sql`; it had not been run.
+
+---
+
 ## 2026-09-17 — Compose: the toolbox rail follows the screen
 
 **For someone using the site**
