@@ -29,12 +29,28 @@ function encodeMetadata(meta: Record<string, string>): string {
     .join(",");
 }
 
+/** Bunny's create response must name the resume URL. Guessing `${endpoint}/${videoId}` stores nothing. */
+export function tusResumeUrl(endpoint: string, location: string | null | undefined): string {
+  const value = location?.trim();
+  if (!value) throw new Error("Upload could not be created (no resume URL).");
+  return new URL(value, endpoint).toString();
+}
+
+function readOffset(headers: { get(name: string): string | null }): number | null {
+  const raw = headers.get("Upload-Offset");
+  if (raw == null || raw === "") return null;
+  const offset = Number(raw);
+  return Number.isFinite(offset) ? offset : null;
+}
+
 export async function uploadToBunnyTus(
   file: Blob,
   session: BunnyUploadSession,
   meta: { title: string; filetype: string },
   onProgress?: (percent: number) => void,
 ): Promise<void> {
+  if (file.size < 1) throw new Error("The video file is empty.");
+
   const authHeaders: Record<string, string> = {
     AuthorizationSignature: session.authorizationSignature,
     AuthorizationExpire: String(session.authorizationExpire),
@@ -43,7 +59,6 @@ export async function uploadToBunnyTus(
     "Tus-Resumable": "1.0.0",
   };
 
-  // 1. Create the upload, get the resumable Location.
   const createRes = await fetch(session.endpoint, {
     method: "POST",
     headers: {
@@ -55,18 +70,12 @@ export async function uploadToBunnyTus(
   if (createRes.status !== 201) {
     throw new Error(`Upload could not be created (${createRes.status}).`);
   }
-  const location = createRes.headers.get("Location");
-  const uploadUrl = location
-    ? new URL(location, session.endpoint).toString()
-    : `${session.endpoint}/${session.videoId}`;
+  const uploadUrl = tusResumeUrl(session.endpoint, createRes.headers.get("Location"));
 
-  // 2. PATCH the file bytes in one shot, reporting progress via XHR.
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PATCH", uploadUrl, true);
-    // setRequestHeader appends to an existing header rather than replacing it,
-    // so Tus-Resumable must not be set here as well as in authHeaders: Bunny
-    // rejects the combined "1.0.0, 1.0.0" value with a 412.
+    // XHR setRequestHeader appends, so Tus-Resumable lives only in authHeaders.
     xhr.setRequestHeader("Upload-Offset", "0");
     xhr.setRequestHeader("Content-Type", "application/offset+octet-stream");
     for (const [k, v] of Object.entries(authHeaders)) xhr.setRequestHeader(k, v);
@@ -74,10 +83,24 @@ export async function uploadToBunnyTus(
       if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
     };
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed (${xhr.status}). ${xhr.responseText ?? ""}`.trim()));
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(`Upload failed (${xhr.status}). ${xhr.responseText ?? ""}`.trim()));
+        return;
+      }
+      const offset = readOffset({ get: (name) => xhr.getResponseHeader(name) });
+      if (offset != null && offset !== file.size) {
+        reject(new Error("Upload did not finish."));
+        return;
+      }
+      resolve();
     };
     xhr.onerror = () => reject(new Error("Upload failed."));
     xhr.send(file);
   });
+
+  const head = await fetch(uploadUrl, { method: "HEAD", headers: authHeaders });
+  const landed = readOffset(head.headers);
+  if (landed != null && landed !== file.size) {
+    throw new Error("Upload did not finish.");
+  }
 }

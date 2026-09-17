@@ -10,6 +10,36 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-17 — A finished video goes live in seconds, not hours
+
+**For someone using the site**
+
+- **Your clip plays as soon as Bunny finishes encoding it.** Publishing used to
+  leave the video on "processing" until a Bunny webhook arrived, or until a
+  daily cleanup at 05:00 UTC. The webhook is not arriving, so a finished clip
+  could sit for hours. After the upload now, Stoa checks Bunny on its own
+  (seconds, then a few minutes) and the publication page asks every five
+  seconds. When Bunny is done, the player swaps in.
+- **The upload checks that the file actually arrived.** A missing resume URL
+  used to be guessed, which can look like a successful upload while Bunny
+  stored nothing. That path is refused, and the transfer is confirmed before
+  Compose moves on.
+- **If the file never reached Bunny, you are told within about a minute**, not
+  left on "processing". The Jeen Technologies upload from this morning never
+  delivered any bytes, which is why it sat there. That clip is marked failed so
+  it can be attached again. The uploader now refuses an empty file and checks
+  that Bunny actually received the bytes before calling it done.
+
+**For Krisi**
+
+- The Bunny Stream webhook URL is still not registered (or not reaching
+  `/api/webhooks/bunny-stream`). Please add
+  `https://www.stoamarket.ai/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>`
+  in the Bunny library. The follow-ups cover the gap; the webhook is still the
+  fastest path when it works.
+
+---
+
 ## 2026-09-17 — Publishing a video no longer dies as React error 441
 
 **For someone using the site**

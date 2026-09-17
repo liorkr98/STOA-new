@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { claimWebhookEvent } from "@/lib/webhooks/idempotency";
 import { normalizeSecret, secretsMatch } from "@/lib/webhooks/secret";
-import { reconcileClip } from "@/lib/video/reconcile";
+import { settleClipOrRetry } from "@/lib/video/reconcile";
 
 /**
  * Bunny Stream webhook (Part 2.3). Bunny does not sign webhooks, so the URL is
  * protected by a shared secret. The state transition itself lives in
- * `reconcileClip`, shared with the maintenance cron and the publication page so
- * a missed delivery cannot strand a clip in `processing`.
+ * `settleClipOrRetry`, shared with the post-upload follow-up, the publication
+ * page poll, and the daily cron so a missed or unfinished delivery cannot
+ * strand a clip in `processing`.
  *
  * A rejected delivery used to return 401 and vanish, which is a bad failure to
  * have on a path nobody watches: the symptom is "clips never go live" and the
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
   const isNew = await claimWebhookEvent("bunny", `${guid}:${event.Status ?? "?"}`).catch(() => true);
   if (!isNew) return NextResponse.json({ ok: true, duplicate: true });
 
-  const outcome = await reconcileClip(guid);
+  const outcome = await settleClipOrRetry(guid, 0);
   return NextResponse.json({ ok: true, outcome });
 }
 

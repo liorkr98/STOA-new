@@ -11,7 +11,7 @@ import { resolveJobDispatch } from "@/lib/jobs/dispatch";
  * gains automatic retry + backoff + dead-letter.
  */
 
-export type JobName = "grade" | "notify" | "video-process";
+export type JobName = "grade" | "notify" | "video-process" | "video-reconcile";
 
 let client: Client | null | undefined;
 
@@ -45,6 +45,8 @@ export interface EnqueueOptions {
    * a Server Component.
    */
   runInline?: boolean;
+  /** Seconds to wait before QStash delivers. Ignored on the inline path. */
+  delaySeconds?: number;
 }
 
 /**
@@ -70,6 +72,7 @@ export async function enqueueOrRun<T>(
     body: payload,
     retries: opts.retries ?? 3,
     ...(opts.deduplicationId ? { deduplicationId: opts.deduplicationId } : {}),
+    ...(opts.delaySeconds != null ? { delay: opts.delaySeconds } : {}),
   });
   return { queued: true };
 }

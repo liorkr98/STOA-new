@@ -123,6 +123,11 @@ export function AddVideoFlow({
           (percent) => setProgress(percent),
         );
 
+        const settled = await fetch(`/api/creator/videos/${data.clipId}/uploaded`, { method: "POST" });
+        if (!settled.ok) {
+          throw new Error("The file uploaded, but processing could not start. Open the publication.");
+        }
+
         setStep("processing");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Upload failed.");

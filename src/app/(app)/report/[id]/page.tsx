@@ -45,6 +45,9 @@ import { SubscribeButton } from "@/components/wallet/subscribe-button";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { ScrollFrame } from "@/components/layout/scroll-frame";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {
@@ -279,6 +282,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             ) : pendingClip ? (
               <div className="order-2 lg:order-none">
                 <ClipPendingPlayer
+                  reportId={id}
                   status={pendingClip.status}
                   startedAt={pendingClip.createdAt}
                   analystName={author?.display_name ?? "The analyst"}

@@ -42,5 +42,7 @@ export async function uploadComposeClip(input: {
     input.onProgress,
   );
 
+  await fetch(`/api/creator/videos/${data.clipId}/uploaded`, { method: "POST" }).catch(() => undefined);
+
   return { clipId: data.clipId };
 }

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getVideoClip } from "@/lib/db/video-clips";
 import { fetchTranscriptFromVtt } from "@/lib/video/bunny";
+import { settleClipOrRetry } from "@/lib/video/reconcile";
 
 /**
  * Clip status poll for the creation flow (Part 3). Owner-only. Reports whether
@@ -16,9 +17,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "sign in required" }, { status: 401 });
 
-  const clip = await getVideoClip(id);
+  let clip = await getVideoClip(id);
   if (!clip || clip.creator_id !== user.id) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
+  if (!(clip.status === "ready" && clip.published_at != null)) {
+    await settleClipOrRetry(clip.bunny_video_guid, 0, { process: false });
+    clip = (await getVideoClip(id)) ?? clip;
   }
 
   let transcript = clip.transcript?.trim() ?? "";

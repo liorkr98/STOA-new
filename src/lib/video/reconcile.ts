@@ -1,5 +1,6 @@
 import "server-only";
 
+import * as Sentry from "@sentry/nextjs";
 import {
   getBunnyVideo,
   deleteBunnyVideo,
@@ -18,6 +19,7 @@ import {
 import { enqueueOrRun } from "@/lib/jobs/client";
 import { clipDurationSeconds } from "@/lib/video/clip-duration";
 import { processReadyVideo } from "@/lib/video/process";
+import { nextClipReconcileDelaySeconds } from "@/lib/video/follow-up";
 
 export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable";
 
@@ -27,8 +29,8 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  *
  * The Bunny webhook is the intended trigger for this, but delivery is not
  * guaranteed (and is currently not arriving at all), so the same logic is
- * reachable from the publication page, which reconciles on view and is what
- * actually promotes clips today, and from a daily cron behind it. Idempotent:
+ * reachable from the post-upload follow-up (`settleClipOrRetry`), the
+ * publication page poll, and a daily cron behind them. Idempotent:
  * re-running on a settled clip is a no-op.
  *
  * Bunny video.status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding,
@@ -43,7 +45,8 @@ export async function reconcileClip(
   let video: Awaited<ReturnType<typeof getBunnyVideo>>;
   try {
     video = await getBunnyVideo(guid);
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err, { extra: { guid, where: "reconcileClip" } });
     return "unreachable";
   }
 
@@ -90,6 +93,57 @@ export async function reconcileClip(
     // Clip is already live; captions retry on the webhook or cron.
   }
   return "ready";
+}
+
+/**
+ * Reconcile once, and if Bunny is still encoding or unreachable, queue the
+ * next look. The webhook is supposed to do this, but it is not arriving, and
+ * the Vercel Hobby cron cannot run more than once a day. Follow-ups cover a
+ * little over ten minutes so a finished clip goes live in seconds, not hours.
+ *
+ * Never throws: page renders and poll routes call this and must not 441.
+ */
+export async function settleClipOrRetry(
+  guid: string,
+  attempt: number,
+  opts: { process?: boolean } = {},
+): Promise<ReconcileOutcome> {
+  let outcome: ReconcileOutcome;
+  try {
+    outcome = await reconcileClip(guid, opts);
+  } catch (err) {
+    Sentry.captureException(err, { extra: { guid, attempt, where: "settleClipOrRetry" } });
+    outcome = "unreachable";
+  }
+
+  if (outcome === "ready" || outcome === "failed") return outcome;
+
+  if (outcome === "unreachable") {
+    Sentry.captureMessage("Bunny unreachable while settling clip", {
+      level: "warning",
+      extra: { guid, attempt },
+    });
+  }
+
+  const delaySeconds = nextClipReconcileDelaySeconds(attempt);
+  if (delaySeconds == null) return outcome;
+
+  try {
+    await enqueueOrRun(
+      "video-reconcile",
+      { guid, attempt: attempt + 1 },
+      () => settleClipOrRetry(guid, attempt + 1, opts),
+      {
+        delaySeconds,
+        runInline: false,
+        deduplicationId: `video-reconcile-${guid}-${attempt + 1}`,
+      },
+    );
+  } catch (err) {
+    Sentry.captureException(err, { extra: { guid, attempt, where: "settleClipOrRetry.enqueue" } });
+  }
+
+  return outcome;
 }
 
 /** Sweep every clip that has not settled yet. Used by the maintenance cron. */
