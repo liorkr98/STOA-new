@@ -25,6 +25,8 @@ export function NativeClip({
   onUnplayable,
   onTime,
   controls = false,
+  trimStart = 0,
+  trimEnd = null,
 }: {
   src: string;
   poster?: string | null;
@@ -49,6 +51,14 @@ export function NativeClip({
   onTime?: (seconds: number) => void;
   /** The browser's own controls, for a page where the reader chose to watch. */
   controls?: boolean;
+  /**
+   * The kept region of the clip, from Compose's trim. Playback starts at
+   * `trimStart` and turns back there when it reaches `trimEnd`; what was cut
+   * is never shown. Positions reported through `onTime` stay in the untrimmed
+   * clip's seconds, which is what the overlays are timed on.
+   */
+  trimStart?: number;
+  trimEnd?: number | null;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const hls = isHlsUrl(src);
@@ -122,24 +132,39 @@ export function NativeClip({
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || (!onProgress && !onTime)) return;
+    if (!el) return;
+    const start = trimStart > 0 ? trimStart : 0;
+    const cut = trimEnd && trimEnd > start ? trimEnd : null;
     const cap = previewSeconds && previewSeconds > 0 ? previewSeconds : null;
+    // The window that plays: the kept region, shortened further by a Feed
+    // preview cap. Both ends are in the untrimmed clip's seconds.
+    const end = cap ? Math.min(start + cap, cut ?? Infinity) : cut;
+    const windowed = start > 0 || end != null;
+    if (!windowed && !onProgress && !onTime) return;
     const tick = () => {
-      if (cap && el.currentTime >= cap) {
-        el.currentTime = 0;
+      // A native loop lands at 0, and a reader's own scrub can land before
+      // the kept region: both go back to its start.
+      if (start > 0 && el.currentTime < start - 0.05) {
+        el.currentTime = start;
+        return;
+      }
+      if (end != null && el.currentTime >= end) {
+        el.currentTime = start;
       }
       onTime?.(el.currentTime);
       if (!onProgress) return;
-      const denom = cap ? cap : el.duration;
-      if (denom > 0) onProgress(Math.min(1, el.currentTime / denom));
+      const total = end != null ? end - start : el.duration - start;
+      if (total > 0) onProgress(Math.min(1, Math.max(0, el.currentTime - start) / total));
     };
     el.addEventListener("timeupdate", tick);
     el.addEventListener("seeked", tick);
+    if (start > 0) el.addEventListener("loadedmetadata", tick);
     return () => {
       el.removeEventListener("timeupdate", tick);
       el.removeEventListener("seeked", tick);
+      el.removeEventListener("loadedmetadata", tick);
     };
-  }, [onProgress, onTime, previewSeconds]);
+  }, [onProgress, onTime, previewSeconds, trimStart, trimEnd]);
 
   /**
    * A dead file, a refused manifest, or a codec the browser will not decode.
