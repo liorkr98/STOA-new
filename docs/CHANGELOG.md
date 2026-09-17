@@ -10,6 +10,61 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-18 — Today's rail fits, the video screen is one screen, and abandoned drafts stay unfiled
+
+**For someone using the site**
+
+- **Every row in the Today sidebar fits the rail.** Ticker rows needed 279px
+  in a 240px rail, so Follow was sliced off, symbols were clipped and the
+  lists could be dragged sideways. The price now sits over the day change in
+  one mono block beside the symbol, with Follow on the right; every row is
+  the same fixed height, so Trending and Popular line up with each other, a
+  list shows five whole rows and rests on a row when scrolled, and nothing
+  in the rail can scroll sideways. Same in the phone drawer.
+- **The video screen no longer scrolls sideways.** The browser's own file
+  control sat above the editor at its native width, wider than a phone. It is
+  hidden now; Record, Replace and Remove video are three buttons that wrap.
+- **One "Add overlay" control.** Five buttons sat under the timeline at rest.
+  Now there is one, which opens a short menu (text, card, chart, visualize,
+  image); choosing one adds it at the playhead and selects it, so its
+  settings appear only then. Card is always on that menu: with cards it lists
+  them, with none it opens the card library and places the new card at the
+  playhead. Cards read as missing because the old Card button was disabled
+  whenever the deck was empty, and on a new video draft it always is.
+- **The headline is written under the video, on the same screen.** One quiet
+  field and the dek below the editor, no preview cards, so the video stays
+  the focus. Continue asks for it once the clip is in. A video's spine is
+  therefore two steps (Video, Tags) and the tracker says so; the written
+  types and the verdict keep three. Draft progress on the picker counts the
+  same way.
+- **Accepting the terms takes you through.** Ticking the marketing box on the
+  consent screen when the account had already opted in at signup made the
+  database refuse the duplicate consent row (the table has no update rule),
+  and that refusal threw out of the screen after the terms had already been
+  recorded: you were left on the consent page with "Something broke", and the
+  logo was the only way in. This was not the bug fixed on 1 September coming
+  back; it is a second cause of the same symptom that the earlier fix never
+  covered. A consent already on record now stands as first given and is never
+  rewritten, and accepting also drops any page cached while consent was still
+  pending before it sends you to Today. Reproduced before and after.
+- **A draft is filed only once it holds something.** The line: a headline or
+  dek of at least three characters, a word in the report, a ticker, a tag, a
+  card, or an overlay on the video. A chosen clip alone does not count, since
+  a clip cannot be kept between sessions anyway. Leaving with less than that
+  says "Nothing here is filed as a draft yet" and offers Leave or Stay rather
+  than a save. Once a draft exists every change is saved, whatever it holds.
+  Each draft row on the Compose picker now has Delete beside Resume, on
+  desktop and on the phone.
+
+**For Krisi**
+
+- No schema change. `user_consents` still has no UPDATE policy; the app no
+  longer needs one, because a consent is written once and never rewritten.
+- The Settings marketing toggle went through the same refused write; it is
+  fixed by the same change.
+
+---
+
 ## 2026-09-17 — A video that never stored its bytes fails instead of processing forever
 
 **For someone using the site**
