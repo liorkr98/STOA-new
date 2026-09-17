@@ -7,6 +7,7 @@ import { cn } from "@/lib/design/cn";
 import { ComposeHeader } from "@/components/compose/compose-header";
 import { PUBLICATION_TYPES, type PublicationType, type PublicationTypeDef } from "@/lib/compose/modes";
 import type { DraftSummary } from "@/lib/compose/drafts";
+import { DeleteDraftDialog } from "@/components/studio/delete-dialog";
 import { VERDICT_WINDOW_DAYS, type VerdictWindow } from "@/lib/compose/verdict";
 
 /**
@@ -189,17 +190,19 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
       >
         Resume
       </Link>
+      {/* Delete sits on the row itself: a draft that should not have been
+          kept must be one press away from going, not a trip to Studio. */}
+      <span className="num shrink-0 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <DeleteDraftDialog id={d.id} title={d.title} />
+      </span>
     </li>
   );
 }
 
 function DraftRowCompact({ d }: { d: PickerDraft }) {
   return (
-    <li>
-      <Link
-        href={d.href}
-        className="focus-ring flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-3.5 py-3"
-      >
+    <li className="flex items-center gap-2 rounded-[var(--radius-card)] border border-border bg-surface pr-3">
+      <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-card)] px-3.5 py-3">
         <span className="min-w-0 flex-1">
           <span className="num block truncate text-[9px] uppercase tracking-[0.14em] text-text-mute">
             {d.typeLabel} · {d.where}
@@ -210,6 +213,9 @@ function DraftRowCompact({ d }: { d: PickerDraft }) {
         </span>
         <Progress percent={d.percent} />
       </Link>
+      <span className="num shrink-0 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <DeleteDraftDialog id={d.id} title={d.title} />
+      </span>
     </li>
   );
 }

@@ -811,13 +811,21 @@ export function StudioEditor({
     }
   }, [draftId, title, summary, isBrief, tags, deck]);
 
-  // Anything a save would keep. A headline or a ticker on its own used to be
-  // ignored by the timer, which only counted words and cards.
-  const hasAnything =
-    Boolean(draftId) ||
-    Boolean(title.trim() || summary.trim() || plainText.trim() || ticker.trim() || tags.primary) ||
+  // Where the line is between a draft worth filing and one that is not. A
+  // draft row is created only once it holds something deliberate: a headline
+  // or a dek of at least three characters (a stray keystroke is not a
+  // draft), a word in the report, a ticker, a tag, a card, or an overlay on
+  // the video. A chosen clip alone does not count: the file cannot be kept
+  // between sessions anyway, so a row for it would reopen empty. Once a row
+  // exists every change is saved, whatever it holds, so nothing typed is
+  // ever lost to this rule.
+  const worthKeeping =
+    title.trim().length >= 3 ||
+    summary.trim().length >= 3 ||
+    Boolean(plainText.trim() || ticker.trim() || tags.primary) ||
     cards.length > 0 ||
     Boolean(videoEdit && videoEdit.overlays.length > 0);
+  const hasAnything = Boolean(draftId) || worthKeeping;
 
   useEffect(() => {
     if (editingPublished) return;
@@ -2006,6 +2014,9 @@ export function StudioEditor({
       <LeaveDialog
         href={leaveTo}
         published={editingPublished}
+        // Nothing here would be filed as a draft yet, so the dialog says so
+        // and offers no save: a chosen clip is the one thing it can hold.
+        nothingToKeep={!editingPublished && !hasAnything}
         saving={saveStatus === "saving" || savingDraft}
         onStay={() => setLeaveTo(null)}
         onLeave={() => {
@@ -2018,8 +2029,10 @@ export function StudioEditor({
           if (!leaveTo) return;
           startDraft(async () => {
             if (editingPublished) await persistEdit();
-            else await persistDraft();
-            if (dirtyRef.current) return;
+            else if (hasAnything) await persistDraft();
+            if (dirtyRef.current && (editingPublished || hasAnything)) return;
+            dirtyRef.current = false;
+            setDirty(false);
             router.push(leaveTo);
           });
         }}
