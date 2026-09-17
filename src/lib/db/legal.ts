@@ -67,9 +67,16 @@ export async function recordUserConsents(
     legal_document_id,
     ip_address: ipAddress ?? null,
   }));
+  // On conflict, do nothing. A consent already on record stands as it was
+  // first given, and the table has no UPDATE policy: rewriting an existing
+  // row was refused by row-level security (42501) and threw out of the
+  // consent screen's action, leaving the person on that screen. Any path
+  // that re-records a consent the account already holds (the marketing
+  // tick on the consent wall for someone who opted in at signup, the
+  // Settings toggle) hit it.
   const { error } = await supabase.from("user_consents").upsert(rows, {
     onConflict: "user_id,legal_document_id",
-    ignoreDuplicates: false,
+    ignoreDuplicates: true,
   });
   if (error) throw error;
 }

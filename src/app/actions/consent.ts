@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -63,6 +64,12 @@ export async function acceptConsents(
     await setMarketingPreference(user.id, true, ip);
   }
 
+  // The consent state changed, so every cached page that was rendered while
+  // it was pending (Today or the Feed, prefetched from this screen's own
+  // nav and kept for up to three minutes by the router cache) is dropped
+  // before the redirect, rather than replayed with its "go to consent"
+  // bounce still inside it.
+  revalidatePath("/", "layout");
   redirect("/home");
 }
 
