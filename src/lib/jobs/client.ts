@@ -52,16 +52,18 @@ export interface EnqueueOptions {
 /**
  * Publish `job` to its consumer route, or run `inline` when QStash is absent.
  * Returns whether the work was queued (true) or executed inline (false).
+ * `skipped` is set when `runInline: false` and there is no queue: the work
+ * did not run at all, which is how a clip follow-up can vanish.
  */
 export async function enqueueOrRun<T>(
   job: JobName,
   payload: Record<string, unknown>,
   inline: () => Promise<T>,
   opts: EnqueueOptions = {},
-): Promise<{ queued: boolean; result?: T }> {
+): Promise<{ queued: boolean; skipped?: boolean; result?: T }> {
   const c = qstash();
   const dispatch = resolveJobDispatch(c !== null, opts.runInline !== false);
-  if (dispatch === "skip") return { queued: false };
+  if (dispatch === "skip") return { queued: false, skipped: true };
   if (dispatch === "inline" || !c) {
     const result = await inline();
     return { queued: false, result };

@@ -182,6 +182,37 @@ carry locked calls, so they cannot be deleted; see "For Krisi").
 
 ---
 
+## 2026-09-17 — A slow encode still goes live, and a failed clip can be attached again in Compose
+
+**For someone using the site**
+
+- **Your clip no longer sits on processing until the next morning.** Two Jeen
+  Technologies videos uploaded this afternoon reached Bunny, encoded (about an
+  hour for a large phone file), and then waited here because Stoa stopped
+  checking after ten minutes. Stoa now keeps checking for a little over two
+  hours. The publication page also keeps asking, and it says a large phone
+  file can take up to an hour.
+- **Those two clips are already live.** Open the newest Jeen publications, not
+  the older ones that failed this morning. The player is there.
+- **If a live publication has no playable clip, you can attach one in Compose
+  and save.** The video step used to freeze on anything already published, even
+  when the only clip had failed, which pushed people to publish a second piece.
+  A clip that is already playing still cannot be replaced. On the publication
+  page, "Attach clip again" is still there.
+
+**For Krisi**
+
+- Bunny Stream webhook is still the fastest path when encoding finishes:
+  `https://www.stoamarket.ai/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>`.
+- Confirm QStash is delivering `POST /api/jobs/video-reconcile`. If it is not,
+  Sentry now errors when a follow-up is skipped, and the only remaining looks
+  are the open publication page and the daily 05:00 UTC cron.
+- Encoding a ~90 MB, 17-second phone clip took about an hour in library
+  705981. Worth checking encoding quota. Rotate the AccessKey that was pasted
+  into chat.
+
+---
+
 ## 2026-09-17 — A video that never stored its bytes fails instead of processing forever
 
 **For someone using the site**

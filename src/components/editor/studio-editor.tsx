@@ -206,6 +206,7 @@ export function StudioEditor({
   initialType,
   initialCards = [],
   hasVideoClip = false,
+  videoReplaceable = false,
   aiCredits = 0,
   plans = [],
   editingPublished = false,
@@ -225,6 +226,12 @@ export function StudioEditor({
   initialCards?: DraftCard[];
   /** The draft already has a clip, so it opens with its video module. */
   hasVideoClip?: boolean;
+  /**
+   * A live publication with no playable clip (failed, or never attached).
+   * The video step stays editable so the author can attach one without
+   * publishing a second piece.
+   */
+  videoReplaceable?: boolean;
   aiCredits?: number;
   plans?: Plan[];
   /**
@@ -267,6 +274,7 @@ export function StudioEditor({
   // The ref holds the file; this holds the fact, because the screen has to
   // re-render when a clip arrives (the video step reads as done).
   const [videoChosen, setVideoChosen] = useState(hasVideoClip);
+  const videoFrozen = editingPublished && !videoReplaceable;
 
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   // The dek on every type but a brief, where it is the brief's own text.
@@ -791,6 +799,26 @@ export function StudioEditor({
         toast.error(res.error ?? "Could not save the edit.");
         return;
       }
+      const pendingVideo = videoFileRef.current;
+      if (pendingVideo) {
+        try {
+          await uploadComposeClip({
+            reportId: draftId,
+            file: pendingVideo.file,
+            title: title.trim() || summary.trim() || "Video",
+            durationSeconds: pendingVideo.durationSeconds,
+          });
+          videoFileRef.current = null;
+        } catch (err) {
+          const reason = err instanceof Error ? err.message : "Upload failed.";
+          setSaveStatus("idle");
+          const msg = `Saved, but the video did not upload: ${reason}`;
+          setSaveError(msg);
+          setError(msg);
+          toast.error(reason);
+          return;
+        }
+      }
       setSaveStatus("saved");
       setSavedAt(Date.now());
       setError(null);
@@ -799,9 +827,11 @@ export function StudioEditor({
         setDirty(false);
       }
       toast.success(
-        (res.sections?.length ?? 0) > 0
-          ? "Saved. The publication now shows an EDITED marker."
-          : "Nothing had changed, so nothing was recorded.",
+        pendingVideo
+          ? "Saved. The video is processing and appears when it is ready."
+          : (res.sections?.length ?? 0) > 0
+            ? "Saved. The publication now shows an EDITED marker."
+            : "Nothing had changed, so nothing was recorded.",
       );
     } catch (e) {
       setSaveStatus("idle");
@@ -1049,7 +1079,7 @@ export function StudioEditor({
    * its reply has a writer to land in. Nowhere else, and never folded to
    * icons (src/lib/compose/rail.ts).
    */
-  const rail = railFor(stepKey, { hasWriter, hasClip: videoChosen, frozen: editingPublished });
+  const rail = railFor(stepKey, { hasWriter, hasClip: videoChosen, frozen: videoFrozen });
   const railUseful = rail !== null;
 
   /** What each step holds right now, for the tracker and the menu. */
@@ -1093,7 +1123,7 @@ export function StudioEditor({
       halfDone: blocker,
       // A live publication's call and clip are the record; they open to
       // be read, never to be changed, and cannot be added after the fact.
-      locked: editingPublished && (def.key === "call" || def.key === "video") && !added,
+      locked: editingPublished && (def.key === "call" || (def.key === "video" && !videoReplaceable)) && !added,
     };
   });
 
@@ -1552,6 +1582,9 @@ export function StudioEditor({
                   {hasLockedCall
                     ? "The call and its entry price cannot change, and neither can its resolution. Those are the record."
                     : "The type, the pricing and the access setting cannot change."}
+                  {videoReplaceable
+                    ? " There is no playable clip yet. Attach one on the video step, then save."
+                    : null}
                 </p>
               </div>
             ) : null}
@@ -1561,7 +1594,9 @@ export function StudioEditor({
               title={current.label}
               blurb={
                 editingPublished && stepKey === "video"
-                  ? "The clip and what is placed on it are the record. They open here to be read."
+                  ? videoReplaceable
+                    ? "There is no playable clip on this publication yet. Choose one here, then save."
+                    : "The clip and what is placed on it are the record. They open here to be read."
                   : current.blurb
               }
               back={back}
@@ -1836,11 +1871,12 @@ export function StudioEditor({
                       videoFileRef.current = { file, durationSeconds };
                       setClipUrl(URL.createObjectURL(file));
                       setVideoChosen(true);
+                      markDirty();
                     }}
                     hasClip={videoChosen}
-                    onRemove={editingPublished ? undefined : removeVideo}
-                    onMakeCard={editingPublished ? undefined : () => setLibraryOpen(true)}
-                    frozen={editingPublished}
+                    onRemove={videoFrozen ? undefined : removeVideo}
+                    onMakeCard={videoFrozen ? undefined : () => setLibraryOpen(true)}
+                    frozen={videoFrozen}
                     cards={deck}
                     chrome={false}
                     ticker={ticker.trim() || undefined}

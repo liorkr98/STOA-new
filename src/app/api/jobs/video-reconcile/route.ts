@@ -8,8 +8,9 @@ export const maxDuration = 60;
 
 /**
  * QStash consumer for clip follow-ups. After upload (and on a non-finished
- * webhook) we poll Bunny on a short delay so a finished clip goes live without
- * waiting for a webhook that may never arrive, or for the daily cron.
+ * webhook) we poll Bunny on a delay so a finished clip goes live without
+ * waiting for a webhook that may never arrive, or for the daily cron. The
+ * chain runs for a little over two hours so a slow encode is not abandoned.
  */
 export async function POST(req: Request) {
   const rawBody = await req.text();
