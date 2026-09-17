@@ -74,7 +74,7 @@ function toPublication(
     base.stateLine = `VIDEO PROCESSING · STARTED ${formatDistanceToNowStrict(new Date(clip.created_at)).toUpperCase()} AGO`;
   }
   if (clip?.status === "failed") {
-    base.stateLine = "VIDEO FAILED · ATTACH THE CLIP AGAIN FROM THE PUBLICATION";
+    base.stateLine = "VIDEO FAILED · OPEN IT AND ATTACH THE CLIP AGAIN";
   }
   if (state === "archived") {
     base.stateLine = "ARCHIVED · HIDDEN FROM THE PUBLIC · CAN BE RESTORED";

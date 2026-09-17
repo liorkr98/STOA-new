@@ -13,9 +13,9 @@ export const maxDuration = 60;
  * Deliberately daily: a sub-daily schedule is rejected at config validation on
  * this Vercel plan and fails the whole deployment. That makes this the slow
  * safety net, not the working path. The working path is the post-upload
- * follow-up (`settleClipOrRetry` via QStash) plus a 5s status poll on the
- * publication page. Registering the Bunny webhook makes the follow-ups
- * redundant. Protected by CRON_SECRET.
+ * follow-up (`settleClipOrRetry` via QStash, about two hours of looks) plus
+ * a status poll on the publication page. Registering the Bunny webhook makes
+ * the follow-ups redundant. Protected by CRON_SECRET.
  */
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCron(request)) {

@@ -24,9 +24,8 @@ function readDuration(file: File): Promise<number> {
 }
 
 /**
- * A failed clip on a live publication cannot be swapped from Compose (the
- * video step is frozen as the record). This is the attach-again control on
- * the publication page itself.
+ * A failed clip on a live publication can be swapped from the publication
+ * page, and from Compose when that publication has no playable clip yet.
  */
 export function ReplaceClipControl({
   reportId,
