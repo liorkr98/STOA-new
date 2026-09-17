@@ -193,9 +193,12 @@ export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
       .order("published_at", { ascending: false })
       .limit(limit);
     if (error || !data) return [];
+    // A verdict's clip travels with the verdict, for the people who can open
+    // it. It is never a Feed or Explore item: the verdict is subscribers-only
+    // while the call is open, and the wall is for strangers.
     return (data as Record<string, unknown>[])
       .map(normalizeCard)
-      .filter((c) => c.report && c.report.status === "published");
+      .filter((c) => c.report && c.report.status === "published" && c.report.type !== "call");
   });
 }
 
