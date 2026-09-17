@@ -1322,28 +1322,31 @@ export function VideoRung({
               <p className="mt-1 text-[13px] text-text-mute">The video is the seed. Call, cards and thesis are optional below.</p>
             </div>
           ) : null}
-          {choosing ? (
-            <div className="ml-auto flex items-center gap-2">
-              {(src || hasClip) && canRecord && picking !== "camera" ? (
+          {/* Record, Replace and Remove as three buttons that wrap. The
+              browser's own file control used to sit here at its native
+              width, which was wider than a phone and made the whole screen
+              scroll sideways; the input is hidden now and Replace opens it. */}
+          {choosing && (src || hasClip) ? (
+            <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 md:ml-auto">
+              {canRecord && picking !== "camera" ? (
                 <Button variant="secondary" size="sm" onClick={() => setPicking("camera")}>
                   <Video size={16} strokeWidth={1.6} /> Record
                 </Button>
               ) : null}
-              {src || hasClip ? (
-                <label className="inline-flex cursor-pointer items-center">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="video/*"
-                    className="text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
-                    onChange={(e) => {
-                      takeFile(e.target.files?.[0]);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-              ) : null}
-              {(src || hasClip) && onRemove ? (
+              <input
+                ref={fileRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => {
+                  takeFile(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
+                <Upload size={16} strokeWidth={1.6} /> Replace
+              </Button>
+              {onRemove ? (
                 <Button
                   variant="secondary"
                   size="sm"
@@ -1401,7 +1404,7 @@ export function VideoRung({
                 ref={fileRef}
                 type="file"
                 accept="video/*"
-                className="mt-1 text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
+                className="mt-1 max-w-full text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
                 onChange={(e) => {
                   takeFile(e.target.files?.[0]);
                   e.target.value = "";
