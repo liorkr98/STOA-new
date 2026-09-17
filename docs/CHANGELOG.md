@@ -10,6 +10,90 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-17 — Compose: the video step's two ways in are back, and a full audit of the restructure
+
+**For someone using the site**
+
+- **The Video type's first step offers Record with your camera and the
+  upload drop zone again.** The four-types restructure merged the old
+  "choose" and "edit" video screens into one, and the chooser was still
+  wired to the "choose" screen, so a new video opened on an empty stage
+  with nothing to press. Both ways in are restored on the one screen:
+  recording has the portrait preview, the shutter, the REC clock with time
+  left, Pause and Resume, and the review with Record again or Use this clip;
+  uploading has the file picker and the drop zone. Both land in the same
+  editor (trim, cover, overlays) and the same upload at publish. The same
+  fix restores the chooser on a verdict's optional video.
+- **A live publication's video screen opens to be read.** It used to offer
+  Record, Replace and Remove video, and the trim and overlay tools, on a
+  piece that was already out, and Save changes never sent any of it. Now
+  the picture plays as it publishes, the controls are gone, and a line says
+  the clip and what is placed on it are the record.
+- **Lint passes again.** Main has failed `npm run lint` since the features
+  menu landed (the React Compiler could not keep the workspace's memoized
+  callbacks around one render-time value). Nothing a visitor sees; the
+  cause was one line and is fixed.
+
+**The audit, type by type.** Every feature below was exercised in a real
+Chrome at 1440 and 390 on the `/dev/compose` fixtures (signed out, so saves
+and publishes fail on purpose and the failure lines were read instead):
+
+- Video, brief, thesis, verdict: the three-step spine, the truthful forward
+  button (Continue refuses with the reason on each step; Skip, Done and a
+  refusing Done in the feature editors), the headline's three destinations,
+  tags chosen by typing (most-used first, narrowing, Enter), the features
+  menu with its Added and Not added rows, the publish screen with its
+  access modes (and the verdict's stated visibility instead), the verdict's
+  own rules as you type (NVDA refused with its market cap, PLAB eligible).
+- The card tray and library (the Steelman still parked), a card dragged
+  from the tray into the thesis body and onto the video timeline, the card
+  editor with three-ink provenance on the cards that carry it, per-card
+  Locked or Free, Delete card, and Done that closes and saves the draft.
+- The assistant rail on the writer, cards and video screens: Ask AI, the
+  six actions, Devil's Advocate, the fact-check panel, Visualize selection,
+  Templates. The fact-check is offered on the publish screen and is never
+  what publish refuses for (the disclosures are).
+- The video editor: trim by dragging the brass ends, the cover picked from
+  twelve frames or an uploaded image, text overlays in three sizes, visual
+  overlays (chart, card, Visualize, image) over the picture or full frame,
+  the size and opacity sliders.
+- The status line (Nothing to save yet, Unsaved changes, Saving, Not saved
+  with the reason), the autosave on a screen change, the leave dialog with
+  its three choices on an in-app link, and the browser's own prompt on a
+  reload with unsaved work.
+- Editing a live piece: the banner, Save changes in the header, the locked
+  call and clip rows on the menu, and the EDITED flag in the Publications
+  list.
+- The Publications list: a draft deletes; a live piece with a call archives
+  and cannot be deleted; a live piece without a call archives or deletes
+  (after typing DELETE); an archived piece restores.
+
+**Verified in code only, needs a signed-in session to see end to end:** card
+ids surviving a save (the server updates a card by the id the client
+holds), the EDITED marker on the publication page itself, the actual
+delete, archive and restore, the fact-check's result, and the upload at
+publish.
+
+**Seen and left alone.** Adding a chart overlay in the video editor makes
+TradingView's own embed script log a "querySelector of null" error in the
+browser console once, in development only (React mounts the widget twice
+there); nothing on screen is affected. In the toolbox rail a card whose
+title is long ("Kill switch" beside its CREATOR EST. chip) wraps its chip
+onto two lines at the rail's 248px; the rail is being rethought (below).
+
+**Open question, not built:** the desktop toolbox rail was designed for the
+old always-on workspace and now sits beside a three-step spine, showing an
+empty card tray on the video chooser and on a live piece's read-only clip
+screen. A proposal is with Bar; see `docs/COMPOSE.md` once decided.
+
+**What needs Krisi**
+
+Nothing new. The 2026-09-16 list stands: the visibility flip at resolution,
+gating `predictions` for open verdicts, `market_cap` coverage, migrations
+0064 and 0065.
+
+---
+
 ## 2026-09-16 — Compose: four publication types, a three-step spine, the verdict
 
 **For someone using the site**

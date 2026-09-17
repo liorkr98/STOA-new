@@ -208,6 +208,13 @@ Support is `getUserMedia` plus `MediaRecorder` on a secure origin. Where the
 browser cannot record, Record is not offered and a line under the drop zone
 says so.
 
+The video screen is one screen, not two: the two ways in while no clip is
+loaded, and the editor on the same screen the moment one is (`<VideoRung
+stage="all">`). With a clip loaded, Record, a Replace file picker and Remove
+video sit above the picture. The four-types restructure lost the two ways in
+for a day (the chooser was wired to a stage the combined screen never sent);
+they are back, and the fixture `/dev/compose?shape=video` opens on them.
+
 ## The video editor
 
 Unchanged in this batch and rebuilt next: one picture above one timeline,
@@ -217,6 +224,13 @@ with the publication (`reports.video_edit`) and drawn by Stoa's player over
 the clip, from the same renderer as "Preview as it will publish". They are
 not composited into the video file: a clip shared or downloaded elsewhere
 plays without them, and the editor says so under the timeline.
+
+On a live publication the video screen opens to be read (`frozen` on
+`VideoRung`): the picture plays as it publishes, and there is no Record,
+Replace or Remove, no trim, no toolbar and no inspector. A line under the
+picture says the clip and what is placed on it are the record. Saving an edit
+to a live piece never sends the video edit, so offering those controls would
+have been a lie.
 
 ## Saving
 

@@ -125,6 +125,10 @@ an intent. Both routes build the same card.
 while composing and afterwards from the published item. Its cost model is deliberately undecided
 and kept pluggable; what is fixed is that promoted content is always labelled as promoted.
 
+A video's first step offers two ways in, record from the camera or upload a file, and both
+land in the same editor: trim, cover frame, overlays, and one upload at publish. Once a piece
+is live its clip is the record: the video screen opens to be read, never to be changed.
+
 ## The Thesis Stack
 
 A publication is navigated on two axes:

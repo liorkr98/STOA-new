@@ -1322,7 +1322,12 @@ costs no duplicated state: `<VideoRung stage="all">` on the video screen (the pi
 editor in one, mounted once for every type that may carry a clip and hidden off-screen so the
 loaded clip survives), and `<LockPublishPanel sections="call" | "publish">` for a non-verdict
 call and the publish settings. The writer (Tiptap) stays mounted and hidden on every other
-screen so the charts the publish path screenshots are never lost.
+screen so the charts the publish path screenshots are never lost. With `stage="all"` the rung
+shows its chooser (Record with your camera, the upload drop zone) while no clip is loaded and
+the editor once one is; the chooser is gated on "not the edit-only stage", never on a
+"choose" stage the combined screen does not send (that gate is what lost the two ways in after
+the four-types restructure). `frozen` makes the rung read-only for a live publication: no
+Record, Replace, Remove, trim, toolbar or inspector, and a line saying the clip is the record.
 
 **A frame, a header, two scrolling columns:**
 
