@@ -10,6 +10,61 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-22 — Today rebuilt as a broadsheet
+
+Today (`/home`) is now the approved broadsheet: a nameplate, a 3 / 6 / 3
+package around the lead, then Trending now beside Your desk, the Verdicts
+ledger and Market news, on one card anatomy and five type sizes.
+
+**For someone using the site**
+
+- **A nameplate instead of the masthead.** `STOA` letterspaced, one ink
+  rule, one mono dateline. On a phone the `Lists` control sits at the right
+  of that dateline and opens the rail as a drawer.
+- **The lead is a package.** The lead in a 4:3 frame with its eyebrow,
+  headline and byline in white over the picture; under it two follow-ups
+  chosen for the same ticker, sector or theme, so the story holds together;
+  two picture stories to the left, four text stories to the right. A lead
+  with no clip takes the same slot on paper.
+- **One card, everywhere.** Square 16:9 image, eyebrow (`NVDA · LONG`, or
+  the sector, with TRENDING or NEW in front), headline, then `Name / Date`.
+  No avatars, no content badges, no pills on images: the duration is mono
+  text on the eyebrow line and the play glyph is small in a corner.
+- **The rail belongs to the page.** Text rows on dashed hairlines, a quiet
+  `+ Follow`, the day change but no price. Nothing in it is a black button
+  and no row scrolls sideways.
+- **Nothing scrolls sideways on a desktop.** The horizontal bands are gone:
+  Trending now is a numbered list of five, Your desk a 2 × 2 grid, Verdicts a
+  ledger (seal, ticker and direction, headline, entry → exit, return), news
+  two text lists. On a phone the page is one scroll and only Your desk moves
+  sideways, with the next card peeking at the edge.
+- **Gone from Today:** the theme cluster band, the Save toggle on rows, and
+  the "Most watched" strip. Saving still lives on the publication page.
+
+**Checked in a real browser at 1440 and 390:** nameplate 87px and 79px tall,
+every type size exact, 60px between sections and 24px title to content, 20px
+and 16px gutters, zero radius on images, no element wider than the screen,
+a touch swipe on the page does not pan it, the desk scroller does, and the
+Lists drawer opens.
+
+**Waiting on Bar: the accent.** The mock's accent is green, and on Stoa green
+is semantic: it is the LONG chip and the HIT seal. Built as specified, the
+eyebrows, author names and trending numerals compute to the exact same green
+as a LONG chip and a HIT seal, so `ZION · SHORT` reads in the colour of
+LONG. This is a real collision. The accent is one variable
+(`--today-accent` on `.today-sheet`); the fix is not chosen yet.
+
+**For Krisi**
+
+- No schema change. `TodayPagePayload` gained `followUps`, `pictures` and
+  `textStories` and lost `secondary` and `theme`; the builder picks them.
+- Markets still renders its publication rows through the old Today row
+  (`HeadlineRow`) and the news band; those keep the old look on purpose
+  until Markets gets its own pass. The Dispatch masthead's `home` mode is
+  now unused.
+
+---
+
 ## 2026-09-22 — Compose with less to read, a scrub bar on every clip, Today no longer pans
 
 Three fixes from the phone: publishing had too much copy between starting and
