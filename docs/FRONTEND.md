@@ -38,6 +38,14 @@ All three are legitimate ingredients, but none of them are *specific to Stoa* �
 at home on a recipe blog or a crypto dashboard. The design needs to come from what Stoa actually
 is: **a public ledger of claims made and outcomes proven, where nothing can be quietly erased.**
 
+One deliberate exception, adopted 2026-09-22: **Today (`/home`) is a broadsheet.** Dashed
+hairlines, square images, one card anatomy, five type sizes (§3.1b). It is allowed there
+because the page is literally a daily issue, and because what sits inside the grid is nowhere
+else's: the seal on every resolved call, the Verdicts ledger (entry → exit → return, graded by
+the market), the mono data voice on every number and ticker, and a single accent that carries
+the author, the eyebrow and the trending numeral. Take those four away and the page is a
+template; they are the reason it is Stoa's. Nowhere else adopts the broadsheet by default.
+
 ### 1.2 Where the design comes from
 
 The real-world material for this brief isn't "fintech app" — it's **the notary's seal, the
@@ -577,9 +585,9 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    placeholder, not an empty frame, not a coloured block. It renders as a
    headline, a dek and its metadata, the way a written report does everywhere
    else. Reserving the frame regardless asserts that every publication is a
-   video. The components own this themselves (`Poster` and the Today row
-   thumbnail return `null`, and carry their own link so a call site cannot leave
-   an empty anchor behind).
+   video. The components own this themselves (Today's `CardImage` and the
+   Markets row thumbnail return `null`, and carry their own link so a call
+   site cannot leave an empty anchor behind).
 
    This holds on every surface: Today's lead and bands, the profile's lead tier
    and grid, Markets publication rows (which render through Today's row), the
@@ -734,34 +742,65 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 ---
 
-### 3.1b Home — `/home` (personalized Dispatch)
+### 3.1b Today — `/home`
 
-**Layout.** The page is a `<ScrollFrame>` filling the room under the nav: the lists column
-(`248px`) and the main column scroll on their own inside it, and the lists start level with the
-masthead. The lists used to be a sticky column pinned `top-20` inside the app's scrolling column,
-where the nav is not, so they sat a band lower than they should have. On a phone the lists are a
-drawer behind a Lists control and the main column is the only column.
+Stoa's daily issue as a broadsheet, adopted 2026-09-22 from an approved mock (the rule in §1.1
+says why it is allowed here). `<TodayPage>` (`src/components/today/today-page.tsx`), the card in
+`today-card.tsx`, the package in `today-package.tsx`, the sections in `today-sections.tsx`, the
+rail in `today-sidebar.tsx`, the nameplate in `today-nameplate.tsx`; the styles are the `.ts-*`
+block at the end of `globals.css`, and `/dev/today` is the seeded fixture.
 
-The signed-in home for **investors and analysts**. Same Dispatch design as `/`, but content is
-scoped to follows, subscriptions, saved reports, and recently read analysts.
+**Grid.** Desktop: 12 columns, 20px gutters, beside the rail. Phone: 4 columns, 16px gutters,
+16px margins. Every block spans whole columns.
 
-**Nav:** `Home` appears first in `<TopNav>` when signed in; logo links to `/home`.
+**The rail** (`<TodaySidebar>`) keeps its lists (trending and popular creators and tickers,
+memberships, following, your tickers) as text rows on dashed hairlines: a name, a NEW or
+TRENDING eyebrow, and a quiet `+ Follow` in the accent where the reader does not follow; a
+ticker row is the mono symbol, its day change and the same control, no price. Nothing in it is
+a solid button and no row scrolls sideways. On a phone it is a drawer behind the `Lists`
+control at the right of the nameplate's dateline (`<TodayListsButton>`).
 
-**Masthead dateline:** `Your briefing · {DATE} · {N} min read`
+**The nameplate** (`<TodayNameplate>`): `STOA` at 54px letterspaced Fraunces, one 2px ink rule,
+one mono dateline (`ISSUE №41 · TUESDAY, AUGUST 18, 2026 · YOUR DAILY BRIEFING`). Under 110px on
+a desktop, under 80px on a phone. The only heavier line on the page is its rule.
 
-**Tagline:** "From the analysts you follow and subscribe to…"
+**The top package, 3 / 6 / 3** (`<TodayPackage>`). Left: two picture stories. Centre: the lead
+in a 4:3 frame with its eyebrow, headline and byline in white over a scrim on the lower third;
+a lead with no clip takes the same slot with its headline and deck on paper. Under the lead, two
+smaller stories side by side, chosen for coverage on the same ticker, sector or theme as the lead
+(`followUps` in `build-today-page.ts`), so the lead and its follow-ups read as one package.
+Right: four text-only stories on hairlines. On a phone: the lead, then the pictures, then the
+text stories, one column.
 
-**Lead** — left-aligned for reading (briefing style)
+**One card anatomy, everywhere** (`<TodayCard>`): image (16:9, square corners, a small play
+glyph in the corner, the duration as mono text on the eyebrow line rather than a pill) → 12px →
+eyebrow → 10px → headline → 12px → byline. Stacked cards: 16px, a dashed hairline, 16px
+(`.ts-stack`). The eyebrow carries `NVDA · LONG` or the sector, with `TRENDING` or `NEW` in
+front. The byline is `Name / Date`, no avatar and no content badge.
 
-**Secondary** — "Also in your briefing"
+**Five type sizes, nothing else** (`.ts-eyebrow` 10.5px mono uppercase in the accent;
+`.ts-byline` 14px sans, the name in the accent and the date faint; `.ts-headline` 22px Fraunces
+regular, `--dense` 18px; `--lead` 34px on a desktop and 26px on a phone; `.ts-title` 40px
+Fraunces semibold, 32px on a phone). Headlines are regular weight; bold is for section titles.
 
-**Today's Record** + **Top creators this week** leaderboard
+**Sections**, 60px apart, title to content 24px. **Trending now**: a numbered list of five in a
+5-column slot, the numerals 40px in the accent, then one empty column. **Your desk**: a
+6-column 2 × 2 of picture stories beside it; on a phone it is the page's only sideways scroller,
+with the next card peeking at the right edge. **Verdicts**: a ledger, one row per resolved call:
+seal, ticker and direction, headline, entry → exit, return. **Market news**: the same anatomy in
+two 6-column text lists, source and time as the byline (`<NewsSheet>`; Markets keeps the band
+form, `<TodayNews>`).
 
-**CTA:** "Browse every analyst on Explore →"
+**Rules and images.** One rule style, 1px dashed at 13% ink (`--today-rule`). Zero radius on
+every image.
 
-**Empty state** (no signals / no matching content): prompt to follow analysts → `/explore`
+**No sideways scrolling on a desktop.** No rails. On a phone, exactly one (Your desk); nothing
+else is wider than the screen. On a phone the page is one document scroll; on a desktop the rail
+and the page are two columns that scroll on their own inside the room under the nav (`.ts-frame`,
+`.ts-column`, measured by `useFrameHeight`, see `src/lib/layout/frame.ts`).
 
-**Backend:** `GET /api/dispatch?personalized=true` — same ranking as `buildDispatch(true)`.
+**The accent** is one variable, `--today-accent` on `.today-sheet`, on author names, eyebrows and
+trending numerals. Seal colours are the site's everywhere (`<SealStamp>`), never changed here.
 
 ---
 
