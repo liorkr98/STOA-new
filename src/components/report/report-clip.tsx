@@ -176,7 +176,10 @@ export function ReportClip({
                   // the nav, above the tab pill and below the page's own top
                   // (about 17rem of headline and byline), so its bottom edge,
                   // where the scrub bar sits, is reachable without scrolling.
-                  "mx-auto h-[min(calc(100dvh-var(--nav-h)-var(--tab-h)-17rem),32rem)] w-auto max-w-full sm:h-[min(60vh,520px)] lg:h-[min(50vh,440px)]",
+                  // Never shorter than 24rem, though: on a short phone the
+                  // video matters more than the control, and the bar is then
+                  // a small scroll away.
+                  "mx-auto h-[max(min(calc(100dvh-var(--nav-h)-var(--tab-h)-17rem),32rem),24rem)] w-auto max-w-full sm:h-[min(60vh,520px)] lg:h-[min(50vh,440px)]",
             )}
           >
             {playing && native && playbackUrl ? (
