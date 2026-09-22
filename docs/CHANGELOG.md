@@ -10,6 +10,46 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-22 — Compose, video wait, Feed and Explore
+
+A professional pass over publishing and discovery: less chrome, the right
+numbers on a call, image overlays that actually persist, and clips that go
+live as soon as Bunny can play them.
+
+**For someone using the site**
+
+- **Price attestation is gone.** The quote protocol on Compose and the
+  publication page produced error messages ("Too Many Requests", failed JSON)
+  and never locked anything. Entry still locks from the live price at publish.
+  The target is the number the analyst types.
+- **Target is not the live price.** The call editor and the lock modal label
+  Entry as the live price at publish, and Target as the number you set. They
+  are no longer described as the same lock.
+- **Compose is quieter.** Shorter step copy, no three-column "how the line
+  travels" mockups, and the lock modal closes as soon as the publication is
+  out so an upload is not sitting under the seal. Upload progress is in the
+  header.
+- **An image on a video stays on the video.** Overlays used a local `blob:`
+  link that died when the tab closed. Images now upload to storage first.
+- **Processing says how far it has got.** The publication page polls more
+  often, shows encoding percent when Bunny reports it, and treats an encode
+  that has reached 100% as playable without waiting for Bunny's Finished
+  flag. Follow-ups still look for about two hours if the webhook is missing.
+- **Feed and Explore remember you.** Likes, saves and follows persist after
+  refresh. NEW and TRENDING markers show on both surfaces. The Feed poster
+  lifts sooner, and the duplicated date line on a phone is gone.
+
+**For Krisi**
+
+- The `attest-price` edge function is no longer called. It can be retired
+  when convenient; nothing in the app depends on it.
+- Encode wall-clock is still Bunny's. Confirm the Stream webhook hits
+  `/api/webhooks/bunny` and QStash `video-reconcile` is registered, so a
+  finished clip does not wait on a poll.
+- Rotate the Bunny library key if it was pasted into chat.
+
+---
+
 ## 2026-09-18 — Publishing audited end to end on the live site: seven fixes, and what is still open
 
 A signed-in functional audit of publishing on stoamarket.ai, one publication
@@ -179,6 +219,37 @@ carry locked calls, so they cannot be deleted; see "For Krisi").
   longer needs one, because a consent is written once and never rewritten.
 - The Settings marketing toggle went through the same refused write; it is
   fixed by the same change.
+
+---
+
+## 2026-09-17 — A slow encode still goes live, and a failed clip can be attached again in Compose
+
+**For someone using the site**
+
+- **Your clip no longer sits on processing until the next morning.** Two Jeen
+  Technologies videos uploaded this afternoon reached Bunny, encoded (about an
+  hour for a large phone file), and then waited here because Stoa stopped
+  checking after ten minutes. Stoa now keeps checking for a little over two
+  hours. The publication page also keeps asking, and it says a large phone
+  file can take up to an hour.
+- **Those two clips are already live.** Open the newest Jeen publications, not
+  the older ones that failed this morning. The player is there.
+- **If a live publication has no playable clip, you can attach one in Compose
+  and save.** The video step used to freeze on anything already published, even
+  when the only clip had failed, which pushed people to publish a second piece.
+  A clip that is already playing still cannot be replaced. On the publication
+  page, "Attach clip again" is still there.
+
+**For Krisi**
+
+- Bunny Stream webhook is still the fastest path when encoding finishes:
+  `https://www.stoamarket.ai/api/webhooks/bunny-stream?secret=<BUNNY_STREAM_WEBHOOK_SECRET>`.
+- Confirm QStash is delivering `POST /api/jobs/video-reconcile`. If it is not,
+  Sentry now errors when a follow-up is skipped, and the only remaining looks
+  are the open publication page and the daily 05:00 UTC cron.
+- Encoding a ~90 MB, 17-second phone clip took about an hour in library
+  705981. Worth checking encoding quota. Rotate the AccessKey that was pasted
+  into chat.
 
 ---
 

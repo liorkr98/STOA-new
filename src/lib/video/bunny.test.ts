@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { isAbandonedUpload, isByteLessUpload, isStuckEmptyUpload } from "./bunny";
+import { isAbandonedUpload, isByteLessUpload, isStuckEmptyUpload, isBunnyPlaybackReady } from "./bunny";
 
 /**
  * The fault this predicate exists to name.
@@ -120,5 +120,17 @@ describe("isStuckEmptyUpload", () => {
       }),
       true,
     );
+  });
+});
+
+describe("isBunnyPlaybackReady", () => {
+  it("treats Finished as playable", () => {
+    assert.equal(isBunnyPlaybackReady({ status: 4, encodeProgress: 100 }), true);
+  });
+
+  it("treats encoding at 100% as playable before the status flips", () => {
+    assert.equal(isBunnyPlaybackReady({ status: 3, encodeProgress: 100 }), true);
+    assert.equal(isBunnyPlaybackReady({ status: 3, encodeProgress: 99 }), false);
+    assert.equal(isBunnyPlaybackReady({ status: 2, encodeProgress: 100 }), false);
   });
 });

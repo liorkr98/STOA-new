@@ -5,7 +5,7 @@ import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
 import { recordRankingImpressions } from "@/lib/db/ranking";
-import { clipsToPublications } from "@/lib/feed/build-publications";
+import { clipsToPublications, attachViewerSocial } from "@/lib/feed/build-publications";
 import {
   EXPLORE,
   filterOptions,
@@ -41,7 +41,10 @@ export default async function ExplorePage({
   ]);
   const sessionId = crypto.randomUUID();
   const ranked = await rankClips(clips, viewer, "explore");
-  const pubs = await clipsToPublications(ranked.map((r) => r.item));
+  const pubs = await attachViewerSocial(
+    await clipsToPublications(ranked.map((r) => r.item)),
+    userId,
+  );
   const reasonsByReport = new Map(ranked.map((r) => [r.reportId, r.reasons]));
   for (const pub of pubs) pub.rankReasons = reasonsByReport.get(pub.id);
 

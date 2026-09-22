@@ -98,6 +98,9 @@ export default async function ComposePage({
     }
   }
 
+  const liveClip = clips.find((c) => c.status === "ready" || c.status === "processing");
+  const editingPublished = Boolean(published);
+
   return (
     <div className="breakout-main">
       {onboarding === "1" && (
@@ -109,12 +112,13 @@ export default async function ComposePage({
         analystReportPrice={profile.report_price}
         initialType={isPublicationType(rawType) ? rawType : "thesis"}
         initialDraft={draft ?? published ?? seeded}
-        editingPublished={Boolean(published)}
+        editingPublished={editingPublished}
         hasLockedCall={Boolean(published?.prediction)}
         verdictLastPublishedAt={lastVerdict}
         popularTags={popularTags}
         initialCards={initialCards}
-        hasVideoClip={clips.length > 0}
+        hasVideoClip={Boolean(liveClip)}
+        videoReplaceable={editingPublished && !liveClip}
         aiCredits={wallet?.ai_credits ?? 0}
         plans={plans}
       />

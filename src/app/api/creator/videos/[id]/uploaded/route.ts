@@ -4,10 +4,12 @@ import { settleClipOrRetry } from "@/lib/video/reconcile";
 import { withHandler } from "@/lib/http/handler";
 import { ApiError } from "@/lib/http/errors";
 
+export const maxDuration = 60;
+
 /**
  * Called once the browser has finished the TUS upload to Bunny. Starts the
- * settle-or-retry chain immediately so a finished encode is promoted in
- * seconds even when the Bunny webhook never arrives.
+ * settle-or-retry chain immediately so a finished encode is promoted even
+ * when the Bunny webhook never arrives.
  */
 export const POST = withHandler<{ id: string }>(
   {

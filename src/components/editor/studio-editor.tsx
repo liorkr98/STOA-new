@@ -206,6 +206,7 @@ export function StudioEditor({
   initialType,
   initialCards = [],
   hasVideoClip = false,
+  videoReplaceable = false,
   aiCredits = 0,
   plans = [],
   editingPublished = false,
@@ -225,6 +226,12 @@ export function StudioEditor({
   initialCards?: DraftCard[];
   /** The draft already has a clip, so it opens with its video module. */
   hasVideoClip?: boolean;
+  /**
+   * A live publication with no playable clip (failed, or never attached).
+   * The video step stays editable so the author can attach one without
+   * publishing a second piece.
+   */
+  videoReplaceable?: boolean;
   aiCredits?: number;
   plans?: Plan[];
   /**
@@ -267,6 +274,7 @@ export function StudioEditor({
   // The ref holds the file; this holds the fact, because the screen has to
   // re-render when a clip arrives (the video step reads as done).
   const [videoChosen, setVideoChosen] = useState(hasVideoClip);
+  const videoFrozen = editingPublished && !videoReplaceable;
 
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   // The dek on every type but a brief, where it is the brief's own text.
@@ -791,6 +799,26 @@ export function StudioEditor({
         toast.error(res.error ?? "Could not save the edit.");
         return;
       }
+      const pendingVideo = videoFileRef.current;
+      if (pendingVideo) {
+        try {
+          await uploadComposeClip({
+            reportId: draftId,
+            file: pendingVideo.file,
+            title: title.trim() || summary.trim() || "Video",
+            durationSeconds: pendingVideo.durationSeconds,
+          });
+          videoFileRef.current = null;
+        } catch (err) {
+          const reason = err instanceof Error ? err.message : "Upload failed.";
+          setSaveStatus("idle");
+          const msg = `Saved, but the video did not upload: ${reason}`;
+          setSaveError(msg);
+          setError(msg);
+          toast.error(reason);
+          return;
+        }
+      }
       setSaveStatus("saved");
       setSavedAt(Date.now());
       setError(null);
@@ -799,9 +827,11 @@ export function StudioEditor({
         setDirty(false);
       }
       toast.success(
-        (res.sections?.length ?? 0) > 0
-          ? "Saved. The publication now shows an EDITED marker."
-          : "Nothing had changed, so nothing was recorded.",
+        pendingVideo
+          ? "Saved. The video is processing and appears when it is ready."
+          : (res.sections?.length ?? 0) > 0
+            ? "Saved. The publication now shows an EDITED marker."
+            : "Nothing had changed, so nothing was recorded.",
       );
     } catch (e) {
       setSaveStatus("idle");
@@ -1049,7 +1079,7 @@ export function StudioEditor({
    * its reply has a writer to land in. Nowhere else, and never folded to
    * icons (src/lib/compose/rail.ts).
    */
-  const rail = railFor(stepKey, { hasWriter, hasClip: videoChosen, frozen: editingPublished });
+  const rail = railFor(stepKey, { hasWriter, hasClip: videoChosen, frozen: videoFrozen });
   const railUseful = rail !== null;
 
   /** What each step holds right now, for the tracker and the menu. */
@@ -1093,7 +1123,7 @@ export function StudioEditor({
       halfDone: blocker,
       // A live publication's call and clip are the record; they open to
       // be read, never to be changed, and cannot be added after the fact.
-      locked: editingPublished && (def.key === "call" || def.key === "video") && !added,
+      locked: editingPublished && (def.key === "call" || (def.key === "video" && !videoReplaceable)) && !added,
     };
   });
 
@@ -1223,6 +1253,8 @@ export function StudioEditor({
         isPublishingRef.current = false;
         return;
       }
+
+      setConfirmOpen(false);
 
       if (pendingVideo && published.id) {
         try {
@@ -1464,6 +1496,11 @@ export function StudioEditor({
           Nothing sticks. The columns under it scroll, so it never has to. */}
       <div className="shrink-0 bg-paper">
         <ComposeHeader crumb={typeDef.label}>
+          {captureStatus ? (
+            <span className="t-meta max-w-[16rem] truncate text-[11px] text-text" aria-live="polite">
+              {captureStatus}
+            </span>
+          ) : null}
           {railUseful ? (
             <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
           ) : null}
@@ -1552,6 +1589,9 @@ export function StudioEditor({
                   {hasLockedCall
                     ? "The call and its entry price cannot change, and neither can its resolution. Those are the record."
                     : "The type, the pricing and the access setting cannot change."}
+                  {videoReplaceable
+                    ? " There is no playable clip yet. Attach one on the video step, then save."
+                    : null}
                 </p>
               </div>
             ) : null}
@@ -1561,7 +1601,9 @@ export function StudioEditor({
               title={current.label}
               blurb={
                 editingPublished && stepKey === "video"
-                  ? "The clip and what is placed on it are the record. They open here to be read."
+                  ? videoReplaceable
+                    ? "There is no playable clip on this publication yet. Choose one here, then save."
+                    : "The clip and what is placed on it are the record. They open here to be read."
                   : current.blurb
               }
               back={back}
@@ -1663,7 +1705,6 @@ export function StudioEditor({
                   <DevCrash step="headline" />
                   <div className="max-w-[60rem]">
                     {headlineFields}
-                    <HeadlineTravels title={title} dek={isBrief ? "" : summary} typeLabel={typeDef.label} ticker={ticker} />
                   </div>
                 </StepErrorBoundary>
               ) : null}
@@ -1818,13 +1859,7 @@ export function StudioEditor({
                 <div className={cn(stepKey !== "video" && "hidden")}>
                   {clipSeconds > 0 && feedPreviewSeconds ? (
                     <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
-                      This clip is longer than the Feed budget. The Feed will play the first{" "}
-                      {feedPreviewSeconds} seconds. The full video stays on Explore and your
-                      profile.
-                    </p>
-                  ) : clipSeconds > 0 && pubType === "video" ? (
-                    <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
-                      This clip fits the Feed. Readers will see the whole thing there.
+                      The Feed plays the first {feedPreviewSeconds} seconds. The full clip stays on the publication.
                     </p>
                   ) : null}
                   <VideoRung
@@ -1836,11 +1871,12 @@ export function StudioEditor({
                       videoFileRef.current = { file, durationSeconds };
                       setClipUrl(URL.createObjectURL(file));
                       setVideoChosen(true);
+                      markDirty();
                     }}
                     hasClip={videoChosen}
-                    onRemove={editingPublished ? undefined : removeVideo}
-                    onMakeCard={editingPublished ? undefined : () => setLibraryOpen(true)}
-                    frozen={editingPublished}
+                    onRemove={videoFrozen ? undefined : removeVideo}
+                    onMakeCard={videoFrozen ? undefined : () => setLibraryOpen(true)}
+                    frozen={videoFrozen}
                     cards={deck}
                     chrome={false}
                     ticker={ticker.trim() || undefined}
@@ -1852,7 +1888,7 @@ export function StudioEditor({
                   {headlineWithVideo ? (
                     <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
                       <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
-                        Headline · the line that travels: Today, the inbox, a pasted link
+                        Headline
                       </p>
                       {headlineFields}
                     </div>
@@ -2048,60 +2084,6 @@ export function StudioEditor({
         busyLabel={captureStatus}
         onConfirm={doPublish}
       />
-    </div>
-  );
-}
-
-/**
- * Where the headline goes once it leaves this screen: a Today row, a
- * subscriber's inbox, a pasted link. Shown under the field so the creator
- * writes for the places it will be read rather than for the field.
- */
-function HeadlineTravels({
-  title,
-  dek,
-  typeLabel,
-  ticker,
-}: {
-  title: string;
-  dek: string;
-  typeLabel: string;
-  ticker: string;
-}) {
-  const line = title.trim() || "Your headline";
-  const empty = !title.trim();
-  const kicker = [ticker.trim().toUpperCase() || null, typeLabel.toUpperCase()].filter(Boolean).join(" · ");
-  return (
-    <div className="mt-6 grid gap-3 border-t border-border pt-5 md:grid-cols-3">
-      <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint md:col-span-3">
-        How the line travels
-      </p>
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
-        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Today</p>
-        <p className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-mute">{kicker}</p>
-        <p className={cn("user-copy mt-1 font-display text-[1.0625rem] font-semibold leading-snug", empty ? "text-text-faint" : "text-text")}>
-          {line}
-        </p>
-        {dek.trim() ? <p className="mt-1 text-[0.8125rem] leading-snug text-text-mute">{dek}</p> : null}
-      </div>
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
-        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Inbox</p>
-        <p className={cn("user-copy mt-2 truncate text-[0.9375rem] font-medium", empty ? "text-text-faint" : "text-text")}>
-          {line}
-        </p>
-        <p className="mt-1 truncate text-[0.8125rem] text-text-mute">
-          {dek.trim() || `A new ${typeLabel.toLowerCase()} from you.`}
-        </p>
-      </div>
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-3.5">
-        <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">Pasted link</p>
-        <div className="mt-2 rounded-[var(--radius-btn)] border border-border bg-bg p-2.5">
-          <p className="num text-[9px] uppercase tracking-[0.14em] text-text-faint">stoamarket.ai</p>
-          <p className={cn("user-copy mt-1 line-clamp-2 text-[0.875rem] font-medium leading-snug", empty ? "text-text-faint" : "text-text")}>
-            {line}
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

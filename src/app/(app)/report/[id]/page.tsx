@@ -37,7 +37,6 @@ import { EditedMarker } from "@/components/report/edited-marker";
 import { listReportEdits } from "@/lib/db/report-edits";
 import { FactCheckLayer } from "@/components/report/fact-check-layer";
 import { AudioBrief } from "@/components/report/audio-brief";
-import { PriceAttestationSection } from "@/components/report/price-attestation-section";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
 import { BuyReportButton } from "@/components/wallet/buy-report-button";
@@ -298,9 +297,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               hideTarget={!canRead}
               pendingReview={report.status === "resolution_pending_review"}
             />
-          )}
-          {report.prediction && report.ticker && canRead && (
-            <PriceAttestationSection ticker={report.ticker} />
           )}
           <DisclosureBlock
             holdsPosition={report.position_held ?? false}

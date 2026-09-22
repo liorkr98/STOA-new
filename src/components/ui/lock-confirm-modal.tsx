@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export function LockConfirmModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticker: string;
-  /** null = no explicit target; the call locks at the live market entry price. */
+  /** null = no target; entry still locks from the live feed. */
   targetPrice: number | null;
   horizonDate: Date;
   /** Live status while onConfirm runs (e.g. "Capturing charts..."). */
@@ -37,6 +37,10 @@ export function LockConfirmModal({
 }) {
   const [locked, setLocked] = useState(false);
   const [pending, setPending] = useState(false);
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   async function handleConfirm() {
     setPending(true);
@@ -47,9 +51,12 @@ export function LockConfirmModal({
       return;
     }
     setPending(false);
+    // Publish closes this so the clip can upload without the seal sitting
+    // over a progress bar. Skip the ceremony if the parent already moved on.
+    if (!openRef.current) return;
     setLocked(true);
     toast("Locked", {
-      description: `${ticker} · ${targetPrice != null ? `$${price(targetPrice)}` : "market entry"}`,
+      description: targetPrice != null ? `${ticker} · target $${price(targetPrice)}` : `${ticker} · entry locked`,
       icon: <SealStamp status="locked" date={new Date()} size="sm" />,
     });
     window.setTimeout(() => onOpenChange(false), 1400);
@@ -84,15 +91,16 @@ export function LockConfirmModal({
               </div>
 
               <Dialog.Description className="t-body mt-2">
-                Once locked, this price target can&apos;t be edited or deleted. It&apos;ll count
-                toward your Track Score whether it hits or misses.
+                Once locked, the call cannot be edited. Entry is the live price at this
+                moment. Target is the number you set, if you set one.
               </Dialog.Description>
 
               <dl className="mt-5 flex flex-col gap-2 rounded-[var(--r-card)] bg-surface-2 p-4 text-sm">
                 <Row label="Ticker" value={ticker} />
+                <Row label="Entry" value="Live price at publish" />
                 <Row
                   label="Target"
-                  value={targetPrice != null ? `$${price(targetPrice)}` : "Locks at market entry"}
+                  value={targetPrice != null ? `$${price(targetPrice)}` : "None"}
                 />
                 <Row label="Horizon" value={horizonDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
               </dl>
@@ -119,7 +127,7 @@ export function LockConfirmModal({
               <div>
                 <p className="t-h3">Locked</p>
                 <p className="t-meta mt-1">
-                  {ticker} &middot; {targetPrice != null ? `$${price(targetPrice)}` : "market entry"} &middot; can&apos;t be edited
+                  {ticker} &middot; {targetPrice != null ? `target $${price(targetPrice)}` : "entry locked"} &middot; cannot be edited
                 </p>
               </div>
             </div>

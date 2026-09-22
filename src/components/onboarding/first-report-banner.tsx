@@ -38,7 +38,7 @@ export function FirstReportBanner() {
       <ul className="mt-4 grid gap-2.5 sm:grid-cols-3">
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <LockSimple size={15} className="mt-0.5 shrink-0 text-accent" />
-          A price target locks the moment you publish -- it can&apos;t be edited after.
+          A call locks when you publish. Entry is the live price; target is the number you set.
         </li>
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <Sparkle size={15} className="mt-0.5 shrink-0 text-accent" />

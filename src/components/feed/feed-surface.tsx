@@ -314,9 +314,9 @@ const FeedItem = function FeedItem({
   const [started, setStarted] = useState(false);
   // Playback position, only tracked when the publication carries overlays.
   const [clipTime, setClipTime] = useState(0);
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [following, setFollowing] = useState(false);
+  const [liked, setLiked] = useState(() => Boolean(pub.likedByMe));
+  const [saved, setSaved] = useState(() => Boolean(pub.savedByMe));
+  const [following, setFollowing] = useState(() => Boolean(pub.followingAnalyst));
   const [shared, setShared] = useState(false);
   const lastRatioRef = useRef(0);
   const loopedRef = useRef(false);
@@ -370,7 +370,7 @@ const FeedItem = function FeedItem({
    */
   useEffect(() => {
     if (!isActive) return;
-    const t = setTimeout(() => setStarted(true), 1200);
+    const t = setTimeout(() => setStarted(true), 400);
     return () => clearTimeout(t);
   }, [isActive]);
 
@@ -837,12 +837,19 @@ const FeedItem = function FeedItem({
                     thing in the frame. */}
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.66),rgba(0,0,0,0.34)_58%,transparent)] p-3 pt-4 md:pt-5">
                   <div className="min-w-0">
-                    <div className="mb-1.5 md:hidden">
-                      <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-white/95">
-                        {dateline}
-                      </span>
-                    </div>
                     <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
+                      {pub.stageMarker ? (
+                        <span
+                          className={cn(
+                            "num inline-flex items-center rounded-[var(--radius-tag)] border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                            pub.stageMarker === "TRENDING"
+                              ? "border-[var(--brass)]/70 bg-black/35 text-[var(--brass)]"
+                              : "border-white/35 bg-black/35 text-white",
+                          )}
+                        >
+                          {pub.stageMarker === "TRENDING" ? "Trending" : "New"}
+                        </span>
+                      ) : null}
                       {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
                       {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
                       {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} /> : null}

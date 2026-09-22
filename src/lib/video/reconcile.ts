@@ -11,6 +11,7 @@ import {
   isAbandonedUpload,
   isByteLessUpload,
   isStuckEmptyUpload,
+  isBunnyPlaybackReady,
   MAX_VIDEO_DURATION_SECONDS,
 } from "@/lib/video/bunny";
 import {
@@ -34,9 +35,9 @@ export type ReconcileOutcome = "ready" | "processing" | "failed" | "unreachable"
  *
  * The Bunny webhook is the intended trigger for this, but delivery is not
  * guaranteed (and is currently not arriving at all), so the same logic is
- * reachable from the post-upload follow-up (`settleClipOrRetry`), the
- * publication page poll, and a daily cron behind them. Idempotent:
- * re-running on a settled clip is a no-op.
+ * reachable from the post-upload follow-up (`settleClipOrRetry`, about two
+ * hours of looks), the publication page poll, and a daily cron behind them.
+ * Idempotent: re-running on a settled clip is a no-op.
  *
  * Bunny video.status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding,
  * 4 Finished, 5 Error, 6 UploadFailed. A record that still holds no bytes
@@ -57,7 +58,7 @@ export async function reconcileClip(
   }
 
   const durationSeconds = clipDurationSeconds(video.length);
-  const finished = video.status === 4;
+  const finished = isBunnyPlaybackReady(video);
   const failed =
     video.status === 5 ||
     video.status === 6 ||
@@ -124,7 +125,8 @@ export async function reconcileClip(
  * Reconcile once, and if Bunny is still encoding or unreachable, queue the
  * next look. The webhook is supposed to do this, but it is not arriving, and
  * the Vercel Hobby cron cannot run more than once a day. Follow-ups cover a
- * little over ten minutes so a finished clip goes live in seconds, not hours.
+ * little over two hours so a finished clip goes live after a slow encode, not
+ * the next morning.
  *
  * Never throws: page renders and poll routes call this and must not 441.
  */
@@ -171,10 +173,18 @@ export async function settleClipOrRetry(
   }
 
   const delaySeconds = nextClipReconcileDelaySeconds(attempt);
-  if (delaySeconds == null) return outcome;
+  if (delaySeconds == null) {
+    if (outcome === "processing") {
+      Sentry.captureMessage("Clip still processing after follow-up window", {
+        level: "warning",
+        extra: { guid, attempt },
+      });
+    }
+    return outcome;
+  }
 
   try {
-    await enqueueOrRun(
+    const enqueued = await enqueueOrRun(
       "video-reconcile",
       { guid, attempt: attempt + 1, expectBytes: Boolean(opts.expectBytes) },
       () => settleClipOrRetry(guid, attempt + 1, opts),
@@ -184,6 +194,12 @@ export async function settleClipOrRetry(
         deduplicationId: `video-reconcile-${guid}-${attempt + 1}`,
       },
     );
+    if (enqueued.skipped) {
+      Sentry.captureMessage("Clip follow-up not queued (QStash missing)", {
+        level: "error",
+        extra: { guid, attempt, delaySeconds, expectBytes: Boolean(opts.expectBytes) },
+      });
+    }
   } catch (err) {
     Sentry.captureException(err, { extra: { guid, attempt, where: "settleClipOrRetry.enqueue" } });
   }

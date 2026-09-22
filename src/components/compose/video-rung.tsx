@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RecordClip, recordingSupported } from "@/components/compose/record-clip";
 import { cn } from "@/lib/design/cn";
 import { OverlayChartFields, OverlayVisualBody, OverlayVisualizeFields } from "@/components/compose/overlay-visual";
+import { uploadReportImage } from "@/lib/compose/upload-report-image";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
 import { cardName, type DraftCard } from "@/lib/compose/cards";
 import {
@@ -963,6 +964,7 @@ function AddOverlay({
   onChart,
   onVisualize,
   onImage,
+  busy = false,
 }: {
   cards: DraftCard[];
   onText: () => void;
@@ -970,7 +972,8 @@ function AddOverlay({
   onMakeCard?: () => void;
   onChart: () => void;
   onVisualize: () => void;
-  onImage: (file: File) => void;
+  onImage: (file: File) => void | Promise<void>;
+  busy?: boolean;
 }) {
   const [open, setOpen] = useState<"root" | "card" | null>(null);
   const imageRef = useRef<HTMLInputElement>(null);
@@ -1026,6 +1029,7 @@ function AddOverlay({
                   <button
                     type="button"
                     role="menuitem"
+                    disabled={busy}
                     onClick={() => {
                       setOpen(null);
                       imageRef.current?.click();
@@ -1063,13 +1067,10 @@ function AddOverlay({
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) onImage(f);
+          if (f) void onImage(f);
           e.target.value = "";
         }}
       />
-      <span className="num hidden text-[10px] uppercase tracking-[0.12em] text-text-faint lg:inline">
-        Or drag a card from the toolbox onto the strip
-      </span>
     </div>
   );
 }
@@ -1223,6 +1224,8 @@ export function VideoRung({
   const [playing, setPlaying] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [faithful, setFaithful] = useState(false);
+  const [overlayBusy, setOverlayBusy] = useState(false);
+  const [overlayError, setOverlayError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const frames = useFrames(src, edit.durationSeconds, STRIP_FRAMES);
@@ -1401,7 +1404,6 @@ export function VideoRung({
           {chrome ? (
             <div>
               <p className="t-eyebrow">Video</p>
-              <p className="mt-1 text-[13px] text-text-mute">The video is the seed. Call, cards and thesis are optional below.</p>
             </div>
           ) : null}
           {/* Record, Replace and Remove as three buttons that wrap. The
@@ -1598,7 +1600,7 @@ export function VideoRung({
 
             {faithful ? (
               <p className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                Plays exactly as it will publish. Overlays show wherever the clip plays on Stoa; a copy shared or downloaded elsewhere plays without them.
+                This is how it plays on Stoa.
               </p>
             ) : selected ? (
               <Selected
@@ -1613,18 +1615,36 @@ export function VideoRung({
             ) : (
               <AddOverlay
                 cards={cards}
+                busy={overlayBusy}
                 onText={addText}
                 onCard={(c) => placeCard(c.id, time)}
                 onMakeCard={makeCard}
                 onChart={() => addVisual({ type: "chart", ticker: ticker || "SPY" })}
                 onVisualize={() => addVisual({ type: "diagram", prompt: "", imageUrl: null })}
-                onImage={(f) => addVisual({ type: "upload", label: f.name, imageUrl: URL.createObjectURL(f) })}
+                onImage={async (f) => {
+                  setOverlayError(null);
+                  setOverlayBusy(true);
+                  try {
+                    const imageUrl = await uploadReportImage(f);
+                    addVisual({ type: "upload", label: f.name, imageUrl });
+                  } catch (err) {
+                    setOverlayError(err instanceof Error ? err.message : "Could not add that image.");
+                  } finally {
+                    setOverlayBusy(false);
+                  }
+                }}
               />
             )}
+            {overlayBusy ? (
+              <p className="text-[0.8125rem] text-text-mute">Storing the image...</p>
+            ) : null}
+            {overlayError ? (
+              <p className="text-[0.8125rem] text-[var(--down)]">{overlayError}</p>
+            ) : null}
 
             {!faithful ? (
               <p className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">
-                Drag the gold ends of the strip to trim · overlays are drawn by Stoa&apos;s player, so they show here and on the site but not in a copy shared elsewhere
+                Drag the gold ends to trim. Overlays play on Stoa, not in a downloaded copy.
               </p>
             ) : null}
           </div>
