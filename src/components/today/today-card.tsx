@@ -16,14 +16,35 @@ import type { TodayItem } from "@/lib/today/types";
  * badge. Every size here is one of the page's five (globals.css, `.ts-*`).
  */
 
-export function eyebrowFor(item: TodayItem): string {
+/**
+ * The eyebrow's words: TRENDING or NEW, then the ticker, then the direction
+ * on its own so it can carry its sentiment colour; or the sector, the
+ * theme, or the type when there is no ticker.
+ */
+export function eyebrowFor(item: TodayItem): { label: string; direction: TodayItem["direction"] } {
   const parts: string[] = [];
   if (item.stageMarker) parts.push(item.stageMarker);
-  if (item.ticker) parts.push(item.direction ? `${item.ticker} · ${item.direction.toUpperCase()}` : item.ticker);
+  if (item.ticker) parts.push(item.ticker);
   else if (item.sector) parts.push(item.sector.toUpperCase());
   else if (item.themeTag) parts.push(item.themeTag.toUpperCase());
   else parts.push(typeLabel(item.type));
-  return parts.join(" · ");
+  return { label: parts.join(" · "), direction: item.ticker ? item.direction : null };
+}
+
+/** The eyebrow as marked-up text: brass label, the direction word in its own colour. */
+export function EyebrowText({ item, className }: { item: TodayItem; className?: string }) {
+  const { label, direction } = eyebrowFor(item);
+  return (
+    <span className={cn("ts-eyebrow", className)}>
+      {label}
+      {direction ? (
+        <>
+          <span aria-hidden> · </span>
+          <span className={`ts-dir--${direction}`}>{direction.toUpperCase()}</span>
+        </>
+      ) : null}
+    </span>
+  );
 }
 
 /** "2h ago", "3d ago", "Jul 20": the mono stamp, in the byline's own case. */
@@ -44,7 +65,7 @@ export function TodayEyebrow({
 }) {
   return (
     <div className={cn("flex items-baseline justify-between gap-3", className)}>
-      <span className="ts-eyebrow min-w-0 truncate">{eyebrowFor(item)}</span>
+      <EyebrowText item={item} className="min-w-0 truncate" />
       {duration ? <span className="ts-mono shrink-0">{duration}</span> : null}
     </div>
   );

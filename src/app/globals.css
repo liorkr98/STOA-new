@@ -2717,8 +2717,18 @@ body {
  * ------------------------------------------------------------------ */
 
 .today-sheet {
-  --today-accent: var(--verdigris);
+  /* A darkened brass: 5.3:1 on the paper, enough for 10.5px eyebrows and
+     14px names. The site's brass token is for chips and seals; this one is
+     for small text. Green and red stay strictly semantic on the page: the
+     direction word inside an eyebrow, returns, and the seals. */
+  --today-accent: #8a5e2b;
+  /* Over the lead's dark scrim: a light brass, 8:1 on the scrim. */
+  --today-accent-scrim: #e6c48a;
   --today-rule: color-mix(in srgb, var(--ink) 13%, transparent);
+}
+.dark .today-sheet {
+  --today-accent: #d1a35f;
+  --today-accent-scrim: #e6c48a;
 }
 
 /* The nameplate: letterspaced serif, one ink rule, one mono dateline. */
@@ -2767,6 +2777,24 @@ body {
 .ts-byline a,
 .ts-byline .ts-name {
   color: var(--today-accent);
+}
+/* The direction word alone carries its sentiment; the label around it is brass. */
+.ts-dir--long {
+  color: var(--up);
+}
+.ts-dir--short {
+  color: var(--down);
+}
+.ts-dir--hold {
+  color: var(--text-mute);
+}
+/* On the lead's scrim: the light brass, and the dark theme's sentiment
+   values, which are the ones made for a dark ground. */
+.ts-on-scrim {
+  --today-accent: var(--today-accent-scrim);
+  --up: #4f9c86;
+  --down: #d17868;
+  --text-mute: rgba(255, 255, 255, 0.72);
 }
 .ts-headline {
   font-family: var(--font-display);

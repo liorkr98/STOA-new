@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Play } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { ClipPendingThumb } from "@/components/video/clip-pending";
-import { CardImage, TodayCard, bylineDate, eyebrowFor } from "@/components/today/today-card";
+import { CardImage, EyebrowText, TodayCard, bylineDate } from "@/components/today/today-card";
 import { durationLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
@@ -23,7 +23,7 @@ function Lead({ lead }: { lead: TodayItem }) {
   if (!lead.thumb) {
     return (
       <article className="min-w-0">
-        <p className="ts-eyebrow">{eyebrowFor(lead)}</p>
+        <EyebrowText item={lead} className="block" />
         <h1 className="ts-headline ts-headline--lead mt-2.5">
           <Link href={href} className="focus-ring rounded">
             {lead.headline}
@@ -46,14 +46,14 @@ function Lead({ lead }: { lead: TodayItem }) {
       <Link href={href} className="ts-image ts-image--lead focus-ring">
         {lead.thumb.processing ? <ClipPendingThumb /> : <ClipThumb src={lead.thumb.thumbnailUrl} seed={lead.author.id} loading="eager" />}
         <span aria-hidden className="ts-scrim" />
-        <span className="absolute inset-x-0 bottom-0 p-5 text-white md:p-6">
+        <span className="ts-on-scrim absolute inset-x-0 bottom-0 p-5 text-white md:p-6">
           <span className="flex items-baseline justify-between gap-3">
-            <span className="ts-eyebrow min-w-0 truncate !text-white/85">{eyebrowFor(lead)}</span>
+            <EyebrowText item={lead} className="min-w-0 truncate" />
             {duration ? <span className="ts-mono shrink-0 !text-white/70">{duration}</span> : null}
           </span>
           <span className="ts-headline ts-headline--lead mt-2.5 block !text-white">{lead.headline}</span>
           <span className="ts-byline mt-3 block !text-white/70">
-            <span className="ts-name !text-white">{lead.author.displayName}</span>
+            <span className="ts-name">{lead.author.displayName}</span>
             <span aria-hidden> / </span>
             {bylineDate(lead.publishedAt)}
           </span>
