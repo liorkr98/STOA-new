@@ -66,6 +66,7 @@ function toPublication(
     videoStatus: clip ? clip.status : null,
     dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),
     views: compact(r.views),
+    plays: clip ? compact(clip.play_count ?? 0) : null,
     pinned: r.id === pinnedId,
     stateLine: null,
   };

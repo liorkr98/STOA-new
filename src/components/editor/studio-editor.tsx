@@ -53,6 +53,7 @@ import { getTiptapTemplate } from "@/lib/editor/tiptap/templates";
 import { VideoRung } from "@/components/compose/video-rung";
 import { SaveStatus } from "@/components/compose/save-status";
 import { LeaveDialog } from "@/components/compose/leave-dialog";
+import { goToLeaveHref, leaveHrefFromAnchor } from "@/lib/nav/back";
 import { TagPicker, EMPTY_TAGS, type TagSelection } from "@/components/compose/tag-picker";
 import { UNIVERSE } from "@/lib/universe";
 import { CardTray } from "@/components/compose/card-tray";
@@ -910,7 +911,7 @@ export function StudioEditor({
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
       e.preventDefault();
       e.stopPropagation();
-      setLeaveTo(url.pathname + url.search + url.hash);
+      setLeaveTo(leaveHrefFromAnchor(a, window.location.origin));
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
@@ -2060,7 +2061,7 @@ export function StudioEditor({
           if (!leaveTo) return;
           dirtyRef.current = false;
           setDirty(false);
-          router.push(leaveTo);
+          goToLeaveHref(router, leaveTo);
         }}
         onSaveAndLeave={() => {
           if (!leaveTo) return;
@@ -2070,7 +2071,7 @@ export function StudioEditor({
             if (dirtyRef.current && (editingPublished || hasAnything)) return;
             dirtyRef.current = false;
             setDirty(false);
-            router.push(leaveTo);
+            goToLeaveHref(router, leaveTo);
           });
         }}
       />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { ComposeHeader } from "@/components/compose/compose-header";
+import { ComposeBackLink } from "@/components/compose/compose-back-link";
 import { PUBLICATION_TYPES, type PublicationType, type PublicationTypeDef } from "@/lib/compose/modes";
 import type { DraftSummary } from "@/lib/compose/drafts";
 import { DeleteDraftDialog } from "@/components/studio/delete-dialog";
@@ -277,12 +278,9 @@ export function ComposePicker({
             <p className="hidden font-display text-[0.9375rem] italic text-text-mute md:block">
               Drafts open at the step you stopped on.
             </p>
-            <Link
-              href="/studio"
-              className="num focus-ring rounded-[var(--radius-btn)] border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-text-mute md:hidden"
-            >
+            <ComposeBackLink className="rounded-[var(--radius-btn)] border border-border px-2.5 py-1 md:hidden">
               All
-            </Link>
+            </ComposeBackLink>
           </div>
 
           {drafts.length === 0 ? (

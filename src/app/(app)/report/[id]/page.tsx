@@ -268,6 +268,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <div className="order-2 lg:order-none">
                 <ReportClip
                   reportId={id}
+                  clipId={clip.id}
                   embedUrl={clipEmbedUrl}
                   playbackUrl={clipMedia?.src ?? null}
                   thumbnailUrl={clipMedia?.poster ?? clip.thumbnail_url}

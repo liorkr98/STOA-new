@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { Camera, Pause, Play, RotateCcw, Square, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
@@ -13,11 +14,14 @@ import { MAX_VIDEO_DURATION_SECONDS } from "@/lib/video/constants";
  * clip goes through, so trim, cover, overlays and the upload at publish are
  * one path. Nothing here knows about the timeline or the report.
  *
- * Portrait, like the Feed's stage. A phone camera held upright gives portrait
- * frames and is recorded as is. A laptop webcam gives landscape frames; those
- * are drawn through a canvas that keeps the middle 9:16 of the picture, so the
- * file matches the preview rather than surprising the creator with a wide
- * clip the Feed would crop anyway.
+ * Portrait, like the Feed's stage. The camera fills the screen, the way
+ * Instagram and CapCut record, instead of sitting in a small box on the
+ * Compose page. The live picture is shown whole (`object-contain`) so a
+ * laptop webcam is not digitally zoomed. A phone camera held upright gives
+ * portrait frames and is recorded as is. A laptop webcam gives landscape
+ * frames; those are drawn through a canvas that keeps the middle 9:16 of the
+ * picture, so the file matches the Feed rather than surprising the creator
+ * with a wide clip the Feed would crop anyway.
  *
  * Support: `getUserMedia` plus `MediaRecorder`, which is Chrome and Edge,
  * Firefox, and Safari 14.1 or later (iOS 14.5 or later), on a secure origin.
@@ -123,6 +127,10 @@ function recordableStream(
   };
 }
 
+function subscribeNever() {
+  return () => {};
+}
+
 export function RecordClip({
   onDone,
   onCancel,
@@ -140,6 +148,7 @@ export function RecordClip({
   const [elapsed, setElapsed] = useState(0);
   const [mirror, setMirror] = useState(true);
   const [take, setTake] = useState<{ blob: Blob; url: string; seconds: number } | null>(null);
+  const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -184,20 +193,26 @@ export function RecordClip({
       attachPreview(streamRef.current);
     }
   }, [phase, attachPreview]);
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   const start = useCallback(async () => {
     setPhase("starting");
-    const portrait: MediaStreamConstraints = {
-      video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } },
+    const unconstrained: MediaStreamConstraints = {
+      video: { facingMode: { ideal: "user" } },
       audio: true,
     };
     const plain: MediaStreamConstraints = { video: true, audio: true };
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia(portrait);
+        stream = await navigator.mediaDevices.getUserMedia(unconstrained);
       } catch (err) {
-        // A camera that cannot meet the portrait request is still a camera.
         const name = err instanceof DOMException ? err.name : "";
         if (name !== "OverconstrainedError" && name !== "NotFoundError") throw err;
         stream = await navigator.mediaDevices.getUserMedia(plain);
@@ -323,19 +338,24 @@ export function RecordClip({
   const remaining = Math.max(0, maxSeconds - elapsed);
   const showLive = phase === "live" || phase === "recording" || phase === "paused" || phase === "starting";
 
-  return (
-    <div className={cn("flex flex-col items-center gap-4", className)} aria-live="polite">
-      {/* The stage: portrait, like the Feed. The shutter sits inside it at the
-          bottom, as in a camera app, so the picture can take the room and the
-          control still lands above the fold on a phone. */}
-      <div className="relative aspect-[9/16] w-full max-w-[min(100%,calc(55vh*9/16))] overflow-hidden rounded-[var(--radius-card)] bg-black">
+  const stage = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Record a clip"
+      className={cn(
+        "fixed inset-0 z-[80] flex flex-col bg-black pt-[var(--safe-top)] pb-[var(--safe-bottom)]",
+        className,
+      )}
+    >
+      <div className="relative min-h-0 flex-1">
         {showLive ? (
           <video
             ref={liveRef}
             muted
             playsInline
             autoPlay
-            className={cn("absolute inset-0 h-full w-full object-cover", mirror && "-scale-x-100")}
+            className={cn("absolute inset-0 h-full w-full object-contain", mirror && "-scale-x-100")}
           />
         ) : null}
         {phase === "review" && take ? (
@@ -430,7 +450,6 @@ export function RecordClip({
           </p>
         ) : null}
 
-        {/* The shutter, over the picture at the bottom, where a thumb reaches. */}
         {phase === "live" ? (
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-4 pt-10">
             <Button variant="ghost" size="sm" className={ON_STAGE_GHOST} onClick={leave}>
@@ -444,7 +463,6 @@ export function RecordClip({
             >
               <span aria-hidden className="h-12 w-12 rounded-full bg-[var(--rust)]" />
             </button>
-            {/* Same width as Cancel so the shutter stays centred. */}
             <span className="invisible" aria-hidden>
               <Button variant="ghost" size="sm" tabIndex={-1}>
                 Cancel
@@ -455,9 +473,6 @@ export function RecordClip({
 
         {phase === "recording" || phase === "paused" ? (
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-4 pt-10">
-            {/* Stop in the middle, where the shutter was; pause beside it,
-                with a blank of the same size on the other side so stop
-                stays put. */}
             <div className="flex w-full items-center justify-center gap-6">
               <button
                 type="button"
@@ -489,7 +504,7 @@ export function RecordClip({
       </div>
 
       {phase === "review" && take ? (
-        <div className="flex w-full max-w-[min(100%,calc(55vh*9/16))] items-center justify-center gap-2">
+        <div className="flex w-full items-center justify-center gap-2 px-4 py-4">
           <Button variant="secondary" size="md" onClick={again}>
             <RotateCcw size={16} strokeWidth={1.6} /> Record again
           </Button>
@@ -500,6 +515,9 @@ export function RecordClip({
       ) : null}
     </div>
   );
+
+  if (!mounted) return null;
+  return createPortal(stage, document.body);
 }
 
 function Notice({
