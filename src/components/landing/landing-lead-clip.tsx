@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Play } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
+import { ScrubBar } from "@/components/video/scrub-bar";
 
 /**
  * The lead clip on the signed-out root, on a press rather than on arrival.
@@ -27,10 +28,32 @@ export function LandingLeadClip({
   analystId: string | null;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const seekRef = useRef<((ratio: number) => void) | null>(null);
   const canPlay = Boolean(playbackUrl || embedUrl);
 
   if (playing && playbackUrl) {
-    return <NativeClip src={playbackUrl} poster={thumbnailUrl} muted paused={false} title={headline} />;
+    return (
+      <>
+        <NativeClip
+          src={playbackUrl}
+          poster={thumbnailUrl}
+          muted
+          paused={false}
+          title={headline}
+          onProgress={setProgress}
+          seekRef={seekRef}
+        />
+        <ScrubBar
+          progress={progress}
+          onSeek={(ratio) => {
+            seekRef.current?.(ratio);
+            setProgress(ratio);
+          }}
+          className="z-10"
+        />
+      </>
+    );
   }
   if (playing && embedUrl) {
     return (

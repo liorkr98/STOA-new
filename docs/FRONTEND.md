@@ -516,7 +516,8 @@ scroll-snap, nothing below the fold.
   in the feed at the right end. A callless publication has no ticker, so its theme tag takes that
   slot.
 - **On the picture:** ticker and direction chips top-left, the resolution seal top-right when the
-  call is resolved, the mute control beside it, a progress bar along the top edge, and the
+  call is resolved, the mute control beside it, a progress bar along the top edge that is also
+  the scrubber (`<ScrubBar>`: a hairline at rest, thicker while held, drag to any point), and the
   analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
 - **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
   SHARE as small outlined icons with mono uppercase letterspaced labels), then the pager (`1 / 7`)
@@ -544,9 +545,13 @@ The clip at the top of a report, and deliberately not the Feed's stage.
 - **The player only mounts on that press**, which is why it may carry
   `autoplay`: by then there has been a gesture, so no browser blocks it, and
   nothing is downloaded for a reader who only wanted to read.
-- **Bunny's own chrome stays on**, unlike the Feed. Someone who pressed play on
-  a report wants a scrubber, a volume control and fullscreen. The Feed hides
-  them because it supplies its own.
+- **Stoa's own chrome, the same as the Feed's.** A tap on the picture pauses
+  and resumes, the mute sits top-right, and the scrub bar runs along the
+  bottom edge (`<ScrubBar>`, shared with the Feed, the Explore and Dispatch
+  cards and the landing lead). The browser's control bar used to sit here; it
+  drew over the bottom of the frame and could not sit under the overlays.
+  Bunny's iframe fallback keeps Bunny's own controls, since nothing outside
+  it knows the playhead.
 - **Portrait, capped in height on desktop, full-width on a phone.** Analyst
   clips are phone-shaped; a 16:9 frame pillarboxes the player and crops the
   poster to a different shape than the video, so the frame jumps on play. In the

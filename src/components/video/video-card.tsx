@@ -11,6 +11,7 @@ import { DirectionTag } from "@/components/ui/tag";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { NativeClip } from "@/components/video/native-clip";
+import { ScrubBar } from "@/components/video/scrub-bar";
 import { isDirectVideoUrl } from "@/lib/video/direct";
 import type { VideoCardData } from "@/lib/video/card-data";
 
@@ -57,6 +58,8 @@ export function VideoCard({
   const previewing = autoPreview || hovering;
   const [playing, setPlaying] = useState(false);
   const [showDisclosure, setShowDisclosure] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const seekRef = useRef<((ratio: number) => void) | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const viewTracked = useRef(false);
 
@@ -144,13 +147,25 @@ export function VideoCard({
         {playing ? (
           <>
             {isDirectVideoUrl(data.playbackUrl) ? (
-              <NativeClip
-                src={data.playbackUrl}
-                poster={data.thumbnailUrl}
-                muted
-                paused={false}
-                title={data.headline}
-              />
+              <>
+                <NativeClip
+                  src={data.playbackUrl}
+                  poster={data.thumbnailUrl}
+                  muted
+                  paused={false}
+                  title={data.headline}
+                  onProgress={setProgress}
+                  seekRef={seekRef}
+                />
+                <ScrubBar
+                  progress={progress}
+                  onSeek={(ratio) => {
+                    seekRef.current?.(ratio);
+                    setProgress(ratio);
+                  }}
+                  className="z-10"
+                />
+              </>
             ) : (
               <iframe
                 key={embedSrc}

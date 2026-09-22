@@ -27,6 +27,7 @@ export function NativeClip({
   controls = false,
   trimStart = 0,
   trimEnd = null,
+  seekRef,
 }: {
   src: string;
   poster?: string | null;
@@ -59,6 +60,12 @@ export function NativeClip({
    */
   trimStart?: number;
   trimEnd?: number | null;
+  /**
+   * Filled with a function that moves playback to a ratio of the window
+   * that plays (the kept region, shortened by any preview cap), for a scrub
+   * bar drawn by the surface. Null until the element exists.
+   */
+  seekRef?: React.MutableRefObject<((ratio: number) => void) | null>;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const hls = isHlsUrl(src);
@@ -140,7 +147,23 @@ export function NativeClip({
     // preview cap. Both ends are in the untrimmed clip's seconds.
     const end = cap ? Math.min(start + cap, cut ?? Infinity) : cut;
     const windowed = start > 0 || end != null;
-    if (!windowed && !onProgress && !onTime) return;
+    const total = () => (end != null ? end - start : el.duration - start);
+    if (seekRef) {
+      seekRef.current = (ratio) => {
+        const span = total();
+        if (!Number.isFinite(span) || span <= 0) return;
+        el.currentTime = start + Math.min(1, Math.max(0, ratio)) * span;
+        // Report the new position at once: a bar that waits for the next
+        // timeupdate snaps back under the finger for a beat.
+        onTime?.(el.currentTime);
+        onProgress?.(Math.min(1, Math.max(0, el.currentTime - start) / span));
+      };
+    }
+    if (!windowed && !onProgress && !onTime) {
+      return () => {
+        if (seekRef) seekRef.current = null;
+      };
+    }
     const tick = () => {
       // A native loop lands at 0, and a reader's own scrub can land before
       // the kept region: both go back to its start.
@@ -153,18 +176,19 @@ export function NativeClip({
       }
       onTime?.(el.currentTime);
       if (!onProgress) return;
-      const total = end != null ? end - start : el.duration - start;
-      if (total > 0) onProgress(Math.min(1, Math.max(0, el.currentTime - start) / total));
+      const span = total();
+      if (span > 0) onProgress(Math.min(1, Math.max(0, el.currentTime - start) / span));
     };
     el.addEventListener("timeupdate", tick);
     el.addEventListener("seeked", tick);
     if (start > 0) el.addEventListener("loadedmetadata", tick);
     return () => {
+      if (seekRef) seekRef.current = null;
       el.removeEventListener("timeupdate", tick);
       el.removeEventListener("seeked", tick);
       el.removeEventListener("loadedmetadata", tick);
     };
-  }, [onProgress, onTime, previewSeconds, trimStart, trimEnd]);
+  }, [onProgress, onTime, previewSeconds, trimStart, trimEnd, seekRef]);
 
   /**
    * A dead file, a refused manifest, or a codec the browser will not decode.

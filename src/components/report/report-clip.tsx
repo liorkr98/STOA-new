@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Play, X } from "lucide-react";
+import { Play, Volume2, VolumeX, X } from "lucide-react";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
 import { OverlayLayer } from "@/components/video/overlay-layer";
+import { ScrubBar } from "@/components/video/scrub-bar";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { StoredVideoEdit } from "@/lib/compose/overlays";
 import { trackEngagement } from "@/lib/engagement/track-client";
@@ -29,11 +30,13 @@ import { cn } from "@/lib/design/cn";
  * so it leads the page and then docks: once it is playing and the reader has
  * scrolled it out of sight, it shrinks to a corner and keeps going.
  *
- * When the publication carries a stored edit, the clip plays in our own
- * element with the browser's controls and the overlays are drawn over it in
- * time with playback (OverlayLayer, the same renderer as Compose's faithful
- * preview). Bunny's iframe stays as the fallback for a stream the browser
- * cannot play; it cannot carry overlays, since nothing outside it knows the
+ * The clip plays in our own element under Stoa's own chrome: a tap pauses
+ * and resumes, the mute sits top-right, and a scrub bar runs along the
+ * bottom edge, the same bar as the Feed's. When the publication carries a
+ * stored edit, the overlays are drawn over it in time with playback
+ * (OverlayLayer, the same renderer as Compose's faithful preview). Bunny's
+ * iframe stays as the fallback for a stream the browser cannot play; it
+ * cannot carry overlays or our bar, since nothing outside it knows the
  * playhead.
  */
 
@@ -65,6 +68,10 @@ export function ReportClip({
   ticker?: string | null;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const seekRef = useRef<((ratio: number) => void) | null>(null);
   const [scrolledAway, setScrolledAway] = useState(false);
   const [time, setTime] = useState(0);
   // A stream the browser refused: fall back to Bunny's own player.
@@ -92,6 +99,8 @@ export function ReportClip({
 
   const start = () => {
     setPlaying(true);
+    setPaused(false);
+    setProgress(0);
     trackEngagement({ reportId, kind: "play", surface: "report" });
     if (clipId) {
       trackVideoEvent(clipId, {
@@ -171,16 +180,50 @@ export function ReportClip({
                 <NativeClip
                   src={playbackUrl}
                   poster={thumbnailUrl}
-                  muted={false}
-                  paused={false}
-                  controls
+                  muted={muted}
+                  paused={paused}
                   title={`${analystName} on this publication`}
                   onTime={edit ? setTime : undefined}
+                  onProgress={setProgress}
+                  seekRef={seekRef}
                   onUnplayable={onUnplayable}
                   trimStart={trimStart}
                   trimEnd={trimEnd}
                 />
-                {edit ? <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} sealLocked /> : null}
+                {edit ? (
+                  <OverlayLayer overlays={edit.overlays} cards={edit.cards} time={time} ticker={ticker ?? undefined} sealLocked className="z-[1]" />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setPaused((p) => !p)}
+                  aria-label={paused ? "Play" : "Pause"}
+                  className="absolute inset-0 z-[2] flex h-full w-full cursor-default items-center justify-center"
+                >
+                  {paused ? (
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] text-[var(--ink)]">
+                      <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+                    </span>
+                  ) : null}
+                </button>
+                {docked ? null : (
+                  <button
+                    type="button"
+                    onClick={() => setMuted((m) => !m)}
+                    aria-label={muted ? "Unmute" : "Mute"}
+                    className="focus-ring absolute right-2 top-2 z-[3] flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white hover:bg-black/60"
+                  >
+                    {muted ? <VolumeX size={14} strokeWidth={1.6} /> : <Volume2 size={14} strokeWidth={1.6} />}
+                  </button>
+                )}
+                <ScrubBar
+                  progress={progress}
+                  hit={docked ? 16 : 24}
+                  onSeek={(ratio) => {
+                    seekRef.current?.(ratio);
+                    setProgress(ratio);
+                  }}
+                  className="z-[3]"
+                />
               </>
             ) : playing && embedUrl ? (
               <iframe

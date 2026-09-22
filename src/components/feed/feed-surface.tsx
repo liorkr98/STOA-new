@@ -26,6 +26,7 @@ import { trackEngagement } from "@/lib/engagement/track-client";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { ClipThumb } from "@/components/ui/clip-thumb";
 import { NativeClip } from "@/components/video/native-clip";
+import { ScrubBar } from "@/components/video/scrub-bar";
 import { OverlayLayer } from "@/components/video/overlay-layer";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { prefersReducedMotion } from "@/lib/motion/reduced";
@@ -330,6 +331,9 @@ const FeedItem = function FeedItem({
    */
   const [streamFailed, setStreamFailed] = useState(false);
   const onUnplayable = useCallback(() => setStreamFailed(true), []);
+  // The scrub bar's hand on the player, and whether a finger is holding it.
+  const seekRef = useRef<((ratio: number) => void) | null>(null);
+  const [scrubbing, setScrubbing] = useState(false);
 
   /**
    * Report how far the reader actually got, at fixed checkpoints.
@@ -544,7 +548,8 @@ const FeedItem = function FeedItem({
    * which is the thing a timer alone would get wrong.
    */
   useEffect(() => {
-    if (!isActive || !started || paused) return;
+    // Held still while the bar is being dragged: the finger is the position.
+    if (!isActive || !started || paused || scrubbing) return;
     const duration = pub.durationSeconds || 0;
     if (duration <= 0) return;
     const id = setInterval(
@@ -557,7 +562,7 @@ const FeedItem = function FeedItem({
       250,
     );
     return () => clearInterval(id);
-  }, [isActive, started, paused, pub.durationSeconds]);
+  }, [isActive, started, paused, scrubbing, pub.durationSeconds]);
 
   useEffect(() => {
     const el = trackRef.current;
@@ -784,6 +789,7 @@ const FeedItem = function FeedItem({
                     preload={isActive ? "auto" : "metadata"}
                     captionUrl={pub.captionUrl}
                     onUnplayable={onUnplayable}
+                    seekRef={seekRef}
                     onTime={pub.videoEdit && isActive ? setClipTime : undefined}
                     onProgress={
                       isActive
@@ -823,13 +829,26 @@ const FeedItem = function FeedItem({
                   <ClipThumb src={pub.thumbnailUrl} seed={pub.analyst.id} loading="eager" />
                 </div>
 
-                {/* Progress. */}
-                <div className="absolute inset-x-0 top-0 z-10 h-[3px] overflow-hidden bg-[color-mix(in_srgb,var(--paper)_20%,transparent)]">
-                  <div
-                    className="h-full origin-left bg-[color-mix(in_srgb,var(--paper)_90%,transparent)]"
-                    style={{ transform: `scaleX(${progress})` }}
-                  />
-                </div>
+                {/* Progress, along the top edge, and the handle to drag it
+                    anywhere. Above the scrim's strip, so the first pixels of
+                    the frame belong to the bar and not to the chips under it. */}
+                <ScrubBar
+                  edge="top"
+                  hit={18}
+                  progress={progress}
+                  onScrubbing={setScrubbing}
+                  onSeek={(ratio) => {
+                    const duration = pub.durationSeconds || 0;
+                    if (seekRef.current) seekRef.current(ratio);
+                    else if (duration > 0) {
+                      // Bunny's embed takes a time, not a ratio.
+                      playerCommand(iframeRef.current, "setCurrentTime", ratio * duration);
+                    }
+                    lastRatioRef.current = ratio;
+                    setProgress(ratio);
+                  }}
+                  className="z-[13]"
+                />
 
                 {/* The scrim carries Stoa's own strip over an unpredictable
                     picture. Clips routinely contain their own tickers and
