@@ -10,6 +10,45 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-22 — Studio chrome, playhead, camera, Insights
+
+Authoring and Studio, after the Compose pass: the playhead can be dragged,
+camera recording fills the screen without a zoomed crop, Back behaves like
+other apps, the sticky Reading / Publishing / Account bar is gone from Studio,
+and creators finally have an Insights page with real play counts.
+
+**For someone using the site**
+
+- **The playhead can be dragged, including back to the start.** Scrubbing
+  pauses the clip so the pin is not fighting playback. The knob sits above
+  the filmstrip with a larger hit area, so the trim handles no longer cover
+  it at 0.
+- **Camera recording is a full-screen camera, not a zoomed box on Compose.**
+  The live picture is shown whole. A laptop webcam is no longer asked for a
+  1080×1920 portrait stream that cropped the face.
+- **Back goes to the page you came from.** Compose opened from the Feed
+  returns to the Feed; opened from Studio, to Studio. If there is unsaved
+  work, the leave dialog still runs, then the same return. A first-load with
+  no page behind it still lands on Publications.
+- **The Reading / Publishing / Account bar no longer rides the screen on
+  Studio.** Studio has its own tabs in the page (Publications, Insights,
+  Track record, Audience, Storefront). On Library, Wallet and the rest, the
+  group row sits at the top of the page and scrolls away with it.
+- **Insights is a real creator page.** Plays, finished plays, page opens and
+  click-throughs come from Stoa's own events, not a Bunny or Mux dashboard.
+  Publications lists plays separately from page views. Playing the clip on
+  the publication page now counts as a play too.
+
+**For Krisi**
+
+- No new tables. `video_clips.play_count` / `completion_count` /
+  `click_through_count` and `reports.views` are what Insights reads. Confirm
+  the `video_view_events` trigger still bumps those counters on the
+  partitioned table.
+- Bunny Stream analytics is not wired and is not needed for this page.
+
+---
+
 ## 2026-09-22 — Compose, video wait, Feed and Explore
 
 A professional pass over publishing and discovery: less chrome, the right

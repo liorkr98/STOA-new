@@ -38,12 +38,12 @@ export default async function PrivateLayout({ children }: { children: React.Reac
           </Suspense>
         </HideOnCompose>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <HideOnCompose>
-            <Suspense fallback={null}>
-              <PrivateMobile />
-            </Suspense>
-          </HideOnCompose>
           <main id="main-content" tabIndex={-1} className="gutter-x min-h-0 min-w-0 flex-1 overflow-y-auto py-[var(--main-pad-y)] outline-none">
+            <HideOnCompose>
+              <Suspense fallback={null}>
+                <PrivateMobile />
+              </Suspense>
+            </HideOnCompose>
             {children}
           </main>
         </div>

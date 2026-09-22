@@ -34,6 +34,7 @@ const GROUPS: NavGroup[] = [
     analystOnly: true,
     items: [
       { label: "Publications", href: "/studio" },
+      { label: "Insights", href: "/studio/insights" },
       { label: "Track record", href: "/studio/track-record" },
       { label: "Audience", href: "/studio/audience" },
       { label: "Storefront", href: "/studio/branding" },
@@ -159,12 +160,13 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const setOpen = (group: string | null) =>
     setOpenOn(group === null ? null : { path: pathname, group });
 
-  // Compose owns the viewport with its own toolbar; a second sticky bar
-  // would eat the writing column.
-  if (pathname.startsWith("/studio/compose")) return null;
+  // Studio has its own in-page section tabs. Compose owns the viewport.
+  // A second bar under the top nav is what used to ride the screen; it is
+  // not shown on those routes.
+  if (pathname.startsWith("/studio")) return null;
 
   return (
-    <div className="sticky top-[var(--nav-h)] z-30 border-b border-border bg-surface md:hidden">
+    <div className="mb-6 border-b border-border bg-surface md:hidden">
       <div className="flex items-stretch gap-1 overflow-x-auto px-3 [scrollbar-width:none]">
         {groups.map((g) => {
           const groupActive = g.items.some((it) => it.href === active);

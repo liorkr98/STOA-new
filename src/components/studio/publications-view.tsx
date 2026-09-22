@@ -37,6 +37,8 @@ export interface Publication {
   videoStatus: "processing" | "ready" | "failed" | null;
   dateLabel: string;
   views: string;
+  /** Clip plays from the Feed and publication player; null when there is no video. */
+  plays: string | null;
   pinned: boolean;
   // draft / scheduled
   stateLine: string | null;
@@ -280,8 +282,15 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
 
                 <div className="hidden shrink-0 flex-col items-end gap-1 md:flex">
                   <div className="num text-right text-[11px] text-text-mute">{p.dateLabel}</div>
-                  <div className="num mt-1 flex gap-4 text-[11px]">
-                    <span className="text-text-mute">{p.views} <span className="text-text-faint">views</span></span>
+                  <div className="num mt-1 flex flex-col items-end gap-0.5 text-[11px]">
+                    {p.plays != null ? (
+                      <span className="text-text-mute">
+                        {p.plays} <span className="text-text-faint">plays</span>
+                      </span>
+                    ) : null}
+                    <span className="text-text-mute">
+                      {p.views} <span className="text-text-faint">page views</span>
+                    </span>
                   </div>
                 </div>
 

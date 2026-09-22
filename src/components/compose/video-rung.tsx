@@ -541,6 +541,8 @@ function Timeline({
   onSelect,
   onEdit,
   onDropCard,
+  onScrubStart,
+  onScrubEnd,
 }: {
   edit: VideoEdit;
   time: number;
@@ -552,6 +554,8 @@ function Timeline({
   onSelect: (id: string | null) => void;
   onEdit: (e: VideoEdit) => void;
   onDropCard: (cardId: string, atSeconds: number) => void;
+  onScrubStart?: () => void;
+  onScrubEnd?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
@@ -585,9 +589,12 @@ function Timeline({
       e.stopPropagation();
       dragRef.current = drag;
       ref.current?.setPointerCapture(e.pointerId);
-      if (drag.kind === "scrub") onTime(timeAt(e.clientX));
+      if (drag.kind === "scrub") {
+        onScrubStart?.();
+        onTime(timeAt(e.clientX));
+      }
     },
-    [faithful, onTime, timeAt],
+    [faithful, onScrubStart, onTime, timeAt],
   );
 
   /** Press a bar near an end to resize it; anywhere else to move it. */
@@ -634,6 +641,7 @@ function Timeline({
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
+    if (dragRef.current?.kind === "scrub") onScrubEnd?.();
     dragRef.current = null;
     if (ref.current?.hasPointerCapture(e.pointerId)) ref.current.releasePointerCapture(e.pointerId);
   };
@@ -644,7 +652,7 @@ function Timeline({
     <div
       ref={ref}
       className={cn(
-        "relative touch-none select-none rounded-[var(--radius-btn)] border border-border bg-surface transition-colors",
+        "relative touch-none select-none rounded-[var(--radius-btn)] border border-border bg-surface pt-3 transition-colors",
         dropActive && "bg-[color-mix(in_srgb,var(--brass)_12%,transparent)] ring-2 ring-[var(--brass)]",
       )}
       onPointerMove={onPointerMove}
@@ -744,17 +752,24 @@ function Timeline({
         </div>
       ) : null}
 
-      {/* The playhead, across everything. */}
+      {/* The playhead. The knob sits above the filmstrip so it is not covered
+          by the trim handles at 0, and the hit target is a thumb-sized pad. */}
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-30 w-px bg-[var(--rust)]"
+        className="pointer-events-none absolute bottom-0 left-0 top-0 z-40"
         style={{ transform: `translateX(${time * pxPerSec}px)` }}
       >
+        <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-[var(--rust)]" />
         <button
           type="button"
           aria-label="Playhead"
-          className="pointer-events-auto absolute -left-[7px] -top-[7px] h-[14px] w-[14px] cursor-ew-resize rounded-full bg-[var(--rust)] focus-ring"
+          className="pointer-events-auto absolute -left-[18px] top-0 h-9 w-9 cursor-ew-resize"
           onPointerDown={(e) => begin(e, { kind: "scrub" })}
-        />
+        >
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-0 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-[var(--rust)]"
+          />
+        </button>
       </div>
     </div>
   );
@@ -1228,6 +1243,7 @@ export function VideoRung({
   const [overlayError, setOverlayError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const scrubbingRef = useRef(false);
   const frames = useFrames(src, edit.durationSeconds, STRIP_FRAMES);
   // Record or pick a file. The camera is only offered where the browser can
   // record; the server (and the first client paint, to match it) says no.
@@ -1300,6 +1316,10 @@ export function VideoRung({
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
+      if (scrubbingRef.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const v = videoRef.current;
       if (v && src) {
         setTime(v.currentTime);
@@ -1322,7 +1342,24 @@ export function VideoRung({
     return () => cancelAnimationFrame(raf);
   }, [playing, src, edit.trimEnd]);
 
-  const jump = useCallback((t: number) => setTime(clamp(t, 0, edit.durationSeconds)), [edit.durationSeconds]);
+  const jump = useCallback(
+    (t: number) => {
+      const next = clamp(t, 0, edit.durationSeconds);
+      setTime(next);
+      const v = videoRef.current;
+      if (v) v.currentTime = next;
+    },
+    [edit.durationSeconds],
+  );
+  const beginScrub = useCallback(() => {
+    scrubbingRef.current = true;
+    setPlaying(false);
+    const v = videoRef.current;
+    if (v) v.pause();
+  }, []);
+  const endScrub = useCallback(() => {
+    scrubbingRef.current = false;
+  }, []);
   const play = () => {
     // Playing from outside the kept region would show what the trim cut.
     if (!playing && (time < edit.trimStart || time >= edit.trimEnd)) setTime(edit.trimStart);
@@ -1453,8 +1490,12 @@ export function VideoRung({
           viewport, which is how CapCut's desktop layout splits the screen. */}
       <div className="mx-auto w-full max-w-[min(880px,calc(44vh*16/9))]">
         {choosing && picking === "camera" ? (
-          // The camera. What it records goes through takeFile like any file.
-          <RecordClip onDone={takeFile} onCancel={() => setPicking("file")} />
+          <>
+            <p className="num text-center text-[11px] uppercase tracking-[0.14em] text-text-mute">
+              Camera is open
+            </p>
+            <RecordClip onDone={takeFile} onCancel={() => setPicking("file")} />
+          </>
         ) : choosing && !src && !hasClip ? (
           <div className={cn("grid gap-3", canRecord && "sm:grid-cols-2")}>
             {canRecord ? (
@@ -1596,6 +1637,8 @@ export function VideoRung({
               onSelect={setSelectedId}
               onEdit={setEdit}
               onDropCard={placeCard}
+              onScrubStart={beginScrub}
+              onScrubEnd={endScrub}
             />
 
             {faithful ? (

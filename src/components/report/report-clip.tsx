@@ -8,6 +8,7 @@ import { OverlayLayer } from "@/components/video/overlay-layer";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { StoredVideoEdit } from "@/lib/compose/overlays";
 import { trackEngagement } from "@/lib/engagement/track-client";
+import { trackVideoEvent } from "@/lib/video/track-client";
 import { cn } from "@/lib/design/cn";
 
 /**
@@ -41,6 +42,7 @@ const TWO_COLUMN = "(min-width: 1024px)";
 
 export function ReportClip({
   reportId,
+  clipId,
   embedUrl,
   playbackUrl,
   thumbnailUrl,
@@ -51,6 +53,7 @@ export function ReportClip({
   ticker,
 }: {
   reportId: string;
+  clipId?: string | null;
   embedUrl: string | null;
   playbackUrl?: string | null;
   thumbnailUrl: string | null;
@@ -90,6 +93,13 @@ export function ReportClip({
   const start = () => {
     setPlaying(true);
     trackEngagement({ reportId, kind: "play", surface: "report" });
+    if (clipId) {
+      trackVideoEvent(clipId, {
+        watchedSeconds: 0,
+        videoLengthSeconds: shownSeconds || durationSeconds,
+        surface: "report",
+      });
+    }
   };
 
   /**

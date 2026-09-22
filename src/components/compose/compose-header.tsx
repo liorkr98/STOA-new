@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { ComposeBackLink } from "@/components/compose/compose-back-link";
 
 /**
  * The bar across the top of Compose, on the picker and in the workspace:
- * the way back to Studio, the wordmark, and where you are. What sits on the
+ * the way back, the wordmark, and where you are. What sits on the
  * right is the caller's (the draft's save state, in the workspace).
+ *
+ * Back pops the in-app stack (Feed, Studio, the type picker) the way
+ * Instagram and CapCut do; it only falls through to Studio when Compose
+ * was the first page.
  *
  * It is one block in the flow. Nothing here sticks: the columns under it
  * scroll on their own, so it never has to.
@@ -29,13 +32,7 @@ export function ComposeHeader({
         className,
       )}
     >
-      <Link
-        href="/studio"
-        className="num focus-ring flex shrink-0 items-center gap-1.5 rounded-[var(--radius-btn)] text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:text-text"
-      >
-        <ArrowLeft size={14} aria-hidden />
-        Studio
-      </Link>
+      <ComposeBackLink />
       <span aria-hidden className="h-4 w-px bg-border" />
       <span className="font-display text-[1.0625rem] font-semibold tracking-[0.22em] text-text">
         STOA

@@ -24,6 +24,7 @@ function row(over: Partial<Publication> & Pick<Publication, "id" | "state" | "ti
     videoStatus: null,
     dateLabel: "SEP 6, 2026",
     views: "0",
+    plays: over.duration ? "0" : null,
     pinned: false,
     stateLine: null,
     ...over,
@@ -44,6 +45,7 @@ const PUBS: Publication[] = [
     duration: "1:12",
     videoStatus: "ready",
     views: "1.2k",
+    plays: "840",
     entry: "$132.40",
     target: "$160",
     progressPct: 40,
@@ -58,6 +60,7 @@ const PUBS: Publication[] = [
     duration: "0:48",
     videoStatus: "ready",
     views: "640",
+    plays: "410",
   }),
   row({ id: "fx-archived", state: "archived", title: "An archived note", typeLabel: "BRIEF" }),
 ];
