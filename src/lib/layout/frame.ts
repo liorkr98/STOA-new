@@ -65,6 +65,13 @@ export function frameHeight(root: HTMLElement, scroller: HTMLElement): number {
  * column carries the clearance the shell's padding used to: the bar's room
  * plus the page's own bottom breathing space. Content passes behind the
  * glass while scrolling; nothing ends underneath it.
+ *
+ * It scrolls vertically and only vertically. A column that scrolls one way
+ * is given the other axis as well by the browser (`overflow-y: auto` makes
+ * `overflow-x` auto too), so anything that reaches past its padding edge,
+ * such as a poster bled to the screen edge with a negative margin, made the
+ * whole page pan sideways on a phone. The bleed still paints inside the
+ * column's padding; it just cannot be scrolled to.
  */
 export const SCROLL_COLUMN =
-  "scroll-area min-h-0 min-w-0 overflow-y-auto pb-[calc(var(--tab-h)+var(--main-pad-y))]";
+  "scroll-area min-h-0 min-w-0 overflow-y-auto overflow-x-hidden pb-[calc(var(--tab-h)+var(--main-pad-y))]";
