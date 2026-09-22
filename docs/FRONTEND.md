@@ -799,8 +799,15 @@ else is wider than the screen. On a phone the page is one document scroll; on a 
 and the page are two columns that scroll on their own inside the room under the nav (`.ts-frame`,
 `.ts-column`, measured by `useFrameHeight`, see `src/lib/layout/frame.ts`).
 
-**The accent** is one variable, `--today-accent` on `.today-sheet`, on author names, eyebrows and
-trending numerals. Seal colours are the site's everywhere (`<SealStamp>`), never changed here.
+**The accent is brass, and green and red stay strictly semantic.** `--today-accent` on
+`.today-sheet` is a darkened brass (`#8a5e2b`, 5.3:1 on the paper; the site's chip-and-seal
+brass is too light for 10.5px text), `#d1a35f` in dark mode (7.8:1), and a light brass
+(`#e6c48a`) over the lead's scrim (`.ts-on-scrim`). It goes on eyebrows, author names, trending
+numerals and the rail's `+ Follow`, and on nothing that is a chip or a seal. Inside an eyebrow
+only the direction word carries its sentiment (`NVDA · LONG` is a brass label with `LONG` in
+`--up`; `SHORT` in `--down`), returns are green or red, and the seals are the site's
+(`<SealStamp>`: HIT green, MISS red, NEAR grey), so nothing brass can be read as a LONG chip, a
+SHORT chip or a seal.
 
 ---
 
@@ -1280,8 +1287,8 @@ wrong.
 **The type picker is the first screen.** Four types described by purpose (Video: reach people
 who don't know you; Brief: stay present between big pieces; Thesis: prove you are worth paying
 for; Verdict: make a call only the market can settle), each saying who sees it. Four cards on a
-desktop (`≥ md`); on a phone four compact rows that all fit above the fold, each a disclosure
-whose detail and Start button open on a tap. The verdict card is tinted `--surface-2` with a
+desktop (`≥ md`); on a phone four compact rows that all fit above the fold, each a link that
+starts its type in one tap. The verdict card is tinted `--surface-2` with a
 `1 PER 30 DAYS` chip, or a brass `UNLOCKS IN 12 DAYS` chip and a line saying so when the window
 is closed. Under the cards, **my drafts**: type, headline, `PLAB · SPINE 2 OF 3 · EDITED 2 DAYS
 AGO`, a hairline progress bar (`66% THERE`) and Resume; compact rows on a phone with an `ALL`

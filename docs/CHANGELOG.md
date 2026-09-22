@@ -47,12 +47,25 @@ and 16px gutters, zero radius on images, no element wider than the screen,
 a touch swipe on the page does not pan it, the desk scroller does, and the
 Lists drawer opens.
 
-**Waiting on Bar: the accent.** The mock's accent is green, and on Stoa green
-is semantic: it is the LONG chip and the HIT seal. Built as specified, the
-eyebrows, author names and trending numerals compute to the exact same green
-as a LONG chip and a HIT seal, so `ZION · SHORT` reads in the colour of
-LONG. This is a real collision. The accent is one variable
-(`--today-accent` on `.today-sheet`); the fix is not chosen yet.
+**The accent is brass.** The mock's green collided with the site's own
+meaning of green (the LONG chip, the HIT seal): built that way, `ZION ·
+SHORT` read in the colour of LONG. Bar chose brass: a darkened brass
+(5.3:1 on the paper, measured; the site's chip brass is 3.7:1, too light for
+10.5px text), a dark-mode value (7.8:1), and a light brass over the lead's
+scrim. Green and red stay strictly semantic: inside an eyebrow only the
+direction word carries its colour, returns are green or red, seals are
+unchanged everywhere. Checked at 1440 and 390 in light and dark that no
+brass element shares a colour with a LONG chip, a SHORT chip or a seal.
+
+**Two phone fixes carried in this batch**
+
+- **The Compose type picker is one tap on a phone.** The row was a
+  disclosure that opened, then offered Start; it is now the link itself, so
+  the phone's click count matches the desktop's for every type.
+- **The report page's scrub bar is reachable without scrolling on a phone.**
+  The clip frame is now sized from the room between the nav and the floating
+  tab pill, so its bottom edge, where the bar sits, is never under the pill
+  on arrival.
 
 **For Krisi**
 
@@ -95,9 +108,10 @@ pressing Publish, no video could be dragged to a point, and Today slid sideways.
   | Thesis | 11 / 12 | 8 / 9 |
   | Verdict | 12 / 13 | 11 / 12 |
 
-  The phone costs one more everywhere because its type picker is a row that
-  opens, then a Start button. What remains is required: the content, a
-  headline, a tag, three disclosures, Publish, and for a verdict the confirm.
+  What remains is required: the content, a headline, a tag, three
+  disclosures, Publish, and for a verdict the confirm. (The phone's extra tap
+  in this table, a row that opened before its Start button, is gone in the
+  Today batch: tapping the row starts the type.)
 - **Every playing clip has a scrub bar.** A hairline along the frame's edge
   that shows progress and can be dragged to any point; it thickens while held
   and has a tall touch area, so it is easy to grab on a phone. The Feed's
@@ -130,8 +144,9 @@ pressing Publish, no video could be dragged to a point, and Today slid sideways.
 - The verdict's visibility card still states the two unbuilt halves in one
   line (the call is readable by anyone; no flip to public at resolution).
 - On a phone at the report page's initial scroll, the clip's bottom edge, and
-  so the bar, sits under the floating tab pill until the reader scrolls a
-  little. Left as is; say if the clip should be capped shorter on phones.
+  so the bar, sat under the floating tab pill until the reader scrolled.
+  Fixed in the Today batch: the phone frame is sized from the room under the
+  nav and above the pill.
 
 ---
 
