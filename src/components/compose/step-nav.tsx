@@ -5,7 +5,7 @@ import { cn } from "@/lib/design/cn";
 import type { StepDef, StepKey, StepState } from "@/lib/compose/steps";
 
 /**
- * The spine's tracker: two or three numbered marks joined by a hairline.
+ * The spine's tracker: two numbered marks joined by a hairline.
  *
  * Three things have to be readable at a glance: where you are, what you have
  * already filled in, and what you have not reached. A done step carries a
@@ -46,7 +46,7 @@ export function StepNav({
                 onClick={() => open && onGo(s.key)}
                 disabled={!open}
                 aria-current={active ? "step" : undefined}
-                title={open ? s.blurb : "Reach this step to open it"}
+                title={open ? undefined : "Reach this step to open it"}
                 className={cn(
                   "focus-ring flex items-center gap-2 rounded-[var(--radius-btn)] py-0.5 pr-1 transition-colors",
                   !open && "cursor-not-allowed",
@@ -100,10 +100,11 @@ export function StepFrame({
   status,
   children,
 }: {
-  /** "Step 1 of 2", "Step 1 of 3", "Add to this verdict · optional", "Ready when you are". */
+  /** "Step 1 of 2", "Add to this verdict · optional", "Ready when you are". */
   eyebrow: string;
   title: string;
-  blurb: string;
+  /** Only where a rule has to be stated (a live publication's read-only clip). */
+  blurb?: string;
   back: { label: string; onPress: () => void } | null;
   /** The forward button. Null on the publish screen, which publishes instead. */
   next: { label: string; onPress: () => void } | null;
@@ -120,9 +121,11 @@ export function StepFrame({
         <h2 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.25rem]">
           {title}
         </h2>
-        <p className="mt-1.5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-text-mute md:text-[1.0625rem]">
-          {blurb}
-        </p>
+        {blurb ? (
+          <p className="mt-1.5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-text-mute md:text-[1.0625rem]">
+            {blurb}
+          </p>
+        ) : null}
       </div>
 
       {children}

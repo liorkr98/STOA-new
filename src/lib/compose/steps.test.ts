@@ -21,11 +21,11 @@ const empty: AdvanceInput = {
 };
 
 describe("spineFor", () => {
-  it("is the content, the headline and the tags; a video carries its headline on the clip's screen", () => {
+  it("is the content, carrying the headline, then the tags, on every type", () => {
     assert.deepEqual(spineFor("video").map((s) => s.key), ["video", "tags"]);
-    assert.deepEqual(spineFor("brief").map((s) => s.key), ["brief", "headline", "tags"]);
-    assert.deepEqual(spineFor("thesis").map((s) => s.key), ["thesis", "headline", "tags"]);
-    assert.deepEqual(spineFor("verdict").map((s) => s.key), ["call", "headline", "tags"]);
+    assert.deepEqual(spineFor("brief").map((s) => s.key), ["brief", "tags"]);
+    assert.deepEqual(spineFor("thesis").map((s) => s.key), ["thesis", "tags"]);
+    assert.deepEqual(spineFor("verdict").map((s) => s.key), ["call", "tags"]);
   });
 });
 
@@ -45,10 +45,15 @@ describe("featuresFor", () => {
 });
 
 describe("advanceFor on the spine", () => {
-  it("asks a video for its headline once the clip is in, on the same screen", () => {
+  it("asks each content screen for its headline once the content is in", () => {
     assert.match(advanceFor("video", "video", { ...empty, hasVideo: true }).blocker ?? "", /headline under the video/);
     assert.equal(advanceFor("video", "video", { ...empty, hasVideo: true, title: "A line" }).blocker, null);
-    // On a verdict the clip is a feature and the headline is its own step.
+    assert.match(advanceFor("brief", "brief", { ...empty, briefText: "A take." }).blocker ?? "", /headline above the take/);
+    assert.match(advanceFor("thesis", "thesis", { ...empty, bodyText: "Words." }).blocker ?? "", /headline above the report/);
+    const call = { ...empty, ticker: "AXTI", symbol: "found" as const, direction: "long" as const, target: "34" };
+    assert.match(advanceFor("verdict", "call", call).blocker ?? "", /headline under the call/);
+    assert.equal(advanceFor("verdict", "call", { ...call, title: "A line" }).blocker, null);
+    // As a feature the clip is asked for on its own; the headline belongs to the verdict's call screen.
     assert.equal(advanceFor("verdict", "video", { ...empty, hasVideo: true }).blocker, null);
   });
 
@@ -60,11 +65,11 @@ describe("advanceFor on the spine", () => {
   });
 
   it("reads Continue and passes once the step is done", () => {
-    assert.deepEqual(advanceFor("brief", "brief", { ...empty, briefText: "A take." }), {
+    assert.deepEqual(advanceFor("brief", "brief", { ...empty, briefText: "A take.", title: "A line" }), {
       label: "Continue",
       blocker: null,
     });
-    assert.deepEqual(advanceFor("thesis", "headline", { ...empty, title: "A line" }), {
+    assert.deepEqual(advanceFor("thesis", "tags", { ...empty, primaryTag: "semis" }), {
       label: "Continue",
       blocker: null,
     });
@@ -94,7 +99,7 @@ describe("advanceFor on the verdict's call", () => {
       /between 7 and 180 days/,
     );
     assert.equal(
-      advanceFor("verdict", "call", { ...found, direction: "long", target: "34", horizon: 45 }).blocker,
+      advanceFor("verdict", "call", { ...found, direction: "long", target: "34", horizon: 45, title: "A line" }).blocker,
       null,
     );
   });

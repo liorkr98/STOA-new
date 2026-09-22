@@ -46,15 +46,9 @@ export function CompanionPicker({
     };
   }, [currentId, type]);
 
-  const hint =
-    type === "video"
-      ? "Optional. Attach a written piece this clip belongs to."
-      : "Optional. Attach a video this piece belongs with.";
-
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
-      <p className="t-eyebrow mb-2.5">Connected piece</p>
-      <p className="t-meta mb-2.5 text-[11px] leading-relaxed">{hint}</p>
+      <p className="t-eyebrow mb-2.5">Connected piece · optional</p>
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value || null)}

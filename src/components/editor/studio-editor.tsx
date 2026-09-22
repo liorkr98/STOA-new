@@ -115,7 +115,6 @@ import {
   type AdvanceInput,
   type StepFacts,
   type StepKey,
-  headlineOnContent,
 } from "@/lib/compose/steps";
 import { spineProgress } from "@/lib/compose/drafts";
 import { StepFrame, StepNav } from "@/components/compose/step-nav";
@@ -261,9 +260,6 @@ export function StudioEditor({
   const hasWriter = !isBrief;
   const spine = useMemo(() => spineFor(pubType), [pubType]);
   const features = useMemo(() => featuresFor(pubType), [pubType]);
-  // A video's headline is written under the clip, on the video screen, so
-  // its spine is two steps and there is no headline screen to reach.
-  const headlineWithVideo = headlineOnContent(pubType);
   // Read once, when the workspace opens: the window is a fact about the
   // analyst's record, and render must not depend on the clock.
   const [vWindow] = useState(() => verdictWindow(verdictLastPublishedAt));
@@ -927,7 +923,7 @@ export function StudioEditor({
   // afterwards. A reopened draft starts at the first step it has not
   // finished; a live publication is never a first pass, so nothing is locked.
   const [stepKey, setStepKey] = useState<StepKey>(() => {
-    if (editingPublished) return isBrief || pubType === "thesis" || headlineWithVideo ? spine[0]!.key : "headline";
+    if (editingPublished) return spine[0]!.key;
     const facts = {
       hasContent:
         pubType === "video"
@@ -944,7 +940,7 @@ export function StudioEditor({
       hasTitle: Boolean(initialDraft?.title?.trim()),
       hasTags: Boolean(initialDraft?.primary_tag),
     };
-    const at = spineProgress(facts, headlineWithVideo).resumeAt;
+    const at = spineProgress(facts).resumeAt;
     return at >= spine.length ? "publish" : spine[at]!.key;
   });
   const [blockedNote, setBlockedNote] = useState<string | null>(null);
@@ -974,7 +970,8 @@ export function StudioEditor({
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const titleAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const headlineVisible = stepKey === "headline" || (headlineWithVideo && stepKey === "video");
+  // The headline sits on the content screen, whichever one this type has.
+  const headlineVisible = stepKey === spine[0]!.key;
   useLayoutEffect(() => {
     if (!headlineVisible) return;
     fitTextarea(titleAreaRef.current);
@@ -1086,7 +1083,6 @@ export function StudioEditor({
   /** What each step holds right now, for the tracker and the menu. */
   const stepFacts: StepFacts = {
     hasVideo: videoChosen,
-    headlineOnVideo: headlineWithVideo,
     hasBrief: summary.trim().length > 0,
     hasThesis: plainText.trim().length > 0,
     hasCall: lockingCall && advanceFor(pubType, "call", advanceInput).blocker === null,
@@ -1103,7 +1099,13 @@ export function StudioEditor({
     switch (def.key) {
       case "call":
         added = stepFacts.hasCall
-          ? [ticker.trim().toUpperCase(), direction, target ? `target ${target}` : null].filter(Boolean).join(" · ")
+          ? [
+              ticker.trim().toUpperCase(),
+              direction ? direction[0]!.toUpperCase() + direction.slice(1) : null,
+              target ? `target ${target}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")
           : null;
         break;
       case "cards":
@@ -1431,8 +1433,8 @@ export function StudioEditor({
   /* The headline and the dek. A textarea, not an input: a headline is one
      thought but rarely one line, and an input clips whatever a 390px screen
      cannot hold. It grows with its words and Enter moves on rather than
-     breaking the line. Rendered on the headline step, or under the clip on
-     a video. */
+     breaking the line. Rendered once, on the type's content screen: above
+     the take and the report, under the clip and the call. */
   const headlineFields = (
     <>
       <label htmlFor="report-title" className="sr-only">
@@ -1451,16 +1453,16 @@ export function StudioEditor({
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            if (isBrief) pressNext();
-            else document.getElementById("report-summary")?.focus();
+            // On to the next field, not a line break: the take on a brief, the dek elsewhere.
+            document.getElementById(isBrief ? "brief-text" : "report-summary")?.focus();
           }
         }}
         placeholder="Headline"
         dir="auto"
-        autoFocus={!editingPublished && stepKey === "headline"}
+        autoFocus={!editingPublished && (stepKey === "brief" || stepKey === "thesis")}
         className={cn(
           "user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none",
-          headlineWithVideo ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
+          stepKey === "video" || stepKey === "call" ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
         )}
         style={{ fontFamily: "var(--font-display)" }}
       />
@@ -1475,6 +1477,11 @@ export function StudioEditor({
             onChange={(e) => {
               setSummary(e.target.value);
               markDirty();
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              e.preventDefault();
+              if (stepKey === "thesis") editorRef.current?.commands.focus("end");
             }}
             placeholder="One line under the headline. Optional."
             dir="auto"
@@ -1638,6 +1645,10 @@ export function StudioEditor({
                 >
                   <DevCrash step="thesis" />
                   <div className={cn(stepKey !== "thesis" && "hidden")}>
+                    {/* The headline leads the report. Only on a thesis: on
+                        the other types the writer is a feature and the
+                        headline lives on their own content screen. */}
+                    {pubType === "thesis" ? <div className="max-w-[60rem]">{headlineFields}</div> : null}
                     {showTemplateStrip && !templatesDismissed && (
                       <ReportTemplateStrip onApply={applyTemplate} onDismiss={dismissTemplates} />
                     )}
@@ -1675,6 +1686,7 @@ export function StudioEditor({
                 <StepErrorBoundary label="The take">
                   <DevCrash step="brief" />
                   <div className="max-w-[60rem]">
+                    {headlineFields}
                     <label htmlFor="brief-text" className="sr-only">
                       The take
                     </label>
@@ -1689,23 +1701,11 @@ export function StudioEditor({
                       placeholder="Say the one thing."
                       rows={6}
                       dir="auto"
-                      autoFocus={!editingPublished}
                       className="user-copy w-full resize-none rounded-[var(--radius-card)] border border-border bg-surface p-4 text-[1.125rem] leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
                     />
                     <p className="num mt-2 text-[11px] uppercase tracking-[0.12em] text-text-faint">
                       {summary.trim().length} / {BRIEF_MAX_CHARS}
                     </p>
-                  </div>
-                </StepErrorBoundary>
-              ) : null}
-
-              {/* THE HEADLINE. One line that travels, and where it travels to.
-                  On a video it sits under the clip instead (below). */}
-              {stepKey === "headline" ? (
-                <StepErrorBoundary label="Headline">
-                  <DevCrash step="headline" />
-                  <div className="max-w-[60rem]">
-                    {headlineFields}
                   </div>
                 </StepErrorBoundary>
               ) : null}
@@ -1734,6 +1734,13 @@ export function StudioEditor({
                     {callDraftNote}
                   </p>
                 ) : null}
+                {/* The headline, under the call: the verdict's content screen. */}
+                <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
+                  <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+                    Headline
+                  </p>
+                  {headlineFields}
+                </div>
                 </StepErrorBoundary>
               ) : null}
               {stepKey === "call" && !isVerdict ? (
@@ -1780,25 +1787,15 @@ export function StudioEditor({
                 </StepErrorBoundary>
               ) : null}
 
-              {/* CARDS. An invitation, not a hurdle: what a card is, what it
-                  does for the reader, and one obvious way to make one. */}
+              {/* CARDS. One obvious way to make the first one, and the deck
+                  once there is one. No copy about what a card is. */}
               {stepKey === "cards" ? (
                 <StepErrorBoundary label="Cards">
                 <DevCrash step="cards" />
                 <div>
                   {cards.length === 0 ? (
                     <div className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-5">
-                      <p className="text-[0.9375rem] leading-relaxed text-text">
-                        A card is the claim on its own: the thesis in two lines, where your
-                        numbers differ from the street, the arithmetic that gets you to the
-                        target, or what would prove you wrong.
-                      </p>
-                      <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute">
-                        Readers see cards first, in the Feed and above the text, and they
-                        are what a reader remembers. They carry your provenance marks, and
-                        you decide which ones sit behind the paywall.
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
@@ -1840,11 +1837,6 @@ export function StudioEditor({
                           Add another card
                         </button>
                       </div>
-                      <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-mute">
-                        Click a card to open it again. Drag a card from the toolbox into your
-                        text to place it there, or onto the timeline to make it appear in the
-                        video.
-                      </p>
                     </div>
                   )}
                 </div>
@@ -1886,7 +1878,7 @@ export function StudioEditor({
                       focus: one quiet field below the editor, no preview
                       cards, and it is asked for by Continue only once the
                       clip is in. */}
-                  {headlineWithVideo ? (
+                  {pubType === "video" ? (
                     <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
                       <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
                         Headline
@@ -2021,8 +2013,6 @@ export function StudioEditor({
         title={title}
         dek={isBrief ? "" : summary}
         cards={cards}
-        clipSeconds={videoChosen ? clipSeconds : null}
-        feedPreviewSeconds={feedPreviewSeconds}
       />
 
       <AskPanel

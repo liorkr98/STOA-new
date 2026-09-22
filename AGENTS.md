@@ -59,8 +59,8 @@ never graded.
 | **THESIS**  | A full written report. Depth; the strongest route onto Today.           | Only if it carries a call |
 | **VERDICT** | A call subscribers get first, public when the market resolves it.       | Yes (it is a call)        |
 
-Compose is a short spine per type (two steps for a video, whose headline sits under the clip; three
-for the rest) plus a features menu on the publish screen; the verdict
+Compose is a two-step spine per type (the content with its headline on the same screen, then the
+tags) plus a features menu on the publish screen, with no explanatory copy on any screen; the verdict
 has its own rules (equities under $2B, 7 to 180 days, one per rolling 30 days). See
 `docs/COMPOSE.md`.
 

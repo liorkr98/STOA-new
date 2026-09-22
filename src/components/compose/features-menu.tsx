@@ -8,9 +8,11 @@ import type { FeatureDef, FeatureKey } from "@/lib/compose/steps";
  * The features menu, on the publish screen and nowhere else.
  *
  * What a publication may add on top of its spine is a menu nobody has to
- * walk past: each row says what the feature is and whether it has been
- * added, opening one goes into that feature's editor, and Done brings the
- * creator back here. Never a step in a sequence.
+ * walk past: each row is the feature's name and its state ("NVDA · Long",
+ * "3 cards", "Not added"), nothing more; opening one goes into that
+ * feature's editor, and Done brings the creator back here. Never a step in
+ * a sequence. The one sentence a row may carry is a refusal: a feature
+ * opened and left half done says what is missing, in rust.
  */
 
 const ICONS: Record<FeatureKey, React.ReactNode> = {
@@ -56,7 +58,7 @@ export function FeaturesMenu({
           const state = row.halfDone
             ? { label: "Half done", tone: "bad" as const }
             : row.added
-              ? { label: `Added · ${row.added}`, tone: "on" as const }
+              ? { label: row.added, tone: "on" as const }
               : { label: "Not added", tone: "off" as const };
           return (
             <li key={row.def.key}>
@@ -65,13 +67,13 @@ export function FeaturesMenu({
                 onClick={() => !row.locked && onOpen(row.def.key)}
                 disabled={row.locked}
                 className={cn(
-                  "focus-ring flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors",
+                  "focus-ring flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
                   row.locked ? "cursor-default" : "hover:bg-surface-2",
                 )}
               >
-                <span className="mt-0.5 shrink-0 text-text-mute">{ICONS[row.def.key]}</span>
+                <span className="shrink-0 text-text-mute">{ICONS[row.def.key]}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
                     <span className="text-[0.9375rem] font-medium text-text">{row.def.label}</span>
                     <span
                       className={cn(
@@ -86,12 +88,14 @@ export function FeaturesMenu({
                       {state.label}
                     </span>
                   </span>
-                  <span className="mt-0.5 block text-[0.8125rem] leading-snug text-text-mute">
-                    {row.halfDone ?? row.def.what}
-                  </span>
+                  {row.halfDone ? (
+                    <span className="mt-0.5 block text-[0.8125rem] leading-snug text-[var(--rust)]">
+                      {row.halfDone}
+                    </span>
+                  ) : null}
                 </span>
                 {row.locked ? null : (
-                  <ChevronRight size={16} strokeWidth={1.6} aria-hidden className="mt-1 shrink-0 text-text-faint" />
+                  <ChevronRight size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-text-faint" />
                 )}
               </button>
             </li>

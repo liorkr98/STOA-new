@@ -17,15 +17,15 @@ const base: DraftRow = {
 describe("spineProgress", () => {
   it("resumes at the first unfinished step", () => {
     assert.equal(spineProgress({ hasContent: false, hasTitle: true, hasTags: true }).resumeAt, 0);
-    assert.equal(spineProgress({ hasContent: true, hasTitle: false, hasTags: true }).resumeAt, 1);
-    assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }).resumeAt, 2);
-    assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }).resumeAt, 3);
+    assert.equal(spineProgress({ hasContent: true, hasTitle: false, hasTags: true }).resumeAt, 0);
+    assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }).resumeAt, 1);
+    assert.equal(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }).resumeAt, 2);
   });
 
-  it("counts a video's headline inside its first step, so the spine is two", () => {
-    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: false, hasTags: true }, true), { done: 1, total: 2, resumeAt: 0 });
-    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }, true), { done: 1, total: 2, resumeAt: 1 });
-    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }, true), { done: 2, total: 2, resumeAt: 2 });
+  it("counts the headline inside the first step, so the spine is two", () => {
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: false, hasTags: true }), { done: 1, total: 2, resumeAt: 0 });
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: false }), { done: 1, total: 2, resumeAt: 1 });
+    assert.deepEqual(spineProgress({ hasContent: true, hasTitle: true, hasTags: true }), { done: 2, total: 2, resumeAt: 2 });
   });
 });
 
@@ -77,9 +77,9 @@ describe("summarizeDraft", () => {
       draft_horizon_days: 30,
     });
     assert.equal(s.typeLabel, "VERDICT");
-    assert.equal(s.done, 2);
-    assert.equal(s.percent, 67);
-    assert.equal(s.where, "Spine 3 of 3 · No tags");
+    assert.equal(s.done, 1);
+    assert.equal(s.percent, 50);
+    assert.equal(s.where, "Spine 2 of 2 · No tags");
     assert.equal(s.touchedAt, "2026-09-09T00:00:00Z");
   });
 

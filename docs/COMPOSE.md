@@ -35,25 +35,29 @@ recorded step). A draft opens at the first step it has not finished. The
 route is `/studio/compose` with nothing after it; `?type=video` starts a
 type, `?id=` reopens a draft.
 
-## The spine: never more than three steps, and two for a video
+## The spine: two steps, on every type
 
 Every type walks the same short mandatory spine, then reaches the publish
 screen:
 
-| Type | Step 1 | Step 2 | Step 3 |
-| --- | --- | --- | --- |
-| Video | the video, with its headline under the clip | tags | |
-| Brief | the take (short text) | headline | tags |
-| Thesis | the report (the full writer) | headline | tags |
-| Verdict | the call | headline | tags |
+| Type | Step 1 | Step 2 |
+| --- | --- | --- |
+| Video | the video, with its headline under the clip | tags |
+| Brief | the headline, then the take (short text) | tags |
+| Thesis | the headline, then the report (the full writer) | tags |
+| Verdict | the call, with its headline under it | tags |
 
-The headline and the tags are mandatory on every type. On a video the
-headline is written under the clip, on the video screen, and Continue asks
-for it once the clip is in; the tracker shows two steps and says so. On
-the other types the headline step shows where the line will travel (a
-Today row, an inbox, a pasted link) so the analyst writes for the places
-it is read. The tags step is a list you
-type into (below).
+The headline and the tags are mandatory on every type, and the headline
+lives on the content screen: above the words on the written types, under
+the clip and the call on the others. Continue asks for it once the content
+is in. On a brief and a thesis the headline field has focus on arrival and
+Enter moves into the text. The tags step opens its list on arrival when
+nothing is chosen, so the primary tag is one tap.
+
+No screen carries explanatory copy: a heading, the work, one button. The
+only sentences are refusals naming what is missing, and the few rules a
+creator would otherwise get wrong (a verdict's visibility, what a locked
+call cannot do, that the target is not the live price).
 
 **One button per screen, and its label is what pressing it does.** On the
 spine it reads **Continue**, and when the step is not done it refuses and

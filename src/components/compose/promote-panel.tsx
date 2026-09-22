@@ -55,11 +55,6 @@ export function PromotePanel({
             <Megaphone size={14} className="text-text-mute" aria-hidden />
             {published ? "Promote this publication" : "Boost on publish"}
           </span>
-          <span className="mt-0.5 block text-[0.8125rem] leading-snug text-text-mute">
-            {published
-              ? "Put this in front of more readers from now."
-              : "Put this in front of more readers the moment it goes live."}
-          </span>
         </span>
       </label>
 

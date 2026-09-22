@@ -10,6 +10,67 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-22 — Compose with less to read, a scrub bar on every clip, Today no longer pans
+
+Three fixes from the phone: publishing had too much copy between starting and
+pressing Publish, no video could be dragged to a point, and Today slid sideways.
+
+**For someone using the site**
+
+- **Compose says less and takes fewer taps.** No screen carries an
+  explanation any more: a heading, the work, one button. The features menu on
+  the publish screen is each feature's name and its state ("NVDA · Long ·
+  target 30", "3 cards", "Not added") and nothing else; a feature left half
+  done still says what is missing, in rust. The only sentences left are
+  refusals and the rules a creator would otherwise get wrong: the verdict's
+  visibility, that the target is not the live price, what a locked call
+  cannot do, the $2B cap.
+- **The headline lives on the content screen, so every type is two steps.**
+  Above the take and the report (where it has focus on arrival and Enter moves
+  into the text), under the clip and the call (Enter in the target jumps to
+  it). The separate headline screen is gone. The tags step opens its list on
+  arrival, so the primary tag is one tap.
+- **Clicks from choosing a type to Publish, counted in a real browser**, with
+  the disclosures' three answers and the verdict's Lock it in confirm kept:
+
+  | Type | Before (desktop / phone) | After (desktop / phone) |
+  |---|---|---|
+  | Video | 12 / 13 | 11 / 12 |
+  | Brief | 10 / 11 | 8 / 9 |
+  | Thesis | 11 / 12 | 8 / 9 |
+  | Verdict | 12 / 13 | 11 / 12 |
+
+  The phone costs one more everywhere because its type picker is a row that
+  opens, then a Start button. What remains is required: the content, a
+  headline, a tag, three disclosures, Publish, and for a verdict the confirm.
+- **Every playing clip has a scrub bar.** A hairline along the frame's edge
+  that shows progress and can be dragged to any point; it thickens while held
+  and has a tall touch area, so it is easy to grab on a phone. The Feed's
+  existing progress line at the top of the stage became the bar rather than
+  gaining a second one. The report page drops the browser's control bar for
+  Stoa's own chrome: tap the picture to pause, mute top-right, the bar along
+  the bottom, so it sits under the overlays like the Feed. The Explore and
+  Dispatch cards and the landing lead carry the same bar. Profiles play
+  nothing inline (their tiles open the report), so nothing changed there.
+- **Today no longer scrolls sideways on a phone.** The lead's poster bleeds to
+  the screen edge with a negative margin, and the column it sits in is its own
+  scroller, which the browser then let pan 20px to the right. The column now
+  scrolls one way only. Its horizontal bands (Verdicts) still scroll on their
+  own.
+
+**For Krisi**
+
+- Nothing new in the database. The publish path is unchanged; the client
+  refuses the same things in the same order (content, headline, tag,
+  disclosures), now on two screens instead of three.
+- The verdict's visibility card still states the two unbuilt halves in one
+  line (the call is readable by anyone; no flip to public at resolution).
+- On a phone at the report page's initial scroll, the clip's bottom edge, and
+  so the bar, sits under the floating tab pill until the reader scrolls a
+  little. Left as is; say if the clip should be capped shorter on phones.
+
+---
+
 ## 2026-09-22 — Studio chrome, playhead, camera, Insights
 
 Authoring and Studio, after the Compose pass: the playhead can be dragged,

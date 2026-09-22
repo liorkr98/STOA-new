@@ -1233,8 +1233,10 @@ The other highest-scrutiny screen in the product, and the one where the seal rit
 gets triggered. The full model is `docs/COMPOSE.md`; this section is the screens.
 
 **Compose is a short mandatory spine and a menu of options, not a wizard.** Instagram's
-structure: everyone walks two or three steps, and what a publication may add on top is a menu nobody
-has to walk past.
+structure: everyone walks two steps, and what a publication may add on top is a menu nobody
+has to walk past. No screen carries explanatory copy: a heading, the work, one button. The only
+sentences are refusals naming what is missing and the few rules a creator would otherwise get
+wrong.
 
 **The type picker is the first screen.** Four types described by purpose (Video: reach people
 who don't know you; Brief: stay present between big pieces; Thesis: prove you are worth paying
@@ -1246,27 +1248,27 @@ is closed. Under the cards, **my drafts**: type, headline, `PLAB · SPINE 2 OF 3
 AGO`, a hairline progress bar (`66% THERE`) and Resume; compact rows on a phone with an `ALL`
 pill to Studio. `<ComposePicker>` (`src/components/compose/type-picker.tsx`).
 
-**The spine is two steps for a video and three for every other type:**
+**The spine is two steps on every type:**
 
-| Type | 1 | 2 | 3 |
-|---|---|---|---|
-| Video | Video (record or upload; the rung with its timeline) and, under the clip, the headline | Tags | |
-| Brief | The take (a textarea, 300 characters) | Headline | Tags |
-| Thesis | The report (the Tiptap writer, with the toolbox rail) | Headline | Tags |
-| Verdict | The call (`<VerdictCallPanel>`) | Headline | Tags |
+| Type | 1 | 2 |
+|---|---|---|
+| Video | Video (record or upload; the rung with its timeline) and, under the clip, the headline | Tags |
+| Brief | The headline, then the take (a textarea, 300 characters) | Tags |
+| Thesis | The headline and the dek, then the report (the Tiptap writer, with the toolbox rail) | Tags |
+| Verdict | The call (`<VerdictCallPanel>`) and, under it, the headline | Tags |
 
-Then the **publish screen**. The tracker (`<StepNav>`) is two or three numbered marks joined by a
+Then the **publish screen**. The tracker (`<StepNav>`) is two numbered marks joined by a
 hairline: the current one filled ink, a done one a verdigris tick, an unreached one dimmed and
 not clickable. Off the spine (the publish screen, a feature editor) no mark is current and the
-heading says where you are. Each screen has an eyebrow (`STEP 1 OF 3`, `ADD TO THIS VERDICT ·
-OPTIONAL`, `READY WHEN YOU ARE`), a display heading and one line under it (`<StepFrame>`).
+heading says where you are. Each screen has an eyebrow (`STEP 1 OF 2`, `ADD TO THIS VERDICT ·
+OPTIONAL`, `READY WHEN YOU ARE`) and a display heading (`<StepFrame>`); no line under it, except
+on a live publication's read-only clip, where the rule has to be stated.
 
-**The headline step** is the headline (a growing textarea in the display face; Enter moves on)
-and the dek (not on a brief, whose text is the take), then **How the line travels**: the
-headline as a Today row, an inbox line and a pasted link, so the creator writes for the places
-it is read. A video has no headline step: the same two fields sit under the clip on the video
-screen, with a one-line eyebrow and no preview cards, so the video stays the focus. Continue
-asks for the headline there once the clip is in.
+**The headline** is a growing textarea in the display face, with the dek under it (not on a
+brief, whose text is the take). It sits on the content screen: above the take and the report,
+where it has focus on arrival and Enter moves into the text; under the clip and the call, with a
+one-line eyebrow, so the clip and the call stay the focus. Continue asks for it once the content
+is in.
 
 **One button per screen, and its label is what pressing it will do.** On the spine it reads
 **Continue**; when it cannot advance the reason sits beside it in rust, in the creator's terms
@@ -1276,12 +1278,12 @@ complete, and Done that refuses and names what is missing when it is half done. 
 information never passes. Back on a feature editor reads **Back to publish**.
 
 **The features menu** (`<FeaturesMenu>`, `src/components/compose/features-menu.tsx`) sits on
-the publish screen above Access: one row per feature the type may add (video: a call, cards, a
-full thesis; brief and thesis: a call, cards; verdict: cards, a video, written text), each with
-its icon, what it is, and `ADDED · NVDA · LONG` in verdigris, `NOT ADDED` faint, or `HALF DONE`
-in rust with the reason. Opening a row goes into that feature's editor; Done or Skip returns to
-the menu. On a live publication the call and the clip are the record: their rows open to be
-read and cannot be added.
+the publish screen above Access: one row per feature the type may add (video: Call, Cards,
+Thesis; brief and thesis: Call, Cards; verdict: Cards, Video, Text), each its icon, its name and
+its state at the right: `NVDA · LONG · TARGET 142` in verdigris, `3 CARDS`, `NOT ADDED` faint,
+or `HALF DONE` in rust with the reason under it. Nothing describes what a feature is. Opening a
+row goes into that feature's editor; Done or Skip returns to the menu. On a live publication
+the call and the clip are the record: their rows open to be read and cannot be added.
 
 **The verdict's call screen** (`src/components/compose/verdict-call-panel.tsx`) is one dashed
 card: the ticker (mono, wide, upper-cased) with the listing's name and `MKT CAP $380M` beside
@@ -1299,14 +1301,15 @@ call.
 
 **The verdict's visibility** (`<VerdictVisibility>`) replaces the Access section on its
 publish screen: a ledger card stating subscribers-only while open, public at resolution, and
-under it a brass box saying what the site does today (the text is gated, the call itself is
-readable by anyone who opens the publication, nothing flips it public yet). The publish button
-reads **Publish the verdict**.
+one brass line saying what the site does today (the call itself is readable by anyone, and
+nothing flips the piece public yet). The publish button reads **Publish the verdict**.
 
-**Tags are typed, not scrolled.** Choose primary opens `<TagSearch>`: a mono field ("TYPE TO
-NARROW") over `MOST USED` (from published work), then every group; typing narrows to one flat
-row of chips, prefix matches first; arrows move, Enter picks, Escape closes; "Nothing matches.
-Tags are a fixed list" when it does not.
+**Tags are one tap, then typed.** The primary list (`<TagSearch>`) is open on arrival when
+nothing is chosen: `MOST USED` (from published work) then every group as chips, over a mono
+field ("TYPE TO NARROW") that takes focus only when the creator opened the list by pressing
+Choose primary or Change; typing narrows to one flat row of chips, prefix matches first; arrows
+move, Enter picks, Escape closes; "Nothing matches. Tags are a fixed list" when it does not. A
+call fills the primary from its sector, marked `AUTO`.
 
 **The header** (`<ComposeHeader>`) is the same on the picker and the workspace: `← STUDIO`,
 the STOA wordmark, `COMPOSE · VERDICT`, and on the right the draft's save state (`DRAFT ·

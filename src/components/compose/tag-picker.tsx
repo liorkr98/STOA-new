@@ -38,6 +38,7 @@ function TagSearch({
   popular,
   onPick,
   onClose,
+  focusOnMount = true,
 }: {
   slot: "primary" | "secondary";
   primary: string | null;
@@ -46,14 +47,20 @@ function TagSearch({
   popular: string[];
   onPick: (slot: "primary" | "secondary", tag: PublicationTag) => void;
   onClose: () => void;
+  /**
+   * The field takes focus when the creator opened the list. The list that
+   * is open on arrival does not: a keyboard rising over the chips on a phone
+   * would hide the one tap the screen asks for.
+   */
+  focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (focusOnMount) inputRef.current?.focus();
+  }, [focusOnMount]);
 
   const taken = (t: PublicationTag) => t.slug === primary || secondary.includes(t.slug);
 
@@ -213,6 +220,13 @@ export function TagPicker({
   popular?: string[];
 }) {
   const [open, setOpen] = useState<"primary" | "secondary" | null>(null);
+  // The primary list shows on arrival while nothing is chosen, so the tag is
+  // one tap away rather than two. Derived, not set: choosing a tag (or the
+  // call filling one in) closes it by itself, and a press on Choose primary
+  // while it shows puts it away until the creator asks again.
+  const [openedByPress, setOpenedByPress] = useState(false);
+  const [defaultDismissed, setDefaultDismissed] = useState(false);
+  const primaryOpen = open === "primary" || (open === null && !value.primary && !defaultDismissed);
 
   useEffect(() => {
     if (!hasCall || value.primaryPinned || value.primary) return;
@@ -236,10 +250,7 @@ export function TagPicker({
 
   return (
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4" aria-label="Tags">
-      <p className="t-eyebrow mb-1">Tags</p>
-      <p className="mb-3 text-[12px] leading-snug text-text-mute">
-        One primary tag. Up to two more for search.
-      </p>
+      <p className="t-eyebrow mb-3">Tags</p>
 
       <div className="num mb-1.5 text-[10px] uppercase tracking-[0.16em] text-text-mute">Primary</div>
       <div className="flex flex-wrap items-center gap-2">
@@ -259,16 +270,21 @@ export function TagPicker({
         ) : null}
         <button
           type="button"
-          onClick={() => setOpen(open === "primary" ? null : "primary")}
+          onClick={() => {
+            if (primaryOpen) {
+              setOpen(null);
+              setDefaultDismissed(true);
+              return;
+            }
+            setOpenedByPress(true);
+            setOpen("primary");
+          }}
           className="focus-ring rounded-[var(--radius-tag)] border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
         >
           {primary ? "Change" : "Choose primary"}
         </button>
       </div>
-      {autoFilled ? (
-        <p className="num mt-1.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">Filled from the call&apos;s sector · one click to change</p>
-      ) : null}
-      {open === "primary" ? (
+      {primaryOpen ? (
         <TagSearch
           slot="primary"
           primary={value.primary}
@@ -276,11 +292,12 @@ export function TagPicker({
           popular={popular}
           onPick={pick}
           onClose={() => setOpen(null)}
+          focusOnMount={openedByPress}
         />
       ) : null}
 
       <div className="num mb-1.5 mt-4 text-[10px] uppercase tracking-[0.16em] text-text-mute">
-        Secondary · searchable only · {secondaries.length}/{TAG_LIMITS.secondary}
+        Secondary · search only · {secondaries.length}/{TAG_LIMITS.secondary}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {secondaries.map((t) => (
@@ -299,7 +316,10 @@ export function TagPicker({
         {secondaries.length < TAG_LIMITS.secondary ? (
           <button
             type="button"
-            onClick={() => setOpen(open === "secondary" ? null : "secondary")}
+            onClick={() => {
+            setOpenedByPress(true);
+            setOpen(open === "secondary" ? null : "secondary");
+          }}
             className="focus-ring rounded-[var(--radius-tag)] border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
           >
             Add secondary
@@ -316,10 +336,6 @@ export function TagPicker({
           onClose={() => setOpen(null)}
         />
       ) : null}
-
-      <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
-        Primary drives placement · secondary tags are searchable
-      </p>
     </section>
   );
 }

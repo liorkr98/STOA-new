@@ -125,6 +125,7 @@ export function VerdictCallPanel({
             placeholder="PLAB"
             autoComplete="off"
             spellCheck={false}
+            autoFocus
           />
           {resolved ? (
             <div className="min-w-0">
@@ -195,6 +196,12 @@ export function VerdictCallPanel({
               min={0}
               step="0.01"
               inputMode="decimal"
+              onKeyDown={(e) => {
+                // The headline sits under the call: Enter moves there, not nowhere.
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                document.getElementById("report-title")?.focus();
+              }}
               className={cn(inputClass, "mt-1.5 border-[var(--ink)]")}
               placeholder="0.00"
             />
@@ -213,11 +220,11 @@ export function VerdictCallPanel({
                 Move from entry
               </p>
             )}
-            <p className="mt-1 font-display text-[0.9375rem] italic text-text-mute">
-              {move != null && !moveAgrees
-                ? `The target moves against a ${direction} call.`
-                : "The target is what the market settles against."}
-            </p>
+            {move != null && !moveAgrees ? (
+              <p className="mt-1 font-display text-[0.9375rem] italic text-[var(--rust)]">
+                The target moves against a {direction} call.
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -291,8 +298,7 @@ function EligibilityLine({
       <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--rust)]" role="alert">
         <X size={13} aria-hidden className="mt-px shrink-0" />
         <span>
-          <span className="num font-semibold">{lookup.symbol}</span> was not found. Check the symbol:
-          a call on a name that cannot be priced can never be graded.
+          <span className="num font-semibold">{lookup.symbol}</span> was not found. Check the symbol.
         </span>
       </p>
     );

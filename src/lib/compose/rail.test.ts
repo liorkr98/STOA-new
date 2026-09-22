@@ -22,8 +22,8 @@ test("a live publication's clip screen has no rail", () => {
   assert.equal(railFor("video", { ...draft, hasClip: true, frozen: true }), null);
 });
 
-test("the take, the call, the headline, the tags and publish have no rail", () => {
-  for (const step of ["brief", "call", "headline", "tags", "publish"] as const) {
+test("the take, the call, the tags and publish have no rail", () => {
+  for (const step of ["brief", "call", "tags", "publish"] as const) {
     assert.equal(railFor(step, { ...draft, hasClip: true }), null, step);
   }
 });

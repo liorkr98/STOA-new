@@ -270,15 +270,9 @@ export function LockPublishPanel({
           className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-4"
           aria-label="The call"
         >
-          <div className="mb-3 flex items-center justify-between">
-            <p className="t-eyebrow">The call</p>
-            <span className="t-meta flex items-center gap-1 text-[11px]">
-              <Lock size={13} aria-hidden />
-              optional
-            </span>
-          </div>
+          <p className="t-eyebrow mb-3">The call</p>
           <p className="t-meta mb-3 text-[11px] leading-relaxed">
-            Ticker and direction lock a call. Target is where you think it goes, not the live price.
+            Target is where you think it goes, not the live price.
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -344,17 +338,11 @@ export function LockPublishPanel({
           {resolved && (
             <div className="mt-3 border-t border-dashed border-border pt-3">
               <div className="flex items-baseline justify-between">
-                <span className="t-meta">{quotedAsYield ? "Entry yield" : "Entry"}</span>
+                <span className="t-meta">{quotedAsYield ? "Entry yield · live now" : "Entry · live now"}</span>
                 <span className="num text-lg font-semibold">{resolved.priceLabel ?? "-"}</span>
               </div>
-              {resolved.priceLabel ? (
-                <p className="t-meta mt-0.5 text-[11px]">
-                  Live price now. This becomes the entry when you publish, not the target.
-                </p>
-              ) : (
-                <p className="t-meta mt-0.5 text-[11px]">
-                  No live level right now. Publishing locks whatever the feed says then.
-                </p>
+              {resolved.priceLabel ? null : (
+                <p className="t-meta mt-0.5 text-[11px]">No live level right now. Publishing locks whatever the feed says then.</p>
               )}
               {moveLabel != null && (
                 <div className="mt-1 flex items-baseline justify-between">
@@ -435,12 +423,7 @@ export function LockPublishPanel({
               onChange={(e) => onMembersIncluded(e.target.checked)}
               className="mt-0.5 accent-[var(--ink)]"
             />
-            <span>
-              <span className="font-medium">Members can open this without paying</span>
-              <span className="t-meta mt-0.5 block text-[11px]">
-                Anyone subscribed to you is entitled, same as a buyer.
-              </span>
-            </span>
+            <span className="font-medium">Members can open this without paying</span>
           </label>
           </>
         )}
@@ -516,11 +499,6 @@ export function LockPublishPanel({
           <p className="t-meta text-center text-[11px]">{publishDisabledReason}</p>
         )}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
-        {hasCard ? (
-          <p className="t-meta text-center text-[11px] text-text-faint">
-            A locked call cannot be edited. The headline, the text and the tags can be.
-          </p>
-        ) : null}
       </div>
       )}
     </div>
