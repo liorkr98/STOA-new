@@ -172,7 +172,11 @@ export function ReportClip({
               "relative aspect-[9/16]",
               docked
                 ? "w-full"
-                : "mx-auto w-[min(100%,18rem)] sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]",
+                : // On a phone the frame is sized from the height left under
+                  // the nav, above the tab pill and below the page's own top
+                  // (about 17rem of headline and byline), so its bottom edge,
+                  // where the scrub bar sits, is reachable without scrolling.
+                  "mx-auto h-[min(calc(100dvh-var(--nav-h)-var(--tab-h)-17rem),32rem)] w-auto max-w-full sm:h-[min(60vh,520px)] lg:h-[min(50vh,440px)]",
             )}
           >
             {playing && native && playbackUrl ? (
