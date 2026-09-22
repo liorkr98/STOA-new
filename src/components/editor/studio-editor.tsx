@@ -350,6 +350,12 @@ export function StudioEditor({
   const [requiredPerks, setRequiredPerks] = useState<string[]>(initialDraft?.required_perks ?? []);
   const [price, setPrice] = useState(initialDraft?.price ?? analystReportPrice ?? 7);
   const [draftId, setDraftId] = useState<string | undefined>(initialDraft?.id);
+  // The id as the save path knows it, the moment a save returns one. State
+  // alone is not enough: a second save that starts before the first has
+  // returned would still see no id and insert a second draft row.
+  const draftIdRef = useRef<string | undefined>(initialDraft?.id);
+  // Saves run one after another, never side by side, for the same reason.
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve());
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   // The draft's true state for the status line: unsaved changes, saving,
@@ -684,60 +690,65 @@ export function StudioEditor({
   // has a dek and, when it has been written, a body.
   const summaryToSave = isBrief ? summary : summary || plainText.slice(0, 280);
 
-  const persistDraft = useCallback(async () => {
-    if (isPublishingRef.current) return;
-    const gen = editGenRef.current;
-    setSaveStatus("saving");
-    setSaveError(null);
-    try {
-      const res = await saveDraft({
-        id: draftId,
-        type,
-        title,
-        summary: summaryToSave,
-        body: isBrief ? undefined : JSON.stringify(latestChangeRef.current.json),
-        access,
-        price: access === "paid" ? Number(price) : null,
-        members_included: membersIncluded,
-        linked_report_id: linkedReportId,
-        feed_preview_seconds: feedPreviewSeconds,
-        min_plan_rank: access === "subscribers" ? minPlanRank : 0,
-        required_perks: access === "subscribers" ? requiredPerks : [],
-        ticker: ticker.trim() ? ticker : null,
-        direction: ticker.trim() && direction ? direction : undefined,
-        target_price: ticker.trim() && target ? Number(target) : null,
-        horizon_days: ticker.trim() ? horizon : undefined,
-        primary_tag: tags.primary,
-        secondary_tags: tags.secondary,
-        video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
-      });
-      setDraftId(res.id);
-      if (res.videoEditError) toast.error(res.videoEditError);
-      if (res.callDraftError && ticker.trim()) setCallDraftNote(res.callDraftError);
-      // Cards need the report id, so they are written after the draft row
-      // exists. A card failure must not read as a lost draft: the words are
-      // already saved by this point.
-      if (res.id) {
-        const cardRes = await saveCards(res.id, toStoredCards(deck));
-        if (!cardRes.ok) toast.error(cardRes.error ?? "Could not save the cards.");
+  const persistDraft = useCallback(() => {
+    const run = async () => {
+      if (isPublishingRef.current) return;
+      const gen = editGenRef.current;
+      setSaveStatus("saving");
+      setSaveError(null);
+      try {
+        const res = await saveDraft({
+          id: draftIdRef.current,
+          type,
+          title,
+          summary: summaryToSave,
+          body: isBrief ? undefined : JSON.stringify(latestChangeRef.current.json),
+          access,
+          price: access === "paid" ? Number(price) : null,
+          members_included: membersIncluded,
+          linked_report_id: linkedReportId,
+          feed_preview_seconds: feedPreviewSeconds,
+          min_plan_rank: access === "subscribers" ? minPlanRank : 0,
+          required_perks: access === "subscribers" ? requiredPerks : [],
+          ticker: ticker.trim() ? ticker : null,
+          direction: ticker.trim() && direction ? direction : undefined,
+          target_price: ticker.trim() && target ? Number(target) : null,
+          horizon_days: ticker.trim() ? horizon : undefined,
+          primary_tag: tags.primary,
+          secondary_tags: tags.secondary,
+          video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
+        });
+        draftIdRef.current = res.id;
+        setDraftId(res.id);
+        if (res.videoEditError) toast.error(res.videoEditError);
+        if (res.callDraftError && ticker.trim()) setCallDraftNote(res.callDraftError);
+        // Cards need the report id, so they are written after the draft row
+        // exists. A card failure must not read as a lost draft: the words are
+        // already saved by this point.
+        if (res.id) {
+          const cardRes = await saveCards(res.id, toStoredCards(deck));
+          if (!cardRes.ok) toast.error(cardRes.error ?? "Could not save the cards.");
+        }
+        setSaveStatus("saved");
+        setSavedAt(Date.now());
+        setError(null);
+        // Only clean if nothing changed while the save was in flight.
+        if (editGenRef.current === gen) {
+          dirtyRef.current = false;
+          setDirty(false);
+        }
+      } catch (e) {
+        setSaveStatus("idle");
+        const msg = e instanceof Error ? e.message : "Could not save draft. Try again.";
+        setSaveError(msg);
+        setError(msg);
+        toast.error(msg);
       }
-      setSaveStatus("saved");
-      setSavedAt(Date.now());
-      setError(null);
-      // Only clean if nothing changed while the save was in flight.
-      if (editGenRef.current === gen) {
-        dirtyRef.current = false;
-        setDirty(false);
-      }
-    } catch (e) {
-      setSaveStatus("idle");
-      const msg = e instanceof Error ? e.message : "Could not save draft. Try again.";
-      setSaveError(msg);
-      setError(msg);
-      toast.error(msg);
-    }
+    };
+    const next = saveChainRef.current.then(run, run);
+    saveChainRef.current = next;
+    return next;
   }, [
-    draftId,
     type,
     title,
     summaryToSave,
@@ -1199,6 +1210,7 @@ export function StudioEditor({
             video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
           });
           id = res.id;
+          draftIdRef.current = id;
           setDraftId(id);
         }
         setCaptureStatus("Capturing charts...");

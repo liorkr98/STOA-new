@@ -58,11 +58,20 @@ pressing Publish, no video could be dragged to a point, and Today slid sideways.
   scrolls one way only. Its horizontal bands (Verdicts) still scroll on their
   own.
 
+- **Autosave no longer writes a second draft.** Found while counting clicks:
+  pressing Continue twice within a couple of seconds on a new piece saved two
+  draft rows, because the second save started before the first had returned
+  an id. Saves now run one after another and share the id the moment it
+  exists. The seventeen test drafts this left on the marcus_webb demo account
+  were deleted.
+
 **For Krisi**
 
 - Nothing new in the database. The publish path is unchanged; the client
   refuses the same things in the same order (content, headline, tag,
   disclosures), now on two screens instead of three.
+- Any analyst may have duplicate drafts from before today; they are harmless
+  and delete from the type picker.
 - The verdict's visibility card still states the two unbuilt halves in one
   line (the call is readable by anyone; no flip to public at resolution).
 - On a phone at the report page's initial scroll, the clip's bottom edge, and
