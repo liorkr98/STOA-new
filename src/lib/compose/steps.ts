@@ -50,39 +50,39 @@ const SPINE_STEPS: Record<Exclude<StepKey, "cards" | "publish">, StepDef> = {
   video: {
     key: "video",
     label: "Video",
-    blurb: "Record one or upload one, and give it the line that travels. The Feed is where strangers find you, and this is the only type that gets there.",
+    blurb: "Record or upload a clip.",
   },
   brief: {
     key: "brief",
     label: "The take",
-    blurb: "A short written take. Say the one thing, in the words you would say it in.",
+    blurb: "A short written take.",
   },
   thesis: {
     key: "thesis",
     label: "The report",
-    blurb: "The full written argument. Depth is what a reader pays for.",
+    blurb: "The full written argument.",
   },
   call: {
     key: "call",
     label: "The call",
-    blurb: "One name, one direction, one horizon. It locks the moment you publish.",
+    blurb: "Ticker, direction, and a horizon. Target is optional.",
   },
   headline: {
     key: "headline",
     label: "Headline",
-    blurb: "One line that travels: Today, the inbox, a pasted link.",
+    blurb: "The line that travels with this.",
   },
   tags: {
     key: "tags",
     label: "Tags",
-    blurb: "Where this sits, so the right readers find it.",
+    blurb: "Where this sits.",
   },
 };
 
 export const PUBLISH_STEP: StepDef = {
   key: "publish",
   label: "Publish",
-  blurb: "What goes with it, who can read it, what you are disclosing, and out it goes.",
+  blurb: "Who can read it, then send it out.",
 };
 
 /** The content step of each type's spine. */
@@ -123,26 +123,26 @@ const FEATURES: Record<FeatureKey, FeatureDef> = {
   call: {
     key: "call",
     label: "A call",
-    what: "A ticker, a direction, a target and a horizon, locked at publish and graded by the market.",
-    blurb: "A ticker and a direction make a call; the target and the horizon say what the market grades it against.",
+    what: "Ticker, direction, horizon. Locked at publish.",
+    blurb: "Entry is the live price at publish. Target is the number you set.",
   },
   cards: {
     key: "cards",
     label: "Cards",
-    what: "Evidence a reader can swipe: the claim, the numbers, what would prove you wrong.",
-    blurb: "The short version of your argument, in the reader's hand before they commit to the whole thing.",
+    what: "Evidence a reader can swipe.",
+    blurb: "The short version of your argument, before the full piece.",
   },
   thesis: {
     key: "thesis",
     label: "A full thesis",
-    what: "The written argument under the video, for buyers and subscribers.",
-    blurb: "The full written argument. Depth is what a reader pays for.",
+    what: "The written argument under the video.",
+    blurb: "The full written argument.",
   },
   video: {
     key: "video",
     label: "A video",
-    what: "A clip to carry the call. It travels with the verdict rather than on the Feed.",
-    blurb: "Record one or upload one. It plays on the verdict for the people who can open it.",
+    what: "A clip that plays with the verdict.",
+    blurb: "Record one or upload one.",
   },
 };
 
@@ -162,8 +162,8 @@ export function featuresFor(type: PublicationType): FeatureDef[] {
         {
           ...FEATURES.thesis,
           label: "Written text",
-          what: "A brief or a full thesis under the call. Subscribers read it with the call.",
-          blurb: "A brief or a full thesis under the call. Write as much as the call needs.",
+          what: "A brief or a thesis under the call.",
+          blurb: "Write as much as the call needs.",
         },
       ];
   }

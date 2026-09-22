@@ -157,15 +157,30 @@ export function editHasOverlays(edit: { overlays: Overlay[] } | null | undefined
  * The edit as it is stored. Null when there is nothing to store, so a
  * publication with no overlays and no trim never writes the column at all.
  */
+function durableOverlayUrl(url: string | null | undefined): string | null {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  return url;
+}
+
+function sanitizeOverlay(overlay: Overlay): Overlay {
+  if (overlay.kind !== "visual") return overlay;
+  const source = overlay.source;
+  if (source.type === "upload" || source.type === "figure" || source.type === "diagram") {
+    return { ...overlay, source: { ...source, imageUrl: durableOverlayUrl(source.imageUrl) } };
+  }
+  return overlay;
+}
+
 export function toStoredVideoEdit(
   edit: VideoEdit | null,
   deck: StoredOverlayCard[],
 ): StoredVideoEdit | null {
   if (!edit) return null;
+  const overlays = edit.overlays.map(sanitizeOverlay);
   const trimmed = edit.trimStart > 0 || (edit.trimEnd > 0 && edit.trimEnd < edit.durationSeconds);
-  if (edit.overlays.length === 0 && !trimmed) return null;
+  if (overlays.length === 0 && !trimmed) return null;
   const wanted = new Set<string>();
-  for (const o of edit.overlays) {
+  for (const o of overlays) {
     if (o.kind === "visual" && o.source.type === "card" && o.source.cardId) wanted.add(o.source.cardId);
   }
   return {
@@ -173,7 +188,7 @@ export function toStoredVideoEdit(
     durationSeconds: edit.durationSeconds,
     trimStart: edit.trimStart,
     trimEnd: edit.trimEnd,
-    overlays: edit.overlays,
+    overlays,
     cards: deck.filter((c) => wanted.has(c.id)).map((c) => ({ id: c.id, kind: c.kind, locked: c.locked, payload: c.payload })),
   };
 }
@@ -189,7 +204,7 @@ export function fromStoredVideoEdit(raw: unknown): VideoEdit | null {
     trimStart: typeof e.trimStart === "number" ? e.trimStart : 0,
     trimEnd: typeof e.trimEnd === "number" ? e.trimEnd : durationSeconds,
     thumbnail: null,
-    overlays: e.overlays as Overlay[],
+    overlays: (e.overlays as Overlay[]).map(sanitizeOverlay),
   };
 }
 
@@ -203,7 +218,7 @@ export function readStoredVideoEdit(raw: unknown): StoredVideoEdit | null {
     durationSeconds: typeof e.durationSeconds === "number" ? e.durationSeconds : 0,
     trimStart: typeof e.trimStart === "number" ? e.trimStart : 0,
     trimEnd: typeof e.trimEnd === "number" ? e.trimEnd : 0,
-    overlays: e.overlays as Overlay[],
+    overlays: (e.overlays as Overlay[]).map(sanitizeOverlay),
     cards: Array.isArray(e.cards) ? (e.cards as StoredOverlayCard[]) : [],
   };
 }

@@ -5,7 +5,7 @@ import { Clapperboard } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FeedSurface } from "@/components/feed/feed-surface";
-import { clipsToPublications } from "@/lib/feed/build-publications";
+import { clipsToPublications, attachViewerSocial } from "@/lib/feed/build-publications";
 import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
@@ -67,8 +67,9 @@ export default async function FeedPage({
     at,
   ).slice(0, FEED_PAGE_SIZE);
   const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
+  const withSocial = await attachViewerSocial(publications, userId);
   const reasonsByReport = new Map(ranked.map((r) => [r.reportId, r.reasons]));
-  for (const pub of publications) pub.rankReasons = reasonsByReport.get(pub.id);
+  for (const pub of withSocial) pub.rankReasons = reasonsByReport.get(pub.id);
 
   void recordRankingImpressions({
     sessionId,
@@ -84,7 +85,7 @@ export default async function FeedPage({
     })),
   });
 
-  if (publications.length === 0) {
+  if (withSocial.length === 0) {
     return (
       <div className="mx-auto w-full max-w-[var(--w-standard)]">
         <EmptyState
@@ -101,7 +102,7 @@ export default async function FeedPage({
     );
   }
 
-  const startIndex = at ? Math.max(0, publications.findIndex((p) => p.id === at)) : 0;
+  const startIndex = at ? Math.max(0, withSocial.findIndex((p) => p.id === at)) : 0;
 
   return (
     // The Feed is the viewport. This cancels the app layout's gutter and vertical
@@ -110,7 +111,7 @@ export default async function FeedPage({
     // and the caption block pads itself clear of it.
     <div className="breakout-main breakout-under-tabs h-full min-h-0">
       <FeedSurface
-        publications={publications}
+        publications={withSocial}
         startIndex={startIndex}
         canAct
         onPost={postFeedComment}

@@ -95,3 +95,25 @@ export async function subscribedAnalystIds(subscriberId: string): Promise<string
     .eq("status", "active");
   return ((data as { analyst_id: string }[]) ?? []).map((r) => r.analyst_id);
 }
+
+export async function likedReportIds(userId: string, reportIds: string[]): Promise<Set<string>> {
+  if (reportIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("likes")
+    .select("report_id")
+    .eq("user_id", userId)
+    .in("report_id", reportIds);
+  return new Set(((data as { report_id: string }[]) ?? []).map((r) => r.report_id));
+}
+
+export async function savedReportIds(userId: string, reportIds: string[]): Promise<Set<string>> {
+  if (reportIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("saved_reports")
+    .select("report_id")
+    .eq("user_id", userId)
+    .in("report_id", reportIds);
+  return new Set(((data as { report_id: string }[]) ?? []).map((r) => r.report_id));
+}

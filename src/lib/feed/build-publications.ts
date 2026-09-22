@@ -6,6 +6,7 @@ import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { medianRate, publicationAttention, stageFor, visibleStageMarker, type AttentionSample } from "@/lib/lifecycle/stages";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { listCardsForReports } from "@/lib/db/publication-cards";
+import { followedAnalystIds, likedReportIds, savedReportIds } from "@/lib/db/social";
 import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
@@ -192,3 +193,25 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
     };
   });
 }
+
+/** Stamp the signed-in reader's like, save and follow onto Feed items. */
+export async function attachViewerSocial(
+  pubs: FeedPublication[],
+  userId: string | null,
+): Promise<FeedPublication[]> {
+  if (!userId || pubs.length === 0) return pubs;
+  const reportIds = pubs.map((p) => p.id);
+  const [liked, saved, following] = await Promise.all([
+    likedReportIds(userId, reportIds),
+    savedReportIds(userId, reportIds),
+    followedAnalystIds(userId),
+  ]);
+  const followingSet = new Set(following);
+  return pubs.map((p) => ({
+    ...p,
+    likedByMe: liked.has(p.id),
+    savedByMe: saved.has(p.id),
+    followingAnalyst: followingSet.has(p.analyst.id),
+  }));
+}
+

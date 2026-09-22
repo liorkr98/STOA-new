@@ -50,9 +50,6 @@ export function FeaturesMenu({
     >
       <div className="border-b border-border px-4 py-3">
         <p className="t-eyebrow">Add to this {typeNoun}</p>
-        <p className="mt-1 text-[12px] leading-snug text-text-mute">
-          Optional, every one of them. Each opens its own editor and brings you back here.
-        </p>
       </div>
       <ul className="divide-y divide-border">
         {rows.map((row) => {

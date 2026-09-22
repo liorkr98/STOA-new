@@ -1,18 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Check, Lock, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { Button } from "@/components/ui/button";
 import type { AccessType, Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
 import type { SymbolLookup } from "@/lib/market/use-symbol-lookup";
-import { attestPrice, type AttestedPriceData } from "@/services/price-attestation";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import { HorizonPicker } from "@/components/editor/horizon-picker";
 import { exchangeTimeZoneFor } from "@/lib/engine/trading-calendar";
-import { PriceAttestationCard } from "@/components/ui/price-attestation-card";
 
 const inputClass =
   "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
@@ -81,8 +78,7 @@ function SymbolStatus({ lookup, onRetry }: { lookup: SymbolLookup; onRetry?: () 
       <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--down)]" role="alert">
         <X size={13} aria-hidden className="mt-px shrink-0" />
         <span>
-          <span className="num font-semibold">{lookup.symbol}</span> was not found. Check the symbol:
-          a call on a name that cannot be priced can never be graded.
+          <span className="num font-semibold">{lookup.symbol}</span> was not found. Check the symbol.
         </span>
       </p>
     );
@@ -215,8 +211,8 @@ export function LockPublishPanel({
   /**
    * Which part of the panel to render. The guided sequence asks for the call
    * in its own step and the publishing settings in the last one, so the same
-   * panel is mounted twice rather than duplicating the ticker, the live quote
-   * and the price attestation. "all" is the original single panel.
+   * panel is mounted twice rather than duplicating the ticker and the live
+   * quote. "all" is the original single panel.
    */
   sections?: "call" | "publish" | "all";
 }) {
@@ -226,76 +222,6 @@ export function LockPublishPanel({
   const resolved = lookup.status === "found" ? lookup.resolved : null;
   const live = hasCard && resolved ? resolved.price : null;
   const quotedAsYield = resolved?.quotedAsYield ?? false;
-  const [committedTicker, setCommittedTicker] = useState("");
-  const [attestationLoading, setAttestationLoading] = useState(false);
-  const [attestationError, setAttestationError] = useState<string | null>(null);
-  const [attestationData, setAttestationData] = useState<AttestedPriceData | null>(null);
-  const lastAttestedRef = useRef<{ ticker: string; data: AttestedPriceData | null }>({
-    ticker: "",
-    data: null,
-  });
-
-  function resetAttestation() {
-    setCommittedTicker("");
-    setAttestationLoading(false);
-    setAttestationError(null);
-    setAttestationData(null);
-    lastAttestedRef.current = { ticker: "", data: null };
-  }
-
-  async function attestLockedTicker(raw: string) {
-    const normalized = raw.trim().toUpperCase();
-    if (!normalized || !/^[A-Z]{1,5}(\.TA)?$/.test(normalized)) {
-      resetAttestation();
-      return;
-    }
-
-    if (lastAttestedRef.current.ticker === normalized && lastAttestedRef.current.data) {
-      setCommittedTicker(normalized);
-      setAttestationData(lastAttestedRef.current.data);
-      setAttestationError(null);
-      setAttestationLoading(false);
-      return;
-    }
-
-    setCommittedTicker(normalized);
-    setAttestationLoading(true);
-    setAttestationError(null);
-    setAttestationData(null);
-
-    const market = normalized.endsWith(".TA") ? "IL" : "US";
-    const result = await attestPrice({ ticker: normalized, market });
-    if (result.success) {
-      lastAttestedRef.current = { ticker: normalized, data: result.data };
-      setAttestationData(result.data);
-      setAttestationError(null);
-    } else {
-      lastAttestedRef.current = { ticker: normalized, data: null };
-      setAttestationData(null);
-      setAttestationError(result.error);
-    }
-    setAttestationLoading(false);
-  }
-
-  function onTickerInputChange(value: string) {
-    const next = value.toUpperCase();
-    onTicker(next);
-    const normalized = next.trim().toUpperCase();
-    if (!normalized) {
-      resetAttestation();
-      return;
-    }
-    if (committedTicker && normalized !== committedTicker) {
-      setCommittedTicker("");
-      setAttestationData(null);
-      setAttestationError(null);
-      lastAttestedRef.current = { ticker: "", data: null };
-    }
-  }
-
-  function commitTickerFromField() {
-    void attestLockedTicker(ticker);
-  }
 
   const targetNum = Number(target);
   // A yield is compared in points, not percent: 4.2% to 4.5% is a move of
@@ -342,19 +268,17 @@ export function LockPublishPanel({
       {hasCard && sections !== "publish" && !frozen && (
         <section
           className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-4"
-          aria-label="Price target"
+          aria-label="The call"
         >
           <div className="mb-3 flex items-center justify-between">
-            <p className="t-eyebrow">Price target</p>
+            <p className="t-eyebrow">The call</p>
             <span className="t-meta flex items-center gap-1 text-[11px]">
               <Lock size={13} aria-hidden />
               optional
             </span>
           </div>
           <p className="t-meta mb-3 text-[11px] leading-relaxed">
-            Add a ticker to lock a call at publish. Leave blank if this piece has no target.
-            Stocks go by ticker; gold is XAUUSD, WTI crude USOIL, Brent UKOIL, the ten-year
-            US10Y, bitcoin BTCUSD.
+            Ticker and direction lock a call. Target is where you think it goes, not the live price.
           </p>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -362,15 +286,7 @@ export function LockPublishPanel({
               Ticker
               <input
                 value={ticker}
-                onChange={(e) => onTickerInputChange(e.target.value)}
-                onBlur={commitTickerFromField}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    commitTickerFromField();
-                    (e.target as HTMLInputElement).blur();
-                  }
-                }}
+                onChange={(e) => onTicker(e.target.value.toUpperCase())}
                 aria-invalid={lookup.status === "missing" || undefined}
                 className={cn(
                   inputClass,
@@ -399,11 +315,6 @@ export function LockPublishPanel({
           <div className="mt-2.5" role="radiogroup" aria-label="Direction">
             <p className="text-xs font-medium text-text-mute">
               Direction
-              {direction === null ? (
-                <span className="t-meta ml-1.5 text-[11px] font-normal">
-                  choose one: a call is a ticker and a direction
-                </span>
-              ) : null}
             </p>
             <div className="mt-1 flex gap-1.5">
               {(["long", "short", "hold"] as Direction[]).map((d) => (
@@ -433,12 +344,12 @@ export function LockPublishPanel({
           {resolved && (
             <div className="mt-3 border-t border-dashed border-border pt-3">
               <div className="flex items-baseline justify-between">
-                <span className="t-meta">{quotedAsYield ? "Current yield" : "Current"}</span>
+                <span className="t-meta">{quotedAsYield ? "Entry yield" : "Entry"}</span>
                 <span className="num text-lg font-semibold">{resolved.priceLabel ?? "-"}</span>
               </div>
               {resolved.priceLabel ? (
                 <p className="t-meta mt-0.5 text-[11px]">
-                  This is the level the call locks at when you publish.
+                  Live price now. This becomes the entry when you publish, not the target.
                 </p>
               ) : (
                 <p className="t-meta mt-0.5 text-[11px]">
@@ -461,17 +372,6 @@ export function LockPublishPanel({
                   Target moves against a {direction} call. Double-check the number.
                 </p>
               )}
-            </div>
-          )}
-
-          {committedTicker && (
-            <div className="mt-3 border-t border-dashed border-border pt-3">
-              <PriceAttestationCard
-                title="Attestation protocol"
-                loading={attestationLoading}
-                error={attestationError}
-                data={attestationData}
-              />
             </div>
           )}
         </section>
@@ -616,10 +516,11 @@ export function LockPublishPanel({
           <p className="t-meta text-center text-[11px]">{publishDisabledReason}</p>
         )}
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
-        <p className="t-meta text-center text-[11px] text-text-faint">
-          A locked call cannot be edited. The headline, the text and the tags can be, and
-          every edit is shown on the publication.
-        </p>
+        {hasCard ? (
+          <p className="t-meta text-center text-[11px] text-text-faint">
+            A locked call cannot be edited. The headline, the text and the tags can be.
+          </p>
+        ) : null}
       </div>
       )}
     </div>

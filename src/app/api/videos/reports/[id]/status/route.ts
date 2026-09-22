@@ -17,9 +17,9 @@ export const GET = withHandler<{ id: string }>(
     rateLimit: { name: "clip-status", limit: 60, windowSeconds: 60, by: "ip" },
   },
   async ({ user, params }) => {
-    const status = await getPublicClipStatus(params.id, user?.id ?? null);
+    const payload = await getPublicClipStatus(params.id, user?.id ?? null);
     return NextResponse.json(
-      { status },
+      payload,
       { headers: { "Cache-Control": "no-store" } },
     );
   },

@@ -58,12 +58,9 @@ const FORBIDDEN_PATTERNS: { name: string; re: RegExp }[] = [
 ];
 
 const DISCLOSURE_MARKERS = [
-  /attested/i,
-  /latency/i,
   /certified independent/i,
   /holds a position/i,
   /these are the creator/i,
-  /price locked via delayed exchange feed/i,
 ];
 
 async function fetchOnce(
@@ -166,15 +163,15 @@ function inspectBrand(html: string, sourceLabel: string): Check[] {
     re.source.replace(/\\/g, ""),
   );
   checks.push({
-    name: `Feature #5: disclosure / attestation markers [${sourceLabel}]`,
+    name: `Feature #5: disclosure markers [${sourceLabel}]`,
     pass: disclosureHits.length > 0,
     soft: sourceLabel.startsWith("markets"),
     detail:
       disclosureHits.length > 0
         ? `Matched: ${disclosureHits.join(", ")}`
         : sourceLabel.startsWith("markets")
-          ? "Attestation/disclosure copy is usually on report or /dev/components, not bare markets SSR (soft)"
-          : "No Attested/latency/disclosure copy found",
+          ? "Disclosure copy is usually on a report, not bare markets SSR (soft)"
+          : "No disclosure copy found",
   });
 
   for (const bad of FORBIDDEN_PATTERNS) {

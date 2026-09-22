@@ -238,10 +238,10 @@ export function TagPicker({
     <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4" aria-label="Tags">
       <p className="t-eyebrow mb-1">Tags</p>
       <p className="mb-3 text-[12px] leading-snug text-text-mute">
-        One primary tag places this publication; up to two secondary tags make it searchable. Three total.
+        One primary tag. Up to two more for search.
       </p>
 
-      <div className="num mb-1.5 text-[10px] uppercase tracking-[0.16em] text-text-mute">Primary · drives placement</div>
+      <div className="num mb-1.5 text-[10px] uppercase tracking-[0.16em] text-text-mute">Primary</div>
       <div className="flex flex-wrap items-center gap-2">
         {primary ? (
           <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-tag)] bg-[var(--ink)] px-2.5 py-1 text-[12px] font-medium text-[var(--paper)]">

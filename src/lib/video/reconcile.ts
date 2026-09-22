@@ -11,6 +11,7 @@ import {
   isAbandonedUpload,
   isByteLessUpload,
   isStuckEmptyUpload,
+  isBunnyPlaybackReady,
   MAX_VIDEO_DURATION_SECONDS,
 } from "@/lib/video/bunny";
 import {
@@ -57,7 +58,7 @@ export async function reconcileClip(
   }
 
   const durationSeconds = clipDurationSeconds(video.length);
-  const finished = video.status === 4;
+  const finished = isBunnyPlaybackReady(video);
   const failed =
     video.status === 5 ||
     video.status === 6 ||

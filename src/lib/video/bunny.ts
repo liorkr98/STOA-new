@@ -185,6 +185,16 @@ export function isStuckEmptyUpload(video: BunnyVideoState): boolean {
   return created != null && Date.now() - created > BYTELESS_UPLOAD_AFTER_MS;
 }
 
+/**
+ * Bunny reports Finished (4) when every rendition is written. Encoding can
+ * sit at 100% on status 3 for a while before that flip; the playlist is
+ * already there, so waiting for 4 is idle time on a clip that can play.
+ */
+export function isBunnyPlaybackReady(video: BunnyVideoState): boolean {
+  if (video.status === 4) return true;
+  return video.status === 3 && (video.encodeProgress ?? 0) >= 100;
+}
+
 /** Create the video object, returning its GUID. Duration is unknown until upload finishes. */
 export async function createBunnyVideo(title: string): Promise<{ guid: string }> {
   const result = (await bunnyFetch("/videos", {

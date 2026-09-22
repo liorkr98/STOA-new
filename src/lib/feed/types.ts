@@ -82,4 +82,10 @@ export interface FeedPublication {
   publishedAt: string;
   /** Logged with the impression; not rendered. */
   rankReasons?: string[];
+  /** The signed-in reader has liked this publication. */
+  likedByMe?: boolean;
+  /** The signed-in reader has saved this publication. */
+  savedByMe?: boolean;
+  /** The signed-in reader follows this analyst. */
+  followingAnalyst?: boolean;
 }
