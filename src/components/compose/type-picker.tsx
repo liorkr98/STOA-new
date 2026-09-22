@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { ComposeHeader } from "@/components/compose/compose-header";
 import { ComposeBackLink } from "@/components/compose/compose-back-link";
@@ -17,9 +16,9 @@ import { VERDICT_WINDOW_DAYS, type VerdictWindow } from "@/lib/compose/verdict";
  * Four jobs rather than four file types, described by purpose, because
  * "reach people who don't know you" is a question an analyst can answer
  * about today and "video" is not. On a phone all four fit above the fold as
- * compact rows whose detail opens on a tap; on a desktop they are four
- * cards. Under them, the drafts: type, headline, when it was last touched,
- * and how far along its spine it is (two steps for a video, three otherwise).
+ * compact rows, each one tap to start; on a desktop they are four cards.
+ * Under them, the drafts: type, headline, when it was last touched, and how
+ * far along its two-step spine it is.
  */
 
 export interface PickerDraft extends DraftSummary {
@@ -92,68 +91,53 @@ function TypeCard({ def, window }: { def: PublicationTypeDef; window: VerdictWin
   );
 }
 
-/** The phone's compact row: everything on one line, detail on a tap. */
-function TypeRow({
-  def,
-  window,
-  open,
-  onToggle,
-}: {
-  def: PublicationTypeDef;
-  window: VerdictWindow;
-  open: boolean;
-  onToggle: () => void;
-}) {
+/**
+ * The phone's compact row: one tap starts the type. It used to be a
+ * disclosure whose detail and Start button opened on a tap, which cost a
+ * second tap on every publication; the row now carries what the card says
+ * (the label, its purpose, who sees it) and is itself the link.
+ */
+function TypeRow({ def, window }: { def: PublicationTypeDef; window: VerdictWindow }) {
   const verdict = def.key === "verdict";
   const locked = verdict && !window.open;
-  return (
-    <li
-      className={cn(
-        "rounded-[var(--radius-card)] border",
-        verdict ? "border-border-strong bg-surface-2" : "border-border bg-surface",
-      )}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="focus-ring flex w-full items-start gap-3 rounded-[var(--radius-card)] px-3.5 py-3 text-left"
-      >
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
-            <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{def.label}</span>
-            {verdict ? <VerdictChip window={window} /> : null}
+  const inner = (
+    <>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{def.label}</span>
+          {verdict ? <VerdictChip window={window} /> : null}
+        </span>
+        <span className="mt-1 line-clamp-2 block font-display text-[1.125rem] font-semibold leading-tight tracking-tight text-text">
+          {def.purpose}
+        </span>
+        {locked ? (
+          <span className="mt-1 block text-[0.8125rem] leading-snug text-text">
+            {window.line}. Until then, a call can ride on a video, a brief or a thesis.
           </span>
-          <span className="mt-1 line-clamp-2 block font-display text-[1.125rem] font-semibold leading-tight tracking-tight text-text">
-            {def.purpose}
-          </span>
+        ) : (
           <span className="num mt-1 block truncate text-[9px] uppercase tracking-[0.14em] text-text-faint">
             Seen by · {def.seenBy}
           </span>
-        </span>
-        <ChevronDown
-          size={14}
-          aria-hidden
-          className={cn("mt-2 shrink-0 text-text-faint transition-transform", open && "rotate-180")}
-        />
-      </button>
-      {open ? (
-        <div className="border-t border-border px-3.5 py-3">
-          <p className="text-[0.875rem] leading-relaxed text-text-mute">{def.detail}</p>
-          {locked ? (
-            <p className="mt-2 text-[0.8125rem] leading-snug text-text">
-              {window.open ? null : window.line}. Until then, a call can ride on a video, a brief or a thesis.
-            </p>
-          ) : (
-            <Link
-              href={typeHref(def.key)}
-              className="focus-ring mt-3 inline-flex h-9 items-center rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 text-[0.8125rem] font-medium text-[var(--paper)]"
-            >
-              Start a {def.label.toLowerCase()}
-            </Link>
-          )}
+        )}
+      </span>
+      {locked ? null : <ChevronRight size={16} aria-hidden className="mt-2 shrink-0 text-text-faint" />}
+    </>
+  );
+  const cls = cn(
+    "flex w-full items-start gap-3 rounded-[var(--radius-card)] border px-3.5 py-3 text-left",
+    verdict ? "border-border-strong bg-surface-2" : "border-border bg-surface",
+  );
+  return (
+    <li>
+      {locked ? (
+        <div className={cn(cls, "cursor-default")} aria-disabled>
+          {inner}
         </div>
-      ) : null}
+      ) : (
+        <Link href={typeHref(def.key)} className={cn(cls, "focus-ring")}>
+          {inner}
+        </Link>
+      )}
     </li>
   );
 }
@@ -228,7 +212,6 @@ export function ComposePicker({
   drafts: PickerDraft[];
   verdictWindow: VerdictWindow;
 }) {
-  const [openRow, setOpenRow] = useState<PublicationType | null>(null);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -249,8 +232,7 @@ export function ComposePicker({
         </p>
 
         {/* Four cards on a desktop; four compact rows on a phone, all four above the
-            fold, with the detail opening on a tap. Two renderings rather than one
-            that reflows, because the phone's row is a disclosure and the card is a link. */}
+            fold, each a link that starts its type in one tap. */}
         <div className="mt-6 hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-4">
           {PUBLICATION_TYPES.map((def) => (
             <TypeCard key={def.key} def={def} window={window} />
@@ -258,13 +240,7 @@ export function ComposePicker({
         </div>
         <ul className="mt-4 flex flex-col gap-2 md:hidden">
           {PUBLICATION_TYPES.map((def) => (
-            <TypeRow
-              key={def.key}
-              def={def}
-              window={window}
-              open={openRow === def.key}
-              onToggle={() => setOpenRow(openRow === def.key ? null : def.key)}
-            />
+            <TypeRow key={def.key} def={def} window={window} />
           ))}
         </ul>
 
