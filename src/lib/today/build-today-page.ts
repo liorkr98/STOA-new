@@ -8,7 +8,6 @@ import { listPendingClipsForReports, listVideoClipCards } from "@/lib/db/video-c
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { createClient } from "@/lib/supabase/server";
 import { getQuotesBatch } from "@/lib/engine/market";
-import { MARKET_THEMES } from "@/lib/markets/themes";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
@@ -34,12 +33,10 @@ import type {
   TodayItem,
   TodayPagePayload,
   TodaySidebarPayload,
-  TodayThemeCluster,
   TodayTickerRow,
   TodayVerdict,
 } from "@/lib/today/types";
 
-const DAY = 86_400_000;
 
 function toAnalyst(profile: Profile): TodayAnalyst {
   return { id: profile.id, handle: profile.handle, displayName: profile.display_name, avatarUrl: profile.avatar_url };
@@ -238,12 +235,26 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const lead = leadReport ? items.get(leadReport.id) ?? null : null;
   const used = new Set<string>(lead ? [lead.reportId] : []);
 
-  const secondary = fillBand(
-    ranked.filter((r) => !used.has(r.id) && items.has(r.id)).map((r) => items.get(r.id)!),
-    3,
-    (it) => hasClip(it.reportId),
-  );
-  for (const it of secondary) used.add(it.reportId);
+  const remaining = () =>
+    ranked.filter((r) => !used.has(r.id) && items.has(r.id)).map((r) => items.get(r.id)!);
+  const take = (list: TodayItem[]) => {
+    for (const it of list) used.add(it.reportId);
+    return list;
+  };
+
+  // The two follow-ups under the lead: coverage on the same name first, then
+  // the same sector or theme, then whatever ranks next. The lead and its
+  // follow-ups are meant to read as one package.
+  const kin = (it: TodayItem) =>
+    Boolean(lead) &&
+    ((lead!.ticker != null && it.ticker === lead!.ticker) ||
+      (lead!.sector != null && it.sector === lead!.sector) ||
+      (lead!.themeTag != null && it.themeTag === lead!.themeTag));
+  const followUps = take([...remaining().filter(kin), ...remaining().filter((it) => !kin(it))].slice(0, 2));
+  // Two picture stories beside the lead: they need a ready clip to be pictures.
+  const pictures = take(remaining().filter((it) => it.thumb && !it.thumb.processing).slice(0, 2));
+  // Four text stories on the other side; a clip is not shown there.
+  const textStories = take(remaining().slice(0, 4));
 
   // The velocity gate is unweighted and is a filter, not a stopping point: the
   // order is now the weighted one, so a publication with no velocity can sort
@@ -253,7 +264,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     ranked
       .filter((r) => !used.has(r.id) && items.has(r.id) && trendingScore(pubSamples.get(r.id)!, now) > 0)
       .map((r) => items.get(r.id)!),
-    16,
+    5,
     (it) => hasClip(it.reportId),
   );
 
@@ -284,30 +295,6 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     ...verdictsAll.filter((v, i) => !deskSet.has(resolved[i].author_id)),
     ...verdictsAll.filter((v, i) => deskSet.has(resolved[i].author_id)),
   ].slice(0, 12);
-
-  // Theme cluster: the editorial theme with the most publications this week.
-  const weekAgo = now - 7 * DAY;
-  let theme: TodayThemeCluster | null = null;
-  for (const t of MARKET_THEMES) {
-    const set = new Set(t.tickers.map((x) => x.toUpperCase()));
-    const inTheme = pool.filter((r) => {
-      const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase();
-      return sym && set.has(sym);
-    });
-    const thisWeek = inTheme.filter((r) => Date.parse(r.published_at ?? r.created_at) >= weekAgo).length;
-    if (thisWeek >= 2 && (!theme || thisWeek > theme.publicationsThisWeek)) {
-      theme = {
-        slug: t.slug,
-        name: t.name,
-        publicationsThisWeek: thisWeek,
-        items: fillBand(
-          inTheme.flatMap((r) => (items.has(r.id) ? [items.get(r.id)!] : [])),
-          8,
-          (it) => hasClip(it.reportId),
-        ),
-      };
-    }
-  }
 
   // Sidebar lists. Every creator row says whether the reader already follows
   // or pays the analyst, so the same row shows Follow in Trending or Popular
@@ -363,11 +350,12 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     issue: { issueNumber, dateISO },
     personalized: Boolean(userId),
     lead,
-    secondary,
+    followUps,
+    pictures,
+    textStories,
     trending,
     desk,
     verdicts,
-    theme,
     news: [],
     sidebar,
   };

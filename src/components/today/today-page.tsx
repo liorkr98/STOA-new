@@ -1,69 +1,67 @@
-import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
-import { TodaySidebar } from "@/components/today/today-sidebar";
-import { TodayTrending } from "@/components/today/today-trending";
-import {
-  TodayDeskRail,
-  TodayLeadSplit,
-  TodayNews,
-  TodayThemeRail,
-  TodayVerdictsRail,
-} from "@/components/today/today-front";
-import { ScrollFrame } from "@/components/layout/scroll-frame";
-import { SCROLL_COLUMN } from "@/lib/layout/frame";
-import { cn } from "@/lib/design/cn";
-import type { TodayPagePayload } from "@/lib/today/types";
 import type { ReactNode } from "react";
+import { TodayShell } from "@/components/today/today-shell";
+import { TodayNameplate } from "@/components/today/today-nameplate";
+import { TodayListsButton, TodaySidebar } from "@/components/today/today-sidebar";
+import { TodayPackage } from "@/components/today/today-package";
+import { DeskGrid, NewsSheet, TrendingList, VerdictLedger } from "@/components/today/today-sections";
+import type { TodayPagePayload } from "@/lib/today/types";
 
 /**
- * Today (/home): Stoa's daily newspaper. A persistent left sidebar of grouped
- * lists beside the main column; a masthead; a split lead; then bands that
- * each scroll horizontally on their own; a quiet wire-news list last.
+ * Today (/home): Stoa's daily broadsheet.
  *
- * The page is a frame that fills the room under the nav, and the sidebar and
- * the main column scroll on their own inside it. The sidebar used to be a
- * sticky column pinned 80px down, a nav's height that was not above it (the
- * nav sits outside the scrolling column), so it sat a band lower than it
- * should have. Nothing here is pinned to anything now.
+ * The rail beside a 12-column page (20px gutters) on a desktop, 4 columns
+ * (16px gutters, 16px margins) on a phone. The nameplate, then the top
+ * package around the lead, then Trending now beside Your desk, the
+ * Verdicts ledger and Market news, 60px apart. Nothing scrolls sideways on
+ * a desktop; on a phone only Your desk does, and the page is one document
+ * scroll with the nameplate and the lead on the first screen.
  */
 export function TodayPage({ data, news }: { data: TodayPagePayload; news?: ReactNode }) {
   const hasAnything =
-    data.lead || data.trending.length || data.desk.length || data.verdicts.length || data.theme || data.news.length;
+    data.lead || data.trending.length || data.desk.length || data.verdicts.length || data.news.length;
 
   return (
-    <ScrollFrame className="dispatch-page dispatch-page--home flex-col gap-4 md:flex-row md:gap-10">
+    <TodayShell>
       <TodaySidebar data={data.sidebar} />
 
-      <article className={cn(SCROLL_COLUMN, "flex-1 pt-2 sm:pt-4")}>
-        <DispatchMasthead
+      <article className="ts-column -mx-1 flex-1 md:mx-0">
+        <TodayNameplate
           issueNumber={data.issue.issueNumber}
           dateIso={data.issue.dateISO}
-          readMinutes={0}
           personalized={data.personalized}
-          mode="home"
+          lists={<TodayListsButton data={data.sidebar} />}
         />
 
-        {data.lead ? <TodayLeadSplit lead={data.lead} secondary={data.secondary} /> : null}
+        {data.lead ? (
+          <TodayPackage
+            lead={data.lead}
+            followUps={data.followUps}
+            pictures={data.pictures}
+            textStories={data.textStories}
+            className="mt-8"
+          />
+        ) : null}
 
-        <TodayTrending items={data.trending} />
-        <TodayDeskRail items={data.desk} />
-        <TodayVerdictsRail verdicts={data.verdicts} />
-        {data.theme ? <TodayThemeRail theme={data.theme} /> : null}
-        {news ?? <TodayNews items={data.news} />}
+        {data.trending.length > 0 || data.desk.length > 0 ? (
+          <div className="ts-section grid grid-cols-4 gap-x-4 gap-y-[60px] md:grid-cols-12 md:gap-x-5">
+            <TrendingList items={data.trending} className="col-span-4 md:col-span-5" />
+            <DeskGrid items={data.desk} className="col-span-4 md:col-span-6 md:col-start-7" />
+          </div>
+        ) : null}
+
+        <VerdictLedger verdicts={data.verdicts} className="ts-section" />
+        {news ?? <NewsSheet items={data.news} className="ts-section" />}
 
         {!hasAnything ? (
-          <p className="mt-16 text-center font-display text-lg text-text-mute">
+          <p className="ts-headline mt-16 text-center text-text-mute">
             Nothing has been published yet. Today fills as analysts publish.
           </p>
         ) : null}
 
-        <footer className="today-end">
-          <p className="today-end-slug">
-            That&apos;s today&apos;s issue
-            <span aria-hidden> · </span>
-            check back tomorrow
-          </p>
+        <footer className="ts-section ts-rule pb-10 pt-6 text-center">
+          <p className="ts-mono">That&apos;s today&apos;s issue · check back tomorrow</p>
         </footer>
       </article>
-    </ScrollFrame>
+    </TodayShell>
   );
 }

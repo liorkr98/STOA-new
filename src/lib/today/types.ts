@@ -159,22 +159,29 @@ export interface TodayDeskItem extends TodayItem {
   relationship: "member" | "following";
 }
 
-export interface TodayThemeCluster {
-  slug: string;
-  name: string;
-  publicationsThisWeek: number;
-  items: TodayItem[];
-}
-
+/**
+ * The front page: a top package around the lead, then the sections.
+ *
+ * The package is the lead, two follow-ups under it (coverage on the same
+ * name or the same sector first, so the lead and its follow-ups read as one
+ * story), two picture stories beside it and four text stories on the other
+ * side. Each list is already cut to its slot; nothing on the page is wider
+ * than the screen, so nothing needs a rail.
+ */
 export interface TodayPagePayload {
   issue: { issueNumber: number; dateISO: string };
   personalized: boolean;
   lead: TodayItem | null;
-  secondary: TodayItem[];
+  /** Two, under the lead: the same ticker, sector or theme when there is any. */
+  followUps: TodayItem[];
+  /** Two picture stories, each with a ready clip. */
+  pictures: TodayItem[];
+  /** Four text-only stories. */
+  textStories: TodayItem[];
+  /** Five, by velocity. */
   trending: TodayItem[];
   desk: TodayDeskItem[];
   verdicts: TodayVerdict[];
-  theme: TodayThemeCluster | null;
   news: NewsItem[];
   sidebar: TodaySidebarPayload;
 }

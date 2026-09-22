@@ -104,12 +104,13 @@ const verdicts: TodayVerdict[] = [
   { reportId: "v5", ticker: "ZION", direction: "short", outcome: "miss", headline: "The deposit beta squeeze", entryPrice: 44.1, exitPrice: 47.9, returnPct: -8.6, resolvedAt: hoursAgo(50), author: MARCUS },
   { reportId: "v6", ticker: "FCX", direction: "long", outcome: "hit", headline: "Copper into the summer restock", entryPrice: 41.2, exitPrice: 48.9, returnPct: 18.7, resolvedAt: hoursAgo(70), author: NOOR },
 ];
-const theme = {
-  slug: "ai-buildout",
-  name: "The AI buildout",
-  publicationsThisWeek: 7,
-  items: [lead, trending[1], trending[4], trending[5], trending[10], trending[11]],
-};
+// The package around the lead: two follow-ups on the same name or sector
+// (the builder's kin rule), two picture stories, four text stories. The
+// trending five come from the rest.
+const followUps = [trending[1], trending[4]];
+const pictures = [secondary[1], trending[0]];
+const textStories = [secondary[0], secondary[2], trending[3], trending[6]];
+const trendingFive = [trending[2], trending[5], trending[7], trending[8], trending[9]];
 
 const creator = (a: TodayAnalyst, marker: TodayCreatorRow["marker"] = null, followed = false): TodayCreatorRow => ({
   id: `fx-${a.handle}`, handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, followed,
@@ -143,11 +144,12 @@ export default async function DevTodayPage({
     issue: { issueNumber: 41, dateISO: "2026-08-18" },
     personalized: !signedOut,
     lead: activeLead,
-    secondary,
-    trending,
+    followUps,
+    pictures,
+    textStories,
+    trending: trendingFive,
     desk: signedOut ? [] : desk,
     verdicts,
-    theme,
     news,
     sidebar: {
       // Followed flags mirror the desk below: PRIYA and KAI are memberships,

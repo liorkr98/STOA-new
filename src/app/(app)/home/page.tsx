@@ -25,7 +25,7 @@ export default async function HomePage() {
         data={data}
         news={
           <Suspense fallback={null}>
-            <TodayNewsSlot />
+            <TodayNewsSlot variant="sheet" />
           </Suspense>
         }
       />
