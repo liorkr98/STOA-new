@@ -10,15 +10,13 @@ import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { cachedPage } from "@/lib/cache/page";
 import type { MarketRow } from "@/lib/markets/types";
 import type { TodayItem } from "@/lib/today/types";
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { Profile, Report } from "@/lib/types";
 import { publicationRow as normalizeReport, REPORT_SELECT, stanceChips } from "@/lib/db/publication-row";
 
 const WEEK_MS = 7 * 86_400_000;
 
 export interface SectorName extends MarketRow {
   publications: number;
-  /** Coverage volume, not a stance: open calls on this name. */
-  openCalls: number;
 }
 
 export interface SectorAnalyst {
@@ -26,7 +24,8 @@ export interface SectorAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
-  calls: number;
+  /** Their publications on this sector's names in the window read. */
+  publications: number;
   following: boolean;
 }
 
@@ -38,8 +37,6 @@ export interface SectorPayload {
   names: SectorName[];
   /** Equal-weight average of the listed names' day changes; null until quotes carry it. */
   dayChangeEqualWeight: number | null;
-  openCalls: number;
-  resolvedCount: number;
   publications: TodayItem[];
   analysts: SectorAnalyst[];
 }
@@ -59,9 +56,7 @@ export function canonicalSector(name: string): string | null {
  */
 function toItem(report: Report, sector: string): TodayItem | null {
   if (!report.author) return null;
-  const hasCall = Boolean(report.prediction);
   const badge: string[] = [];
-  if (hasCall) badge.push("Call");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
   if (badge.length === 0) badge.push("Note");
   const themeTag = report.ticker ? null : sector.toUpperCase();
@@ -122,28 +117,18 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
   const since = new Date(Date.now() - WEEK_MS);
   const symbols = await sectorSymbols(sector);
 
-  const [{ data: reportRows }, { data: predictionRows }] = await Promise.all([
-    symbols.length
-      ? supabase
-          .from("reports")
-          .select(REPORT_SELECT)
-          .in("status", ["published", "resolution_pending_review"])
-          .in("ticker", symbols)
-          .order("published_at", { ascending: false })
-          .limit(120)
-      : Promise.resolve({ data: [] }),
-    symbols.length
-      ? supabase
-          .from("predictions")
-          .select("*, author:profiles!predictions_author_id_fkey(*)")
-          .in("ticker", symbols)
-          .limit(600)
-      : Promise.resolve({ data: [] }),
-  ]);
+  const { data: reportRows } = symbols.length
+    ? await supabase
+        .from("reports")
+        .select(REPORT_SELECT)
+        .in("status", ["published", "resolution_pending_review"])
+        .in("ticker", symbols)
+        .order("published_at", { ascending: false })
+        .limit(120)
+    : { data: [] };
 
   const followedIds = new Set<string>();
   const reports = ((reportRows as Record<string, unknown>[]) ?? []).map(normalizeReport);
-  const predictions = (predictionRows as (Prediction & { author?: Profile | null })[]) ?? [];
 
   const coverage = new Map<string, number>();
   let publicationsThisWeek = 0;
@@ -153,29 +138,14 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
     if ((r.published_at ?? r.created_at) >= since.toISOString()) publicationsThisWeek += 1;
   }
 
-  const openBySymbol = new Map<string, number>();
   const analystIds = new Set<string>();
-  const perAnalyst = new Map<string, { profile: Profile; calls: number }>();
-  let openCalls = 0;
-  let resolvedCount = 0;
-
-  for (const p of predictions) {
-    const sym = p.ticker?.toUpperCase();
-    if (!sym) continue;
-    analystIds.add(p.author_id);
-
-    if (p.author) {
-      const entry = perAnalyst.get(p.author_id) ?? { profile: p.author, calls: 0 };
-      entry.calls += 1;
-      perAnalyst.set(p.author_id, entry);
-    }
-
-    if (p.outcome === "open") {
-      openCalls += 1;
-      openBySymbol.set(sym, (openBySymbol.get(sym) ?? 0) + 1);
-    } else {
-      resolvedCount += 1;
-    }
+  const perAnalyst = new Map<string, { profile: Profile; publications: number }>();
+  for (const r of reports) {
+    analystIds.add(r.author_id);
+    if (!r.author) continue;
+    const entry = perAnalyst.get(r.author_id) ?? { profile: r.author, publications: 0 };
+    entry.publications += 1;
+    perAnalyst.set(r.author_id, entry);
   }
 
   // The eight most-covered names, falling back to the largest in the sector so
@@ -201,7 +171,6 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
         changePercent: quotes.get(symbol)?.changePercent ?? null,
         marketCap: row?.market_cap ?? null,
         publications: coverage.get(symbol) ?? 0,
-        openCalls: openBySymbol.get(symbol) ?? 0,
       },
     ];
   });
@@ -209,14 +178,14 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
   // Ordered by how much they publish here, not by Track Score. Ranking the
   // analysts against each other is the thing this surface no longer does.
   const analysts: SectorAnalyst[] = [...perAnalyst.values()]
-    .sort((a, b) => b.calls - a.calls)
+    .sort((a, b) => b.publications - a.publications)
     .slice(0, 4)
     .map((a) => ({
       id: a.profile.id,
       handle: a.profile.handle,
       displayName: a.profile.display_name,
       avatarUrl: a.profile.avatar_url,
-      calls: a.calls,
+      publications: a.publications,
       following: followedIds.has(a.profile.id),
     }));
 
@@ -239,8 +208,6 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
     analystsActive: analystIds.size,
     publicationsThisWeek,
     names,
-    openCalls,
-    resolvedCount,
     publications,
     analysts,
   };

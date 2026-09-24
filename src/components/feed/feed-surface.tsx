@@ -19,7 +19,6 @@ import { loadFeedComments } from "@/app/actions/feed";
 import { Avatar } from "@/components/ui/avatar";
 import { DirectionTag } from "@/components/ui/tag";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { FeedCardView } from "@/components/feed/feed-cards";
 import { DiscussionThread, type DiscussionActions } from "@/components/discussion/discussion-thread";
 import { trackEngagement } from "@/lib/engagement/track-client";
@@ -875,9 +874,6 @@ const FeedItem = function FeedItem({
                     </div>
                   </div>
                   <div className="pointer-events-auto flex flex-none items-start gap-2">
-                    {pub.seal ? (
-                      <SealStamp status={pub.seal.status} date={new Date(pub.seal.dateISO)} size="sm" />
-                    ) : null}
                     <button
                       type="button"
                       onClick={() => onMutedChange(!muted)}

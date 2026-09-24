@@ -16,11 +16,9 @@ import { Button } from "@/components/ui/button";
 export function ArchiveDialog({
   id,
   title,
-  hasCall,
 }: {
   id: string;
   title: string;
-  hasCall: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -71,14 +69,6 @@ export function ArchiveDialog({
                 This is not a delete. The record, its text and its timestamp stay exactly
                 as you published them, and the archive is written to your audit log.
               </p>
-              {hasCall && (
-                <p className="rounded-[var(--radius-card)] border border-[var(--brass)]/40 bg-[var(--brass)]/10 p-3">
-                  <span className="font-semibold">This publication has a locked call.</span>{" "}
-                  The call stays on your track record, keeps counting toward your
-                  accuracy, and still resolves on its horizon date. Archiving hides the
-                  write-up, not the result.
-                </p>
-              )}
               <p className="text-text-mute">You can restore it at any time.</p>
             </div>
           </Dialog.Description>

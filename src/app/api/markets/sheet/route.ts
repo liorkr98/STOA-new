@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getStockSnapshot } from "@/lib/engine/market";
 import { getCandles } from "@/lib/engine/market/candles";
 import { getTickerRow } from "@/lib/db/tickers";
-import { buildStockCalls } from "@/lib/markets/build-stock";
 import { buildEtfSnapshot } from "@/lib/markets/build-etf";
 
 /**
@@ -15,8 +14,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
 
-  const [calls, candles, etf, snapshot, meta] = await Promise.all([
-    buildStockCalls(symbol),
+  const [candles, etf, snapshot, meta] = await Promise.all([
     getCandles(symbol, "6M"),
     buildEtfSnapshot(symbol),
     getStockSnapshot(symbol),
@@ -46,8 +44,5 @@ export async function GET(req: Request) {
     price,
     changePercent,
     candles,
-    openCalls: calls.openCalls,
-    resolvedCalls: calls.resolvedCalls,
-    coverage: calls.coverage,
   });
 }

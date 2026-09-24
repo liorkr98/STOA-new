@@ -1,40 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { SealStamp, type SealStatus } from "@/components/ui/seal-stamp";
 import { FadeIn } from "@/components/motion/fade-in";
 import { cn } from "@/lib/design/cn";
-import type { Outcome } from "@/lib/types";
 import type { DispatchStory } from "@/lib/dispatch/types";
 
-/** The seal is semantic: only a call (a prediction) earns one. */
-function outcomeToSeal(o: Outcome | undefined | null): SealStatus | null {
-  switch (o) {
-    case "hit":
-      return "hit";
-    case "miss":
-      return "miss";
-    case "near":
-    case "partial":
-    case "neutral":
-      return "near";
-    case "open":
-      return "locked";
-    default:
-      return null;
-  }
-}
-
 /**
- * Content facets shown as mono chips. CALL and THESIS are derived from the
- * report; VIDEO and CARDS are placeholders until the content model exposes
+ * Content facets shown as mono chips. THESIS is derived from the report;
+ * VIDEO and CARDS are placeholders until the content model exposes
  * those flags (see the dispatch data-gap notes) — shown, per the house rule, as
  * placeholders rather than omitted so the row matches the design.
  */
 function contentBadges(story: DispatchStory): string[] {
-  const badges = ["Video"];
-  if (story.prediction || story.report.type === "call") badges.push("Call");
-  badges.push("Cards");
+  const badges = ["Video", "Cards"];
   if (story.report.body) badges.push("Thesis");
   return badges;
 }
@@ -46,20 +24,12 @@ export function DispatchLead({
   story: DispatchStory;
   align?: "center" | "start";
 }) {
-  const { report, author, prediction, headline, dek } = story;
+  const { report, author, headline, dek } = story;
   const centered = align === "center";
 
   // Kicker source label — derived from access; a subscription-gated lead reads
   // "from your subscriptions", an open one "from analysts you follow".
   const source = report.access === "free" ? "From analysts you follow" : "From your subscriptions";
-
-  const sealStatus = outcomeToSeal(prediction?.outcome);
-  const resolved = Boolean(prediction) && prediction!.outcome !== "open";
-  const sealDate = new Date(
-    resolved
-      ? prediction!.resolution_trading_date ?? prediction!.resolves_at
-      : report.locked_at ?? report.published_at ?? report.created_at,
-  );
 
   const badges = contentBadges(story);
 
@@ -101,11 +71,6 @@ export function DispatchLead({
             </Link>
           </div>
 
-          {sealStatus && (
-            <div className="hidden shrink-0 sm:flex sm:items-start sm:justify-end">
-              <SealStamp status={sealStatus} date={sealDate} size="lg" animateOnView />
-            </div>
-          )}
         </div>
 
         {/* Byline: identity · content facets · read link */}

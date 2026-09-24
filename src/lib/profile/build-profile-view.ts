@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { format } from "date-fns";
 import { getProfileByHandle } from "@/lib/db/profiles";
-import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
 import { listReadyClipsByCreator } from "@/lib/db/video-clips";
 import { listPendingClipsByCreator } from "@/lib/db/video-clips";
@@ -9,13 +8,13 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
-import { pct, compact, usd } from "@/lib/format";
+import { compact, usd } from "@/lib/format";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
-import type { Prediction, Report } from "@/lib/types";
+import type { Report } from "@/lib/types";
 import type { VideoClip } from "@/lib/db/video-clips";
 import type {
   AnalystProfileViewProps,
@@ -46,53 +45,41 @@ export function formatDuration(seconds: number): string {
 
 /**
  * The content badge states exactly what a publication contains, built only from
- * what is stored: a ready video clip, a locked call, a written thesis, an
- * evidence stack. Nothing is claimed that a reader cannot then find.
+ * what is stored: a ready video clip, a written thesis, an evidence stack. Nothing is claimed that a reader cannot then find.
  */
 export function contentBadge(input: {
   hasVideo: boolean;
-  hasCall: boolean;
   hasThesis: boolean;
   hasCards?: boolean;
 }): string {
   const parts: string[] = [];
   if (input.hasVideo) parts.push("VIDEO");
-  if (input.hasCall) parts.push("CALL");
   if (input.hasThesis) parts.push("THESIS");
   if (input.hasCards) parts.push("CARDS");
   return parts.length ? parts.join(" · ") : "NOTE";
 }
 
 /**
- * Turns an analyst's reports, calls and video clips into the one publication
+ * Turns an analyst's reports and video clips into the one publication
  * shape the storefront renders. Shared with the /dev/profile fixture so the
  * fixture goes through exactly the same rules as live data.
  */
 export function buildPublications(input: {
   reports: Report[];
-  predictions: Prediction[];
   clips: VideoClip[];
   /** Publications with a stored evidence stack. Omitted by the dev fixture. */
   cardIds?: Set<string>;
   /** Publications whose clip exists but is not live yet. */
   pendingClipIds?: Set<string>;
 }): ProfilePublication[] {
-  const predByReport = new Map<string, Prediction>();
-  for (const p of input.predictions) if (!predByReport.has(p.report_id)) predByReport.set(p.report_id, p);
   const clipByReport = new Map<string, VideoClip>();
   for (const c of input.clips) if (!clipByReport.has(c.report_id)) clipByReport.set(c.report_id, c);
 
   return input.reports.map((r) => {
-    const pred = predByReport.get(r.id) ?? null;
     const clip = clipByReport.get(r.id) ?? null;
     const pending = !clip && Boolean(input.pendingClipIds?.has(r.id));
-    const hasCall = Boolean(pred);
     const hasThesis = r.type === "research" || (r.body?.length ?? 0) > 600;
     const when = r.published_at ?? r.created_at;
-    const resolved =
-      pred && ["hit", "near", "miss", "partial"].includes(pred.outcome) && pred.lock_price && pred.resolved_price != null
-        ? pred
-        : null;
 
     // Anchoring rule: a publication shows its own ticker and stance. A
     // tickerless item anchors on its own theme tag.
@@ -111,7 +98,6 @@ export function buildPublications(input: {
       themeTag,
       badge: contentBadge({
         hasVideo: Boolean(clip) || pending,
-        hasCall,
         hasThesis,
         hasCards: input.cardIds?.has(r.id) ?? false,
       }),
@@ -122,15 +108,6 @@ export function buildPublications(input: {
       dateISO: when,
       dateLabel: format(new Date(when), "MMM d, yyyy").toUpperCase(),
       views: r.views ?? 0,
-      seal: resolved
-        ? {
-            status: resolved.outcome === "hit" ? "hit" : resolved.outcome === "near" ? "near" : "miss",
-            dateISO: resolved.resolution_trading_date ?? resolved.resolves_at,
-            entryExit: `${resolved.lock_price.toFixed(2)} → ${resolved.resolved_price?.toFixed(2)}`,
-            retLabel: resolved.return_pct == null ? "—" : pct(resolved.return_pct),
-            retTone: resolved.return_pct == null ? "neutral" : resolved.return_pct > 0 ? "up" : resolved.return_pct < 0 ? "down" : "neutral",
-          }
-        : null,
       subject,
     };
   });
@@ -182,9 +159,7 @@ export async function buildProfileView(
   const profile = await getProfileByHandle(handle);
   if (!profile) return null;
 
-  const [predictions, reports, clips, pendingClips, userId, plans] = await Promise.all([
-    listPredictionsByAuthor(profile.id),
-    listByAuthor(profile.id, { status: "published" }),
+  const [reports, clips, pendingClips, userId, plans] = await Promise.all([    listByAuthor(profile.id, { status: "published" }),
     listReadyClipsByCreator(profile.id),
     listPendingClipsByCreator(profile.id),
     getSessionUserId(),
@@ -224,7 +199,6 @@ export async function buildProfileView(
   const cardIds = await reportIdsWithCards(reports.map((r) => r.id));
   const publications = buildPublications({
     reports,
-    predictions,
     clips,
     cardIds,
     pendingClipIds: new Set(pendingClips.keys()),

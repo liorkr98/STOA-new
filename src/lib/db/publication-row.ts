@@ -1,41 +1,31 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import type { Direction, PublicationCall, Report } from "@/lib/types";
+import type { Direction, Report } from "@/lib/types";
 
 /**
  * A publication's ticker and direction are its own: `reports.ticker` and
- * `reports.stance`. The call is joined only for what grading still shows (the
- * seal, the entry, the target, the return), never for the ticker or the
- * direction.
+ * `reports.stance`. Grading is gone, and nothing else is read from the
+ * retired calls table.
  *
- * `direction` rides along on the join for one reason: until migration 0065
- * is applied, `reports` has no stance column and the call is the only place
- * the direction lives. `publicationRow` moves it onto the report as `stance`
- * and drops it from the call, so nothing downstream can read it from there.
- * The migration copies every call's direction onto its publication, so the
- * two sources agree row for row.
+ * The one exception is this bridge. Until migration 0065 is applied,
+ * `reports` has no stance column and the archived call is the only place a
+ * direction lives, so the join carries `direction` and nothing else, and
+ * `publicationRow` moves it onto the report as `stance`. The migration
+ * copies every call's direction onto its publication, so the two sources
+ * agree row for row. The bridge goes when the calls table is dropped.
  */
-export const CALL_FIELDS =
-  "id, outcome, lock_price, target_price, resolved_price, return_pct, benchmark_pct, horizon_days, target_horizon_date, resolution_trading_date, resolves_at, created_at, direction";
-
-export const CALL_JOIN = `prediction:predictions(${CALL_FIELDS})`;
+export const CALL_JOIN = "prediction:predictions(direction)";
 
 export const REPORT_SELECT = `*, author:profiles!reports_author_id_fkey(*), ${CALL_JOIN}`;
 
-/** A joined report row, flattened: the call's array unwrapped, the stance on the report. */
+/** A joined report row, flattened: the stance on the report, the bridge dropped. */
 export function publicationRow(row: Record<string, unknown>): Report {
-  const raw = (Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null)) as
-    | (PublicationCall & { direction?: Direction })
+  const { prediction, ...rest } = row;
+  const raw = (Array.isArray(prediction) ? (prediction[0] ?? null) : (prediction ?? null)) as
+    | { direction?: Direction | null }
     | null;
-  let call: PublicationCall | null = null;
-  let callDirection: Direction | null = null;
-  if (raw) {
-    const { direction, ...rest } = raw;
-    call = rest;
-    callDirection = direction ?? null;
-  }
-  const ticker = (row.ticker as string | null | undefined) ?? null;
-  const stance = "stance" in row ? ((row.stance as Direction | null) ?? null) : callDirection;
-  return { ...(row as unknown as Report), ticker, stance: ticker ? stance : null, prediction: call };
+  const ticker = (rest.ticker as string | null | undefined) ?? null;
+  const stance = "stance" in rest ? ((rest.stance as Direction | null) ?? null) : (raw?.direction ?? null);
+  return { ...(rest as unknown as Report), ticker, stance: ticker ? stance : null };
 }
 
 /** The chip pair every surface shows: the ticker, and the direction only beside a ticker. */

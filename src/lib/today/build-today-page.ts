@@ -3,7 +3,6 @@ import "server-only";
 import { getProfilesByIds, listAnalystsByFollowers } from "@/lib/db/profiles";
 import { listPublishedByAuthors, listRecentPublished, tickerCoverage } from "@/lib/db/reports";
 import { listTickerRows } from "@/lib/db/tickers";
-import { listRecentResolvedWithReports } from "@/lib/db/predictions";
 import { listPendingClipsForReports, listVideoClipCards } from "@/lib/db/video-clips";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +33,6 @@ import type {
   TodayPagePayload,
   TodaySidebarPayload,
   TodayTickerRow,
-  TodayVerdict,
 } from "@/lib/today/types";
 import { stanceChips } from "@/lib/db/publication-row";
 
@@ -44,14 +42,13 @@ function toAnalyst(profile: Profile): TodayAnalyst {
 }
 
 /**
- * The content badge states exactly what is stored: a ready clip, a locked
- * call, a written thesis, an evidence stack. Nothing is claimed that a reader
+ * The content badge states exactly what is stored: a ready clip, a written
+ * thesis, an evidence stack. Nothing is claimed that a reader
  * cannot then find.
  */
 export function honestBadge(report: Report, hasVideo: boolean, hasCards = false): string[] {
   const badge: string[] = [];
   if (hasVideo) badge.push("Video");
-  if (report.prediction) badge.push("Call");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
   if (hasCards) badge.push("Cards");
   if (badge.length === 0) badge.push("Note");
@@ -130,7 +127,7 @@ function creatorRow(p: Profile, marker: StageMarker, followed: boolean): TodayCr
 
 /**
  * Builds the whole Today front page. Signed-out readers get the platform-wide
- * issue (no desk, no memberships); Verdicts renders for everyone.
+ * issue (no desk, no memberships).
  */
 export async function buildTodayPage(userId: string | null): Promise<TodayPagePayload> {
   if (!userId) return cachedPage("today-public", 20, () => assembleTodayPage(null));
@@ -143,12 +140,11 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const dateISO = cycle.dateIso;
 
   const emptySaved = new Set<string>();
-  const [pool, clips, analysts, resolved, coverage, issueNumber, subscribedIds, followedIds, savedIds] =
+  const [pool, clips, analysts, coverage, issueNumber, subscribedIds, followedIds, savedIds] =
     await Promise.all([
       listRecentPublished(120),
       listVideoClipCards(120),
       listAnalystsByFollowers(40),
-      listRecentResolvedWithReports(24),
       tickerCoverage(),
       fetchIssueNumber(dateISO),
       userId ? subscribedAnalystIds(userId) : Promise.resolve([] as string[]),
@@ -278,25 +274,6 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     })
     .slice(0, 12);
 
-  // Verdicts: discovery first (analysts the reader does not already know).
-  const deskSet = new Set(deskAuthorIds);
-  const verdictsAll: TodayVerdict[] = resolved.map((p) => ({
-    reportId: p.report!.id,
-    ticker: p.ticker.toUpperCase(),
-    direction: p.direction,
-    outcome: p.outcome as TodayVerdict["outcome"],
-    headline: p.report!.title?.trim() || p.report!.summary?.trim() || `${p.ticker.toUpperCase()} call`,
-    entryPrice: p.lock_price,
-    exitPrice: p.resolved_price,
-    returnPct: p.return_pct,
-    resolvedAt: p.resolution_trading_date ?? p.resolves_at,
-    author: toAnalyst(p.author!),
-  }));
-  const verdicts = [
-    ...verdictsAll.filter((v, i) => !deskSet.has(resolved[i].author_id)),
-    ...verdictsAll.filter((v, i) => deskSet.has(resolved[i].author_id)),
-  ].slice(0, 12);
-
   // Sidebar lists. Every creator row says whether the reader already follows
   // or pays the analyst, so the same row shows Follow in Trending or Popular
   // and nothing at all once followed; the reader's own row never offers it.
@@ -356,7 +333,6 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     textStories,
     trending,
     desk,
-    verdicts,
     news: [],
     sidebar,
   };

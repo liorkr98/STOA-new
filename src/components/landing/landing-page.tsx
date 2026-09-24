@@ -2,12 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { buttonClass } from "@/components/ui/button";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
 import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
-import { pct } from "@/lib/format";
 import { LandingLeadClip } from "@/components/landing/landing-lead-clip";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
@@ -16,8 +14,8 @@ import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing
 /**
  * The signed-out root. Two constraints held together: show without giving
  * away (headlines and posters only, and the lead plays on a press rather than
- * on arrival), and feel alive (the running tape, seals arriving as they scroll
- * into view, a live activity line, a wall of faces, and restrained scroll
+ * on arrival), and feel alive (the running tape, a live activity line, a
+ * wall of faces, and restrained scroll
  * reveals driven by the reader's own scroll position rather than a timer).
  */
 
@@ -25,8 +23,8 @@ import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing
  * Signing up is the only door to the Feed.
  *
  * Watching is the expensive thing this product does per view, so it sits
- * behind an account. What a stranger gets instead is proof: today's
- * headlines, resolved calls with their seals, and the wall of analysts.
+ * behind an account. What a stranger gets instead is today's headlines and
+ * the wall of analysts.
  */
 const ACTIONS = (
   <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
@@ -47,12 +45,11 @@ function Reveal({ children, className }: { children: React.ReactNode; className?
 
 function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   const a = data.activity;
-  const quiet = a.publicationsToday === 0 && a.analystsToday === 0 && a.callsResolvedToday === 0;
+  const quiet = a.publicationsToday === 0 && a.analystsToday === 0;
   const when = a.window === "week" ? "this week" : "today";
   const activity = [
     `${a.publicationsToday} publication${a.publicationsToday === 1 ? "" : "s"} ${when}`,
     `${a.analystsToday} analyst${a.analystsToday === 1 ? "" : "s"}`,
-    `${a.callsResolvedToday} call${a.callsResolvedToday === 1 ? "" : "s"} resolved`,
   ].join(" · ");
   return (
     <section aria-label="Stoa" className="landing-doors">
@@ -60,7 +57,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
         <h1 className="dispatch-wordmark landing-wordmark">STOA</h1>
         <p className="mt-5 font-display text-[1.375rem] tracking-tight text-text md:text-[1.625rem]">Think clearly. Invest better.</p>
         <p className="mt-6 max-w-[46ch] font-display text-[1.0625rem] leading-relaxed text-text-mute">
-          Independent analysts publish their research on video. Every call locks at publish and is graded by the market, hits and misses alike.
+          Independent analysts publish their research on video.
         </p>
         <div className="mt-8">{ACTIONS}</div>
         <p className="mt-4 text-[0.8125rem] text-text-mute">Free to join. Watching needs an account.</p>
@@ -151,47 +148,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
   );
 }
 
-/* ---------- Section 3: verdicts and faces ---------- */
-
-function Verdicts({ data }: { data: LandingPayload }) {
-  if (data.verdicts.length === 0) return null;
-  return (
-    <div>
-      <h2 className="font-display text-[1.75rem] font-semibold tracking-tight">Most popular verdicts</h2>
-      <p className="num mt-2 max-w-[44ch] text-[10px] uppercase leading-relaxed tracking-[0.14em] text-text-mute">
-        Every call is recorded when it&apos;s published and graded by the market. Misses stay visible.
-      </p>
-      <div className="mt-6 flex flex-col divide-y divide-[var(--border)]">
-        {data.verdicts.map((v) => {
-          const seal = v.outcome === "hit" ? "hit" : v.outcome === "near" || v.outcome === "partial" ? "near" : "miss";
-          const ret = v.returnPct;
-          const tone = ret == null ? "var(--text-mute)" : ret > 0 ? "var(--up)" : ret < 0 ? "var(--down)" : "var(--text-mute)";
-          return (
-            <Reveal key={`${v.reportId}-${v.ticker}`}>
-              <article className="flex items-start justify-between gap-4 py-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <TickerChip ticker={v.ticker} />
-                    <DirectionTag direction={v.direction} />
-                  </div>
-                  <h3 className="mt-2 font-display text-[1.125rem] font-semibold leading-[1.2] tracking-tight">{v.headline}</h3>
-                  <div className="num mt-1.5 text-[0.6875rem] uppercase tracking-[0.1em] text-text-mute">
-                    {v.author.displayName}
-                    <span aria-hidden> · </span>
-                    {v.entryPrice.toFixed(2)} → {v.exitPrice?.toFixed(2) ?? "—"}
-                    <span aria-hidden> · </span>
-                    <span style={{ color: tone }}>{ret == null ? "—" : pct(ret)}</span>
-                  </div>
-                </div>
-                <SealStamp status={seal} date={new Date(v.resolvedAt)} size="md" animateOnView className="flex-none" />
-              </article>
-            </Reveal>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+/* ---------- Section 3: faces ---------- */
 
 function initials(name: string) {
   return name
@@ -245,13 +202,10 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
 }
 
 function Split({ data }: { data: LandingPayload }) {
-  if (data.verdicts.length === 0 && data.faces.length === 0) return null;
+  if (data.faces.length === 0) return null;
   return (
-    <section aria-label="Verdicts and creators" className="gutter-x mx-auto mt-24 max-w-[var(--w-standard)]">
+    <section aria-label="Creators" className="gutter-x mx-auto mt-24 max-w-[var(--w-standard)]">
       <div className="grid gap-12 md:grid-cols-2 md:divide-x md:divide-[var(--border)]">
-        <div className="md:pr-12">
-          <Verdicts data={data} />
-        </div>
         <div className="md:pl-12">
           <Reveal>
             <h2 className="font-display text-[1.75rem] font-semibold tracking-tight">Most popular creators</h2>
@@ -266,10 +220,7 @@ function Split({ data }: { data: LandingPayload }) {
         </div>
       </div>
       <Reveal className="mt-20 text-center">
-        <p className="mx-auto max-w-[40ch] font-display text-[1.25rem] leading-snug tracking-tight text-text">
-          Read the record before you trust the opinion.
-        </p>
-        <div className="mt-6">{ACTIONS}</div>
+        <div>{ACTIONS}</div>
       </Reveal>
     </section>
   );

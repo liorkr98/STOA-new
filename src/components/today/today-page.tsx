@@ -3,7 +3,7 @@ import { TodayShell } from "@/components/today/today-shell";
 import { TodayNameplate } from "@/components/today/today-nameplate";
 import { TodayListsButton, TodaySidebar } from "@/components/today/today-sidebar";
 import { TodayPackage } from "@/components/today/today-package";
-import { DeskGrid, NewsSheet, TrendingList, VerdictLedger } from "@/components/today/today-sections";
+import { DeskGrid, NewsSheet, TrendingList } from "@/components/today/today-sections";
 import type { TodayPagePayload } from "@/lib/today/types";
 
 /**
@@ -11,14 +11,14 @@ import type { TodayPagePayload } from "@/lib/today/types";
  *
  * The rail beside a 12-column page (20px gutters) on a desktop, 4 columns
  * (16px gutters, 16px margins) on a phone. The nameplate, then the top
- * package around the lead, then Trending now beside Your desk, the
- * Verdicts ledger and Market news, 60px apart. Nothing scrolls sideways on
+ * package around the lead, then Trending now beside Your desk, and Market
+ * news, 60px apart. Nothing scrolls sideways on
  * a desktop; on a phone only Your desk does, and the page is one document
  * scroll with the nameplate and the lead on the first screen.
  */
 export function TodayPage({ data, news }: { data: TodayPagePayload; news?: ReactNode }) {
   const hasAnything =
-    data.lead || data.trending.length || data.desk.length || data.verdicts.length || data.news.length;
+    data.lead || data.trending.length || data.desk.length || data.news.length;
 
   return (
     <TodayShell>
@@ -49,7 +49,6 @@ export function TodayPage({ data, news }: { data: TodayPagePayload; news?: React
           </div>
         ) : null}
 
-        <VerdictLedger verdicts={data.verdicts} className="ts-section" />
         {news ?? <NewsSheet items={data.news} className="ts-section" />}
 
         {!hasAnything ? (

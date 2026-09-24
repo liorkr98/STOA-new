@@ -8,10 +8,8 @@ export interface AudioBriefSource {
   summary: string | null;
   ticker: string | null;
   body: string | null;
-  prediction?: {
-    direction: string;
-    target_price: number | null;
-  } | null;
+  /** The publication's direction on its ticker, when it declares one. */
+  direction?: string | null;
 }
 
 function bodyExcerpt(body: string | null): string {
@@ -29,10 +27,8 @@ function fallbackScript(source: AudioBriefSource): string {
   if (source.title) parts.push(source.title);
   if (source.summary) parts.push(source.summary);
   if (source.ticker) parts.push(`Ticker ${source.ticker}.`);
-  const p = source.prediction;
-  if (p?.direction) {
-    const word = `${p.direction.charAt(0).toUpperCase()}${p.direction.slice(1)}`;
-    parts.push(p.target_price != null ? `${word} call with a target of $${p.target_price}.` : `${word}.`);
+  if (source.direction) {
+    parts.push(`${source.direction.charAt(0).toUpperCase()}${source.direction.slice(1)}.`);
   }
   const excerpt = bodyExcerpt(source.body);
   if (excerpt) parts.push(excerpt);
@@ -40,7 +36,7 @@ function fallbackScript(source: AudioBriefSource): string {
 }
 
 const AUDIO_BRIEF_SYSTEM = `You write spoken audio briefs for equity research. Output plain text only — no markdown.
-Keep it under 150 words (~60 seconds when read aloud). Cover thesis, ticker, direction/target if present, and one key risk.`;
+Keep it under 150 words (~60 seconds when read aloud). Cover thesis, ticker, direction if present, and one key risk.`;
 
 /** Build a ~60s spoken script from report fields. Uses DeepSeek when configured. */
 export async function buildAudioBriefScript(source: AudioBriefSource): Promise<string> {
@@ -48,9 +44,7 @@ export async function buildAudioBriefScript(source: AudioBriefSource): Promise<s
     source.title ? `Title: ${source.title}` : "",
     source.summary ? `Summary: ${source.summary}` : "",
     source.ticker ? `Ticker: ${source.ticker}` : "",
-    source.prediction
-      ? `Call: ${source.prediction.direction}, target $${source.prediction.target_price ?? "n/a"}`
-      : "",
+    source.direction ? `Direction: ${source.direction}` : "",
     bodyExcerpt(source.body) ? `Body excerpt: ${bodyExcerpt(source.body)}` : "",
   ]
     .filter(Boolean)

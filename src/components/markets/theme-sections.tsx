@@ -90,7 +90,7 @@ export function ThemeNames({ payload }: { payload: ThemePayload }) {
 export function ThemePublications({ payload }: { payload: ThemePayload }) {
   if (payload.publications.length === 0) return null;
   return (
-    <Band title="Publications about this theme" note="Calls on its names, and commentary on them with no call.">
+    <Band title="Publications about this theme" note="Views on its names, and commentary on them with no stance.">
       <div className="mt-2">
         {payload.publications.map((item) => (
           <HeadlineRow

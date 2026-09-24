@@ -24,18 +24,12 @@ export function DispatchStoryList({
       <div className="dispatch-columns mt-6">
         {stories.map((story) => {
           const ticker = (story.report.ticker ?? "").toUpperCase();
-          const showTarget = story.report.access === "free";
-          return (
+                  return (
             <article key={story.report.id} className="flex flex-col gap-2.5">
               <div className="flex items-center gap-2">
                 {ticker && (
                   <span className="num text-[11px] font-semibold uppercase tracking-wider text-text">
                     {ticker}
-                  </span>
-                )}
-                {showTarget && story.prediction?.target_price != null && (
-                  <span className="num text-[11px] text-text-faint">
-                    Target ${story.prediction.target_price.toFixed(0)}
                   </span>
                 )}
               </div>

@@ -6,14 +6,13 @@ import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { Profile, Report } from "@/lib/types";
 import type {
   TodayAnalyst,
   TodayItem,
   TodayPayload,
   TodaySavedItem,
   TodaySavedReason,
-  TodayVerdict,
   TodayVideo,
 } from "@/lib/today/types";
 import { publicationRow as normalizeReport, REPORT_SELECT, stanceChips } from "@/lib/db/publication-row";
@@ -28,13 +27,12 @@ function toAnalyst(profile: Profile): TodayAnalyst {
 }
 
 /**
- * Content facets. CALL and THESIS are read off the report; VIDEO and CARDS are
+ * Content facets. THESIS is read off the report; VIDEO and CARDS are
  * assumed, matching the existing lead-story treatment -- the content model does
  * not yet expose per-publication flags for either.
  */
 function contentBadge(report: Report): string[] {
   const badge = ["Video"];
-  if (report.prediction || report.type === "call") badge.push("Call");
   badge.push("Cards");
   if (report.body) badge.push("Thesis");
   return badge;
@@ -114,60 +112,11 @@ async function fetchViewedReportIds(userId: string, reportIds: string[]): Promis
   return new Set(((data as { report_id: string }[]) ?? []).map((r) => r.report_id));
 }
 
-/**
- * Verdicts is a discovery department: resolved calls from analysts the reader
- * does NOT follow, so the band widens their world rather than mirroring it.
- */
-async function fetchVerdicts(excludeAuthorIds: Set<string>, limit: number): Promise<TodayVerdict[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select(
-      "*, author:profiles!predictions_author_id_fkey(*), report:reports!predictions_report_id_fkey(id, title, summary, status)",
-    )
-    .neq("outcome", "open")
-    .not("resolved_price", "is", null)
-    .order("resolves_at", { ascending: false })
-    .limit(limit * 4);
-
-  const rows = (data as (Prediction & {
-    author?: Profile | null;
-    report?: { id: string; title: string | null; summary: string | null; status: string } | null;
-  })[]) ?? [];
-
-  const outside: TodayVerdict[] = [];
-  const inside: TodayVerdict[] = [];
-
-  for (const p of rows) {
-    if (!p.author || !p.report || p.report.status !== "published") continue;
-    if (p.outcome === "open") continue;
-    const verdict: TodayVerdict = {
-      reportId: p.report.id,
-      ticker: p.ticker.toUpperCase(),
-      direction: p.direction,
-      outcome: p.outcome,
-      headline: p.report.title?.trim() || p.report.summary?.trim() || `${p.ticker.toUpperCase()} call`,
-      entryPrice: p.lock_price,
-      exitPrice: p.resolved_price,
-      returnPct: p.return_pct,
-      resolvedAt: p.resolution_trading_date ?? p.resolves_at,
-      author: toAnalyst(p.author),
-    };
-    (excludeAuthorIds.has(p.author_id) ? inside : outside).push(verdict);
-  }
-
-  // Discovery first, then trending calls the reader may already follow.
-  return [...outside, ...inside].slice(0, limit);
-}
-
 function savedReason(
   report: Report,
   followUpAuthorIds: Set<string>,
   viewed: Set<string>,
 ): TodaySavedReason | null {
-  const outcome = report.prediction?.outcome;
-  if (outcome === "hit") return "resolved_hit";
-  if (outcome === "miss") return "resolved_miss";
   if (followUpAuthorIds.has(report.author_id)) return "follow_up";
   if (!viewed.has(report.id)) return "unread";
   return null;
@@ -210,10 +159,8 @@ async function buildSaved(userId: string): Promise<TodaySavedItem[]> {
   }
 
   const priority: Record<TodaySavedReason, number> = {
-    resolved_hit: 0,
-    resolved_miss: 1,
-    follow_up: 2,
-    unread: 3,
+    follow_up: 0,
+    unread: 1,
   };
   return items.sort((a, b) => priority[a.reason] - priority[b.reason]).slice(0, 3);
 }
@@ -290,8 +237,6 @@ export async function buildToday(userId: string): Promise<TodayPayload> {
       buildMostWatched(4),
     ]);
 
-  const verdicts = await fetchVerdicts(deskAuthorIds, 5);
-
   const toItems = (reports: Report[], limit: number) =>
     reports
       .flatMap((r) => {
@@ -316,7 +261,6 @@ export async function buildToday(userId: string): Promise<TodayPayload> {
 
   return {
     desk: { subscriptions, following },
-    verdicts,
     saved,
     mostWatched,
     worthReading,

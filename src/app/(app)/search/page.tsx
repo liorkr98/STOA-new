@@ -6,7 +6,6 @@ import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchForm } from "@/components/search/search-form";
 import { searchAll } from "@/lib/db/search";
-import { resolvedCountsByAuthors } from "@/lib/db/predictions";
 
 export const metadata: Metadata = { title: "Search" };
 
@@ -18,16 +17,10 @@ export default async function SearchPage({
   const { q = "" } = await searchParams;
   const results = q.trim() ? await searchAll(q) : null;
 
-  const counts = results ? await resolvedCountsByAuthors(results.analysts.map((a) => a.id)) : {};
-  const analystsWithCounts = results
-    ? results.analysts.map((a) => ({
-        analyst: a,
-        resolved: counts[a.id] ?? 0,
-      }))
-    : [];
+  const analysts = results ? results.analysts : [];
 
   const totalHits = results
-    ? analystsWithCounts.length + results.reports.length + results.tickers.length
+    ? analysts.length + results.reports.length + results.tickers.length
     : 0;
 
   return (
@@ -74,12 +67,12 @@ export default async function SearchPage({
             </section>
           )}
 
-          {analystsWithCounts.length > 0 && (
+          {analysts.length > 0 && (
             <section>
               <h2 className="t-h3 mb-4">Analysts</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {analystsWithCounts.map(({ analyst, resolved }) => (
-                  <AnalystCard key={analyst.id} analyst={analyst} resolvedCalls={resolved} />
+                {analysts.map((analyst) => (
+                  <AnalystCard key={analyst.id} analyst={analyst} />
                 ))}
               </div>
             </section>

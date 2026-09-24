@@ -1,18 +1,12 @@
-import { CallsChart } from "@/components/markets/calls-chart";
+import { PriceChart } from "@/components/markets/price-chart";
 import { EtfHeader, EtfHoldings, EtfSectorExposure } from "@/components/markets/etf-sections";
-import {
-  StockCoverageBlock,
-  StockOpenCalls,
-  StockPublications,
-  StockResolvedHistory,
-} from "@/components/markets/stock-sections";
+import { StockPublications } from "@/components/markets/stock-sections";
 import type { Candle } from "@/lib/market/candle-types";
 import type { EtfSnapshot } from "@/lib/markets/build-etf";
-import type { StockCallsPayload } from "@/lib/markets/build-stock";
 import type { TodayItem } from "@/lib/today/types";
 
 /**
- * A fund page. Same call-annotation chart and same Stoa activity components as
+ * A fund page. Same price chart and same Stoa activity components as
  * a stock, but fund facts in the header and holdings/exposure in place of
  * fundamentals.
  *
@@ -23,7 +17,6 @@ import type { TodayItem } from "@/lib/today/types";
 export function EtfView({
   etf,
   candles,
-  calls,
   publications,
   coverage,
   range,
@@ -32,7 +25,6 @@ export function EtfView({
 }: {
   etf: EtfSnapshot;
   candles: Candle[];
-  calls: StockCallsPayload;
   publications: TodayItem[];
   coverage: Record<string, number>;
   range: string;
@@ -43,11 +35,9 @@ export function EtfView({
     <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <EtfHeader etf={etf} />
 
-      <CallsChart
+      <PriceChart
         ticker={etf.symbol}
         candles={candles}
-        openCalls={calls.openCalls}
-        resolvedCalls={calls.resolvedCalls}
         range={range}
         customFrom={customFrom}
         customTo={customTo}
@@ -56,12 +46,9 @@ export function EtfView({
       <EtfHoldings holdings={etf.holdings} coverage={coverage} />
       <EtfSectorExposure weights={etf.sectorWeights} />
 
-      <StockCoverageBlock ticker={etf.symbol} coverage={calls.coverage} />
-      <StockOpenCalls calls={calls.openCalls} />
       <StockPublications items={publications} />
-      <StockResolvedHistory calls={calls.resolvedCalls} />
 
-      {calls.openCalls.length === 0 && publications.length === 0 ? (
+      {publications.length === 0 ? (
         <p className="markets-empty">
           No Stoa coverage on {etf.symbol} yet. When an analyst publishes on this fund it will
           show up here.

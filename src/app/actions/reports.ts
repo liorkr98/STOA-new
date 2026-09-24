@@ -9,6 +9,7 @@ import { normalizeTags } from "@/lib/tags/validate";
 import type { ComposeInput, AccessType, ContentType } from "@/lib/types";
 import { soldReportIds } from "@/lib/db/report-unlocks";
 import { deleteBlocker } from "@/lib/studio/delete-rule";
+import { CALL_JOIN, publicationRow } from "@/lib/db/publication-row";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -122,9 +123,9 @@ async function storeVideoEdit(
  * Editing a publication that is already out.
  *
  * The headline, the dek, the thesis, the cards and the tags may all change.
- * The call may not, and neither may its resolution: those are frozen on the
- * `predictions` row by a trigger this never touches, so there is nothing to
- * check for here beyond not sending them.
+ * The ticker and the stance may not: the database freezes them once a
+ * publication is locked, so there is nothing to check for here beyond not
+ * sending them.
  *
  * Every edit writes a `report_edits` row before anything else, because that
  * row is the disclosure and a silent edit is the one outcome that would
@@ -372,15 +373,9 @@ export async function publishReport(
 }
 
 /**
- * Archiving is the only removal a creator gets, and it is deliberately not a
- * delete. The database refuses to delete anything locked (0034), so the record
- * behind a publication is never rewritten: archiving flips status only, the
- * trigger writes report.archived to the audit log, and the row, its body, its
- * content hash and any locked call stay exactly as published.
- *
- * A locked call lives in `predictions`, which is keyed off the report but read
- * without a status filter, so the track record keeps counting an archived
- * call and it still resolves on schedule. Archiving cannot bury a miss.
+ * Archiving hides a publication without deleting it: it flips status only,
+ * the trigger writes report.archived to the audit log, and the row, its body,
+ * its content hash and its stance stay exactly as published.
  */
 export async function archivePublication(
   reportId: string,
@@ -431,24 +426,19 @@ export async function deletePublication(
 ): Promise<{ ok: boolean; error?: string }> {
   const { supabase, userId } = await requireUser();
 
-  // `*` so `stance` comes along once migration 0065 adds it.
-  const { data: report } = await supabase
+  // `*` so `stance` comes along once migration 0065 adds it; the join is the
+  // bridge that supplies it from the archived call before then.
+  const { data: row } = await supabase
     .from("reports")
-    .select("*")
+    .select(`*, ${CALL_JOIN}`)
     .eq("id", reportId)
     .eq("author_id", userId)
     .maybeSingle();
-  if (!report) return { ok: false, error: "Not your publication" };
+  if (!row) return { ok: false, error: "Not your publication" };
+  const report = publicationRow(row as Record<string, unknown>);
 
-  const [{ data: call }, sold] = await Promise.all([
-    supabase.from("predictions").select("id").eq("report_id", reportId).maybeSingle(),
-    soldReportIds([reportId]),
-  ]);
-  const blocker = deleteBlocker({
-    hasStance: Boolean((report as { stance?: string | null }).stance),
-    hasCall: Boolean(call),
-    sold: sold.has(reportId),
-  });
+  const sold = await soldReportIds([reportId]);
+  const blocker = deleteBlocker({ hasStance: Boolean(report.stance), sold: sold.has(reportId) });
   if (blocker) return { ok: false, error: blocker };
 
   const { error } = await supabase

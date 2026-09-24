@@ -4,8 +4,8 @@ import type { StoredVideoEdit } from "@/lib/compose/overlays";
 
 /**
  * The Feed player's publication shape: one video, optionally enriched with a
- * call, an evidence-card stack and a thesis. Built server-side from reports,
- * predictions and video clips (or from fixtures under /dev), never from
+ * stance, an evidence-card stack and a thesis. Built server-side from reports,
+ * video clips (or from fixtures under /dev), never from
  * anything that would put Bunny/env code in the browser.
  */
 
@@ -74,7 +74,6 @@ export interface FeedPublication {
   contentBadge: string;
   stageMarker: StageMarker;
   analyst: { id: string; handle: string; displayName: string; avatarUrl: string | null };
-  seal: { status: "hit" | "miss" | "near"; dateISO: string } | null;
   access: "free" | "paid" | "subscribers";
   price: number | null;
   cards: FeedCard[];

@@ -8,7 +8,6 @@ import type {
   TodayItem,
   TodayPagePayload,
   TodayTickerRow,
-  TodayVerdict,
 } from "@/lib/today/types";
 
 /**
@@ -67,42 +66,34 @@ function item(
   };
 }
 
-const lead = item("t-lead", LENA, "call", "Blackwell demand is still under-modelled into the January quarter", "Hyperscaler capex guides imply a supply-constrained first half; the Street's unit assumptions have not caught up.", {
+const lead = item("t-lead", LENA, "research", "Blackwell demand is still under-modelled into the January quarter", "Hyperscaler capex guides imply a supply-constrained first half; the Street's unit assumptions have not caught up.", {
   ticker: "NVDA", direction: "long", sector: "Semiconductors", secs: 222, hours: 2, stageMarker: "TRENDING",
 });
 const secondary = [
   item("t-s1", KAI, "research", "The refiners nobody is modelling correctly", null, { ticker: "VLO", direction: "long", sector: "Energy", hours: 4 }),
   item("t-s2", PRIYA, "short_post", "What the Strait of Hormuz headlines mean for crude this week", null, { sector: "Energy", secs: 95, hours: 5, themeTag: "MACRO · OIL & ENERGY" }),
-  item("t-s3", MARCUS, "call", "Shorting the last honest regional bank", null, { ticker: "ZION", direction: "short", sector: "Financials", hours: 7 }),
+  item("t-s3", MARCUS, "research", "Shorting the last honest regional bank", null, { ticker: "ZION", direction: "short", sector: "Financials", hours: 7 }),
 ];
 const trending: TodayItem[] = [
-  item("tr1", NOOR, "call", "Copper is the only clean energy trade left", null, { ticker: "FCX", direction: "long", sector: "Materials", secs: 140, hours: 6 }),
-  item("tr2", DANA, "call", "Micron: HBM pricing holds through the cycle", null, { ticker: "MU", direction: "long", sector: "Semiconductors", secs: 187, hours: 9, stageMarker: "NEW" }),
+  item("tr1", NOOR, "research", "Copper is the only clean energy trade left", null, { ticker: "FCX", direction: "long", sector: "Materials", secs: 140, hours: 6 }),
+  item("tr2", DANA, "research", "Micron: HBM pricing holds through the cycle", null, { ticker: "MU", direction: "long", sector: "Semiconductors", secs: 187, hours: 9, stageMarker: "NEW" }),
   item("tr3", KAI, "short_post", "A note on the yen carry unwind", null, { secs: 71, hours: 10, themeTag: "MACRO · RATES" }),
   item("tr4", MARCUS, "research", "Insurance float is quietly repricing", null, { ticker: "CB", direction: "long", sector: "Financials", hours: 12 }),
-  item("tr5", PRIYA, "call", "Semis are not one trade anymore", null, { ticker: "SMH", direction: "long", sector: "Semiconductors", secs: 200, hours: 14 }),
-  item("tr6", LENA, "call", "AMD's MI350 window is narrower than the bulls think", null, { ticker: "AMD", direction: "short", sector: "Semiconductors", secs: 301, hours: 20 }),
+  item("tr5", PRIYA, "research", "Semis are not one trade anymore", null, { ticker: "SMH", direction: "long", sector: "Semiconductors", secs: 200, hours: 14 }),
+  item("tr6", LENA, "research", "AMD's MI350 window is narrower than the bulls think", null, { ticker: "AMD", direction: "short", sector: "Semiconductors", secs: 301, hours: 20 }),
   item("tr7", NOOR, "research", "Grid capex is the decade's quietest compounder", null, { ticker: "ETN", direction: "long", sector: "Industrials", hours: 22 }),
   item("tr8", DANA, "short_post", "Reading the SOX breadth chart", null, { secs: 60, hours: 26, stageMarker: "NEW" }),
-  item("tr9", KAI, "call", "Valero into the turnaround season", null, { ticker: "VLO", direction: "long", sector: "Energy", hours: 30 }),
-  item("tr10", MARCUS, "call", "Zions: the deposit beta problem", null, { ticker: "ZION", direction: "short", sector: "Financials", hours: 33 }),
+  item("tr9", KAI, "research", "Valero into the turnaround season", null, { ticker: "VLO", direction: "long", sector: "Energy", hours: 30 }),
+  item("tr10", MARCUS, "research", "Zions: the deposit beta problem", null, { ticker: "ZION", direction: "short", sector: "Financials", hours: 33 }),
   item("tr11", PRIYA, "research", "ASML after the bookings trough", null, { ticker: "ASML", direction: "long", sector: "Semiconductors", hours: 40 }),
-  item("tr12", LENA, "call", "TSMC's N2 ramp is the capex the market is not pricing", null, { ticker: "TSM", direction: "long", sector: "Semiconductors", secs: 240, hours: 44 }),
+  item("tr12", LENA, "research", "TSMC's N2 ramp is the capex the market is not pricing", null, { ticker: "TSM", direction: "long", sector: "Semiconductors", secs: 240, hours: 44 }),
 ];
 const desk: TodayDeskItem[] = [
-  { ...item("d1", PRIYA, "call", "Arm's royalty mix is where the models break", null, { ticker: "ARM", direction: "long", secs: 180, hours: 3 }), relationship: "member" },
+  { ...item("d1", PRIYA, "research", "Arm's royalty mix is where the models break", null, { ticker: "ARM", direction: "long", secs: 180, hours: 3 }), relationship: "member" },
   { ...item("d2", LENA, "research", "The written case on Blackwell supply", null, { ticker: "NVDA", direction: "long", secs: 260, hours: 8 }), relationship: "following" },
   { ...item("d3", KAI, "short_post", "Crack spreads, one chart", null, { secs: 55, hours: 11 }), relationship: "member" },
-  { ...item("d4", NOOR, "call", "Freeport at the top of the copper curve", null, { ticker: "FCX", direction: "long", secs: 130, hours: 19 }), relationship: "following" },
-  { ...item("d5", MARCUS, "call", "Regional banks: the next shoe", null, { ticker: "KRE", direction: "short", secs: 95, hours: 27 }), relationship: "following" },
-];
-const verdicts: TodayVerdict[] = [
-  { reportId: "v1", ticker: "NVDA", direction: "long", outcome: "hit", headline: "Blackwell demand is being underwritten, not forecast", entryPrice: 118.4, exitPrice: 142.1, returnPct: 20.0, resolvedAt: hoursAgo(5), author: LENA },
-  { reportId: "v2", ticker: "AMD", direction: "short", outcome: "near", headline: "The MI350 share-gain story runs out of road", entryPrice: 162.1, exitPrice: 158.9, returnPct: 1.98, resolvedAt: hoursAgo(9), author: LENA },
-  { reportId: "v3", ticker: "ASML", direction: "long", outcome: "miss", headline: "Bookings trough was the second quarter", entryPrice: 712.4, exitPrice: 665.2, returnPct: -6.6, resolvedAt: hoursAgo(28), author: PRIYA },
-  { reportId: "v4", ticker: "XOM", direction: "long", outcome: "hit", headline: "Supply discipline holds through the summer", entryPrice: 104.2, exitPrice: 118.7, returnPct: 13.9, resolvedAt: hoursAgo(31), author: KAI },
-  { reportId: "v5", ticker: "ZION", direction: "short", outcome: "miss", headline: "The deposit beta squeeze", entryPrice: 44.1, exitPrice: 47.9, returnPct: -8.6, resolvedAt: hoursAgo(50), author: MARCUS },
-  { reportId: "v6", ticker: "FCX", direction: "long", outcome: "hit", headline: "Copper into the summer restock", entryPrice: 41.2, exitPrice: 48.9, returnPct: 18.7, resolvedAt: hoursAgo(70), author: NOOR },
+  { ...item("d4", NOOR, "research", "Freeport at the top of the copper curve", null, { ticker: "FCX", direction: "long", secs: 130, hours: 19 }), relationship: "following" },
+  { ...item("d5", MARCUS, "research", "Regional banks: the next shoe", null, { ticker: "KRE", direction: "short", secs: 95, hours: 27 }), relationship: "following" },
 ];
 // The package around the lead: two follow-ups on the same name or sector
 // (the builder's kin rule), two picture stories, four text stories. The
@@ -149,7 +140,6 @@ export default async function DevTodayPage({
     textStories,
     trending: trendingFive,
     desk: signedOut ? [] : desk,
-    verdicts,
     news,
     sidebar: {
       // Followed flags mirror the desk below: PRIYA and KAI are memberships,

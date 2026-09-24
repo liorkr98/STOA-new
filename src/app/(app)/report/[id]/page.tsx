@@ -22,8 +22,7 @@ import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { Avatar } from "@/components/ui/avatar";
 import { TickerChip } from "@/components/ui/ticker-chip";
-import { Tag } from "@/components/ui/tag";
-import { PredictionCard } from "@/components/prediction-card";
+import { DirectionTag, Tag } from "@/components/ui/tag";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
@@ -175,6 +174,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="flex flex-wrap items-center gap-3">
         <Tag>{publicTypeLabel(report.type)}</Tag>
         {report.ticker && <TickerChip ticker={report.ticker} />}
+        {report.ticker && report.stance ? <DirectionTag direction={report.stance} /> : null}
         <span className="t-meta">
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
         </span>
@@ -292,15 +292,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               </div>
             ) : null}
             <aside className="order-4 flex flex-col gap-4 lg:order-none">
-          {report.prediction && report.ticker && (
-            <PredictionCard
-              prediction={report.prediction}
-              ticker={report.ticker}
-              direction={report.stance ?? null}
-              hideTarget={!canRead}
-              pendingReview={report.status === "resolution_pending_review"}
-            />
-          )}
           <DisclosureBlock
             holdsPosition={report.position_held ?? false}
             compensationTied={report.compensation_tied ?? false}

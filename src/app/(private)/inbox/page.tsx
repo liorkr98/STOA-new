@@ -22,19 +22,15 @@ function categoryFor(kind: string): InboxCategory {
  */
 function demoItems(isAnalyst: boolean): InboxItem[] {
   const base: InboxItem[] = [
-    { id: "ph-call", zone: "needs", category: "calls", title: "A call you follow resolved: Maren Vos on NVDA", entryExit: "ENTRY 331.40 → EXIT 398.20", sealStatus: "hit", timeLabel: "2H AGO", read: false, href: "#", action: "View call", demo: true },
     { id: "ph-renew", zone: "needs", category: "money", title: "Your subscription to Lena Kowalczyk renews in 3 days", timeLabel: "6H AGO", read: false, href: "#", action: "Manage", demo: true },
     { id: "ph-pay", zone: "needs", category: "money", danger: true, title: "Your payment method failed — renewals are paused", timeLabel: "1D AGO", read: false, href: "#", action: "Fix payment", demo: true },
   ];
   const analyst: InboxItem[] = [
-    { id: "ph-own", zone: "needs", category: "calls", title: "Your MU call resolved · HIT", scoreDelta: "TRACK 72 → 74 ▲2", sealStatus: "hit", timeLabel: "3H AGO", read: false, href: "#", action: "View", demo: true },
     { id: "ph-payout", zone: "needs", category: "money", title: "Payout ready · $128.40", timeLabel: "1D AGO", read: false, href: "#", action: "View payout", demo: true },
-    { id: "ph-horizon", zone: "needs", category: "calls", title: "Your ASML call reaches its horizon tomorrow", timeLabel: "1D AGO", read: true, href: "#", action: "Review", demo: true },
   ];
   const good: InboxItem[] = [
     { id: "ph-done", zone: "good", category: "money", title: "You reviewed the payment issue", confirmed: true, timeLabel: "JUST NOW", read: true, href: null, action: null, demo: true },
     { id: "ph-pub", zone: "good", category: "publications", title: "Lena Kowalczyk published: The Blackwell sequel", timeLabel: "5H AGO", read: false, href: "#", action: "View", demo: true },
-    { id: "ph-target", zone: "good", category: "calls", title: "AAPL reached a target on a report you saved", timeLabel: "1D AGO", read: true, href: "#", action: "View", demo: true },
     { id: "ph-follow", zone: "good", category: "audience", title: "Kenji Ito started following you", timeLabel: "2D AGO", read: true, href: "#", action: "View profile", demo: true },
   ];
   const analystGood: InboxItem[] = [

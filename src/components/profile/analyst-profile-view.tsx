@@ -10,7 +10,6 @@ import type { Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { DirectionTag } from "@/components/ui/tag";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { FollowButton } from "@/components/follow-button";
 import { ShareMenu } from "@/components/share/share-menu";
 import { TierPickerModal } from "@/components/profile/tier-picker-modal";
@@ -37,14 +36,7 @@ export interface ProfilePublication {
   dateISO: string;
   dateLabel: string;
   views: number;
-  seal: {
-    status: "hit" | "miss" | "near";
-    dateISO: string;
-    entryExit: string;
-    retLabel: string;
-    retTone: "up" | "down" | "neutral";
-  } | null;
-  /** Filter key: the ticker for calls, the theme tag otherwise. */
+  /** Filter key: the ticker when there is one, the theme tag otherwise. */
   subject: string | null;
 }
 
@@ -93,9 +85,6 @@ export interface AnalystProfileViewProps {
   storefrontStyle?: CSSProperties;
   texture?: boolean;
 }
-
-const toneColor = (tone: "up" | "down" | "neutral") =>
-  tone === "up" ? "var(--up)" : tone === "down" ? "var(--down)" : "var(--text-mute)";
 
 /**
  * A publication's image slot: the real thumbnail when one is stored, otherwise
@@ -192,10 +181,6 @@ function ViewsMeta({ p }: { p: ProfilePublication }) {
     <div className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
       {p.dateLabel}
       {p.views > 0 ? ` · ${p.views.toLocaleString()} VIEWS` : ""}
-      {p.seal ? ` · ${p.seal.entryExit}` : ""}
-      {p.seal ? (
-        <span style={{ color: toneColor(p.seal.retTone) }}>{` · ${p.seal.retLabel}`}</span>
-      ) : null}
     </div>
   );
 }
@@ -238,9 +223,6 @@ function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: strin
             )}
             <ViewsMeta p={p} />
           </div>
-          {p.seal && (
-            <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="lg" className="md:mt-1" />
-          )}
         </div>
       </Link>
     </section>
@@ -274,7 +256,6 @@ function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string 
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
         <h3 dir="auto" className="user-copy font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
-        {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
       </div>
       <ViewsMeta p={p} />
     </Link>
@@ -298,7 +279,6 @@ function WrittenTile({ p }: { p: ProfilePublication }) {
         <h3 className="font-display text-xl font-semibold leading-[1.15] tracking-tight line-clamp-3 group-hover:underline">
           {p.title}
         </h3>
-        {p.seal && <SealStamp status={p.seal.status} date={new Date(p.seal.dateISO)} size="sm" className="flex-none" />}
       </div>
       {p.deck && <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute line-clamp-2">{p.deck}</p>}
       <ViewsMeta p={p} />
@@ -460,7 +440,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
             </button>
             {followBtn}
             <ShareMenu
-              target={{ url: `/analyst/${props.handle}`, title: `${props.name} on Stoa - verified track record` }}
+              target={{ url: `/analyst/${props.handle}`, title: `${props.name} on Stoa` }}
               label="Share profile"
             />
           </div>

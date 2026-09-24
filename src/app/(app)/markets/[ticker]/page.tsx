@@ -5,20 +5,15 @@ import { listByTicker, publishedReportCount } from "@/lib/db/reports";
 import { listReportIdsWithClips } from "@/lib/db/video-clips";
 import { listCardsForReports } from "@/lib/db/publication-cards";
 import { getTickerRow, listSectorPeers, featuredUniverseEntry } from "@/lib/db/tickers";
-import { hasResolvedHistory } from "@/lib/db/predictions";
 import { coverageAllTime } from "@/lib/markets/coverage";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CallsChart } from "@/components/markets/calls-chart";
+import { PriceChart } from "@/components/markets/price-chart";
 import {
-  StockCoverageBlock,
   StockFundamentals,
   StockHeader,
-  StockOpenCalls,
   StockPeers,
   StockPublications,
-  StockResolvedHistory,
 } from "@/components/markets/stock-sections";
-import { buildStockCalls } from "@/lib/markets/build-stock";
 import { buildEtfSnapshot } from "@/lib/markets/build-etf";
 import { curatedEtf } from "@/lib/markets/etfs";
 import { EtfView } from "@/components/markets/etf-view";
@@ -26,7 +21,7 @@ import { MacroView } from "@/components/markets/macro-view";
 import { macroInstrument } from "@/lib/markets/instruments";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import type { ChartRange } from "@/lib/market/candle-types";
-import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/call-types";
+import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/chart-ranges";
 import type { TodayItem } from "@/lib/today/types";
 import type { Report } from "@/lib/types";
 import { stanceChips } from "@/lib/db/publication-row";
@@ -47,20 +42,12 @@ export async function generateMetadata({
   // Same guard the sitemap uses (src/lib/db/reports.ts: publishedReportCount /
   // allTickerCoverage) so a page's indexability and its sitemap presence can
   // never disagree.
-  const [reportCount, resolvedHistory] = await Promise.all([
-    publishedReportCount(sym),
-    hasResolvedHistory(sym),
-  ]);
+  const reportCount = await publishedReportCount(sym);
   const hasCoverage = reportCount > 0;
 
-  // "Locked" and "fact-checked" are true the instant a report publishes.
-  // "Verified track record" implies resolved history -- only claim that once
-  // a call has actually resolved for this ticker.
   const description = !hasCoverage
-    ? `${name} (${sym}) on Stoa: independent analyst research with a permanent, public call record.`
-    : resolvedHistory
-      ? `Review the analyst record on ${name}: locked calls, entry and exit prices, and graded outcomes on Stoa.`
-      : `Locked, fact-checked research and price calls for ${name}, each attributed by analyst on Stoa's permanent ledger.`;
+    ? `${name} (${sym}) on Stoa: independent analyst research, each piece attributed by name.`
+    : `Independent research on ${name} on Stoa, each piece attributed by analyst with its stance.`;
 
   const ogImage = `/api/og/stock?ticker=${sym}`;
 
@@ -98,7 +85,6 @@ function toItem(report: Report, hasVideo: boolean, hasCards: boolean): TodayItem
   // advertise a clip and an evidence stack it did not have.
   const badge: string[] = [];
   if (hasVideo) badge.push("Video");
-  if (report.prediction || report.type === "call") badge.push("Call");
   if (hasCards) badge.push("Cards");
   if (report.body) badge.push("Thesis");
   if (badge.length === 0) badge.push("Note");
@@ -156,10 +142,9 @@ export default async function TickerPage({
   const macro = macroInstrument(sym);
   const knownFund = !macro && Boolean(curatedEtf(sym));
   const featured = macro ? null : featuredUniverseEntry(sym);
-  const [etf, reports, calls, candles, snapshot, meta, peersEarly, coverageAll] = await Promise.all([
+  const [etf, reports, candles, snapshot, meta, peersEarly, coverageAll] = await Promise.all([
     macro ? Promise.resolve(null) : buildEtfSnapshot(sym),
     listByTicker(sym),
-    buildStockCalls(sym),
     candlesFor(),
     macro || knownFund ? Promise.resolve(null) : getStockSnapshot(sym),
     macro ? Promise.resolve(null) : getTickerRow(sym),
@@ -191,7 +176,6 @@ export default async function TickerPage({
         price={quote.price}
         changePercent={quote.changePercent ?? null}
         candles={candles}
-        calls={calls}
         publications={publications}
         range={range}
         customFrom={query.from}
@@ -206,7 +190,6 @@ export default async function TickerPage({
       <EtfView
         etf={etf}
         candles={candles}
-        calls={calls}
         publications={publications}
         coverage={coverage}
         range={range}
@@ -236,20 +219,15 @@ export default async function TickerPage({
         high52={equitySnapshot.fiftyTwoWeekHigh}
       />
 
-      <CallsChart
+      <PriceChart
         ticker={sym}
         candles={candles}
-        openCalls={calls.openCalls}
-        resolvedCalls={calls.resolvedCalls}
         range={range}
         customFrom={query.from}
         customTo={query.to}
       />
 
-      <StockCoverageBlock ticker={sym} coverage={calls.coverage} />
-      <StockOpenCalls calls={calls.openCalls} />
       <StockPublications items={publications} />
-      <StockResolvedHistory calls={calls.resolvedCalls} />
 
       <StockFundamentals
         peRatio={equitySnapshot.fundamentals.peRatio}
@@ -261,11 +239,11 @@ export default async function TickerPage({
 
       <StockPeers peers={peers} coverage={coverage} />
 
-      {publications.length === 0 && calls.openCalls.length === 0 && (
+      {publications.length === 0 && (
         <div className="mt-8">
           <EmptyState
             title={`No Stoa coverage on ${sym} yet`}
-            body="When an analyst publishes a call or report on this ticker, it will show up here."
+            body="When an analyst publishes on this ticker, it will show up here."
           />
         </div>
       )}

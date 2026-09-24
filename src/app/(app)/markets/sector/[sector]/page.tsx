@@ -6,7 +6,6 @@ import {
   SectorHeader,
   SectorNames,
   SectorPublications,
-  SectorCoverage,
   SectorAnalysts,
 } from "@/components/markets/sector-sections";
 
@@ -45,7 +44,6 @@ export default async function SectorPage({
     <article className="markets-page mx-auto w-full max-w-[var(--w-wide)] py-10 sm:py-14">
       <SectorHeader payload={payload} />
       <SectorNames names={payload.names} />
-      <SectorCoverage payload={payload} />
       <SectorPublications items={payload.publications} />
       <SectorAnalysts analysts={payload.analysts} isAuthed={Boolean(userId)} />
     </article>

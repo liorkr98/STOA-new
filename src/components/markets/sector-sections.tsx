@@ -70,52 +70,10 @@ export function SectorNames({ names }: { names: SectorName[] }) {
             <DayChange percent={n.changePercent} />
             <span className="markets-row-meta num">
               {n.publications} {n.publications === 1 ? "publication" : "publications"}
-              {n.openCalls > 0
-                ? ` · ${n.openCalls} open ${n.openCalls === 1 ? "call" : "calls"}`
-                : ""}
             </span>
             <FollowTicker ticker={n.symbol} />
           </div>
         ))}
-      </div>
-    </Band>
-  );
-}
-
-/**
- * Coverage volume and the outcome record for the sector. There is deliberately
- * no long/short split here: a sector-wide stance would read as a Stoa house
- * view, and Stoa does not have one.
- */
-export function SectorCoverage({ payload }: { payload: SectorPayload }) {
-  if (payload.openCalls === 0 && payload.resolvedCount === 0) return null;
-
-  return (
-    <Band
-      title={`Stoa coverage of ${payload.sector}`}
-      note="How much of Stoa is publishing here. Volume only, never a house view."
-    >
-      <div className="stock-consensus">
-        <div>
-          <p className="stock-consensus-figure">{payload.openCalls}</p>
-          <p className="stock-consensus-key">
-            Open {payload.openCalls === 1 ? "call" : "calls"}
-          </p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">{payload.analystsActive}</p>
-          <p className="stock-consensus-key">
-            {payload.analystsActive === 1 ? "Analyst active" : "Analysts active"}
-          </p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">{payload.publicationsThisWeek}</p>
-          <p className="stock-consensus-key">Publications this week</p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">{payload.resolvedCount}</p>
-          <p className="stock-consensus-key">Resolved {payload.resolvedCount === 1 ? "call" : "calls"}</p>
-        </div>
       </div>
     </Band>
   );
@@ -131,7 +89,7 @@ export function SectorPublications({
   return (
     <Band
       title="Publications in this sector"
-      note="Calls on names here, and commentary tagged to the sector itself."
+      note="Views on names here, and commentary tagged to the sector itself."
       seeAllHref="/explore"
     >
       <div className="mt-2">
@@ -172,7 +130,7 @@ export function SectorAnalysts({
               </span>
             </Link>
             <span className="markets-row-meta num">
-              {a.calls} {a.calls === 1 ? "call" : "calls"}
+              {a.publications} {a.publications === 1 ? "publication" : "publications"}
             </span>
             <FollowButton analystId={a.id} initialFollowing={a.following} isAuthed={isAuthed} />
           </div>

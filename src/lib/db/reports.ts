@@ -7,7 +7,7 @@ import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
 import { tickersInCapBand } from "@/lib/db/tickers";
 import { coverageAllTime } from "@/lib/markets/coverage";
 import type { CapBand } from "@/lib/market/cap-bands";
-import { CALL_FIELDS, publicationRow, REPORT_SELECT } from "@/lib/db/publication-row";
+import { publicationRow, REPORT_SELECT } from "@/lib/db/publication-row";
 import type { AccessType, ContentType, Report } from "@/lib/types";
 import type { DraftRow } from "@/lib/compose/drafts";
 
@@ -26,30 +26,16 @@ function asReportRow(data: unknown): Record<string, unknown> {
 
 export type FeedSort = "trending" | "recent";
 
-export type CallStatusFilter = "open" | "resolved";
-
-/** Filters applied in the query (and a light post-pass for joined prediction/score). */
+/** Filters applied in the query (and a light post-pass on the ticker). */
 export interface FeedFilters {
   type?: ContentType;
   access?: AccessType;
   ticker?: string;
-  /** Minimum author Track Score (0-100). */
-  minScore?: number;
-  status?: CallStatusFilter;
   mcap?: CapBand;
 }
 
 function applyJoinedFilters(reports: Report[], filters: FeedFilters): Report[] {
   let out = reports;
-  if (filters.minScore != null && filters.minScore > 0) {
-    out = out.filter((r) => (r.author?.score ?? 0) >= filters.minScore!);
-  }
-  // Status is preferably applied via !inner join; keep a safety pass for embeds.
-  if (filters.status === "open") {
-    out = out.filter((r) => r.prediction != null && r.prediction.outcome === "open");
-  } else if (filters.status === "resolved") {
-    out = out.filter((r) => r.prediction != null && r.prediction.outcome !== "open");
-  }
   if (filters.ticker) {
     const t = filters.ticker.toUpperCase();
     out = out.filter(
@@ -59,15 +45,8 @@ function applyJoinedFilters(reports: Report[], filters: FeedFilters): Report[] {
   return out;
 }
 
-function selectClause(filters: FeedFilters): string {
-  if (filters.status) {
-    return `*, author:profiles!reports_author_id_fkey(*), prediction:predictions!inner(${CALL_FIELDS})`;
-  }
-  return SELECT;
-}
-
 /**
- * Apply column filters that PostgREST can express on `reports` (and nested prediction).
+ * Apply column filters that PostgREST can express on `reports`.
  * Deliberately synchronous: Supabase query builders are thenables, and an async
  * function that returns one gets its return value silently unwrapped by the
  * runtime (the query executes early and the caller receives `{data, error}`
@@ -89,11 +68,6 @@ function applyReportColumnFilters(
     } else {
       q = q.in("ticker", mcapTickers);
     }
-  }
-  if (filters.status === "open") {
-    q = q.eq("prediction.outcome", "open");
-  } else if (filters.status === "resolved") {
-    q = q.neq("prediction.outcome", "open");
   }
   // Ticker is applied in applyJoinedFilters, on the publication's own ticker.
   return q;
@@ -119,17 +93,13 @@ export async function listFeed({
       merged.mcap ? tickersInCapBand(merged.mcap) : Promise.resolve(undefined),
     ]);
     const dismissed = new Set(dismissedList);
-    const needsOverfetch =
-      dismissed.size > 0 ||
-      (merged.minScore != null && merged.minScore > 0) ||
-      Boolean(merged.ticker) ||
-      merged.status != null;
+    const needsOverfetch = dismissed.size > 0 || Boolean(merged.ticker);
     const fetchLimit = needsOverfetch
       ? Math.min(200, Math.max(limit * 4, limit + dismissed.size))
       : limit;
     let q = supabase
       .from("reports")
-      .select(selectClause(merged))
+      .select(SELECT)
       .in("status", ["published", "resolution_pending_review"]);
     q = applyReportColumnFilters(q, merged, mcapTickers);
     q =
@@ -161,15 +131,11 @@ export async function listFeedFromAnalysts(
     filters.mcap ? tickersInCapBand(filters.mcap) : Promise.resolve(undefined),
   ]);
   const dismissed = new Set(dismissedList);
-  const needsOverfetch =
-    dismissed.size > 0 ||
-    (filters.minScore != null && filters.minScore > 0) ||
-    Boolean(filters.ticker) ||
-    filters.status != null;
+  const needsOverfetch = dismissed.size > 0 || Boolean(filters.ticker);
   const fetchLimit = needsOverfetch ? Math.min(200, Math.max(limit * 4, limit + dismissed.size)) : limit;
   let q = supabase
     .from("reports")
-    .select(selectClause(filters))
+    .select(SELECT)
     .in("status", ["published", "resolution_pending_review"])
     .in("author_id", analystIds);
   q = applyReportColumnFilters(q, filters, mcapTickers);
@@ -373,7 +339,7 @@ export async function listTagUsage(): Promise<string[]> {
   });
 }
 
-/** Newest publicly visible publications platform-wide, with author and prediction. */
+/** Newest publicly visible publications platform-wide, with author and stance. */
 export async function listRecentPublished(limit = 80): Promise<Report[]> {
   return cachedPage(`reports:stance:recent:${limit}`, 20, async () => {
     const supabase = createPublicClient();

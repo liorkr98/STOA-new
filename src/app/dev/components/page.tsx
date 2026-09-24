@@ -3,7 +3,6 @@
 import { EditedMarker } from "@/components/report/edited-marker";
 import { EditedFlag } from "@/components/report/edited-flag";
 import type { ReportEdit } from "@/lib/db/report-edits";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
@@ -132,33 +131,6 @@ export default function ComponentPreviewPage() {
             }
             claims={sampleClaims}
           />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-10">
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="locked" date={new Date("2026-05-03")} size="sm" />
-          <span className="t-meta">locked sm</span>
-        </div>
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="locked" date={new Date("2026-05-03")} size="md" />
-          <span className="t-meta">locked md</span>
-        </div>
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="locked" date={new Date("2026-05-03")} size="lg" />
-          <span className="t-meta">locked lg</span>
-        </div>
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="hit" date={new Date("2026-06-18")} size="lg" />
-          <span className="t-meta">hit lg</span>
-        </div>
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="miss" date={new Date("2026-06-18")} size="lg" />
-          <span className="t-meta">miss lg</span>
-        </div>
-        <div className="flex flex-col items-center gap-3">
-          <SealStamp status="locked" date={new Date()} size="lg" animate />
-          <span className="t-meta">locked lg (animate)</span>
         </div>
       </div>
     </div>

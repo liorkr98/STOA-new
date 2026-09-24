@@ -1,16 +1,10 @@
 import Link from "next/link";
-import { CallsChart } from "@/components/markets/calls-chart";
+import { PriceChart } from "@/components/markets/price-chart";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
-import {
-  StockCoverageBlock,
-  StockOpenCalls,
-  StockPublications,
-  StockResolvedHistory,
-} from "@/components/markets/stock-sections";
+import { StockPublications } from "@/components/markets/stock-sections";
 import { formatMacroLevel, type MacroInstrument } from "@/lib/markets/instruments";
 import type { Candle } from "@/lib/market/candle-types";
-import type { StockCallsPayload } from "@/lib/markets/build-stock";
 import type { TodayItem } from "@/lib/today/types";
 
 const KIND_LABEL: Record<MacroInstrument["kind"], string> = {
@@ -31,7 +25,6 @@ export function MacroView({
   price,
   changePercent,
   candles,
-  calls,
   publications,
   range,
   customFrom,
@@ -41,7 +34,6 @@ export function MacroView({
   price: number | null;
   changePercent: number | null;
   candles: Candle[];
-  calls: StockCallsPayload;
   publications: TodayItem[];
   range: string;
   customFrom?: string;
@@ -88,22 +80,17 @@ export function MacroView({
         ) : null}
       </header>
 
-      <CallsChart
+      <PriceChart
         ticker={instrument.symbol}
         candles={candles}
-        openCalls={calls.openCalls}
-        resolvedCalls={calls.resolvedCalls}
         range={range}
         customFrom={customFrom}
         customTo={customTo}
       />
 
-      <StockCoverageBlock ticker={instrument.symbol} coverage={calls.coverage} />
-      <StockOpenCalls calls={calls.openCalls} />
       <StockPublications items={publications} />
-      <StockResolvedHistory calls={calls.resolvedCalls} />
 
-      {calls.openCalls.length === 0 && publications.length === 0 ? (
+      {publications.length === 0 ? (
         <p className="markets-empty">
           No Stoa coverage on {instrument.name} yet. When an analyst publishes on this
           instrument it will show up here.

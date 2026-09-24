@@ -48,9 +48,7 @@ export function findTheme(slug: string): MarketTheme | null {
 /** Honest badge and anchoring: a publication shows its own ticker and stance; tickerless items carry the theme tag. */
 function toItem(report: Report, themeName: string): TodayItem | null {
   if (!report.author) return null;
-  const hasCall = Boolean(report.prediction);
   const badge: string[] = [];
-  if (hasCall) badge.push("Call");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
   if (badge.length === 0) badge.push("Note");
   return {

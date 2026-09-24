@@ -11,27 +11,16 @@ import {
   LineStyle,
   LineType,
   createChart,
-  createSeriesMarkers,
   type IChartApi,
   type MouseEventParams,
-  type SeriesMarker,
   type UTCTimestamp,
 } from "lightweight-charts";
 import { MarketTradingViewChartCard } from "@/components/markets/market-tradingview-chart-card";
 import { cn } from "@/lib/design/cn";
 import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
-import type { OpenCall, ResolvedCall } from "@/lib/markets/call-types";
-import {
-  CUSTOM_RANGE,
-  STOCK_RANGES,
-  overlayVisible,
-} from "@/lib/markets/call-types";
-import {
-  buildTapeMarkers,
-  periodChangePct,
-  type MarkerTone,
-} from "@/lib/markets/chart-markers";
+import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/chart-ranges";
+import { periodChangePct } from "@/lib/markets/chart-change";
 import { canvasColor } from "@/lib/design/canvas-color";
 
 function cssVar(name: string): string {
@@ -57,22 +46,17 @@ type Hover = {
   open: string;
   high: string;
   low: string;
-  events: { label: string; analyst: string }[];
 } | null;
 
 /**
  * Markets tape: TradingView Lightweight Charts, drawn like Yahoo Finance.
  *
- * One area chart, quiet horizontal grid, last price on the right, small event
- * dots for HIT / MISS / NEAR. Open targets are not drawn as full-width dashed
- * lines: several analysts near the same price used to pile initials on top
- * of each other. The Advanced chart button opens TradingView's widget.
+ * One area chart, quiet horizontal grid, last price on the right. The
+ * Advanced chart button opens TradingView's widget.
  */
-export function CallsChart({
+export function PriceChart({
   ticker,
   candles,
-  openCalls,
-  resolvedCalls,
   range,
   customFrom,
   customTo,
@@ -80,25 +64,16 @@ export function CallsChart({
 }: {
   ticker: string;
   candles: Candle[];
-  openCalls: OpenCall[];
-  resolvedCalls: ResolvedCall[];
   range: string;
   customFrom?: string;
   customTo?: string;
-  maxTargetLines?: number;
   compact?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [advanced, setAdvanced] = useState(false);
   const [hover, setHover] = useState<Hover>(null);
-  const showCalls = overlayVisible(range);
   const changePct = periodChangePct(candles);
   const rising = (changePct ?? 0) >= 0;
-
-  const { markers, eventsByTime } = useMemo(
-    () => buildTapeMarkers(candles, openCalls, resolvedCalls, showCalls),
-    [candles, openCalls, resolvedCalls, showCalls],
-  );
 
   const candleByTime = useMemo(() => {
     const map = new Map<number, Candle>();
@@ -114,11 +89,9 @@ export function CallsChart({
     const paper = cssVar("--paper") || "#faf8f4";
     const up = cssVar("--verdigris") || "#2f6e5d";
     const down = cssVar("--rust") || "#a6483c";
-    const brass = cssVar("--brass") || "#855f22";
     const grid = cssVar("--border") || "rgba(20,23,31,0.12)";
     const muted = cssVar("--text-faint") || "rgba(20,23,31,0.45)";
     const stroke = rising ? up : down;
-    const tones: Record<MarkerTone, string> = { up, down, brass, ink };
 
     const chart: IChartApi = createChart(host, {
       autoSize: true,
@@ -167,20 +140,6 @@ export function CallsChart({
     });
     area.setData(candles.map((c) => ({ time: c.time as UTCTimestamp, value: c.close })));
 
-    const plugin = createSeriesMarkers(
-      area,
-      markers.map(
-        (m): SeriesMarker<UTCTimestamp> => ({
-          time: m.time as UTCTimestamp,
-          position: m.position,
-          color: tones[m.tone],
-          shape: "circle",
-          text: m.text,
-          size: m.size,
-        }),
-      ),
-    );
-
     chart.timeScale().fitContent();
 
     const onMove = (param: MouseEventParams) => {
@@ -198,7 +157,6 @@ export function CallsChart({
         setHover(null);
         return;
       }
-      const events = eventsByTime.get(t) ?? [];
       setHover({
         x: param.point.x,
         y: param.point.y,
@@ -213,17 +171,15 @@ export function CallsChart({
         open: fmtPrice(bar.open),
         high: fmtPrice(bar.high),
         low: fmtPrice(bar.low),
-        events: events.map((e) => ({ label: e.label, analyst: e.analyst })),
       });
     };
     chart.subscribeCrosshairMove(onMove);
 
     return () => {
       chart.unsubscribeCrosshairMove(onMove);
-      plugin.detach();
       chart.remove();
     };
-  }, [candles, compact, range, rising, markers, candleByTime, eventsByTime]);
+  }, [candles, compact, range, rising, candleByTime]);
 
   if (candles.length < 2) {
     return (
@@ -279,7 +235,7 @@ export function CallsChart({
           className="calls-tape"
           style={{ height: compact ? 220 : 380 }}
           role="img"
-          aria-label={`${ticker} price with ${openCalls.length} open Stoa calls and ${resolvedCalls.length} resolved`}
+          aria-label={`${ticker} price`}
         />
         {hover ? (
           <div
@@ -294,50 +250,11 @@ export function CallsChart({
             <p className="text-text-mute">
               Open {hover.open} · High {hover.high} · Low {hover.low}
             </p>
-            {hover.events.map((e, i) => (
-              <p key={`${e.analyst}-${e.label}-${i}`} className="mt-1 text-text">
-                {e.label}
-                {e.label ? " · " : ""}
-                {e.analyst}
-              </p>
-            ))}
           </div>
         ) : null}
       </div>
       )}
 
-      {!showCalls ? (
-        <div className="calls-chart-legend">
-          <span className="calls-chart-legend-key">Calls are marked from 1W and longer.</span>
-        </div>
-      ) : (
-        <div className="calls-chart-legend">
-          <span className="calls-chart-legend-key">
-            <svg width="10" height="10" aria-hidden>
-              <circle cx="5" cy="5" r="3.5" fill="var(--up)" />
-            </svg>
-            HIT
-          </span>
-          <span className="calls-chart-legend-key">
-            <svg width="10" height="10" aria-hidden>
-              <circle cx="5" cy="5" r="3.5" fill="var(--down)" />
-            </svg>
-            MISS
-          </span>
-          <span className="calls-chart-legend-key">
-            <svg width="10" height="10" aria-hidden>
-              <circle cx="5" cy="5" r="3.5" fill="var(--brass)" />
-            </svg>
-            NEAR
-          </span>
-          <span className="calls-chart-legend-key">
-            <svg width="10" height="10" aria-hidden>
-              <circle cx="5" cy="5" r="3.5" fill="var(--paper)" stroke="var(--ink)" strokeWidth="1.5" />
-            </svg>
-            Open call
-          </span>
-        </div>
-      )}
     </div>
   );
 }

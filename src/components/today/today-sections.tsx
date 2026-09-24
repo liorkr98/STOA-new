@@ -1,12 +1,8 @@
-import Link from "next/link";
-import { SealStamp } from "@/components/ui/seal-stamp";
-import { DirectionTag } from "@/components/ui/tag";
 import { TodayCard } from "@/components/today/today-card";
 import { sinceLabel } from "@/lib/today/format";
-import { pct } from "@/lib/format";
 import { cn } from "@/lib/design/cn";
 import type { NewsItem } from "@/lib/market/types";
-import type { TodayDeskItem, TodayItem, TodayVerdict } from "@/lib/today/types";
+import type { TodayDeskItem, TodayItem } from "@/lib/today/types";
 
 /**
  * The sections under the package. Each is a title in the section size and
@@ -53,54 +49,6 @@ export function DeskGrid({ items, className }: { items: TodayDeskItem[]; classNa
           <TodayCard key={it.reportId} item={it} className="w-[82%] shrink-0 snap-start" />
         ))}
       </div>
-    </section>
-  );
-}
-
-/** Verdicts: a ledger, one row per resolved call. Seal colours are the site's. */
-export function VerdictLedger({ verdicts, className }: { verdicts: TodayVerdict[]; className?: string }) {
-  if (verdicts.length === 0) return null;
-  return (
-    <section aria-label="Verdicts" id="verdicts" className={className}>
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="ts-title">Verdicts</h2>
-        <Link href="/markets" className="ts-mono focus-ring hidden rounded hover:text-text sm:inline">
-          The record →
-        </Link>
-      </div>
-      <ol className="ts-stack">
-        {verdicts.map((v) => {
-          const seal = v.outcome === "hit" ? "hit" : v.outcome === "near" || v.outcome === "partial" ? "near" : "miss";
-          const ret = v.returnPct;
-          const tone = ret == null ? "var(--text-faint)" : ret > 0 ? "var(--up)" : ret < 0 ? "var(--down)" : "var(--text-faint)";
-          return (
-            <li
-              key={`${v.reportId}-${v.ticker}`}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 md:grid-cols-[40px_150px_minmax(0,1fr)_170px_72px]"
-            >
-              <SealStamp status={seal} date={new Date(v.resolvedAt)} size="sm" animateOnView className="flex-none" />
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="ts-mono font-semibold text-text">{v.ticker}</span>
-                <DirectionTag direction={v.direction} />
-              </div>
-              <span className="ts-mono text-right md:hidden" style={{ color: tone }}>
-                {ret == null ? "—" : pct(ret)}
-              </span>
-              <h3 className="ts-headline ts-headline--dense col-span-3 md:col-span-1">
-                <Link href={`/report/${v.reportId}`} className="focus-ring rounded">
-                  {v.headline}
-                </Link>
-              </h3>
-              <span className="ts-mono col-span-3 md:col-span-1 md:text-right">
-                {v.entryPrice.toFixed(2)} → {v.exitPrice?.toFixed(2) ?? "—"}
-              </span>
-              <span className="ts-mono hidden text-right md:inline" style={{ color: tone }}>
-                {ret == null ? "—" : pct(ret)}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
     </section>
   );
 }

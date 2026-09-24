@@ -7,7 +7,6 @@ import { Play, Pencil, Eye, Pin, Loader2, FileText, RotateCcw } from "lucide-rea
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
 import { ArchiveDialog } from "@/components/studio/archive-dialog";
@@ -16,14 +15,13 @@ import { EditedFlag } from "@/components/report/edited-flag";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
 
-export type PubState = "draft" | "scheduled" | "published" | "open" | "resolved" | "archived";
+export type PubState = "draft" | "scheduled" | "published" | "archived";
 
 export interface Publication {
   id: string;
   href: string;
   editHref: string;
   state: PubState;
-  hasCall: boolean;
   /** Published and allowed to be deleted outright (`deleteBlocker`). */
   deletable: boolean;
   /** Last edited after publication, if it ever was. */
@@ -44,16 +42,6 @@ export interface Publication {
   pinned: boolean;
   // draft / scheduled
   stateLine: string | null;
-  warning?: boolean;
-  // open call
-  entry?: string | null;
-  target?: string | null;
-  progressPct?: number | null;
-  // resolved
-  entryExit?: string | null;
-  returnPct?: string | null;
-  returnTone?: "up" | "down";
-  sealStatus?: "hit" | "miss" | "near" | null;
   direction?: Direction | null;
 }
 
@@ -63,8 +51,6 @@ const CHIPS: { key: "all" | PubState; label: string }[] = [
   { key: "archived", label: "ARCHIVED" },
   { key: "scheduled", label: "SCHEDULED" },
   { key: "published", label: "PUBLISHED" },
-  { key: "open", label: "OPEN CALLS" },
-  { key: "resolved", label: "RESOLVED" },
 ];
 
 /**
@@ -182,15 +168,13 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
       ) : (
         <div className="flex flex-col gap-3 md:gap-0">
           {shown.map((p) => {
-            const open = p.state === "open";
             const draft = p.state === "draft" || p.state === "scheduled";
             return (
               <div
                 key={p.id}
                 className={cn(
                   "group flex gap-4 rounded-[var(--radius-card)] p-5 md:rounded-none md:border-b md:border-border md:p-0 md:py-5",
-                  open ? "border border-border bg-surface md:border md:bg-surface md:px-5" : "border border-border md:border-0",
-                  open && p.warning && "border-l-2 border-l-[var(--brass)]",
+                  "border border-border md:border-0",
                   draft && "opacity-70",
                 )}
               >
@@ -222,31 +206,9 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   </h3>
 
                   {p.stateLine && (
-                    <p className={cn("num mt-2 text-[11px] uppercase tracking-[0.14em]", p.warning ? "text-[var(--brass)]" : "text-text-faint")}>
+                    <p className="num mt-2 text-[11px] uppercase tracking-[0.14em] text-text-faint">
                       {p.stateLine}
                     </p>
-                  )}
-
-                  {open && (
-                    <>
-                      <p className="num mt-1.5 text-[11px] text-text-mute">
-                        ENTRY {p.entry} · TARGET {p.target} · NOW — · —
-                      </p>
-                      <div className="mt-2 h-1 max-w-sm overflow-hidden rounded-full bg-surface-2">
-                        <div className="h-full rounded-full bg-[var(--ink)]" style={{ width: `${p.progressPct ?? 0}%` }} />
-                      </div>
-                    </>
-                  )}
-
-                  {p.state === "resolved" && (
-                    <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <span className="num text-[11px]" style={{ color: p.returnTone === "down" ? "var(--down)" : "var(--up)" }}>
-                        {p.entryExit} · {p.returnPct}
-                      </span>
-                      <span className="num rounded-full border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">
-                        SCORE Δ pending
-                      </span>
-                    </div>
                   )}
 
                   {/* Hover actions */}
@@ -267,7 +229,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     {p.state === "archived" ? (
                       <RestoreAction id={p.id} />
                     ) : (
-                      !draft && <ArchiveDialog id={p.id} title={p.title} hasCall={p.hasCall} />
+                      !draft && <ArchiveDialog id={p.id} title={p.title} />
                     )}
                     {/* Delete is offered only where it is allowed. A draft was
                         never published, so it deletes outright after a plain
@@ -297,9 +259,6 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   </div>
                 </div>
 
-                {p.sealStatus && (
-                  <SealStamp status={p.sealStatus} date={new Date()} size="md" className="hidden shrink-0 md:block" />
-                )}
               </div>
             );
           })}

@@ -7,8 +7,8 @@ import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { EditedFlag } from "./report/edited-flag";
-import { Tag } from "./ui/tag";
-import { PredictionCard } from "./prediction-card";
+import { DirectionTag, Tag } from "./ui/tag";
+import { TickerChip } from "./ui/ticker-chip";
 
 export function ReportCard({
   report,
@@ -23,7 +23,6 @@ export function ReportCard({
   const author = report.author;
   const when = report.published_at ?? report.created_at;
   const locked = report.access !== "free";
-  const pendingReview = report.status === "resolution_pending_review";
 
   return (
     <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
@@ -60,6 +59,8 @@ export function ReportCard({
         )}
         <div className="flex items-center gap-2">
           <Tag>{publicTypeLabel(report.type)}</Tag>
+          {report.ticker ? <TickerChip ticker={report.ticker} /> : null}
+          {report.ticker && report.stance ? <DirectionTag direction={report.stance} /> : null}
         </div>
       </div>
 
@@ -71,18 +72,6 @@ export function ReportCard({
           </p>
         )}
       </Link>
-
-      {report.prediction && report.ticker && (
-        <Link href={`/report/${report.id}`} className="mt-4 block">
-          <PredictionCard
-            prediction={report.prediction}
-            ticker={report.ticker}
-            direction={report.stance ?? null}
-            hideTarget={locked}
-            pendingReview={pendingReview}
-          />
-        </Link>
-      )}
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
         <div className="flex items-center gap-4 text-text-faint">

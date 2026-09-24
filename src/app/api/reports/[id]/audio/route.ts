@@ -93,9 +93,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       summary: report.summary,
       ticker: report.ticker,
       body: (bodyRow as { body: string | null } | null)?.body ?? null,
-      prediction: direction
-        ? { direction, target_price: report.prediction?.target_price ?? null }
-        : null,
+      direction,
     });
 
     const mp3 = await synthesizeSpeech(script);

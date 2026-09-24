@@ -38,7 +38,6 @@ function captionProxyUrl(vttUrl: string): string {
 export function contentBadgeFor(report: Report, hasVideo: boolean): string {
   const parts: string[] = [];
   if (hasVideo) parts.push("VIDEO");
-  if (report.prediction) parts.push("CALL");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) parts.push("THESIS");
   return parts.length ? parts.join(" · ") : "NOTE";
 }
@@ -157,8 +156,6 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
     const duration = preview && preview > 0 ? Math.min(kept, preview) : kept;
     const sym = chips.ticker;
     const sector = sym ? sectorByTicker.get(sym) ?? null : null;
-    const p = r.prediction;
-    const resolved = p && ["hit", "near", "miss", "partial"].includes(p.outcome) && p.resolved_price != null;
     return {
       id: r.id,
       clipId: c.id,
@@ -182,12 +179,9 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       contentBadge: contentBadgeFor(r, true),
       stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
       analyst: { id: r.author!.id, handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
-      seal: resolved
-        ? { status: p.outcome === "hit" ? "hit" : p.outcome === "near" ? "near" : "miss", dateISO: p.resolution_trading_date ?? p.resolves_at }
-        : null,
       access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
       price: r.price,
-      // The price tape rides with a declared stance, as it did with a call.
+      // The price tape rides with a declared stance.
       cards: cardsFor(r, cardsByReport.get(r.id), chips.direction ? sym : null),
       comments: [],
       publishedAt: r.published_at ?? r.created_at,

@@ -1,4 +1,4 @@
-import type { Profile, PublicationCall, Report } from "@/lib/types";
+import type { Profile, Report } from "@/lib/types";
 
 export interface DispatchCycle {
   issueNumber: number;
@@ -13,22 +13,8 @@ export interface DispatchCycle {
 export interface DispatchStory {
   report: Report;
   author: Profile;
-  prediction: PublicationCall | null;
   headline: string;
   dek: string | null;
-}
-
-export interface DispatchLedgerRow {
-  ticker: string;
-  authorHandle: string;
-  authorName: string;
-  targetPrice: number | null;
-  resolvedPrice: number | null;
-  /** Signed return in percent, direction-aware (prediction.return_pct). */
-  returnPct: number | null;
-  outcome: "hit" | "near" | "partial" | "miss";
-  resolvedAt: string;
-  reportId: string;
 }
 
 export interface DispatchPayload {
@@ -42,7 +28,6 @@ export interface DispatchPayload {
   secondary: DispatchStory[];
   /** Dense one-line stories after the featured block. */
   wire: DispatchStory[];
-  resolved: DispatchLedgerRow[];
 }
 
 export type DispatchViewMode = "public" | "home";

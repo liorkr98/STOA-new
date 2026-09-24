@@ -11,18 +11,11 @@ import {
 } from "react";
 import Link from "next/link";
 import { ArrowRight, X } from "lucide-react";
-import { Avatar } from "@/components/ui/avatar";
-import { DirectionTag } from "@/components/ui/tag";
-import { CallsChart } from "@/components/markets/calls-chart";
+import { PriceChart } from "@/components/markets/price-chart";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
-import type { OpenCall, ResolvedCall, StockCoverage } from "@/lib/markets/call-types";
-
-/** The sheet's smaller frame carries fewer lines before they crowd. */
-const SHEET_TARGET_LINES = 3;
-const SHEET_OPEN_CALLS = 3;
 
 interface SheetPayload {
   symbol: string;
@@ -31,9 +24,6 @@ interface SheetPayload {
   price: number | null;
   changePercent: number | null;
   candles: Candle[];
-  openCalls: OpenCall[];
-  resolvedCalls: ResolvedCall[];
-  coverage: StockCoverage;
 }
 
 const SheetContext = createContext<{ open: (symbol: string) => void } | null>(null);
@@ -131,56 +121,7 @@ function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => v
           <p className="markets-pending mt-6 block">Loading {symbol}…</p>
         ) : (
           <>
-            <CallsChart
-              ticker={symbol}
-              candles={data.candles}
-              openCalls={data.openCalls}
-              resolvedCalls={data.resolvedCalls}
-              range="6M"
-              maxTargetLines={SHEET_TARGET_LINES}
-              compact
-            />
-
-            {data.coverage.openCount > 0 || data.coverage.resolvedCount > 0 ? (
-              <div className="sheet-consensus">
-                <div>
-                  <p className="stock-consensus-figure">{data.coverage.openCount}</p>
-                  <p className="stock-consensus-key">
-                    Open {data.coverage.openCount === 1 ? "call" : "calls"}
-                  </p>
-                </div>
-                <div>
-                  <p className="stock-consensus-figure">{data.coverage.analystCount}</p>
-                  <p className="stock-consensus-key">
-                    {data.coverage.analystCount === 1 ? "Analyst" : "Analysts"}
-                  </p>
-                </div>
-                <div>
-                  <p className="stock-consensus-figure">
-                    {data.coverage.hitRatePct == null ? "-" : `${data.coverage.hitRatePct}%`}
-                  </p>
-                  <p className="stock-consensus-key">Hit rate</p>
-                </div>
-              </div>
-            ) : null}
-
-            {data.openCalls.length > 0 && (
-              <div className="sheet-calls">
-                <h3 className="band-col-title">Open calls</h3>
-                {data.openCalls.slice(0, SHEET_OPEN_CALLS).map((c) => (
-                  <div key={c.reportId} className="sheet-call">
-                    <Avatar src={c.analyst.avatarUrl} name={c.analyst.displayName} size="sm" />
-                    <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold text-text">
-                      {c.analyst.displayName}
-                    </span>
-                    <DirectionTag direction={c.direction} />
-                    <span className="num text-[0.75rem] tabular-nums">
-                      {c.targetPrice == null ? "-" : fmtPrice(c.targetPrice)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <PriceChart ticker={symbol} candles={data.candles} range="6M" compact />
           </>
         )}
 

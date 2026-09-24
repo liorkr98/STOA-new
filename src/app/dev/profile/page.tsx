@@ -1,7 +1,7 @@
 import { AnalystProfileView } from "@/components/profile/analyst-profile-view";
 import { buildPublications, tierPublications } from "@/lib/profile/build-profile-view";
 import type { VideoClip } from "@/lib/db/video-clips";
-import type { Prediction, Report } from "@/lib/types";
+import type { Report } from "@/lib/types";
 
 /**
  * Dev-only seeded storefront so the three-tier content area can be reviewed
@@ -49,38 +49,6 @@ function report(
   } as unknown as Report;
 }
 
-function call(
-  reportId: string,
-  ticker: string,
-  direction: Prediction["direction"],
-  lock: number,
-  outcome: Prediction["outcome"],
-  resolvedPrice: number | null,
-  returnPct: number | null,
-  daysAgo: number,
-): Prediction {
-  return {
-    id: `pred-${reportId}`,
-    report_id: reportId,
-    author_id: "fx-analyst",
-    ticker,
-    direction,
-    lock_price: lock,
-    target_price: lock * (direction === "short" ? 0.85 : 1.2),
-    horizon_days: 90,
-    target_horizon_date: null,
-    resolves_at: ago(daysAgo - 90),
-    resolution_trading_date: outcome === "open" ? null : ago(Math.max(0, daysAgo - 90)),
-    resolved_price: resolvedPrice,
-    bench_lock_price: null,
-    benchmark_pct: null,
-    bench_resolved_price: null,
-    outcome,
-    return_pct: returnPct,
-    created_at: ago(daysAgo),
-  } as Prediction;
-}
-
 function clip(reportId: string, seconds: number, daysAgo: number): VideoClip {
   return {
     id: `clip-${reportId}`,
@@ -103,23 +71,18 @@ function clip(reportId: string, seconds: number, daysAgo: number): VideoClip {
 const LONG_BODY = "x".repeat(900);
 
 const reports: Report[] = [
-  report("r1", "call", "Blackwell demand is still under-modelled into the January quarter", "Hyperscaler capex guides imply a supply-constrained H1; the Street's unit assumptions have not caught up.", "NVDA", 2, 4820, LONG_BODY),
+  report("r1", "research", "Blackwell demand is still under-modelled into the January quarter", "Hyperscaler capex guides imply a supply-constrained H1; the Street's unit assumptions have not caught up.", "NVDA", 2, 4820, LONG_BODY),
   report("r2", "short_post", "What the Strait of Hormuz headlines mean for crude this week", "A note on tanker rates, not on politics.", "XOM", 5, 2210),
   report("r3", "research", "TSMC's N2 ramp: the capex the market is not pricing", "The written thesis on 2027 wafer starts and what it does to gross margin.", "TSM", 9, 1330, LONG_BODY),
-  report("r4", "call", "AMD's MI350 window is narrower than the bulls think", "The share-gain story depends on a software gap closing faster than it ever has.", "AMD", 40, 3910),
-  report("r5", "call", "Micron: HBM pricing holds through the cycle", "Memory has never had a customer with this little price sensitivity.", "MU", 121, 5610),
+  report("r4", "research", "AMD's MI350 window is narrower than the bulls think", "The share-gain story depends on a software gap closing faster than it ever has.", "AMD", 40, 3910),
+  report("r5", "research", "Micron: HBM pricing holds through the cycle", "Memory has never had a customer with this little price sensitivity.", "MU", 121, 5610),
   report("r6", "short_post", "Why the semis rally is broader than the Magnificent Seven", null, "SMH", 14, 980),
   report("r7", "research", "The case against Intel foundry, revisited", "Eighteen months on, the yield story has moved; the customer story has not.", "INTC", 60, 1740, LONG_BODY),
-  report("r8", "call", "ASML: bookings trough was Q2", "The high-NA cadence sets up a 2027 order cycle the sell side is late to.", "ASML", 150, 2980),
+  report("r8", "research", "ASML: bookings trough was Q2", "The high-NA cadence sets up a 2027 order cycle the sell side is late to.", "ASML", 150, 2980),
   report("r9", "short_post", "Reading the SOX breadth chart", "A short note on breadth as a leading signal.", null, 21, 640),
 ];
 
-const predictions: Prediction[] = [
-  call("r1", "NVDA", "long", 118.4, "open", null, null, 2),
-  call("r4", "AMD", "short", 162.1, "near", 158.9, 1.98, 40),
-  call("r5", "MU", "long", 96.2, "hit", 121.7, 26.5, 121),
-  call("r8", "ASML", "long", 712.4, "miss", 665.2, -6.6, 150),
-];
+const stances: Record<string, Report["stance"]> = { r1: "long", r4: "short", r5: "long", r8: "long" };
 
 const clips: VideoClip[] = [
   clip("r1", 222, 2),
@@ -130,11 +93,7 @@ const clips: VideoClip[] = [
   clip("r8", 264, 150),
 ];
 
-// Each fixture call's direction is its publication's stance, as migration 0065 copies it.
-const staged: Report[] = reports.map((r) => ({
-  ...r,
-  stance: predictions.find((p) => p.report_id === r.id)?.direction ?? null,
-}));
+const staged: Report[] = reports.map((r) => ({ ...r, stance: stances[r.id] ?? null }));
 
 export default async function DevProfilePage({
   searchParams,
@@ -149,7 +108,6 @@ export default async function DevProfilePage({
 
   const pubs = buildPublications({
     reports: isNew ? staged.slice(0, 2) : staged,
-    predictions: isNew ? predictions.slice(0, 1) : predictions,
     clips: (isNew ? clips.slice(0, 1) : clips).filter((c) => c.report_id !== processingId),
     pendingClipIds: processingId ? new Set([processingId]) : undefined,
   });
@@ -167,8 +125,8 @@ export default async function DevProfilePage({
         specialty={isNew ? "Semiconductor supply chains" : "Semiconductors and AI infrastructure"}
         bio={
           isNew
-            ? "Former equipment analyst. Two publications in, first call still open."
-            : "Twelve years covering the semiconductor supply chain, most recently at a long-only fund. Every call on the record."
+            ? "Former equipment analyst. Two publications in."
+            : "Twelve years covering the semiconductor supply chain, most recently at a long-only fund."
         }
         handleLine={isNew ? "@NEWANALYST · JOINED 2026" : "@LENAKW · JOINED 2024"}
         isSelf={false}

@@ -28,8 +28,7 @@ export async function getPlatformStats(): Promise<PlatformStats | null> {
 export interface TodayActivity {
   publicationsToday: number;
   analystsToday: number;
-  callsResolvedToday: number;
-  /** Quiet NY days fall back to the last seven days so the landing never prints three zeros. */
+  /** Quiet NY days fall back to the last seven days so the landing never prints zeros. */
   window: "today" | "week";
 }
 
@@ -43,42 +42,37 @@ export async function getTodayActivity(): Promise<TodayActivity> {
 }
 
 function emptyActivity(): TodayActivity {
-  return { publicationsToday: 0, analystsToday: 0, callsResolvedToday: 0, window: "today" };
+  return { publicationsToday: 0, analystsToday: 0, window: "today" };
 }
 
-function isQuiet(a: { publicationsToday: number; analystsToday: number; callsResolvedToday: number }) {
-  return a.publicationsToday === 0 && a.analystsToday === 0 && a.callsResolvedToday === 0;
+function isQuiet(a: { publicationsToday: number; analystsToday: number }) {
+  return a.publicationsToday === 0 && a.analystsToday === 0;
 }
 
 async function queryActivity(
   supabase: SupabaseClient,
   since: string,
-): Promise<{ publicationsToday: number; analystsToday: number; callsResolvedToday: number } | null> {
+): Promise<{ publicationsToday: number; analystsToday: number } | null> {
   const { data, error } = await supabase.rpc("today_activity", { p_since: since });
   const row = Array.isArray(data) ? data[0] : data;
   if (!error && row && typeof row === "object") {
-    const r = row as { publications: number; analysts: number; resolved: number };
+    const r = row as { publications: number; analysts: number };
     return {
       publicationsToday: Number(r.publications) || 0,
       analystsToday: Number(r.analysts) || 0,
-      callsResolvedToday: Number(r.resolved) || 0,
     };
   }
 
-  const [{ data: pubs }, { data: resolved }] = await Promise.all([
-    supabase
-      .from("reports")
-      .select("author_id")
-      .in("status", ["published", "resolution_pending_review"])
-      .gte("published_at", since)
-      .limit(2000),
-    supabase.from("predictions").select("id").neq("outcome", "open").gte("resolves_at", since).limit(2000),
-  ]);
+  const { data: pubs } = await supabase
+    .from("reports")
+    .select("author_id")
+    .in("status", ["published", "resolution_pending_review"])
+    .gte("published_at", since)
+    .limit(2000);
   const rows = (pubs as { author_id: string }[]) ?? [];
   return {
     publicationsToday: rows.length,
     analystsToday: new Set(rows.map((r) => r.author_id)).size,
-    callsResolvedToday: ((resolved as { id: string }[]) ?? []).length,
   };
 }
 

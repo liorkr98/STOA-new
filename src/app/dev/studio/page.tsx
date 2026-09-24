@@ -6,8 +6,8 @@ import { PublicationsView, type Publication } from "@/components/studio/publicat
 /**
  * Dev-only Publications list: one row in every state a creator's list can
  * hold, so the per-row actions can be reviewed without a session. A draft
- * offers Delete and not Promote or Archive; a callless published piece offers
- * both Archive and Delete; a piece with a call offers Archive only. The
+ * offers Delete and not Promote or Archive; a published piece with no stance
+ * offers both Archive and Delete; a piece with a stance offers Archive only. The
  * actions call the real server actions, which fail here without a session.
  */
 
@@ -15,7 +15,6 @@ function row(over: Partial<Publication> & Pick<Publication, "id" | "state" | "ti
   return {
     href: `/report/${over.id}`,
     editHref: `/studio/compose?id=${over.id}`,
-    hasCall: false,
     typeLabel: "THESIS",
     tag: null,
     tagIsTicker: false,
@@ -27,29 +26,27 @@ function row(over: Partial<Publication> & Pick<Publication, "id" | "state" | "ti
     plays: over.duration ? "0" : null,
     pinned: false,
     stateLine: null,
+    deletable: true,
     ...over,
-    deletable: over.deletable ?? !over.hasCall,
   };
 }
 
 const PUBS: Publication[] = [
   row({ id: "fx-draft", state: "draft", title: "A draft nobody has seen yet", stateLine: "DRAFT · EDITED 2H AGO" }),
   row({
-    id: "fx-open",
-    state: "open",
+    id: "fx-stance",
+    state: "published",
     title: "NVDA earns its multiple into the January quarter",
-    hasCall: true,
-    typeLabel: "VERDICT",
+    deletable: false,
+    direction: "long",
+    typeLabel: "VIDEO",
     tag: "NVDA",
     tagIsTicker: true,
-    badge: "VIDEO · CALL · CARDS",
+    badge: "VIDEO · CARDS",
     duration: "1:12",
     videoStatus: "ready",
     views: "1.2k",
     plays: "840",
-    entry: "$132.40",
-    target: "$160",
-    progressPct: 40,
   }),
   row({
     id: "fx-note",

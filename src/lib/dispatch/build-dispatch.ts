@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUserId } from "@/lib/db/auth";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
 import { listSavedReports } from "@/lib/db/saved";
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { Report } from "@/lib/types";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { cachedPage } from "@/lib/cache/page";
@@ -13,14 +13,12 @@ import {
   estimateReadMinutes,
   inCycle,
   scoreReportForDispatch,
-  scoreResolvedPrediction,
   storyDek,
   storyHeadline,
   walkCycleOffsets,
 } from "@/lib/dispatch/ranking";
 import type {
   DispatchCycle,
-  DispatchLedgerRow,
   DispatchPayload,
   DispatchStory,
 } from "@/lib/dispatch/types";
@@ -42,32 +40,12 @@ async function fetchPublishedReports(limit = 80): Promise<Report[]> {
   return ((data as Record<string, unknown>[]) ?? []).map(normalizeReport);
 }
 
-async function fetchResolvedPredictions(since: Date, limit = 40): Promise<
-  (Prediction & { author?: Profile; report?: { id: string; ticker: string | null } })[]
-> {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("predictions")
-    .select(
-      "*, author:profiles!predictions_author_id_fkey(handle, display_name), report:reports!predictions_report_id_fkey(id, ticker)",
-    )
-    .neq("outcome", "open")
-    .gte("resolves_at", since.toISOString())
-    .order("resolves_at", { ascending: false })
-    .limit(limit);
-  return (data as (Prediction & {
-    author?: Profile;
-    report?: { id: string; ticker: string | null };
-  })[]) ?? [];
-}
-
 function toStory(report: Report): DispatchStory | null {
   const author = report.author;
   if (!author) return null;
   return {
     report,
     author,
-    prediction: report.prediction ?? null,
     headline: storyHeadline(report),
     dek: storyDek(report),
   };
@@ -148,61 +126,13 @@ function pickStories(
   return { lead, secondary, wire };
 }
 
-function normalizeOutcome(outcome: Prediction["outcome"]): DispatchLedgerRow["outcome"] | null {
-  if (outcome === "open") return null;
-  if (outcome === "neutral") return "partial";
-  return outcome;
-}
-
-function buildLedger(
-  predictions: (Prediction & {
-    author?: Profile;
-    report?: { id: string; ticker: string | null };
-  })[],
-  cycleStart: Date,
-  cycleEnd: Date,
-  personalized: boolean,
-  authorIds: Set<string>,
-  tickers: Set<string>,
-): DispatchLedgerRow[] {
-  return predictions
-    .filter((p) => inCycle(p.resolves_at, cycleStart, cycleEnd))
-    .filter((p) => {
-      if (!personalized) return true;
-      if (authorIds.has(p.author_id)) return true;
-      const t = (p.ticker ?? p.report?.ticker ?? "").toUpperCase();
-      return t && tickers.has(t);
-    })
-    .sort((a, b) => scoreResolvedPrediction(b) - scoreResolvedPrediction(a))
-    .slice(0, 12)
-    .flatMap((p) => {
-      const outcome = normalizeOutcome(p.outcome);
-      if (!outcome) return [];
-      return [
-        {
-          ticker: (p.ticker ?? p.report?.ticker ?? "-").toUpperCase(),
-          authorHandle: p.author?.handle ?? "analyst",
-          authorName: p.author?.display_name ?? "Analyst",
-          targetPrice: p.target_price,
-          resolvedPrice: p.resolved_price,
-          returnPct: p.return_pct,
-          outcome,
-          resolvedAt: p.resolves_at,
-          reportId: p.report_id,
-        },
-      ];
-    });
-}
-
 export async function buildDispatch(personalized: boolean): Promise<DispatchPayload> {
   if (!personalized) return cachedPage("dispatch-public", 30, () => assembleDispatch(false));
   return assembleDispatch(true);
 }
 
 async function assembleDispatch(personalized: boolean): Promise<DispatchPayload> {
-  const resolvedLookback = new Date(getCycleWindow().start.getTime() - 14 * 86_400_000);
-
-  const [personal, issueNumber, allReports, resolvedRaw] = await Promise.all([
+  const [personal, issueNumber, allReports] = await Promise.all([
     (async () => {
       if (!personalized) return { userId: null as string | null, authorIds: new Set<string>(), tickers: new Set<string>() };
       const userId = await getSessionUserId();
@@ -212,7 +142,6 @@ async function assembleDispatch(personalized: boolean): Promise<DispatchPayload>
     })(),
     fetchIssueNumber(),
     fetchPublishedReports(),
-    fetchResolvedPredictions(resolvedLookback),
   ]);
 
   const { userId, authorIds, tickers } = personal;
@@ -250,15 +179,6 @@ async function assembleDispatch(personalized: boolean): Promise<DispatchPayload>
     cycleWindow.end,
   );
 
-  const resolved = buildLedger(
-    resolvedRaw,
-    cycleWindow.start,
-    cycleWindow.end,
-    Boolean(userId && personalized),
-    authorIds,
-    tickers,
-  );
-
   const readTexts = [
     lead?.headline ?? "",
     lead?.dek ?? "",
@@ -283,6 +203,5 @@ async function assembleDispatch(personalized: boolean): Promise<DispatchPayload>
     lead,
     secondary,
     wire,
-    resolved,
   };
 }

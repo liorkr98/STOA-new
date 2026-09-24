@@ -1,15 +1,11 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
 import { TickerChip } from "@/components/ui/ticker-chip";
-import { DirectionTag, GradeTag } from "@/components/ui/tag";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
 import { compact, companyName, price } from "@/lib/format";
-import type { OpenCall, ResolvedCall, StockCoverage } from "@/lib/markets/call-types";
 import type { TodayItem } from "@/lib/today/types";
 import type { TickerRow } from "@/lib/db/tickers";
 
@@ -97,97 +93,6 @@ export function StockHeader({
   );
 }
 
-/**
- * Coverage volume and the outcome record, never a house view. The long/short
- * split and the average target are gone on purpose: each analyst's position is
- * attributed by name in the open-calls list below, and blending them into one
- * number would save the reader from reading any of them.
- */
-export function StockCoverageBlock({
-  ticker,
-  coverage,
-}: {
-  ticker: string;
-  coverage: StockCoverage;
-}) {
-  if (coverage.openCount === 0 && coverage.resolvedCount === 0) return null;
-
-  return (
-    <Band
-      title={`Stoa coverage of ${ticker}`}
-      note="How much of Stoa is on this name, and how its closed calls turned out."
-    >
-      <div className="stock-consensus">
-        <div>
-          <p className="stock-consensus-figure">{coverage.openCount}</p>
-          <p className="stock-consensus-key">
-            Open {coverage.openCount === 1 ? "call" : "calls"}
-          </p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">{coverage.analystCount}</p>
-          <p className="stock-consensus-key">
-            {coverage.analystCount === 1 ? "Analyst covering" : "Analysts covering"}
-          </p>
-        </div>
-        <div>
-          <p className="stock-consensus-figure">
-            {coverage.hitRatePct == null ? (
-              <span className="markets-pending">No history</span>
-            ) : (
-              `${coverage.hitRatePct}%`
-            )}
-          </p>
-          <p className="stock-consensus-key">
-            Hit rate · {coverage.resolvedCount} resolved
-          </p>
-        </div>
-      </div>
-    </Band>
-  );
-}
-
-export function StockOpenCalls({ calls }: { calls: OpenCall[] }) {
-  if (calls.length === 0) return null;
-
-  return (
-    <Band
-      title="Open calls"
-      note="Every position, attributed by name. Locked at publication, graded by the market at the horizon."
-    >
-      <div className="mt-2">
-        {calls.map((c) => (
-          <div key={c.reportId} className="markets-row">
-            <Link
-              href={`/analyst/${c.analyst.handle}`}
-              className="markets-row-name focus-ring"
-            >
-              <Avatar src={c.analyst.avatarUrl} name={c.analyst.displayName} size="sm" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text">
-                {c.analyst.displayName}
-              </span>
-            </Link>
-            <DirectionTag direction={c.direction} />
-            <span className="num text-[0.8125rem] tabular-nums text-text">
-              {price(c.entryPrice)}
-              <span aria-hidden className="text-text-faint"> → </span>
-              {c.targetPrice == null ? "-" : price(c.targetPrice)}
-            </span>
-            <span className="markets-row-meta num">{c.daysLeft} days left</span>
-            <Link
-              href={`/report/${c.reportId}`}
-              className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] text-sm font-medium text-accent hover:underline"
-            >
-              Read report
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        ))}
-      </div>
-    </Band>
-  );
-}
-
 export function StockPublications({ items }: { items: TodayItem[] }) {
   if (items.length === 0) return null;
 
@@ -205,68 +110,6 @@ export function StockPublications({ items }: { items: TodayItem[] }) {
             }
           />
         ))}
-      </div>
-    </Band>
-  );
-}
-
-export function StockResolvedHistory({ calls }: { calls: ResolvedCall[] }) {
-  if (calls.length === 0) return null;
-
-  return (
-    <Band title="Resolved history" note="What the market did with every call that has closed.">
-      <div className="overflow-x-auto scroll-area-x">
-        <table className="stock-table">
-          <thead>
-            <tr>
-              <th>Analyst</th>
-              <th>Direction</th>
-              <th>Entry → resolved</th>
-              <th>Return</th>
-              <th>Outcome</th>
-            </tr>
-          </thead>
-          <tbody>
-            {calls.map((c) => (
-              <tr key={c.reportId}>
-                <td>
-                  <Link
-                    href={`/analyst/${c.analyst.handle}`}
-                    className="focus-ring inline-flex items-center gap-2.5 rounded-[var(--radius-btn)]"
-                  >
-                    <span className="font-semibold">{c.analyst.displayName}</span>
-                  </Link>
-                </td>
-                <td>
-                  <DirectionTag direction={c.direction} />
-                </td>
-                <td className="num">
-                  {price(c.entryPrice)}
-                  <span aria-hidden className="text-text-faint"> → </span>
-                  {c.exitPrice == null ? "-" : price(c.exitPrice)}
-                </td>
-                <td
-                  className="num font-semibold"
-                  style={{
-                    color:
-                      c.returnPct == null
-                        ? "var(--text-mute)"
-                        : c.returnPct >= 0
-                          ? "var(--up)"
-                          : "var(--down)",
-                  }}
-                >
-                  {c.returnPct == null
-                    ? "-"
-                    : `${c.returnPct >= 0 ? "+" : ""}${c.returnPct.toFixed(1)}%`}
-                </td>
-                <td>
-                  <GradeTag outcome={c.outcome} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </Band>
   );

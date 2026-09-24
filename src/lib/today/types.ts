@@ -1,4 +1,4 @@
-import type { AccessType, ContentType, Direction, Outcome } from "@/lib/types";
+import type { AccessType, ContentType, Direction } from "@/lib/types";
 import type { NewsItem } from "@/lib/market/types";
 
 /** Byline identity, shared by every band. */
@@ -50,20 +50,6 @@ export interface TodayItem {
   sector?: string | null;
 }
 
-/** A resolved call, graded by the market. Never paywalled. */
-export interface TodayVerdict {
-  reportId: string;
-  ticker: string;
-  direction: Direction;
-  outcome: Exclude<Outcome, "open">;
-  headline: string;
-  entryPrice: number;
-  exitPrice: number | null;
-  returnPct: number | null;
-  resolvedAt: string;
-  author: TodayAnalyst;
-}
-
 /**
  * Why a saved item is resurfacing. Every reason here is computed from stored
  * data. `price_near_target` from the design brief is deliberately absent: it
@@ -71,7 +57,7 @@ export interface TodayVerdict {
  * not carry and which would put an external market-data call on the critical
  * path of the signed-in home page.
  */
-export type TodaySavedReason = "resolved_hit" | "resolved_miss" | "follow_up" | "unread";
+export type TodaySavedReason = "follow_up" | "unread";
 
 export interface TodaySavedItem extends TodayItem {
   reason: TodaySavedReason;
@@ -108,7 +94,6 @@ export interface TodayPayload {
     subscriptions: TodayItem[];
     following: TodayItem[];
   };
-  verdicts: TodayVerdict[];
   saved: TodaySavedItem[];
   mostWatched: TodayVideo[];
   worthReading: TodayItem[];
@@ -181,7 +166,6 @@ export interface TodayPagePayload {
   /** Five, by velocity. */
   trending: TodayItem[];
   desk: TodayDeskItem[];
-  verdicts: TodayVerdict[];
   news: NewsItem[];
   sidebar: TodaySidebarPayload;
 }

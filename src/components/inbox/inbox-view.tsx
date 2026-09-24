@@ -5,11 +5,9 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import type { Direction } from "@/lib/types";
-import { SealStamp } from "@/components/ui/seal-stamp";
 import { markAllNotificationsRead, markNotificationRead } from "@/app/actions/notifications";
 
-export type InboxCategory = "calls" | "publications" | "money" | "audience" | "social";
+export type InboxCategory = "publications" | "money" | "audience" | "social";
 
 export interface InboxItem {
   id: string;
@@ -24,20 +22,12 @@ export interface InboxItem {
   danger?: boolean;
   /** Already-acted confirmation (shown once in "good"). */
   confirmed?: boolean;
-  // Resolved-call variant
-  ticker?: string | null;
-  direction?: Direction | null;
-  entryExit?: string | null;
-  sealStatus?: "hit" | "miss" | null;
-  // Own-call variant
-  scoreDelta?: string | null;
   /** True for placeholder demo items (dev only). */
   demo?: boolean;
 }
 
 const CHIPS: { key: "all" | InboxCategory; label: string }[] = [
   { key: "all", label: "ALL" },
-  { key: "calls", label: "CALLS" },
   { key: "publications", label: "PUBLICATIONS" },
   { key: "money", label: "MONEY" },
   { key: "audience", label: "AUDIENCE" },
@@ -47,15 +37,11 @@ const CHIPS: { key: "all" | InboxCategory; label: string }[] = [
 const READING_PREFS = [
   "Publications from subscriptions",
   "Publications from follows",
-  "Call resolutions",
-  "Price target hits",
   "Subscription renewals",
   "New followers",
   "Product news",
 ];
 const RESEARCH_PREFS = [
-  "Your call resolutions",
-  "Calls approaching horizon",
   "New subscribers",
   "Report unlocks",
   "Comments",
@@ -127,12 +113,6 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
               )}
               {it.title}
             </p>
-            {it.entryExit && (
-              <p className="num mt-1 text-[12px] text-text-mute">{it.entryExit}</p>
-            )}
-            {it.scoreDelta && (
-              <p className="num mt-1 text-[11px] uppercase tracking-[0.14em] text-text-mute">{it.scoreDelta}</p>
-            )}
             <div className="mt-1.5 flex items-center gap-3">
               <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{it.timeLabel}</span>
               {it.action &&
@@ -158,9 +138,6 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
                 ))}
             </div>
           </div>
-          {it.sealStatus && (
-            <SealStamp status={it.sealStatus} date={new Date()} size="md" className="shrink-0" />
-          )}
         </div>
       </div>
       <button

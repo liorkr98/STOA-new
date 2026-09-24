@@ -2,10 +2,8 @@ import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
 import { FadeIn } from "@/components/motion/fade-in";
 import { DispatchForCreators } from "@/components/dispatch/dispatch-for-creators";
-import { DispatchHowItWorks } from "@/components/dispatch/dispatch-how-it-works";
 import { DispatchIssueColumns } from "@/components/dispatch/dispatch-issue-columns";
 import { DispatchLead } from "@/components/dispatch/dispatch-lead";
-import { DispatchLedger } from "@/components/dispatch/dispatch-ledger";
 import { DispatchMasthead } from "@/components/dispatch/dispatch-masthead";
 import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
 import { VideoGrid } from "@/components/video/video-grid";
@@ -14,20 +12,17 @@ import type { VideoCardData } from "@/lib/video/card-data";
 
 function splitColumns(dispatch: DispatchPayload): {
   research: DispatchStory[];
-  calls: DispatchStory[];
   wire: DispatchStory[];
 } {
   const research: DispatchStory[] = [];
-  const calls: DispatchStory[] = [];
   const wire: DispatchStory[] = [...dispatch.wire];
 
   for (const s of dispatch.secondary) {
-    if (s.report.type === "call") calls.push(s);
-    else if (s.report.type === "short_post") wire.push(s);
+    if (s.report.type === "short_post") wire.push(s);
     else research.push(s);
   }
 
-  return { research, calls, wire };
+  return { research, wire };
 }
 
 /**
@@ -60,8 +55,7 @@ export function DispatchView({
     personalized &&
     Boolean(dispatch.lead) &&
     dispatch.secondary.length === 0 &&
-    dispatch.wire.length === 0 &&
-    dispatch.resolved.length === 0;
+    dispatch.wire.length === 0;
 
   const columns = splitColumns(dispatch);
 
@@ -86,7 +80,7 @@ export function DispatchView({
         <FadeIn>
           <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
             <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
-              Today&apos;s locked calls and graded research.
+              Today&apos;s research.
             </p>
             <p className="text-sm leading-relaxed text-text-mute sm:pt-1">
               A numbered daily issue. Follow analysts to get a briefing that matches what you
@@ -131,11 +125,8 @@ export function DispatchView({
 
       <DispatchIssueColumns
         research={columns.research}
-        calls={columns.calls}
         wire={columns.wire}
       />
-
-      <DispatchLedger items={dispatch.resolved} />
 
       {thinHome ? (
         <div className="dispatch-section rounded-[var(--radius-card)] border border-border bg-surface px-5 py-6 text-center">
@@ -173,12 +164,7 @@ export function DispatchView({
         </footer>
       )}
 
-      {!isHome ? (
-        <>
-          <DispatchHowItWorks />
-          <DispatchForCreators />
-        </>
-      ) : null}
+      {!isHome ? <DispatchForCreators /> : null}
     </article>
   );
 }

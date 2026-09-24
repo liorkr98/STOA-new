@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, LineChart, Radio } from "lucide-react";
+import { BookOpen, Radio } from "lucide-react";
 import { FadeIn } from "@/components/motion/fade-in";
 import type { DispatchStory } from "@/lib/dispatch/types";
 import { cn } from "@/lib/design/cn";
@@ -14,7 +14,6 @@ function IssueCard({
   meta?: string;
 }) {
   const ticker = (story.report.ticker ?? "").toUpperCase();
-  const showTarget = story.report.access === "free";
 
   return (
     <FadeIn delay={Math.min(index, 6) * 0.04}>
@@ -24,11 +23,6 @@ function IssueCard({
             {ticker ? (
               <span className="num text-[11px] font-semibold uppercase tracking-wider text-text">
                 {ticker}
-              </span>
-            ) : null}
-            {showTarget && story.prediction?.target_price != null ? (
-              <span className="num text-[11px] text-text-faint">
-                ${story.prediction.target_price.toFixed(0)}
               </span>
             ) : null}
           </div>
@@ -103,19 +97,18 @@ function Column({
 }
 
 /**
- * Daily Dispatch-style three-column issue board: research, calls, wire.
+ * Daily Dispatch-style issue board: research and the wire, on the
+ * three-column grid the locked-calls column used to share.
  * Used under the lead on home / public dispatch.
  */
 export function DispatchIssueColumns({
   research,
-  calls,
   wire,
 }: {
   research: DispatchStory[];
-  calls: DispatchStory[];
   wire: DispatchStory[];
 }) {
-  if (research.length === 0 && calls.length === 0 && wire.length === 0) return null;
+  if (research.length === 0 && wire.length === 0) return null;
 
   return (
     <div className="dispatch-section dispatch-issue-board grid gap-8 lg:grid-cols-3 lg:gap-6">
@@ -125,13 +118,6 @@ export function DispatchIssueColumns({
         stories={research}
         empty="No long-form research in this cycle."
         accentClass="text-text"
-      />
-      <Column
-        icon={LineChart}
-        title="Locked calls"
-        stories={calls}
-        empty="No locked calls in this cycle."
-        accentClass="text-[var(--brass)]"
       />
       <Column
         icon={Radio}

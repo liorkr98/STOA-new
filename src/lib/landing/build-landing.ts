@@ -2,7 +2,6 @@ import "server-only";
 
 import { listRecentPublished } from "@/lib/db/reports";
 import { listAnalystsByFollowers } from "@/lib/db/profiles";
-import { listRecentResolvedWithReports } from "@/lib/db/predictions";
 import { listVideoClipCards } from "@/lib/db/video-clips";
 import { listTickerRows } from "@/lib/db/tickers";
 import { getTodayActivity, type TodayActivity } from "@/lib/db/platform-stats";
@@ -15,7 +14,6 @@ import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { cachedPage } from "@/lib/cache/page";
 import { attentionRate, publicationAttention } from "@/lib/lifecycle/stages";
 import type { TapeQuote } from "@/lib/markets/types";
-import type { TodayVerdict } from "@/lib/today/types";
 import type { Direction } from "@/lib/types";
 import { stanceChips } from "@/lib/db/publication-row";
 
@@ -57,7 +55,6 @@ export interface LandingPayload {
   issue: { issueNumber: number; dateISO: string };
   lead: LandingLead | null;
   headlines: LandingHeadline[];
-  verdicts: TodayVerdict[];
   faces: LandingFace[];
 }
 
@@ -68,11 +65,10 @@ export async function buildLanding(): Promise<LandingPayload> {
 async function buildLandingUncached(): Promise<LandingPayload> {
   const now = Date.now();
   const cycle = getCycleWindow();
-  const [pool, clips, analysts, resolved, activity, issueNumber] = await Promise.all([
+  const [pool, clips, analysts, activity, issueNumber] = await Promise.all([
     listRecentPublished(80).catch(() => []),
     listVideoClipCards(80).catch(() => []),
     listAnalystsByFollowers(30).catch(() => []),
-    listRecentResolvedWithReports(40).catch(() => []),
     getTodayActivity(),
     getIssueNumber(cycle.dateIso),
   ]);
@@ -142,25 +138,6 @@ async function buildLandingUncached(): Promise<LandingPayload> {
   }
   const headlines = ranked.filter((r) => r.id !== leadReport?.id).slice(0, 4).map(toHeadline);
 
-  // Five resolved calls, most popular first, with at least one MISS when one exists.
-  const verdictsAll: TodayVerdict[] = resolved.map((p) => ({
-    reportId: p.report!.id,
-    ticker: p.ticker.toUpperCase(),
-    direction: p.direction,
-    outcome: p.outcome as TodayVerdict["outcome"],
-    headline: p.report!.title?.trim() || p.report!.summary?.trim() || `${p.ticker.toUpperCase()} call`,
-    entryPrice: p.lock_price,
-    exitPrice: p.resolved_price,
-    returnPct: p.return_pct,
-    resolvedAt: p.resolution_trading_date ?? p.resolves_at,
-    author: { id: p.author!.id, handle: p.author!.handle, displayName: p.author!.display_name, avatarUrl: p.author!.avatar_url },
-  }));
-  let verdicts = verdictsAll.slice(0, 5);
-  if (!verdicts.some((v) => v.outcome === "miss")) {
-    const miss = verdictsAll.find((v) => v.outcome === "miss");
-    if (miss) verdicts = [...verdicts.slice(0, 4), miss];
-  }
-
   const faces: LandingFace[] = analysts.map((a) => ({
     handle: a.handle,
     displayName: a.display_name,
@@ -174,7 +151,6 @@ async function buildLandingUncached(): Promise<LandingPayload> {
     issue: { issueNumber, dateISO: cycle.dateIso },
     lead,
     headlines,
-    verdicts,
     faces,
   };
 }

@@ -8,13 +8,11 @@ import { Sparkline } from "./charts/sparkline";
 export function AnalystCard({
   analyst,
   spark,
-  resolvedCalls = 0,
   promoted = false,
   className,
 }: {
   analyst: Profile;
   spark?: number[];
-  resolvedCalls?: number;
   promoted?: boolean;
   className?: string;
 }) {
@@ -52,12 +50,11 @@ export function AnalystCard({
         <p className="t-meta line-clamp-2 text-text-mute">{analyst.headline}</p>
       )}
 
-      <div className="flex items-end justify-between">
-        <span className="t-meta num">
-          {resolvedCalls} resolved {resolvedCalls === 1 ? "call" : "calls"}
-        </span>
-        {spark && spark.length > 1 && <Sparkline data={spark} width={96} height={28} />}
-      </div>
+      {spark && spark.length > 1 ? (
+        <div className="flex items-end justify-end">
+          <Sparkline data={spark} width={96} height={28} />
+        </div>
+      ) : null}
     </Link>
   );
 }
