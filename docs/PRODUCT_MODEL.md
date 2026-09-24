@@ -39,9 +39,12 @@ video-only commentary with no call at all (e.g. "what the Iran escalation means 
 
 ### Anchoring rule
 
-Items **with** a call show a ticker chip and a direction chip, and a HIT / MISS / NEAR seal once
-resolved. Items **without** a call show no ticker, no direction chip and no seal; they anchor on
-a theme or sector tag instead (`MACRO · OIL & ENERGY`, `SEMIS`). Every item on every surface
+A publication carries a **stance**: one ticker and, when it declares one, a direction (long,
+short or hold), stored on the publication itself (`reports.ticker`, `reports.stance`, migration
+0065). An item with a ticker shows a ticker chip, and a direction chip beside it when it has a
+stance; a HIT / MISS / NEAR seal still follows a resolved call while grading runs. An item with no
+ticker shows no ticker and no direction chip; it anchors on a theme or sector tag instead
+(`MACRO · OIL & ENERGY`, `SEMIS`). Nothing reads the ticker or direction from the call. Every item on every surface
 carries a **content badge** stating exactly what it contains (`VIDEO`, `VIDEO · CALL`,
 `VIDEO · CALL · CARDS · THESIS`), built only from what is stored.
 

@@ -521,8 +521,7 @@ scroll-snap, nothing below the fold.
 - **On a phone:** dateline, headline, and actions sit on the picture (lower third), so the face
   is not squeezed by a second column of chrome. Desktop still uses the paper strip beneath the frame.
 - **Above the frame (desktop):** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
-  in the feed at the right end. A callless publication has no ticker, so its theme tag takes that
-  slot.
+  in the feed at the right end. A publication with no ticker has its theme tag in that slot.
 - **On the picture:** ticker and direction chips top-left, the resolution seal top-right when the
   call is resolved, the mute control beside it, a progress bar along the top edge that is also
   the scrubber (`<ScrubBar>`: a hairline at rest, thicker while held, drag to any point), and the
@@ -530,8 +529,10 @@ scroll-snap, nothing below the fold.
 - **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
   SHARE as small outlined icons with mono uppercase letterspaced labels), then the pager (`1 / 7`)
   at the right end. The pager is a button: it jumps to the unlock card.
-- **Callless publications show no ticker, no direction chip and no seal.** They anchor on a theme
-  or sector tag instead. This is the rule, not a fallback.
+- **The chips are the publication's stance.** Its ticker (`reports.ticker`) and, beside it, its
+  direction (`reports.stance`) when it declares one; never read from the call. A publication with a
+  ticker and no stance shows the ticker alone. One with no ticker anchors on a theme or sector tag
+  instead. An empty chip is never drawn. `stanceChips()` in `src/lib/db/publication-row.ts`.
 - **Keyboard:** up/down between publications, left/right through cards, a double right to the
   unlock card, M to mute, Space to pause.
 - **Autoplay:** only the publication in view mounts a player, which is both the autoplay rule and

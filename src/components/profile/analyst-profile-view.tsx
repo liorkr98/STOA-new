@@ -24,10 +24,10 @@ export interface ProfilePublication {
   /** The clip exists but is still being prepared; the tile keeps its media area and says so. */
   processing?: boolean;
   typeLabel: "VIDEO" | "BRIEF" | "THESIS" | "VERDICT";
-  /** Set only when the publication carries a locked call (anchoring rule). */
+  /** The publication's own ticker and, beside it, its stance (anchoring rule). */
   ticker: string | null;
   direction: Direction | null;
-  /** Theme or sector tag for callless publications; null when nothing is stored. */
+  /** Theme or sector tag for publications with no ticker; null when nothing is stored. */
   themeTag: string | null;
   badge: string;
   title: string;
