@@ -1,15 +1,9 @@
 import "./load-env";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import {
-  callReturn,
-  computeScore,
-  computeTier,
-  gradeOutcome,
-} from "../src/lib/engine/score";
 
 /**
  * Seeds the marketplace with diverse demo analysts, an investor, and research
- * with resolved + open calls so scores, tiers, and the leaderboard are populated.
+ * carrying a stance (a ticker and a direction). Nothing is graded.
  *
  * All demo accounts use @stoa.demo emails — safe to re-run (purges prior demo content).
  * Does not touch real users (e.g. liorkr98@gmail.com).
@@ -30,7 +24,7 @@ type AnalystSeed = {
   coverSeed: string;
   sub: number;
   report: number;
-  /** Win-rate bias when simulating resolved calls (0.35 = struggling, 0.72 = elite). */
+  /** Reach: above 0.58 the analyst is verified, and the follower band widens above 0.65. */
   skill: number;
   minCalls: number;
   maxCalls: number;
@@ -51,7 +45,7 @@ const ANALYSTS: AnalystSeed[] = [
     handle: "marcus_webb",
     name: "Marcus Webb",
     headline: "Multi-cap generalist. 15 years on the buy side.",
-    bio: "Former PM at a long-only fund. I publish a few high-conviction calls per quarter and let the tape grade them.",
+    bio: "Former PM at a long-only fund. I publish a few high-conviction views per quarter.",
     specialty: "Generalist",
     avatarSeed: "marcus-webb",
     coverSeed: "mw-cover",
@@ -277,9 +271,6 @@ function pick<T>(arr: readonly T[]): T {
 function daysAgo(n: number) {
   return new Date(Date.now() - n * 86_400_000).toISOString();
 }
-function daysAhead(n: number) {
-  return new Date(Date.now() + n * 86_400_000).toISOString();
-}
 
 async function ensureUser(db: SupabaseClient, email: string, meta: Record<string, string>) {
   const { data, error } = await db.auth.admin.createUser({
@@ -361,52 +352,24 @@ async function main() {
 
     const totalCalls = Math.floor(rand(a.minCalls, a.maxCalls));
     const pool = tickersFor(a);
-    const allPreds: {
-      direction: (typeof DIRECTIONS)[number];
-      lock_price: number;
-      resolved_price: number | null;
-      target_price: number | null;
-      outcome: string;
-      benchmark_pct: number | null;
-      resolves_at: string;
-    }[] = [];
 
     for (let i = 0; i < totalCalls; i++) {
       const ticker = pick(pool);
       const direction = Math.random() < 0.72 ? "long" : pick(DIRECTIONS);
-      const lock = rand(ticker.endsWith(".TA") ? 80 : 40, ticker.endsWith(".TA") ? 1200 : 480);
       const horizon = pick([14, 21, 30, 45, 60, 90]);
       const ageDays = Math.floor(rand(8, 280));
-      const isResolved = ageDays > horizon && Math.random() < 0.88;
-      const type = Math.random() < 0.5 ? "research" : "call";
-
-      const win = Math.random() < a.skill;
-      const magnitude = rand(0.02, a.skill > 0.65 ? 0.22 : 0.14);
-      const movePct =
-        direction === "short" ? (win ? -magnitude : magnitude) : win ? magnitude : -magnitude;
-      const resolvedPrice = isResolved ? Math.round(lock * (1 + movePct) * 100) / 100 : null;
-      const target =
-        direction === "hold"
-          ? null
-          : Math.round(lock * (direction === "short" ? 0.88 : 1.15) * 100) / 100;
 
       const titleFn = pick(RESEARCH_TITLES);
-      const body =
-        type === "research"
-          ? `${a.name} on ${ticker}.\n\n${a.bio}\n\nThesis: ${direction} over ${horizon} days. Entry locked at publication. Risk: macro shock overwhelms the single-name view.\n\n[Demo seed content — not investment advice.]`
-          : `${direction.toUpperCase()} ${ticker} · ${horizon}-day horizon. [Demo call]`;
+      const body = `${a.name} on ${ticker}.\n\n${a.bio}\n\nThesis: ${direction} over ${horizon} days. Risk: macro shock overwhelms the single-name view.\n\n[Demo seed content — not investment advice.]`;
 
       const access = pick(ACCESS);
       const { data: report } = await db
         .from("reports")
         .insert({
           author_id: id,
-          type,
-          title: type === "research" ? titleFn(ticker, direction) : `${direction.toUpperCase()} ${ticker}`,
-          summary:
-            type === "research"
-              ? `${a.specialty}: ${ticker} over ${horizon} days — demo research by @${a.handle}.`
-              : `${horizon}-day ${direction} on ${ticker}.`,
+          type: "research",
+          title: titleFn(ticker, direction),
+          summary: `${a.specialty}: ${ticker} over ${horizon} days — demo research by @${a.handle}.`,
           status: "published",
           access,
           price: access === "paid" ? a.report : null,
@@ -421,46 +384,13 @@ async function main() {
         .single();
 
       if (!report) continue;
-      await db.from("report_bodies").insert({ report_id: (report as { id: string }).id, body });
-
-      const outcome = isResolved
-        ? gradeOutcome({ direction, lock_price: lock, target_price: target, resolved_price: resolvedPrice! })
-        : "open";
-      const benchmark = isResolved ? Math.round(rand(-6, 10) * 100) / 100 : null;
-      const ret = isResolved ? callReturn(direction, lock, resolvedPrice) : null;
-      const resolvesAt = isResolved
-        ? daysAgo(Math.max(1, ageDays - horizon))
-        : daysAhead(Math.max(3, horizon - (ageDays % horizon)));
-
-      await db.from("predictions").insert({
-        report_id: (report as { id: string }).id,
-        author_id: id,
-        ticker,
-        direction,
-        lock_price: lock,
-        target_price: target,
-        horizon_days: horizon,
-        resolves_at: resolvesAt,
-        resolved_price: resolvedPrice,
-        bench_lock_price: Math.round(rand(380, 520) * 100) / 100,
-        benchmark_pct: benchmark,
-        return_pct: ret != null ? Math.round(ret * 100) / 100 : null,
-        outcome,
-        created_at: daysAgo(ageDays),
-      });
-
-      allPreds.push({
-        direction,
-        lock_price: lock,
-        resolved_price: resolvedPrice,
-        target_price: target,
-        outcome,
-        benchmark_pct: benchmark,
-        resolves_at: resolvesAt,
-      });
+      const reportId = (report as { id: string }).id;
+      await db.from("report_bodies").insert({ report_id: reportId, body });
+      // Tolerated before migration 0065 adds the column: the piece keeps its ticker.
+      await db.from("reports").update({ stance: direction }).eq("id", reportId);
     }
 
-    // Short posts (no prediction / track record).
+    // Short posts, with no stance.
     for (let p = 0; p < Math.floor(rand(2, 5)); p++) {
       // A short post still needs a headline: without one the report page has no
       // H1 and every list falls back to rendering the summary as the title,
@@ -482,48 +412,16 @@ async function main() {
       });
     }
 
-    const result = computeScore(
-      allPreds.map((p) => ({
-        direction: p.direction,
-        lock_price: p.lock_price,
-        resolved_price: p.resolved_price,
-        benchmark_pct: p.benchmark_pct,
-        outcome: p.outcome as never,
-        resolves_at: p.resolves_at,
-      })),
-    );
-    const tier = computeTier(result.score, result.total);
     const followers = Math.floor(rand(150, a.skill > 0.65 ? 28_000 : 8000));
 
     await db
       .from("profiles")
       .update({
-        score: result.score,
-        rating: result.rating,
-        tier: tier.key,
-        wilson_win_rate: result.wilsonWinRate,
-        profit_factor: result.profitFactor,
-        avg_return: result.avgReturn,
-        avg_alpha: result.avgAlpha,
-        sample_size: result.total,
         followers_count: followers,
       })
       .eq("id", id);
 
-    await db.from("moat_score_snapshots").insert({
-      creator_id: id,
-      score: result.score,
-      sample_size: result.total,
-      wilson_win_rate: result.wilsonWinRate,
-      profit_factor: result.profitFactor,
-      avg_return: result.avgReturn,
-      avg_alpha: result.avgAlpha,
-      breakdown: result.breakdown,
-    });
-
-    console.log(
-      `  @${a.handle} — ${tier.label} · score ${result.score} · ${result.total} resolved · ${a.specialty}`,
-    );
+    console.log(`  @${a.handle} — ${totalCalls} publications · ${a.specialty}`);
   }
 
   // Demo investor follows a slice of analysts.
@@ -534,9 +432,9 @@ async function main() {
     );
   }
 
-  console.log(`\nSeeded ${ANALYSTS.length} analysts with portraits and varied track records.`);
+  console.log(`\nSeeded ${ANALYSTS.length} analysts with portraits.`);
   console.log("Sign in: any handle@stoa.demo /", PASSWORD);
-  console.log("Example: maren_vos@stoa.demo · marcus_webb@stoa.demo (legend tier)");
+  console.log("Example: maren_vos@stoa.demo · marcus_webb@stoa.demo");
 }
 
 main().catch((e) => {

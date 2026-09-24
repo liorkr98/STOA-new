@@ -1,6 +1,5 @@
 import "./load-env";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { callReturn, computeScore, computeTier, gradeOutcome } from "../src/lib/engine/score";
 import {
   ANALYSTS,
   CORE_TICKERS,
@@ -8,8 +7,6 @@ import {
   DEMO_PASSWORD,
   buildCards,
   listDemoUsers,
-  resolvedFor,
-  type Intent,
   SECTOR_BY_TICKER,
   STEELMEN,
   TAIL_TICKERS,
@@ -19,9 +16,10 @@ import {
 import { ContentForge, type Direction } from "./demo-content";
 
 /**
- * Pass 1 of the demo dataset: 40 analysts and their publications, with resolved
- * and open calls, evidence-card stacks, comment threads, follows and paying
- * subscribers. No video, so Discover and Explore stay empty until pass 2.
+ * Pass 1 of the demo dataset: 40 analysts and their publications, each with
+ * its stance where it has one, evidence-card stacks, comment threads, follows
+ * and paying subscribers. Nothing is graded. No video, so the Feed and
+ * Explore stay empty until pass 2.
  *
  * Every account is @stoa.demo, which is what `npm run demo:teardown` keys off.
  *
@@ -72,9 +70,6 @@ function chance(p: number) {
 }
 function iso(daysFromNow: number) {
   return new Date(Date.now() + daysFromNow * 86_400_000).toISOString();
-}
-function round2(n: number) {
-  return Math.round(n * 100) / 100;
 }
 
 /** Recency-weighted age in days inside the publishing window. */
@@ -184,7 +179,7 @@ async function main() {
         .from("reports")
         .update({ status: "archived" })
         .eq("author_id", u.id)
-        .in("status", ["published", "resolution_pending_review", "draft"])
+        .in("status", ["published", "draft"])
         .select("id");
       if (error) {
         console.error(`  could not archive ${u.email}: ${error.message}`);
@@ -226,36 +221,24 @@ async function main() {
   );
 
   /**
-   * One standing stance per analyst per name: which way they argue it, and how
-   * the market treated them on it.
-   *
-   * The old seed drew a fresh outcome for every call independently, so the same
-   * analyst could be graded HIT +25.3% and MISS -12.9% on the same name and
-   * direction three days apart. Fixing the outcome family per name keeps a
-   * record internally consistent: an analyst who was right about a name is
-   * right about it across the window, with NEAR as the only variation.
+   * One standing stance per analyst per name: which way they argue it. An
+   * analyst who is long MSFT is long MSFT in every piece they write about it.
    */
-  const stances = new Map<string, { direction: Direction; family: "hit" | "near" | "miss" }>();
-  function stanceFor(a: AnalystSeed, ticker: string) {
+  const stances = new Map<string, Direction>();
+  function stanceFor(a: AnalystSeed, ticker: string): Direction {
     const key = `${a.handle}|${ticker}`;
     const existing = stances.get(key);
     if (existing) return existing;
     const dirRoll = Math.random();
     const direction: Direction = dirRoll < 0.64 ? "long" : dirRoll < 0.9 ? "short" : "hold";
-    const r = Math.random();
-    const family = r < a.skill ? "hit" : r < a.skill + 0.18 ? "near" : "miss";
-    const made = { direction, family } as const;
-    stances.set(key, made);
-    return made;
-  }
-  function stanceDirection(a: AnalystSeed, ticker: string | undefined): Direction {
-    return ticker ? stanceFor(a, ticker).direction : "long";
+    stances.set(key, direction);
+    return direction;
   }
 
   const analystIds: { id: string; a: AnalystSeed }[] = [];
   let totalPubs = 0;
-  let totalCalls = 0;
-  const outcomeTally: Record<string, number> = { hit: 0, near: 0, miss: 0, partial: 0, open: 0 };
+  let totalStances = 0;
+  let stanceColumn = true;
   const tickerTally: Record<string, number> = {};
 
   for (const a of ANALYSTS) {
@@ -281,24 +264,19 @@ async function main() {
       .eq("id", id);
 
     const count = Math.round(rand(a.minPubs, a.maxPubs));
-    const scoringCalls: Parameters<typeof computeScore>[0] = [];
 
     for (let i = 0; i < count; i++) {
       const ageDays = Math.min(weightedAge(), a.joinedDaysAgo);
       const roll = Math.random();
-      const type = roll < 0.5 ? "call" : roll < 0.78 ? "research" : "short_post";
-      const hasCall = type === "call" || (type === "research" && chance(0.42));
+      const type = roll < 0.64 ? "research" : "short_post";
 
-      // A callless note some of the time; otherwise a view on a name.
-      const wantsNote = !hasCall && type === "short_post" && chance(0.55);
+      // A note on a theme some of the time; otherwise a view on a name.
+      const wantsNote = type === "short_post" && chance(0.55);
       let composed = wantsNote ? forge.composeNote() : null;
 
       if (!composed) {
-        // One stance per analyst per name for the whole window. An analyst who
-        // is long MSFT is long MSFT in every piece they write about it, which
-        // is what stops the same name being graded HIT and MISS days apart.
         const candidates = tickerCandidates(a);
-        composed = forge.compose(candidates, (t) => stanceDirection(a, t), true) ?? forge.composeNote();
+        composed = forge.compose(candidates, (t) => stanceFor(a, t)) ?? forge.composeNote();
       }
       if (!composed) {
         console.error(`  content exhausted for @${a.handle}; stopping this analyst`);
@@ -311,14 +289,9 @@ async function main() {
       const direction: Direction = composed.direction;
 
       // If the forge had to argue a different side than this analyst's standing
-      // stance on the name, the piece runs as research without a locked call
-      // rather than contradicting their own record.
-      const stance = ticker ? stanceFor(a, ticker) : null;
-      const carriesCall = hasCall && !!ticker && (!stance || stance.direction === direction) && direction !== "hold";
-      // docs/PRODUCT_MODEL.md: a CALL is "built around a locked call". If this
-      // piece did not end up carrying one, it is research, not a call -- the
-      // chip on the page has to match what is actually in the publication.
-      const publishedType = type === "call" && !carriesCall ? "research" : type;
+      // stance on the name, the piece names the ticker without a direction
+      // rather than contradicting them.
+      const stance = ticker && stanceFor(a, ticker) === direction ? direction : null;
 
       const themeTag = composed.themeTagHint;
       const primaryTag = ticker ? SECTOR_BY_TICKER[ticker] ?? null : composed.themeTagHint;
@@ -334,7 +307,7 @@ async function main() {
         .from("reports")
         .insert({
           author_id: id,
-          type: publishedType,
+          type,
           // Every publication carries a headline. Short posts used to store
           // null here, which left the report page with no H1 at all and made
           // the profile list render them as "Untitled".
@@ -368,71 +341,22 @@ async function main() {
       // no text with the dek, so a reader never gets the same sentence twice.
       await db.from("report_bodies").insert({ report_id: reportId, body: composed.body });
 
-      let target: number | null = null;
-      let lock = 0;
-
-      if (carriesCall && ticker) {
-        totalCalls++;
-        lock = round2(basePrice(ticker) * rand(0.88, 1.12));
-        const horizon = pick([7, 7, 14, 14, 21, 21, 30, 30, 45, 60, 90]);
-        const targetPct = rand(0.07, 0.2);
-        // carriesCall already excludes "hold", so a locked call always has a target.
-        target = round2(lock * (direction === "short" ? 1 - targetPct : 1 + targetPct));
-
-        const isResolved = ageDays > horizon;
-        let outcome = "open";
-        let resolvedPrice: number | null = null;
-        let ret: number | null = null;
-        let benchmark: number | null = null;
-
-        if (isResolved) {
-          // Consistent with this analyst's standing record on the name: a
-          // "hit" name never also produces a miss, only the occasional near.
-          const family = stance?.family ?? "near";
-          const intent: Intent =
-            family === "hit" ? (chance(0.74) ? "hit" : "near")
-            : family === "miss" ? (chance(0.74) ? "miss" : "near")
-            : "near";
-          resolvedPrice = resolvedFor(intent, direction, lock, target);
-          outcome = gradeOutcome({ direction, lock_price: lock, target_price: target, resolved_price: resolvedPrice });
-          ret = callReturn(direction, lock, resolvedPrice);
-          benchmark = round2(rand(-5, 9));
+      // Its own statement, so the seed still runs before migration 0065 adds
+      // the column; the publication then carries its ticker alone.
+      if (stance && stanceColumn) {
+        const { error: stanceErr } = await db.from("reports").update({ stance }).eq("id", reportId);
+        if (stanceErr && /stance/.test(stanceErr.message)) {
+          stanceColumn = false;
+          console.log("  reports.stance is missing (migration 0065): publications carry their ticker only.");
+        } else if (stanceErr) {
+          console.error(`  stance failed: ${stanceErr.message}`);
+        } else {
+          totalStances++;
         }
-        outcomeTally[outcome] = (outcomeTally[outcome] ?? 0) + 1;
-
-        const resolvesAt = isResolved
-          ? iso(-(ageDays - horizon))
-          : iso(chance(0.22) ? rand(1, 5) : rand(6, horizon));
-
-        await db.from("predictions").insert({
-          report_id: reportId,
-          author_id: id,
-          ticker,
-          direction,
-          lock_price: lock,
-          target_price: target,
-          horizon_days: horizon,
-          resolves_at: resolvesAt,
-          resolved_price: resolvedPrice,
-          bench_lock_price: round2(rand(4_200, 5_900)),
-          benchmark_pct: benchmark,
-          return_pct: ret != null ? round2(ret) : null,
-          outcome,
-          created_at: iso(-ageDays),
-        });
-
-        scoringCalls.push({
-          direction,
-          lock_price: lock,
-          resolved_price: resolvedPrice,
-          benchmark_pct: benchmark,
-          outcome: outcome as never,
-          resolves_at: resolvesAt,
-        });
       }
 
       if (chance(0.34)) {
-        const cards = buildCards(reportId, headline, deck, ticker, target, lock || basePrice(ticker ?? "NVDA"));
+        const cards = buildCards(reportId, headline, deck, ticker, null, basePrice(ticker ?? "NVDA"));
         if (chance(0.45)) {
           cards.push({
             report_id: reportId,
@@ -474,34 +398,7 @@ async function main() {
       }
     }
 
-    const result = computeScore(scoringCalls);
-    const tier = computeTier(result.score, result.total);
-    await db
-      .from("profiles")
-      .update({
-        score: result.score,
-        rating: result.rating,
-        tier: tier.key,
-        wilson_win_rate: result.wilsonWinRate,
-        profit_factor: result.profitFactor,
-        avg_return: result.avgReturn,
-        avg_alpha: result.avgAlpha,
-        sample_size: result.total,
-      })
-      .eq("id", id);
-
-    await db.from("moat_score_snapshots").insert({
-      creator_id: id,
-      score: result.score,
-      sample_size: result.total,
-      wilson_win_rate: result.wilsonWinRate,
-      profit_factor: result.profitFactor,
-      avg_return: result.avgReturn,
-      avg_alpha: result.avgAlpha,
-      breakdown: result.breakdown,
-    });
-
-    console.log(`  @${a.handle}: ${count} publications, ${result.total} resolved calls`);
+    console.log(`  @${a.handle}: ${count} publications`);
   }
 
   for (const readerId of readerIds) {
@@ -519,8 +416,7 @@ async function main() {
   }
 
   const topTickers = Object.entries(tickerTally).sort((x, y) => y[1] - x[1]).slice(0, 12);
-  console.log(`\nSeeded ${ANALYSTS.length} analysts, ${totalPubs} publications, ${totalCalls} calls.`);
-  console.log(`Outcomes: ${Object.entries(outcomeTally).map(([k, v]) => `${k} ${v}`).join(", ")}`);
+  console.log(`\nSeeded ${ANALYSTS.length} analysts, ${totalPubs} publications, ${totalStances} with a stance.`);
   console.log(`Top coverage: ${topTickers.map(([t, n]) => `${t} ${n}`).join(", ")}`);
   console.log(`Sign in as any handle@stoa.demo with password ${DEMO_PASSWORD}`);
   console.log("Remove everything with: npm run demo:teardown");

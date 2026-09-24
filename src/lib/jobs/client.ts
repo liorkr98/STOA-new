@@ -11,7 +11,7 @@ import { resolveJobDispatch } from "@/lib/jobs/dispatch";
  * gains automatic retry + backoff + dead-letter.
  */
 
-export type JobName = "grade" | "notify" | "video-process" | "video-reconcile";
+export type JobName = "notify" | "video-process" | "video-reconcile";
 
 let client: Client | null | undefined;
 

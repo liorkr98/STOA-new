@@ -626,7 +626,6 @@ export class ContentForge {
     bank: SectorBank,
     direction: Direction,
     name: string,
-    target: number | null,
     angleIndex: number,
   ): string {
     const mech = this.aligned(bank.mechanism, angleIndex);
@@ -634,10 +633,8 @@ export class ContentForge {
     const risks = this.aligned(bank.risk, angleIndex);
     const stance =
       direction === "hold"
-        ? `The position: no call. This is a name I want to own and not at this level, so there is nothing locked here and nothing for the record to grade. If the entry improves I will say so in a piece that does carry a call.`
-        : `The position: ${direction} on ${name}, entry locked at publication and the exit dated rather than open-ended.${
-            target ? ` The target is stated in the call block above and the horizon with it.` : ""
-          } Sized to the catalyst rather than to conviction, with the invalidation written into the kill-switch card instead of left implicit.`;
+        ? `The position: hold. This is a name I want to own and not at this level. If the entry improves I will say so.`
+        : `The position: ${direction} on ${name}. Sized to the catalyst rather than to conviction, with the invalidation written into the kill-switch card instead of left implicit.`;
 
     for (const m of mech) {
       for (const e of evid) {
@@ -664,15 +661,13 @@ export class ContentForge {
   compose(
     tickers: string[],
     directionFor: (ticker: string) => Direction,
-    targetKnown = true,
   ): Composed | null {
     for (const ticker of tickers) {
       const bank = this.bank(ticker);
       if (!bank) continue;
       const name = SHORT_NAME[ticker] ?? ticker.replace(".TA", "");
       // Each candidate is argued the way this analyst already argues that name,
-      // so the composed direction matches their standing stance and the piece
-      // can carry a locked call.
+      // so the composed direction matches their standing stance.
       const direction = directionFor(ticker);
       for (const angle of shuffled(this.anglesFor(bank, direction), this.rnd)) {
         // Position in the sector's own angle list, which is the index the
@@ -688,7 +683,7 @@ export class ContentForge {
             direction: angle.d,
             headline,
             dek,
-            body: this.composeBody(bank, angle.d, name, targetKnown ? 1 : null, angleIndex),
+            body: this.composeBody(bank, angle.d, name, angleIndex),
             themeTagHint: this.themeOf(ticker) ?? null,
           };
         }

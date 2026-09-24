@@ -9,8 +9,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Refreshes cached last_price / market_cap on all active `tickers` via Yahoo.
- * Scheduled hourly in vercel.json — full universe sweep fits within one run.
+ * Refreshes cached last_price / market_cap on all active `tickers` via Yahoo,
+ * then the platform_stats view (the grading run used to refresh it).
+ * Scheduled daily in vercel.json — full universe sweep fits within one run.
  */
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCron(request)) {
@@ -21,10 +22,15 @@ export async function GET(request: NextRequest) {
     const result = await withCronMonitor("refresh-ticker-metrics-cron", async () => {
       const db = createAdminClient();
       const offset = Number(request.nextUrl.searchParams.get("offset") ?? "0");
-      return refreshTickerMetrics(db, {
+      const metrics = await refreshTickerMetrics(db, {
         offset: Number.isFinite(offset) ? offset : 0,
         maxBatches: 120,
       });
+      await db.rpc("refresh_platform_stats").then(
+        () => undefined,
+        () => undefined,
+      );
+      return metrics;
     });
 
     return NextResponse.json({ ok: true, ...result });
