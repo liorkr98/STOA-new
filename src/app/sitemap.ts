@@ -59,7 +59,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // No /feed: it requires an account, so a crawler only ever sees sign-in.
     { url: `${SITE_URL}/explore`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${SITE_URL}/markets`, changeFrequency: "daily", priority: 0.7 },
-    { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/pricing`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },

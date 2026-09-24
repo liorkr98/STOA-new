@@ -33,7 +33,13 @@ const nextConfig = {
    * rather than 404s. Permanent, because it is never coming back.
    */
   async redirects() {
-    return [{ source: "/discover", destination: "/feed", permanent: true }];
+    return [
+      { source: "/discover", destination: "/feed", permanent: true },
+      // Grading is retired: its explainer and the private track record are gone.
+      { source: "/scoring", destination: "/", permanent: true },
+      { source: "/how-it-works", destination: "/", permanent: true },
+      { source: "/studio/track-record", destination: "/studio", permanent: true },
+    ];
   },
   async rewrites() {
     return [{ source: "/icon", destination: "/icon/512" }];

@@ -35,7 +35,6 @@ const GROUPS: NavGroup[] = [
     items: [
       { label: "Publications", href: "/studio" },
       { label: "Insights", href: "/studio/insights" },
-      { label: "Track record", href: "/studio/track-record" },
       { label: "Audience", href: "/studio/audience" },
       { label: "Storefront", href: "/studio/branding" },
     ],

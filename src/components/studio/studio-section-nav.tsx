@@ -13,7 +13,6 @@ import { cn } from "@/lib/design/cn";
 const ITEMS = [
   { href: "/studio", label: "Publications" },
   { href: "/studio/insights", label: "Insights" },
-  { href: "/studio/track-record", label: "Track record" },
   { href: "/studio/audience", label: "Audience" },
   { href: "/studio/branding", label: "Storefront" },
 ] as const;

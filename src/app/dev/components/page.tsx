@@ -4,13 +4,11 @@ import { EditedMarker } from "@/components/report/edited-marker";
 import { EditedFlag } from "@/components/report/edited-flag";
 import type { ReportEdit } from "@/lib/db/report-edits";
 import { SealStamp } from "@/components/ui/seal-stamp";
-import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { FactCheckLayer, FactCheckedText } from "@/components/report/fact-check-layer";
-import { ScoreRing } from "@/components/ui/score-ring";
 import { Button } from "@/components/ui/button";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
@@ -67,17 +65,6 @@ export default function ComponentPreviewPage() {
     <div className="min-h-screen bg-paper p-12">
       <p className="t-eyebrow mb-8">Scratch preview -- delete before ship</p>
 
-      <p className="t-eyebrow mb-4">TrackScoreBadge</p>
-      <div className="flex flex-wrap items-center gap-8 mb-12">
-        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} size="sm" />
-        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} size="md" />
-        <TrackScoreBadge handle="maren_vos" score={32} hitRate={0.3} size="md" />
-        <TrackScoreBadge handle="new_analyst" score={null} size="md" />
-        <TrackScoreBadge handle="maren_vos" score={78} hitRate={0.64} sampleSize={14} size="lg" />
-        <TrackScoreBadge handle="new_analyst" score={55} hitRate={0.5} sampleSize={4} size="lg" />
-        <TrackScoreBadge handle="new_analyst" score={null} size="lg" />
-      </div>
-
       <p className="t-eyebrow mb-4">EditedMarker (on the publication) and EditedFlag (in a list)</p>
       <div className="flex flex-wrap items-center gap-6 mb-12">
         <span className="flex items-center gap-2">
@@ -108,14 +95,6 @@ export default function ComponentPreviewPage() {
       <p className="t-eyebrow mb-4">DyorBar</p>
       <div className="max-w-md mb-12">
         <DyorBar />
-      </div>
-
-      <p className="t-eyebrow mb-4">ScoreRing (sm / md / lg, plus provisional)</p>
-      <div className="mb-12 flex items-end gap-6">
-        <ScoreRing score={72} size="sm" />
-        <ScoreRing score={72} size="md" />
-        <ScoreRing score={72} size="lg" />
-        <ScoreRing score={41} size="md" provisional />
       </div>
 
       <p className="t-eyebrow mb-4">PaywallGate (single CTA, real-world case)</p>

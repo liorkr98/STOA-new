@@ -15,7 +15,6 @@ const groups = [
     links: [
       { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
-      { href: "/scoring", label: "How calls are graded" },
       { href: "/pricing", label: "Pricing" },
     ],
   },
