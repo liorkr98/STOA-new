@@ -6,6 +6,7 @@ import { spendAiCredits } from "@/lib/ai/spend";
 import { AI_COST } from "@/lib/ai/credits";
 import { buildAudioBriefScript } from "@/lib/ai/audio-brief-script";
 import { hasTtsProvider, synthesizeSpeech } from "@/lib/ai/tts";
+import { CALL_JOIN, publicationRow, stanceChips } from "@/lib/db/publication-row";
 
 const BUCKET = "report-audio";
 const SIGNED_TTL_S = 60 * 60;
@@ -56,11 +57,12 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     );
   }
 
-  const { data: report } = await supabase
+  const { data: row } = await supabase
     .from("reports")
-    .select("id, author_id, title, summary, ticker")
+    .select(`*, ${CALL_JOIN}`)
     .eq("id", id)
     .maybeSingle();
+  const report = row ? publicationRow(row as Record<string, unknown>) : null;
   if (!report) return NextResponse.json({ error: "not found" }, { status: 404 });
   if (report.author_id !== user.id) {
     return NextResponse.json({ error: "authors only" }, { status: 403 });
@@ -72,11 +74,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     .eq("report_id", id)
     .maybeSingle();
 
-  const { data: prediction } = await supabase
-    .from("predictions")
-    .select("direction, target_price, horizon_date")
-    .eq("report_id", id)
-    .maybeSingle();
+  // The stance is the publication's; the target, while grading runs, is the
+  // call's. This used to ask predictions for a `horizon_date` column that does
+  // not exist, so the lookup always failed and no brief mentioned either.
+  const { direction } = stanceChips(report);
 
   const spend = await spendAiCredits("audioBrief", `Audio brief for ${report.title ?? id}`);
   if (spend.error) {
@@ -92,11 +93,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       summary: report.summary,
       ticker: report.ticker,
       body: (bodyRow as { body: string | null } | null)?.body ?? null,
-      prediction: prediction as {
-        direction: string;
-        target_price: number | null;
-        horizon_date?: string | null;
-      } | null,
+      prediction: direction
+        ? { direction, target_price: report.prediction?.target_price ?? null }
+        : null,
     });
 
     const mp3 = await synthesizeSpeech(script);

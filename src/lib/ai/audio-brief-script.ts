@@ -11,7 +11,6 @@ export interface AudioBriefSource {
   prediction?: {
     direction: string;
     target_price: number | null;
-    horizon_date?: string | null;
   } | null;
 }
 
@@ -31,10 +30,9 @@ function fallbackScript(source: AudioBriefSource): string {
   if (source.summary) parts.push(source.summary);
   if (source.ticker) parts.push(`Ticker ${source.ticker}.`);
   const p = source.prediction;
-  if (p?.direction && p.target_price != null) {
-    parts.push(
-      `${p.direction.charAt(0).toUpperCase()}${p.direction.slice(1)} call with a target of $${p.target_price}.`,
-    );
+  if (p?.direction) {
+    const word = `${p.direction.charAt(0).toUpperCase()}${p.direction.slice(1)}`;
+    parts.push(p.target_price != null ? `${word} call with a target of $${p.target_price}.` : `${word}.`);
   }
   const excerpt = bodyExcerpt(source.body);
   if (excerpt) parts.push(excerpt);
