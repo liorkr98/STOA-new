@@ -1,3 +1,6 @@
+import { publicTypeLabel } from "@/lib/compose/modes";
+import type { ContentType } from "@/lib/types";
+
 /** Mono dateline stamp for a headline row: "2H AGO", "3D AGO", "JUL 20". */
 export function sinceLabel(iso: string | null | undefined, now = new Date()): string {
   if (!iso) return "";
@@ -28,15 +31,9 @@ export function durationLabel(seconds: number): string {
   return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-const TYPE_LABEL: Record<string, string> = {
-  call: "VERDICT",
-  research: "THESIS",
-  short_post: "BRIEF",
-  video: "VIDEO",
-};
-
+/** The printed type. A retired verdict (`call`) reads as a thesis until 0067 relabels it. */
 export function typeLabel(type: string): string {
-  return TYPE_LABEL[type] ?? "THESIS";
+  return publicTypeLabel(type as ContentType);
 }
 
 /** Free / $7 / Subscribers, from the report's own access setting. */

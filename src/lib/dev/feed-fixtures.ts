@@ -136,8 +136,7 @@ const SPECS: Spec[] = [
 
 export function fixturePublications(): FeedPublication[] {
   return SPECS.map((s, i) => {
-    const hasCall = Boolean(s.ticker);
-    const badge = ["VIDEO", hasCall ? "CALL" : null, s.type === "THESIS" ? "THESIS" : null].filter(Boolean).join(" · ");
+    const badge = ["VIDEO", s.type === "THESIS" ? "THESIS" : null].filter(Boolean).join(" · ");
     const clip = demoClipPath(i);
     return {
       id: s.id,
@@ -161,7 +160,7 @@ export function fixturePublications(): FeedPublication[] {
       analyst: s.by,
       access: s.access ?? "free",
       price: s.access === "paid" ? 7 : null,
-      cards: hasCall ? fullStack(s.id, s.ticker!, s.locked ?? []) : noteStack(s.id),
+      cards: s.ticker ? fullStack(s.id, s.ticker, s.locked ?? []) : noteStack(s.id),
       comments: comments(s.id, s.by),
       publishedAt: hoursAgo(s.hours),
     };

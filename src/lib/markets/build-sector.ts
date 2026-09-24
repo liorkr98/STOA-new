@@ -103,7 +103,7 @@ async function sectorSymbols(sector: string): Promise<string[]> {
 }
 
 export async function buildSector(sector: string, viewerId: string | null): Promise<SectorPayload> {
-  const payload = await cachedPage(`sector:${sector.toLowerCase()}`, 20, () => assembleSector(sector));
+  const payload = await cachedPage(`sector-v2:${sector.toLowerCase()}`, 20, () => assembleSector(sector));
   if (!viewerId) return payload;
   const followed = new Set(await followedAnalystIds(viewerId));
   return {

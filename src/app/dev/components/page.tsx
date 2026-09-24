@@ -3,7 +3,6 @@
 import { EditedMarker } from "@/components/report/edited-marker";
 import { EditedFlag } from "@/components/report/edited-flag";
 import type { ReportEdit } from "@/lib/db/report-edits";
-import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { PaywallGate } from "@/components/ui/paywall-gate";
@@ -71,14 +70,6 @@ export default function ComponentPreviewPage() {
           <EditedMarker edits={EDITS} />
         </span>
         <EditedFlag editedAt="2026-08-29T14:32:00.000Z" />
-      </div>
-
-      <p className="t-eyebrow mb-4">StatusChip</p>
-      <div className="flex flex-wrap items-center gap-4 mb-12">
-        <StatusChip status="draft" />
-        <StatusChip status="open" resolvesAt={new Date("2026-08-15")} />
-        <StatusChip status="hit" />
-        <StatusChip status="miss" />
       </div>
 
       <p className="t-eyebrow mb-4">DisclosureBlock</p>

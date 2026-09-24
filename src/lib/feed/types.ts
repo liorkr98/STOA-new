@@ -64,7 +64,7 @@ export interface FeedPublication {
   videoEdit: StoredVideoEdit | null;
   headline: string;
   deck: string | null;
-  typeLabel: "VIDEO" | "BRIEF" | "THESIS" | "VERDICT";
+  typeLabel: "VIDEO" | "BRIEF" | "THESIS";
   /** When set, the Feed loops only this many seconds of the clip. */
   feedPreviewSeconds: number | null;
   ticker: string | null;

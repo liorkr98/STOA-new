@@ -107,7 +107,7 @@ export function ThemePublications({ payload }: { payload: ThemePayload }) {
 export function ThemeAnalysts({ payload, isAuthed }: { payload: ThemePayload; isAuthed: boolean }) {
   if (payload.analysts.length === 0) return null;
   return (
-    <Band title="Most active in this theme" note="Who publishes here most. No ranking, no score.">
+    <Band title="Most active in this theme" note="Who publishes here most.">
       <div className="mt-2">
         {payload.analysts.map((a) => (
           <div key={a.handle} className="markets-row">
