@@ -10,6 +10,182 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-24 — Removing grading, step two: the grading machinery is gone
+
+Nothing on Stoa is graded, scored or resolved any more. A publication keeps
+its stance (ticker and direction); everything that graded it is deleted.
+Edit markers, the market data layer, the ticker-metrics refresh, the
+subscription expiry job, the stance chips and the fact-checker's verdicts
+are untouched.
+
+**For someone using the site**
+
+- **No seal, score or track record anywhere.** The report page's call block,
+  the seals on the Feed, profile tiles, Dispatch and Studio, Today's and the
+  landing's Verdicts, the ticker page's open calls and resolved history,
+  hit rates, "resolved calls" counts, the private track record page, the
+  score ring and the /scoring explainer are all gone. /scoring and
+  /how-it-works forward to the home page, /studio/track-record to Studio.
+- **Compose has three types: video, brief, thesis.** The Verdict type and its
+  rules are gone. The Call feature is now **Stance**: a ticker and long, short
+  or hold, with no target, horizon or entry price. The button reads Publish
+  and publishes in one press; there is no lock confirmation.
+- **The direction chip now sits beside the ticker on the report page and on
+  report cards**, where it used to live inside the call block.
+- **Markets' chart is a plain price chart**: no target lines, no HIT/MISS
+  marks, no legend.
+- **Copy no longer promises grading**: site description, About, footer, the
+  research-not-advice bar, the paywall, the subscribe modal, the first-report
+  banner, the edit marker ("The ticker and its direction can never change"),
+  and the stock share image.
+
+**What replaced the ranking terms**
+
+- **Feed and Explore:** a clip used to lose 15% of its score when its call
+  missed (5% for a near), and the analyst's Track Score carried 3% of the
+  Feed weight and 4% of Explore's. The penalty is gone with nothing in its
+  place. The Feed's 3% moved to completion (how much of a clip people
+  watch); Explore's 4% to the follow proxy (how likely the viewer is to
+  follow someone new). Weights still sum to one.
+- **Dispatch:** "is a call" (+25) became "declares a stance" (+25), the
+  closest like-for-like. The target-price bonus (+20), the analyst's score
+  (up to +15) and the hit/near bonus are gone, with nothing in their place.
+- **Search:** analysts were sorted and boosted by score; they now sort by
+  followers and get a small boost from the log of their follower count. The
+  database's own analyst search is rewritten the same way in 0067.
+
+**"Waiting for grade review" became published.** It meant one thing: a call
+reached its horizon with no closing price and a person had to grade it.
+With nothing to grade it has no meaning. Every access rule already treated
+it exactly like published, so folding it in changes nothing a reader can
+see. The code now asks for published only; 0067 moves the 30 such
+publications (all demo) and refuses the status. Until 0067 is applied those
+30 read as not live (their audio brief answers 403).
+
+**0062's delete rule.** Nothing depends on it any more. Its delete function
+was replaced by 0066 and is replaced again by 0067 without the calls check
+(since 0065 every call's direction is its publication's stance, so the
+stance refuses exactly what the call did). Its body guard was replaced by
+0063, and the claims guard it added only reads the cascade flag. The Studio
+and the delete action check the stance and purchases, never calls.
+
+**The data: migration `0067_retire_grading.sql`.** Needs 0065 and 0066, and
+goes on after this code is live. It deletes no publication and drops no
+table: waiting-for-review becomes published (30, all demo); the 907
+Verdict-type publications become theses when their text runs past 300
+characters and briefs otherwise (758 and 149; one is not demo); scores,
+ratings, tiers and breakdowns go back to their defaults and the 403 score
+snapshots are deleted (all demo); the calls table becomes a read-only
+archive (the guards that froze calls, blocked their deletion and logged
+each grading are dropped, and one rule refuses every write; the demo purge
+keeps its exception); every access rule, counter and trigger that named the
+review status is rewritten without it. It checks its footing and its work
+and refuses otherwise. **Rehearsed in a local Postgres on a copy of the live
+rows: 33 of 33 checks**, including no "last edited" time moving, no audit
+entries written, and a planted stance mismatch refusing the whole run.
+
+**The demo seed** writes briefs and theses with a stance and nothing graded.
+
+**Holes left on purpose (not filled), and what they look like now**
+
+- **Landing:** the verdicts column is gone. On a desktop the creators wall
+  now sits in the left half and the right half is empty; on a phone nothing
+  looks missing. The tagline is one sentence, the activity line reads
+  "N publications · N analysts", and the closing "Read the record before you
+  trust the opinion." line is gone (just the two buttons).
+- **Dispatch:** the locked-calls column is gone. The board shows Research and
+  On the wire on a three-column grid, so the third slot is empty on a
+  desktop. The lead has no seal (blank space right of the headline). The
+  "How Stoa works" section (the call locks / the market grades / the record
+  stands) is gone entirely. The intro reads "Today's research."
+- **Studio:** Track record is gone from the sidebar and the phone tabs (the
+  entries are removed, not dead links). The publications list lost its OPEN
+  CALLS and RESOLVED filters and the open-call progress rows.
+- **Earnings:** the "Open Track record" button is gone; the empty state is a
+  title and one sentence.
+- **Compose picker:** three cards on a four-column grid, so on a wide screen
+  the fourth slot on the right is empty. Phones show three rows.
+- **Search:** the analyst card's bottom row ("N resolved calls") is gone; the
+  card ends after the headline.
+- **Markets:** stock, fund and macro pages go chart, publications,
+  fundamentals, peers; the coverage box, open calls and resolved history
+  are gone. The quick-look sheet is the chart and "Open full page". The
+  sector page lost its coverage box; its analysts now show publication
+  counts. Explore's bands still say "N calls" and "Newly called", which now
+  count publications with a stance.
+- **Report page:** the side column starts at the disclosure block.
+- **Today:** the Verdicts ledger is gone; Trending and Your desk run straight
+  into Market news.
+- **Inbox:** the CALLS filter, call notifications and their preference
+  toggles are gone.
+- **Footer:** "How calls are graded" is gone.
+
+Hidden rather than left empty (the one exception): the landing's verdicts
+column and Dispatch's locked-calls column, which would otherwise have drawn
+an empty half with a rule beside it and an empty "Locked calls" column.
+
+**Reconciliation pass (rule 7): what still assumes grading**
+
+- **Legal pages** (Terms "Track Record & Immutability", Privacy "grade locked
+  calls", the disclaimers on MOAT scores and Hit/Miss grades, the GDPR
+  erasure note). Not touched: they are for counsel.
+- **Historical docs** (BUILD_SPEC, the backend deep dive, PRODUCT_AUDIT,
+  GROWTH_RESEARCH, SCALE, ROADMAP, V3_HANDOFF, DESIGN_LANGUAGE, the legal
+  compliance brief) still describe grading. AGENTS.md, CLAUDE.md,
+  PRODUCT_MODEL.md and COMPOSE.md are rewritten; README, FRONTEND, MOTION and
+  the backend brief carry a "grading is retired" note over their old
+  sections.
+- **One bridge in the code, on purpose:** until 0065 is applied a
+  publication's direction is read from its archived call (the chips, the
+  Markets counts, the delete rule). It goes with the table.
+- **In the database after 0067** (for the release that drops `predictions`):
+  the table, the `platform_stats` view's `locked_calls_tracked`, the RPCs
+  `resolved_counts_by_authors`, `ticker_call_activity` and
+  `get_moat_snapshots`, the `moat_score_snapshots` table, the score columns on
+  profiles, the `call` and `resolution_pending_review` enum values, and the
+  demo purge's delete of calls. The RLS test that a client cannot update a
+  call still holds.
+- **62 former verdicts have clips.** They are subscribers-only and were kept
+  off the Feed and Explore because a verdict was hidden while open. Once 0067
+  relabels them they join the Feed and Explore like any subscriber video.
+
+**Found in passing**
+
+- The grading run was the only thing refreshing the `platform_stats` view;
+  the daily ticker-metrics cron now does it.
+- Page payloads are cached in Next's data cache, which can serve a payload
+  written by older code for a few seconds after a change. Locally, Today
+  crashed once on a stale payload from before the broadsheet rebuild. The
+  sector payload changed shape here, so its cache key moved on.
+
+**Checked in a real browser at 1440 and 390, signed out:** 36 addresses each
+(landing, Today, Feed, Explore, Markets, a stock, a fund, a macro page, a
+sector, a theme, a former verdict free and paid, a publication awaiting
+review, a thesis, a brief, a video, a profile, search, Dispatch, About,
+Pricing, the three redirects, and every dev fixture for Compose, Studio,
+Feed, Today, landing, profile, Markets, Dispatch and components). No page
+errors, no sideways scroll, no seal or score element, and no grading word
+except "price target" inside third-party news headlines. In the Compose
+fixture the Stance opens from the publish screen, takes NVDA short, and the
+menu row reads "NVDA · SHORT". Lint, typecheck, build and every test suite
+pass.
+
+**For Krisi**
+
+- **Order:** apply 0065, then 0066, then merge this, then apply
+  `0067_retire_grading.sql`. 0067 refuses every insert into the calls table,
+  which the old publish path still does. Run it as one transaction (the CLI
+  does; in the SQL editor run the whole file at once). It prints "Grading
+  retired. 1128 calls archived read-only" or refuses and changes nothing.
+- **This code needs 0065:** without the stance column a new publication has
+  nowhere to keep its direction.
+- **Outside the repo:** delete the deployed `attest-price` edge function in
+  Supabase, the `grade-cron` Sentry monitor, and any QStash schedule for the
+  `grade` job. `vercel.json` no longer lists the grade cron.
+- The legal pages need counsel before they stop describing grading.
+
+---
+
 ## 2026-09-24 — Removing grading, step one: subscriptions end on their own, and every publication carries its stance
 
 Grading is being removed. A publication keeps a **stance**: its ticker and a
