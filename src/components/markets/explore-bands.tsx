@@ -12,7 +12,7 @@ import type {
   EtfBandRow,
   CoveredRow,
   MarketRow,
-  NewlyCalledRow,
+  NewlyCoveredRow,
   SectorTile,
   TapeQuote,
   ThemeCard,
@@ -142,9 +142,9 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
               {r.analystCount === 1 ? "analyst" : "analysts"}
             </span>
             <span className="markets-row-meta num">
-              {r.openCalls === 0
-                ? "No calls"
-                : `${r.openCalls} ${r.openCalls === 1 ? "call" : "calls"}`}
+              {r.stancePublications === 0
+                ? "No publications"
+                : `${r.stancePublications} ${r.stancePublications === 1 ? "publication" : "publications"}`}
             </span>
             <FollowTicker ticker={r.symbol} />
           </div>
@@ -154,14 +154,14 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
   );
 }
 
-/* --------------------------------------------------------- newly called --- */
+/* -------------------------------------------------------- newly covered --- */
 
-export function ExploreNewlyCalled({ rows }: { rows: NewlyCalledRow[] }) {
+export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
   if (rows.length === 0) return null;
   return (
     <Band
-      title="Newly called"
-      note="Names that just received their first call on Stoa."
+      title="Newly covered"
+      note="Names that just received their first publication on Stoa."
       seeAllHref="/explore"
     >
       <div className="mt-2">
@@ -181,7 +181,7 @@ export function ExploreNewlyCalled({ rows }: { rows: NewlyCalledRow[] }) {
               </span>
             </Link>
             <DirectionTag direction={r.direction} />
-            <span className="markets-row-meta num">Called {sinceLabel(r.calledAt).toLowerCase()}</span>
+            <span className="markets-row-meta num">Covered {sinceLabel(r.coveredAt).toLowerCase()}</span>
           </div>
         ))}
       </div>
@@ -269,7 +269,7 @@ export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
 export function ExploreUncovered({ rows }: { rows: MarketRow[] }) {
   if (rows.length === 0) return null;
   return (
-    <Band title="Uncovered" note="Nobody on Stoa has called these.">
+    <Band title="Uncovered" note="Nobody on Stoa has covered these.">
       <div className="mt-2">
         {rows.map((r) => (
           <div key={r.symbol} className="markets-row">

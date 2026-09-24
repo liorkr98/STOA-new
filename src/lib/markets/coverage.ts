@@ -172,14 +172,14 @@ export async function coverageFor(symbols: string[]): Promise<Record<string, num
 export interface FirstCallRow {
   symbol: string;
   direction: Direction;
-  calledAt: string;
+  coveredAt: string;
   reportId: string;
   authorId: string;
 }
 
 /**
  * The first live publication with a stance on each ticker, newest first.
- * Powers the Markets "newly called" band.
+ * Powers the Markets "newly covered" band.
  */
 export async function firstCallsRecent(limit: number): Promise<FirstCallRow[]> {
   return cachedPage(`coverage:first-stances:${limit}`, COVERAGE_TTL_S, async () => {
@@ -191,6 +191,6 @@ export async function firstCallsRecent(limit: number): Promise<FirstCallRow[]> {
     return [...first.values()]
       .sort((a, b) => b.at.localeCompare(a.at))
       .slice(0, limit)
-      .map((s) => ({ symbol: s.symbol, direction: s.stance, calledAt: s.at, reportId: s.reportId, authorId: s.authorId }));
+      .map((s) => ({ symbol: s.symbol, direction: s.stance, coveredAt: s.at, reportId: s.reportId, authorId: s.authorId }));
   });
 }

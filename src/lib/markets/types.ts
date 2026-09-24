@@ -24,17 +24,17 @@ export interface CoveredRow extends MarketRow {
   newPublications: number;
   analystCount: number;
   /** Coverage volume, not a blended stance: live publications on this name that are long or short. */
-  openCalls: number;
+  stancePublications: number;
 }
 
-export interface NewlyCalledRow extends MarketRow {
+export interface NewlyCoveredRow extends MarketRow {
   analyst: {
     handle: string;
     displayName: string;
     avatarUrl: string | null;
   };
   direction: Direction;
-  calledAt: string;
+  coveredAt: string;
   reportId: string;
 }
 
@@ -64,7 +64,7 @@ export interface ExplorePayload {
   tape: TapeQuote[];
   themes: ThemeCard[];
   covered: CoveredRow[];
-  newlyCalled: NewlyCalledRow[];
+  newlyCovered: NewlyCoveredRow[];
   sectors: SectorTile[];
   uncovered: MarketRow[];
   etfs: EtfBandRow[];

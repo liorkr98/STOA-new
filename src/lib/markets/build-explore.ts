@@ -15,7 +15,7 @@ import type {
   EtfBandRow,
   ExplorePayload,
   MarketRow,
-  NewlyCalledRow,
+  NewlyCoveredRow,
   SectorTile,
   TapeQuote,
   ThemeCard,
@@ -70,7 +70,7 @@ function applyQuotes<T extends MarketRow>(rows: T[], quotes: Map<string, Quote>)
 }
 
 /**
- * Coverage and call activity are grouped in Postgres and cached; see
+ * Coverage and stance activity are grouped in Postgres and cached; see
  * src/lib/markets/coverage.ts. Both used to be 2000-row scans reduced in Node,
  * and Markets ran four of them per request.
  */
@@ -131,14 +131,14 @@ async function buildCovered(
         ...toRow(symbol, name, row?.last_price ?? null, row?.market_cap ?? null),
         newPublications: coverageWeek.get(symbol) ?? 0,
         analystCount: entry?.analysts ?? 0,
-        openCalls: (entry?.long ?? 0) + (entry?.short ?? 0),
+        stancePublications: (entry?.long ?? 0) + (entry?.short ?? 0),
       },
     ];
   });
 }
 
-/** Names whose very first Stoa call landed recently. */
-async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
+/** Names whose very first Stoa publication with a stance landed recently. */
+async function buildNewlyCovered(limit: number): Promise<NewlyCoveredRow[]> {
   const firsts = await firstCallsRecent(limit);
   if (firsts.length === 0) return [];
 
@@ -165,7 +165,7 @@ async function buildNewlyCalled(limit: number): Promise<NewlyCalledRow[]> {
           avatarUrl: author.avatar_url,
         },
         direction: first.direction,
-        calledAt: first.calledAt,
+        coveredAt: first.coveredAt,
         reportId: first.reportId,
       },
     ];
@@ -296,10 +296,10 @@ async function buildExploreUncached(): Promise<ExplorePayload> {
 
   const mostCovered = [...coverageAll.entries()].sort((a, b) => b[1] - a[1]).slice(0, TAPE_COVERED).map(([s]) => s.toUpperCase());
 
-  const [themesRaw, coveredRaw, newlyCalledRaw, sectors, uncoveredRaw] = await Promise.all([
+  const [themesRaw, coveredRaw, newlyCoveredRaw, sectors, uncoveredRaw] = await Promise.all([
     buildThemes(coverageWeek, coverageLastWeek),
     buildCovered(coverageAll, coverageWeek, activity, 6),
-    buildNewlyCalled(4),
+    buildNewlyCovered(4),
     buildSectors(coverageAll),
     buildUncovered(coverageAll, 4),
   ]);
@@ -307,7 +307,7 @@ async function buildExploreUncached(): Promise<ExplorePayload> {
   const extraSymbols = [
     ...mostCovered,
     ...coveredRaw.map((r) => r.symbol),
-    ...newlyCalledRaw.map((r) => r.symbol),
+    ...newlyCoveredRaw.map((r) => r.symbol),
     ...uncoveredRaw.map((r) => r.symbol),
   ].filter((s) => !knownQuotes.has(s.toUpperCase()));
   const extraQuotes = extraSymbols.length
@@ -317,7 +317,7 @@ async function buildExploreUncached(): Promise<ExplorePayload> {
 
   const themes = themesRaw.map((t) => ({ ...t, constituents: applyQuotes(t.constituents, quotes) }));
   const covered = applyQuotes(coveredRaw, quotes);
-  const newlyCalled = applyQuotes(newlyCalledRaw, quotes);
+  const newlyCovered = applyQuotes(newlyCoveredRaw, quotes);
   const uncovered = applyQuotes(uncoveredRaw, quotes);
 
   const tape = tapeFrom(quotes, mostCovered);
@@ -334,5 +334,5 @@ async function buildExploreUncached(): Promise<ExplorePayload> {
     .sort((a, b) => b.publications - a.publications)
     .slice(0, ETF_BAND_SIZE);
 
-  return { tape, themes, covered, newlyCalled, sectors, uncovered, etfs };
+  return { tape, themes, covered, newlyCovered, sectors, uncovered, etfs };
 }

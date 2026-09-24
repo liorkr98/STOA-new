@@ -50,7 +50,7 @@ export function PaywallGate({
         <ul className="t-meta mx-auto mt-4 max-w-sm space-y-1.5 text-left">
           <li>Fact-checked claims stay on the record</li>
           <li>Platform fee is shown as its own line at checkout (10%)</li>
-          <li>Call block and disclosures remain free to read</li>
+          <li>The stance and disclosures remain free to read</li>
         </ul>
         <div className={cn("mt-5 flex flex-col gap-3", onUnlock && onSubscribe && "sm:flex-row")}>
           {onUnlock && <div className="mx-auto w-full max-w-xs flex-1 sm:mx-0">{onUnlock}</div>}
