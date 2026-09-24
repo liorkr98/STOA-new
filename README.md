@@ -162,9 +162,11 @@ See `docs/platform.md` for the full external-services table.
 
 - When an analyst publishes a call, the entry price is locked from the market feed server-side
   (`src/app/actions/reports.ts`). The SPY price is captured for alpha.
-- The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) expires
-  lapsed subscriptions, finds calls whose timeframe has ended, pulls prices via Yahoo Finance
-  (with optional fallbacks), grades each call, and recomputes score, rating, and tier.
+- The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) finds
+  calls whose timeframe has ended, pulls prices via Yahoo Finance (with optional fallbacks),
+  grades each call, and recomputes score, rating, and tier.
+- Lapsed subscriptions are expired by their own daily job
+  (`src/app/api/cron/subscription-expiry/route.ts`), independent of grading.
 - Run it manually any time:
 
 ```bash
@@ -181,8 +183,9 @@ Your Supabase project is already the backend. Keep the service-role key out of t
 
 1. Push this folder to a Git repository (see below) and import it into Vercel.
 2. Add the same environment variables in the Vercel project settings.
-3. `vercel.json` registers an hourly cron that calls `/api/cron/grade`. Vercel automatically sends
-   `Authorization: Bearer $CRON_SECRET`, which the route verifies.
+3. `vercel.json` registers the daily crons (`/api/cron/grade`, `/api/cron/subscription-expiry` and
+   the rest). Vercel automatically sends `Authorization: Bearer $CRON_SECRET`, which each route
+   verifies. This plan rejects sub-daily schedules.
 
 ## Pushing to a brand-new repository
 

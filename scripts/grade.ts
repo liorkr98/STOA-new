@@ -11,7 +11,7 @@ async function main() {
   const db = createClient(url, key, { auth: { persistSession: false } });
   const summary = await gradeDuePredictions(db);
   console.log(
-    `Graded ${summary.graded} predictions, updated ${summary.analystsUpdated} analysts, expired ${summary.subscriptionsExpired} subscriptions.`,
+    `Graded ${summary.graded} predictions, updated ${summary.analystsUpdated} analysts.`,
   );
 }
 

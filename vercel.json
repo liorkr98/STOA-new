@@ -24,6 +24,10 @@
     {
       "path": "/api/cron/video-reconcile",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/subscription-expiry",
+      "schedule": "0 0 * * *"
     }
   ]
 }

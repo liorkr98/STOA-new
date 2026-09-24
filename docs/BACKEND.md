@@ -63,7 +63,7 @@ Requires `NAPKIN_API_KEY` (server-only). Editor: `napkinNode`, `/napkin` slash c
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Publishable/anon key (browser-safe) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only; audit log inserts, grading |
 | `SUPABASE_STORAGE_URL` | Yes* | `{NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public` — chart screenshot URL validation |
-| `CRON_SECRET` | Prod | Protects `/api/cron/grade` |
+| `CRON_SECRET` | Prod | Protects the `/api/cron/*` jobs |
 | `TWELVE_DATA_API_KEY` | No | Live quote fallback |
 | `ALPHA_VANTAGE_API_KEY` | No | Live quote fallback |
 | `DEEPSEEK_API_KEY` | No | Fact-check + compose AI + diagrams |

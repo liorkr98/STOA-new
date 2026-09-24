@@ -2,14 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Outcome, Prediction } from "@/lib/types";
 import { callReturn, computeScore, computeTier, gradeOutcome, type ScoreResult } from "./score";
 import { benchmarkReturn, getQuotesBatch } from "./market";
-import { expireSubscriptions } from "./subscriptions";
 import { getTickerMeta } from "./tickers";
 import { effectiveResolutionDate } from "./trading-calendar";
 
 export interface GradeSummary {
   graded: number;
   analystsUpdated: number;
-  subscriptionsExpired: number;
   pendingReview: number;
   neutralResolved: number;
 }
@@ -35,12 +33,10 @@ async function logAudit(
 }
 
 /**
- * Resolves open predictions past their timeframe, expires lapsed subscriptions,
- * then recomputes score + rating + tier for each affected analyst.
+ * Resolves open predictions past their timeframe, then recomputes score +
+ * rating + tier for each affected analyst.
  */
 export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSummary> {
-  const subscriptionsExpired = await expireSubscriptions(db);
-
   const nowISO = new Date().toISOString();
   const { data, error } = await db
     .from("predictions")
@@ -52,7 +48,7 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
 
   const rawDue = (data as Prediction[]) ?? [];
   if (rawDue.length === 0) {
-    return { graded: 0, analystsUpdated: 0, subscriptionsExpired, pendingReview: 0, neutralResolved: 0 };
+    return { graded: 0, analystsUpdated: 0, pendingReview: 0, neutralResolved: 0 };
   }
 
   const reportIds = [...new Set(rawDue.map((p) => p.report_id))];
@@ -64,7 +60,7 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
   );
   const due = rawDue.filter((p) => !blocked.has(p.report_id));
   if (due.length === 0) {
-    return { graded: 0, analystsUpdated: 0, subscriptionsExpired, pendingReview: 0, neutralResolved: 0 };
+    return { graded: 0, analystsUpdated: 0, pendingReview: 0, neutralResolved: 0 };
   }
 
   const quotes = await getQuotesBatch(due.map((p) => p.ticker));
@@ -259,7 +255,6 @@ export async function gradeDuePredictions(db: SupabaseClient): Promise<GradeSumm
   return {
     graded,
     analystsUpdated: affected.size,
-    subscriptionsExpired,
     pendingReview,
     neutralResolved,
   };
