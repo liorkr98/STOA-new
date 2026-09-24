@@ -28,6 +28,7 @@ function row(over: Partial<Publication> & Pick<Publication, "id" | "state" | "ti
     pinned: false,
     stateLine: null,
     ...over,
+    deletable: over.deletable ?? !over.hasCall,
   };
 }
 

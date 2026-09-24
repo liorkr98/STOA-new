@@ -6,6 +6,8 @@ import { editedAtByReport } from "@/lib/db/report-edits";
 import { listByAuthor } from "@/lib/db/reports";
 import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listClipsByCreator } from "@/lib/db/video-clips";
+import { soldReportIds } from "@/lib/db/report-unlocks";
+import { deleteBlocker } from "@/lib/studio/delete-rule";
 import { formatDuration } from "@/lib/profile/build-profile-view";
 import { compact, pct } from "@/lib/format";
 import { publicTypeLabel } from "@/lib/compose/modes";
@@ -38,6 +40,7 @@ function toPublication(
   clip: Clip | undefined,
   pinnedId: string | null,
   editedAt: string | null,
+  sold: boolean,
 ): Publication {
   let state: PubState = "published";
   if (r.status === "archived") state = "archived";
@@ -51,6 +54,7 @@ function toPublication(
     editHref: `/studio/compose?id=${r.id}`,
     state,
     hasCall: Boolean(pred),
+    deletable: deleteBlocker({ hasStance: Boolean(r.stance), hasCall: Boolean(pred), sold }) === null,
     editedAt,
     typeLabel: typeLabel(r.type),
     tag: r.ticker,
@@ -116,8 +120,10 @@ export default async function PublicationsPage() {
   const clipByReport = new Map(clips.map((c) => [c.report_id, c] as const));
   const pinnedId = profile.profile_config?.pinned_report_id ?? null;
 
-
-  const editedAt = await editedAtByReport(reports.map((r) => r.id));
+  const [editedAt, sold] = await Promise.all([
+    editedAtByReport(reports.map((r) => r.id)),
+    soldReportIds(reports.filter((r) => r.status !== "draft").map((r) => r.id)),
+  ]);
 
   const pubs: Publication[] = reports.map((r) =>
     toPublication(
@@ -126,6 +132,7 @@ export default async function PublicationsPage() {
       clipByReport.get(r.id),
       pinnedId,
       editedAt.get(r.id) ?? null,
+      sold.has(r.id),
     ),
   );
 

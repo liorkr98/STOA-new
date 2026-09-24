@@ -7,6 +7,8 @@ import { deleteChartSnapshotsForReport } from "@/lib/reports/chart-storage";
 import { PublishReportError, validateAndPublishReport } from "@/lib/reports/publish-report";
 import { normalizeTags } from "@/lib/tags/validate";
 import type { ComposeInput, AccessType, ContentType } from "@/lib/types";
+import { soldReportIds } from "@/lib/db/report-unlocks";
+import { deleteBlocker } from "@/lib/studio/delete-rule";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -416,13 +418,11 @@ export async function archivePublication(
 /**
  * Deleting a publication outright.
  *
- * The permanence guarantee exists to stop an analyst burying a bad call, so it
- * applies to calls and not to everything a creator ever wrote. A publication
- * carrying no call is content, and a creator may remove their own content.
- *
- * A publication carrying a call is refused here and refused again by the
- * database (0062), which checks for a `predictions` row rather than trusting
- * this function to have looked. Archiving stays the only option for those.
+ * The permanence guarantee exists to stop an analyst burying a wrong view, so
+ * it applies to a publication that declares a stance, not to everything a
+ * creator ever wrote. And nothing anyone has bought is deleted. The rule is
+ * `deleteBlocker`; it is checked here and again by the database (0066), which
+ * looks at the rows itself rather than trusting this function to have looked.
  *
  * This is irreversible. There is no restore, and the caller is responsible for
  * having said so plainly before getting here.
@@ -432,25 +432,25 @@ export async function deletePublication(
 ): Promise<{ ok: boolean; error?: string }> {
   const { supabase, userId } = await requireUser();
 
+  // `*` so `stance` comes along once migration 0065 adds it.
   const { data: report } = await supabase
     .from("reports")
-    .select("id, author_id, status")
+    .select("*")
     .eq("id", reportId)
     .eq("author_id", userId)
     .maybeSingle();
   if (!report) return { ok: false, error: "Not your publication" };
 
-  const { data: call } = await supabase
-    .from("predictions")
-    .select("id")
-    .eq("report_id", reportId)
-    .maybeSingle();
-  if (call) {
-    return {
-      ok: false,
-      error: "This publication carries a locked call, so it can be archived but not deleted.",
-    };
-  }
+  const [{ data: call }, sold] = await Promise.all([
+    supabase.from("predictions").select("id").eq("report_id", reportId).maybeSingle(),
+    soldReportIds([reportId]),
+  ]);
+  const blocker = deleteBlocker({
+    hasStance: Boolean((report as { stance?: string | null }).stance),
+    hasCall: Boolean(call),
+    sold: sold.has(reportId),
+  });
+  if (blocker) return { ok: false, error: blocker };
 
   const { error } = await supabase
     .from("reports")

@@ -24,6 +24,8 @@ export interface Publication {
   editHref: string;
   state: PubState;
   hasCall: boolean;
+  /** Published and allowed to be deleted outright (`deleteBlocker`). */
+  deletable: boolean;
   /** Last edited after publication, if it ever was. */
   editedAt?: string | null;
   typeLabel: string;
@@ -269,13 +271,14 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     )}
                     {/* Delete is offered only where it is allowed. A draft was
                         never published, so it deletes outright after a plain
-                        question. A published piece carrying a call can be
-                        archived and nothing else, so the option is absent
-                        rather than present and refused. */}
+                        question. A published piece with a stance, or one
+                        anyone has bought, can be archived and nothing else,
+                        so the option is absent rather than present and
+                        refused. */}
                     {draft ? (
                       <DeleteDraftDialog id={p.id} title={p.title} />
                     ) : (
-                      !p.hasCall && <DeleteDialog id={p.id} title={p.title} />
+                      p.deletable && <DeleteDialog id={p.id} title={p.title} />
                     )}
                   </div>
                 </div>

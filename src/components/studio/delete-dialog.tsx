@@ -17,7 +17,7 @@ const CONFIRM_WORD = "DELETE";
  * never be confused for one another. So this dialog does not reuse the archive
  * copy with a harder verb: it says what is destroyed, says that Archive is the
  * reversible option, and asks the creator to type the word before the button
- * turns on. Only a publication with no call ever reaches here.
+ * turns on. Only a publication `deleteBlocker` allows ever reaches here.
  */
 export function DeleteDialog({ id, title }: { id: string; title: string }) {
   const [open, setOpen] = useState(false);
