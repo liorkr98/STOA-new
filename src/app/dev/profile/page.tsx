@@ -130,10 +130,11 @@ const clips: VideoClip[] = [
   clip("r8", 264, 150),
 ];
 
-const sectorByTicker = new Map<string, string | null>([
-  ["XOM", "Energy"],
-  ["SMH", "Semiconductors"],
-]);
+// Each fixture call's direction is its publication's stance, as migration 0065 copies it.
+const staged: Report[] = reports.map((r) => ({
+  ...r,
+  stance: predictions.find((p) => p.report_id === r.id)?.direction ?? null,
+}));
 
 export default async function DevProfilePage({
   searchParams,
@@ -147,10 +148,9 @@ export default async function DevProfilePage({
   const processingId = clipMode === "processing" ? clips[0]?.report_id : undefined;
 
   const pubs = buildPublications({
-    reports: isNew ? reports.slice(0, 2) : reports,
+    reports: isNew ? staged.slice(0, 2) : staged,
     predictions: isNew ? predictions.slice(0, 1) : predictions,
     clips: (isNew ? clips.slice(0, 1) : clips).filter((c) => c.report_id !== processingId),
-    sectorByTicker,
     pendingClipIds: processingId ? new Set([processingId]) : undefined,
   });
   const tiers = tierPublications(pubs, pinned ?? null);

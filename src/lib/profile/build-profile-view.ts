@@ -5,7 +5,6 @@ import { listPredictionsByAuthor } from "@/lib/db/predictions";
 import { listByAuthor } from "@/lib/db/reports";
 import { listReadyClipsByCreator } from "@/lib/db/video-clips";
 import { listPendingClipsByCreator } from "@/lib/db/video-clips";
-import { listTickerRows } from "@/lib/db/tickers";
 import { getSessionUserId } from "@/lib/db/auth";
 import { isFollowing, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
@@ -16,13 +15,14 @@ import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
-import type { Direction, Prediction, Report } from "@/lib/types";
+import type { Prediction, Report } from "@/lib/types";
 import type { VideoClip } from "@/lib/db/video-clips";
 import type {
   AnalystProfileViewProps,
   ProfilePublication,
   ProfileSubject,
 } from "@/components/profile/analyst-profile-view";
+import { stanceChips } from "@/lib/db/publication-row";
 
 function initialsOf(name: string) {
   return name
@@ -63,12 +63,6 @@ export function contentBadge(input: {
   return parts.length ? parts.join(" · ") : "NOTE";
 }
 
-/** Sector label as a theme tag: "Information Technology" -> "INFORMATION TECHNOLOGY". */
-function sectorTag(sector: string | null | undefined): string | null {
-  const s = sector?.trim();
-  return s ? s.toUpperCase() : null;
-}
-
 /**
  * Turns an analyst's reports, calls and video clips into the one publication
  * shape the storefront renders. Shared with the /dev/profile fixture so the
@@ -78,7 +72,6 @@ export function buildPublications(input: {
   reports: Report[];
   predictions: Prediction[];
   clips: VideoClip[];
-  sectorByTicker: Map<string, string | null>;
   /** Publications with a stored evidence stack. Omitted by the dev fixture. */
   cardIds?: Set<string>;
   /** Publications whose clip exists but is not live yet. */
@@ -101,16 +94,11 @@ export function buildPublications(input: {
         ? pred
         : null;
 
-    // Anchoring rule: only a call earns a ticker + direction. A callless item
-    // anchors on its own theme tag, falling back to the ticker's sector for rows
-    // published before tags existed.
-    const themeTag = hasCall
-      ? null
-      : themeLabel(
-          r,
-          r.ticker ? sectorTag(input.sectorByTicker.get(r.ticker.toUpperCase())) : null,
-        );
-    const subject = hasCall && pred ? pred.ticker : themeTag;
+    // Anchoring rule: a publication shows its own ticker and stance. A
+    // tickerless item anchors on its own theme tag.
+    const chips = stanceChips(r);
+    const themeTag = chips.ticker ? null : themeLabel(r);
+    const subject = chips.ticker ?? themeTag;
 
     return {
       id: r.id,
@@ -118,8 +106,8 @@ export function buildPublications(input: {
       kind: clip || pending ? "video" : "written",
       processing: pending,
       typeLabel: typeLabel(r.type),
-      ticker: hasCall && pred ? pred.ticker : null,
-      direction: hasCall && pred ? (pred.direction as Direction) : null,
+      ticker: chips.ticker,
+      direction: chips.direction,
       themeTag,
       badge: contentBadge({
         hasVideo: Boolean(clip) || pending,
@@ -207,22 +195,11 @@ export async function buildProfileView(
   const config = profile.profile_config ?? {};
   const showMembers = config.show_member_count === true;
 
-  const calledReportIds = new Set(predictions.map((p) => p.report_id));
-  const callessTickers = [
-    ...new Set(
-      reports.filter((r) => r.ticker && !calledReportIds.has(r.id)).map((r) => r.ticker!.toUpperCase()),
-    ),
-  ];
-
-  const [following, wallet, members, tickerRows] = await Promise.all([
+  const [following, wallet, members] = await Promise.all([
     userId ? isFollowing(userId, profile.id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
     showMembers ? subscriberCount(profile.id) : Promise.resolve(0),
-    callessTickers.length ? listTickerRows(callessTickers) : Promise.resolve([]),
   ]);
-
-  const sectorByTicker = new Map<string, string | null>();
-  for (const row of tickerRows) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
 
   // Per-analyst storefront theming (branding studio Style tab): scoped custom
   // accent (re-validated so a bad stored value never ships), font pairing, and
@@ -249,7 +226,6 @@ export async function buildProfileView(
     reports,
     predictions,
     clips,
-    sectorByTicker,
     cardIds,
     pendingClipIds: new Set(pendingClips.keys()),
   });

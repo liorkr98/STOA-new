@@ -1,15 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Prediction, Report } from "@/lib/types";
-
-const REPORT_FIELDS =
-  "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalize(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction)
-    ? (row.prediction[0] ?? null)
-    : (row.prediction ?? null);
-  return { ...(row as unknown as Report), prediction: (raw ?? null) as Prediction | null };
-}
+import { publicationRow as normalize, REPORT_SELECT as REPORT_FIELDS } from "@/lib/db/publication-row";
+import type { Report } from "@/lib/types";
 
 export async function listSavedReports(userId: string, limit = 50): Promise<Report[]> {
   const supabase = await createClient();

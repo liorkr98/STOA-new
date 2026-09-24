@@ -292,9 +292,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               </div>
             ) : null}
             <aside className="order-4 flex flex-col gap-4 lg:order-none">
-          {report.prediction && (
+          {report.prediction && report.ticker && (
             <PredictionCard
               prediction={report.prediction}
+              ticker={report.ticker}
+              direction={report.stance ?? null}
               hideTarget={!canRead}
               pendingReview={report.status === "resolution_pending_review"}
             />

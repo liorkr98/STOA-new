@@ -13,6 +13,7 @@ import type { FeedCard, FeedPublication } from "@/lib/feed/types";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
+import { stanceChips } from "@/lib/db/publication-row";
 
 /**
  * Server-side mapper from published video clips (with their joined report,
@@ -103,7 +104,7 @@ function cardsFor(report: Report, stored: FeedCard[] | undefined, ticker: string
 export async function clipsToPublications(clips: VideoClipCard[], now = Date.now()): Promise<FeedPublication[]> {
   const usable = clips.filter((c) => c.report && c.report.author);
   const symbols = [
-    ...new Set(usable.map((c) => (c.report!.prediction?.ticker ?? c.report!.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s))),
+    ...new Set(usable.map((c) => c.report!.ticker?.toUpperCase()).filter((s): s is string => Boolean(s))),
   ];
   const sectorByTicker = new Map<string, string | null>();
   for (const row of symbols.length ? await listTickerRows(symbols) : []) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
@@ -142,7 +143,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
     } catch {
       embedUrl = native ? null : c.playback_url || null;
     }
-    const hasCall = Boolean(r.prediction);
+    const chips = stanceChips(r);
     const preview = r.feed_preview_seconds ?? null;
     const videoEdit = readStoredVideoEdit(r.video_edit);
     // The length a reader gets: the kept region when the clip was trimmed,
@@ -154,7 +155,7 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
           ? c.duration_seconds - videoEdit.trimStart
           : c.duration_seconds;
     const duration = preview && preview > 0 ? Math.min(kept, preview) : kept;
-    const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
+    const sym = chips.ticker;
     const sector = sym ? sectorByTicker.get(sym) ?? null : null;
     const p = r.prediction;
     const resolved = p && ["hit", "near", "miss", "partial"].includes(p.outcome) && p.resolved_price != null;
@@ -173,11 +174,10 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       headline: storyHeadline(r),
       deck: storyDek(r),
       typeLabel: typeLabel(r.type),
-      ticker: hasCall ? sym : null,
-      direction: hasCall ? (p?.direction ?? null) : null,
-      // Callless items anchor on the publication's own theme tag; the ticker's
-      // sector is the fallback for rows published before tags existed.
-      themeTag: hasCall ? null : themeLabel(r, sector),
+      ticker: chips.ticker,
+      direction: chips.direction,
+      // Tickerless items anchor on the publication's own theme tag.
+      themeTag: chips.ticker ? null : themeLabel(r, sector),
       sector,
       contentBadge: contentBadgeFor(r, true),
       stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
@@ -187,7 +187,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
         : null,
       access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
       price: r.price,
-      cards: cardsFor(r, cardsByReport.get(r.id), hasCall ? sym : null),
+      // The price tape rides with a declared stance, as it did with a call.
+      cards: cardsFor(r, cardsByReport.get(r.id), chips.direction ? sym : null),
       comments: [],
       publishedAt: r.published_at ?? r.created_at,
     };

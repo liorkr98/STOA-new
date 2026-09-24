@@ -4,6 +4,7 @@ import type { VideoClipCard } from "@/lib/db/video-clips";
 import type { VideoCardData } from "@/lib/video/card-data";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { isDirectVideoUrl } from "@/lib/video/direct";
+import { stanceChips } from "@/lib/db/publication-row";
 
 /**
  * Server-side mapper: video_clips row (+ joined report) -> client-safe card data
@@ -23,7 +24,7 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
   }
 
   const author = report.author;
-  const ticker = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase() || null;
+  const ticker = (report.ticker ?? "").toUpperCase() || null;
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
   const seed = [...card.id].reduce((n, ch) => n + ch.charCodeAt(0), 0);
   const media = resolveClipPlayback({
@@ -54,7 +55,7 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
     durationSeconds: card.duration_seconds,
     headline,
     ticker,
-    direction: report.prediction?.direction ?? null,
+    direction: stanceChips(report).direction,
     access: report.access,
     price: report.price,
     analyst: {

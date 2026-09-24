@@ -24,15 +24,10 @@ import type {
   DispatchPayload,
   DispatchStory,
 } from "@/lib/dispatch/types";
+import { publicationRow, REPORT_SELECT } from "@/lib/db/publication-row";
 
-const SELECT =
-  "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalizeReport(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  const prediction = (raw ?? null) as Prediction | null;
-  return { ...(row as unknown as Report), prediction };
-}
+const SELECT = REPORT_SELECT;
+const normalizeReport = publicationRow;
 
 const fetchIssueNumber = () => getIssueNumber(getCycleWindow().dateIso);
 
@@ -87,7 +82,7 @@ function filterPersonalized(
   if (authorIds.size === 0 && tickers.size === 0) return strict ? [] : reports;
   return reports.filter((r) => {
     if (authorIds.has(r.author_id)) return true;
-    const t = (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase();
+    const t = (r.ticker ?? "").toUpperCase();
     return t && tickers.has(t);
   });
 }
@@ -123,7 +118,7 @@ async function buildPersonalizationSets(userId: string): Promise<{
 
   for (const report of saved) {
     if (report.author_id) authorIds.add(report.author_id);
-    const t = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
+    const t = (report.ticker ?? "").toUpperCase();
     if (t) tickers.add(t);
   }
 

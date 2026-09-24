@@ -13,7 +13,7 @@ function IssueCard({
   index: number;
   meta?: string;
 }) {
-  const ticker = (story.report.ticker ?? story.prediction?.ticker ?? "").toUpperCase();
+  const ticker = (story.report.ticker ?? "").toUpperCase();
   const showTarget = story.report.access === "free";
 
   return (

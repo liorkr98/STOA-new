@@ -17,6 +17,7 @@ import { attentionRate, publicationAttention } from "@/lib/lifecycle/stages";
 import type { TapeQuote } from "@/lib/markets/types";
 import type { TodayVerdict } from "@/lib/today/types";
 import type { Direction } from "@/lib/types";
+import { stanceChips } from "@/lib/db/publication-row";
 
 /**
  * The signed-out landing, built from what is popular platform-wide. Nothing
@@ -76,7 +77,7 @@ async function buildLandingUncached(): Promise<LandingPayload> {
     getIssueNumber(cycle.dateIso),
   ]);
 
-  const symbols = [...new Set(pool.map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s)))];
+  const symbols = [...new Set(pool.map((r) => r.ticker?.toUpperCase()).filter((s): s is string => Boolean(s)))];
   const sectorByTicker = new Map<string, string | null>();
   for (const row of symbols.length ? await listTickerRows(symbols).catch(() => []) : []) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
   const clipByReport = new Map(clips.map((c) => [c.report_id, c] as const));
@@ -95,16 +96,16 @@ async function buildLandingUncached(): Promise<LandingPayload> {
     .map((x) => x.r);
 
   const toHeadline = (r: (typeof ranked)[number]): LandingHeadline => {
-    const hasCall = Boolean(r.prediction);
-    const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
+    const chips = stanceChips(r);
+    const sym = chips.ticker;
     const sector = sym ? sectorByTicker.get(sym) : null;
     return {
       reportId: r.id,
       kicker: (sector ?? sym ?? (r.type === "short_post" ? "Note" : "Research")).toUpperCase(),
       headline: storyHeadline(r),
       analyst: r.author!.display_name,
-      ticker: hasCall ? sym : null,
-      direction: hasCall ? (r.prediction?.direction ?? null) : null,
+      ticker: chips.ticker,
+      direction: chips.direction,
     };
   };
 

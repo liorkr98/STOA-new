@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cachedPage } from "@/lib/cache/page";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { clipDurationSeconds } from "@/lib/video/clip-duration";
-import type { Prediction, Report } from "@/lib/types";
+import { CALL_JOIN, publicationRow, reportsHaveStance } from "@/lib/db/publication-row";
+import type { Report } from "@/lib/types";
 
 /**
  * video_clips + video_view_events data layer (the video-first Feed). The only
@@ -50,17 +51,15 @@ const CARD_COLUMNS =
 const REPORT_CARD_COLUMNS =
   "id, author_id, type, status, title, summary, access, price, ticker, theme_tag, primary_tag, secondary_tags, feed_preview_seconds, video_edit, views, likes, comment_count, published_at, created_at";
 
-const CARD_SELECT = `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${REPORT_CARD_COLUMNS}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url, score), prediction:predictions(*))`;
+/** The card select. `stance` is named only once the column exists (migration 0065). */
+async function cardSelect(): Promise<string> {
+  const columns = (await reportsHaveStance()) ? `${REPORT_CARD_COLUMNS}, stance` : REPORT_CARD_COLUMNS;
+  return `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${columns}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url, score), ${CALL_JOIN})`;
+}
 
 function normalizeCard(row: Record<string, unknown>): VideoClipCard {
   const rawReport = row.report as Record<string, unknown> | null;
-  let report: Report | null = null;
-  if (rawReport) {
-    const rawPred = Array.isArray(rawReport.prediction)
-      ? (rawReport.prediction[0] ?? null)
-      : (rawReport.prediction ?? null);
-    report = { ...(rawReport as unknown as Report), prediction: (rawPred ?? null) as Prediction | null };
-  }
+  const report: Report | null = rawReport ? publicationRow(rawReport) : null;
   return { ...(row as unknown as VideoClip), report };
 }
 
@@ -103,9 +102,9 @@ export async function getVideoClip(id: string): Promise<VideoClip | null> {
 
 export async function getVideoClipCard(id: string): Promise<VideoClipCard | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("video_clips").select(CARD_SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("video_clips").select(await cardSelect()).eq("id", id).maybeSingle();
   if (error || !data) return null;
-  return normalizeCard(data as Record<string, unknown>);
+  return normalizeCard(data as unknown as Record<string, unknown>);
 }
 
 export async function listVideosByReport(reportId: string): Promise<VideoClip[]> {
@@ -183,11 +182,11 @@ export async function getReadyClipForReport(reportId: string): Promise<VideoClip
 
 /** Published, ready clips for the Feed and the Explore wall. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
-  return cachedPage(`video-cards:${limit}`, 20, async () => {
+  return cachedPage(`video-cards:stance:${limit}`, 20, async () => {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("video_clips")
-      .select(CARD_SELECT)
+      .select(await cardSelect())
       .eq("status", "ready")
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
@@ -196,7 +195,7 @@ export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
     // A verdict's clip travels with the verdict, for the people who can open
     // it. It is never a Feed or Explore item: the verdict is subscribers-only
     // while the call is open, and the wall is for strangers.
-    return (data as Record<string, unknown>[])
+    return (data as unknown as Record<string, unknown>[])
       .map(normalizeCard)
       .filter((c) => c.report && c.report.status === "published" && c.report.type !== "call");
   });

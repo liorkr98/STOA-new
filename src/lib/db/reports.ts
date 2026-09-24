@@ -7,17 +7,12 @@ import { listDismissedReportIds } from "@/lib/db/feed-dismissals";
 import { tickersInCapBand } from "@/lib/db/tickers";
 import { coverageAllTime } from "@/lib/markets/coverage";
 import type { CapBand } from "@/lib/market/cap-bands";
-import type { AccessType, ContentType, Prediction, Report } from "@/lib/types";
+import { CALL_FIELDS, publicationRow, REPORT_SELECT } from "@/lib/db/publication-row";
+import type { AccessType, ContentType, Report } from "@/lib/types";
 import type { DraftRow } from "@/lib/compose/drafts";
 
-const SELECT =
-  "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalize(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  const prediction = (raw ?? null) as Prediction | null;
-  return { ...(row as unknown as Report), prediction };
-}
+const SELECT = REPORT_SELECT;
+const normalize = publicationRow;
 
 /** Supabase dynamic selects (e.g. !inner joins) widen inferred types; normalize via unknown. */
 function asReportRows(data: unknown): Record<string, unknown>[] {
@@ -58,7 +53,7 @@ function applyJoinedFilters(reports: Report[], filters: FeedFilters): Report[] {
   if (filters.ticker) {
     const t = filters.ticker.toUpperCase();
     out = out.filter(
-      (r) => (r.ticker ?? r.prediction?.ticker ?? "").toUpperCase() === t,
+      (r) => (r.ticker ?? "").toUpperCase() === t,
     );
   }
   return out;
@@ -66,7 +61,7 @@ function applyJoinedFilters(reports: Report[], filters: FeedFilters): Report[] {
 
 function selectClause(filters: FeedFilters): string {
   if (filters.status) {
-    return "*, author:profiles!reports_author_id_fkey(*), prediction:predictions!inner(*)";
+    return `*, author:profiles!reports_author_id_fkey(*), prediction:predictions!inner(${CALL_FIELDS})`;
   }
   return SELECT;
 }
@@ -100,7 +95,7 @@ function applyReportColumnFilters(
   } else if (filters.status === "resolved") {
     q = q.neq("prediction.outcome", "open");
   }
-  // Ticker is applied in applyJoinedFilters so prediction.ticker also matches.
+  // Ticker is applied in applyJoinedFilters, on the publication's own ticker.
   return q;
 }
 
@@ -399,7 +394,7 @@ export async function listTagUsage(): Promise<string[]> {
 
 /** Newest publicly visible publications platform-wide, with author and prediction. */
 export async function listRecentPublished(limit = 80): Promise<Report[]> {
-  return cachedPage(`reports:recent:${limit}`, 20, async () => {
+  return cachedPage(`reports:stance:recent:${limit}`, 20, async () => {
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("reports")
@@ -443,7 +438,7 @@ export async function tickerCoverage(): Promise<Record<string, number>> {
 
 export async function listByTicker(ticker: string, limit = 30): Promise<Report[]> {
   const sym = ticker.toUpperCase();
-  return cachedPage(`reports:ticker:${sym}:${limit}`, 20, async () => {
+  return cachedPage(`reports:stance:ticker:${sym}:${limit}`, 20, async () => {
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("reports")

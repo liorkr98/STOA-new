@@ -1,6 +1,6 @@
 import { DispatchView } from "@/components/dispatch/dispatch-view";
 import type { DispatchPayload, DispatchStory } from "@/lib/dispatch/types";
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { PublicationCall, Profile, Report } from "@/lib/types";
 
 /** Dev-only seeded dispatch so the full front page can be reviewed without data. */
 
@@ -26,14 +26,12 @@ function story(
   const prediction = target
     ? ({
         id: `p-${id}`,
-        ticker,
-        direction: "long",
         target_price: target,
         target_horizon_date: "2026-10-02",
-      } as unknown as Prediction)
+      } as unknown as PublicationCall)
     : null;
   return {
-    report: { id, ticker, title: headline, summary: dek } as unknown as Report,
+    report: { id, ticker, stance: target ? "long" : null, title: headline, summary: dek } as unknown as Report,
     author,
     prediction,
     headline,

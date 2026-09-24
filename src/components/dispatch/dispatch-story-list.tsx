@@ -23,7 +23,7 @@ export function DispatchStoryList({
 
       <div className="dispatch-columns mt-6">
         {stories.map((story) => {
-          const ticker = (story.report.ticker ?? story.prediction?.ticker ?? "").toUpperCase();
+          const ticker = (story.report.ticker ?? "").toUpperCase();
           const showTarget = story.report.access === "free";
           return (
             <article key={story.report.id} className="flex flex-col gap-2.5">

@@ -1,4 +1,4 @@
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { Profile, PublicationCall, Report } from "@/lib/types";
 
 export interface DispatchCycle {
   issueNumber: number;
@@ -13,7 +13,7 @@ export interface DispatchCycle {
 export interface DispatchStory {
   report: Report;
   author: Profile;
-  prediction: Prediction | null;
+  prediction: PublicationCall | null;
   headline: string;
   dek: string | null;
 }

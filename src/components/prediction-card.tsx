@@ -2,7 +2,7 @@ import { ArrowUpRight, Target, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { TickerChip } from "@/components/ui/ticker-chip";
 import { price, pct } from "@/lib/format";
-import type { Prediction } from "@/lib/types";
+import type { Direction, PublicationCall } from "@/lib/types";
 import { DirectionTag, GradeTag, PendingReviewTag } from "./ui/tag";
 import { SealStamp } from "./ui/seal-stamp";
 
@@ -11,16 +11,23 @@ import { SealStamp } from "./ui/seal-stamp";
  * target, horizon, and a live/graded outcome. Sentiment color is allowed here
  * on the direction tag, grade tag, and the return number only.
  *
+ * The ticker and direction are the publication's own stance, passed in; the
+ * call supplies only what is graded.
+ *
  * hideTarget: for paywalled teasers, keep ticker/direction/seal visible but
  * do not leak the price target before unlock.
  */
 export function PredictionCard({
   prediction,
+  ticker,
+  direction,
   className,
   hideTarget = false,
   pendingReview = false,
 }: {
-  prediction: Prediction;
+  prediction: PublicationCall;
+  ticker: string;
+  direction: Direction | null;
   className?: string;
   hideTarget?: boolean;
   /** True when the report itself is resolution_pending_review: the horizon
@@ -30,8 +37,6 @@ export function PredictionCard({
   pendingReview?: boolean;
 }) {
   const {
-    ticker,
-    direction,
     lock_price,
     target_price,
     resolved_price,
@@ -57,7 +62,7 @@ export function PredictionCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <TickerChip ticker={ticker} />
-          <DirectionTag direction={direction} />
+          {direction ? <DirectionTag direction={direction} /> : null}
         </div>
         <div className="flex items-center gap-2">
           {pendingReview ? (

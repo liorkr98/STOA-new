@@ -36,6 +36,7 @@ import type {
   TodayTickerRow,
   TodayVerdict,
 } from "@/lib/today/types";
+import { stanceChips } from "@/lib/db/publication-row";
 
 
 function toAnalyst(profile: Profile): TodayAnalyst {
@@ -74,15 +75,15 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
   if (!report.author) return null;
   const clip = ctx.clipsByReport.get(report.id) ?? null;
   const pending = !clip && ctx.pendingClipIds.has(report.id);
-  const hasCall = Boolean(report.prediction);
+  const chips = stanceChips(report);
   const pubMarker = ctx.markerByReport.get(report.id) ?? null;
   const authorMarker = ctx.markerByAuthor.get(report.author_id) ?? null;
   return {
     reportId: report.id,
     type: report.type,
-    // Anchoring rule: only a locked call earns a ticker and direction chip.
-    ticker: hasCall ? (report.prediction?.ticker ?? null) : null,
-    direction: hasCall ? (report.prediction?.direction ?? null) : null,
+    // The publication's own stance: its ticker, and a direction when it declares one.
+    ticker: chips.ticker,
+    direction: chips.direction,
     contentBadge: honestBadge(report, Boolean(clip) || pending, ctx.cardIds.has(report.id)),
     headline: storyHeadline(report),
     deck: storyDek(report),
@@ -96,10 +97,10 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
       : pending
         ? { thumbnailUrl: null, durationSeconds: 0, processing: true }
         : null,
-    // Callless items anchor on the publication's stored theme tag.
-    themeTag: hasCall ? null : themeLabel(report),
+    // Tickerless items anchor on the publication's stored theme tag.
+    themeTag: chips.ticker ? null : themeLabel(report),
     sector: (() => {
-      const sym = (report.prediction?.ticker ?? report.ticker)?.toUpperCase();
+      const sym = report.ticker?.toUpperCase();
       return sym ? ctx.sectorByTicker.get(sym) ?? null : null;
     })(),
     stageMarker: pubMarker === "TRENDING" || authorMarker === "TRENDING" ? "TRENDING" : (pubMarker ?? authorMarker),
@@ -157,7 +158,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
 
   const deskAuthorIds = [...new Set([...subscribedIds, ...followedIds])];
   const poolSymbols = [
-    ...new Set(pool.map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase()).filter((s): s is string => Boolean(s))),
+    ...new Set(pool.map((r) => r.ticker?.toUpperCase()).filter((s): s is string => Boolean(s))),
   ];
   const popularSyms = Object.entries(coverage)
     .sort((a, b) => b[1] - a[1])
@@ -178,7 +179,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const deskSymbols = [
     ...new Set(
       deskReports
-        .map((r) => (r.prediction?.ticker ?? r.ticker)?.toUpperCase())
+        .map((r) => r.ticker?.toUpperCase())
         .filter((s): s is string => typeof s === "string" && s.length > 0 && !poolSymbols.includes(s)),
     ),
   ];
@@ -317,7 +318,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const tickerTrend = new Map<string, number>();
   const tickerPubs = new Map<string, number>();
   for (const r of pool) {
-    const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase();
+    const sym = r.ticker?.toUpperCase();
     if (!sym) continue;
     tickerPubs.set(sym, (tickerPubs.get(sym) ?? 0) + 1);
     const s = trendingScore(pubSamples.get(r.id)!, now);

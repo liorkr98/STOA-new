@@ -11,6 +11,7 @@ import { cachedPage } from "@/lib/cache/page";
 import type { MarketRow } from "@/lib/markets/types";
 import type { TodayItem } from "@/lib/today/types";
 import type { Prediction, Profile, Report } from "@/lib/types";
+import { publicationRow as normalizeReport, REPORT_SELECT, stanceChips } from "@/lib/db/publication-row";
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -51,16 +52,10 @@ export function canonicalSector(name: string): string | null {
   return MARKET_SECTORS.find((s) => s.toLowerCase() === name.toLowerCase()) ?? null;
 }
 
-const REPORT_SELECT = "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalizeReport(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  return { ...(row as unknown as Report), prediction: (raw ?? null) as Prediction | null };
-}
 
 /**
- * Honest badge (only what is stored) and the anchoring rule: only a locked
- * call earns a ticker and direction; callless items anchor on the sector.
+ * Honest badge (only what is stored) and the anchoring rule: a publication
+ * shows its own ticker and stance; tickerless items anchor on the sector.
  */
 function toItem(report: Report, sector: string): TodayItem | null {
   if (!report.author) return null;
@@ -69,13 +64,12 @@ function toItem(report: Report, sector: string): TodayItem | null {
   if (hasCall) badge.push("Call");
   if (report.type === "research" || (report.body?.length ?? 0) > 600) badge.push("Thesis");
   if (badge.length === 0) badge.push("Note");
-  const themeTag = hasCall ? null : sector.toUpperCase();
+  const themeTag = report.ticker ? null : sector.toUpperCase();
 
   return {
     reportId: report.id,
     type: report.type,
-    ticker: hasCall ? (report.prediction?.ticker ?? null) : null,
-    direction: hasCall ? (report.prediction?.direction ?? null) : null,
+    ...stanceChips(report),
     contentBadge: badge,
     headline: storyHeadline(report),
     deck: storyDek(report),

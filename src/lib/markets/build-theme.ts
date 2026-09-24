@@ -12,7 +12,8 @@ import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { cachedPage } from "@/lib/cache/page";
 import type { MarketRow } from "@/lib/markets/types";
 import type { TodayItem } from "@/lib/today/types";
-import type { Prediction, Profile, Report } from "@/lib/types";
+import type { Profile, Report } from "@/lib/types";
+import { publicationRow as normalizeReport, REPORT_SELECT, stanceChips } from "@/lib/db/publication-row";
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -44,14 +45,7 @@ export function findTheme(slug: string): MarketTheme | null {
   return MARKET_THEMES.find((t) => t.slug === slug) ?? null;
 }
 
-const REPORT_SELECT = "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalizeReport(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  return { ...(row as unknown as Report), prediction: (raw ?? null) as Prediction | null };
-}
-
-/** Honest badge and anchoring: only a call earns a ticker; callless items carry the theme tag. */
+/** Honest badge and anchoring: a publication shows its own ticker and stance; tickerless items carry the theme tag. */
 function toItem(report: Report, themeName: string): TodayItem | null {
   if (!report.author) return null;
   const hasCall = Boolean(report.prediction);
@@ -62,8 +56,7 @@ function toItem(report: Report, themeName: string): TodayItem | null {
   return {
     reportId: report.id,
     type: report.type,
-    ticker: hasCall ? (report.prediction?.ticker ?? null) : null,
-    direction: hasCall ? (report.prediction?.direction ?? null) : null,
+    ...stanceChips(report),
     contentBadge: badge,
     headline: storyHeadline(report),
     deck: storyDek(report),
@@ -73,7 +66,7 @@ function toItem(report: Report, themeName: string): TodayItem | null {
     price: report.price,
     saved: false,
     thumb: null,
-    themeTag: hasCall ? null : themeName.toUpperCase(),
+    themeTag: report.ticker ? null : themeName.toUpperCase(),
   };
 }
 
@@ -120,7 +113,7 @@ async function assembleTheme(theme: MarketTheme): Promise<ThemePayload> {
   let thisWeek = 0;
   let lastWeek = 0;
   for (const r of reports) {
-    const sym = (r.prediction?.ticker ?? r.ticker)?.toUpperCase();
+    const sym = r.ticker?.toUpperCase();
     if (sym) coverage.set(sym, (coverage.get(sym) ?? 0) + 1);
     const when = r.published_at ?? r.created_at;
     if (when >= weekAgo) thisWeek += 1;

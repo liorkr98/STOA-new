@@ -72,9 +72,15 @@ export function ReportCard({
         )}
       </Link>
 
-      {report.prediction && (
+      {report.prediction && report.ticker && (
         <Link href={`/report/${report.id}`} className="mt-4 block">
-          <PredictionCard prediction={report.prediction} hideTarget={locked} pendingReview={pendingReview} />
+          <PredictionCard
+            prediction={report.prediction}
+            ticker={report.ticker}
+            direction={report.stance ?? null}
+            hideTarget={locked}
+            pendingReview={pendingReview}
+          />
         </Link>
       )}
 

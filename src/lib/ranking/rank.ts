@@ -8,7 +8,7 @@ import type { RankingSignals, RankingSurface, ScoredClip, ViewerContext } from "
 
 function signalsFromClip(clip: VideoClipCard, sectorByTicker: Map<string, string | null>): RankingSignals {
   const r = clip.report!;
-  const ticker = (r.prediction?.ticker ?? r.ticker)?.toUpperCase() ?? null;
+  const ticker = r.ticker?.toUpperCase() ?? null;
   const tags = [r.primary_tag, r.theme_tag, ...(r.secondary_tags ?? [])].filter((t): t is string => Boolean(t));
   return {
     views: r.views ?? 0,
@@ -40,7 +40,7 @@ export async function rankClips(
   const symbols = [
     ...new Set(
       pool
-        .map((c) => (c.report!.prediction?.ticker ?? c.report!.ticker)?.toUpperCase())
+        .map((c) => c.report!.ticker?.toUpperCase())
         .filter((s): s is string => Boolean(s)),
     ),
   ];

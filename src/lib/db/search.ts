@@ -1,13 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { publicationRow as normalizeReport, REPORT_SELECT } from "@/lib/db/publication-row";
 import type { Profile, Report } from "@/lib/types";
-
-const REPORT_SELECT =
-  "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-function normalizeReport(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  return { ...(row as unknown as Report), prediction: raw };
-}
 
 export interface SearchResults {
   analysts: Profile[];
@@ -16,7 +9,7 @@ export interface SearchResults {
 }
 
 function reportRelevance(report: Report, q: string, upper: string): number {
-  const ticker = (report.ticker ?? report.prediction?.ticker ?? "").toUpperCase();
+  const ticker = (report.ticker ?? "").toUpperCase();
   const title = (report.title ?? "").toLowerCase();
   const summary = (report.summary ?? "").toLowerCase();
   const needle = q.toLowerCase();

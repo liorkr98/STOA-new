@@ -23,7 +23,7 @@ export interface ThemeCard {
 export interface CoveredRow extends MarketRow {
   newPublications: number;
   analystCount: number;
-  /** Coverage volume, not a stance: how many calls on this name are still open. */
+  /** Coverage volume, not a blended stance: live publications on this name that are long or short. */
   openCalls: number;
 }
 

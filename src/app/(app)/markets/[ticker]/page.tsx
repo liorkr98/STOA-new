@@ -29,6 +29,7 @@ import type { ChartRange } from "@/lib/market/candle-types";
 import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/call-types";
 import type { TodayItem } from "@/lib/today/types";
 import type { Report } from "@/lib/types";
+import { stanceChips } from "@/lib/db/publication-row";
 
 export async function generateMetadata({
   params,
@@ -105,8 +106,7 @@ function toItem(report: Report, hasVideo: boolean, hasCards: boolean): TodayItem
   return {
     reportId: report.id,
     type: report.type,
-    ticker: report.ticker ?? report.prediction?.ticker ?? null,
-    direction: report.prediction?.direction ?? null,
+    ...stanceChips(report),
     contentBadge: badge,
     headline: storyHeadline(report),
     deck: storyDek(report),

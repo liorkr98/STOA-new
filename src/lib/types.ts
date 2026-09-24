@@ -128,9 +128,29 @@ export interface Report {
   steelman_card_locked?: boolean;
   /** Joined author, when the query asks for it. */
   author?: Profile;
-  /** The investment card, for research + call types. */
-  prediction?: Prediction | null;
+  /**
+   * The call's grading fields, while grading runs. Never its ticker or
+   * direction: those are `ticker` and `stance` above.
+   */
+  prediction?: PublicationCall | null;
 }
+
+/** What a publication still shows of its call: the seal, entry, target and return. */
+export type PublicationCall = Pick<
+  Prediction,
+  | "id"
+  | "outcome"
+  | "lock_price"
+  | "target_price"
+  | "resolved_price"
+  | "return_pct"
+  | "benchmark_pct"
+  | "horizon_days"
+  | "target_horizon_date"
+  | "resolution_trading_date"
+  | "resolves_at"
+  | "created_at"
+>;
 
 export type ClaimVerdict = "fact" | "unproven" | "opinion" | "contradicted";
 

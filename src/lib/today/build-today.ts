@@ -16,15 +16,7 @@ import type {
   TodayVerdict,
   TodayVideo,
 } from "@/lib/today/types";
-
-const REPORT_SELECT =
-  "*, author:profiles!reports_author_id_fkey(*), prediction:predictions(*)";
-
-
-function normalizeReport(row: Record<string, unknown>): Report {
-  const raw = Array.isArray(row.prediction) ? (row.prediction[0] ?? null) : (row.prediction ?? null);
-  return { ...(row as unknown as Report), prediction: (raw ?? null) as Prediction | null };
-}
+import { publicationRow as normalizeReport, REPORT_SELECT, stanceChips } from "@/lib/db/publication-row";
 
 function toAnalyst(profile: Profile): TodayAnalyst {
   return {
@@ -53,8 +45,8 @@ function toItem(report: Report, saved: boolean, thumb: TodayItem["thumb"] = null
   return {
     reportId: report.id,
     type: report.type,
-    ticker: report.ticker ?? report.prediction?.ticker ?? null,
-    direction: report.prediction?.direction ?? null,
+    ticker: report.ticker ?? null,
+    direction: stanceChips(report).direction,
     contentBadge: contentBadge(report),
     headline: storyHeadline(report),
     deck: storyDek(report),
@@ -239,7 +231,7 @@ async function buildMostWatched(limit: number): Promise<TodayVideo[]> {
           headline: storyHeadline(report),
           thumbnailUrl: clip.thumbnail_url,
           durationSeconds: clip.duration_seconds,
-          ticker: report.ticker ?? report.prediction?.ticker ?? null,
+          ticker: report.ticker ?? null,
           contentBadge: contentBadge(report),
           publicationViews: report.views ?? 0,
           author: toAnalyst(report.author),

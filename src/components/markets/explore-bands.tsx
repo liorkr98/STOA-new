@@ -143,8 +143,8 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
             </span>
             <span className="markets-row-meta num">
               {r.openCalls === 0
-                ? "No open calls"
-                : `${r.openCalls} open ${r.openCalls === 1 ? "call" : "calls"}`}
+                ? "No calls"
+                : `${r.openCalls} ${r.openCalls === 1 ? "call" : "calls"}`}
             </span>
             <FollowTicker ticker={r.symbol} />
           </div>

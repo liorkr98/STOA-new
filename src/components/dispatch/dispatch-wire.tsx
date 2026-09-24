@@ -18,7 +18,7 @@ export function DispatchWire({ stories }: { stories: DispatchStory[] }) {
 
       <ul className="mt-4 divide-y divide-border">
         {stories.map((story) => {
-          const ticker = (story.report.ticker ?? story.prediction?.ticker ?? "").toUpperCase();
+          const ticker = (story.report.ticker ?? "").toUpperCase();
           return (
             <li key={story.report.id}>
               <Link
