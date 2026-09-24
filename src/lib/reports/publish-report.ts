@@ -6,31 +6,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { enqueueOrRun } from "@/lib/jobs/client";
 import { cacheDel } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache/keys";
-import { getBenchmarkQuote, getQuote } from "@/lib/engine/market";
-import { getTickerMeta } from "@/lib/engine/tickers";
 import { normalizeTags } from "@/lib/tags/validate";
-import {
-  effectiveResolutionDate,
-  horizonDateFromDays,
-  marketCloseIso,
-  todayInTimezone,
-} from "@/lib/engine/trading-calendar";
 import {
   analyzeChartBody,
   validateChartScreenshotUrls,
 } from "@/lib/reports/chart-screenshots";
 import { alertReportPublished } from "@/lib/slack/alerts";
-import { getTickerRow } from "@/lib/db/tickers";
-import { macroInstrument } from "@/lib/markets/instruments";
-import {
-  VERDICT_CAP_MAX_USD,
-  VERDICT_HORIZON_MAX_DAYS,
-  VERDICT_HORIZON_MIN_DAYS,
-  VERDICT_WINDOW_DAYS,
-  formatMarketCap,
-  horizonInRange,
-  verdictWindow,
-} from "@/lib/compose/verdict";
 import type { ComposeInput } from "@/lib/types";
 
 export class PublishReportError extends Error {
@@ -106,8 +87,8 @@ async function saveDraftBody(
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
   // The stance goes on the row before it locks, after which the database
-  // freezes it with the ticker. Tolerated while migration 0065 is unapplied:
-  // the call row below still carries the direction until then.
+  // freezes it with the ticker. Tolerated while migration 0065 is unapplied,
+  // when there is nowhere to keep a direction.
   const { error: stanceErr } = await supabase
     .from("reports")
     .update({ stance: input.ticker ? (input.direction ?? null) : null })
@@ -137,83 +118,16 @@ async function saveDraftBody(
   return reportId;
 }
 
-/**
- * The verdict's rules, enforced where they cannot be bypassed.
- *
- * Compose explains each of these as the analyst types; this is the same
- * list, read again at publish so nothing the screen refused can arrive by
- * another route. A verdict is a complete call (ticker, long or short, a
- * target, a horizon of 7 to 180 days) on a listed equity under $2B, and an
- * analyst publishes one per rolling thirty days. It is always
- * subscribers-only when it goes out.
- */
-async function enforceVerdictRules(
-  supabase: SupabaseClient,
-  userId: string,
-  input: ComposeInput,
-): Promise<void> {
-  const ticker = input.ticker?.trim().toUpperCase();
-  if (!ticker) throw new PublishReportError("A verdict starts with a ticker.");
-  if (input.direction !== "long" && input.direction !== "short") {
-    throw new PublishReportError("A verdict is long or short. The market cannot settle a hold.");
-  }
-  if (!(Number(input.target_price) > 0)) {
-    throw new PublishReportError(`A verdict needs a target price. It is what the market settles ${ticker} against.`);
-  }
-  const horizon = input.horizon_days ?? 0;
-  if (!horizonInRange(horizon)) {
-    throw new PublishReportError(
-      `A verdict's horizon is between ${VERDICT_HORIZON_MIN_DAYS} and ${VERDICT_HORIZON_MAX_DAYS} days.`,
-    );
-  }
-  const macro = macroInstrument(ticker);
-  if (macro) {
-    throw new PublishReportError(
-      `${ticker} is ${macro.name.toLowerCase()}, a macro instrument with no market cap. A verdict is a call on a company under $2B.`,
-    );
-  }
-  const row = await getTickerRow(ticker);
-  if (!row || row.status !== "active") {
-    throw new PublishReportError(`${ticker} is not a listed equity Stoa knows. A verdict is a call on a company under $2B.`);
-  }
-  const cap = row.market_cap != null ? Number(row.market_cap) : null;
-  if (cap == null || !Number.isFinite(cap) || cap <= 0) {
-    throw new PublishReportError(
-      `Stoa has no market cap on file for ${ticker} yet, so it cannot confirm the name is under $2B.`,
-    );
-  }
-  if (cap >= VERDICT_CAP_MAX_USD) {
-    throw new PublishReportError(
-      `${ticker} is a ${formatMarketCap(cap)} company. A verdict is a call on a name under $2B.`,
-    );
-  }
-
-  const since = new Date(Date.now() - VERDICT_WINDOW_DAYS * 86_400_000).toISOString();
-  const { data: last } = await supabase
-    .from("reports")
-    .select("published_at")
-    .eq("author_id", userId)
-    .eq("type", "call")
-    .in("status", ["published", "resolution_pending_review", "archived"])
-    .gte("published_at", since)
-    .order("published_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const lastAt = (last as { published_at: string | null } | null)?.published_at ?? null;
-  const window = verdictWindow(lastAt);
-  if (!window.open) {
-    throw new PublishReportError(`${window.line}. One verdict per rolling ${VERDICT_WINDOW_DAYS} days.`);
-  }
-}
-
 export async function validateAndPublishReport(
   supabase: SupabaseClient,
   userId: string,
-  rawInput: ComposeInput,
+  input: ComposeInput,
 ): Promise<{ id: string }> {
-  // A verdict is subscribers-only while it is open, whatever the client sent.
-  const input: ComposeInput =
-    rawInput.type === "call" ? { ...rawInput, access: "subscribers", price: null } : rawInput;
+  // The Verdict type is retired. A client still sending it is refused rather
+  // than published as a type nothing shows.
+  if (input.type === "call") {
+    throw new PublishReportError("The Verdict type is retired. Publish this as a brief or a thesis.");
+  }
   // The only real eligibility gate in this stack: an admin approved this
   // account as an analyst (approve_analyst_application sets profiles.role).
   // Previously enforced only by the studio compose page's client-side
@@ -234,8 +148,6 @@ export async function validateAndPublishReport(
     );
   }
 
-  if (input.type === "call") await enforceVerdictRules(supabase, userId, input);
-
   const disclosureProvided = input.views_certified !== undefined;
   if (disclosureProvided && !input.views_certified) {
     throw new PublishReportError("You must certify these are your own views before publishing.");
@@ -243,7 +155,7 @@ export async function validateAndPublishReport(
 
   // Tags are validated (closed taxonomy, max 2 secondaries) but a primary tag is
   // not required server-side: written publications may legitimately have none,
-  // and discovery falls back to anchoring on the call's sector. The Compose
+  // and discovery falls back to anchoring on the stance's sector. The Compose
   // picker is where the "choose a tag" prompt lives.
   const reportId = await saveDraftBody(supabase, userId, input);
 
@@ -252,7 +164,7 @@ export async function validateAndPublishReport(
       .from("reports")
       .select("id", { count: "exact", head: true })
       .eq("author_id", userId)
-      .in("status", ["published", "resolution_pending_review"]),
+      .eq("status", "published"),
     supabase.from("profiles").select("display_name, handle").eq("id", userId).maybeSingle(),
   ]);
 
@@ -284,58 +196,9 @@ export async function validateAndPublishReport(
     .eq("author_id", userId);
   if (pubErr) throw new PublishReportError(pubErr.message, 400);
 
-  const wantsPrediction = Boolean(input.ticker && input.direction);
-  let hashTargetPrice: number | null = null;
-  let hashHorizonDate: string | null = null;
-
-  if (wantsPrediction) {
-    const ticker = input.ticker!.toUpperCase();
-    const meta = await getTickerMeta(ticker);
-    const horizon = input.horizon_days ?? 30;
-    const targetHorizonDate =
-      input.target_horizon_date ?? horizonDateFromDays(horizon, meta.timezone);
-
-    if (targetHorizonDate <= todayInTimezone(meta.timezone)) {
-      throw new PublishReportError(
-        `Target horizon date must be after today. "${targetHorizonDate}" is not a valid horizon date for ${ticker}.`,
-      );
-    }
-
-    const { tradingDate } = effectiveResolutionDate(targetHorizonDate, meta.timezone);
-    const [quote, bench] = await Promise.all([getQuote(ticker), getBenchmarkQuote()]);
-    if (!quote.available || quote.price == null) {
-      throw new PublishReportError(
-        `Live price for ${ticker} is unavailable. Try again during market hours or check the symbol.`,
-      );
-    }
-    if (!bench.available || bench.price == null) {
-      throw new PublishReportError("Benchmark quote (SPY) is unavailable. Try again shortly.");
-    }
-
-    const resolvesAt = marketCloseIso(tradingDate, meta.timezone);
-
-    await supabase.from("predictions").insert({
-      report_id: reportId,
-      author_id: userId,
-      ticker,
-      direction: input.direction,
-      lock_price: quote.price,
-      target_price: input.target_price ?? null,
-      horizon_days: horizon,
-      target_horizon_date: targetHorizonDate,
-      resolution_trading_date: tradingDate,
-      resolves_at: resolvesAt,
-      bench_lock_price: bench.price,
-      outcome: "open",
-    });
-
-    hashTargetPrice = input.target_price ?? null;
-    hashHorizonDate = targetHorizonDate;
-  }
-
   // Structured-data content hash (docs: institutional SEO infra). Covers every
-  // field a reader could dispute was changed after the fact -- ticker, the
-  // locked call terms, the body, and the lock timestamp itself. Best-effort:
+  // field a reader could dispute was changed after the fact -- the ticker, the
+  // direction, the body, and the lock timestamp itself. Best-effort:
   // a failure here must never roll back or block an already-published report,
   // and a missing hash is simply omitted from ReportSchema rather than faked.
   try {
@@ -343,8 +206,7 @@ export async function validateAndPublishReport(
       .update(
         [
           input.ticker ? input.ticker.toUpperCase() : "",
-          hashTargetPrice != null ? String(hashTargetPrice) : "",
-          hashHorizonDate ?? "",
+          input.ticker ? (input.direction ?? "") : "",
           input.body ?? "",
           lockedAtIso,
         ].join("|"),
@@ -370,7 +232,7 @@ export async function validateAndPublishReport(
         chart_count: chartStats.chartCount,
         has_screenshots: chartStats.hasScreenshots,
         ticker: input.ticker ? input.ticker.toUpperCase() : null,
-        target_price: input.target_price ?? null,
+        stance: input.ticker ? (input.direction ?? null) : null,
         locked_at: new Date().toISOString(),
       },
     });

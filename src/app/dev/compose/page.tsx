@@ -7,7 +7,6 @@ import { StudioEditor } from "@/components/editor/studio-editor";
 import { ProcessingState } from "@/components/compose/processing-state";
 import { ComposePicker, type PickerDraft } from "@/components/compose/type-picker";
 import { summarizeDraft } from "@/lib/compose/drafts";
-import { verdictWindow } from "@/lib/compose/verdict";
 import { PublicationsView, type Publication } from "@/components/studio/publications-view";
 import type { DraftCard } from "@/lib/compose/cards";
 import type { Report } from "@/lib/types";
@@ -100,7 +99,7 @@ const BODY = JSON.stringify({
   ],
 });
 
-type Shape = "pick" | "video" | "brief" | "thesis" | "verdict" | "published";
+type Shape = "pick" | "video" | "brief" | "thesis" | "stance" | "published";
 
 function parseShape(raw: string | null): Shape {
   if (
@@ -108,7 +107,7 @@ function parseShape(raw: string | null): Shape {
     raw === "video" ||
     raw === "brief" ||
     raw === "thesis" ||
-    raw === "verdict" ||
+    raw === "stance" ||
     raw === "published"
   ) {
     return raw;
@@ -120,8 +119,8 @@ function parseShape(raw: string | null): Shape {
 const PICKER_DRAFTS: PickerDraft[] = (
   [
     {
-      id: "fx-verdict",
-      type: "call",
+      id: "fx-stance",
+      type: "short_post",
       title: "Photronics guided flat and the mix says otherwise",
       summary: null,
       body: null,
@@ -176,8 +175,8 @@ const SHAPES: { key: Shape; label: string; blurb: string }[] = [
   { key: "video", label: "Video", blurb: "A new video: the spine from its first step" },
   { key: "brief", label: "Brief", blurb: "A brief with its take written, no headline yet" },
   { key: "thesis", label: "Thesis", blurb: "A thesis with words and a headline, no tags yet" },
-  { key: "verdict", label: "Verdict", blurb: "A verdict draft with its call half entered" },
-  { key: "published", label: "Published, editing", blurb: "A live piece with a real clip and a locked call, reopened" },
+  { key: "stance", label: "Stance", blurb: "A thesis draft carrying a stance, NVDA long" },
+  { key: "published", label: "Published, editing", blurb: "A live piece with a real clip and a stance, reopened" },
 ];
 
 /** One draft per type, each stopped at a different point along its spine. */
@@ -203,14 +202,16 @@ function draftFor(shape: Shape): Report | null {
         body: BODY,
         access: "free",
       } as unknown as Report;
-    case "verdict":
+    case "stance":
       return {
-        id: "dev-verdict",
-        type: "call",
+        id: "dev-stance",
+        type: "research",
         status: "draft",
+        title: "Blackwell demand is still under-modelled into the January quarter",
+        body: BODY,
         ticker: "NVDA",
         stance: "long",
-        access: "subscribers",
+        access: "free",
       } as unknown as Report;
     default:
       return {
@@ -223,6 +224,7 @@ function draftFor(shape: Shape): Report | null {
         access: "paid",
         price: 9,
         ticker: "NVDA",
+        stance: "long",
         primary_tag: "semiconductors",
         secondary_tags: ["ai-infrastructure"],
         locked_at: "2026-08-18T14:00:00.000Z",
@@ -285,8 +287,6 @@ const PROCESSING_STARTED_AT = new Date(Date.now() - 2 * 60_000).toISOString();
 const READY_STARTED_AT = new Date(Date.now() - 9 * 60_000).toISOString();
 /** The most-used tags, as the live page reads them off published work. */
 const POPULAR_TAGS = ["semiconductors", "ai-buildout", "energy", "financials", "memory", "software"];
-/** A verdict published 18 days ago, for the limited picker. */
-const LAST_VERDICT_AT = new Date(Date.now() - 18 * 86_400_000).toISOString();
 
 export default function DevComposePage() {
   return (
@@ -299,31 +299,24 @@ export default function DevComposePage() {
 function DevComposeInner() {
   const search = useSearchParams();
   const [shape, setShape] = useState<Shape>(() => parseShape(search.get("shape")));
-  // ?limited=1 shows the verdict card when the analyst has used this month's.
-  const limited = search.get("limited") === "1";
 
   return (
     <div className="w-full">
       <DevPrivateShell>
         <div className="breakout-main">
           {shape === "pick" ? (
-            <ComposePicker
-              drafts={PICKER_DRAFTS}
-              verdictWindow={verdictWindow(limited ? LAST_VERDICT_AT : null)}
-            />
+            <ComposePicker drafts={PICKER_DRAFTS} />
           ) : (
           <StudioEditor
             key={shape}
             analystReportPrice={null}
-            initialType={shape === "published" ? "video" : shape}
+            initialType={shape === "published" ? "video" : shape === "stance" ? "thesis" : shape}
             initialDraft={draftFor(shape)}
             initialCards={shape === "thesis" || shape === "published" ? CARDS : []}
             hasVideoClip={shape === "published"}
             aiCredits={40}
             plans={[]}
             editingPublished={shape === "published"}
-            hasLockedCall={shape === "published"}
-            verdictLastPublishedAt={limited ? LAST_VERDICT_AT : null}
             popularTags={POPULAR_TAGS}
           />
           )}

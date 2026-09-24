@@ -343,9 +343,8 @@ async function captureVersion(
 }
 
 /**
- * Publishes a report. For research + call types with a ticker and direction, it
- * locks the entry price from the live feed (server-side, never client-trusted),
- * captures the SPY baseline for alpha, and schedules resolution.
+ * Publishes a report: validates it server-side and locks it, with its stance
+ * (ticker and direction) when it has one.
  */
 export async function publishReport(
   input: ComposeInput,

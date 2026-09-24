@@ -2,9 +2,9 @@
  * The spine and the features menu.
  *
  * Every publication walks the same two-step spine: the content (a clip, a
- * take, a report, or a call, by type) with the headline on the same screen,
- * then the tags. After the spine comes the publish screen, and on it a menu
- * of optional features (a call, cards, a thesis, a video) that nobody has to
+ * take or a report, by type) with the headline on the same screen, then the
+ * tags. After the spine comes the publish screen, and on it a menu of
+ * optional features (a stance, cards, a thesis) that nobody has to
  * walk past: opening one goes into that feature's editor and Done brings you
  * back to the menu. Instagram's structure, not a wizard.
  *
@@ -21,17 +21,11 @@
  */
 
 import type { PublicationType } from "@/lib/compose/modes";
-import type { VerdictEligibility } from "@/lib/compose/verdict";
-import {
-  VERDICT_HORIZON_MAX_DAYS,
-  VERDICT_HORIZON_MIN_DAYS,
-  horizonInRange,
-} from "@/lib/compose/verdict";
 import type { Direction } from "@/lib/types";
 
-export type StepKey = "video" | "brief" | "thesis" | "call" | "cards" | "tags" | "publish";
+export type StepKey = "video" | "brief" | "thesis" | "stance" | "cards" | "tags" | "publish";
 
-export type FeatureKey = "call" | "cards" | "thesis" | "video";
+export type FeatureKey = "stance" | "cards" | "thesis";
 
 export interface StepDef {
   key: StepKey;
@@ -43,11 +37,10 @@ export interface StepDef {
   blurb?: string;
 }
 
-const SPINE_STEPS: Record<Exclude<StepKey, "cards" | "publish">, StepDef> = {
+const SPINE_STEPS: Record<Exclude<StepKey, "stance" | "cards" | "publish">, StepDef> = {
   video: { key: "video", label: "Video" },
   brief: { key: "brief", label: "The take" },
   thesis: { key: "thesis", label: "The report" },
-  call: { key: "call", label: "The call" },
   tags: { key: "tags", label: "Tags" },
 };
 
@@ -62,8 +55,6 @@ export function contentStepFor(type: PublicationType): StepKey {
       return "brief";
     case "thesis":
       return "thesis";
-    case "verdict":
-      return "call";
   }
 }
 
@@ -83,23 +74,20 @@ export interface FeatureDef {
 }
 
 const FEATURES: Record<FeatureKey, FeatureDef> = {
-  call: { key: "call", label: "Call" },
+  stance: { key: "stance", label: "Stance" },
   cards: { key: "cards", label: "Cards" },
   thesis: { key: "thesis", label: "Thesis" },
-  video: { key: "video", label: "Video" },
 };
 
 /** What each type may add, in the order the menu lists them. */
 export function featuresFor(type: PublicationType): FeatureDef[] {
   switch (type) {
     case "video":
-      return [FEATURES.call, FEATURES.cards, FEATURES.thesis];
+      return [FEATURES.stance, FEATURES.cards, FEATURES.thesis];
     case "brief":
-      return [FEATURES.call, FEATURES.cards];
+      return [FEATURES.stance, FEATURES.cards];
     case "thesis":
-      return [FEATURES.call, FEATURES.cards];
-    case "verdict":
-      return [FEATURES.cards, FEATURES.video, { ...FEATURES.thesis, label: "Text" }];
+      return [FEATURES.stance, FEATURES.cards];
   }
 }
 
@@ -131,8 +119,8 @@ export interface StepFacts {
   hasVideo: boolean;
   hasBrief: boolean;
   hasThesis: boolean;
-  /** A complete call: ticker, direction, and for a verdict the target too. */
-  hasCall: boolean;
+  /** A complete stance: a ticker and a direction. */
+  hasStance: boolean;
   cardCount: number;
   hasTitle: boolean;
   hasTags: boolean;
@@ -141,8 +129,8 @@ export interface StepFacts {
 
 /**
  * A content step carries the headline, so it is done only with both. As a
- * feature (a call on a video, a video on a verdict) the same key is done
- * with the feature alone; the menu asks about the feature, not the line.
+ * feature (a thesis on a video) the same key is done with the feature alone;
+ * the menu asks about the feature, not the line.
  */
 export function stepState(key: StepKey, f: StepFacts, role: StepRole = "spine"): StepState {
   const line = role === "spine" ? f.hasTitle : true;
@@ -153,8 +141,8 @@ export function stepState(key: StepKey, f: StepFacts, role: StepRole = "spine"):
       return f.hasBrief && line ? "done" : "empty";
     case "thesis":
       return f.hasThesis && line ? "done" : "empty";
-    case "call":
-      return f.hasCall && line ? "done" : "empty";
+    case "stance":
+      return f.hasStance ? "done" : "empty";
     case "cards":
       return f.cardCount > 0 ? "done" : "empty";
     case "tags":
@@ -170,7 +158,7 @@ export interface Advance {
   label: "Continue" | "Skip" | "Done";
   /**
    * Why pressing will not advance, in the creator's own terms, or null when
-   * it will. Specific on purpose: "a target price needs a ticker", never
+   * it will. Specific on purpose: "a direction needs a ticker", never
    * "invalid input".
    */
   blocker: string | null;
@@ -185,21 +173,14 @@ export interface AdvanceInput {
   /** The report's words, as plain text. */
   bodyText: string;
   ticker: string;
-  /** Null until the creator has chosen one. A call is a ticker and a direction. */
+  /** Null until the creator has chosen one. A stance is a ticker and a direction. */
   direction: Direction | null;
-  target: string;
-  horizon: number;
   /**
-   * Whether the ticker in the field is a real, priceable name. "checking"
-   * while the answer is on its way; "frozen" for a live publication, whose
-   * call was checked when it was locked and cannot change now.
+   * Whether the ticker in the field is a real name. "checking" while the
+   * answer is on its way; "frozen" for a live publication, whose stance was
+   * checked when it went out and cannot change now.
    */
   symbol: "idle" | "checking" | "found" | "missing" | "failed" | "frozen";
-  /**
-   * The verdict's own check on a found symbol (equities only, under $2B).
-   * Null while nothing has been found, or for a call that is not a verdict.
-   */
-  eligibility: VerdictEligibility | null;
   /** Each card in the deck by name, and whether anything is written on it. */
   cards: { name: string; empty: boolean }[];
   hasVideo: boolean;
@@ -223,22 +204,13 @@ function videoBlockers(s: AdvanceInput): string | null {
 }
 
 /**
- * A call's blockers, in the order the creator would fix them: the ticker
- * first, because nothing else on the step means anything without it.
- * `verdict` tightens it: a direction is long or short, a target is required,
- * the horizon is bounded, and the name has to pass the verdict's own check.
+ * A stance's blockers, in the order the creator would fix them: the ticker
+ * first, because a direction means nothing without it.
  */
-function callBlockers(s: AdvanceInput, verdict: boolean): string | null {
+function stanceBlockers(s: AdvanceInput): string | null {
   const ticker = s.ticker.trim().toUpperCase();
-  const target = s.target.trim();
-  const hasDirection = s.direction !== null;
   if (s.symbol === "frozen") return null;
-  if (!ticker) {
-    if (verdict) return "A verdict starts with a ticker. Add the name you are calling.";
-    return target
-      ? "A target price needs a ticker. Add the ticker, or clear the target."
-      : "A direction needs a ticker. Add the ticker, or clear the direction.";
-  }
+  if (!ticker) return "A direction needs a ticker. Add the ticker, or clear the direction.";
   if (s.symbol === "checking") {
     return `Still checking ${ticker}. Give it a second, then press again.`;
   }
@@ -248,26 +220,7 @@ function callBlockers(s: AdvanceInput, verdict: boolean): string | null {
   if (s.symbol === "failed") {
     return `${ticker} could not be checked just now. Try again in a moment.`;
   }
-  if (verdict && s.eligibility && !s.eligibility.ok) {
-    return s.eligibility.reason;
-  }
-  if (!hasDirection) {
-    return verdict
-      ? `A verdict needs a direction. Long or short on ${ticker}?`
-      : `A call needs a direction. Choose long, short or hold for ${ticker}.`;
-  }
-  if (verdict && s.direction === "hold") {
-    return "A verdict is long or short. The market cannot settle a hold.";
-  }
-  if (verdict && !target) {
-    return `A verdict needs a target price. It is what the market settles ${ticker} against.`;
-  }
-  if (target && !(Number(target) > 0)) {
-    return `"${target}" is not a price. A target is a number, like 142.50.`;
-  }
-  if (verdict && !horizonInRange(s.horizon)) {
-    return `A verdict's horizon is between ${VERDICT_HORIZON_MIN_DAYS} and ${VERDICT_HORIZON_MAX_DAYS} days.`;
-  }
+  if (s.direction === null) return `Choose long, short or hold for ${ticker}.`;
   return null;
 }
 
@@ -283,10 +236,6 @@ export function advanceFor(type: PublicationType, key: StepKey, s: AdvanceInput)
 
   switch (key) {
     case "video": {
-      if (role === "feature") {
-        if (!s.hasVideo) return skip;
-        return done(videoBlockers(s));
-      }
       if (!s.hasVideo) return go("Add a video first. Record one, or upload one.");
       const clip = videoBlockers(s);
       if (clip) return go(clip);
@@ -306,15 +255,9 @@ export function advanceFor(type: PublicationType, key: StepKey, s: AdvanceInput)
       if (!words) return go("Write the report first.");
       return headline("above the report");
     }
-    case "call": {
-      const empty = !s.ticker.trim() && !s.target.trim() && s.direction === null;
-      if (role === "feature") {
-        if (empty) return skip;
-        return done(callBlockers(s, false));
-      }
-      const call = callBlockers(s, true);
-      if (call) return go(call);
-      return headline("under the call");
+    case "stance": {
+      if (!s.ticker.trim() && s.direction === null) return skip;
+      return done(stanceBlockers(s));
     }
     case "cards": {
       if (s.cards.length === 0) return skip;

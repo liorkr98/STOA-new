@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Film, FileText, Layers, Target } from "lucide-react";
+import { ChevronRight, FileText, Layers, Target } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { FeatureDef, FeatureKey } from "@/lib/compose/steps";
 
@@ -16,10 +16,9 @@ import type { FeatureDef, FeatureKey } from "@/lib/compose/steps";
  */
 
 const ICONS: Record<FeatureKey, React.ReactNode> = {
-  call: <Target size={16} strokeWidth={1.6} aria-hidden />,
+  stance: <Target size={16} strokeWidth={1.6} aria-hidden />,
   cards: <Layers size={16} strokeWidth={1.6} aria-hidden />,
   thesis: <FileText size={16} strokeWidth={1.6} aria-hidden />,
-  video: <Film size={16} strokeWidth={1.6} aria-hidden />,
 };
 
 export interface FeatureRow {
@@ -31,7 +30,7 @@ export interface FeatureRow {
   added: string | null;
   /** The feature was opened and left half done; the reason, in words. */
   halfDone: string | null;
-  /** The row cannot be opened (a frozen call on a live publication). */
+  /** The row cannot be opened (no stance on a live publication). */
   locked?: boolean;
 }
 
@@ -40,7 +39,7 @@ export function FeaturesMenu({
   rows,
   onOpen,
 }: {
-  /** "verdict", for the heading. */
+  /** "thesis", for the heading. */
   typeNoun: string;
   rows: FeatureRow[];
   onOpen: (key: FeatureKey) => void;

@@ -27,7 +27,7 @@ export interface DraftRow {
 }
 
 /** The spine's first step, by type. */
-export type ContentStepKey = "video" | "brief" | "thesis" | "call";
+export type ContentStepKey = "video" | "brief" | "thesis";
 
 export function contentStepFor(type: PublicationType): ContentStepKey {
   switch (type) {
@@ -37,8 +37,6 @@ export function contentStepFor(type: PublicationType): ContentStepKey {
       return "brief";
     case "thesis":
       return "thesis";
-    case "verdict":
-      return "call";
   }
 }
 
@@ -95,11 +93,6 @@ export function draftFacts(row: DraftRow): SpineFacts & { type: PublicationType 
     case "thesis":
       hasContent = bodyHasWords(row.body);
       break;
-    case "verdict":
-      // The target and horizon are held in the tab until publish, so a
-      // reopened verdict always starts at its call.
-      hasContent = false;
-      break;
   }
   return {
     type,
@@ -129,14 +122,13 @@ export interface DraftSummary {
   href: string;
 }
 
-function whereLine(type: PublicationType, f: SpineFacts, row: DraftRow): string {
+function whereLine(type: PublicationType, f: SpineFacts): string {
   const p = spineProgress(f);
   if (p.resumeAt === p.total) return "Ready to publish";
   if (p.resumeAt === 1) return "No tags";
   if (type === "video") return "Needs the clip again";
   if (f.hasContent) return "No headline";
   if (type === "thesis") return "Report not started";
-  if (type === "verdict") return row.ticker ? "Call half entered" : "No call yet";
   return "Nothing written yet";
 }
 
@@ -152,7 +144,7 @@ export function summarizeDraft(row: DraftRow): DraftSummary {
     title: title || `Untitled ${def.label.toLowerCase()}`,
     untitled: !title,
     ticker: row.ticker?.trim() ? row.ticker.trim().toUpperCase() : null,
-    where: `Spine ${Math.min(p.resumeAt + 1, p.total)} of ${p.total} · ${whereLine(facts.type, facts, row)}`,
+    where: `Spine ${Math.min(p.resumeAt + 1, p.total)} of ${p.total} · ${whereLine(facts.type, facts)}`,
     done: p.done,
     total: p.total,
     percent: Math.round((p.done / p.total) * 100),

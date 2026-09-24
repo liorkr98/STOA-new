@@ -9,10 +9,7 @@ const empty: AdvanceInput = {
   bodyText: "",
   ticker: "",
   direction: null,
-  target: "",
-  horizon: 45,
   symbol: "idle",
-  eligibility: null,
   cards: [],
   hasVideo: false,
   wordlessOverlays: 0,
@@ -25,22 +22,21 @@ describe("spineFor", () => {
     assert.deepEqual(spineFor("video").map((s) => s.key), ["video", "tags"]);
     assert.deepEqual(spineFor("brief").map((s) => s.key), ["brief", "tags"]);
     assert.deepEqual(spineFor("thesis").map((s) => s.key), ["thesis", "tags"]);
-    assert.deepEqual(spineFor("verdict").map((s) => s.key), ["call", "tags"]);
   });
 });
 
 describe("featuresFor", () => {
   it("offers each type what it may add, as a menu and never as steps", () => {
-    assert.deepEqual(featuresFor("video").map((f) => f.key), ["call", "cards", "thesis"]);
-    assert.deepEqual(featuresFor("brief").map((f) => f.key), ["call", "cards"]);
-    assert.deepEqual(featuresFor("thesis").map((f) => f.key), ["call", "cards"]);
-    assert.deepEqual(featuresFor("verdict").map((f) => f.key), ["cards", "video", "thesis"]);
+    assert.deepEqual(featuresFor("video").map((f) => f.key), ["stance", "cards", "thesis"]);
+    assert.deepEqual(featuresFor("brief").map((f) => f.key), ["stance", "cards"]);
+    assert.deepEqual(featuresFor("thesis").map((f) => f.key), ["stance", "cards"]);
   });
 
-  it("knows a call is the verdict's spine and a video's feature", () => {
-    assert.equal(roleOf("verdict", "call"), "spine");
-    assert.equal(roleOf("video", "call"), "feature");
-    assert.equal(roleOf("verdict", "video"), "feature");
+  it("knows the stance is a feature on every type, and a thesis is a video's feature", () => {
+    assert.equal(roleOf("video", "stance"), "feature");
+    assert.equal(roleOf("thesis", "stance"), "feature");
+    assert.equal(roleOf("video", "thesis"), "feature");
+    assert.equal(roleOf("thesis", "thesis"), "spine");
   });
 });
 
@@ -50,18 +46,12 @@ describe("advanceFor on the spine", () => {
     assert.equal(advanceFor("video", "video", { ...empty, hasVideo: true, title: "A line" }).blocker, null);
     assert.match(advanceFor("brief", "brief", { ...empty, briefText: "A take." }).blocker ?? "", /headline above the take/);
     assert.match(advanceFor("thesis", "thesis", { ...empty, bodyText: "Words." }).blocker ?? "", /headline above the report/);
-    const call = { ...empty, ticker: "AXTI", symbol: "found" as const, direction: "long" as const, target: "34" };
-    assert.match(advanceFor("verdict", "call", call).blocker ?? "", /headline under the call/);
-    assert.equal(advanceFor("verdict", "call", { ...call, title: "A line" }).blocker, null);
-    // As a feature the clip is asked for on its own; the headline belongs to the verdict's call screen.
-    assert.equal(advanceFor("verdict", "video", { ...empty, hasVideo: true }).blocker, null);
   });
 
   it("refuses an empty content step and names it", () => {
     assert.match(advanceFor("video", "video", empty).blocker ?? "", /Add a video/);
     assert.match(advanceFor("brief", "brief", empty).blocker ?? "", /Write the take/);
     assert.match(advanceFor("thesis", "thesis", empty).blocker ?? "", /Write the report/);
-    assert.match(advanceFor("verdict", "call", empty).blocker ?? "", /starts with a ticker/);
   });
 
   it("reads Continue and passes once the step is done", () => {
@@ -81,62 +71,34 @@ describe("advanceFor on the spine", () => {
   });
 });
 
-describe("advanceFor on the verdict's call", () => {
-  const found = { ...empty, ticker: "AXTI", symbol: "found" as const };
-
-  it("walks the creator through the call in order", () => {
-    assert.match(advanceFor("verdict", "call", found).blocker ?? "", /needs a direction/);
-    assert.match(
-      advanceFor("verdict", "call", { ...found, direction: "long" }).blocker ?? "",
-      /needs a target price/,
-    );
-    assert.match(
-      advanceFor("verdict", "call", { ...found, direction: "hold", target: "34" }).blocker ?? "",
-      /long or short/,
-    );
-    assert.match(
-      advanceFor("verdict", "call", { ...found, direction: "long", target: "34", horizon: 200 }).blocker ?? "",
-      /between 7 and 180 days/,
-    );
-    assert.equal(
-      advanceFor("verdict", "call", { ...found, direction: "long", target: "34", horizon: 45, title: "A line" }).blocker,
-      null,
-    );
-  });
-
-  it("carries the eligibility reason as the blocker", () => {
-    const r = advanceFor("verdict", "call", {
-      ...found,
-      direction: "long",
-      target: "34",
-      eligibility: { ok: false, kind: "too_large", reason: "NVDA is a $3.2T company." },
-    });
-    assert.equal(r.blocker, "NVDA is a $3.2T company.");
-  });
-});
-
 describe("advanceFor in a feature editor", () => {
   it("reads Skip when nothing was added", () => {
-    assert.deepEqual(advanceFor("video", "call", empty), { label: "Skip", blocker: null });
+    assert.deepEqual(advanceFor("video", "stance", empty), { label: "Skip", blocker: null });
     assert.deepEqual(advanceFor("video", "cards", empty), { label: "Skip", blocker: null });
-    assert.deepEqual(advanceFor("verdict", "video", empty), { label: "Skip", blocker: null });
+    assert.deepEqual(advanceFor("video", "thesis", empty), { label: "Skip", blocker: null });
   });
 
-  it("reads Done and refuses a half-entered call", () => {
-    const r = advanceFor("video", "call", { ...empty, ticker: "NVDA", symbol: "found" });
+  it("reads Done and refuses a half-entered stance", () => {
+    const r = advanceFor("video", "stance", { ...empty, ticker: "NVDA", symbol: "found" });
     assert.equal(r.label, "Done");
-    assert.match(r.blocker ?? "", /needs a direction/);
+    assert.match(r.blocker ?? "", /Choose long, short or hold for NVDA/);
+    assert.match(
+      advanceFor("brief", "stance", { ...empty, direction: "long" }).blocker ?? "",
+      /direction needs a ticker/,
+    );
+    assert.match(
+      advanceFor("brief", "stance", { ...empty, ticker: "ZZZZ", symbol: "missing", direction: "long" }).blocker ?? "",
+      /ZZZZ was not found/,
+    );
   });
 
-  it("lets a plain call keep hold and a macro name, which a verdict cannot", () => {
-    const r = advanceFor("brief", "call", {
-      ...empty,
-      ticker: "XAUUSD",
-      symbol: "found",
-      direction: "hold",
-      eligibility: { ok: false, kind: "macro", reason: "no" },
-    });
+  it("takes any direction on any name, hold and macro instruments included", () => {
+    const r = advanceFor("brief", "stance", { ...empty, ticker: "XAUUSD", symbol: "found", direction: "hold" });
     assert.deepEqual(r, { label: "Done", blocker: null });
+  });
+
+  it("never asks a live publication's stance for anything", () => {
+    assert.equal(advanceFor("thesis", "stance", { ...empty, ticker: "NVDA", symbol: "frozen" }).blocker, null);
   });
 
   it("refuses a blank card by name", () => {

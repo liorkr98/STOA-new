@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { EditedMarker } from "@/components/report/edited-marker";
 import { EditedFlag } from "@/components/report/edited-flag";
 import type { ReportEdit } from "@/lib/db/report-edits";
@@ -9,7 +8,6 @@ import { TrackScoreBadge } from "@/components/ui/track-score-badge";
 import { StatusChip } from "@/components/ui/status-chip";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
-import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import { PaywallGate } from "@/components/ui/paywall-gate";
 import { FactCheckLayer, FactCheckedText } from "@/components/report/fact-check-layer";
 import { ScoreRing } from "@/components/ui/score-ring";
@@ -64,7 +62,6 @@ const EDITS: ReportEdit[] = [
 ];
 
 export default function ComponentPreviewPage() {
-  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-paper p-12">
@@ -111,19 +108,6 @@ export default function ComponentPreviewPage() {
       <p className="t-eyebrow mb-4">DyorBar</p>
       <div className="max-w-md mb-12">
         <DyorBar />
-      </div>
-
-      <p className="t-eyebrow mb-4">LockConfirmModal</p>
-      <div className="mb-12">
-        <Button onClick={() => setModalOpen(true)}>Open lock modal</Button>
-        <LockConfirmModal
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          ticker="NVDA"
-          targetPrice={142}
-          horizonDate={new Date("2026-09-01")}
-          onConfirm={async () => new Promise((r) => setTimeout(r, 600))}
-        />
       </div>
 
       <p className="t-eyebrow mb-4">ScoreRing (sm / md / lg, plus provisional)</p>

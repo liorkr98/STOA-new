@@ -199,45 +199,45 @@ function TagSearch({
 /**
  * Tagging: a closed curated list, one PRIMARY tag that drives placement, up
  * to two SECONDARY tags that are searchable only. The primary auto-fills from
- * the call's ticker sector when a call exists (overridable in one click);
- * nothing auto-fills without a call. The two roles are visually distinct: the
+ * the stance's ticker sector when there is a stance (overridable in one
+ * click); nothing auto-fills without one. The two roles are visually distinct: the
  * primary is a solid ink chip, secondaries are outlined. Choosing opens a
  * list you type into (TagSearch above) rather than one you scroll.
  */
 export function TagPicker({
   value,
   onChange,
-  callSector,
-  hasCall,
+  stanceSector,
+  hasStance,
   popular = [],
 }: {
   value: TagSelection;
   onChange: (v: TagSelection) => void;
-  /** Sector of the call's ticker, when known. */
-  callSector: string | null;
-  hasCall: boolean;
+  /** Sector of the stance's ticker, when known. */
+  stanceSector: string | null;
+  hasStance: boolean;
   /** Tag slugs by how often they are used across published work, most used first. */
   popular?: string[];
 }) {
   const [open, setOpen] = useState<"primary" | "secondary" | null>(null);
   // The primary list shows on arrival while nothing is chosen, so the tag is
   // one tap away rather than two. Derived, not set: choosing a tag (or the
-  // call filling one in) closes it by itself, and a press on Choose primary
+  // stance filling one in) closes it by itself, and a press on Choose primary
   // while it shows puts it away until the creator asks again.
   const [openedByPress, setOpenedByPress] = useState(false);
   const [defaultDismissed, setDefaultDismissed] = useState(false);
   const primaryOpen = open === "primary" || (open === null && !value.primary && !defaultDismissed);
 
   useEffect(() => {
-    if (!hasCall || value.primaryPinned || value.primary) return;
-    const auto = tagForSector(callSector);
+    if (!hasStance || value.primaryPinned || value.primary) return;
+    const auto = tagForSector(stanceSector);
     if (auto) onChange({ ...value, primary: auto.slug });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasCall, callSector]);
+  }, [hasStance, stanceSector]);
 
   const primary = value.primary ? tagBySlug(value.primary) : undefined;
   const secondaries = value.secondary.map(tagBySlug).filter((t): t is PublicationTag => Boolean(t));
-  const autoFilled = hasCall && !value.primaryPinned && primary && tagForSector(callSector)?.slug === primary.slug;
+  const autoFilled = hasStance && !value.primaryPinned && primary && tagForSector(stanceSector)?.slug === primary.slug;
 
   const pick = (slot: "primary" | "secondary", tag: PublicationTag) => {
     if (slot === "primary") {

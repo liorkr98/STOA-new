@@ -6,7 +6,6 @@ import {
   getAuthorReportStatus,
   getDraftForAuthor,
   getPublishedForAuthor,
-  lastVerdictPublishedAt,
   listDraftsForPicker,
   listTagUsage,
 } from "@/lib/db/reports";
@@ -22,7 +21,6 @@ import { FirstReportBanner } from "@/components/onboarding/first-report-banner";
 import { ComposePicker, type PickerDraft } from "@/components/compose/type-picker";
 import { summarizeDraft } from "@/lib/compose/drafts";
 import { isPublicationType } from "@/lib/compose/modes";
-import { verdictWindow } from "@/lib/compose/verdict";
 import type { Report } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Compose" };
@@ -39,28 +37,24 @@ export default async function ComposePage({
   // Compose opens by asking what the analyst is publishing. A draft, a chosen
   // type or a notebook to seed from skips the question.
   if (!id && !notebook && !isPublicationType(rawType)) {
-    const [rows, lastVerdict] = await Promise.all([
-      listDraftsForPicker(profile.id),
-      lastVerdictPublishedAt(profile.id),
-    ]);
+    const rows = await listDraftsForPicker(profile.id);
     const drafts: PickerDraft[] = rows.map((row) => {
       const d = summarizeDraft(row);
       return { ...d, editedLabel: formatDistanceToNowStrict(new Date(d.touchedAt), { addSuffix: true }) };
     });
     return (
       <div className="breakout-main">
-        <ComposePicker drafts={drafts} verdictWindow={verdictWindow(lastVerdict)} />
+        <ComposePicker drafts={drafts} />
       </div>
     );
   }
 
-  const [draft, wallet, plans, savedCards, clips, lastVerdict, popularTags] = await Promise.all([
+  const [draft, wallet, plans, savedCards, clips, popularTags] = await Promise.all([
     id ? getDraftForAuthor(id, profile.id) : Promise.resolve(null),
     getWallet(profile.id),
     listActivePlans(profile.id),
     id ? listAuthorCards(id, profile.id) : Promise.resolve([]),
     id ? listVideosByReport(id) : Promise.resolve([]),
-    lastVerdictPublishedAt(profile.id),
     listTagUsage(),
   ]);
   // A published report used to be a dead end here, because the database
@@ -113,8 +107,6 @@ export default async function ComposePage({
         initialType={isPublicationType(rawType) ? rawType : "thesis"}
         initialDraft={draft ?? published ?? seeded}
         editingPublished={editingPublished}
-        hasLockedCall={Boolean(published?.prediction)}
-        verdictLastPublishedAt={lastVerdict}
         popularTags={popularTags}
         initialCards={initialCards}
         hasVideoClip={Boolean(liveClip)}

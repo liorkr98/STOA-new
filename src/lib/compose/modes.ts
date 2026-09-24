@@ -1,16 +1,17 @@
 /**
- * The four publication types, and how they map onto what the database
+ * The three publication types, and how they map onto what the database
  * stores. See docs/COMPOSE.md.
  *
- * A type is a job, not a file format: reach strangers, stay present, prove
- * depth, or make a call the market settles. The database's `content_type`
- * enum already has four values, so each type stores as one of them and
- * nothing needs a migration to remember which job a draft was for.
+ * A type is a job, not a file format: reach strangers, stay present, or
+ * prove depth. Each type stores as one value of the database's
+ * `content_type` enum. The enum's fourth value, `call`, belonged to the
+ * retired Verdict type; migration 0067 relabels those rows, and until it is
+ * applied they read as a thesis.
  */
 
 import type { ContentType } from "@/lib/types";
 
-export type PublicationType = "video" | "brief" | "thesis" | "verdict";
+export type PublicationType = "video" | "brief" | "thesis";
 
 export interface PublicationTypeDef {
   key: PublicationType;
@@ -48,14 +49,6 @@ export const PUBLICATION_TYPES: PublicationTypeDef[] = [
       "A full written report. Depth is what converts a reader into a subscriber, and the strongest route onto Today.",
     seenBy: "Buyers and subscribers",
   },
-  {
-    key: "verdict",
-    label: "Verdict",
-    purpose: "Make a call only the market can settle",
-    detail:
-      "Subscribers get it first. It goes public the moment the market resolves it, so the record speaks for you anywhere.",
-    seenBy: "Subscribers now, everyone at resolution",
-  },
 ];
 
 export function publicationTypeDef(key: PublicationType): PublicationTypeDef {
@@ -63,7 +56,7 @@ export function publicationTypeDef(key: PublicationType): PublicationTypeDef {
 }
 
 export function isPublicationType(raw: string | null | undefined): raw is PublicationType {
-  return raw === "video" || raw === "brief" || raw === "thesis" || raw === "verdict";
+  return raw === "video" || raw === "brief" || raw === "thesis";
 }
 
 /** What the database stores for each type. */
@@ -75,18 +68,17 @@ export function contentTypeFor(type: PublicationType): ContentType {
       return "short_post";
     case "thesis":
       return "research";
-    case "verdict":
-      return "call";
   }
 }
 
-/** The type a stored row was made as. Older rows with no clip read as a thesis. */
+/**
+ * The type a stored row was made as. Older rows with no clip read as a
+ * thesis, and so does a retired verdict (`call`) until 0067 relabels it.
+ */
 export function publicationTypeFrom(type: ContentType | null | undefined): PublicationType {
   switch (type) {
     case "short_post":
       return "brief";
-    case "call":
-      return "verdict";
     case "video":
       return "video";
     default:
@@ -112,7 +104,7 @@ export function feedPreviewSecondsForClip(clipSeconds: number): number | null {
 /** Hard cap on a Brief. */
 export const BRIEF_MAX_CHARS = 300;
 
-export type PublicTypeLabel = "VIDEO" | "BRIEF" | "THESIS" | "VERDICT";
+export type PublicTypeLabel = "VIDEO" | "BRIEF" | "THESIS";
 
 /** The type as it is printed on a publication, everywhere on the site. */
 export function publicTypeLabel(type: ContentType): PublicTypeLabel {

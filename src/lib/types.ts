@@ -265,15 +265,11 @@ export interface ComposeInput {
   required_perks?: string[];
   ticker?: string | null;
   direction?: Direction;
-  target_price?: number | null;
-  horizon_days?: number;
-  /** Explicit horizon end date (exchange-local). Must be after today when publishing. */
-  target_horizon_date?: string;
   /** Taxonomy slug driving discovery placement. Required to publish. */
   primary_tag?: string | null;
   /** Up to 2 further taxonomy slugs, searchable only. */
   secondary_tags?: string[];
-  /** Theme anchor for callless publications; defaults to the primary tag. */
+  /** Theme anchor for publications with no stance; defaults to the primary tag. */
   theme_tag?: string | null;
   /** Future publish time. Held as a draft until the scheduler releases it. */
   scheduled_for?: string | null;

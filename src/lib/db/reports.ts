@@ -351,25 +351,6 @@ export async function listDraftsForPicker(authorId: string, limit = 30): Promise
 }
 
 /**
- * When the author's most recent verdict went out, for the rolling thirty-day
- * window. Archived verdicts count: taking one down does not earn another.
- */
-export async function lastVerdictPublishedAt(authorId: string): Promise<string | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reports")
-    .select("published_at")
-    .eq("author_id", authorId)
-    .eq("type", "call")
-    .in("status", ["published", "resolution_pending_review", "archived"])
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as { published_at: string | null } | null)?.published_at ?? null;
-}
-
-/**
  * How often each primary tag is used across published work, most used
  * first. The tag search shows these before anything is typed, the same way
  * Explore's filters lead with the most-covered names.

@@ -31,12 +31,12 @@ import type { Plan } from "@/lib/db/plans";
 import { TiptapEditor } from "@/components/editor/tiptap/tiptap-editor";
 import { captureChartScreenshots } from "@/lib/editor/tiptap/nodes/chart-capture";
 import {
-  LockPublishPanel,
+  PublishPanel,
+  StancePanel,
   disclosuresAnswered,
   type DisclosureState,
-} from "@/components/editor/lock-publish-panel";
+} from "@/components/editor/publish-panel";
 import { AskPanel } from "@/components/editor/tiptap/ask-panel";
-import { LockConfirmModal } from "@/components/ui/lock-confirm-modal";
 import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { VisualizeSelectionMenu } from "@/components/editor/tiptap/visualize-selection-menu";
 import { setEditorReportTicker } from "@/lib/editor/tiptap/editor-context";
@@ -73,8 +73,6 @@ import { ComposeHeader } from "@/components/compose/compose-header";
 import { FeaturesMenu, type FeatureRow } from "@/components/compose/features-menu";
 import { PromotePanel } from "@/components/compose/promote-panel";
 import { railFor } from "@/lib/compose/rail";
-import { VerdictCallPanel } from "@/components/compose/verdict-call-panel";
-import { VerdictVisibility } from "@/components/compose/verdict-visibility";
 import {
   blankCard,
   cardIsEmpty,
@@ -88,7 +86,6 @@ import {
 import { setComposeDeck } from "@/lib/compose/card-store";
 import {
   emptyEdit,
-  fmtTimecode,
   fromStoredVideoEdit,
   toStoredVideoEdit,
   type VideoEdit,
@@ -97,7 +94,6 @@ import { useFrameHeight } from "@/components/layout/scroll-frame";
 import { useSymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { saveCards } from "@/app/actions/cards";
 import { isCardDrag, readCardDrag } from "@/lib/compose/drag";
-import { exchangeTimeZoneFor, horizonDateFromNow } from "@/lib/engine/trading-calendar";
 import type { CardKind } from "@/lib/feed/card-schema";
 import type { PromoteState } from "@/lib/compose/promote";
 import { EMPTY_PROMOTE } from "@/lib/compose/promote";
@@ -128,12 +124,6 @@ import {
   publicationTypeFrom,
   type PublicationType,
 } from "@/lib/compose/modes";
-import {
-  VERDICT_HORIZON_DEFAULT_DAYS,
-  verdictEligibility,
-  verdictWindow,
-  type VerdictEligibility,
-} from "@/lib/compose/verdict";
 
 /**
  * Bring an existing draft into the Tiptap editor. New drafts are already
@@ -210,16 +200,12 @@ export function StudioEditor({
   aiCredits = 0,
   plans = [],
   editingPublished = false,
-  hasLockedCall = false,
-  verdictLastPublishedAt = null,
   popularTags = [],
 }: {
   analystReportPrice: number | null;
   initialDraft?: Report | null;
   /** The type chosen on the picker, for a publication that has no row yet. */
   initialType?: PublicationType;
-  /** When the analyst's last verdict went out, for the rolling thirty-day window. */
-  verdictLastPublishedAt?: string | null;
   /** Tag slugs by use across published work, most used first, for the tag search. */
   popularTags?: string[];
   /** The draft's saved deck, payloads intact (see listAuthorCards). */
@@ -236,12 +222,10 @@ export function StudioEditor({
   plans?: Plan[];
   /**
    * This publication is already out. The prose, the cards and the tags are
-   * editable and every change is disclosed; the call, the pricing and the
+   * editable and every change is disclosed; the stance, the pricing and the
    * type are frozen, so their controls are not offered.
    */
   editingPublished?: boolean;
-  /** The live publication carries a call, which can never be edited. */
-  hasLockedCall?: boolean;
 }) {
   const initialDoc = useMemo(() => initialTiptap(initialDraft?.body), [initialDraft?.body]);
 
@@ -254,15 +238,11 @@ export function StudioEditor({
   const typeDef = publicationTypeDef(pubType);
   const type = contentTypeFor(pubType);
   const isBrief = pubType === "brief";
-  const isVerdict = pubType === "verdict";
   // The writer (the Tiptap editor) exists on every type but a brief: it is
   // the thesis's content step and an optional feature on the others.
   const hasWriter = !isBrief;
   const spine = useMemo(() => spineFor(pubType), [pubType]);
   const features = useMemo(() => featuresFor(pubType), [pubType]);
-  // Read once, when the workspace opens: the window is a fact about the
-  // analyst's record, and render must not depend on the clock.
-  const [vWindow] = useState(() => verdictWindow(verdictLastPublishedAt));
 
   // The file a creator picked in the video rung, held until the report is
   // locked. video_clips rows hang off a locked report, so the upload cannot
@@ -286,11 +266,11 @@ export function StudioEditor({
   const [docJson, setDocJson] = useState<JSONContent>(initialDoc);
   const [plainText, setPlainText] = useState(() => tiptapPlainText(initialDoc));
   const [ticker, setTicker] = useState(initialDraft?.ticker ?? "");
-  // Whether the symbol in the field is a real, priceable name. Owned here
-  // rather than in the call panel because the forward button has to read
-  // it: a call locked on a symbol that does not resolve can never be
-  // graded, so Continue refuses it. A live publication's call is frozen and
-  // was checked when it was locked, so nothing is looked up for it.
+  // Whether the symbol in the field is a real name. Owned here rather than
+  // in the stance panel because the forward button has to read it: a stance
+  // on a symbol that does not resolve would chip a ticker page that does
+  // not exist, so Done refuses it. A live publication's stance is frozen and
+  // was checked when it went out, so nothing is looked up for it.
   const { lookup: symbolLookup, retry: retrySymbolLookup } = useSymbolLookup(
     ticker,
     !editingPublished,
@@ -333,13 +313,7 @@ export function StudioEditor({
   // The stance. Null direction until chosen: a ticker on its own declares
   // none. Seeded from the draft's stance when the database has it.
   const [direction, setDirection] = useState<Direction | null>(initialDraft?.stance ?? null);
-  const [target, setTarget] = useState("");
-  const [horizon, setHorizon] = useState(isVerdict ? VERDICT_HORIZON_DEFAULT_DAYS : 30);
-  // A verdict is subscribers-only while it is open; the setting is not
-  // offered on it.
-  const [access, setAccess] = useState<AccessType>(
-    isVerdict ? "subscribers" : (initialDraft?.access ?? "free"),
-  );
+  const [access, setAccess] = useState<AccessType>(initialDraft?.access ?? "free");
   const [membersIncluded, setMembersIncluded] = useState(Boolean(initialDraft?.members_included));
   const [linkedReportId, setLinkedReportId] = useState<string | null>(initialDraft?.linked_report_id ?? null);
   const [minPlanRank, setMinPlanRank] = useState(initialDraft?.min_plan_rank ?? 0);
@@ -361,9 +335,9 @@ export function StudioEditor({
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Said once on the call screen when the database could not keep the
+  // Said once on the stance screen when the database could not keep the
   // draft's direction between sessions (migration 0065).
-  const [callDraftNote, setCallDraftNote] = useState<string | null>(null);
+  const [stanceDraftNote, setStanceDraftNote] = useState<string | null>(null);
   // An in-app link pressed with unsaved changes, held until the creator
   // decides whether to save, leave, or stay.
   const [leaveTo, setLeaveTo] = useState<string | null>(null);
@@ -400,12 +374,6 @@ export function StudioEditor({
       // Same: without storage it comes back next time, which is harmless.
     }
   }, []);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  // Stamped when the confirm modal opens, not read during render: the analyst
-  // is confirming the horizon they saw, and render has to stay pure.
-  const [confirmHorizonDate, setConfirmHorizonDate] = useState(
-    () => new Date(Date.now() + 30 * 86_400_000),
-  );
   const [captureStatus, setCaptureStatus] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [savingDraft, startDraft] = useTransition();
@@ -708,8 +676,6 @@ export function StudioEditor({
           required_perks: access === "subscribers" ? requiredPerks : [],
           ticker: ticker.trim() ? ticker : null,
           direction: ticker.trim() && direction ? direction : undefined,
-          target_price: ticker.trim() && target ? Number(target) : null,
-          horizon_days: ticker.trim() ? horizon : undefined,
           primary_tag: tags.primary,
           secondary_tags: tags.secondary,
           video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
@@ -717,7 +683,7 @@ export function StudioEditor({
         draftIdRef.current = res.id;
         setDraftId(res.id);
         if (res.videoEditError) toast.error(res.videoEditError);
-        if (res.stanceError && ticker.trim()) setCallDraftNote(res.stanceError);
+        if (res.stanceError && ticker.trim()) setStanceDraftNote(res.stanceError);
         // Cards need the report id, so they are written after the draft row
         // exists. A card failure must not read as a lost draft: the words are
         // already saved by this point.
@@ -755,8 +721,6 @@ export function StudioEditor({
     price,
     ticker,
     direction,
-    target,
-    horizon,
     membersIncluded,
     linkedReportId,
     tags,
@@ -920,10 +884,10 @@ export function StudioEditor({
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  // A call is a ticker and a direction. The server only creates the graded
-  // record when both arrive, so anything less must never reach it as if it
-  // were a call: the call screen and the publish screen both refuse it below.
-  const lockingCall = Boolean(ticker.trim()) && direction !== null;
+  // A stance is a ticker and a direction. Anything less never reaches the
+  // server as a stance: the stance screen and the publish screen both refuse
+  // it below.
+  const hasStance = Boolean(ticker.trim()) && direction !== null;
 
   // ── The spine ──────────────────────────────────────────────────────────
   // Two or three steps, one at a time on the first pass, every step a tab
@@ -1014,13 +978,6 @@ export function StudioEditor({
     if (prev) goStep(prev.key);
   }, [spine, stepKey, goStep]);
 
-  // The verdict's own check on the name in the field. Owned here because
-  // the forward button and the publish button both read it.
-  const eligibility: VerdictEligibility | null =
-    isVerdict && !editingPublished && symbolLookup.status === "found"
-      ? verdictEligibility(symbolLookup.resolved)
-      : null;
-
   /** Everything the forward button needs to know, as plain values. */
   const advanceInput: AdvanceInput = {
     title,
@@ -1029,10 +986,7 @@ export function StudioEditor({
     bodyText: plainText,
     ticker,
     direction,
-    target,
-    horizon,
     symbol: editingPublished ? "frozen" : symbolLookup.status,
-    eligibility,
     cards: cards.map((c) => ({ name: cardName(c), empty: cardIsEmpty(c) })),
     hasVideo: videoChosen,
     wordlessOverlays:
@@ -1057,15 +1011,12 @@ export function StudioEditor({
   const spineBlockedBy =
     spine.map((s) => advanceFor(pubType, s.key, advanceInput).blocker).find(Boolean) ?? null;
   const featureBlockedBy =
-    (["call", "cards", "thesis", "video"] as StepKey[])
+    (["stance", "cards", "thesis"] as StepKey[])
       .filter((k) => roleOf(pubType, k) === "feature")
       .map((k) => advanceFor(pubType, k, advanceInput).blocker)
       .find(Boolean) ?? null;
   const detailsBlockedBy: string | null = (() => {
     if (featureBlockedBy) return featureBlockedBy;
-    if (isVerdict && !editingPublished && !vWindow.open) {
-      return `${vWindow.line}. One verdict per rolling thirty days; this one is saved as a draft.`;
-    }
     // The fact-check is offered on this screen and encouraged, never required:
     // a creator publishes without it, and its result travels with the piece
     // when they do run it.
@@ -1088,7 +1039,7 @@ export function StudioEditor({
     hasVideo: videoChosen,
     hasBrief: summary.trim().length > 0,
     hasThesis: plainText.trim().length > 0,
-    hasCall: lockingCall && advanceFor(pubType, "call", advanceInput).blocker === null,
+    hasStance: hasStance && advanceFor(pubType, "stance", advanceInput).blocker === null,
     cardCount: cards.length,
     hasTitle: title.trim().length > 0,
     hasTags: Boolean(tags.primary),
@@ -1100,12 +1051,11 @@ export function StudioEditor({
     const blocker = advanceFor(pubType, def.key, advanceInput).blocker;
     let added: string | null = null;
     switch (def.key) {
-      case "call":
-        added = stepFacts.hasCall
+      case "stance":
+        added = stepFacts.hasStance
           ? [
               ticker.trim().toUpperCase(),
               direction ? direction[0]!.toUpperCase() + direction.slice(1) : null,
-              target ? `target ${target}` : null,
             ]
               .filter(Boolean)
               .join(" · ")
@@ -1119,17 +1069,14 @@ export function StudioEditor({
         added = n > 0 ? `${n.toLocaleString("en-US")} words` : null;
         break;
       }
-      case "video":
-        added = videoChosen ? (clipSeconds > 0 ? fmtTimecode(clipSeconds) : "clip chosen") : null;
-        break;
     }
     return {
       def,
       added,
       halfDone: blocker,
-      // A live publication's call and clip are the record; they open to
+      // A live publication's stance is frozen with its ticker: it opens to
       // be read, never to be changed, and cannot be added after the fact.
-      locked: editingPublished && (def.key === "call" || (def.key === "video" && !videoReplaceable)) && !added,
+      locked: editingPublished && def.key === "stance" && !added,
     };
   });
 
@@ -1177,7 +1124,7 @@ export function StudioEditor({
     };
     try {
       let id = draftId;
-      // Screenshot every chart between "Lock it in" and the publish call, so
+      // Screenshot every chart between the press and the publish call, so
       // the reading view has a static image and the report gets an og:image.
       // Save first (charts upload under the report id); failures never block.
       if (hasCard && editor) {
@@ -1193,10 +1140,8 @@ export function StudioEditor({
             min_plan_rank: access === "subscribers" ? minPlanRank : 0,
             required_perks: access === "subscribers" ? requiredPerks : [],
             ...extras,
-            ticker: lockingCall ? ticker : null,
-            direction: lockingCall && direction ? direction : undefined,
-            target_price: lockingCall && target ? Number(target) : null,
-            horizon_days: lockingCall ? horizon : undefined,
+            ticker: hasStance ? ticker : null,
+            direction: hasStance && direction ? direction : undefined,
             primary_tag: tags.primary,
             secondary_tags: tags.secondary,
             video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
@@ -1233,10 +1178,8 @@ export function StudioEditor({
         min_plan_rank: access === "subscribers" ? minPlanRank : 0,
         required_perks: access === "subscribers" ? requiredPerks : [],
         ...extras,
-        ticker: lockingCall ? ticker : null,
-        direction: lockingCall && direction ? direction : undefined,
-        target_price: lockingCall && target ? Number(target) : null,
-        horizon_days: lockingCall ? horizon : undefined,
+        ticker: hasStance ? ticker : null,
+        direction: hasStance && direction ? direction : undefined,
         primary_tag: tags.primary,
         secondary_tags: tags.secondary,
         video_edit: videoChosen ? toStoredVideoEdit(videoEdit, deck) : null,
@@ -1255,13 +1198,10 @@ export function StudioEditor({
         const reason = published && "error" in published ? published.error : "Could not publish.";
         setError(reason);
         toast.error(reason);
-        setConfirmOpen(false);
         setCaptureStatus(null);
         isPublishingRef.current = false;
         return;
       }
-
-      setConfirmOpen(false);
 
       if (pendingVideo && published.id) {
         try {
@@ -1293,7 +1233,6 @@ export function StudioEditor({
       if (e instanceof Error && !e.message.includes("NEXT_REDIRECT")) {
         setError(e.message);
         toast.error(e.message);
-        setConfirmOpen(false);
         setCaptureStatus(null);
         isPublishingRef.current = false;
       }
@@ -1311,11 +1250,9 @@ export function StudioEditor({
     requiredPerks,
     price,
     hasCard,
-    lockingCall,
+    hasStance,
     ticker,
     direction,
-    target,
-    horizon,
     factCheck,
     videoChosen,
     videoEdit,
@@ -1325,7 +1262,6 @@ export function StudioEditor({
     membersIncluded,
     linkedReportId,
     feedPreviewSeconds,
-    setConfirmOpen,
     setError,
     setDraftId,
     setCaptureStatus,
@@ -1338,20 +1274,15 @@ export function StudioEditor({
       toast.message(publishBlockedBy);
       return;
     }
-    if (lockingCall) {
-      setConfirmHorizonDate(horizonDateFromNow(horizon, exchangeTimeZoneFor(ticker)));
-      setConfirmOpen(true);
-    } else {
-      start(async () => {
-        try {
-          await doPublish();
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : "Publish failed. Try again.";
-          setError(msg);
-          toast.error(msg);
-        }
-      });
-    }
+    start(async () => {
+      try {
+        await doPublish();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Publish failed. Try again.";
+        setError(msg);
+        toast.error(msg);
+      }
+    });
   }
 
   /* LEFT: what this screen can take, by railFor. */
@@ -1466,7 +1397,7 @@ export function StudioEditor({
         autoFocus={!editingPublished && (stepKey === "brief" || stepKey === "thesis")}
         className={cn(
           "user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none",
-          stepKey === "video" || stepKey === "call" ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
+          stepKey === "video" ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
         )}
         style={{ fontFamily: "var(--font-display)" }}
       />
@@ -1598,9 +1529,7 @@ export function StudioEditor({
                   changed and when, which readers can open.
                 </p>
                 <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-mute">
-                  {hasLockedCall
-                    ? "The call and its entry price cannot change, and neither can its resolution. Those are the record."
-                    : "The type, the pricing and the access setting cannot change."}
+                  The type, the stance, the pricing and the access setting cannot change.
                   {videoReplaceable
                     ? " There is no playable clip yet. Attach one on the video step, then save."
                     : null}
@@ -1714,45 +1643,11 @@ export function StudioEditor({
                 </StepErrorBoundary>
               ) : null}
 
-              {/* THE CALL. The verdict's spine, or a feature on the others. */}
-              {stepKey === "call" && isVerdict ? (
-                <StepErrorBoundary label="The call">
-                <DevCrash step="call" />
-                <VerdictCallPanel
-                  ticker={ticker}
-                  onTicker={dirtying(setTicker)}
-                  lookup={symbolLookup}
-                  onRetryLookup={retrySymbolLookup}
-                  eligibility={eligibility}
-                  direction={direction}
-                  onDirection={dirtying(setDirection)}
-                  target={target}
-                  onTarget={dirtying(setTarget)}
-                  horizon={horizon}
-                  onHorizon={dirtying(setHorizon)}
-                  window={vWindow}
-                  frozen={editingPublished}
-                />
-                {callDraftNote ? (
-                  <p className="mt-3 text-[0.8125rem] leading-snug text-[var(--brass)]" role="status">
-                    {callDraftNote}
-                  </p>
-                ) : null}
-                {/* The headline, under the call: the verdict's content screen. */}
-                <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
-                  <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
-                    Headline
-                  </p>
-                  {headlineFields}
-                </div>
-                </StepErrorBoundary>
-              ) : null}
-              {stepKey === "call" && !isVerdict ? (
-                <StepErrorBoundary label="The call">
-                <DevCrash step="call" />
-                <LockPublishPanel
-                  sections="call"
-                  hasCard={hasCard}
+              {/* THE STANCE. A feature on every type. */}
+              {stepKey === "stance" ? (
+                <StepErrorBoundary label="The stance">
+                <DevCrash step="stance" />
+                <StancePanel
                   ticker={ticker}
                   onTicker={dirtying(setTicker)}
                   lookup={symbolLookup}
@@ -1760,32 +1655,10 @@ export function StudioEditor({
                   frozen={editingPublished}
                   direction={direction}
                   onDirection={dirtying(setDirection)}
-                  target={target}
-                  onTarget={dirtying(setTarget)}
-                  horizon={horizon}
-                  onHorizon={dirtying(setHorizon)}
-                  access={access}
-                  onAccess={dirtying(setAccess)}
-                  price={price}
-                  onPrice={dirtying(setPrice)}
-                  membersIncluded={membersIncluded}
-                  onMembersIncluded={dirtying(setMembersIncluded)}
-                  minPlanRank={minPlanRank}
-                  onMinPlanRank={dirtying(setMinPlanRank)}
-                  requiredPerks={requiredPerks}
-                  onRequiredPerks={dirtying(setRequiredPerks)}
-                  plans={plans}
-                  disclosure={disclosure}
-                  onDisclosure={setDisclosure}
-                  publishLabel=""
-                  publishDisabledReason={null}
-                  onPublish={() => {}}
-                  pending={false}
-                  error={null}
                 />
-                {callDraftNote ? (
+                {stanceDraftNote ? (
                   <p className="mt-3 text-[0.8125rem] leading-snug text-[var(--brass)]" role="status">
-                    {callDraftNote}
+                    {stanceDraftNote}
                   </p>
                 ) : null}
                 </StepErrorBoundary>
@@ -1847,10 +1720,10 @@ export function StudioEditor({
                 </StepErrorBoundary>
               ) : null}
 
-              {/* VIDEO. Mounted on every type that may carry a clip and hidden
-                  off-screen, so the loaded clip and its object URL survive a
-                  move to another screen and back. */}
-              {pubType === "video" || pubType === "verdict" ? (
+              {/* VIDEO. Mounted on the video type and hidden off-screen, so
+                  the loaded clip and its object URL survive a move to another
+                  screen and back. */}
+              {pubType === "video" ? (
                 <StepErrorBoundary label="Video">
                 <DevCrash step="video" />
                 <div className={cn(stepKey !== "video" && "hidden")}>
@@ -1882,14 +1755,12 @@ export function StudioEditor({
                       focus: one quiet field below the editor, no preview
                       cards, and it is asked for by Continue only once the
                       clip is in. */}
-                  {pubType === "video" ? (
-                    <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
-                      <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
-                        Headline
-                      </p>
-                      {headlineFields}
-                    </div>
-                  ) : null}
+                  <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
+                    <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+                      Headline
+                    </p>
+                    {headlineFields}
+                  </div>
                 </div>
                 </StepErrorBoundary>
               ) : null}
@@ -1903,9 +1774,9 @@ export function StudioEditor({
                     value={tags}
                     onChange={dirtying(setTags)}
                     popular={popularTags}
-                    hasCall={lockingCall}
-                    callSector={
-                      lockingCall
+                    hasStance={hasStance}
+                    stanceSector={
+                      hasStance
                         ? (UNIVERSE.find((u) => u.ticker === ticker.trim().toUpperCase())?.sector ??
                           null)
                         : null
@@ -1943,17 +1814,8 @@ export function StudioEditor({
                     value={linkedReportId}
                     onChange={setLinkedReportId}
                   />
-                  <LockPublishPanel
-                    sections="publish"
-                    hasCard={hasCard}
+                  <PublishPanel
                     ticker={ticker}
-                    onTicker={dirtying(setTicker)}
-                    direction={direction}
-                    onDirection={dirtying(setDirection)}
-                    target={target}
-                    onTarget={dirtying(setTarget)}
-                    horizon={horizon}
-                    onHorizon={dirtying(setHorizon)}
                     access={access}
                     onAccess={dirtying(setAccess)}
                     price={price}
@@ -1967,13 +1829,13 @@ export function StudioEditor({
                     plans={plans}
                     disclosure={disclosure}
                     onDisclosure={setDisclosure}
-                    publishLabel={isVerdict ? "Publish the verdict" : lockingCall ? "Publish & Lock" : "Publish"}
+                    publishLabel="Publish"
                     publishDisabledReason={publishBlockedBy}
                     onPublish={onPublishClick}
                     pending={pending}
+                    busyLabel={captureStatus}
                     error={error}
                     promote={<PromotePanel state={promote} onChange={setPromote} />}
-                    visibility={isVerdict ? <VerdictVisibility /> : undefined}
                   />
                 </div>
                 </StepErrorBoundary>
@@ -2068,16 +1930,6 @@ export function StudioEditor({
             goToLeaveHref(router, leaveTo);
           });
         }}
-      />
-
-      <LockConfirmModal
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        ticker={ticker.trim().toUpperCase()}
-        targetPrice={target ? Number(target) : null}
-        horizonDate={confirmHorizonDate}
-        busyLabel={captureStatus}
-        onConfirm={doPublish}
       />
     </div>
   );

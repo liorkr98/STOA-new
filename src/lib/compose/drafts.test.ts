@@ -49,8 +49,8 @@ describe("draftFacts", () => {
     assert.equal(draftFacts({ ...base, type: "video", title: "Why the qualification matters" }).hasContent, false);
   });
 
-  it("reopens a verdict at its call, since the target and horizon stay in the tab", () => {
-    assert.equal(draftFacts({ ...base, type: "call", ticker: "PLAB" }).hasContent, false);
+  it("reads a retired verdict row as a thesis, from its text", () => {
+    assert.equal(draftFacts({ ...base, type: "call", ticker: "PLAB" }).type, "thesis");
     assert.equal(draftFacts({ ...base, type: "call", ticker: "PLAB", stance: "long" }).hasContent, false);
   });
 });
@@ -59,15 +59,15 @@ describe("summarizeDraft", () => {
   it("says where the draft is and how far along", () => {
     const s = summarizeDraft({
       ...base,
-      type: "call",
+      type: "research",
       ticker: "PLAB",
       title: "Photronics guided flat and the mix says otherwise",
       stance: "short",
     });
-    assert.equal(s.typeLabel, "VERDICT");
+    assert.equal(s.typeLabel, "THESIS");
     assert.equal(s.done, 0);
     assert.equal(s.percent, 0);
-    assert.equal(s.where, "Spine 1 of 2 · Call half entered");
+    assert.equal(s.where, "Spine 1 of 2 · Report not started");
     assert.equal(s.touchedAt, "2026-09-09T00:00:00Z");
   });
 

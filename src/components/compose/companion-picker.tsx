@@ -7,10 +7,10 @@ import type { ContentType } from "@/lib/types";
 
 /** What each type may be connected to: a video to written work, and back. */
 const TARGETS: Record<PublicationType, ContentType[]> = {
+  // `call` is a retired verdict, written work until 0067 relabels it.
   video: ["research", "short_post", "call"],
   brief: ["video"],
   thesis: ["video"],
-  verdict: ["video", "research", "short_post"],
 };
 
 /**
