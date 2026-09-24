@@ -87,8 +87,8 @@ export function EditedMarker({
             Revised after publication
           </p>
           <p className="mt-1.5 text-[12px] leading-relaxed text-text-mute">
-            The call, its entry price and its resolution can never change. Everything
-            below is a change the analyst made in the open.
+            The ticker and its direction can never change. Everything below is a change
+            the analyst made in the open.
           </p>
 
           <ul className="mt-3 space-y-3 border-t border-border pt-3">
