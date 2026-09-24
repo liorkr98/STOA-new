@@ -49,19 +49,9 @@ describe("draftFacts", () => {
     assert.equal(draftFacts({ ...base, type: "video", title: "Why the qualification matters" }).hasContent, false);
   });
 
-  it("needs the whole call for a verdict, not just the ticker", () => {
+  it("reopens a verdict at its call, since the target and horizon stay in the tab", () => {
     assert.equal(draftFacts({ ...base, type: "call", ticker: "PLAB" }).hasContent, false);
-    assert.equal(
-      draftFacts({
-        ...base,
-        type: "call",
-        ticker: "PLAB",
-        draft_direction: "long",
-        draft_target_price: 34,
-        draft_horizon_days: 45,
-      }).hasContent,
-      true,
-    );
+    assert.equal(draftFacts({ ...base, type: "call", ticker: "PLAB", stance: "long" }).hasContent, false);
   });
 });
 
@@ -72,14 +62,12 @@ describe("summarizeDraft", () => {
       type: "call",
       ticker: "PLAB",
       title: "Photronics guided flat and the mix says otherwise",
-      draft_direction: "short",
-      draft_target_price: 20,
-      draft_horizon_days: 30,
+      stance: "short",
     });
     assert.equal(s.typeLabel, "VERDICT");
-    assert.equal(s.done, 1);
-    assert.equal(s.percent, 50);
-    assert.equal(s.where, "Spine 2 of 2 · No tags");
+    assert.equal(s.done, 0);
+    assert.equal(s.percent, 0);
+    assert.equal(s.where, "Spine 1 of 2 · Call half entered");
     assert.equal(s.touchedAt, "2026-09-09T00:00:00Z");
   });
 

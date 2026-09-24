@@ -323,9 +323,9 @@ export async function listLinkableByAuthor(
 
 /**
  * The author's drafts as the type picker lists them: the row plus its body,
- * newest touched first. `*` rather than a column list so the draft-call
- * columns (migration 0065) come along once they exist and the query does not
- * fail while they do not.
+ * newest touched first. `*` rather than a column list so `stance`
+ * (migration 0065) comes along once it exists and the query does not fail
+ * while it does not.
  */
 export async function listDraftsForPicker(authorId: string, limit = 30): Promise<DraftRow[]> {
   const supabase = await createClient();
@@ -350,9 +350,7 @@ export async function listDraftsForPicker(authorId: string, limit = 30): Promise
       primary_tag: r.primary_tag ?? null,
       created_at: r.created_at,
       updated_at: r.updated_at ?? null,
-      draft_direction: r.draft_direction ?? null,
-      draft_target_price: r.draft_target_price ?? null,
-      draft_horizon_days: r.draft_horizon_days ?? null,
+      stance: r.stance ?? null,
     };
   });
 }

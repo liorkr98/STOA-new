@@ -330,15 +330,11 @@ export function StudioEditor({
   const [askSeed, setAskSeed] = useState<string | null>(null);
   const [promote, setPromote] = useState<PromoteState>(EMPTY_PROMOTE);
   const [researchDropActive, setResearchDropActive] = useState(false);
-  // The call. Null direction until chosen: a ticker on its own is not a
-  // call. Seeded from the draft-call columns when the database has them.
-  const [direction, setDirection] = useState<Direction | null>(initialDraft?.draft_direction ?? null);
-  const [target, setTarget] = useState(
-    initialDraft?.draft_target_price != null ? String(initialDraft.draft_target_price) : "",
-  );
-  const [horizon, setHorizon] = useState(
-    initialDraft?.draft_horizon_days ?? (isVerdict ? VERDICT_HORIZON_DEFAULT_DAYS : 30),
-  );
+  // The stance. Null direction until chosen: a ticker on its own declares
+  // none. Seeded from the draft's stance when the database has it.
+  const [direction, setDirection] = useState<Direction | null>(initialDraft?.stance ?? null);
+  const [target, setTarget] = useState("");
+  const [horizon, setHorizon] = useState(isVerdict ? VERDICT_HORIZON_DEFAULT_DAYS : 30);
   // A verdict is subscribers-only while it is open; the setting is not
   // offered on it.
   const [access, setAccess] = useState<AccessType>(
@@ -366,7 +362,7 @@ export function StudioEditor({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   // Said once on the call screen when the database could not keep the
-  // call's direction, target and horizon between sessions (migration 0065).
+  // draft's direction between sessions (migration 0065).
   const [callDraftNote, setCallDraftNote] = useState<string | null>(null);
   // An in-app link pressed with unsaved changes, held until the creator
   // decides whether to save, leave, or stay.
@@ -721,7 +717,7 @@ export function StudioEditor({
         draftIdRef.current = res.id;
         setDraftId(res.id);
         if (res.videoEditError) toast.error(res.videoEditError);
-        if (res.callDraftError && ticker.trim()) setCallDraftNote(res.callDraftError);
+        if (res.stanceError && ticker.trim()) setCallDraftNote(res.stanceError);
         // Cards need the report id, so they are written after the draft row
         // exists. A card failure must not read as a lost draft: the words are
         // already saved by this point.
@@ -943,11 +939,7 @@ export function StudioEditor({
             ? Boolean(initialDraft?.summary?.trim())
             : pubType === "thesis"
               ? tiptapPlainText(initialDoc).trim().length > 0
-              : Boolean(
-                  initialDraft?.ticker?.trim() &&
-                    initialDraft.draft_direction &&
-                    initialDraft.draft_target_price != null,
-                ),
+              : false,
       hasTitle: Boolean(initialDraft?.title?.trim()),
       hasTags: Boolean(initialDraft?.primary_tag),
     };

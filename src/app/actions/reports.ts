@@ -23,7 +23,7 @@ async function requireUser() {
  */
 export async function saveDraft(
   input: ComposeInput,
-): Promise<{ id: string; videoEditError?: string; callDraftError?: string }> {
+): Promise<{ id: string; videoEditError?: string; stanceError?: string }> {
   const { supabase, userId } = await requireUser();
   // A draft may be untagged; publish is where the primary tag becomes mandatory.
   const tags = await normalizeTags(supabase, input);
@@ -62,38 +62,33 @@ export async function saveDraft(
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
   const videoEditError = await storeVideoEdit(supabase, reportId, input);
-  const callDraftError = await storeDraftCall(supabase, reportId, input);
+  const stanceError = await storeStance(supabase, reportId, input);
 
   await captureVersion(supabase, reportId, userId, input);
 
-  return { id: reportId, videoEditError, callDraftError };
+  return { id: reportId, videoEditError, stanceError };
 }
 
 /**
- * The draft call's direction, target and horizon, in their own statement
+ * The draft's stance (its direction on the ticker), in its own statement
  * after the row so a missing column (migration 0065 not yet applied) costs
- * the creator a plain sentence rather than the draft. Only the ticker is
- * on the main row; without these three a reopened verdict draft had lost
- * most of its call.
+ * the creator a plain sentence rather than the draft. The ticker is on the
+ * main row; a direction without one is not kept.
  */
-async function storeDraftCall(
+async function storeStance(
   supabase: Awaited<ReturnType<typeof createClient>>,
   reportId: string,
-  input: Pick<ComposeInput, "ticker" | "direction" | "target_price" | "horizon_days">,
+  input: Pick<ComposeInput, "ticker" | "direction">,
 ): Promise<string | undefined> {
   const hasTicker = Boolean(input.ticker?.trim());
   const { error } = await supabase
     .from("reports")
-    .update({
-      draft_direction: hasTicker ? (input.direction ?? null) : null,
-      draft_target_price: hasTicker ? (input.target_price ?? null) : null,
-      draft_horizon_days: hasTicker ? (input.horizon_days ?? null) : null,
-    })
+    .update({ stance: hasTicker ? (input.direction ?? null) : null })
     .eq("id", reportId);
   if (!error) return undefined;
-  return /draft_direction|draft_target_price|draft_horizon_days/.test(error.message)
-    ? "The call's direction, target and horizon stay in this tab only: the database has no place for them yet."
-    : `The call's details could not be saved: ${error.message}`;
+  return /stance/.test(error.message)
+    ? "The direction stays in this tab only: the database has no place for it yet."
+    : `The direction could not be saved: ${error.message}`;
 }
 
 /**

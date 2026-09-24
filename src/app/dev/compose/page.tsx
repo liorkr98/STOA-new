@@ -129,9 +129,7 @@ const PICKER_DRAFTS: PickerDraft[] = (
       primary_tag: null,
       created_at: "2026-09-10T09:00:00Z",
       updated_at: "2026-09-14T15:00:00Z",
-      draft_direction: "short",
-      draft_target_price: 20,
-      draft_horizon_days: 30,
+      stance: "short",
       editedLabel: "2 days ago",
     },
     {
@@ -211,7 +209,7 @@ function draftFor(shape: Shape): Report | null {
         type: "call",
         status: "draft",
         ticker: "NVDA",
-        draft_direction: "long",
+        stance: "long",
         access: "subscribers",
       } as unknown as Report;
     default:

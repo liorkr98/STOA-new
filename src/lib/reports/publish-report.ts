@@ -99,6 +99,18 @@ async function saveDraftBody(
     .from("report_bodies")
     .upsert({ report_id: reportId, body: input.body ?? null }, { onConflict: "report_id" });
 
+  // The stance goes on the row before it locks, after which the database
+  // freezes it with the ticker. Tolerated while migration 0065 is unapplied:
+  // the call row below still carries the direction until then.
+  const { error: stanceErr } = await supabase
+    .from("reports")
+    .update({ stance: input.ticker ? (input.direction ?? null) : null })
+    .eq("id", reportId)
+    .eq("author_id", userId);
+  if (stanceErr && !/stance/.test(stanceErr.message)) {
+    throw new PublishReportError(`The direction could not be stored: ${stanceErr.message}`, 400);
+  }
+
   // Trim and overlays go on the row before it locks. A missing column used to
   // abort the whole publish as a 500, which production React showed as #441.
   // The clip can still attach if this write fails.

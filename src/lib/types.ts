@@ -102,14 +102,11 @@ export interface Report {
   updated_at?: string;
   fact_check_results?: Record<string, unknown> | null;
   /**
-   * A draft call's direction, target and horizon, kept between sessions
-   * (migration 0065). Only the ticker survived a reopened draft before; a
-   * verdict is nothing without the other three. Absent until the migration
-   * is applied.
+   * The publication's direction on `ticker`: long, short or hold, or null
+   * when it declares none (migration 0065). Drafts hold it too. Absent until
+   * the migration is applied.
    */
-  draft_direction?: Direction | null;
-  draft_target_price?: number | null;
-  draft_horizon_days?: number | null;
+  stance?: Direction | null;
   /** Compose video edit (trim and overlays), drawn by the player. See src/lib/compose/overlays.ts. */
   video_edit?: Record<string, unknown> | null;
   /** Mandatory disclosure block — never optional, always shown on published content. */

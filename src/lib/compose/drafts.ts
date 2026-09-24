@@ -23,9 +23,7 @@ export interface DraftRow {
   primary_tag: string | null;
   created_at: string;
   updated_at?: string | null;
-  draft_direction?: Direction | null;
-  draft_target_price?: number | null;
-  draft_horizon_days?: number | null;
+  stance?: Direction | null;
 }
 
 /** The spine's first step, by type. */
@@ -98,13 +96,9 @@ export function draftFacts(row: DraftRow): SpineFacts & { type: PublicationType 
       hasContent = bodyHasWords(row.body);
       break;
     case "verdict":
-      hasContent = Boolean(
-        row.ticker?.trim() &&
-          row.draft_direction &&
-          row.draft_target_price != null &&
-          row.draft_target_price > 0 &&
-          row.draft_horizon_days != null,
-      );
+      // The target and horizon are held in the tab until publish, so a
+      // reopened verdict always starts at its call.
+      hasContent = false;
       break;
   }
   return {

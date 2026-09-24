@@ -139,11 +139,13 @@ and nothing flips the publication public when the resolution engine settles
 it. The publish screen says so rather than pretending. Both need Krisi (see
 `docs/CHANGELOG.md`).
 
-**Draft calls between sessions.** Migration 0065 adds `draft_direction`,
-`draft_target_price` and `draft_horizon_days` on `reports`. Compose writes
-them in their own statement after the draft row, so before the migration is
-applied a draft still saves and the call screen says the three stay in the
-tab until then. Only the ticker survived a reopened draft before.
+**The stance between sessions.** Migration 0065 adds `reports.stance` (long,
+short or hold) beside `reports.ticker`. Compose writes it in its own
+statement after the draft row, so before the migration is applied a draft
+still saves and the call screen says the direction stays in the tab until
+then. A verdict's target and horizon are not kept: a reopened verdict starts
+at its call. Publish writes the stance before the row locks; once locked it
+is frozen with the ticker.
 
 ## Tags: type to narrow
 
