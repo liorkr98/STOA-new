@@ -5,7 +5,7 @@ import { resolveJobDispatch } from "@/lib/jobs/dispatch";
 
 /**
  * QStash job publisher. `enqueueOrRun` publishes a job to QStash when
- * configured, otherwise runs the work inline - so grading and the video
+ * configured, otherwise runs the work inline - so notifications and the video
  * pipeline keep working (synchronously, as today) before the QStash account
  * exists. When configured, the work moves off the request/cron function and
  * gains automatic retry + backoff + dead-letter.

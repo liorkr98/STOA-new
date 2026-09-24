@@ -10,7 +10,6 @@ export type Role = "user" | "analyst" | "admin";
 export type ContentType = "research" | "call" | "short_post" | "video";
 export type ReportStatus = "draft" | "published" | "archived";
 export type Direction = "long" | "short" | "hold";
-export type Outcome = "open" | "hit" | "near" | "partial" | "miss" | "neutral";
 export type AccessType = "free" | "subscribers" | "paid";
 export type SubscriptionStatus = "active" | "cancelled" | "expired";
 export type TxnType =
@@ -143,37 +142,6 @@ export interface DebateComment {
   body: string;
   created_at: string;
   author?: Profile;
-}
-
-export interface Prediction {
-  id: string;
-  report_id: string;
-  author_id: string;
-  ticker: string;
-  direction: Direction;
-  /** Entry price locked server-side at publish time. */
-  lock_price: number;
-  target_price: number | null;
-  /** Horizon in days from publish. */
-  horizon_days: number;
-  /** Last calendar day of the call horizon in the listing exchange timezone. */
-  target_horizon_date: string | null;
-  resolves_at: string;
-  /** Actual trading session date used when weekend/holiday substitution applies. */
-  resolution_trading_date: string | null;
-  resolved_price: number | null;
-  /** SPY price captured at publish, used for alpha. */
-  bench_lock_price: number | null;
-  /** S&P 500 return over the same window, in percent. */
-  benchmark_pct: number | null;
-  /** SPY price captured at resolution for audit. */
-  bench_resolved_price: number | null;
-  outcome: Outcome;
-  /** Signed return in percent, direction-aware. Null until resolved. */
-  return_pct: number | null;
-  created_at: string;
-  /** Parent report's status, joined in for callers that render a pendingReview state. */
-  report_status?: ReportStatus;
 }
 
 export interface Wallet {

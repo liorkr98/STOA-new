@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 /**
- * Minimal .env loader for tsx scripts (seed, grade). Loads .env.local then .env
+ * Minimal .env loader for tsx scripts (seeds, metrics). Loads .env.local then .env
  * without adding a dependency. Existing process.env values win.
  */
 function load(file: string) {

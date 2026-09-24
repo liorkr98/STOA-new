@@ -104,7 +104,7 @@ export async function runAllAlertTests(): Promise<AlertTestResult[]> {
       alertReportPublished(
         {
           reportId: "test-report-id",
-          title: `${TEST_PREFIX}First locked call on NVDA`,
+          title: `${TEST_PREFIX}First publication on NVDA`,
           type: "research",
           ticker: "NVDA",
           analystName: "Priya Raman",
@@ -116,7 +116,7 @@ export async function runAllAlertTests(): Promise<AlertTestResult[]> {
     ),
     runTest("cron-failure", "Cron failure", "bugs", () =>
       alertCronResult({
-        job: `${TEST_PREFIX}grade`,
+        job: `${TEST_PREFIX}refresh-ticker-metrics`,
         ok: false,
         error: "Simulated cron failure for integration testing.",
       }),
@@ -130,9 +130,9 @@ export async function runAllAlertTests(): Promise<AlertTestResult[]> {
     ),
     runTest("cron-success", "Cron success", "ops", () =>
       alertCronResult({
-        job: `${TEST_PREFIX}grade`,
+        job: `${TEST_PREFIX}refresh-ticker-metrics`,
         ok: true,
-        summary: { graded: 0, skipped: 0, test: true },
+        summary: { refreshed: 0, test: true },
       }),
     ),
   ]);

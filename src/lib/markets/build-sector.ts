@@ -175,7 +175,7 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
     ];
   });
 
-  // Ordered by how much they publish here, not by Track Score. Ranking the
+  // Ordered by how much they publish here, never by a score. Ranking the
   // analysts against each other is the thing this surface no longer does.
   const analysts: SectorAnalyst[] = [...perAnalyst.values()]
     .sort((a, b) => b.publications - a.publications)

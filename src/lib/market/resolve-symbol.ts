@@ -8,12 +8,11 @@ import { cacheKeys } from "@/lib/cache/keys";
 import { price as fmtPrice } from "@/lib/format";
 
 /**
- * What the compose call block learns about a symbol the creator typed.
+ * What the compose stance panel learns about a symbol the creator typed.
  *
- * A call is graded against a live price, so "recognised" means the same thing
- * here that it means at publish: the symbol is a listed name Stoa knows, or
- * one of the macro instruments, and it can be priced. A symbol that fails
- * both is a typo as far as the record is concerned, and the block says so
+ * "Recognised" means the symbol is a listed name Stoa knows, or one of the
+ * macro instruments, and it can be priced. A symbol that fails both is a
+ * typo, and the panel says so
  * before the creator gets anywhere near the publish button.
  */
 export interface ResolvedSymbol {
@@ -31,7 +30,7 @@ export interface ResolvedSymbol {
   /**
    * Last refreshed market capitalisation in USD, from the listing row. Null
    * for a macro instrument, and for a listing whose metrics have not been
-   * refreshed yet. The verdict's under-$2B rule reads it.
+   * refreshed yet.
    */
   marketCap: number | null;
   /** The level printed the way the instrument is read: "$178.20", "4.215%". */
