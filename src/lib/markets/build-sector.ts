@@ -121,7 +121,7 @@ async function assembleSector(sector: string): Promise<SectorPayload> {
     ? await supabase
         .from("reports")
         .select(REPORT_SELECT)
-        .in("status", ["published", "resolution_pending_review"])
+        .eq("status", "published")
         .in("ticker", symbols)
         .order("published_at", { ascending: false })
         .limit(120)

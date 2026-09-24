@@ -34,7 +34,7 @@ async function fetchPublishedReports(limit = 80): Promise<Report[]> {
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .order("published_at", { ascending: false })
     .limit(limit);
   return ((data as Record<string, unknown>[]) ?? []).map(normalizeReport);

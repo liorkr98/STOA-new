@@ -71,7 +71,7 @@ interface LiveStance {
   at: string;
 }
 
-const LIVE_STATUSES = ["published", "resolution_pending_review"];
+const LIVE_STATUSES = ["published"];
 const DIRECTIONS: Direction[] = ["long", "short", "hold"];
 const STANCE_PAGE = 1000;
 

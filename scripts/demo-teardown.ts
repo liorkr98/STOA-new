@@ -131,7 +131,7 @@ async function main() {
       .from("reports")
       .update({ status: "archived" })
       .eq("author_id", u.id)
-      .in("status", ["published", "resolution_pending_review", "draft"])
+      .in("status", ["published", "draft"])
       .select("id");
     if (error) console.error(`  could not archive ${u.email}: ${error.message}`);
     else archived += data?.length ?? 0;

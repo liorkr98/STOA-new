@@ -66,7 +66,7 @@ async function queryActivity(
   const { data: pubs } = await supabase
     .from("reports")
     .select("author_id")
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .gte("published_at", since)
     .limit(2000);
   const rows = (pubs as { author_id: string }[]) ?? [];

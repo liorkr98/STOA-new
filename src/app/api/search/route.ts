@@ -113,7 +113,7 @@ async function fallbackSearch(
     supabase
       .from("reports")
       .select("id, title, ticker, author:profiles!reports_author_id_fkey(handle)")
-      .in("status", ["published", "resolution_pending_review"])
+      .eq("status", "published")
       .or(`title.ilike.${like},ticker.ilike.%${upper}%`)
       .order("published_at", { ascending: false })
       .limit(limit),
@@ -157,7 +157,7 @@ async function searchReports(q: string, limit: number): Promise<SearchReportHit[
   const { data } = await supabase
     .from("reports")
     .select("id, title, ticker, author:profiles!reports_author_id_fkey(handle)")
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .or(`title.ilike.${like},ticker.ilike.%${upper}%`)
     .order("published_at", { ascending: false })
     .limit(limit);

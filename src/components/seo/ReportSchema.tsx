@@ -46,15 +46,10 @@ const ALT_NAME_BY_VERDICT: Record<Verdict, string> = {
 
 export function ReportSchema({ report }: { report: Report }) {
   const author = report.author;
-  // published_at survives a resolution_pending_review flip (the report never
-  // actually unpublished), but a draft/archived report can carry a stale
-  // published_at from a prior cycle -- gate on status too so schema markup
-  // never outlives what's actually indexable.
-  if (
-    !author ||
-    !report.published_at ||
-    (report.status !== "published" && report.status !== "resolution_pending_review")
-  ) {
+  // A draft/archived report can carry a stale published_at from a prior
+  // cycle -- gate on status too so schema markup never outlives what's
+  // actually indexable.
+  if (!author || !report.published_at || report.status !== "published") {
     return null;
   }
 

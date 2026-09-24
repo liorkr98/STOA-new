@@ -8,7 +8,7 @@ import type { ProfileConfig } from "@/lib/editor/types";
 
 export type Role = "user" | "analyst" | "admin";
 export type ContentType = "research" | "call" | "short_post" | "video";
-export type ReportStatus = "draft" | "published" | "archived" | "resolution_pending_review";
+export type ReportStatus = "draft" | "published" | "archived";
 export type Direction = "long" | "short" | "hold";
 export type Outcome = "open" | "hit" | "near" | "partial" | "miss" | "neutral";
 export type AccessType = "free" | "subscribers" | "paid";

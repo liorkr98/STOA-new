@@ -40,7 +40,7 @@ async function main() {
       .from("reports")
       .select("id", { count: "exact", head: true })
       .eq("author_id", u.id)
-      .in("status", ["published", "resolution_pending_review"]);
+      .eq("status", "published");
     const { count: hidden } = await db
       .from("reports")
       .select("id", { count: "exact", head: true })

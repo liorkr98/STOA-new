@@ -95,7 +95,7 @@ async function assembleTheme(theme: MarketTheme): Promise<ThemePayload> {
     supabase
       .from("reports")
       .select(REPORT_SELECT)
-      .in("status", ["published", "resolution_pending_review"])
+      .eq("status", "published")
       .in("ticker", symbols)
       .order("published_at", { ascending: false })
       .limit(120),

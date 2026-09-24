@@ -11,8 +11,8 @@
   --paper: #faf8f4;
   --verdigris: #2f6e5d;
   /* Deep antique brass: #b8863b read at 2.84:1 on paper -- an accessibility
-   * fail everywhere brass carries meaning (PendingReviewTag, provisional
-   * scores, Unproven claims). #855f22 keeps the ochre identity at 5.05:1 on
+   * fail everywhere brass carries meaning (Unproven claims, the edit
+   * marker). #855f22 keeps the ochre identity at 5.05:1 on
    * paper and 4.65:1 on surface-2 (C.2 rule 8). */
   --brass: #855f22;
   --plum: #5b4b6b;

@@ -100,7 +100,7 @@ export async function listFeed({
     let q = supabase
       .from("reports")
       .select(SELECT)
-      .in("status", ["published", "resolution_pending_review"]);
+      .eq("status", "published");
     q = applyReportColumnFilters(q, merged, mcapTickers);
     q =
       sort === "trending"
@@ -136,7 +136,7 @@ export async function listFeedFromAnalysts(
   let q = supabase
     .from("reports")
     .select(SELECT)
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .in("author_id", analystIds);
   q = applyReportColumnFilters(q, filters, mcapTickers);
   const { data } = await q.order("published_at", { ascending: false }).limit(fetchLimit);
@@ -204,7 +204,7 @@ export async function getPublishedForAuthor(
       .select(SELECT)
       .eq("id", id)
       .eq("author_id", authorId)
-      .in("status", ["published", "archived", "resolution_pending_review"])
+      .in("status", ["published", "archived"])
       .maybeSingle(),
     supabase.from("report_bodies").select("body").eq("report_id", id).maybeSingle(),
   ]);
@@ -251,14 +251,7 @@ export async function listByAuthor(
 ): Promise<Report[]> {
   const supabase = await createClient();
   let q = supabase.from("reports").select(SELECT).eq("author_id", authorId);
-  // "published" means "publicly visible": a report awaiting resolution review
-  // is still live at its permalink (see resolution_pending_review RLS policies),
-  // so it belongs alongside published reports here, not silently excluded.
-  if (opts.status === "published") {
-    q = q.in("status", ["published", "resolution_pending_review"]);
-  } else if (opts.status) {
-    q = q.eq("status", opts.status);
-  }
+  if (opts.status) q = q.eq("status", opts.status);
   const { data } = await q.order("created_at", { ascending: false }).limit(opts.limit ?? 50);
   return asReportRows(data).map(normalize);
 }
@@ -273,7 +266,7 @@ export async function listLinkableByAuthor(
     .from("reports")
     .select("id, title, summary, type, status, ticker")
     .eq("author_id", authorId)
-    .in("status", ["draft", "published", "resolution_pending_review"])
+    .in("status", ["draft", "published"])
     .in("type", opts.types)
     .order("updated_at", { ascending: false })
     .limit(opts.limit ?? 40);
@@ -327,7 +320,7 @@ export async function listTagUsage(): Promise<string[]> {
     const { data } = await supabase
       .from("reports")
       .select("primary_tag")
-      .in("status", ["published", "resolution_pending_review"])
+      .eq("status", "published")
       .not("primary_tag", "is", null)
       .limit(2000);
     const counts = new Map<string, number>();
@@ -346,7 +339,7 @@ export async function listRecentPublished(limit = 80): Promise<Report[]> {
     const { data } = await supabase
       .from("reports")
       .select(SELECT)
-      .in("status", ["published", "resolution_pending_review"])
+      .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
     return asReportRows(data).map(normalize);
@@ -360,7 +353,7 @@ export async function listPublishedByAuthors(authorIds: string[], limit = 24): P
   const { data } = await supabase
     .from("reports")
     .select(SELECT)
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .in("author_id", authorIds)
     .order("published_at", { ascending: false })
     .limit(limit);
@@ -390,7 +383,7 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
     const { data } = await supabase
       .from("reports")
       .select(SELECT)
-      .in("status", ["published", "resolution_pending_review"])
+      .eq("status", "published")
       .eq("ticker", sym)
       .order("published_at", { ascending: false })
       .limit(limit);
@@ -403,9 +396,7 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
  * both the /markets/[ticker] noindex decision and sitemap.ts's inclusion
  * filter. One query shape in one place so the two can't drift out of sync (a
  * ticker page and its sitemap entry disagreeing on indexability is its own
- * SEO bug). Locked (not just published) means genuinely immutable content;
- * resolution_pending_review is included since the report itself never
- * unpublished, only one call's grading is waiting on market data.
+ * SEO bug). Locked (not just published) means genuinely immutable content.
  */
 export const publishedReportCount = cache(async (ticker: string): Promise<number> => {
   const supabase = createPublicClient();
@@ -413,7 +404,7 @@ export const publishedReportCount = cache(async (ticker: string): Promise<number
     .from("reports")
     .select("id", { count: "exact", head: true })
     .eq("ticker", ticker.toUpperCase())
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .not("locked_at", "is", null);
   return count ?? 0;
 });
@@ -436,7 +427,7 @@ export async function listLockedReportRoutes(
   const { data } = await supabase
     .from("reports")
     .select("id, locked_at")
-    .in("status", ["published", "resolution_pending_review"])
+    .eq("status", "published")
     .not("locked_at", "is", null)
     .order("locked_at", { ascending: false })
     .limit(limit);

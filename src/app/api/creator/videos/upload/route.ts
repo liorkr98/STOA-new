@@ -61,10 +61,7 @@ export const POST = withHandler(
     if (!report || report.author_id !== user!.id) {
       throw new ApiError("not_found", "report not found");
     }
-    const locked =
-      report.locked_at != null ||
-      report.status === "published" ||
-      report.status === "resolution_pending_review";
+    const locked = report.locked_at != null || report.status === "published";
     if (!locked) {
       throw new ApiError("conflict", "Lock or publish the report before attaching a video.");
     }
