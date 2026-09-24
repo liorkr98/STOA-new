@@ -565,7 +565,7 @@ export async function deleteReport(id: string) {
   revalidatePath("/studio");
 }
 
-/** Hides a published report from feeds. Track record (prediction) is preserved. */
+/** Hides a published report from feeds. The row and its stance are preserved. */
 export async function archiveReport(id: string) {
   const { supabase, userId } = await requireUser();
 

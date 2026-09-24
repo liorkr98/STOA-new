@@ -7,7 +7,7 @@ import { getDispatchVideos } from "@/lib/video/dispatch-videos";
 
 export const metadata: Metadata = {
   title: "Today's Dispatch",
-  description: "Stoa's daily editorial briefing of locked calls and graded research.",
+  description: "Stoa's daily editorial briefing of independent research.",
 };
 
 /** Public daily dispatch. Signed-in readers use /home. */

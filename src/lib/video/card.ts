@@ -63,8 +63,6 @@ export function toVideoCardData(card: VideoClipCard): VideoCardData | null {
       handle: author?.handle ?? "",
       displayName: author?.display_name ?? "Analyst",
       avatarUrl: author?.avatar_url ?? null,
-      score: author?.score || null,
-      sampleSize: author?.sample_size,
     },
     disclosure: {
       positionHeld: report.position_held,

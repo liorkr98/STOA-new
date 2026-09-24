@@ -12,7 +12,7 @@ import type { Poll } from "@/lib/db/polls";
  * PollCard (H3). A surface card -- NEVER .ledger-card -- with horizontal result
  * bars on the categorical palette and tabular percentages. One vote per user
  * (changeable until close). Always labelled community sentiment: a poll is not
- * a call and is never scored.
+ * an analyst's view.
  */
 
 function isClosed(poll: Poll): boolean {

@@ -4,7 +4,7 @@ import type { DispatchStory } from "@/lib/dispatch/types";
 /**
  * Featured stories after the lead: a two-column newspaper block with a real
  * column rule. Denser than cards, richer than a wire line -- each story gets
- * a serif headline, a clamped dek, and a byline with the analyst's score.
+ * a serif headline, a clamped dek, and a byline.
  */
 export function DispatchStoryList({
   stories,

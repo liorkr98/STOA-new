@@ -22,7 +22,7 @@ export interface ProfilePublication {
   kind: "video" | "written";
   /** The clip exists but is still being prepared; the tile keeps its media area and says so. */
   processing?: boolean;
-  typeLabel: "VIDEO" | "BRIEF" | "THESIS" | "VERDICT";
+  typeLabel: "VIDEO" | "BRIEF" | "THESIS";
   /** The publication's own ticker and, beside it, its stance (anchoring rule). */
   ticker: string | null;
   direction: Direction | null;

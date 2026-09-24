@@ -13,12 +13,11 @@ export function DispatchForCreators() {
           For analysts
         </p>
         <h2 className="mt-3 font-display text-xl font-semibold text-text">
-          Your next call could lead this page
+          Your next piece could lead this page
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-mute">
-          Publish conviction-backed research. Build a permanent, public record of calls the
-          market has already graded. The dispatch features the day&apos;s best work, chosen on
-          merit, never bought.
+          Publish conviction-backed research. The dispatch features the day&apos;s best work,
+          chosen on merit, never bought.
         </p>
         <Link href="/become-analyst" className={`${buttonClass("secondary", "md")} mt-5`}>
           Start publishing

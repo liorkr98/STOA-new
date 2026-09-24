@@ -20,7 +20,7 @@ export function ComposeHeader({
   children,
   className,
 }: {
-  /** After COMPOSE, e.g. "Verdict". */
+  /** After COMPOSE, e.g. "Thesis". */
   crumb?: string | null;
   children?: React.ReactNode;
   className?: string;

@@ -21,7 +21,6 @@ export default async function FollowingPage() {
     href: `/analyst/${a.handle}`,
     name: a.display_name,
     initials: initialsOf(a.display_name),
-    score: a.score ?? null,
     specialty: a.headline?.trim().toUpperCase() || "INDEPENDENT ANALYST",
     // Placeholder: no per-analyst monthly publication count in the backend yet.
     pubs: "— PUBLICATIONS THIS MONTH",

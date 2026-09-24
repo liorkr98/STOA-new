@@ -21,9 +21,7 @@ export function FirstReportBanner() {
         <div>
           <p className="t-h3">Your first report</p>
           <p className="t-body mt-1 text-sm">
-            Write in the center. Use Lock &amp; Publish on the right (or the panel button on
-            mobile) for ticker, target, access, and disclosures. Publishing locks your call for
-            the Track Score.
+            Write in the center, then publish from the last step: tags, access and disclosures.
           </p>
         </div>
         <button
@@ -38,7 +36,7 @@ export function FirstReportBanner() {
       <ul className="mt-4 grid gap-2.5 sm:grid-cols-3">
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <LockSimple size={15} className="mt-0.5 shrink-0 text-accent" />
-          A call locks when you publish. Entry is the live price; target is the number you set.
+          A ticker and a direction are optional. Once published, they cannot change.
         </li>
         <li className="flex items-start gap-2 text-sm text-text-mute">
           <Sparkle size={15} className="mt-0.5 shrink-0 text-accent" />

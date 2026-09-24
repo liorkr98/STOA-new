@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 /**
  * Explore is on-demand discovery: a wall of faces the reader scans and picks
  * from, handing off to the Feed player. Order comes from the Explore ranker
- * (likes, comments, follow probability, velocity; MOAT is a light gate). Tile
+ * (likes, comments, follow probability, velocity). Tile
  * size follows that order; the wall packs without gaps.
  */
 export default async function ExplorePage({

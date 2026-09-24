@@ -74,9 +74,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     .eq("report_id", id)
     .maybeSingle();
 
-  // The stance is the publication's; the target, while grading runs, is the
-  // call's. This used to ask predictions for a `horizon_date` column that does
-  // not exist, so the lookup always failed and no brief mentioned either.
+  // The direction is the publication's stance.
   const { direction } = stanceChips(report);
 
   const spend = await spendAiCredits("audioBrief", `Audio brief for ${report.title ?? id}`);

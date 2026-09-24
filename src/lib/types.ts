@@ -32,17 +32,6 @@ export interface Profile {
   cover_url: string | null;
   bio: string | null;
   headline: string | null;
-  /** 0-100 analyst score from the engine (tiers, breakdown). */
-  score: number;
-  /** 600-1400 public display rating. */
-  rating: number;
-  tier: string;
-  /** Score breakdown, persisted at grading time so the analytics page never recomputes from raw calls. */
-  wilson_win_rate?: number | null;
-  profit_factor?: number | null;
-  avg_return?: number | null;
-  avg_alpha?: number | null;
-  sample_size?: number;
   identity_verified?: boolean;
   followers_count: number;
   /** Monthly subscription price in USD. */

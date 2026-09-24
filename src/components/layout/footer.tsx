@@ -40,8 +40,7 @@ export function Footer() {
         <div className="flex flex-col gap-3">
           <StoaLogo />
           <p className="t-meta max-w-xs">
-            A marketplace for independent stock research, with a verified public track record on
-            every call. Think clearly. Invest better.
+            A marketplace for independent stock research. Think clearly. Invest better.
           </p>
         </div>
         {groups.map((g) => (

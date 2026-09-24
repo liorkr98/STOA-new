@@ -8,12 +8,12 @@ import { buildTodayPage } from "@/lib/today/build-today-page";
 export const metadata: Metadata = {
   title: "Today",
   description:
-    "Stoa's daily briefing: the lead, what is trending, and the calls the market just graded.",
+    "Stoa's daily briefing: the lead and what is trending.",
 };
 
 /**
  * Today is Stoa's daily newspaper. Signed-in readers get their desk and lists;
- * signed-out readers get the platform-wide issue, so Verdicts is a real,
+ * signed-out readers get the platform-wide issue, so Today is a real,
  * server-rendered, indexable page for someone who has never heard of Stoa.
  */
 export default async function HomePage() {

@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 export function PaywallGate({
   previewText,
   headline = "Unlock the full report",
-  body = "The locked call and the disclosures stay visible. The research body unlocks with purchase or subscription.",
+  body = "The stance and the disclosures stay visible. The research body unlocks with purchase or subscription.",
   onUnlock,
   onSubscribe,
   isAuthed,

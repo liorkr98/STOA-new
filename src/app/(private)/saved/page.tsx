@@ -91,7 +91,6 @@ export default async function LibraryPage() {
       analystName: r.author?.display_name ?? "Analyst",
       analystInitials: initialsOf(r.author?.display_name ?? "A"),
       analystHref: r.author?.handle ? `/analyst/${r.author.handle}` : "#",
-      analystScore: r.author?.score ?? null,
       state,
       chipTone,
       locked,

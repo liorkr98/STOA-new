@@ -73,7 +73,7 @@ export function CreatePollForm() {
       <div>
         <h2 className="t-h3">New poll</h2>
         <p className="t-meta mt-1">
-          Ask your audience. Results are community sentiment, never part of your track record.
+          Ask your audience. Results are community sentiment.
         </p>
       </div>
 

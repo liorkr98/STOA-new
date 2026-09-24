@@ -33,7 +33,7 @@ const FEED_CANDIDATE_POOL = 120;
  * over: the reader taps a face on the wall and lands on that face here.
  *
  * Order comes from the Feed ranker (likes, comments, completion, click-through,
- * watchlist, recency; MOAT is a light gate). Not recency alone.
+ * watchlist, recency). Not recency alone.
  *
  * **Signed in only.** Streaming video is the most expensive thing the product
  * does per view, and an anonymous scroll spends that money with no account to

@@ -4,7 +4,7 @@ import type { DispatchStory } from "@/lib/dispatch/types";
 
 /**
  * The wire: dense one-line stories below the featured block. Ticker in a
- * fixed mono gutter, serif headline as the link, byline and score trailing.
+ * fixed mono gutter, serif headline as the link, byline trailing.
  * Reads like a front page's "more stories" rail, not a feed of tiles.
  */
 export function DispatchWire({ stories }: { stories: DispatchStory[] }) {

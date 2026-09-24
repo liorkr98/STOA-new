@@ -8,18 +8,14 @@ export default function AboutPage() {
       <h1 className="t-h1">About Stoa</h1>
       <p className="t-body mt-4">
         Stoa is a marketplace for independent stock research. Analysts publish their work and set
-        their own pricing; investors browse verified track records and pay for the voices they
-        trust.
+        their own pricing; investors pay for the voices they trust.
       </p>
       <p className="t-body mt-4">
         The name comes from the ancient Athenian Stoa, a public colonnade where people gathered to
-        argue ideas and do business. That is the spirit here: open debate, real accountability, and
-        a permanent record of who was right.
+        argue ideas and do business. That is the spirit here: open debate and real accountability.
       </p>
       <p className="t-body mt-4">
-        Unlike legacy research platforms, analysts on Stoa own their subscriber relationships, and
-        every prediction is scored into a public, non-transferable track record. If an analyst
-        leaves, their score stays.
+        Unlike legacy research platforms, analysts on Stoa own their subscriber relationships.
       </p>
     </div>
   );

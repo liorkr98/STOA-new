@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 
 /**
  * Archiving is the closest thing to deleting a publication, and the copy here
- * is the product's honesty about the difference. A creator must not close this
- * believing a locked call went away with it.
+ * is the product's honesty about the difference: the publication stays on
+ * record, hidden, and can be restored.
  */
 export function ArchiveDialog({
   id,

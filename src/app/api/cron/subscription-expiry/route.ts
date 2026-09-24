@@ -10,9 +10,8 @@ export const maxDuration = 60;
 
 /**
  * Daily subscription expiry: an active subscription past its renewal date is
- * marked expired, which ends the paid access it granted. Deliberately its own
- * job, independent of grading, so switching grading off never leaves lapsed
- * subscribers with access. Daily because this Vercel plan rejects sub-daily
+ * marked expired, which ends the paid access it granted. Its own job: it used
+ * to ride inside the retired grading run. Daily because this Vercel plan rejects sub-daily
  * schedules. Protected by CRON_SECRET.
  */
 export async function GET(request: NextRequest) {

@@ -20,7 +20,6 @@ export interface LibraryItem {
   analystName: string;
   analystInitials: string;
   analystHref: string;
-  analystScore: number | null;
   state: string;
   chipTone: "ink" | "outline";
   locked: boolean;

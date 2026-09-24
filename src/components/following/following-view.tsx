@@ -10,7 +10,6 @@ export interface FollowCreator {
   href: string;
   name: string;
   initials: string;
-  score: number | null;
   specialty: string;
   pubs: string;
 }

@@ -9,12 +9,12 @@ import { MarketTapeFallback, MarketTapeSlot } from "@/components/markets/market-
 export const metadata: Metadata = {
   title: "Stoa - Think clearly. Invest better.",
   description:
-    "Independent analysts publish their research on video. Every call locks at publish and is graded by the market, hits and misses alike.",
+    "Independent analysts publish their research on video.",
 };
 
 /**
  * The signed-out root: the doors, a glimpse of Today (headlines only), the
- * most popular verdicts beside the most popular creators, and the footer.
+ * most popular creators, and the footer.
  * Built from real rows; a section with nothing to show collapses. Signed-in
  * readers go straight to Today.
  */

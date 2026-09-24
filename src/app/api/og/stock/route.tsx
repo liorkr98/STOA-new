@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 
   // Subset each font request to only the glyphs the card actually renders --
   // smaller font payload, faster Edge response.
-  const monoText = `${ticker}$.0123456789STOAVERIFIEDANALYSTLEDGERIMMUTABLETRACKRECORD·`;
+  const monoText = `${ticker}$.0123456789STOAINDEPENDENTANALYSTRESEARCH·`;
   const serifText = name || ticker;
 
   // Satori has no built-in fallback font -- it throws ("No fonts are loaded")
@@ -146,7 +146,7 @@ export async function GET(req: Request) {
                 textTransform: "uppercase",
               }}
             >
-              {`Verified analyst ledger ${String.fromCharCode(0xb7)} Immutable track record`}
+              {"Independent analyst research"}
             </span>
           </div>
         </div>

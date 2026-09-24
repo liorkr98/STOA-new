@@ -36,7 +36,7 @@ export interface VideoClip {
   click_through_count?: number;
 }
 
-/** A published clip joined to its report (with author + prediction) for feed cards. */
+/** A published clip joined to its report (with author and stance) for feed cards. */
 export interface VideoClipCard extends VideoClip {
   report: Report | null;
 }
@@ -54,7 +54,7 @@ const REPORT_CARD_COLUMNS =
 /** The card select. `stance` is named only once the column exists (migration 0065). */
 async function cardSelect(): Promise<string> {
   const columns = (await reportsHaveStance()) ? `${REPORT_CARD_COLUMNS}, stance` : REPORT_CARD_COLUMNS;
-  return `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${columns}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url, score), ${CALL_JOIN})`;
+  return `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${columns}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url), ${CALL_JOIN})`;
 }
 
 function normalizeCard(row: Record<string, unknown>): VideoClipCard {
@@ -192,12 +192,9 @@ export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
       .order("published_at", { ascending: false })
       .limit(limit);
     if (error || !data) return [];
-    // A verdict's clip travels with the verdict, for the people who can open
-    // it. It is never a Feed or Explore item: the verdict is subscribers-only
-    // while the call is open, and the wall is for strangers.
     return (data as unknown as Record<string, unknown>[])
       .map(normalizeCard)
-      .filter((c) => c.report && c.report.status === "published" && c.report.type !== "call");
+      .filter((c) => c.report && c.report.status === "published");
   });
 }
 

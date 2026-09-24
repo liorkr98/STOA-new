@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!name) return { title: "Sector" };
   return {
     title: `${name} · Sector`,
-    description: `Analyst coverage, open calls, and verified track records across ${name} on Stoa.`,
+    description: `Independent analyst coverage across ${name} on Stoa.`,
     alternates: { canonical: `/markets/sector/${encodeURIComponent(name)}` },
   };
 }

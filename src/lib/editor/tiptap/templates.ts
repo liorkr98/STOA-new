@@ -113,7 +113,7 @@ function initiatingCoverage(ticker?: string, peers: string[] = []): JSONContent 
       h2("Cover summary"),
       p("Investment view in two sentences. What you believe and why now."),
       bullet([
-        "Recommendation framing (your words — locked call stays in the publish panel)",
+        "Recommendation framing (your words — the stance is set on the publish screen)",
         "Key metric that drives the thesis",
         "Primary catalyst in the next 6–12 months",
       ]),

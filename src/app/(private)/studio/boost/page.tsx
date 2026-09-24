@@ -18,7 +18,7 @@ export default async function BoostPage() {
         <EmptyState
           icon={<Megaphone size={32} />}
           title="Boost is not for sale yet"
-          body="When it is, every promoted placement will be labelled Promoted. It will never change your Track Score or where your calls rank on merit."
+          body="When it is, every promoted placement will be labelled Promoted. It will never change where your work ranks on merit."
         />
       </div>
     </div>

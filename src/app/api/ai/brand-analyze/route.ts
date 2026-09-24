@@ -65,7 +65,7 @@ function mockAnalyze(input: z.infer<typeof inputSchema>): BrandAnalyzeResult {
   if (!input.bio?.trim()) {
     suggestions.push({
       field: "bio",
-      proposed: `Independent analyst covering ${input.specialties.join(", ") || "US equities"}. Every call is scored on a permanent track record.`,
+      proposed: `Independent analyst covering ${input.specialties.join(", ") || "US equities"}.`,
       reason: "Lead with coverage and accountability.",
     });
   }

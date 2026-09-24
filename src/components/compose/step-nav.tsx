@@ -100,7 +100,7 @@ export function StepFrame({
   status,
   children,
 }: {
-  /** "Step 1 of 2", "Add to this verdict · optional", "Ready when you are". */
+  /** "Step 1 of 2", "Add to this thesis · optional", "Ready when you are". */
   eyebrow: string;
   title: string;
   /** Only where a rule has to be stated (a live publication's read-only clip). */

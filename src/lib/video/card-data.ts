@@ -11,8 +11,6 @@ export interface VideoCardAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
-  score: number | null;
-  sampleSize?: number;
 }
 
 export interface VideoCardData {

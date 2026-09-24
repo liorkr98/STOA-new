@@ -2,8 +2,8 @@
 
 /* ------------------------------------------------------------------ *
  * Stoa design tokens. See design-system/MASTER.md.
- * The notary's ledger, not a trading terminal: ink on paper, a seal
- * that makes a claim permanent. Light is the default; .dark overrides.
+ * The notary's ledger, not a trading terminal: ink on paper. Light is
+ * the default; .dark overrides.
  * ------------------------------------------------------------------ */
 
 :root {
@@ -623,55 +623,8 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-/* ------------------------------------------------------------------ *
- * Seal stamp -- the signature motif. See SealStamp component.
- * ------------------------------------------------------------------ */
-
-/* The lock ceremony (docs/MOTION.md A.3), three phases in one 400ms run:
- * press (0-20%, the only sanctioned ease-in -- it's a physical press),
- * settle with the 8deg rotation returning to rest (ease-out), and the
- * ink-bleed overlapping the settle on a separate element. */
-@keyframes seal-press {
-  0% {
-    transform: scale(1) rotate(8deg);
-    opacity: 0;
-    animation-timing-function: ease-in;
-  }
-  20% {
-    transform: scale(0.96) rotate(8deg);
-    opacity: 1;
-    animation-timing-function: var(--ease-out);
-  }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-@keyframes seal-ink-bleed {
-  0% { opacity: 0.5; transform: scale(0.6); filter: blur(2px); }
-  100% { opacity: 0; transform: scale(1.8); filter: blur(0); }
-}
-
-.seal-press {
-  animation: seal-press var(--dur-ceremony) both;
-}
-
-.seal-ink-bleed {
-  animation: seal-ink-bleed 320ms var(--ease-out) 80ms both;
-}
-
-/* Resolution stamp (HIT/MISS): same language, smaller. Plays once when the
- * resolved card first enters the viewport; never re-triggers on scroll. */
-@keyframes seal-resolve {
-  from { transform: scale(1.15) rotate(4deg); opacity: 0; }
-  to { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-.seal-resolve {
-  animation: seal-resolve 300ms var(--ease-out) both;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .pulse-dot { animation: none; }
-  .seal-press, .seal-ink-bleed { animation: none !important; opacity: 1; transform: none; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -869,19 +822,6 @@ body {
   }
 }
 
-/* Landing seal stage (21st sketch, Stoa tokens). Seal is the only circle. */
-.landing-hero-seal {
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
-  background:
-    radial-gradient(
-      circle at 50% 40%,
-      var(--surface) 0%,
-      var(--paper) 70%,
-      var(--surface-2) 100%
-    );
-}
-
 .landing-tilt-1 { transform: rotate(-5deg) translateY(-4px); }
 .landing-tilt-2 { transform: rotate(4deg) translateY(2px); }
 .landing-tilt-3 { transform: rotate(-2deg); }
@@ -891,10 +831,6 @@ body {
 @keyframes landing-float {
   from { transform: translateY(0); }
   to { transform: translateY(-6px); }
-}
-
-@keyframes landing-seal-spin {
-  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -909,21 +845,17 @@ body {
     animation: landing-float 8s var(--ease-in-out) infinite alternate;
     animation-delay: 1s;
   }
-  .landing-seal-spin {
-    animation: landing-seal-spin 60s linear infinite;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .landing-float-a,
   .landing-float-b,
-  .landing-float-c,
-  .landing-seal-spin {
+  .landing-float-c {
     animation: none;
   }
 }
 
-/* Optional paper texture (B4): storefront + seal moments only, <=3% opacity,
+/* Optional paper texture (B4): storefront moments only, <=3% opacity,
  * never under reading text. Default off; the storefront opts in per-analyst.
  * Removed entirely under reduced motion (it is decoration, not content). */
 .paper-texture {
@@ -1395,19 +1327,6 @@ body {
   align-items: baseline;
   gap: var(--space-3);
   padding-block: 0.6875rem;
-}
-
-/* Ledger table: tabular numerals, hairline rows, no card chrome. */
-.dispatch-ledger {
-  font-variant-numeric: tabular-nums;
-}
-.dispatch-ledger th {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
 }
 
 /* End slug: the issue has a real ending. */
@@ -2083,27 +2002,6 @@ body {
   padding: var(--space-5);
 }
 
-.calls-chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-5);
-  margin-top: var(--space-4);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 0.5938rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.calls-chart-legend-key {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
 .calls-tape {
   width: 100%;
   overflow: hidden;
@@ -2491,28 +2389,6 @@ body {
   color: var(--text);
 }
 
-.sheet-consensus {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-5);
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--r-card);
-}
-
-.sheet-calls {
-  margin-top: var(--space-5);
-}
-
-.sheet-call {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding-block: var(--space-3);
-  border-bottom: 1px solid var(--border);
-}
-
 .sheet-full {
   display: inline-flex;
   align-items: center;
@@ -2712,15 +2588,15 @@ body {
  *
  * One card anatomy, five type sizes, one dashed rule, zero radius on
  * every image. What keeps it Stoa's own is what sits inside the grid: the
- * seal, the Verdicts ledger, the mono data voice, and the accent, which is
- * a single variable so the whole page follows one decision.
+ * mono data voice and the accent, which is a single variable so the whole
+ * page follows one decision.
  * ------------------------------------------------------------------ */
 
 .today-sheet {
   /* A darkened brass: 5.3:1 on the paper, enough for 10.5px eyebrows and
-     14px names. The site's brass token is for chips and seals; this one is
-     for small text. Green and red stay strictly semantic on the page: the
-     direction word inside an eyebrow, returns, and the seals. */
+     14px names. The site's brass token is for chips; this one is for small
+     text. Green and red stay strictly semantic on the page: the direction
+     word inside an eyebrow. */
   --today-accent: #8a5e2b;
   /* Over the lead's dark scrim: a light brass, 8:1 on the scrim. */
   --today-accent-scrim: #e6c48a;

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · Stoa",
   },
   description:
-    "A marketplace for independent stock research with a verified, public track record on every call.",
+    "A marketplace for independent stock research.",
   appleWebApp: {
     capable: true,
     title: "Stoa",

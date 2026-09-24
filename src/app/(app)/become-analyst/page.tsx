@@ -63,7 +63,7 @@ export default async function BecomeAnalystPage({
       <h1 className="t-h1">Apply to publish research</h1>
       <p className="t-body mt-2 text-text-mute">
         Stoa is invite quality. We review every application to keep the signal high. Once
-        approved you can publish reports, price predictions, and short notes.
+        approved you can publish videos, reports and short notes.
       </p>
 
       <form action={submitAnalystApplication} className="mt-8 flex flex-col gap-6">

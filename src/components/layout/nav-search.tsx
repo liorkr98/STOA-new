@@ -10,7 +10,6 @@ type CreatorHit = {
   id: string;
   handle: string;
   display_name: string;
-  score: number;
 };
 
 type TickerHit = {

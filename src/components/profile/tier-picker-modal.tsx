@@ -70,7 +70,7 @@ export function TierPickerModal({
         </button>
 
         <h2 className="t-h2 font-display">Subscribe to {firstName}</h2>
-        <p className="t-body mt-2">Locked at publication, graded by the market. Cancel anytime.</p>
+        <p className="t-body mt-2">Cancel anytime.</p>
 
         {!isAuthed ? (
           <Link href="/sign-in" className={buttonClass("primary", "lg", "mt-6 w-full")}>

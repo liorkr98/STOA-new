@@ -28,7 +28,7 @@ export function PublishDetailsDialog({
                 Before you publish
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-[0.8125rem] leading-snug text-text-mute">
-                Tags, who can read it, and an optional locked call. Same idea as filling in the details after an upload.
+                Tags, who can read it, and an optional stance. Same idea as filling in the details after an upload.
               </Dialog.Description>
             </div>
             <Dialog.Close
