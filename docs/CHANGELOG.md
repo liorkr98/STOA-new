@@ -76,10 +76,17 @@ opened on AAPL (LONG), SCO (LONG) and INTC (ticker alone). Compose still
 saves drafts and reaches Publish for a verdict and a thesis, with the same
 number of taps. The test drafts were deleted.
 
-**4. Deleting publications: a decision for Bar, not changed.** Migration
-0062 lets a creator delete a publication only when it has no call. Once no
-publication has a call, every publication becomes deletable. The options are
-listed in the batch report. Nothing changes until one is chosen.
+**4. Deleting publications, decided by Bar.** Migration 0062 allowed
+deleting any publication with no call, which would have made everything
+deletable once calls are gone. Now a published publication that declares a
+stance can be archived but never deleted, which refuses exactly what 0062
+refused. A publication anyone has bought is never deleted, whatever its
+stance: before this, a paid publication with no call could be deleted and
+the buyer lost it. The Studio offers Delete only where the rule allows it,
+the server checks again, and migration 0066 enforces it in the database.
+Rehearsed in a local Postgres. The Studio at 1440 and 390 shows Delete on
+45 of Marcus Webb's 100 publications, exactly the ones with no call and no
+purchase.
 
 **Reconciliation pass.** Every surface that showed a ticker or direction was
 checked for anything still reading them from the call; TypeScript now
@@ -95,7 +102,8 @@ the Studio offers to delete.
 
 **For Krisi**
 
-- **Apply `0065_publication_stance.sql`.** Do not apply the old
+- **Apply `0065_publication_stance.sql`, then `0066_delete_rule_stance_and_purchases.sql`**
+  (0066 needs 0065's column). Do not apply the old
   `0065_draft_call_fields.sql`; it is gone from the repo. It prints "Stance
   copied: 1128 of 1128" (or the count on the day). If it refuses, nothing
   changed and the message says which rows disagree. Until it is applied a
