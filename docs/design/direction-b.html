@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stoa — Direction B, in depth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#FAFAFA;--card:#FFFFFF;--sunk:#F2F3F5;--ink:#101418;--mu:#5B6470;--ln:#E6E8EB;
+ --ac:#FF5A47;--ac-tx:#C8321F;--up:#12B981;--up-tx:#087A55;--dn:#E5484D;--dn-tx:#C92A31;
+ --disp:"Bricolage Grotesque",system-ui,sans-serif;--ui:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1216;--card:#171B20;--sunk:#1D2127;--ink:#F3F4F6;--mu:#A0A8B3;--ln:#2A2F36;--ac-tx:#FF7A6A;--up-tx:#34D399;--dn-tx:#F87171}}
+:root[data-theme="dark"]{--bg:#0F1216;--card:#171B20;--sunk:#1D2127;--ink:#F3F4F6;--mu:#A0A8B3;--ln:#2A2F36;--ac-tx:#FF7A6A;--up-tx:#34D399;--dn-tx:#F87171}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+p{margin:0}h1,h2,h3,h4{margin:0}
+img{max-width:100%}
+.face{background:radial-gradient(circle at 50% 36%,rgba(255,255,255,.34) 0 16%,transparent 16.6%),radial-gradient(ellipse 46% 40% at 50% 100%,rgba(255,255,255,.34) 0 98%,transparent 100%),linear-gradient(160deg,var(--c1),var(--c2))}
+
+/* prototype switcher */
+.proto{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--ink);color:var(--bg);display:flex;gap:6px;align-items:center;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.proto::-webkit-scrollbar{display:none}
+.proto span{font:600 11px var(--ui);opacity:.6;margin-right:6px;white-space:nowrap}
+.proto button{font:600 13px var(--ui);background:transparent;color:var(--bg);border:1px solid color-mix(in srgb,var(--bg) 30%,transparent);border-radius:99px;padding:6px 13px;cursor:pointer;white-space:nowrap}
+.proto button[aria-pressed="true"]{background:var(--bg);color:var(--ink)}
+.screen{display:none}.screen.on{display:block}
+
+/* shared chrome */
+.nav{display:flex;align-items:center;gap:26px;padding:14px 32px;border-bottom:1px solid var(--ln);background:var(--bg)}
+.wm{font:800 23px var(--disp);letter-spacing:-.04em}
+.nav a{color:var(--mu);text-decoration:none;font-weight:500}.nav a.on{color:var(--ink)}.sp{margin-left:auto}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 14px var(--ui);padding:10px 18px;border-radius:99px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ln)}
+.btn.coral{background:var(--ac);color:#101418}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px 80px}
+.narrow{max-width:760px;margin:0 auto}
+
+/* the accent-as-object system */
+.arrow{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ac);color:#101418;font-size:12px;flex:none;font-weight:700}
+.arrow.dn{transform:rotate(180deg)}
+.chip{display:inline-flex;align-items:center;font:600 12px var(--ui);padding:5px 11px;border-radius:99px;border:1.5px solid var(--ac-tx);color:var(--ac-tx);white-space:nowrap}
+.chip.fill{background:var(--ac);border-color:var(--ac);color:#101418}
+.chip.quiet{border-color:var(--ln);color:var(--mu)}
+.sym{font:600 20px var(--mono);letter-spacing:-.01em}
+.up{color:var(--up-tx)}.dn{color:var(--dn-tx)}
+.call{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:16px 18px}
+.call .t{color:var(--mu);font-size:14px}.call .t b{color:var(--ink);font-weight:600}
+.call .chip{margin-left:auto}
+
+/* ---------- 0 · SYSTEM ---------- */
+.sys h1{font:800 clamp(52px,8vw,96px)/.9 var(--disp);letter-spacing:-.05em;margin:40px 0 12px}
+.sys .lede{font-size:18px;color:var(--mu);max-width:640px;margin-bottom:44px}
+.sys h2{font:800 26px var(--disp);letter-spacing:-.03em;margin:44px 0 14px}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.s{border-radius:12px;overflow:hidden;border:1px solid var(--ln);background:var(--card)}
+.s i{display:block;height:78px}
+.s div{padding:10px 12px;font-size:13px}.s b{display:block;font-weight:600}.s code{font:500 12px var(--mono);color:var(--mu)}
+.note{font-size:14px;color:var(--mu);margin-top:12px;max-width:720px}
+.scale>div{display:flex;align-items:baseline;gap:20px;padding:14px 0;border-bottom:1px solid var(--ln)}
+.scale small{width:130px;flex:none;font:500 12px var(--mono);color:var(--mu)}
+.comp{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+
+/* ---------- 1 · TODAY ---------- */
+.mast{font:800 clamp(64px,11vw,148px)/.86 var(--disp);letter-spacing:-.05em;margin:34px 0 8px}
+.date{color:var(--mu);margin-bottom:34px}
+.lead{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center}
+.photo{aspect-ratio:4/5;border-radius:12px;position:relative}
+.play{position:absolute;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.lh{font:800 clamp(34px,4.6vw,60px)/1 var(--disp);letter-spacing:-.035em;margin:0 0 18px}
+.by{display:flex;align-items:center;gap:10px;color:var(--mu);margin-bottom:24px}.by .face{width:36px;height:36px;border-radius:50%}.by b{color:var(--ink);font-weight:600}
+.sec{font:800 34px var(--disp);letter-spacing:-.03em;margin:64px 0 20px}
+.row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.story .ph{aspect-ratio:1;border-radius:12px;margin-bottom:12px;position:relative}
+.story .ph .d{position:absolute;left:10px;bottom:10px;font:500 11px var(--mono);background:rgba(16,20,24,.7);color:#fff;padding:3px 7px;border-radius:6px}
+.story h3{font:700 19px/1.2 var(--disp);letter-spacing:-.02em;margin-bottom:8px}
+.story .m{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:13px}.story .m .face{width:22px;height:22px;border-radius:50%}
+.people{display:flex;gap:22px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.people::-webkit-scrollbar{display:none}
+.pp{flex:none;width:84px;text-align:center}.pp .face{width:76px;height:76px;border-radius:50%;margin:0 auto 8px}
+.pp p{font-size:13px;font-weight:600}.pp small{display:block;color:var(--mu);font-size:12px}
+.pp.new .face{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px var(--ac)}
+.vlist{border-top:1px solid var(--ln)}
+.v{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid var(--ln)}
+.v .face{width:44px;height:44px;border-radius:50%}
+.v h4{font:700 18px var(--disp);letter-spacing:-.02em;margin-bottom:3px}.v p{color:var(--mu);font-size:13px}
+.ret{font:600 18px var(--ui)}
+
+/* ---------- 2 · REPORT ---------- */
+.rep h1{font:800 clamp(40px,6vw,72px)/.98 var(--disp);letter-spacing:-.045em;margin:40px 0 20px}
+.rep .dek{font-size:20px;line-height:1.45;color:var(--mu);margin-bottom:26px}
+.rep .by{margin-bottom:30px}
+.rvid{aspect-ratio:16/10;border-radius:14px;position:relative;margin-bottom:28px}
+.scrub{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.3);border-radius:0 0 14px 14px;overflow:hidden}.scrub i{display:block;width:34%;height:100%;background:#fff}
+.body{font-size:18px;line-height:1.7}
+.body p{margin-bottom:22px}
+.body h2{font:800 28px var(--disp);letter-spacing:-.03em;margin:40px 0 14px}
+.fig{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+.fig div{background:var(--sunk);border-radius:12px;padding:16px}
+.fig small{display:block;color:var(--mu);font-size:13px;margin-bottom:4px}.fig b{font:800 30px var(--disp);letter-spacing:-.03em}
+.pull{font:700 28px/1.2 var(--disp);letter-spacing:-.025em;border-left:4px solid var(--ac);padding:4px 0 4px 20px;margin:34px 0}
+.ecard{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:20px;margin:30px 0}
+.ecard .k{font:600 12px var(--ui);color:var(--mu);margin-bottom:10px}
+.ecard .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ecard .cols div{border-top:2px solid var(--ln);padding-top:10px}
+.ecard .cols div:last-child{border-color:var(--ac)}
+.ecard h4{font:700 15px var(--ui);margin-bottom:4px}
+.lock{position:relative;border-radius:14px;overflow:hidden;margin:30px 0}
+.lock .blur{filter:blur(6px);opacity:.55;padding:20px;background:var(--card);border:1px solid var(--ln);border-radius:14px}
+.lock .gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;background:linear-gradient(to bottom,transparent,var(--bg) 70%)}
+.lock .gate b{font:800 22px var(--disp);letter-spacing:-.02em}
+.cmt{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--ln)}
+.cmt .face{width:34px;height:34px;border-radius:50%;flex:none}
+.cmt b{font-weight:600}.cmt .au{font:600 11px var(--ui);background:var(--ink);color:var(--bg);padding:2px 7px;border-radius:99px;margin-left:6px}
+.cmt p{margin-top:3px}.cmt .ac{display:flex;gap:16px;color:var(--mu);font-size:13px;margin-top:6px}
+
+/* ---------- 3 · PROFILE ---------- */
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center;padding:44px 0 32px;border-bottom:1px solid var(--ln)}
+.hero .face{width:128px;height:128px;border-radius:50%}
+.hero h1{font:800 clamp(38px,5vw,60px)/.95 var(--disp);letter-spacing:-.045em;margin-bottom:8px}
+.hero .hd{font-size:18px;margin-bottom:6px}.hero .mt{color:var(--mu);font-size:14px;margin-bottom:18px}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.pin{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end;margin-top:36px}
+.pin .ph{aspect-ratio:16/10;border-radius:14px;position:relative}
+.pin .lbl{font:600 12px var(--ui);color:var(--ac-tx);margin-bottom:8px}
+.pin h2{font:800 34px/1 var(--disp);letter-spacing:-.035em;margin-bottom:16px}
+.tabs{display:flex;gap:6px;margin:44px 0 22px;flex-wrap:wrap}
+.tabs span{font:600 14px var(--ui);padding:8px 15px;border-radius:99px;color:var(--mu);box-shadow:inset 0 0 0 1.5px var(--ln)}
+.tabs span.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.receipt{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:18px;align-items:center;padding:16px 18px;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin-bottom:10px}
+.receipt .l{display:flex;align-items:center;gap:12px;min-width:0}
+.receipt .l small{display:block;color:var(--mu);font-size:13px}
+.receipt .px{font:500 14px var(--mono);color:var(--mu);white-space:nowrap}
+
+/* ---------- 4 · COMPOSE ---------- */
+.cmp h1{font:800 clamp(44px,6vw,76px)/.95 var(--disp);letter-spacing:-.045em;margin:44px 0 10px}
+.cmp .sub{font-size:18px;color:var(--mu);margin-bottom:30px}
+.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.ty{background:var(--card);border:1.5px solid var(--ln);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;min-height:220px;cursor:pointer;transition:border-color .15s,transform .15s}
+.ty:hover{border-color:var(--ink);transform:translateY(-2px)}
+.ty .ic{width:44px;height:44px;border-radius:12px;background:var(--sunk);display:flex;align-items:center;justify-content:center;font-size:20px}
+.ty h3{font:800 24px var(--disp);letter-spacing:-.03em}
+.ty p{color:var(--mu);font-size:14px;flex:1}
+.ty small{font:600 12px var(--ui);color:var(--mu)}
+.ty.vd{border-color:var(--ac)}.ty.vd .ic{background:var(--ac)}
+.drafts{margin-top:40px}
+.drafts h2{font:800 24px var(--disp);letter-spacing:-.03em;margin-bottom:12px}
+.dr{display:grid;grid-template-columns:auto minmax(0,1fr) 140px auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--ln)}
+.dr .kind{font:600 12px var(--ui);padding:4px 10px;border-radius:99px;background:var(--sunk);color:var(--mu)}
+.dr h4{font:700 16px var(--ui)}.dr small{color:var(--mu);font-size:13px}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+
+/* ---------- 5 · FEED (phone) ---------- */
+.stage{display:flex;justify-content:center;gap:36px;padding:40px 16px 70px;flex-wrap:wrap}
+.phone{width:360px;max-width:100%;border-radius:40px;padding:10px;background:#0B0D10;box-shadow:0 30px 60px rgba(0,0,0,.18)}
+.scr{border-radius:32px;overflow:hidden;position:relative;aspect-ratio:9/19.5;background:#000}
+.scr .face{position:absolute;inset:0}
+.scr::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78),transparent 50%,rgba(0,0,0,.35));pointer-events:none}
+.scr>*:not(.face){z-index:2}
+.fd{position:relative;display:flex;justify-content:space-between;align-items:center;padding:52px 18px 0;color:#fff;font:600 13px var(--ui)}
+.fd .mute{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+.fcall{position:absolute;z-index:2;left:14px;right:14px;top:104px;display:flex;align-items:center;gap:10px;background:rgba(250,250,250,.94);border-radius:14px;padding:11px 13px;color:#101418}
+.fcall .sym{font-size:16px}.fcall small{color:#5B6470;font-size:12px}
+.fcall .chip{margin-left:auto;border-color:#C8321F;color:#C8321F}
+.fbot{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:0 16px 18px;color:#fff}
+.fbot h3{font:800 25px/1.08 var(--disp);letter-spacing:-.03em;margin-bottom:14px}
+.fid{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.fid .face{position:static;width:38px;height:38px;border-radius:50%;box-shadow:0 0 0 2px #fff}
+.fid b{font-weight:600}.fid small{display:block;opacity:.75;font-size:12px}
+.fid .fo{margin-left:auto;background:var(--ac);color:#101418;font:700 13px var(--ui);padding:7px 14px;border-radius:99px}
+.facts{display:flex;align-items:center;gap:20px;border-top:1px solid rgba(255,255,255,.18);padding-top:12px;font:600 12px var(--ui)}
+.facts span{display:flex;align-items:center;gap:6px}
+.facts .pg{margin-left:auto;opacity:.75}
+.fscrub{height:3px;background:rgba(255,255,255,.28);border-radius:99px;margin-bottom:14px}.fscrub i{display:block;width:42%;height:100%;background:#fff;border-radius:99px}
+.ftabs{position:absolute;left:50%;transform:translateX(-50%);bottom:-2px;display:none}
+.explain{max-width:340px;align-self:center}
+.explain h2{font:800 30px/1 var(--disp);letter-spacing:-.035em;margin-bottom:14px}
+.explain p{color:var(--mu);margin-bottom:12px}
+
+/* ---------- phone breakpoint ---------- */
+@media (max-width:860px){
+ .nav{padding:12px 16px;gap:16px}.nav a:not(.on){display:none}
+ .wrap{padding:0 16px 70px}
+ .lead,.pin{grid-template-columns:1fr;gap:20px}.photo{aspect-ratio:1}
+ .row4{grid-template-columns:1fr 1fr;gap:14px}.sec{font-size:28px;margin-top:48px}
+ .v{grid-template-columns:40px minmax(0,1fr) auto}.v .chip{display:none}
+ .hero{grid-template-columns:1fr;text-align:left;gap:16px;padding-top:28px}.hero .face{width:96px;height:96px}
+ .receipt{grid-template-columns:minmax(0,1fr) auto}.receipt .px,.receipt .ret{display:none}
+ .types{grid-template-columns:1fr 1fr}.ty{min-height:0}
+ .dr{grid-template-columns:auto minmax(0,1fr)}.dr .bar,.dr .btn{display:none}
+ .fig{grid-template-columns:1fr}.ecard .cols{grid-template-columns:1fr}
+ .body{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="toolbar" aria-label="Choose a screen">
+ <span>DIRECTION B</span>
+ <button data-s="sys" aria-pressed="true">The system</button>
+ <button data-s="today" aria-pressed="false">Today</button>
+ <button data-s="report" aria-pressed="false">Report</button>
+ <button data-s="profile" aria-pressed="false">Profile</button>
+ <button data-s="compose" aria-pressed="false">Compose</button>
+ <button data-s="feed" aria-pressed="false">Feed · phone</button>
+</div>
+
+<!-- ============ 0 · THE SYSTEM ============ -->
+<section class="screen on" id="sys">
+<div class="wrap sys">
+ <h1>Editorial Confidence.</h1>
+ <p class="lede">Black and white carry everything. One coral appears only where a call lives — its direction and its verdict — so the eye always lands on what matters.</p>
+
+ <h2>Colour</h2>
+ <div class="sw">
+  <div class="s"><i style="background:#FAFAFA"></i><div><b>Paper</b><code>#FAFAFA</code></div></div>
+  <div class="s"><i style="background:#101418"></i><div><b>Ink</b><code>#101418</code></div></div>
+  <div class="s"><i style="background:#5B6470"></i><div><b>Muted</b><code>#5B6470</code></div></div>
+  <div class="s"><i style="background:#FF5A47"></i><div><b>Coral · fills</b><code>#FF5A47</code></div></div>
+  <div class="s"><i style="background:#C8321F"></i><div><b>Coral · text</b><code>#C8321F</code></div></div>
+  <div class="s"><i style="background:#087A55"></i><div><b>Gain</b><code>#087A55</code></div></div>
+  <div class="s"><i style="background:#C92A31"></i><div><b>Loss</b><code>#C92A31</code></div></div>
+ </div>
+ <p class="note">Coral fills always carry black text (6.0:1). The bright coral fails as small text on white (3.1:1), so any coral words use the deeper coral (5.1:1). Same rule for gain and loss: every coloured word clears 4.5:1.</p>
+
+ <h2>Type</h2>
+ <div class="scale">
+  <div><small>Display · 800</small><span style="font:800 56px/1 var(--disp);letter-spacing:-.05em">Today.</span></div>
+  <div><small>Headline · 800</small><span style="font:800 32px/1.05 var(--disp);letter-spacing:-.035em">Rubin pre-orders are filling</span></div>
+  <div><small>Title · 700</small><span style="font:700 19px var(--disp);letter-spacing:-.02em">Memory pricing is the tell</span></div>
+  <div><small>Body · Inter</small><span style="font-size:17px">The order book is telling on itself, and the margin recovery is already in the numbers.</span></div>
+  <div><small>Ticker · mono</small><span class="sym">NVDA 178.40</span></div>
+ </div>
+ <p class="note">Bricolage Grotesque carries the personality; Inter carries the reading, with tabular figures so prices line up. Mono is reserved for tickers alone — no uppercase labels anywhere.</p>
+
+ <h2>The call, as an object</h2>
+ <div class="comp">
+  <span class="arrow">▲</span><span class="arrow dn">▲</span>
+  <span class="chip">Open</span><span class="chip fill">Hit</span><span class="chip">Miss</span>
+  <button class="btn">Subscribe</button><button class="btn ghost">Follow</button><button class="btn coral">Publish</button>
+ </div>
+ <div class="call" style="margin-top:18px;max-width:560px"><span class="arrow">▲</span><span class="sym">NVDA</span><span class="t">178.40 → <b>205.00</b> in 42 days</span><span class="chip">Open</span></div>
+ <p class="note">Round shapes throughout: pill buttons, 12–16px cards, circular faces. No hairline broadsheet, no zero-radius corners.</p>
+</div>
+</section>
+
+<!-- ============ 1 · TODAY ============ -->
+<section class="screen" id="today">
+<nav class="nav"><span class="wm">stoa</span><a class="on" href="#">Today</a><a href="#">Feed</a><a href="#">Explore</a><a href="#">Markets</a><span class="sp"></span><span class="btn">Post</span></nav>
+<main class="wrap">
+ <div class="mast">Today.</div>
+ <p class="date">Thursday 17 September — 14 new calls, 3 verdicts</p>
+ <section class="lead">
+  <div class="photo face" style="--c1:#3E8570;--c2:#123127"><span class="play"><svg width="18" height="18" viewBox="0 0 10 10"><path d="M2.5 1.5l6 3.5-6 3.5z" fill="#101418"/></svg></span></div>
+  <div>
+   <h1 class="lh">Rubin pre-orders are quietly filling.</h1>
+   <div class="by"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><span><b>Lena Kowalczyk</b> on semis</span></div>
+   <div class="call"><span class="arrow">▲</span><span class="sym">NVDA</span><span class="t">178.40 → <b>205.00</b> in 42 days</span><span class="chip">Open</span></div>
+  </div>
+ </section>
+
+ <h2 class="sec">Posting today</h2>
+ <div class="people">
+  <div class="pp new"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><p>Lena</p><small>Semis</small></div>
+  <div class="pp new"><div class="face" style="--c1:#C08E4B;--c2:#4d3419"></div><p>Marcus</p><small>Memory</small></div>
+  <div class="pp"><div class="face" style="--c1:#5C7396;--c2:#222c3d"></div><p>Priya</p><small>Banks</small></div>
+  <div class="pp new"><div class="face" style="--c1:#845B84;--c2:#312231"></div><p>Aisha</p><small>Energy</small></div>
+  <div class="pp"><div class="face" style="--c1:#7F9970;--c2:#313a29"></div><p>Omer</p><small>Pharma</small></div>
+  <div class="pp"><div class="face" style="--c1:#C4735C;--c2:#4c2a21"></div><p>Sofia</p><small>Software</small></div>
+  <div class="pp"><div class="face" style="--c1:#4E7284;--c2:#1f2f38"></div><p>Dana</p><small>Rates</small></div>
+ </div>
+
+ <h2 class="sec">Worth your next minute</h2>
+ <div class="row4">
+  <div class="story"><div class="ph face" style="--c1:#C08E4B;--c2:#4d3419"><span class="d">1:12</span></div><h3>Memory pricing is the tell nobody watches</h3><div class="m"><div class="face" style="--c1:#C08E4B;--c2:#4d3419"></div>Marcus Chen</div></div>
+  <div class="story"><div class="ph face" style="--c1:#5C7396;--c2:#222c3d"><span class="d">0:47</span></div><h3>Deposit betas peaked a quarter early</h3><div class="m"><div class="face" style="--c1:#5C7396;--c2:#222c3d"></div>Priya Nadar</div></div>
+  <div class="story"><div class="ph face" style="--c1:#845B84;--c2:#312231"><span class="d">0:52</span></div><h3>Power is the constraint, not the chips</h3><div class="m"><div class="face" style="--c1:#845B84;--c2:#312231"></div>Aisha Bello</div></div>
+  <div class="story"><div class="ph face" style="--c1:#C4735C;--c2:#4c2a21"><span class="d">0:39</span></div><h3>The cannibalisation fear is overdone</h3><div class="m"><div class="face" style="--c1:#C4735C;--c2:#4c2a21"></div>Sofia Ricci</div></div>
+ </div>
+
+ <h2 class="sec">The market decided</h2>
+ <div class="vlist">
+  <div class="v"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><div><h4>NVDA · Blackwell demand was underestimated</h4><p>Lena Kowalczyk · 178.40 → 214.30</p></div><span class="ret up">+20.1%</span><span class="chip fill">Hit</span></div>
+  <div class="v"><div class="face" style="--c1:#C08E4B;--c2:#4d3419"></div><div><h4>INTC · The foundry turn takes longer</h4><p>Marcus Chen · 142.10 → 138.90</p></div><span class="ret dn">−2.3%</span><span class="chip">Miss</span></div>
+  <div class="v"><div class="face" style="--c1:#845B84;--c2:#312231"></div><div><h4>AVGO · Multiple compression, eventually</h4><p>Aisha Bello · 1,610 → 1,588</p></div><span class="ret up">+1.4%</span><span class="chip fill">Hit</span></div>
+ </div>
+</main>
+</section>
+
+<!-- ============ 2 · REPORT ============ -->
+<section class="screen" id="report">
+<nav class="nav"><span class="wm">stoa</span><a href="#">Today</a><a href="#">Feed</a><a href="#">Explore</a><a href="#">Markets</a><span class="sp"></span><span class="btn">Post</span></nav>
+<main class="wrap rep"><div class="narrow">
+ <h1>Rubin pre-orders are quietly filling.</h1>
+ <p class="dek">Channel checks point to a cleaner air-gap than the last cycle — and the order book is already telling on itself.</p>
+ <div class="by"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><span><b>Lena Kowalczyk</b> · 17 Sep · 6 min read</span><span class="sp"></span><span class="btn ghost" style="padding:7px 14px">Follow</span></div>
+ <div class="rvid face" style="--c1:#3E8570;--c2:#0f2a22"><span class="play" style="left:18px;right:auto"><svg width="18" height="18" viewBox="0 0 10 10"><path d="M2.5 1.5l6 3.5-6 3.5z" fill="#101418"/></svg></span><span class="scrub"><i></i></span></div>
+ <div class="call" style="margin-bottom:34px"><span class="arrow">▲</span><span class="sym">NVDA</span><span class="t">178.40 → <b>205.00</b> in 42 days</span><span class="chip">Open</span></div>
+ <div class="body">
+  <p>Three quarters of channel commentary pointed at a supply-constrained ramp. The pre-order pattern now looks materially cleaner than the last cycle, and the gap between what the Street models and what the order book says has rarely been this wide.</p>
+  <div class="fig"><div><small>Pre-orders vs. last cycle</small><b>+38%</b></div><div><small>Lead time, weeks</small><b>11</b></div><div><small>Street FY estimate</small><b>$4.10</b></div></div>
+  <h2>Why the market hasn't priced it</h2>
+  <p>The consensus is still anchored on the last transition, when the air-gap between generations cost two quarters of revenue. That's the pattern the market is paying for. It isn't the pattern the channel is showing.</p>
+  <p class="pull">The question isn't whether demand is there. It's whether the multiple already reflects it.</p>
+  <div class="ecard"><p class="k">The edge</p><div class="cols"><div><h4>The Street says</h4><p>A two-quarter air-gap, like last time.</p></div><div><h4>I say</h4><p>Under one quarter — pre-orders are already covering it.</p></div></div></div>
+  <div class="lock"><div class="blur"><p>The target and the three conditions that would make me wrong are laid out for subscribers, along with the full channel-check data and the sensitivity table across three demand scenarios.</p></div><div class="gate"><b>The rest is for subscribers.</b><span class="btn coral">Subscribe · $12/mo</span></div></div>
+ </div>
+ <h2 style="font:800 26px var(--disp);letter-spacing:-.03em;margin:40px 0 6px">Discussion</h2>
+ <div class="cmt"><div class="face" style="--c1:#5C7396;--c2:#222c3d"></div><div><b>Priya Nadar</b><p>How much of this is already in the buy side's numbers?</p><div class="ac"><span>Reply</span><span>♡ 12</span></div></div></div>
+ <div class="cmt"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><div><b>Lena Kowalczyk</b><span class="au">Author</span><p>Less than you'd think — the sell-side models still carry the old air-gap.</p><div class="ac"><span>Reply</span><span>♡ 31</span></div></div></div>
+</div></main>
+</section>
+
+<!-- ============ 3 · PROFILE ============ -->
+<section class="screen" id="profile">
+<nav class="nav"><span class="wm">stoa</span><a href="#">Today</a><a href="#">Feed</a><a href="#">Explore</a><a href="#">Markets</a><span class="sp"></span><span class="btn">Post</span></nav>
+<main class="wrap">
+ <section class="hero">
+  <div class="face" style="--c1:#3E8570;--c2:#17352c"></div>
+  <div>
+   <h1>Lena Kowalczyk</h1>
+   <p class="hd">Semis and AI infrastructure. Concentrated, high conviction.</p>
+   <p class="mt">19.2K followers · 214 members · 23 calls made</p>
+   <div class="ctas"><span class="btn coral">Subscribe · $12/mo</span><span class="btn ghost">Follow</span><span class="btn ghost">Share</span></div>
+  </div>
+ </section>
+ <section class="pin">
+  <div class="ph face" style="--c1:#3E8570;--c2:#0f2a22"><span class="play"><svg width="18" height="18" viewBox="0 0 10 10"><path d="M2.5 1.5l6 3.5-6 3.5z" fill="#101418"/></svg></span></div>
+  <div><p class="lbl">Latest</p><h2>Rubin pre-orders are quietly filling.</h2><div class="call"><span class="arrow">▲</span><span class="sym">NVDA</span><span class="t">→ <b>205.00</b></span><span class="chip">Open</span></div></div>
+ </section>
+ <div class="tabs"><span class="on">Everything</span><span>Videos</span><span>Theses</span><span>Receipts</span></div>
+ <h2 class="sec" style="margin-top:8px">Receipts</h2>
+ <p style="color:var(--mu);margin:-10px 0 18px">Every call, as the market settled it. Misses stay.</p>
+ <div class="receipt"><div class="l"><span class="arrow">▲</span><div><span class="sym">NVDA</span><small>Blackwell demand was underestimated</small></div></div><span class="px">178.40 → 214.30</span><span class="ret up">+20.1%</span><span class="chip fill">Hit</span></div>
+ <div class="receipt"><div class="l"><span class="arrow dn">▲</span><div><span class="sym">AVGO</span><small>Multiple compression, eventually</small></div></div><span class="px">1,610 → 1,588</span><span class="ret up">+1.4%</span><span class="chip fill">Hit</span></div>
+ <div class="receipt"><div class="l"><span class="arrow">▲</span><div><span class="sym">AMD</span><small>Being the alternative is worth more</small></div></div><span class="px">162.30 → 151.10</span><span class="ret dn">−6.9%</span><span class="chip">Miss</span></div>
+ <div class="receipt"><div class="l"><span class="arrow">▲</span><div><span class="sym">TSM</span><small>Order intake bottomed</small></div></div><span class="px">198.40 → 211.00</span><span class="ret up">+6.4%</span><span class="chip quiet">Near</span></div>
+</main>
+</section>
+
+<!-- ============ 4 · COMPOSE ============ -->
+<section class="screen" id="compose">
+<nav class="nav"><span class="wm">stoa</span><a href="#">Today</a><a href="#">Feed</a><a href="#">Explore</a><a href="#">Markets</a><span class="sp"></span><span class="btn ghost">Close</span></nav>
+<main class="wrap cmp">
+ <h1>What are you making?</h1>
+ <p class="sub">Four jobs. Pick today's.</p>
+ <div class="types">
+  <div class="ty"><span class="ic">▶</span><h3>Video</h3><p>Reach people who don't know you yet. The only thing that goes on the Feed.</p><small>Everyone</small></div>
+  <div class="ty"><span class="ic">✎</span><h3>Brief</h3><p>A quick take that keeps your people close between the big pieces.</p><small>Followers & members</small></div>
+  <div class="ty"><span class="ic">≡</span><h3>Thesis</h3><p>Show your work. The deep one that earns a spot on Today.</p><small>Followers & members</small></div>
+  <div class="ty vd"><span class="ic">▲</span><h3>Verdict</h3><p>A call your members get first. Public the moment the market settles it.</p><small>1 every 30 days</small></div>
+ </div>
+ <div class="drafts">
+  <h2>Pick up where you left off</h2>
+  <div class="dr"><span class="kind">Thesis</span><div><h4>Why TSMC's capex guide matters more than the print</h4><small>Edited 2 hours ago</small></div><div class="bar"><i style="width:70%"></i></div><span class="btn ghost" style="padding:7px 14px">Resume</span></div>
+  <div class="dr"><span class="kind">Video</span><div><h4>The memory cycle, one more time</h4><small>Edited yesterday</small></div><div class="bar"><i style="width:35%"></i></div><span class="btn ghost" style="padding:7px 14px">Resume</span></div>
+  <div class="dr"><span class="kind">Brief</span><div><h4>Quick one on the rates move</h4><small>Edited 3 days ago</small></div><div class="bar"><i style="width:90%"></i></div><span class="btn ghost" style="padding:7px 14px">Resume</span></div>
+ </div>
+</main>
+</section>
+
+<!-- ============ 5 · FEED (phone) ============ -->
+<section class="screen" id="feed">
+<div class="stage">
+ <div class="phone"><div class="scr">
+  <div class="face" style="--c1:#3E8570;--c2:#0c2019"></div>
+  <div class="fd"><span>Semis · 0:58</span><span class="mute"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m23 9-6 6m0-6 6 6"/></svg></span></div>
+  <div class="fcall"><span class="arrow">▲</span><div><span class="sym">NVDA</span><small style="display:block">→ 205.00 in 42 days</small></div><span class="chip">Open</span></div>
+  <div class="fbot">
+   <h3>Rubin pre-orders are quietly filling.</h3>
+   <div class="fid"><div class="face" style="--c1:#3E8570;--c2:#17352c"></div><div><b>Lena Kowalczyk</b><small>19.2K followers</small></div><span class="fo">Follow</span></div>
+   <div class="fscrub"><i></i></div>
+   <div class="facts"><span>♡ 1.2K</span><span>💬 84</span><span>↗ Share</span><span class="pg">1 / 6</span></div>
+  </div>
+ </div></div>
+ <div class="explain">
+  <h2>The Feed, in B.</h2>
+  <p>The face fills the screen. Everything else is small and white on top of it, except the call — a paper card that sits on the picture, with the coral arrow and chip, so direction is the first thing you read.</p>
+  <p>Follow is the only coral button on screen. That's the discipline: coral means "the call" or "the one action that matters here," nothing else.</p>
+ </div>
+</div>
+</section>
+
+<script>
+(function(){
+ var btns=document.querySelectorAll('.proto button');
+ function show(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)});
+  btns.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.s===id?'true':'false')});
+  window.scrollTo(0,0);
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+ }
+ btns.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.s)})});
+ var h=(location.hash||'').slice(1);
+ if(h&&document.getElementById(h))show(h);
+ window.addEventListener("load",function(){setTimeout(function(){window.scrollTo(0,0)},60)});
+})();
+</script>
+</body>
+</html>
