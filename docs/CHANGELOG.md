@@ -10,6 +10,110 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-24 — Removing grading, step one: subscriptions end on their own, and every publication carries its stance
+
+Grading is being removed. A publication keeps a **stance**: its ticker and a
+direction (long, short or hold), one per publication. This batch only makes
+that safe and moves the data. Nothing is deleted, and grading still runs.
+
+**For someone using the site**
+
+- **Every ticker and direction chip now comes from the publication itself,**
+  not from its call: Today, Feed, Explore, profiles, sector and theme pages,
+  the landing page, video cards, the ticker page, the dispatch, search and
+  saved. A publication with a stance looks exactly as it did.
+- **A publication with a ticker and no call now shows its ticker,** with no
+  direction beside it. Before, it showed a theme tag. There are 609 of these
+  in the demo data. A publication with no ticker still shows its theme tag.
+- **Markets counts publications.** "Newly called" is the first live
+  publication with a stance on a name. The covered-names line says "11
+  calls" where it said "4 open calls": it now counts every live long or
+  short publication, where before it counted only unresolved calls, and
+  included archived ones.
+- **Every ticker page works again.** It had been showing "Something broke on
+  our side" for everyone (confirmed live on AVGO, MSFT and SPY). The chart
+  was handed a colour it could not read.
+- **The audio brief mentions the direction.** It never had: it asked the
+  database for a field that does not exist, and the lookup always failed.
+
+**1. Subscription expiry has its own job.** It used to be the first step of
+the nightly grading job, so switching grading off would have left lapsed
+subscribers with paid access. It now runs by itself daily at 00:00 UTC, with
+its own Sentry monitor (it declares its own schedule, so a missed night
+alerts with no dashboard setup) and a Slack alert when it fails or expires
+anything. It talks to the database directly, not through the job queue, and
+shares no code with grading. How it was proved: in a separate copy of the
+code with the grading job deleted outright, the code still type-checked, and
+the new job ran against a stand-in database. Without the secret it refused.
+With it, it asked the database to expire subscriptions, reported the count,
+and checked in with Sentry twice (started, finished). With the database
+failing, it returned the error, checked in "error" and raised the failure
+alert.
+
+**2. The stance lives on the publication.** Migration `0065_publication_stance`
+replaces the old, never-applied `0065_draft_call_fields` (draft direction,
+target and horizon), which is deleted. It adds the direction beside the
+ticker, refuses a direction without a ticker, copies every call's direction
+onto its publication, and freezes the stance with the ticker once published.
+It checks its own work and refuses to change anything unless every call ends
+up carried by its publication. Rehearsed on a copy of the live rows: **1,128
+of 1,128 calls copied** (830 long, 208 short, 90 hold). Every call's ticker
+already matched its publication's, so no ticker moves. The 609 ticker-only
+publications get no direction, nobody's "last edited" time moves, and a
+planted mismatch rolled the whole thing back. Drafts save their direction to
+it, and publishing writes it before the publication locks.
+
+**3. Read from the publication.** The ten queries that pulled the whole call
+record now pull only what grading still shows (the seal, entry, target,
+return), and every chip reads the publication. Until 0065 is applied, the
+direction is read from the call through one bridge. The values are the same
+row for row, so the site works before and after the migration.
+Walked in a real browser at 1440 and 390 on ten surfaces, every card checked
+against the database, before the change and after it. Every direction
+that showed before still shows on the same card. None appears where it
+should not, none is wrong, and no empty chip is drawn anywhere. The Feed was
+opened on AAPL (LONG), SCO (LONG) and INTC (ticker alone). Compose still
+saves drafts and reaches Publish for a verdict and a thesis, with the same
+number of taps. The test drafts were deleted.
+
+**4. Deleting publications: a decision for Bar, not changed.** Migration
+0062 lets a creator delete a publication only when it has no call. Once no
+publication has a call, every publication becomes deletable. The options are
+listed in the batch report. Nothing changes until one is chosen.
+
+**Reconciliation pass.** Every surface that showed a ticker or direction was
+checked for anything still reading them from the call; TypeScript now
+refuses it (the joined call has no ticker or direction). It found one real
+problem in this batch's own work, fixed: a draft that lost its ticker while
+holding a direction would have had its save refused and the creator's other
+edits dropped silently. The product model and frontend docs now state the
+anchoring rule around the stance. Still reading the call on purpose,
+because they are grading and go in the next step: seals, HIT/MISS, the
+Verdicts ledger, the ticker page's open and resolved calls, the sector
+page's open-call counts, the "Call" content badge, and which publications
+the Studio offers to delete.
+
+**For Krisi**
+
+- **Apply `0065_publication_stance.sql`.** Do not apply the old
+  `0065_draft_call_fields.sql`; it is gone from the repo. It prints "Stance
+  copied: 1128 of 1128" (or the count on the day). If it refuses, nothing
+  changed and the message says which rows disagree. Until it is applied a
+  draft's direction stays in the tab, as before.
+- **Grading has not run since 14 September.** Its last activity in the audit
+  log is 14 September 21:02 UTC. 79 open calls are past their end date (the
+  oldest from July), and three subscriptions have been past renewal since
+  15 to 17 September and are still active (demo readers reader_omri and
+  reader_pauline, so no real money). Worth checking the Vercel cron log, the
+  `grade-cron` Sentry monitor and #bugs for dead letters: the cron may be
+  queuing to QStash and the consumer failing. The new expiry job will expire
+  those three on its first run.
+- `vercel.json` now has six daily crons. The new one is daily on purpose.
+- Once 0065 is applied, the bridge (the call's direction on the join, the
+  column check, the calls path in the Markets counts) can go with grading.
+
+---
+
 ## 2026-09-22 — Today rebuilt as a broadsheet
 
 Today (`/home`) is now the approved broadsheet: a nameplate, a 3 / 6 / 3
