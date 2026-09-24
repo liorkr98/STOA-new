@@ -1,8 +1,9 @@
 /**
  * Transparent ranking weights. Sum to 1 per surface. Tune here; report the change.
  *
- * Rule 0: engagement decides what gets seen; the ledger (MOAT) is a light
- * amplifier, not the sort key. Likes and comments are first-class, as rates
+ * Rule 0: engagement decides what gets seen. Nothing about the analyst's
+ * record enters: grading is retired, so there is no score to amplify and no
+ * outcome to penalise. Likes and comments are first-class, as rates
  * (Bayesian-smoothed, so a 3-view clip with 3 likes does not beat a 200-view
  * clip with 40 likes). Comment *volume* is not a term: that is the controversy
  * loop. Comment *rate* is the conversion-adjacent signal.
@@ -18,16 +19,13 @@ export const RANKING = {
   BAYES_STRENGTH: 16,
   /** Neutral rate used when there is no history yet. */
   BAYES_PRIOR: 0.12,
-  /** A resolved MISS on this call, not the analyst's whole record. */
-  MISS_PENALTY: 0.85,
-  NEAR_PENALTY: 0.95,
   MAX_CONSECUTIVE_PER_ANALYST: 2,
   MAX_PER_WINDOW: 4,
   WINDOW_SIZE: 12,
 } as const;
 
 export const FEED_WEIGHTS = {
-  completion: 0.18,
+  completion: 0.21,
   likes: 0.16,
   comments: 0.14,
   clickThrough: 0.14,
@@ -36,17 +34,15 @@ export const FEED_WEIGHTS = {
   saves: 0.05,
   shares: 0.05,
   sector: 0.03,
-  moat: 0.03,
 } as const;
 
 export const EXPLORE_WEIGHTS = {
-  followProxy: 0.16,
+  followProxy: 0.2,
   likes: 0.16,
   comments: 0.16,
   velocity: 0.14,
   topicMatch: 0.12,
   clickThrough: 0.1,
   recency: 0.08,
-  moat: 0.04,
   saves: 0.04,
 } as const;

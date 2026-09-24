@@ -1,5 +1,3 @@
-import type { Outcome } from "@/lib/types";
-
 export type RankingSurface = "feed" | "explore";
 
 /**
@@ -16,13 +14,10 @@ export interface RankingSignals {
   saveCount: number;
   shareCount: number;
   publishedAt: string;
-  /** 0-100 MOAT from the engine. */
-  moatScore: number;
   ticker: string | null;
   sector: string | null;
   tags: string[];
   analystId: string;
-  outcome: Outcome | null;
 }
 
 export interface ViewerContext {

@@ -10,7 +10,6 @@ export interface SearchCreator {
   handle: string;
   display_name: string;
   avatar_url: string | null;
-  score: number;
   followers_count: number;
   sim?: number;
 }
@@ -80,7 +79,7 @@ function rankCreators(rows: SearchCreator[], q: string): SearchCreator[] {
       else if (c.handle.toLowerCase().startsWith(lower)) boost += 50;
       if (c.display_name.toLowerCase().startsWith(lower)) boost += 40;
       else if (c.display_name.toLowerCase().includes(lower)) boost += 15;
-      boost += Math.min(Math.floor((c.score ?? 0) / 10), 20);
+      boost += Math.min(Math.round(Math.log10(1 + (c.followers_count ?? 0)) * 4), 20);
       return { c, boost };
     })
     .sort((a, b) => b.boost - a.boost)
@@ -100,10 +99,10 @@ async function fallbackSearch(
   const [{ data: creators }, { data: tickers }, { data: reports }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, handle, display_name, avatar_url, score, followers_count")
+      .select("id, handle, display_name, avatar_url, followers_count")
       .in("role", ["analyst", "admin"])
       .or(`handle.ilike.${like},display_name.ilike.${like}`)
-      .order("score", { ascending: false })
+      .order("followers_count", { ascending: false })
       .limit(limit),
     supabase
       .from("tickers")

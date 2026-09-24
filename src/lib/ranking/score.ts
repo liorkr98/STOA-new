@@ -63,12 +63,6 @@ export function followProxy(signals: RankingSignals, ctx: ViewerContext): number
   return clamp01(0.45 + 0.4 * topic + 0.15 * clamp01(engagement / 0.3));
 }
 
-function outcomeMultiplier(outcome: RankingSignals["outcome"]): number {
-  if (outcome === "miss") return RANKING.MISS_PENALTY;
-  if (outcome === "near" || outcome === "partial") return RANKING.NEAR_PENALTY;
-  return 1;
-}
-
 function engagementTrials(views: number, successes: number): number {
   return Math.max(views, successes, 0);
 }
@@ -95,7 +89,6 @@ export function scoreFeed(signals: RankingSignals, ctx: ViewerContext): ScoreBre
   const saves = bayesRate(signals.saveCount, engagementTrials(signals.views, signals.saveCount));
   const shares = bayesRate(signals.shareCount, engagementTrials(signals.views, signals.shareCount));
   const sector = signals.sector && ctx.sectorInterests.has(signals.sector.toLowerCase()) ? 1 : 0;
-  const moat = clamp01(signals.moatScore / 100);
 
   const parts = {
     completion: w.completion * completion,
@@ -107,18 +100,16 @@ export function scoreFeed(signals: RankingSignals, ctx: ViewerContext): ScoreBre
     saves: w.saves * saves,
     shares: w.shares * shares,
     sector: w.sector * sector,
-    moat: w.moat * moat,
   };
 
   const raw = Object.values(parts).reduce((a, b) => a + b, 0);
   const reasons: string[] = [];
   if (watchlist) reasons.push("watchlist");
   if (sector > 0 && !watchlist) reasons.push("sector");
-  if (moat >= 0.7) reasons.push("high_moat");
   if (recency > 0.75) reasons.push("fresh");
 
   return {
-    score: raw * outcomeMultiplier(signals.outcome),
+    score: raw,
     reasons: topReasons(parts, reasons),
     parts,
   };
@@ -131,7 +122,6 @@ export function scoreExplore(signals: RankingSignals, ctx: ViewerContext): Score
   const clickThrough = bayesRate(signals.clickThroughCount, signals.playCount);
   const recency = recencyScore(signals.publishedAt, ctx.now);
   const saves = bayesRate(signals.saveCount, engagementTrials(signals.views, signals.saveCount));
-  const moat = clamp01(signals.moatScore / 100);
   const topic = topicMatch(signals, ctx);
   const follow = followProxy(signals, ctx);
   const velocity = velocityScore(signals, ctx.now);
@@ -144,7 +134,6 @@ export function scoreExplore(signals: RankingSignals, ctx: ViewerContext): Score
     topicMatch: w.topicMatch * topic,
     clickThrough: w.clickThrough * clickThrough,
     recency: w.recency * recency,
-    moat: w.moat * moat,
     saves: w.saves * saves,
   };
 
@@ -152,11 +141,10 @@ export function scoreExplore(signals: RankingSignals, ctx: ViewerContext): Score
   const reasons: string[] = [];
   if (!ctx.followedAnalystIds.has(signals.analystId)) reasons.push("discover");
   if (topic >= 0.75) reasons.push("topic");
-  if (moat >= 0.7) reasons.push("high_moat");
   if (velocity > 0.5) reasons.push("velocity");
 
   return {
-    score: raw * outcomeMultiplier(signals.outcome),
+    score: raw,
     reasons: topReasons(parts, reasons),
     parts,
   };

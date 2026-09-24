@@ -20,12 +20,10 @@ function signalsFromClip(clip: VideoClipCard, sectorByTicker: Map<string, string
     saveCount: 0,
     shareCount: 0,
     publishedAt: clip.published_at ?? r.published_at ?? r.created_at,
-    moatScore: r.author?.score ?? 0,
     ticker,
     sector: ticker ? (sectorByTicker.get(ticker) ?? null) : null,
     tags,
     analystId: r.author_id,
-    outcome: r.prediction?.outcome ?? null,
   };
 }
 

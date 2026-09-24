@@ -29,12 +29,10 @@ function signals(over: Partial<RankingSignals> = {}): RankingSignals {
     saveCount: 0,
     shareCount: 0,
     publishedAt: "2026-08-22T12:00:00Z",
-    moatScore: 50,
     ticker: "NVDA",
     sector: "Semiconductors",
     tags: [],
     analystId: "a1",
-    outcome: "open",
     ...over,
   };
 }
@@ -47,9 +45,9 @@ describe("ranking weights", () => {
     assert.ok(Math.abs(explore - 1) < 1e-9, `explore weights ${explore}`);
   });
 
-  it("weights likes plus comments above MOAT on both surfaces", () => {
-    assert.ok(FEED_WEIGHTS.likes + FEED_WEIGHTS.comments > FEED_WEIGHTS.moat * 4);
-    assert.ok(EXPLORE_WEIGHTS.likes + EXPLORE_WEIGHTS.comments > EXPLORE_WEIGHTS.moat * 4);
+  it("carries no term for the analyst's record", () => {
+    assert.ok(!("moat" in FEED_WEIGHTS));
+    assert.ok(!("moat" in EXPLORE_WEIGHTS));
   });
 });
 
@@ -62,11 +60,11 @@ describe("length-normalized completion", () => {
 
   it("does not treat seconds as the ranking unit", () => {
     const shortHigh = scoreFeed(
-      signals({ playCount: 100, completionCount: 80, likes: 0, comments: 0, views: 100, moatScore: 0 }),
+      signals({ playCount: 100, completionCount: 80, likes: 0, comments: 0, views: 100 }),
       ctx(),
     );
     const longLow = scoreFeed(
-      signals({ playCount: 100, completionCount: 40, likes: 0, comments: 0, views: 100, moatScore: 0 }),
+      signals({ playCount: 100, completionCount: 40, likes: 0, comments: 0, views: 100 }),
       ctx(),
     );
     assert.ok(shortHigh.parts.completion > longLow.parts.completion);
@@ -74,27 +72,26 @@ describe("length-normalized completion", () => {
   });
 });
 
-describe("likes and comments outrank MOAT", () => {
-  it("ranks a busy low-MOAT clip above a quiet high-MOAT clip on Feed", () => {
+describe("likes and comments decide", () => {
+  it("ranks a busy clip above a quiet one on Feed", () => {
     const busy = scoreFeed(
-      signals({ likes: 80, comments: 30, views: 200, moatScore: 18, playCount: 180, completionCount: 40 }),
+      signals({ likes: 80, comments: 30, views: 200, playCount: 180, completionCount: 40 }),
       ctx(),
     );
     const quiet = scoreFeed(
-      signals({ likes: 1, comments: 0, views: 200, moatScore: 96, playCount: 180, completionCount: 20 }),
+      signals({ likes: 1, comments: 0, views: 200, playCount: 180, completionCount: 20 }),
       ctx(),
     );
     assert.ok(busy.score > quiet.score, `busy ${busy.score} vs quiet ${quiet.score}`);
-    assert.ok(busy.parts.likes + busy.parts.comments > busy.parts.moat);
   });
 
   it("does the same on Explore", () => {
     const busy = scoreExplore(
-      signals({ likes: 80, comments: 30, views: 200, moatScore: 18 }),
+      signals({ likes: 80, comments: 30, views: 200 }),
       ctx(),
     );
     const quiet = scoreExplore(
-      signals({ likes: 1, comments: 0, views: 200, moatScore: 96 }),
+      signals({ likes: 1, comments: 0, views: 200 }),
       ctx(),
     );
     assert.ok(busy.score > quiet.score, `busy ${busy.score} vs quiet ${quiet.score}`);
@@ -112,12 +109,12 @@ describe("recency", () => {
   });
 });
 
-describe("miss penalty", () => {
-  it("lowers a MISS relative to an otherwise identical OPEN call", () => {
-    const open = scoreFeed(signals({ outcome: "open" }), ctx());
-    const miss = scoreFeed(signals({ outcome: "miss" }), ctx());
-    assert.ok(miss.score < open.score);
-    assert.ok(Math.abs(miss.score / open.score - 0.85) < 0.001);
+describe("no outcome penalty", () => {
+  it("scores two identical clips identically, whatever became of their calls", () => {
+    const a = scoreFeed(signals(), ctx());
+    const b = scoreFeed(signals(), ctx());
+    assert.equal(a.score, b.score);
+    assert.ok(!("moat" in a.parts));
   });
 });
 
