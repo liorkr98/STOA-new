@@ -1,12 +1,12 @@
-# Compose: four publication types, one spine
+# Compose: three publication types, one spine
 
 The authoring model. This is the source of truth for `/studio/compose`.
 `docs/PRODUCT_MODEL.md` describes the public surfaces; this file describes
 how an analyst actually publishes.
 
-## The four types
+## The three types
 
-Compose opens by asking what the analyst is trying to do. Four types,
+Compose opens by asking what the analyst is trying to do. Three types,
 described by purpose rather than format, each saying who sees it:
 
 | Type | Purpose | Seen by | Stored as |
@@ -14,21 +14,19 @@ described by purpose rather than format, each saying who sees it:
 | **Video** | Reach people who don't know you. The only type on the Feed and in Explore. | Everyone, including strangers | `content_type = video` |
 | **Brief** | Stay present between big pieces. A short written take, at most 300 characters. | Your followers | `short_post` |
 | **Thesis** | Prove you are worth paying for. A full written report, the strongest route onto Today. | Buyers and subscribers | `research` |
-| **Verdict** | Make a call only the market can settle. Subscribers get it first; public the moment the market resolves it. | Subscribers now, everyone at resolution | `call` |
 
 The type is chosen on the picker and stored with the draft. It does not
 change afterwards: a brief that grows into a thesis is a new thesis. The
 public type label everywhere on the site is the type's name (VIDEO, BRIEF,
-THESIS, VERDICT).
+THESIS).
 
-The four map onto the four values the database's `content_type` enum already
-has, so no migration was needed to remember a draft's type. `call` now means
-a verdict; older `call`-type rows reopen as verdicts.
+Each maps onto a value of the database's `content_type` enum. The enum's
+fourth value, `call`, was the Verdict type, retired with grading on
+2026-09-24: migration 0067 relabels those rows as theses or briefs and
+refuses the value, and until then they read as theses.
 
-**The picker.** Four cards on a desktop; on a phone four compact rows, all
-above the fold, whose detail opens on a tap. The verdict card carries its
-one-per-30-days rule and, once this month's is used, says when the next one
-unlocks (as anticipation, not a refusal). Under the cards, every draft: type,
+**The picker.** Three cards on a desktop; on a phone three compact rows, all
+above the fold, each one tap to start. Under the cards, every draft: type,
 headline, when it was last touched, and how far along its spine it is
 (`src/lib/compose/drafts.ts` derives this from what is stored, never from a
 recorded step). A draft opens at the first step it has not finished. The
@@ -45,32 +43,30 @@ screen:
 | Video | the video, with its headline under the clip | tags |
 | Brief | the headline, then the take (short text) | tags |
 | Thesis | the headline, then the report (the full writer) | tags |
-| Verdict | the call, with its headline under it | tags |
 
 The headline and the tags are mandatory on every type, and the headline
 lives on the content screen: above the words on the written types, under
-the clip and the call on the others. Continue asks for it once the content
+the clip on a video. Continue asks for it once the content
 is in. On a brief and a thesis the headline field has focus on arrival and
 Enter moves into the text. The tags step opens its list on arrival when
 nothing is chosen, so the primary tag is one tap.
 
 No screen carries explanatory copy: a heading, the work, one button. The
-only sentences are refusals naming what is missing, and the few rules a
-creator would otherwise get wrong (a verdict's visibility, what a locked
-call cannot do, that the target is not the live price).
+only sentences are refusals naming what is missing, and the one rule a
+creator would otherwise get wrong on a live piece (what can no longer
+change).
 
 **One button per screen, and its label is what pressing it does.** On the
 spine it reads **Continue**, and when the step is not done it refuses and
 says what is missing beside the button, in the creator's terms ("Add a
-video first. Record one, or upload one", "Write the take first", "A verdict
-needs a target price. It is what the market settles PLAB against", "Choose
-a primary tag"), staying put until it is fixed. In a feature editor it reads
+video first. Record one, or upload one", "Write the take first", "Choose
+long, short or hold for PLAB", "Choose a primary tag"), staying put until it is fixed. In a feature editor it reads
 **Skip** when nothing has been added, **Done** when the feature is complete,
 and Done that refuses and names what is missing when it is half done.
 Partial information never passes. The rule is `advanceFor` in
 `src/lib/compose/steps.ts`; the publish button reads every spine step and
-every feature through the same function, so a half-entered call cannot go
-out.
+every feature through the same function, so a half-entered stance cannot
+go out.
 
 The first pass guides: a step not yet reached is dimmed and not clickable in
 the tracker. Reaching the publish screen unlocks every step as a tab.
@@ -82,10 +78,9 @@ screen (`featuresFor` in `steps.ts`):
 
 | Type | Can add |
 | --- | --- |
-| Video | a call, cards, a full thesis |
-| Brief | a call, cards |
-| Thesis | a call, cards |
-| Verdict | cards, a video, written text (a brief or a thesis under the call) |
+| Video | a stance, cards, a full thesis |
+| Brief | a stance, cards |
+| Thesis | a stance, cards |
 
 Each row says what the feature is and whether it has been added (`NVDA ·
 long`, `4 cards`, `1,840 words`, `0:58`). Opening one goes into that
@@ -93,59 +88,20 @@ feature's editor and Done brings you back to the menu. A feature opened and
 left half done says so on its row in the same words the publish button
 refuses with. Nothing here is a step in a sequence.
 
-A call added as a feature keeps the older, wider rules: any priceable name,
+**The stance** is a ticker and a direction: any name Stoa can look up,
 including the macro instruments (gold is XAUUSD, WTI crude USOIL, Brent
-UKOIL, the ten-year US10Y, bitcoin BTCUSD), long, short or hold, a target
-that is optional. Only a locked call is graded.
-
-## The verdict's rules
-
-A verdict is the platform's proof-and-conversion mechanic, so its rules are
-tighter, and they are said as the analyst types rather than at publish
-(`src/lib/compose/verdict.ts`, `VerdictCallPanel`):
-
-- **Equities only, under a $2B market cap.** The ticker is looked up as it is
-  typed; the listing's market cap sits beside its name, a verdigris tick
-  says "Eligible. Under the $2B cap", and a name over the cap is refused with
-  its size named ("NVDA is a $4.9T company"). A macro instrument is refused
-  in plain words: it has no market cap, and a verdict is a call on a
-  company. A listing whose market cap is not on file yet is refused rather
-  than guessed at.
-- **Direction is long or short.** The market cannot settle a hold.
-- **A target price is required.** It is what the market settles against.
-  The entry is the live level the call will lock at; the move to target is
-  printed beside it and reads in rust when it goes against the call.
-- **Horizon between 7 and 180 days**, on a slider, with the resolution date.
-- **One verdict per analyst per rolling 30 days**, rolling from the moment
-  the last one went out. When the window is closed the picker and the call
-  screen say when the next one unlocks; the draft still saves and publish
-  refuses with the same line.
-- **Subscribers-only while open, public on resolution.** The publish screen
-  states this in a ledger card instead of offering an access setting, and
-  says plainly what the server does today (below).
-
-The server reads the same rules again at publish (`enforceVerdictRules` in
-`src/lib/reports/publish-report.ts`) and forces a verdict to
-subscribers-only, so nothing the screen refused can arrive by another route.
-
-**What the backend does today, and what it does not.** The rate limit, the
-market-cap check, the horizon bound and the completeness check all run on
-the server now, reading the listing's `market_cap` (refreshed by the ticker
-metrics job) and the author's own published verdicts. Two halves of the
-visibility rule are not built: the written text is gated to subscribers by
-the existing `report_bodies` policy, but the call itself (ticker, direction,
-target on `predictions`) is readable by anyone who opens the publication,
-and nothing flips the publication public when the resolution engine settles
-it. The publish screen says so rather than pretending. Both need Krisi (see
-`docs/CHANGELOG.md`).
+UKOIL, the ten-year US10Y, bitcoin BTCUSD), and long, short or hold. The
+ticker is looked up as it is typed and a name that does not resolve is
+refused. There is no target, no horizon and no entry price: nothing is
+graded (`StancePanel` in `src/components/editor/publish-panel.tsx`). Publish
+is one press; there is no lock confirmation.
 
 **The stance between sessions.** Migration 0065 adds `reports.stance` (long,
 short or hold) beside `reports.ticker`. Compose writes it in its own
 statement after the draft row, so before the migration is applied a draft
-still saves and the call screen says the direction stays in the tab until
-then. A verdict's target and horizon are not kept: a reopened verdict starts
-at its call. Publish writes the stance before the row locks; once locked it
-is frozen with the ticker.
+still saves and the stance screen says the direction stays in the tab until
+then. Publish writes the stance before the row locks; once locked it is
+frozen with the ticker.
 
 ## Tags: type to narrow
 
@@ -157,7 +113,7 @@ Typing narrows to one flat list, names that begin with the query before
 names that merely contain it; arrows move, Enter picks, Escape closes. The
 list is closed: when nothing matches it says so and points at the sectors
 and themes. One primary tag drives placement; up to two secondary tags are
-searchable only. The primary auto-fills from a call's sector, one click to
+searchable only. The primary auto-fills from the stance's sector, one click to
 change.
 
 ## The rail: only where the screen can take what it holds
@@ -175,7 +131,7 @@ else. It never folds to a column of icons.
 | The report (the writer) | The card tray and the assistant |
 | Cards | The card tray (its order is set there) |
 | Video, once a clip is loaded | The card tray, for the timeline |
-| Video before a clip, a live piece's read-only clip, the take, the call, the headline, tags, publish | None; the canvas takes the full width |
+| Video before a clip, a live piece's read-only clip, the take, the stance, the headline, tags, publish | None; the canvas takes the full width |
 
 On a phone the same contents open as a drawer from a Toolbox button in the
 top bar, on the same screens.
@@ -290,25 +246,24 @@ Publishing navigates on purpose and is never interrupted.
 
 Editing a live publication is the one place a button stays: **Save changes**
 in the header, because an edit files a public EDITED marker and must be
-meant. The call and the clip are the record and cannot change; their rows
-on the features menu open to be read.
+meant. The stance is frozen with the ticker and cannot change; its row on
+the features menu opens to be read, and a live piece with no stance cannot
+gain one. A live clip cannot change either, unless the piece has none that
+plays.
 
 ## Access
 
-On a video, a brief or a thesis, three modes on the publish screen:
+On every type, three modes on the publish screen:
 
 1. **Free.** Anyone.
 2. **Subscribers.** Members only (optional plan rank and perks).
 3. **Paid unlock.** One-time purchase. The analyst can also tick **Members can
    open this without paying**.
 
-A verdict has no access setting: it is subscribers-only while open, stated
-on the publish screen.
-
 ## What does not change
 
-The public surfaces stay video-first. There is still no Discover. A locked
-call is still the only graded element. A brief does not run the
+The public surfaces stay video-first. There is still no Discover. Nothing
+is graded. A brief does not run the
 fact-checker. The card tray and library, drag into the timeline and into
 the writer, card identity across saves, the assistant, three-ink
 provenance, per-card locking, the recorder, the upload path, edit markers on

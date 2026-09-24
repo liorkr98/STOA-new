@@ -9,58 +9,50 @@ pieces fit together. For visual tokens see `docs/FRONTEND.md`; for agent working
 Stoa is a marketplace where independent financial analysts publish stock research and market
 commentary, and retail investors pay for it. The platform takes 10%.
 
-The core differentiator is the **Track Record Engine**: every call is logged at publication with
-its entry price locked and attested, then graded by the market at resolution. Every graded
-outcome (HIT / MISS / NEAR, entry to exit, return, alpha) is public, permanent and
-non-transferable, and stays visible wherever the call appears. That record is the moat.
+**Grading is retired (2026-09-24).** Stoa used to lock each call's entry price, grade it against
+the market at its horizon, and keep a track record and a private Track Score. All of that is gone:
+nothing is graded, scored or resolved, there is no seal, no track record and no Verdict type. A
+publication keeps its **stance** (below). See `docs/CHANGELOG.md` for the removal.
 
-**There is no public scoring.** No score, rating, rank, percentile or leaderboard appears
-anywhere public, and no surface ever aggregates analysts into a verdict (no long/short splits,
-average targets or consensus). Analysts appear as an avatar and a name; the one exception is the
-public profile's audience line (`4.3K FOLLOWERS · 214 MEMBERS`, members opt-in). The engine still
-computes a private Track Score and records still accrue; the analyst sees their own number in
-their private track record only. Placement across the product is driven by the lifecycle model
-below, not by score.
+**There is no scoring.** No score, rating, rank, percentile, hit rate or leaderboard appears
+anywhere, and no surface ever aggregates analysts into a verdict (no long/short splits, average
+targets or consensus). Analysts appear as an avatar and a name; the one exception is the public
+profile's audience line (`4.3K FOLLOWERS · 214 MEMBERS`, members opt-in). Placement across the
+product is driven by the lifecycle model below.
 
 ## The content model (video-first)
 
 The atomic unit of a publication is a short analyst **video**. Everything else is optional
 enrichment layered on top of the video:
 
-- **Call** — a locked prediction: ticker, direction, target price, horizon. Locked and attested
-  at publish, then immutable. The only element the market grades.
+- **Stance** — a ticker and a direction (long, short or hold). Frozen with the ticker once the
+  publication is out. Never graded.
 - **Cards** — a swipeable stack of evidence (see The Card Engine).
 - **Thesis** — the full written argument.
 
-So a publication can be a locked call with a full thesis and a deep card stack, or it can be
-video-only commentary with no call at all (e.g. "what the Iran escalation means for crude").
-
-**Only publications carrying a locked call are ever graded.** Commentary is never graded.
+So a publication can take a stance with a full thesis and a deep card stack, or it can be
+video-only commentary with no stance at all (e.g. "what the Iran escalation means for crude").
 
 ### Anchoring rule
 
 A publication carries a **stance**: one ticker and, when it declares one, a direction (long,
 short or hold), stored on the publication itself (`reports.ticker`, `reports.stance`, migration
 0065). An item with a ticker shows a ticker chip, and a direction chip beside it when it has a
-stance; a HIT / MISS / NEAR seal still follows a resolved call while grading runs. An item with no
-ticker shows no ticker and no direction chip; it anchors on a theme or sector tag instead
-(`MACRO · OIL & ENERGY`, `SEMIS`). Nothing reads the ticker or direction from the call. Every item on every surface
-carries a **content badge** stating exactly what it contains (`VIDEO`, `VIDEO · CALL`,
-`VIDEO · CALL · CARDS · THESIS`), built only from what is stored.
+stance. An item with no ticker shows no ticker and no direction chip; it anchors on a theme or
+sector tag instead (`MACRO · OIL & ENERGY`, `SEMIS`). Until migration 0065 is applied the
+direction is read from the archived call as a fallback; nothing else is read from it. Every item
+on every surface carries a **content badge** stating exactly what it contains (`VIDEO`,
+`VIDEO · CARDS`, `VIDEO · CARDS · THESIS`), built only from what is stored.
 
 ### Type labels
 
-Every publication is one of four types, chosen when it is made and printed on it everywhere:
+Every publication is one of three types, chosen when it is made and printed on it everywhere:
 
 - **VIDEO** — reach people who don't know you. The only type on the Feed and in Explore.
 - **BRIEF** — a short written take that keeps existing followers and subscribers engaged.
 - **THESIS** — a full written report. Depth, and the strongest route onto Today.
-- **VERDICT** — a call subscribers get first, public the moment the market resolves it. The
-  platform's proof-and-conversion mechanic: equities under $2B only, a 7 to 180 day horizon,
-  one per analyst per rolling 30 days.
-
-A video, a brief or a thesis may carry a call as an optional feature; a verdict *is* a call.
-Only a locked call is graded, whichever type carries it.
+Any of them may carry a stance as an optional feature. The fourth type, VERDICT, was retired
+with grading; migration 0067 relabels its publications as theses or briefs.
 
 ## The surfaces
 
@@ -72,10 +64,10 @@ Stoa is organized around five surfaces.
 - **Today** — the daily editorial read. A curated, newspaper-style briefing of what matters now.
 - **Markets** — instrument exploration: stocks, ETFs, and sectors, and the Stoa coverage on each.
 - **Compose** — the authoring workspace where analysts build a publication: the video, the
-  research, the cards, and the call.
+  research, the cards, and the stance.
 - **Profile** — the public analyst storefront, plus one private area that covers both the
   investor sections (library, subscriptions, following) and the creator sections (publications,
-  track record, audience, earnings, storefront).
+  insights, audience, earnings, storefront).
 
 Routes: Feed is `/feed`, Today is `/home` (there is no `/today`), Explore is `/explore`,
 Markets is `/markets`, Compose is `/studio/compose`, the public profile is `/analyst/[handle]`.
@@ -102,10 +94,10 @@ events are recorded, attention per day since arrival stands in for a windowed ve
 
 ## Compose is a spine and a menu, not a wizard
 
-Compose opens by asking what the analyst is trying to do: one of the four types above, described
+Compose opens by asking what the analyst is trying to do: one of the three types above, described
 by purpose. Every type then walks the same short mandatory spine (the content, the headline, the
-tags; a video writes its headline under the clip, so its spine is two steps) and reaches the publish screen, where what the type may add on top (a call, cards, a
-thesis, a video) is a menu nobody has to walk past. Instagram's structure. The full model is
+tags; a video writes its headline under the clip, so its spine is two steps) and reaches the publish screen, where what the type may add on top (a stance, cards, a
+thesis) is a menu nobody has to walk past. Instagram's structure. The full model is
 `docs/COMPOSE.md`.
 
 The workspace is still organised by one sentence: **left is what you build with, the spine is
@@ -203,74 +195,10 @@ does not appear among the formats a creator can make. Nothing was deleted: the c
 schema, its editor and its Feed rendering all remain, so any publication that already carries a
 Steelman card renders exactly as before, and the surface returns the day the analysis works.
 
-## The Track Record Engine and the (private) Track Score
+## Retired: the Track Record Engine
 
-The record is an analyst's reputation, and it is the moat.
-
-- Every call locks an entry price at publish, server-side, and attests it.
-- When the call's horizon ends, the market grades the outcome against that locked entry.
-- Every graded outcome is **public** (seal, entry to exit, return, alpha), **permanent** (nothing
-  is quietly erased) and **non-transferable** (it belongs to the record, not the account).
-- The engine also computes a 0 to 100 **Track Score** from graded outcomes. It is **not shown
-  publicly**; the analyst sees it in their private track record. It must be settled (below) before
-  it is ever shown again.
-
-Only calls move the record. Video commentary, notes, cards, polls, and any community sentiment
-never touch it.
-
-### Open decision: the scoring formula is unresolved
-
-How a graded outcome translates into the number is **not settled**, and this document does not
-pick a winner:
-
-- The **docs describe a modified Elo** (a 600-1400 style rating).
-- The **shipped engine** (`src/lib/engine/score.ts`) computes a **Wilson win-rate / profit-factor
-  / alpha composite**.
-
-These are two different formulas. Reconciling them is open work and needs a decision with Krisi.
-Until then, the score stays private and the underlying formula undecided.
-
-### Swapping the formula
-
-The scoring math is isolated so a different formula (for example the modified Elo above) can be
-dropped in later without touching the rest of the app.
-
-**Where it lives.** All scoring math is in one file: `src/lib/engine/scoring/formula.ts`. Nothing
-else in the app does scoring arithmetic of its own. (`src/lib/engine/score.ts` re-exports the
-formula and adds the separate grading step and tier labels; `src/lib/dispatch/ranking.ts` computes
-a distinct editorial ranking that *reads* an analyst's Track Score but is not the Track Score.)
-
-**What the formula receives.** An array of resolved calls (`ScoringCall`), each carrying only the
-facts the score is derived from: direction, locked entry price, resolved (exit) price, the
-benchmark return over the same window, the graded outcome, and the resolution date. It may also
-receive the platform-wide alpha distribution used to rank one analyst against all others.
-
-**What the formula must return.** A `ScoreResult`: the 0-100 `score`, its component `breakdown`
-(win rate, profit factor, alpha, consistency), the supporting numbers, and the `formulaVersion`
-that produced it.
-
-**How to swap it.**
-1. Change `computeScore` in `formula.ts`, keeping the same input and output contract.
-2. Bump `FORMULA_VERSION`.
-3. Recompute all scores together (below).
-
-**Recompute rule: all analysts move together.** A score is only meaningful relative to other
-scores, so when the formula changes every analyst is recomputed in one pass, never a mix of old
-and new versions. Run:
-
-```bash
-npm run recompute:scores              # dry run: prints every analyst's old -> new score
-npm run recompute:scores -- --commit  # rewrite profiles + insert fresh snapshots
-```
-
-It requires `SUPABASE_SERVICE_ROLE_KEY`, reads each analyst's stored call history, and rewrites
-their score and components from it using one shared alpha distribution.
-
-**Stored inputs, and what's missing.** Every fact the formula needs is already persisted per call
-on `predictions`: entry price (`lock_price`), exit price (`resolved_price`), target
-(`target_price`), direction, horizon (`resolves_at` / `target_horizon_date`), actual return
-(`return_pct`), and benchmark return (`benchmark_pct`). Per-call alpha is not stored but is
-derivable (`return_pct - benchmark_pct`). Two things are NOT yet stored and need a schema change
-(for Krisi): a `formula_version` column on `profiles` and on `moat_score_snapshots`, so every
-stored score is traceable to the formula that produced it. Until those columns exist, the
-recompute path carries the version in code and logs it but cannot persist it.
+Until 2026-09-24 every call locked an entry price at publish, was graded against the market at
+its horizon, and fed a private 0 to 100 Track Score. The engine, the nightly grade job, the score,
+the seals, the track record page, the Verdict type and the scoring formula are all deleted. The
+graded data is retired by migration 0067 (scores cleared, `predictions` frozen read-only) and the
+table is dropped in a later release. Nothing replaces it.

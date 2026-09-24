@@ -1,5 +1,10 @@
 # Stoa — Motion & Polish Spec
 
+> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
+> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
+> described below are deleted, and nothing may rebuild them. Where this document specifies them,
+> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
+
 > **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
 
 ### The go-live elevation pass. Extends `docs/FRONTEND.md` §1.5 — where they differ, this doc wins on motion; FRONTEND.md wins on everything else.

@@ -1,5 +1,10 @@
 # Stoa — Backend brief
 
+> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
+> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
+> described below are deleted, and nothing may rebuild them. Where this document specifies them,
+> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
+
 For Krisi. Written at the end of the frontend build run of August 2026 (see `docs/BUILD_SPEC.md`
 for what was built). Every item below is something the frontend now renders as a placeholder,
 holds in memory, or derives from a proxy, and needs the backend to become real. The frontend

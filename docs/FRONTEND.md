@@ -1,5 +1,10 @@
 # Stoa — Frontend & Design Deep Dive
 
+> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
+> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
+> described below are deleted, and nothing may rebuild them. Where this document specifies them,
+> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
+
 The full frontend specification. `AGENTS.md` is the short version for day-to-day work; when the
 two disagree, this file wins and `AGENTS.md` should be corrected to match.
 

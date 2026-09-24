@@ -7,10 +7,10 @@ editing this file and letting `CLAUDE.md` re-export it.
 **Full specs — read before any structural or visual work:**
 
 - `docs/PRODUCT_MODEL.md` — the current product model: the video-first content model, the five
-  surfaces, the Card Engine, the lifecycle model, the Track Record Engine. Read this first.
+  surfaces, the Card Engine, the lifecycle model. Read this first.
 - `docs/BUILD_SPEC.md` — the frontend build spec that this run implemented, and
   `docs/BACKEND_BRIEF.md` — the backend gap list handed to Krisi.
-- `docs/BACKEND.md` — schema, RLS, the Track Score engine, the fact-checker pipeline, payments.
+- `docs/BACKEND.md` — schema, RLS, the fact-checker pipeline, payments.
   **Does not exist yet.** No one has supplied the source content for it, so it is not being
   fabricated here. Until it exists, `supabase/migrations/*` and `docs/BACKEND_DATA_CONTRACTS.md`
   (gaps found and PayPal research from the frontend build) are the closest things to a backend
@@ -23,17 +23,21 @@ disagree, the long version wins — update this file to match, don't patch aroun
 ## What Stoa is
 
 A marketplace where independent financial analysts publish stock research and market commentary
-and get paid, with the platform taking 10%. Every locked call is permanently on the record and
-graded by the market. Named after the ancient Athenian Stoa, a public place for debate and
+and get paid, with the platform taking 10%. Named after the ancient Athenian Stoa, a public place for debate and
 commerce. Tagline: "Think clearly. Invest better."
 
 Publications are **video-first**: the atomic unit is a short analyst video, optionally enriched
-with a locked call, evidence cards, and a written thesis. Full model in `docs/PRODUCT_MODEL.md`.
+with a stance (a ticker and a direction), evidence cards, and a written thesis. Full model in
+`docs/PRODUCT_MODEL.md`.
+
+**Grading is retired (2026-09-24).** Nothing is locked as a call, graded, scored or resolved. There
+is no seal, no track record, no Track Score and no Verdict type. Do not rebuild any of it. The
+`predictions` table is a read-only archive until it is dropped (migration 0067), and its only
+remaining read is the fallback for a publication's direction before migration 0065.
 
 **Not a social network.** The value isn't a follow graph — it's a stranger trusting another
-stranger's paid opinion because the track record is more convincing than any relationship. Design
-and copy should reflect that: the trust surface (call block, disclosure block, the visible record
-of resolved outcomes) matters more than feed mechanics.
+stranger's paid opinion. Design and copy should reflect that: the trust surface (the stance, the
+disclosure block, the edit marker, the fact-checker) matters more than feed mechanics.
 
 One-line positioning if a pitch needs it: "Seeking Alpha's research model with Patreon's creator
 economics and a trust layer neither has." Do not compare Stoa to casual creator platforms.
@@ -43,69 +47,47 @@ economics and a trust layer neither has." Do not compare Stoa to casual creator 
 The atomic unit of a publication is a short analyst **video**. Everything else is optional
 enrichment layered on top:
 
-- **Call** — a locked, attested prediction: ticker, direction, target price, horizon. Locked at
-  publish and immutable. A call is the ONLY element the Track Record Engine grades.
+- **Stance** — a ticker (`reports.ticker`) and a direction, long, short or hold
+  (`reports.stance`). Frozen with the ticker once published. Never graded.
 - **Cards** — a swipeable stack of evidence (the Card Engine; see docs/PRODUCT_MODEL.md).
 - **Thesis** — the full written argument.
 
-A publication can be video-only commentary with no call at all (e.g. "what the Iran escalation
-means for crude"). Scoring keys off one thing only: **does it carry a locked call.** Commentary is
-never graded.
+A publication can be video-only commentary with no stance at all (e.g. "what the Iran escalation
+means for crude").
 
-| Type label  | What it is                                                              | Graded by the market?     |
-| ----------- | ----------------------------------------------------------------------- | ------------------------- |
-| **VIDEO**   | Reach people who don't know you. The only type on the Feed and Explore. | Only if it carries a call |
-| **BRIEF**   | A short written take for existing followers and subscribers.            | Only if it carries a call |
-| **THESIS**  | A full written report. Depth; the strongest route onto Today.           | Only if it carries a call |
-| **VERDICT** | A call subscribers get first, public when the market resolves it.       | Yes (it is a call)        |
+| Type label  | What it is                                                              |
+| ----------- | ----------------------------------------------------------------------- |
+| **VIDEO**   | Reach people who don't know you. The only type on the Feed and Explore. |
+| **BRIEF**   | A short written take for existing followers and subscribers.            |
+| **THESIS**  | A full written report. Depth; the strongest route onto Today.           |
 
 Compose is a two-step spine per type (the content with its headline on the same screen, then the
-tags) plus a features menu on the publish screen, with no explanatory copy on any screen; the verdict
-has its own rules (equities under $2B, 7 to 180 days, one per rolling 30 days). See
-`docs/COMPOSE.md`.
+tags) plus a features menu on the publish screen (stance, cards, thesis), with no explanatory copy
+on any screen. See `docs/COMPOSE.md`.
 
-Every publication shows a **content badge** of what it contains, e.g. `VIDEO · CALL · CARDS` or
-`VIDEO · NOTE`. Publications with a call show **ticker + direction chips**; publications without a
-call **anchor on a theme / sector tag** instead (e.g. `MACRO · OIL & ENERGY`).
+Every publication shows a **content badge** of what it contains, e.g. `VIDEO · CARDS` or
+`VIDEO · NOTE`. Publications with a ticker show **ticker + direction chips** (the direction only
+when there is one); publications without a ticker **anchor on a theme / sector tag** instead
+(e.g. `MACRO · OIL & ENERGY`).
 
 Full model: docs/PRODUCT_MODEL.md.
 
-### The trust mechanic — three pillars
+### Trust
 
-1. **Locked and attested entry price.** A call locks its ticker, direction, target price, and
-   horizon date at publish, with the entry price attested and enforced immutable at the *database*
-   level (a Postgres trigger rejects the UPDATE, not just an app-layer check). See
-   `docs/BACKEND.md` §3 once it exists.
-2. **Market grading at resolution.** When a call's horizon ends, a scheduled job pulls the final
-   price plus benchmark and grades the outcome against the locked entry. Nothing is graded by hand.
-3. **A public, permanent, non-transferable record.** Every graded outcome is public, cannot be
-   quietly erased, and belongs to the record rather than the account. This is the moat.
+**No public scoring, and no private scoring either.** Nothing anywhere shows a score, rating, rank,
+percentile, hit rate or leaderboard, and no surface aggregates analysts into a verdict. Placement is
+driven by the **lifecycle model** (`src/lib/lifecycle/stages.ts`): NEW / AVERAGE / RISING /
+TRENDING / POPULAR, of which only NEW and TRENDING are ever displayed. What a reader can trust is
+visible on the piece: the stance, frozen once published; the disclosure block; the EDITED marker
+and its public edit log; and the fact-checker's result.
 
-**No public scoring.** The engine still computes a 0-100 Track Score internally and it is shown
-only to the analyst in their private track record (`/studio/track-record`); nothing public shows
-a score, rating, rank, percentile or leaderboard, and no surface aggregates analysts into a
-verdict. What is public is the record itself: HIT / MISS / NEAR seals, entry to exit, return and
-alpha per call, everywhere a resolved call appears. Placement is driven by the **lifecycle model**
-(`src/lib/lifecycle/stages.ts`): NEW / AVERAGE / RISING / TRENDING / POPULAR, of which only NEW
-and TRENDING are ever displayed. The scoring *formula* is an open decision (the docs describe a
-modified Elo; the shipped engine computes a Wilson / profit-factor / alpha composite), so do not
-treat either formula as settled.
-
-**Fact-check is a feature, not a pillar.** The AI fact-checker is a **pre-publish bonus, never a
+**Fact-check is a feature.** The AI fact-checker is a **pre-publish bonus, never a
 gate**: a creator may run it and every claim is classified (fact / unproven / opinion /
 contradicted), but publishing never waits for it. It already exists (`src/lib/ai/fact-check.ts`, `reports.fact_check_results`) and the
 frontend surfaces it inline (`FactCheckLayer`/`FactCheckedText`, `src/components/report/`). It
-improves quality; it is not one of the three trust pillars, and it never feeds the record.
+improves quality, and it never feeds any ranking.
 Still missing on the backend: `char_start`/`char_end` offsets on stored claims, and the
 `debate_threads`/`debate_replies` tables — see `docs/BACKEND_DATA_CONTRACTS.md`.
-
-### The seal
-
-The one deliberately bold visual moment in the product. Locking a call triggers a wax-seal/stamp
-animation on the call block; the seal stays on the card permanently afterward, with the lock date
-set in a ring around it; resolution stamps HIT or MISS the same way. Nowhere else in the product
-should reach for this level of visual flourish — see `docs/FRONTEND.md` §1.3–1.5. **This exists**
-(`SealStamp`, `LockConfirmModal`) and is wired into `PredictionCard` and the report locking flow.
 
 ## Tech stack (do not swap without asking)
 
@@ -114,8 +96,7 @@ should reach for this level of visual flourish — see `docs/FRONTEND.md` §1.3�
 - Supabase: Postgres, Auth, Storage, Row Level Security, scheduled jobs (`pg_cron` + Edge
   Functions).
 - TanStack Query for client data fetching/caching.
-- Motion (`motion/react`) for animation — mandatory `prefers-reduced-motion` support, especially
-  for the seal.
+- Motion (`motion/react`) for animation — mandatory `prefers-reduced-motion` support.
 - **Icons: Lucide (`lucide-react`) going forward**, replacing Phosphor. Not an urgent rip-out of
   existing icons, but every new component uses Lucide — matches the restrained line-icon
   direction in `docs/FRONTEND.md` §7.3. Don't end up with both libraries in steady-state.
@@ -145,7 +126,7 @@ src/
   components/          UI. ui/ = primitives, charts/, layout/, feature components.
   lib/
     supabase/          Browser + server clients, middleware helper.
-    engine/            Scoring engine + market data. Pure, server-side, tested by hand.
+    engine/            Market data (quotes, candles, fundamentals) and the ticker-metrics refresh.
     db/                Typed queries + mutations (the only place that talks to Supabase).
     wallet/            Ledger logic (server actions) — see money migration note above.
     design/            cn() helper and shared design tokens in TS.
@@ -162,7 +143,7 @@ docs/
 design-system/MASTER.md  Deprecated as of this rewrite. Kept as historical reference only —
                           docs/FRONTEND.md is now the single source of truth for tokens and
                           screens. Do not add new decisions here.
-scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engine once).
+scripts/               tsx scripts: seed-demo.ts / seed.ts (demo data), refresh-ticker-metrics.ts.
 ```
 
 ## Naming
@@ -182,11 +163,9 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
 - **Video is adaptive HLS**, played by `NativeClip` (native on Safari, hls.js elsewhere, loaded
   on demand), with the Bunny iframe as an automatic fallback when a manifest is refused. The
   local demo MP4s are a walkthrough tool behind `STOA_DEMO_CLIPS=1`, never a delivery path.
-- Content types: **VIDEO / BRIEF / THESIS / VERDICT** (see the content model above). A publication is a
-  video, optionally carrying a locked call, cards, and a thesis.
-- The score: **Track Score**, internal and private. Never shown publicly; the public sees the
-  record (seals, entry to exit, return). The underlying formula is an open decision — see
-  `docs/PRODUCT_MODEL.md`.
+- Content types: **VIDEO / BRIEF / THESIS** (see the content model above). A publication is a
+  video, optionally carrying a stance, cards, and a thesis. The database's `content_type` enum
+  still has a `call` value (the retired Verdict); migration 0067 refuses it.
 - **Routes are unchanged from the existing build.** `docs/FRONTEND.md` was written against a
   `/@handle`-style IA; this repo keeps `/analyst/[handle]`, `/feed`, `/studio`, etc. Map the
   spec's routes onto the existing ones rather than renaming — this avoided conflicting with
@@ -219,8 +198,8 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
    tokens, type, color, radii, and components — `design-system/MASTER.md` is deprecated.
 6. **Color: six tokens**, not one accent + neutrals. `--ink`, `--paper`, `--verdigris`, `--brass`,
    `--plum`, `--rust`. Green and red (verdigris/rust) are the **only sentiment colors** — up/down,
-   hit/miss, fact/contradicted. Brass (seal/certification) and plum (opinion) are non-sentiment
-   accents. Neutral surfaces/borders/muted text derive from `--ink` and `--paper` at varying
+   long/short, fact/contradicted. Brass (certification, the edit marker) and plum (opinion) are
+   non-sentiment accents. Neutral surfaces/borders/muted text derive from `--ink` and `--paper` at varying
    opacity. **Primary buttons are solid ink; navy is reserved for the wordmark.** A verdigris-green
    primary button or accent is a bug, not the design — verdigris appears only as a sentiment
    signal, never as chrome. Full rationale in `docs/FRONTEND.md` §1.4.
@@ -230,10 +209,8 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
    display font too.
 8. **No drop shadows for elevation** — unchanged, still correct. Depth comes from surface tints
    and hairline borders. One soft shadow token exists only for floating overlays (menus, modals).
-9. **Radii:** cards 12px, buttons/inputs/chips 6px. The seal graphic is the only **ceremonial,
-   angled** circle in the product, deliberately. The Score Ring is an upright hairline frame (also
-   circular, but static and uncolored), distinct from the seal on purpose. Rounded avatars use the
-   12px card radius, not full circles.
+9. **Radii:** cards 12px, buttons/inputs/chips 6px. Rounded avatars use the 12px card radius, not
+   full circles.
 10. **Zero em-dashes** anywhere user-visible — unchanged, still correct.
 11. **The disclosure block cannot accept a theme/branding prop, ever.** Every other surface an
     analyst customizes; this one doesn't. See `docs/FRONTEND.md` §2.3. **Already done.**
@@ -254,38 +231,31 @@ scripts/               tsx scripts: seed.ts (demo data), grade.ts (run the engin
     amount — every time a dollar figure appears, not just at signup. **Already done** on
     `/wallet`'s earnings breakdown; extend the same pattern anywhere else a dollar figure appears.
 
-## Engine (the differentiator)
+## Market data
 
-Scoring lives in `src/lib/engine/`. Calls lock an entry price server-side at publish time. A
-scheduled job pulls the final price + benchmark when a call's timeframe ends, grades it, and
-recomputes the analyst's Track Score. What the engine computes today: win rate (Wilson lower
-bound), decay-weighted profit factor, alpha vs benchmark, and a logarithmic sample-size confidence
-ramp (`src/lib/engine/score.ts`). **Open decision:** this Wilson / profit-factor / alpha composite
-is not the same as the modified-Elo model the docs describe — reconciling the two is unresolved
-work (see `docs/PRODUCT_MODEL.md`), so do not treat either formula as final. Other gaps: the
-database-level immutability trigger on locked calls is unverified (needs a `docs/BACKEND.md` to
-confirm), and weekend/holiday handling + no-market-data fallback in the grading job are unhandled.
-Never trust client-supplied prices.
+Quotes, candles and fundamentals live in `src/lib/engine/market/`; the daily ticker-metrics cron
+refreshes cached prices and market caps (`src/lib/engine/refresh-ticker-metrics.ts`) and the
+`platform_stats` view. Markets depends on both. Never trust client-supplied prices.
 
 ## Anti-patterns (do not ship)
 
 - AI-purple gradients, neon glows, pure black/white, three identical feature cards.
 - Green/red (verdigris/rust) on anything that is not sentiment: fact-check verdicts, market
-  direction, hit/miss outcomes. Never generic UI.
+  direction. Never generic UI.
 - A second accent color anywhere, or a color outside the six-token system.
 - Drop shadows used for card elevation.
 - Em-dashes in any user-visible string.
 - Components calling Supabase directly. Data flows through `src/lib/db/*` only.
-- A locked call with no seal treatment — locked and unlocked states must be visually distinct.
-- Any score, rating, rank, percentile or leaderboard on a public surface, or any aggregate stance
-  (long/short split, average target, consensus). Resolved outcomes are evidence; a blended number
-  is a verdict.
+- Any grading, scoring or resolution of a publication, public or private: no seal, no HIT/MISS,
+  no track record, no Track Score, no hit rate. Grading was retired on 2026-09-24.
+- Any score, rating, rank, percentile or leaderboard, or any aggregate stance (long/short split,
+  average target, consensus).
 - The disclosure block restyled per analyst, or collapsed into an accordion.
 - Paywalled report bodies reachable via a direct client-side table read — `report_bodies` is
   already RLS-gated for this reason; keep it that way.
 - Dating-app or other casual creator-platform comparisons in any user-facing or internal copy.
 - Running any design-system generator that persists output into this repo (e.g. UI/UX Pro Max
-  `--design-system --persist`) — it overwrites the ledger-and-seal system with a generic one.
+  `--design-system --persist`) — it overwrites the ledger system with a generic one.
 
 ## Cursor Cloud specific instructions
 
@@ -311,9 +281,9 @@ scripts and `README.md`; this section only records the non-obvious parts.
   fixture routes (profile, today, explore, feed, compose, landing, markets, ...) render every
   surface with fictional data and are blocked in production by the middleware.
 - `SUPABASE_SERVICE_ROLE_KEY` is the service-role secret used only by the admin client
-  (`src/lib/supabase/admin.ts`), i.e. `npm run seed` and `npm run grade`. It is **not** needed to
+  (`src/lib/supabase/admin.ts`), i.e. `npm run seed` and `npm run demo:seed`. It is **not** needed to
   run or browse the app, and it is not retrievable via the Supabase MCP; it must be supplied as a
-  secret before running seed/grade.
+  secret before running a seed.
 
 ### Running and testing
 
@@ -324,8 +294,8 @@ scripts and `README.md`; this section only records the non-obvious parts.
 - Market data uses Yahoo Finance with no key and falls back to deterministic mock prices; AI
   features (fact-check, compose assist) mock-fall back without `DEEPSEEK_API_KEY`. Neither blocks
   local dev.
-- Lint/typecheck/tests/build: see the `lint`, `typecheck`, `test:engine`, `test:valuation`,
-  `test:pwa`, and `build` scripts in `package.json`. There is no single aggregate `test` script.
+- Lint/typecheck/tests/build: see the `lint`, `typecheck`, `test:*` (valuation, ranking, compose,
+  video, pwa, ...), and `build` scripts in `package.json`. There is no single aggregate `test` script.
 
 ### PWA
 

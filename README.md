@@ -1,8 +1,12 @@
 # Stoa (Next.js rebuild)
 
-A marketplace for independent stock research with a verified, public track record on every call.
-This is a clean-slate rebuild with no Base44: Next.js (App Router) + Supabase + a server-side
-scoring engine fed by real market data.
+A marketplace for independent stock research. This is a clean-slate rebuild with no Base44:
+Next.js (App Router) + Supabase + real market data.
+
+> **Grading is retired (2026-09-24).** Nothing is graded or scored any more: the engine, the grade
+> job, the track record, the seals and the Verdict type are deleted, and the `predictions` table is
+> a read-only archive (migration 0067). Sections of this README that describe grading are history.
+> Current rules: `AGENTS.md`; the removal: `docs/CHANGELOG.md`.
 
 Tagline: Think clearly. Invest better.
 
@@ -10,8 +14,6 @@ Tagline: Think clearly. Invest better.
 
 - **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Motion, Phosphor icons.
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
-- **Engine:** a 0-100 analyst score (win rate + profit factor + alpha) mapped to a 600-1400 rating,
-  with automatic grading of calls against live prices on a schedule.
 - **Money:** a simulated wallet/credits system with a 90/10 split, built so real PayPal payouts can
   drop in later (PayPal, not Stripe Connect, since Stripe Connect payouts aren't available for
   Israel-based platforms/sellers).
@@ -158,20 +160,12 @@ pattern as the OpenAI integration. Once `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECR
 
 See `docs/platform.md` for the full external-services table.
 
-## How grading works
+## Scheduled jobs
 
-- When an analyst publishes a call, the entry price is locked from the market feed server-side
-  (`src/app/actions/reports.ts`). The SPY price is captured for alpha.
-- The scheduled job (`src/app/api/cron/grade/route.ts` -> `src/lib/engine/grade.ts`) finds
-  calls whose timeframe has ended, pulls prices via Yahoo Finance (with optional fallbacks),
-  grades each call, and recomputes score, rating, and tier.
 - Lapsed subscriptions are expired by their own daily job
-  (`src/app/api/cron/subscription-expiry/route.ts`), independent of grading.
-- Run it manually any time:
-
-```bash
-npm run grade
-```
+  (`src/app/api/cron/subscription-expiry/route.ts`).
+- Ticker prices and market caps, and the `platform_stats` view, refresh daily
+  (`src/app/api/cron/refresh-ticker-metrics/route.ts`).
 
 ## Deploy
 
@@ -183,8 +177,8 @@ Your Supabase project is already the backend. Keep the service-role key out of t
 
 1. Push this folder to a Git repository (see below) and import it into Vercel.
 2. Add the same environment variables in the Vercel project settings.
-3. `vercel.json` registers the daily crons (`/api/cron/grade`, `/api/cron/subscription-expiry` and
-   the rest). Vercel automatically sends `Authorization: Bearer $CRON_SECRET`, which each route
+3. `vercel.json` registers the daily crons (`/api/cron/subscription-expiry`,
+   `/api/cron/refresh-ticker-metrics` and the rest). Vercel automatically sends `Authorization: Bearer $CRON_SECRET`, which each route
    verifies. This plan rejects sub-daily schedules.
 
 ## Pushing to a brand-new repository
@@ -362,7 +356,6 @@ PAYPAL_WEBHOOK_ID=
 npm install
 npm run dev          # http://localhost:3000 (or 3001 if 3000 busy)
 npm run seed         # demo analysts + investor@stoa.demo / stoademo123
-npm run grade        # manually run grading engine once
 ```
 
 ### Key file map
