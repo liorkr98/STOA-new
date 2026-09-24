@@ -83,6 +83,12 @@ async function saveDraftBody(
 
   let reportId = input.id;
   if (reportId) {
+    // A stance cannot outlive its ticker (reports_stance_needs_ticker): a
+    // draft losing its ticker loses its stance first. Tolerated while
+    // migration 0065 is unapplied.
+    if (!payload.ticker) {
+      await supabase.from("reports").update({ stance: null }).eq("id", reportId).eq("author_id", userId);
+    }
     const { error } = await supabase
       .from("reports")
       .update(payload)

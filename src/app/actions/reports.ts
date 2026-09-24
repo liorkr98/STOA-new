@@ -50,6 +50,9 @@ export async function saveDraft(
 
   let reportId = input.id;
   if (reportId) {
+    // A stance cannot outlive its ticker (reports_stance_needs_ticker), so
+    // clearing the ticker clears the stance first or the row update fails.
+    if (!payload.ticker) await storeStance(supabase, reportId, input);
     await supabase.from("reports").update(payload).eq("id", reportId);
   } else {
     const { data, error } = await supabase.from("reports").insert(payload).select("id").single();
