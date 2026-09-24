@@ -39,6 +39,7 @@ import {
 } from "@/lib/market/chart-indicator-render";
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
 import { TradingViewChartPanel } from "@/components/editor/tiptap/nodes/trading-view-chart-panel";
+import { canvasColor } from "@/lib/design/canvas-color";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -56,7 +57,7 @@ const DRAW_TOOLS: { key: DrawMode; label: string; icon: typeof MousePointer2 }[]
 ];
 
 function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return canvasColor(name);
 }
 
 function hexToRgba(hex: string, alpha: number): string {

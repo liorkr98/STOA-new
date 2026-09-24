@@ -3,6 +3,7 @@ import { LineSeries, type UTCTimestamp } from "lightweight-charts";
 import type { Candle } from "@/lib/market/candle-types";
 import type { ChartIndicator } from "@/lib/market/chart-indicators";
 import { rsi, sma } from "@/lib/market/indicators";
+import { canvasColor } from "@/lib/design/canvas-color";
 
 export interface IndicatorHandles {
   overlay: ISeriesApi<"Line">[];
@@ -30,8 +31,7 @@ export function clearIndicatorHandles(chart: IChartApi, handles: IndicatorHandle
 const SMA_COLORS = ["var(--brass)", "var(--plum)", "var(--verdigris)"];
 
 function cssVar(name: string): string {
-  if (typeof document === "undefined") return name;
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || name;
+  return canvasColor(name) || "#888888";
 }
 
 /** Apply SMA overlays and RSI sub-pane from chartNode indicator attrs. */

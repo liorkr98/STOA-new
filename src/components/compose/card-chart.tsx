@@ -12,6 +12,7 @@ import {
 } from "lightweight-charts";
 import { cn } from "@/lib/design/cn";
 import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
+import { canvasColor } from "@/lib/design/canvas-color";
 
 type SparkPoint = { t: number; v: number };
 
@@ -23,7 +24,7 @@ interface SparkBody {
 }
 
 function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return canvasColor(name);
 }
 
 function toSeries(body: SparkBody | null): SparkPoint[] {

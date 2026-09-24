@@ -32,9 +32,10 @@ import {
   periodChangePct,
   type MarkerTone,
 } from "@/lib/markets/chart-markers";
+import { canvasColor } from "@/lib/design/canvas-color";
 
 function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return canvasColor(name);
 }
 
 function withAlpha(hex: string, alpha: number): string {
