@@ -44,17 +44,17 @@
     "demo:video:check": "tsx scripts/demo-video-check.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^4.0.71",
+    "@ai-sdk/openai": "^4.0.72",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@phosphor-icons/react": "^2.1.7",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-popover": "^1.1.23",
-    "@sentry/nextjs": "^10.75.0",
+    "@sentry/nextjs": "^10.75.2",
     "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.116.0",
-    "@tanstack/react-query": "^5.103.1",
+    "@supabase/supabase-js": "^2.117.0",
+    "@tanstack/react-query": "^5.103.2",
     "@tiptap/core": "3.31.3",
     "@tiptap/extension-collaboration": "3.31.3",
     "@tiptap/extension-drag-handle": "3.31.3",
@@ -70,8 +70,8 @@
     "@tiptap/y-tiptap": "^3.0.9",
     "@upstash/qstash": "^2.11.3",
     "@upstash/ratelimit": "^2.1.0",
-    "@upstash/redis": "^1.38.4",
-    "ai": "^7.0.107",
+    "@upstash/redis": "^1.39.0",
+    "ai": "^7.0.109",
     "clsx": "^2.1.1",
     "culori": "^4.0.1",
     "date-fns": "^4.1.0",
@@ -108,7 +108,7 @@
     "eslint": "^9.17.0",
     "eslint-config-next": "^16.3.5",
     "tailwindcss": "^4.0.0",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.2"
   }
 }
