@@ -44,7 +44,7 @@ export function BlockEditor({
     const text = String(c.text ?? "");
     if (readOnly) {
       return (
-        <div className="t-body-editorial whitespace-pre-wrap">
+        <div className="stoa-prose stoa-prose--read whitespace-pre-wrap">
           {claims && claims.length > 0 ? (
             <FactCheckedText text={text} claims={claims} isAuthed={isAuthed} />
           ) : (

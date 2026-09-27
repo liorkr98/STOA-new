@@ -9,6 +9,7 @@ import { Avatar } from "./ui/avatar";
 import { EditedFlag } from "./report/edited-flag";
 import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
 import { Card } from "@/components/ui/card";
+import { labelCase } from "@/lib/design/label";
 
 export function ReportCard({
   report,
@@ -58,7 +59,7 @@ export function ReportCard({
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Chip>{publicTypeLabel(report.type)}</Chip>
+          <Chip>{labelCase(publicTypeLabel(report.type))}</Chip>
           {report.ticker ? <TickerChip ticker={report.ticker} /> : null}
           {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
         </div>

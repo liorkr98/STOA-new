@@ -66,6 +66,15 @@ const WORDS = [
   "--pending",
   "--mark-edited",
 ];
+function hue(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b);
+  const d = max - Math.min(r, g, b);
+  if (d === 0) return 0;
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+}
+
 const FILLS: [fill: string, ink: string][] = [
   ["--coral", "--on-coral"],
   ["--gain", "--on-gain"],
@@ -88,6 +97,20 @@ for (const [themeName, theme] of [["light", light], ["dark", dark]] as const) {
       const r = ratio(resolve(theme, fill), resolve(theme, ink));
       assert.ok(r >= 4.5, `${ink} on ${fill} is ${r.toFixed(2)}:1`);
     }
+  });
+
+  test(`${themeName}: error words read on their own box`, () => {
+    const r = ratio(resolve(theme, "--error"), resolve(theme, "--error-soft"));
+    assert.ok(r >= 4.5, `--error on --error-soft is ${r.toFixed(2)}:1`);
+  });
+
+  test(`${themeName}: the error red stays clear of the price red`, () => {
+    // The red exception for errors is only safe while it cannot pass for a
+    // price move: keep it at least 15 degrees of hue away from loss.
+    const a = hue(resolve(theme, "--error"));
+    const b = hue(resolve(theme, "--loss-text"));
+    const gap = Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+    assert.ok(gap >= 15, `--error and --loss-text are only ${gap.toFixed(1)} degrees apart`);
   });
 
   test(`${themeName}: decorative faint text still clears 3:1`, () => {
@@ -166,6 +189,12 @@ test("mono only on tickers", () => {
 test("the faint grey is decoration, never a text colour", () => {
   const hits = offenders(/(?<![\w-])(?:[a-z]+:)*text-text-faint\b|(?<![-\w])color:\s*["']?var\(--text-faint\)/);
   assert.deepEqual(hits, [], `faint text fails 4.5:1; use text-text-mute:\n${hits.join("\n")}`);
+});
+
+test("the reading size is only for the report body and the Compose editor", () => {
+  // Both render through .stoa-prose in globals.css; nothing else may use it.
+  const hits = offenders(/\btext-reading\b|--type-reading/, (f) => f === "src/app/globals.css");
+  assert.deepEqual(hits, [], `reading size outside .stoa-prose:\n${hits.join("\n")}`);
 });
 
 test("retired tokens stay retired", () => {

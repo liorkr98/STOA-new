@@ -17,8 +17,8 @@ function containsMath(node: JSONContent): boolean {
 /**
  * Read-only render of a Tiptap report body. Uses the same extension set as
  * the editor (buildExtensions) so the reading view matches the editor
- * exactly. The .stoa-prose--read modifier swaps the drafting sans for the
- * editorial face and reading-scale leading.
+ * exactly, at the reading size. The .stoa-prose--read modifier only drops the
+ * editor's drag gutter and caps the measure.
  */
 export function TiptapReportRenderer({
   json,

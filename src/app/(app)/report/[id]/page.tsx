@@ -41,6 +41,7 @@ import { SubscribeButton } from "@/components/wallet/subscribe-button";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { ScrollFrame } from "@/components/layout/scroll-frame";
 import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
+import { labelCase } from "@/lib/design/label";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -171,7 +172,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Chip>{publicTypeLabel(report.type)}</Chip>
+        <Chip>{labelCase(publicTypeLabel(report.type))}</Chip>
         {report.ticker && <TickerChip ticker={report.ticker} />}
         {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
         <span className="t-meta">

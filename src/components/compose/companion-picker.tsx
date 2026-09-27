@@ -5,6 +5,7 @@ import { listLinkablePublications } from "@/app/actions/reports";
 import { publicTypeLabel, type PublicationType } from "@/lib/compose/modes";
 import type { ContentType } from "@/lib/types";
 import { Card } from "@/components/ui/card";
+import { labelCase } from "@/lib/design/label";
 
 /** What each type may be connected to: a video to written work, and back. */
 const TARGETS: Record<PublicationType, ContentType[]> = {
@@ -58,7 +59,7 @@ export function CompanionPicker({
         <option value="">None</option>
         {rows.map((r) => (
           <option key={r.id} value={r.id}>
-            {publicTypeLabel(r.type)} · {r.title?.trim() || r.summary?.trim() || r.ticker || "Untitled"} · {r.status}
+            {labelCase(publicTypeLabel(r.type))} · {r.title?.trim() || r.summary?.trim() || r.ticker || "Untitled"} · {r.status}
           </option>
         ))}
       </select>

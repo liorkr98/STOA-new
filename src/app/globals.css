@@ -61,9 +61,14 @@
   /* Meanings that used to borrow brass, verdigris, rust or plum. Split out
    * by meaning so each can change in one place; under the accent law they
    * all resolve to ink and grey. */
-  --error: var(--ink); /* error text, destructive hovers */
-  --error-soft: var(--surface-2); /* error box fill */
-  --error-edge: var(--border-strong); /* error box border */
+  /* THE ERROR EXCEPTION (decided 2026-09-27). A failed payment or a rejected
+   * form must not read as neutral, so errors are red, but a crimson that sits
+   * well away from the price red (--loss) in hue, so an error can never be
+   * read as a price move. test:contrast checks the hue gap. Only errors,
+   * failures and destructive hovers use it; never success, never price. */
+  --error: #b0164f; /* error words, destructive hovers */
+  --error-soft: #fcedf3; /* error box fill */
+  --error-edge: #f0bfd1; /* error box border */
   --notice-edge: var(--border-strong); /* caveat / "attorney review" notices */
   --notice-soft: var(--surface-2);
   --ok: var(--ink); /* done, connected, verified ticks */
@@ -104,12 +109,16 @@
   /* Tickers only. Prices and other figures are Inter with tabular figures. */
   --font-mono: var(--font-jetbrains), ui-monospace, Menlo, monospace;
 
-  /* The five type sizes. Mirrored into Tailwind as text-display ... text-ticker. */
+  /* The type sizes. Mirrored into Tailwind as text-display ... text-reading. */
   --type-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
   --type-headline: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
   --type-title: 1.1875rem;
   --type-body: 0.9375rem;
   --type-ticker: 0.8125rem;
+  /* The sixth size, for long reading only: the report body and the Compose
+   * editor, where someone reads for ten minutes. Nowhere else (test:contrast
+   * checks where it is used). */
+  --type-reading: clamp(1.0625rem, 1rem + 0.25vw, 1.125rem);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -426,6 +435,10 @@
   --gain-text: #34d399;
   --loss-text: #f87171;
 
+  --error: #ff7fa8;
+  --error-soft: #2a1720;
+  --error-edge: #5c2438;
+
   --accent-weak: color-mix(in srgb, var(--ink) 10%, transparent);
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.24);
@@ -472,8 +485,8 @@
 
   --default-font-family: var(--font-sans);
 
-  /* Five sizes. Tailwind's own scale (text-xs ... text-9xl) is deleted so a
-   * sixth size cannot creep back in through a utility. */
+  /* Six sizes. Tailwind's own scale (text-xs ... text-9xl) is deleted so a
+   * seventh cannot creep back in through a utility. */
   --text-*: initial;
   --text-display: var(--type-display);
   --text-display--line-height: 0.96;
@@ -488,6 +501,8 @@
   --text-body--line-height: 1.5;
   --text-ticker: var(--type-ticker);
   --text-ticker--line-height: 1.4;
+  --text-reading: var(--type-reading);
+  --text-reading--line-height: 1.75;
 
   /* The --space-N ramp (docs/FRONTEND.md 7.2) is for hand-written CSS only.
      Mapping it onto Tailwind's --spacing-N made h-9 render 96px instead of
@@ -567,7 +582,7 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
- * Type: five sizes, three faces. docs/DESIGN_LANGUAGE.md section 3.
+ * Type: six sizes, three faces. docs/DESIGN_LANGUAGE.md section 2.
  *
  *   display   Bricolage 800   page mastheads
  *   headline  Bricolage 800   section heads, lead headlines
@@ -575,6 +590,7 @@ body {
  *   body      Inter 400/500   reading and UI; tabular figures on
  *   ticker    13px            the ticker symbol (JetBrains Mono) and, in
  *                             Inter, every caption, chip and meta line
+ *   reading   17-18px Inter   the report body and the Compose editor only
  *
  * Tailwind utilities text-display / -headline / -title / -body / -ticker
  * set the size alone; the .t-* classes below set face, weight and colour.
@@ -982,22 +998,24 @@ body {
 .stoa-prose {
   font-family: var(--font-sans);
   color: var(--text);
-  font-size: var(--type-body);
-  line-height: 1.7;
+  font-size: var(--type-reading);
+  line-height: 1.75;
   padding-inline-start: 1.75rem; /* gutter the drag handle sits in (dir-aware) */
   text-align: start; /* follows block dir; never hardcoded left (Phase 1.3) */
 }
 .stoa-prose > * + * { margin-top: 0.85em; }
 .stoa-prose h2 {
+  font-family: var(--font-display);
   font-size: var(--type-headline);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   line-height: 1.25;
   margin-top: 1.6em;
 }
 .stoa-prose h3 {
+  font-family: var(--font-display);
   font-size: var(--type-title);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
   margin-top: 1.3em;
 }
@@ -1082,15 +1100,12 @@ body {
   pointer-events: none;
 }
 /* Read modifier: editorial body, no drag gutter */
+/* The published reader: the same Inter reading size as the editor, so a
+ * report reads as it was written, without the drag gutter. */
 .stoa-prose--read {
   padding-left: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.8;
   max-width: 68ch;
 }
-.stoa-prose--read h2,
-.stoa-prose--read h3 { font-family: var(--font-sans); }
 
 /* ------------------------------------------------------------------ *
  * Modal enter/exit. Modals stay centered (transform-origin: center),

@@ -36,7 +36,7 @@ export function ReportBody({
 
   if (!body.trimStart().startsWith("{")) {
     return (
-      <div className="mt-8 whitespace-pre-wrap text-body leading-[1.8] text-text">
+      <div className="stoa-prose stoa-prose--read mt-8 whitespace-pre-wrap">
         {claims && claims.length > 0 ? (
           <FactCheckedText text={body} claims={claims} isAuthed={isAuthed} reportId={reportId} />
         ) : (
