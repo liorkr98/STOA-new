@@ -226,6 +226,7 @@ export function ExploreWall({
             discussionActions={discussionActions}
             sessionId={sessionId}
             embedded
+            surface="explore"
             onBack={closeWatch}
           />
         </div>,
