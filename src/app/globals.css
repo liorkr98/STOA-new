@@ -272,6 +272,55 @@
   contain-intrinsic-size: auto 100dvh;
 }
 
+/* Today's faces, watched as stories: a header of fixed height (the progress
+   segments, the analyst, the close button) over the Feed player, which takes
+   exactly the rest. Nothing floats under it, so the tab pill's room is zero. */
+.stories-overlay {
+  --stories-head: calc(3.75rem + var(--safe-top));
+  --tab-h: 0px;
+}
+
+.stories-head {
+  height: var(--stories-head);
+}
+
+.feed-snap-stories {
+  height: calc(100dvh - var(--stories-head));
+}
+
+.feed-snap-stories .feed-item-shell {
+  contain-intrinsic-size: auto calc(100dvh - var(--stories-head));
+}
+
+.stories-enter-next {
+  animation: stories-in-next var(--dur-3) var(--ease-out);
+}
+
+.stories-enter-prev {
+  animation: stories-in-prev var(--dur-3) var(--ease-out);
+}
+
+@keyframes stories-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes stories-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stories-enter-next,
+  .stories-enter-prev {
+    animation: none;
+  }
+}
+
 @media (max-width: 767px) {
   /* Set on the root whenever a page carries the tab shell, not on the shell
      itself: things that float outside it (the install hint is mounted at the

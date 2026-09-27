@@ -1,6 +1,8 @@
 import { TodayPage } from "@/components/today/today-page";
 import { InstrumentSheetProvider } from "@/components/markets/instrument-sheet";
 import { getMarketNews } from "@/lib/market/yahoo-news";
+import { fixturePublications } from "@/lib/dev/feed-fixtures";
+import type { FeedPublication } from "@/lib/feed/types";
 import type {
   TodayAnalyst,
   TodayCreatorRow,
@@ -25,7 +27,13 @@ import type {
  *
  * The faces' post times are relative to the real clock, so the coral ring can
  * be reviewed: set `stoa:today:last-looked` in localStorage to a moment within
- * the last few hours and reload.
+ * the last few hours and reload. Watching a face through clears its ring;
+ * `stoa:today:watched` holds those marks.
+ *
+ * Tapping a face opens the stories overlay over the Feed fixtures, grouped by
+ * analyst. Dana's work is written only (no clips), so the readable-card stage
+ * is reviewable; `?state=empty` is signed out, where every clip shows its
+ * poster and a way to sign in.
  */
 
 const NOW = Date.parse("2026-08-18T14:00:00Z");
@@ -142,6 +150,7 @@ export default async function DevTodayPage({
     lastPublishedAt: new Date(clock - (quiet ? hours + 30 : hours) * 3_600_000).toISOString(),
   });
   const people = [face(LENA, 0.5), face(KAI, 1.5), face(PRIYA, 3), face(MARCUS, 5), face(NOOR, 7), face(DANA, 11)];
+  const faceFixture = storiesFor(people, signedOut);
 
   const data: TodayPagePayload = {
     dateISO: "2026-08-18",
@@ -171,8 +180,34 @@ export default async function DevTodayPage({
   return (
     <InstrumentSheetProvider>
       <div className="mx-auto w-full max-w-[var(--w-wide)] px-5 py-8">
-        <TodayPage data={data} />
+        <TodayPage data={data} faceFixture={faceFixture} />
       </div>
     </InstrumentSheetProvider>
   );
+}
+
+/**
+ * Each face's recent work from the Feed fixtures, newest first, at most four.
+ * Dana's pieces lose their clips (written work); signed out, every clip is
+ * gated the way the real action gates it.
+ */
+function storiesFor(people: TodayFace[], signedOut: boolean): Record<string, FeedPublication[]> {
+  const all = fixturePublications();
+  const out: Record<string, FeedPublication[]> = {};
+  for (const p of people) {
+    // Dated back from the face's own last post, the way the real row and its work agree.
+    const newest = Date.parse(p.lastPublishedAt);
+    out[p.id] = all
+      .filter((pub) => pub.analyst.handle === p.handle)
+      .slice(0, 4)
+      .map((pub, i) => ({ ...pub, publishedAt: new Date(newest - i * 9 * 3_600_000).toISOString() }))
+      .map((pub) => {
+        if (p.handle === DANA.handle) {
+          return { ...pub, clipId: null, embedUrl: null, playbackUrl: null, thumbnailUrl: null, captionUrl: null, durationSeconds: 0, videoEdit: null, typeLabel: "THESIS" as const, deck: pub.deck ?? "Written for the page: the argument, the numbers behind it and what would change the view." };
+        }
+        if (signedOut) return { ...pub, clipId: null, embedUrl: null, playbackUrl: null, captionUrl: null, watchGated: true };
+        return pub;
+      });
+  }
+  return out;
 }

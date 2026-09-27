@@ -6,6 +6,7 @@ import { TodayFaces } from "@/components/today/today-faces";
 import { ClusterBand, DeskBand, MinuteBand, NewsBand, ReadingBand } from "@/components/today/today-sections";
 import { publishedTodayLabel, todayDateLabel } from "@/lib/today/format";
 import type { TodayPagePayload } from "@/lib/today/types";
+import type { FeedPublication } from "@/lib/feed/types";
 
 /**
  * Today (/home), in Direction B.
@@ -18,7 +19,16 @@ import type { TodayPagePayload } from "@/lib/today/types";
  * scrolling on its own; on a phone the page is one document scroll and the
  * rail is a drawer behind Lists, beside the dateline.
  */
-export function TodayPage({ data, news }: { data: TodayPagePayload; news?: ReactNode }) {
+export function TodayPage({
+  data,
+  news,
+  faceFixture,
+}: {
+  data: TodayPagePayload;
+  news?: ReactNode;
+  /** Dev only: each face's recent work, so the overlay runs without a database. */
+  faceFixture?: Record<string, FeedPublication[]>;
+}) {
   const hasAnything = data.lead || data.minute.length || data.reading.length || data.desk.length;
 
   return (
@@ -42,7 +52,13 @@ export function TodayPage({ data, news }: { data: TodayPagePayload; news?: React
 
         {data.lead ? <TodayLead lead={data.lead} className="mt-8 md:mt-10" /> : null}
 
-        <TodayFaces people={data.faces.people} today={data.faces.today} className="today-band" />
+        <TodayFaces
+          people={data.faces.people}
+          today={data.faces.today}
+          signedIn={data.sidebar.signedIn}
+          fixture={faceFixture}
+          className="today-band"
+        />
         <MinuteBand items={data.minute} className="today-band" />
         <DeskBand items={data.desk} className="today-band" />
         <ClusterBand cluster={data.cluster} className="today-band" />
