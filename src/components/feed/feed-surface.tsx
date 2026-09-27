@@ -34,6 +34,7 @@ import { cn } from "@/lib/design/cn";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { FeedComment, FeedPublication } from "@/lib/feed/types";
 import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
+import { labelCase } from "@/lib/design/label";
 
 /**
  * The Feed: the only video discovery surface, and the whole viewport.
@@ -701,13 +702,11 @@ const FeedItem = function FeedItem({
     }
   };
 
-  /** CALL · NVDA · AUG 22, 2026 · 0:58. Theme lives on the overlay chip, not here. */
+  /** Video · NVDA · Aug 22, 2026 · 0:58. Theme lives on the overlay chip, not here. */
   const dateline = [
-    pub.typeLabel,
+    labelCase(pub.typeLabel),
     pub.ticker,
-    new Date(pub.publishedAt)
-      .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-      .toUpperCase(),
+    new Date(pub.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
     fmt(pub.durationSeconds),
   ]
     .filter(Boolean)

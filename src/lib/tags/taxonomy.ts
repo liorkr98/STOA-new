@@ -102,13 +102,13 @@ export function tagForSector(sector: string | null | undefined): PublicationTag 
  * Display label for a theme chip on a callless publication. Prefers the stored
  * theme tag, then the primary tag, and finally the ticker's sector as the legacy
  * fallback for rows published before tags existed. An unrecognised slug still
- * renders (uppercased) rather than disappearing.
+ * renders rather than disappearing.
  */
 export function themeLabel(
   input: { theme_tag?: string | null; primary_tag?: string | null },
   sectorFallback?: string | null,
 ): string | null {
   const slug = input.theme_tag ?? input.primary_tag ?? null;
-  if (slug) return (tagBySlug(slug)?.label ?? slug).toUpperCase();
-  return sectorFallback ? sectorFallback.toUpperCase() : null;
+  if (slug) return tagBySlug(slug)?.label ?? slug;
+  return sectorFallback ?? null;
 }

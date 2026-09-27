@@ -5,6 +5,7 @@ import { ClipPendingThumb } from "@/components/video/clip-pending";
 import { durationLabel, sinceLabel, typeLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
+import { labelCase } from "@/lib/design/label";
 
 /**
  * One card anatomy, everywhere on Today.
@@ -17,21 +18,21 @@ import type { TodayItem } from "@/lib/today/types";
  */
 
 /**
- * The eyebrow's words: TRENDING or NEW, then the ticker, then the direction
+ * The eyebrow's words: Trending or New, then the ticker, then the direction
  * on its own so it can carry its sentiment colour; or the sector, the
  * theme, or the type when there is no ticker.
  */
 export function eyebrowFor(item: TodayItem): { label: string; direction: TodayItem["direction"] } {
   const parts: string[] = [];
-  if (item.stageMarker) parts.push(item.stageMarker);
+  if (item.stageMarker) parts.push(labelCase(item.stageMarker));
   if (item.ticker) parts.push(item.ticker);
-  else if (item.sector) parts.push(item.sector.toUpperCase());
-  else if (item.themeTag) parts.push(item.themeTag.toUpperCase());
+  else if (item.sector) parts.push(item.sector);
+  else if (item.themeTag) parts.push(labelCase(item.themeTag));
   else parts.push(typeLabel(item.type));
   return { label: parts.join(" · "), direction: item.ticker ? item.direction : null };
 }
 
-/** The eyebrow as marked-up text: brass label, the direction word in its own colour. */
+/** The eyebrow as marked-up text: grey label, the direction word in its own colour. */
 export function EyebrowText({ item, className }: { item: TodayItem; className?: string }) {
   const { label, direction } = eyebrowFor(item);
   return (
@@ -40,7 +41,7 @@ export function EyebrowText({ item, className }: { item: TodayItem; className?: 
       {direction ? (
         <>
           <span aria-hidden> · </span>
-          <span className={`ts-dir--${direction}`}>{direction.toUpperCase()}</span>
+          <span className={`ts-dir--${direction}`}>{labelCase(direction)}</span>
         </>
       ) : null}
     </span>

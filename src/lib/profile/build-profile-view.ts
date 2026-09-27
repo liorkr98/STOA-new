@@ -140,7 +140,7 @@ export function tierPublications(publications: ProfilePublication[], pinnedId: s
 
   return {
     lead,
-    leadLabel: (pinned ? "PINNED" : "LATEST") as "PINNED" | "LATEST",
+    leadLabel: (pinned ? "Pinned" : "Latest") as "Pinned" | "Latest",
     mostWatched,
     everything,
     subjects: subjects.length >= 2 ? subjects : [],
@@ -192,7 +192,7 @@ export async function buildProfileView(
   // always present; members (paying subscribers) only when the analyst opted in
   // from the Storefront.
   const audienceLine = [
-    `${compact(profile.followers_count)} FOLLOWERS`,
+    `${compact(profile.followers_count)} followers`,
     ...(showMembers ? [`${compact(members)} MEMBER${members === 1 ? "" : "S"}`] : []),
   ].join(" · ");
 
@@ -219,7 +219,7 @@ export async function buildProfileView(
     verified: profile.verified,
     specialty: profile.headline?.trim() || "Independent analyst on Stoa",
     bio: profile.bio,
-    handleLine: `@${profile.handle.toUpperCase()} · JOINED ${joinedYear}`,
+    handleLine: `@${profile.handle} · joined ${joinedYear}`,
     isSelf,
     audienceLine,
     ...tiers,

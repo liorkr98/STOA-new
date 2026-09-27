@@ -1,5 +1,6 @@
 import { publicTypeLabel } from "@/lib/compose/modes";
 import type { ContentType } from "@/lib/types";
+import { labelCase } from "@/lib/design/label";
 
 /** Mono dateline stamp for a headline row: "2H AGO", "3D AGO", "JUL 20". */
 export function sinceLabel(iso: string | null | undefined, now = new Date()): string {
@@ -12,14 +13,13 @@ export function sinceLabel(iso: string | null | undefined, now = new Date()): st
   if (minutes < 60) return `${minutes}M AGO`;
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}H AGO`;
+  if (hours < 24) return `${hours}h ago`;
 
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}D AGO`;
+  if (days < 7) return `${days}d ago`;
 
   return then
-    .toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })
-    .toUpperCase();
+    .toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
 }
 
 /** "0:58" / "12:04" from a duration in seconds. */
@@ -33,7 +33,7 @@ export function durationLabel(seconds: number): string {
 
 /** The printed type. A retired verdict (`call`) reads as a thesis until 0067 relabels it. */
 export function typeLabel(type: string): string {
-  return publicTypeLabel(type as ContentType);
+  return labelCase(publicTypeLabel(type as ContentType));
 }
 
 /** Free / $7 / Subscribers, from the report's own access setting. */

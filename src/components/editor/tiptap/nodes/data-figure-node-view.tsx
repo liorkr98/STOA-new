@@ -137,7 +137,7 @@ export function DataFigureNodeView({
                 rel="noopener noreferrer"
                 className="t-meta inline-flex items-center gap-1 text-ticker hover:text-accent"
               >
-                {(sourceRef.provider ?? "source").toUpperCase()}
+                {sourceRef.provider ?? "source"}
                 {sourceRef.accession ? ` - ${sourceRef.accession}` : ""}
                 <ArrowUpRight size={11} />
               </a>
@@ -229,7 +229,7 @@ export function DataFigureNodeView({
       {sourceRef ? (
         <div className="mt-2 flex items-center gap-1.5 border-t border-border pt-2">
           <span className="t-meta flex-1 truncate text-ticker">
-            {(sourceRef.provider ?? "source").toUpperCase()}
+            {sourceRef.provider ?? "source"}
             {sourceRef.concept ? ` - ${sourceRef.concept}` : ""}
             {sourceRef.asOf ? ` - filed ${sourceRef.asOf}` : ""}
           </span>

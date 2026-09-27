@@ -51,7 +51,7 @@ export default async function InboxPage() {
     zone: "good", // real notification kinds are all "good to know" today
     category: categoryFor(n.kind),
     title: `${n.actor ? `${n.actor.display_name} ` : ""}${n.body ?? n.kind}`,
-    timeLabel: formatDistanceToNow(new Date(n.created_at), { addSuffix: true }).toUpperCase(),
+    timeLabel: formatDistanceToNow(new Date(n.created_at), { addSuffix: true }),
     read: n.read,
     href: n.link,
     action: n.link ? "View" : null,

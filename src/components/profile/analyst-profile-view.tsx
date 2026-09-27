@@ -68,7 +68,7 @@ export interface AnalystProfileViewProps {
 
   /** Tier 1: the pinned publication, or the newest video. */
   lead: ProfilePublication | null;
-  leadLabel: "LATEST" | "PINNED";
+  leadLabel: "Latest" | "Pinned";
   /** Tier 2: three or four most-watched videos, empty when there are too few. */
   mostWatched: ProfilePublication[];
   /** Tier 3: the complete archive, empty when the lead is all there is. */

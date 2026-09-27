@@ -21,7 +21,7 @@ export default async function FollowingPage() {
     href: `/analyst/${a.handle}`,
     name: a.display_name,
     initials: initialsOf(a.display_name),
-    specialty: a.headline?.trim().toUpperCase() || "INDEPENDENT ANALYST",
+    specialty: a.headline?.trim() || "Independent analyst",
     // Placeholder: no per-analyst monthly publication count in the backend yet.
     pubs: "— PUBLICATIONS THIS MONTH",
   }));

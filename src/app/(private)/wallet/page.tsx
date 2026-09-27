@@ -104,13 +104,13 @@ export default async function WalletPage() {
                   className="num flex items-center justify-between gap-5 border-b border-border py-3 text-ticker md:grid md:grid-cols-[120px_1fr_110px]"
                 >
                   <div className="hidden text-text-mute md:block">
-                    {format(new Date(t.created_at), "MMM d, yyyy").toUpperCase()}
+                    {format(new Date(t.created_at), "MMM d, yyyy")}
                   </div>
                   <div className="min-w-0">
                     <span className="font-sans text-body">{txnLabel[t.type]}</span>
                     {t.memo && <span className="ml-2 text-text-mute">{t.memo}</span>}
                     <span className="ml-2 text-text-mute md:hidden">
-                      {format(new Date(t.created_at), "MMM d").toUpperCase()}
+                      {format(new Date(t.created_at), "MMM d")}
                     </span>
                   </div>
                   <div

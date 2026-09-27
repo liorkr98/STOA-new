@@ -21,9 +21,9 @@ function typeLabel(type: Report["type"]): string {
 /** Only what is stored: a ready clip, a written thesis. */
 function badgeFor(r: Report, hasVideo: boolean): string {
   const parts: string[] = [];
-  if (hasVideo) parts.push("VIDEO");
-  if (r.type === "research" || (r.body?.length ?? 0) > 600) parts.push("THESIS");
-  return parts.length ? parts.join(" · ") : "NOTE";
+  if (hasVideo) parts.push("Video");
+  if (r.type === "research" || (r.body?.length ?? 0) > 600) parts.push("thesis");
+  return parts.length ? parts.join(" · ") : "Brief";
 }
 
 type Clip = Awaited<ReturnType<typeof listClipsByCreator>>[number];
@@ -62,7 +62,7 @@ function toPublication(
     title: r.title?.trim() || r.summary?.trim() || "Untitled",
     duration: clip?.status === "ready" ? formatDuration(clip.duration_seconds) : "",
     videoStatus: clip ? clip.status : null,
-    dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d").toUpperCase(),
+    dateLabel: format(new Date(r.published_at ?? r.created_at), "MMM d"),
     views: compact(r.views),
     plays: clip ? compact(clip.play_count ?? 0) : null,
     pinned: r.id === pinnedId,
@@ -70,15 +70,15 @@ function toPublication(
   };
 
   if (clip?.status === "processing") {
-    base.stateLine = `VIDEO PROCESSING · STARTED ${formatDistanceToNowStrict(new Date(clip.created_at)).toUpperCase()} AGO`;
+    base.stateLine = `Video processing · started ${formatDistanceToNowStrict(new Date(clip.created_at))} ago`;
   }
   if (clip?.status === "failed") {
-    base.stateLine = "VIDEO FAILED · OPEN IT AND ATTACH THE CLIP AGAIN";
+    base.stateLine = "Video failed · open it and attach the clip again";
   }
   if (state === "archived") {
-    base.stateLine = "ARCHIVED · HIDDEN FROM THE PUBLIC · CAN BE RESTORED";
+    base.stateLine = "Archived · hidden from the public · can be restored";
   } else if (state === "draft") {
-    base.stateLine = `DRAFT · EDITED ${formatDistanceToNowStrict(new Date(r.created_at)).toUpperCase()} AGO`;
+    base.stateLine = `Draft · edited ${formatDistanceToNowStrict(new Date(r.created_at))} ago`;
   }
 
   return base;

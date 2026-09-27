@@ -18,10 +18,10 @@ function typeLabel(type: Report["type"]): string {
   return publicTypeLabel(type);
 }
 function badgeFor(type: Report["type"]): string {
-  if (type === "research") return "VIDEO · THESIS";
-  if (type === "short_post") return "VIDEO · NOTE";
-  if (type === "video") return "VIDEO";
-  return "VIDEO · CALL";
+  if (type === "research") return "Video · thesis";
+  if (type === "short_post") return "Video · brief";
+  // "call" is the pre-2026-09-24 verdict type; grading is retired, so it reads as a video.
+  return "Video";
 }
 
 export default async function LibraryPage() {
@@ -53,7 +53,7 @@ export default async function LibraryPage() {
     const isSaved = savedIds.has(r.id);
     const subscribed = subSet.has(r.author_id);
 
-    let state = "SAVED · FREE";
+    let state = "Saved · free";
     let chipTone: "ink" | "outline" = "outline";
     let locked = false;
     let sub: string | null = null;
@@ -61,21 +61,21 @@ export default async function LibraryPage() {
 
     if (owned) {
       const u = unlockedById.get(r.id)!;
-      const dateLabel = u.unlockedAt ? format(new Date(u.unlockedAt), "d MMM").toUpperCase() : null;
+      const dateLabel = u.unlockedAt ? format(new Date(u.unlockedAt), "d MMM") : null;
       const price = u.price ?? r.price;
-      state = "OWNED";
+      state = "Owned";
       chipTone = "ink";
-      sub = `UNLOCKED${dateLabel ? ` ${dateLabel}` : ""}${price != null ? ` · $${price}` : ""}`;
+      sub = `Unlocked${dateLabel ? ` ${dateLabel}` : ""}${price != null ? ` · $${price}` : ""}`;
     } else if (gated === "free") {
-      state = "SAVED · FREE";
+      state = "Saved · free";
     } else if (gated === "subscribers") {
-      state = "SAVED · SUBSCRIBERS";
+      state = "Saved · subscribers";
       locked = !subscribed;
-      sub = subscribed ? "INCLUDED IN YOUR SUBSCRIPTION" : null;
+      sub = subscribed ? "Included in your subscription" : null;
     } else {
-      state = "SAVED · LOCKED";
+      state = "Saved · locked";
       locked = true;
-      sub = `UNLOCK $${r.price} →`;
+      sub = `Unlock $${r.price} →`;
       subHref = `/report/${r.id}`;
     }
 

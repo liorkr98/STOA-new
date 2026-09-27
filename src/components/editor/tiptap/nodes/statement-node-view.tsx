@@ -331,7 +331,7 @@ export function StatementNodeView({
           <span className="flex items-center gap-2">
             {statement.source?.provider && (
               <span className="t-meta text-ticker">
-                Source: {statement.source.provider.toUpperCase()}
+                Source: {statement.source.provider}
                 {statement.source.asOf ? ` - filed ${statement.source.asOf}` : ""}
               </span>
             )}

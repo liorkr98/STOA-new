@@ -79,8 +79,8 @@ export default async function SubscriptionsPage() {
                     className={`num mt-3.5 text-ticker ${cancelling ? "text-text-mute" : "text-text-mute"}`}
                   >
                     {cancelling
-                      ? `CANCELS ${format(new Date(s.renews_at), "MMM d, yyyy")} · ACCESS UNTIL THEN`
-                      : `RENEWS ${format(new Date(s.renews_at), "MMM d, yyyy")}`}
+                      ? `Cancels ${format(new Date(s.renews_at), "MMM d, yyyy")} · access until then`
+                      : `Renews ${format(new Date(s.renews_at), "MMM d, yyyy")}`}
                   </div>
                   <div className="mt-4 flex items-center gap-4">
                     {s.analyst?.handle && (
@@ -138,7 +138,7 @@ export default async function SubscriptionsPage() {
                 className="num flex flex-col gap-1 border-b border-border py-3 text-ticker md:grid md:grid-cols-[110px_1fr_200px_90px] md:items-center md:gap-5"
               >
                 <div className="text-text-mute">
-                  {u.unlockedAt ? format(new Date(u.unlockedAt), "MMM d, yyyy").toUpperCase() : "—"}
+                  {u.unlockedAt ? format(new Date(u.unlockedAt), "MMM d, yyyy") : "—"}
                 </div>
                 <div dir="auto" className="user-copy font-sans text-body">{u.report.title ?? "Untitled"}</div>
                 <div className="text-text-mute">{u.report.author?.display_name ?? "—"}</div>

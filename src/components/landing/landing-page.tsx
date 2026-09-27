@@ -91,7 +91,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
     <section aria-label="Today, a glimpse" className="landing-today gutter-x mx-auto mt-20 max-w-[var(--w-standard)]">
       <Reveal>
         <div className="flex flex-col gap-1 border-y border-[var(--ink)] py-2 sm:flex-row sm:items-baseline sm:justify-between">
-          <span className="font-display text-title font-semibold">STOA · TODAY</span>
+          <span className="font-display text-title font-semibold">Stoa · Today</span>
           <span className="num text-ticker text-text-mute">
             Issue №{data.issue.issueNumber} · {formatDispatchDateline(data.issue.dateISO)}
           </span>
