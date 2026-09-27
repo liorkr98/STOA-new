@@ -1001,7 +1001,7 @@ function AddOverlay({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative">
-        <Button variant="secondary" size="sm" onClick={() => setOpen((o) => (o ? null : "root"))} aria-expanded={open !== null} aria-haspopup="menu">
+        <Button variant="ghost" size="sm" onClick={() => setOpen((o) => (o ? null : "root"))} aria-expanded={open !== null} aria-haspopup="menu">
           <Plus size={14} /> Add overlay
         </Button>
         {open ? (
@@ -1120,7 +1120,7 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
                 : "None chosen yet. This is what people click."}
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
           {open ? "Done" : chosen ? "Change" : "Choose"}
         </Button>
       </div>
@@ -1159,7 +1159,7 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
                 if (f) onChange({ type: "upload", url: URL.createObjectURL(f) });
               }}
             />
-            <Button variant="secondary" size="sm" onClick={() => uploadRef.current?.click()}>
+            <Button variant="ghost" size="sm" onClick={() => uploadRef.current?.click()}>
               <ImagePlus size={14} /> Use an image instead
             </Button>
             <span className="num text-ticker text-text-faint">Shown at 4:5, as on Explore and the profile</span>
@@ -1450,7 +1450,7 @@ export function VideoRung({
           {choosing && (src || hasClip) ? (
             <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 md:ml-auto">
               {canRecord && picking !== "camera" ? (
-                <Button variant="secondary" size="sm" onClick={() => setPicking("camera")}>
+                <Button variant="ghost" size="sm" onClick={() => setPicking("camera")}>
                   <Video size={16} strokeWidth={1.6} /> Record
                 </Button>
               ) : null}
@@ -1464,12 +1464,12 @@ export function VideoRung({
                   e.target.value = "";
                 }}
               />
-              <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
+              <Button variant="ghost" size="sm" onClick={() => fileRef.current?.click()}>
                 <Upload size={16} strokeWidth={1.6} /> Replace
               </Button>
               {onRemove ? (
                 <Button
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
                   onClick={() => {
                     setSrc(null);
@@ -1612,7 +1612,7 @@ export function VideoRung({
                 </span>
               ) : null}
               <Button
-                variant={faithful ? "primary" : "secondary"}
+                variant={faithful ? "ink" : "ghost"}
                 size="sm"
                 className="ml-auto"
                 onClick={() => {

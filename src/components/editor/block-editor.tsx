@@ -1,10 +1,10 @@
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import type { EditorBlock } from "@/lib/editor/types";
 import { parseMetricsItems } from "@/lib/editor/document";
 import { MiniChart } from "@/components/editor/mini-chart";
 import { FactCheckedText } from "@/components/report/fact-check-layer";
 import type { FactClaim } from "@/lib/ai/fact-check";
+import { TickerChip } from "@/components/ui/chip";
 
 const inputClass =
   "w-full rounded-field border border-border bg-bg/80 px-3 py-2 text-body focus-ring";

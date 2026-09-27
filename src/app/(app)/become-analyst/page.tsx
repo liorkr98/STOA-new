@@ -5,6 +5,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { submitAnalystApplication } from "@/app/actions/profile";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Apply to publish" };
 
@@ -46,14 +47,14 @@ export default async function BecomeAnalystPage({
   if (submitted === "1") {
     return (
       <div className="mx-auto max-w-[var(--w-reading)] py-8">
-        <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
+        <Card className="flex flex-col items-center gap-4 p-8 text-center">
           <Clock size={48} weight="duotone" className="text-[var(--pending)]" />
           <h1 className="t-title">Application submitted!</h1>
           <p className="t-body text-text-mute max-w-sm">
             We&apos;ll review your application and notify you by email and in-app notification.
             Usually within 1-2 business days.
           </p>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -173,7 +174,7 @@ function ApplicationStatus({
 }) {
   if (application.status === "pending") {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
+      <Card className="flex flex-col items-center gap-4 p-8 text-center">
         <Clock size={48} weight="duotone" className="text-[var(--pending)]" />
         <h2 className="t-title">Application under review</h2>
         <p className="t-body text-text-mute max-w-sm">
@@ -181,13 +182,13 @@ function ApplicationStatus({
           {new Date(application.submitted_at).toLocaleDateString()}. We&apos;ll notify you once
           it&apos;s reviewed.
         </p>
-      </div>
+      </Card>
     );
   }
 
   if (application.status === "approved") {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
+      <Card className="flex flex-col items-center gap-4 p-8 text-center">
         <CheckCircle size={48} weight="duotone" className="text-[var(--ok)]" />
         <h2 className="t-title">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
@@ -199,13 +200,13 @@ function ApplicationStatus({
         <a href="/studio/compose" className="text-body text-accent underline hover:no-underline">
           Go to Studio
         </a>
-      </div>
+      </Card>
     );
   }
 
   // rejected
   return (
-    <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
+    <Card className="flex flex-col items-center gap-4 p-8 text-center">
       <XCircle size={48} weight="duotone" className="text-[var(--error)]" />
       <h2 className="t-title">Application not approved</h2>
       {application.review_note && (
@@ -217,6 +218,6 @@ function ApplicationStatus({
       <a href="/become-analyst?reapply=1" className="inline-flex h-10 items-center justify-center gap-2 rounded-button border border-border bg-surface px-4 text-body font-medium transition hover:bg-surface-2 focus-ring">
         Update and re-apply
       </a>
-    </div>
+    </Card>
   );
 }

@@ -124,7 +124,7 @@ export function FactCheckerPanel({
       <Button
         type="button"
         size="sm"
-        variant="secondary"
+        variant="ghost"
         disabled={pending || !text.trim() || credits < AI_COST.factCheck}
         onClick={run}
       >

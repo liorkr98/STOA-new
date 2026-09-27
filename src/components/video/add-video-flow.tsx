@@ -355,7 +355,7 @@ export function AddVideoFlow({
                   {countdown}s
                 </span>
               </div>
-              <Button variant="primary" onClick={stopRecording} className="w-full">
+              <Button variant="ink" onClick={stopRecording} className="w-full">
                 <Square size={16} aria-hidden /> Stop &amp; use recording
               </Button>
             </div>
@@ -428,7 +428,7 @@ export function AddVideoFlow({
               )}
 
               <Button
-                variant="primary"
+                variant="ink"
                 onClick={publish}
                 disabled={publishing || !transcript.trim()}
                 className="w-full"
@@ -453,7 +453,7 @@ export function AddVideoFlow({
               <p className="text-ticker text-text-mute">
                 It is now attached to your report and will appear in the Feed, on Explore and in the Dispatch.
               </p>
-              <Button variant="secondary" onClick={onClose}>
+              <Button variant="ghost" onClick={onClose}>
                 Done
               </Button>
             </div>

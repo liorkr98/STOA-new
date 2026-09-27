@@ -8,11 +8,11 @@ import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { ClipPendingThumb } from "@/components/video/clip-pending";
 import type { Direction } from "@/lib/types";
 import type { Plan } from "@/lib/db/plans";
-import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
-import { DirectionTag } from "@/components/ui/tag";
 import { FollowButton } from "@/components/follow-button";
 import { ShareMenu } from "@/components/share/share-menu";
 import { TierPickerModal } from "@/components/profile/tier-picker-modal";
+import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
+import { Avatar } from "@/components/ui/avatar";
 
 /** One publication as the storefront renders it: a video tile or a written tile. */
 export interface ProfilePublication {
@@ -158,8 +158,8 @@ function MetaRow({ p, className }: { p: ProfilePublication; className?: string }
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
       {p.ticker && <TickerChip ticker={p.ticker} />}
-      {p.direction && <DirectionTag direction={p.direction} />}
-      {!p.ticker && p.themeTag && <ThemeTag label={p.themeTag} />}
+      {p.direction && <StanceChip direction={p.direction} />}
+      {!p.ticker && p.themeTag && <ThemeChip label={p.themeTag} />}
       {p.badge !== p.typeLabel && (
         <span className="num text-ticker text-text-faint">{p.badge}</span>
       )}
@@ -389,14 +389,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       {/* HERO: identity, audience, actions */}
       <div className="max-w-[720px]">
         <div className="flex items-start gap-4 sm:gap-5">
-          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-panel bg-[var(--ink)] font-display text-headline text-[var(--paper)] md:h-[92px] md:w-[92px]">
-            {props.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
-            ) : (
-              props.initials
-            )}
-          </span>
+          <Avatar src={props.avatarUrl} name={props.name} size={64} className="md:h-[92px] md:w-[92px]" />
           <div className="min-w-0 pt-1">
             <div className="flex min-w-0 items-center gap-2.5">
               <h1 className="min-w-0 break-words font-display text-headline font-semibold leading-tight tracking-tight md:text-display">

@@ -93,7 +93,7 @@ export function ImageCropDialog({
             />
           </label>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
               Cancel
             </Button>
             <Button type="button" size="sm" disabled={pending || !area} onClick={() => void apply()}>

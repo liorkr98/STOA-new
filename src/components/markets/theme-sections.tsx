@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { FollowButton } from "@/components/follow-button";
@@ -10,6 +9,7 @@ import { accessLabel } from "@/lib/today/format";
 import { price } from "@/lib/format";
 import { macroLevelLabel } from "@/lib/markets/instruments";
 import type { ThemePayload } from "@/lib/markets/build-theme";
+import { TickerChip } from "@/components/ui/chip";
 
 /**
  * The theme page, structured like the sector page: constituent names with

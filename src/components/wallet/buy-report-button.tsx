@@ -26,7 +26,7 @@ export function BuyReportButton({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full")}>
         Sign in to unlock
       </Link>
     );
@@ -34,7 +34,7 @@ export function BuyReportButton({
 
   return (
     <>
-      <Button variant="secondary" size="lg" className="w-full" onClick={() => setOpen(true)}>
+      <Button variant="ghost" size="lg" className="w-full" onClick={() => setOpen(true)}>
         <LockOpen size={18} aria-hidden />
         Unlock for {usd(price)}
       </Button>

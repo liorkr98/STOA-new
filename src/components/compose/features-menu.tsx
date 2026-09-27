@@ -3,6 +3,7 @@
 import { ChevronRight, FileText, Layers, Target } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { FeatureDef, FeatureKey } from "@/lib/compose/steps";
+import { Card } from "@/components/ui/card";
 
 /**
  * The features menu, on the publish screen and nowhere else.
@@ -45,9 +46,9 @@ export function FeaturesMenu({
   onOpen: (key: FeatureKey) => void;
 }) {
   return (
-    <section
+    <Card as="section"
       aria-label={`Add to this ${typeNoun}`}
-      className="rounded-panel border border-border bg-surface"
+      className=""
     >
       <div className="border-b border-border px-4 py-3">
         <p className="t-meta">Add to this {typeNoun}</p>
@@ -101,6 +102,6 @@ export function FeaturesMenu({
           );
         })}
       </ul>
-    </section>
+    </Card>
   );
 }

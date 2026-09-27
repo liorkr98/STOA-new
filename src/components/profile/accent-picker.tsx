@@ -189,7 +189,7 @@ export function AccentPicker({
         <Button type="button" onClick={save} disabled={pending || !check.valid}>
           {pending ? "Saving..." : "Save accent"}
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={reset} disabled={pending}>
+        <Button type="button" variant="plain" size="sm" onClick={reset} disabled={pending}>
           <RotateCcw size={14} /> Reset to default
         </Button>
         {saved && !pending && (

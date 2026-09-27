@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Newspaper } from "lucide-react";
 import type { NewsItem } from "@/lib/market/types";
+import { Card } from "@/components/ui/card";
 
 type NewsState =
   | { status: "loading"; items: NewsItem[] }
@@ -57,7 +58,7 @@ export function CompanyNews({ ticker }: { ticker: string }) {
   const items = useMemo(() => state.items.slice(0, 8), [state.items]);
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5">
+    <Card as="section" className="p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="t-title">Latest news</h2>
@@ -111,6 +112,6 @@ export function CompanyNews({ ticker }: { ticker: string }) {
           ))}
         </ul>
       )}
-    </section>
+    </Card>
   );
 }

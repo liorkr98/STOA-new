@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { BarChart2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { scenario, type ScenarioCase, type ScenarioResult } from "@/lib/valuation/model";
+import { TickerChip } from "@/components/ui/chip";
 
 /**
  * scenarioNode view (A2). Bull/base/bear x price x probability with a sum=100

@@ -185,7 +185,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="secondary" size="sm" onClick={() => void aiBio()}>
+        <Button type="button" variant="ghost" size="sm" onClick={() => void aiBio()}>
           <Sparkle size={16} className="text-accent" />
           AI bio suggestion
         </Button>

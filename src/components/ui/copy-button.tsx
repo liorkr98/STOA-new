@@ -15,7 +15,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className={buttonClass("secondary", "sm")}
+      className={buttonClass("ghost", "sm")}
     >
       {copied ? <Check size={14} /> : <Copy size={14} />}
       {copied ? "Copied" : label}

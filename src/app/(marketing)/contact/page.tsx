@@ -5,6 +5,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { submitContactMessage } from "@/app/actions/contact";
 import { parseContactTopic } from "@/lib/db/contact";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -37,7 +38,7 @@ export default async function ContactPage({
   if (submitted === "1") {
     return (
       <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
-        <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
+        <Card className="flex flex-col items-center gap-4 p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-[var(--ok)]" aria-hidden />
           <h1 className="t-title">Message sent</h1>
           <p className="t-body max-w-sm text-text-mute">
@@ -47,7 +48,7 @@ export default async function ContactPage({
           <Link href="/feed" className="text-body text-accent underline hover:no-underline">
             Back to the Feed
           </Link>
-        </div>
+        </Card>
       </div>
     );
   }

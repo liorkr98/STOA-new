@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Calculator, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { dcf, dcfSensitivity, type DcfResult } from "@/lib/valuation/model";
 import { diverging } from "@/lib/design/chart-theme";
+import { TickerChip } from "@/components/ui/chip";
 
 /**
  * valuationNode view (A1). DCF calculator: inputs left, output card right (fair

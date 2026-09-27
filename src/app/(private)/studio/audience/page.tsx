@@ -9,6 +9,7 @@ import { subscriberCount } from "@/lib/db/social";
 import { compact } from "@/lib/format";
 import { CopyButton } from "@/components/ui/copy-button";
 import { SubscriberTable, type SubscriberRowVM } from "@/components/studio/subscriber-table";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Audience" };
 
@@ -75,12 +76,12 @@ export default async function StudioAudiencePage() {
 
       <section className="flex flex-col gap-4">
         <SectionLabel>Referral link</SectionLabel>
-        <div className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-5 sm:flex-row sm:items-center">
+        <Card className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
           <code className="num min-w-0 flex-1 overflow-x-auto rounded-inner border border-border bg-bg px-3 py-2 text-body">
             {referralLink}
           </code>
           <CopyButton value={referralLink} label="Copy" />
-        </div>
+        </Card>
         <p className="num text-ticker text-text-faint">
           Signups attributed to you are counted above.
         </p>

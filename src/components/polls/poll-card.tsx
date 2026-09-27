@@ -3,10 +3,10 @@
 import { useMemo, useState, useTransition } from "react";
 import { BarChart3, Clock } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { seriesColor } from "@/lib/design/chart-theme";
 import { votePollAction } from "@/app/actions/polls";
 import type { Poll } from "@/lib/db/polls";
+import { TickerChip } from "@/components/ui/chip";
 
 /**
  * PollCard (H3). A surface card -- NEVER .ledger-card -- with horizontal result

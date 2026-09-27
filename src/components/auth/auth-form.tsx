@@ -12,7 +12,7 @@ import type { OAuthProvider } from "@/lib/auth/providers";
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={buttonClass("primary", "lg", "w-full")}>
+    <button type="submit" disabled={pending} className={buttonClass("ink", "lg", "w-full")}>
       {pending ? "One moment..." : label}
     </button>
   );

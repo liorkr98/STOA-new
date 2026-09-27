@@ -7,8 +7,8 @@ import { publicTypeLabel } from "@/lib/compose/modes";
 import type { Report } from "@/lib/types";
 import { Avatar } from "./ui/avatar";
 import { EditedFlag } from "./report/edited-flag";
-import { DirectionTag, Tag } from "./ui/tag";
-import { TickerChip } from "./ui/ticker-chip";
+import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
+import { Card } from "@/components/ui/card";
 
 export function ReportCard({
   report,
@@ -25,7 +25,7 @@ export function ReportCard({
   const locked = report.access !== "free";
 
   return (
-    <article className="rounded-panel border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
+    <Card as="article" className="p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
       {promoted && (
         <p className="t-meta mb-2 text-ticker font-medium text-accent">Promoted</p>
       )}
@@ -58,9 +58,9 @@ export function ReportCard({
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Tag>{publicTypeLabel(report.type)}</Tag>
+          <Chip>{publicTypeLabel(report.type)}</Chip>
           {report.ticker ? <TickerChip ticker={report.ticker} /> : null}
-          {report.ticker && report.stance ? <DirectionTag direction={report.stance} /> : null}
+          {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
         </div>
       </div>
 
@@ -92,6 +92,6 @@ export function ReportCard({
           </span>
         )}
       </div>
-    </article>
+    </Card>
   );
 }

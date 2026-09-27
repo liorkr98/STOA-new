@@ -8,7 +8,7 @@ export function SentryExampleContent() {
     <div className="mt-8 flex flex-col gap-4">
       <Button
         type="button"
-        variant="secondary"
+        variant="ghost"
         onClick={() => {
           throw new Error("Sentry test error from /sentry-example-page");
         }}
@@ -17,7 +17,7 @@ export function SentryExampleContent() {
       </Button>
       <Button
         type="button"
-        variant="ghost"
+        variant="plain"
         onClick={() => {
           Sentry.captureMessage("Sentry test message from /sentry-example-page");
         }}

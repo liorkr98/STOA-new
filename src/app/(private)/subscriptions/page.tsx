@@ -9,12 +9,11 @@ import { usd } from "@/lib/format";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { CancelSubscriptionButton } from "@/components/subscriptions/cancel-button";
+import { Avatar } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Subscriptions" };
 
-function initialsOf(name: string): string {
-  return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-}
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -52,7 +51,7 @@ export default async function SubscriptionsPage() {
             title="No active subscriptions"
             body="Subscribe to an analyst to unlock subscriber-only research."
             action={
-              <Link href="/feed" className={buttonClass("primary", "md")}>
+              <Link href="/feed" className={buttonClass("ink", "md")}>
                 Browse analysts
               </Link>
             }
@@ -68,9 +67,7 @@ export default async function SubscriptionsPage() {
                   className={`flex flex-col rounded-panel border border-border bg-surface p-5 ${cancelling ? "opacity-70" : ""}`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-body text-[var(--paper)]">
-                      {initialsOf(name)}
-                    </span>
+                    <Avatar src={s.analyst?.avatar_url} name={name} size={36} />
                     <span className="flex-1 font-display text-title font-semibold tracking-tight">{name}</span>
                   </div>
                   <div className="mt-4 text-body">Monthly subscription</div>
@@ -106,7 +103,7 @@ export default async function SubscriptionsPage() {
       {/* Payment method */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Payment method</SectionLabel>
-        <div className="flex items-center gap-4 rounded-panel border border-border bg-surface p-5">
+        <Card className="flex items-center gap-4 p-5">
           <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-body font-medium">
             PP
           </span>
@@ -116,10 +113,10 @@ export default async function SubscriptionsPage() {
               Not connected — renewals will fail
             </p>
           </div>
-          <button type="button" className={buttonClass("secondary", "sm")} disabled>
+          <button type="button" className={buttonClass("ghost", "sm")} disabled>
             Connect
           </button>
-        </div>
+        </Card>
       </section>
 
       {/* Purchase history */}

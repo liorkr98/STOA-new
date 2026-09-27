@@ -1,13 +1,14 @@
+import type React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/design/cn";
 
-type Size = "sm" | "md" | "lg" | "xl";
+type Size = "xs" | "sm" | "md" | "lg" | "xl";
 
-const px: Record<Size, number> = { sm: 28, md: 40, lg: 56, xl: 88 };
+const px: Record<Size, number> = { xs: 22, sm: 28, md: 40, lg: 56, xl: 88 };
 
-function initials(name: string) {
+export function initialsOf(name: string) {
   return name
-    .split(" ")
+    .split(/\s+/)
     .map((w) => w[0])
     .filter(Boolean)
     .slice(0, 2)
@@ -15,6 +16,11 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+/**
+ * A person's face. Always a circle (--r-avatar), never a rounded square.
+ * `size` takes a named step or an exact pixel size; `className` may override
+ * the box with responsive width/height classes.
+ */
 export function Avatar({
   src,
   name,
@@ -23,23 +29,26 @@ export function Avatar({
 }: {
   src?: string | null;
   name: string;
-  size?: Size;
+  size?: Size | number;
   className?: string;
 }) {
-  const dim = px[size];
+  const dim = typeof size === "number" ? size : px[size];
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-panel bg-surface-2 border border-border text-text-mute font-semibold",
+        "relative inline-flex h-[var(--av)] w-[var(--av)] shrink-0 items-center justify-center overflow-hidden rounded-avatar bg-surface-2 text-text-mute font-semibold",
         className,
       )}
-      style={{ width: dim, height: dim, fontSize: dim * 0.36 }}
+      style={
+        { "--av": `${dim}px`, fontSize: Math.max(10, Math.round(dim * 0.38)) } as React.CSSProperties
+      }
     >
       {src ? (
         <Image src={src} alt={name} fill sizes={`${dim}px`} className="object-cover" />
       ) : (
-        <span className="num">{initials(name)}</span>
+        <span aria-hidden>{initialsOf(name)}</span>
       )}
+      {!src ? <span className="sr-only">{name}</span> : null}
     </span>
   );
 }

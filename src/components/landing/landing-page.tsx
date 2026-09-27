@@ -2,14 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { buttonClass } from "@/components/ui/button";
-import { TickerChip } from "@/components/ui/ticker-chip";
-import { DirectionTag } from "@/components/ui/tag";
 import { MarketTape } from "@/components/markets/explore-bands";
 import { formatDispatchDateline } from "@/lib/dispatch/cycle";
 import { LandingLeadClip } from "@/components/landing/landing-lead-clip";
 import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
+import { StanceChip, TickerChip } from "@/components/ui/chip";
 
 /**
  * The signed-out root. Two constraints held together: show without giving
@@ -28,10 +27,10 @@ import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing
  */
 const ACTIONS = (
   <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
-    <Link href="/sign-up" className={buttonClass("primary", "lg", "w-full sm:w-auto")}>
+    <Link href="/sign-up" className={buttonClass("ink", "lg", "w-full sm:w-auto")}>
       Sign up
     </Link>
-    <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full sm:w-auto")}>
+    <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
       Log in
     </Link>
   </div>
@@ -126,7 +125,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="text-body font-semibold text-text">{lead.analyst}</span>
                 {lead.ticker ? <TickerChip ticker={lead.ticker} /> : null}
-                {lead.direction ? <DirectionTag direction={lead.direction} /> : null}
+                {lead.direction ? <StanceChip direction={lead.direction} /> : null}
               </div>
             </article>
           </Reveal>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
 
 export interface SubscriberRowVM {
   id: string;
@@ -48,9 +49,7 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
               className="flex flex-col gap-1 border-b border-border py-3 md:grid md:grid-cols-[1fr_120px_180px] md:items-center md:gap-4"
             >
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-panel bg-[var(--ink)] text-ticker text-[var(--paper)]">
-                  {r.initials}
-                </span>
+                <Avatar name={r.name} size="sm" />
                 <span className="text-body">{r.name}</span>
               </div>
               <div className="num text-ticker text-text-mute">{r.joined}</div>

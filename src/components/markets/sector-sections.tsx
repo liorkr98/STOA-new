@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowSector, FollowTicker } from "@/components/markets/follow-control";
 import { FollowButton } from "@/components/follow-button";
@@ -9,6 +8,7 @@ import { HeadlineRow, RowTag } from "@/components/today/headline-row";
 import { accessLabel } from "@/lib/today/format";
 import { price } from "@/lib/format";
 import type { SectorAnalyst, SectorName, SectorPayload } from "@/lib/markets/build-sector";
+import { TickerChip } from "@/components/ui/chip";
 
 export function SectorHeader({ payload }: { payload: SectorPayload }) {
   return (

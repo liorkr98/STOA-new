@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { convertToCredits } from "@/app/actions/wallet";
 import { AI_CREDITS_PER_DOLLAR } from "@/lib/ai/credits";
 import { buttonClass } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export function ConvertCreditsButton({ balance }: { balance: number }) {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
   if (amounts.length === 0) return null;
 
   return (
-    <div className="rounded-panel border border-border bg-surface p-4">
+    <Card className="p-4">
       <div className="flex items-center gap-2">
         <Coins size={18} className="text-text-mute" aria-hidden />
         <p className="text-body font-semibold">Buy AI credits</p>
@@ -30,7 +31,7 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
             key={usd}
             type="button"
             disabled={pending}
-            className={buttonClass("secondary", "sm")}
+            className={buttonClass("ghost", "sm")}
             onClick={() =>
               start(async () => {
                 const res = await convertToCredits(usd);
@@ -47,6 +48,6 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
           </button>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

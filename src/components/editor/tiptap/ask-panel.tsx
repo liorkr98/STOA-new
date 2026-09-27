@@ -477,7 +477,7 @@ export function AskPanel({
             type="button"
             onClick={() => send()}
             disabled={pending}
-            className={buttonClass("primary", "sm")}
+            className={buttonClass("ink", "sm")}
             aria-label="Send"
           >
             <ArrowRight size={15} />

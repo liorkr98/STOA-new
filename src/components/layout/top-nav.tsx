@@ -9,6 +9,7 @@ import { StoaLogo } from "@/components/brand/logo";
 import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
 import { LinkPending } from "@/components/layout/link-pending";
+import { Avatar } from "@/components/ui/avatar";
 
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/feed";
@@ -27,21 +28,8 @@ function itemActive(pathname: string, item: NavItem) {
   return pathname.startsWith(item.href);
 }
 
-function initialsOf(name: string) {
-  return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-}
-
 function AvatarCircle({ profile, className }: { profile: Profile; className?: string }) {
-  return (
-    <span className={cn("flex h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] text-ticker font-medium text-[var(--paper)]", className)}>
-      {profile.avatar_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
-      ) : (
-        <span className="num">{initialsOf(profile.display_name)}</span>
-      )}
-    </span>
-  );
+  return <Avatar src={profile.avatar_url} name={profile.display_name} size={30} className={className} />;
 }
 
 export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; unreadCount?: number }) {
@@ -90,7 +78,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
           <NavSearch />
           {profile ? (
             <>
-              <Link href={isAnalyst ? "/studio/compose" : "/become-analyst"} className={buttonClass("primary", "sm")}>
+              <Link href={isAnalyst ? "/studio/compose" : "/become-analyst"} className={buttonClass("ink", "sm")}>
                 <PenLine size={15} />
                 {isAnalyst ? "Compose" : "Become analyst"}
               </Link>
@@ -117,7 +105,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               <Link href="/sign-in" className="focus-ring rounded-button px-3 py-1.5 text-body text-text-mute hover:text-text">
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+              <Link href="/sign-up" className={buttonClass("ink", "sm")}>
                 Join Stoa
               </Link>
             </>
@@ -173,7 +161,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               >
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("primary", "sm", "ml-1")}>
+              <Link href="/sign-up" className={buttonClass("ink", "sm", "ml-1")}>
                 Join
               </Link>
             </>

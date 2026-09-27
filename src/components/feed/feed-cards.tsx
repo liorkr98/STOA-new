@@ -255,7 +255,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
             The thesis, the call and the disclosure, on the report page. Nothing here is behind a
             paywall.
           </p>
-          <Link href={card.href} className={buttonClass("primary", "md", "mt-4")}>
+          <Link href={card.href} className={buttonClass("ink", "md", "mt-4")}>
             Read the full report
           </Link>
         </CardFrame>
@@ -272,7 +272,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
               ? "Members of this analyst see every card and the written thesis."
               : "One-time unlock for every card and the written thesis."}
           </p>
-          <Link href={card.href} className={buttonClass("primary", "md", "mt-4")}>
+          <Link href={card.href} className={buttonClass("ink", "md", "mt-4")}>
             {card.access === "paid" && card.price ? `Unlock · ${card.price}` : card.access === "paid" ? "Unlock" : "Become a member"}
           </Link>
         </CardFrame>

@@ -62,7 +62,7 @@ export function BrandAnalyzerPanel({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="secondary" disabled={loading} onClick={() => void analyze()}>
+        <Button type="button" variant="ghost" disabled={loading} onClick={() => void analyze()}>
           <Sparkle size={16} className="text-accent" />
           {loading ? "Analyzing..." : "Analyze my brand"}
         </Button>
@@ -109,7 +109,7 @@ export function BrandAnalyzerPanel({
                   <Button
                     type="button"
                     size="sm"
-                    variant="secondary"
+                    variant="ghost"
                     className="mt-3"
                     onClick={() => onApply(s.field, s.proposed)}
                   >

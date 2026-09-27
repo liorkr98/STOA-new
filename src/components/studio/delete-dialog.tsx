@@ -104,7 +104,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
 
           <div className="mt-5 flex justify-end gap-2">
             <Dialog.Close asChild>
-              <Button variant="secondary" size="sm" disabled={pending}>
+              <Button variant="ghost" size="sm" disabled={pending}>
                 Keep it
               </Button>
             </Dialog.Close>
@@ -169,7 +169,7 @@ export function DeleteDraftDialog({ id, title }: { id: string; title: string }) 
 
           <div className="mt-5 flex justify-end gap-2">
             <Dialog.Close asChild>
-              <Button variant="secondary" size="sm" disabled={pending}>
+              <Button variant="ghost" size="sm" disabled={pending}>
                 Keep it
               </Button>
             </Dialog.Close>

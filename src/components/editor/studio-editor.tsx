@@ -1454,7 +1454,7 @@ export function StudioEditor({
           ) : null}
           {editingPublished ? (
             <>
-              <Button variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)}>
                 Preview
               </Button>
               <Button

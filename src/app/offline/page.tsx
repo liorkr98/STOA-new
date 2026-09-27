@@ -11,7 +11,7 @@ export default function OfflinePage() {
       <p className="text-body leading-relaxed text-text-mute">
         Stoa needs a connection to load calls and clips. Reconnect, then open the Feed again.
       </p>
-      <Link href="/feed" className={buttonClass("primary", "md")}>
+      <Link href="/feed" className={buttonClass("ink", "md")}>
         Open Feed
       </Link>
     </div>

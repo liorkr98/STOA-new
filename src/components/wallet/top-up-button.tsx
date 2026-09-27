@@ -32,7 +32,7 @@ export function TopUpButton() {
 
   if (!open) {
     return (
-      <Button variant="secondary" onClick={() => setOpen(true)}>
+      <Button variant="ghost" onClick={() => setOpen(true)}>
         <Plus size={16} aria-hidden />
         Add funds
       </Button>
@@ -43,11 +43,11 @@ export function TopUpButton() {
     <div className="flex flex-col items-end gap-2">
       <div className="flex items-center gap-2">
         {AMOUNTS.map((a) => (
-          <Button key={a} variant="secondary" disabled={pending} onClick={() => add(a)}>
+          <Button key={a} variant="ghost" disabled={pending} onClick={() => add(a)}>
             +${a}
           </Button>
         ))}
-        <Button variant="ghost" onClick={() => setOpen(false)}>
+        <Button variant="plain" onClick={() => setOpen(false)}>
           Cancel
         </Button>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { listLinkablePublications } from "@/app/actions/reports";
 import { publicTypeLabel, type PublicationType } from "@/lib/compose/modes";
 import type { ContentType } from "@/lib/types";
+import { Card } from "@/components/ui/card";
 
 /** What each type may be connected to: a video to written work, and back. */
 const TARGETS: Record<PublicationType, ContentType[]> = {
@@ -47,7 +48,7 @@ export function CompanionPicker({
   }, [currentId, type]);
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-4">
+    <Card as="section" className="p-4">
       <p className="t-meta mb-2.5">Connected piece · optional</p>
       <select
         value={value ?? ""}
@@ -61,6 +62,6 @@ export function CompanionPicker({
           </option>
         ))}
       </select>
-    </section>
+    </Card>
   );
 }

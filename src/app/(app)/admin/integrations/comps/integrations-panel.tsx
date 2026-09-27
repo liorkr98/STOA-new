@@ -17,6 +17,7 @@ import type { SlackChannel } from "@/lib/slack/channels";
 import type { AlertDelivery } from "@/lib/slack/settings";
 import type { AlertTestResult } from "@/lib/slack/alert-tests";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export function IntegrationsPanel({
   initialSlack,
@@ -64,7 +65,7 @@ export function IntegrationsPanel({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="rounded-panel border border-border bg-surface p-5">
+      <Card as="section" className="p-5">
         <h2 className="t-title">Alert delivery</h2>
         <p className="t-body mt-1 text-text-mute">
           Choose immediate Slack pings, a once-daily digest (8:00 UTC), or off. Revenue and
@@ -99,7 +100,7 @@ export function IntegrationsPanel({
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={pending}
             onClick={() =>
               run(async () => {
@@ -112,7 +113,7 @@ export function IntegrationsPanel({
           </Button>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={pending}
             onClick={() =>
               run(async () => {
@@ -123,9 +124,9 @@ export function IntegrationsPanel({
             Send digests now
           </Button>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-panel border border-border bg-surface p-5">
+      <Card as="section" className="p-5">
         <h2 className="t-title">Sentry</h2>
         <p className="t-body mt-1 text-text-mute">
           Error monitoring. Connect Sentry to Slack in the Sentry dashboard (Integrations → Slack →
@@ -140,7 +141,7 @@ export function IntegrationsPanel({
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={!sentryConfigured || pending}
             onClick={() =>
               run(
@@ -153,7 +154,7 @@ export function IntegrationsPanel({
           </Button>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={!sentryConfigured || pending}
             onClick={() =>
               run(
@@ -165,9 +166,9 @@ export function IntegrationsPanel({
             Send error test
           </Button>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-panel border border-border bg-surface p-5">
+      <Card as="section" className="p-5">
         <h2 className="t-title">STOA bot (#bugs)</h2>
         <p className="t-body mt-1 text-text-mute">
           The bot posts thread replies on error alerts in #bugs. Manual posts in Slack only work after
@@ -242,7 +243,7 @@ export function IntegrationsPanel({
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={!slackBot.tokenConfigured || !slackBot.authOk || pending}
             onClick={() =>
               run(
@@ -254,9 +255,9 @@ export function IntegrationsPanel({
             Test STOA bot
           </Button>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-panel border border-border bg-surface p-5">
+      <Card as="section" className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="t-title">Slack channels</h2>
@@ -266,7 +267,7 @@ export function IntegrationsPanel({
           </div>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={pending}
             onClick={() =>
               run(async () => {
@@ -295,7 +296,7 @@ export function IntegrationsPanel({
               <Button
                 type="button"
                 size="sm"
-                variant="ghost"
+                variant="plain"
                 disabled={!row.configured || pending}
                 onClick={() =>
                   run(
@@ -309,9 +310,9 @@ export function IntegrationsPanel({
             </li>
           ))}
         </ul>
-      </section>
+      </Card>
 
-      <section className="rounded-panel border border-border bg-surface p-5">
+      <Card as="section" className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="t-title">Alert smoke tests</h2>
@@ -321,7 +322,7 @@ export function IntegrationsPanel({
           </div>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             disabled={pending}
             onClick={() =>
               run(async () => {
@@ -352,7 +353,7 @@ export function IntegrationsPanel({
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       {message && (
         <p className="rounded-inner border border-border bg-surface-2 px-4 py-3 text-body">

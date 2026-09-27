@@ -5,6 +5,7 @@ import { compact, pct, price } from "@/lib/format";
 import type { StockSnapshot } from "@/lib/engine/market";
 import { listSectorPeers } from "@/lib/db/tickers";
 import { WatchlistButton } from "@/components/markets/watchlist-button";
+import { Card } from "@/components/ui/card";
 
 export function StockQuoteHeader({
   ticker,
@@ -26,7 +27,7 @@ export function StockQuoteHeader({
   const hasPrice = quote.available && quote.price != null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5 md:p-6">
+    <Card as="section" className="p-5 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="flex items-start gap-3">
           <WatchlistButton ticker={ticker} className="mt-1 shrink-0" />
@@ -76,7 +77,7 @@ export function StockQuoteHeader({
           </div>
         </div>
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -102,7 +103,7 @@ export function StockKeyStats({ snapshot }: { snapshot: StockSnapshot }) {
   if (stats.length === 0) return null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5">
+    <Card as="section" className="p-5">
       <h2 className="t-title mb-4">Key statistics</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
@@ -112,7 +113,7 @@ export function StockKeyStats({ snapshot }: { snapshot: StockSnapshot }) {
           </div>
         ))}
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -122,7 +123,7 @@ export function StockRangeBar({ snapshot }: { snapshot: StockSnapshot }) {
   if (dayLow == null && fiftyTwoWeekLow == null) return null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5">
+    <Card as="section" className="p-5">
       <h2 className="t-title mb-4">Trading ranges</h2>
       <div className="grid gap-6 md:grid-cols-2">
         {dayLow != null && dayHigh != null && (
@@ -137,7 +138,7 @@ export function StockRangeBar({ snapshot }: { snapshot: StockSnapshot }) {
           />
         )}
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -185,7 +186,7 @@ export async function SectorPeers({
   if (peers.length === 0) return null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5">
+    <Card as="section" className="p-5">
       <h2 className="t-title mb-3">Peers in {sector}</h2>
       <div className="flex flex-wrap gap-2">
         {peers.map((p) => (
@@ -199,6 +200,6 @@ export async function SectorPeers({
           </Link>
         ))}
       </div>
-    </section>
+    </Card>
   );
 }

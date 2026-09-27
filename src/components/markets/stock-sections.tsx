@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Band } from "@/components/ui/band";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { HeadlineRow, RowTag } from "@/components/today/headline-row";
@@ -8,6 +7,7 @@ import { accessLabel } from "@/lib/today/format";
 import { compact, companyName, price } from "@/lib/format";
 import type { TodayItem } from "@/lib/today/types";
 import type { TickerRow } from "@/lib/db/tickers";
+import { TickerChip } from "@/components/ui/chip";
 
 /** Provenance mark: an automatically sourced market fact, not an estimate. */
 function Auto() {

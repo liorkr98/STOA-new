@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Band } from "@/components/ui/band";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { compact, companyName, price } from "@/lib/format";
 import type { EtfHolding, EtfSnapshot, SectorWeight } from "@/lib/markets/build-etf";
+import { TickerChip } from "@/components/ui/chip";
 
 function Auto() {
   return <span className="auto-tag">Auto</span>;

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { Target, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import type { Estimate, PriceTarget } from "@/lib/market/types";
+import { TickerChip } from "@/components/ui/chip";
 
 /**
  * estimatesNode view (A7). Editor pulls EPS estimates vs actuals + the analyst

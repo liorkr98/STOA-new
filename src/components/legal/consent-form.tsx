@@ -10,7 +10,7 @@ import type { LegalDocType } from "@/lib/legal/constants";
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={buttonClass("primary", "lg", "w-full")}>
+    <button type="submit" disabled={pending} className={buttonClass("ink", "lg", "w-full")}>
       {pending ? "Saving..." : "Continue"}
     </button>
   );

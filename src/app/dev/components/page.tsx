@@ -91,7 +91,7 @@ export default function ComponentPreviewPage() {
       <div className="max-w-2xl mb-12">
         <PaywallGate
           previewText="Nvidia's data center revenue accelerated again this quarter, and the setup into the next print looks asymmetric. The read-through for the broader AI capex cycle is the part most investors are still underpricing, and here's why the entry point matters more than the headline number..."
-          onUnlock={<Button variant="secondary" className="w-full">Unlock this report -- $4</Button>}
+          onUnlock={<Button variant="ghost" className="w-full">Unlock this report -- $4</Button>}
           onSubscribe={null}
           isAuthed={false}
           loginHref="/sign-in"
@@ -101,8 +101,8 @@ export default function ComponentPreviewPage() {
       <p className="t-meta mb-4">PaywallGate (both CTAs, if access model allowed it)</p>
       <div className="max-w-2xl mb-12">
         <PaywallGate
-          onUnlock={<Button variant="secondary" className="w-full">Unlock this report -- $4</Button>}
-          onSubscribe={<Button variant="secondary" className="w-full">Subscribe to @maren_vos -- $12/mo</Button>}
+          onUnlock={<Button variant="ghost" className="w-full">Unlock this report -- $4</Button>}
+          onSubscribe={<Button variant="ghost" className="w-full">Subscribe to @maren_vos -- $12/mo</Button>}
           isAuthed={false}
           loginHref="/sign-in"
         />

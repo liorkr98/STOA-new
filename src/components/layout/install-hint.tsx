@@ -77,13 +77,13 @@ export function InstallHint() {
           {prompt ? (
             <button
               type="button"
-              className={buttonClass("primary", "sm")}
+              className={buttonClass("ink", "sm")}
               onClick={() => void prompt.prompt().catch(() => undefined)}
             >
               Install
             </button>
           ) : null}
-          <button type="button" className={buttonClass("secondary", "sm")} onClick={dismiss}>
+          <button type="button" className={buttonClass("ghost", "sm")} onClick={dismiss}>
             Not now
           </button>
         </div>

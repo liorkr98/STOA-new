@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { Bookmark, Lock, Search } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { toggleSave } from "@/app/actions/social";
-import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
+import { ThemeChip, TickerChip } from "@/components/ui/chip";
+import { Avatar } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 
 export interface LibraryItem {
   id: string;
@@ -128,15 +130,15 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
       ) : (
         <div className="flex flex-col gap-3 md:gap-0">
           {shown.map((it) => (
-            <div
+            <Card
               key={it.id}
-              className="rounded-panel border border-border bg-surface p-5 md:grid md:grid-cols-[1fr_260px] md:items-center md:gap-8 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0 md:py-6"
+              className="p-5 md:grid md:grid-cols-[1fr_260px] md:items-center md:gap-8 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0 md:py-6"
             >
               <Link href={it.href} className="block">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="num text-ticker text-text-mute">{it.typeLabel}</span>
                   {it.tag &&
-                    (it.tagIsTicker ? <TickerChip ticker={it.tag} /> : <ThemeTag label={it.tag} />)}
+                    (it.tagIsTicker ? <TickerChip ticker={it.tag} /> : <ThemeChip label={it.tag} />)}
                   <span className="num text-ticker text-text-faint">{it.badge}</span>
                 </div>
                 <h3 className="mt-3 max-w-[700px] font-display text-title font-semibold leading-snug tracking-tight md:text-headline">
@@ -144,9 +146,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                 </h3>
                 {it.deck && <p className="mt-1.5 max-w-[680px] text-body text-text-mute">{it.deck}</p>}
                 <div className="mt-3.5 flex items-center gap-2.5">
-                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--ink)] text-ticker text-[var(--paper)]">
-                    {it.analystInitials}
-                  </span>
+                  <Avatar name={it.analystName} size="xs" />
                   <span className="text-body">{it.analystName}</span>
                 </div>
               </Link>
@@ -180,7 +180,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                     </span>
                   ))}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

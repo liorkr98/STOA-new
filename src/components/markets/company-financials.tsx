@@ -1,6 +1,7 @@
 import { edgar, finnhub } from "@/lib/market";
 import type { Estimate, FinancialStatement } from "@/lib/market/types";
 import type { FilingRow } from "@/lib/db/financials";
+import { Card } from "@/components/ui/card";
 
 /**
  * Company financials for the ticker page (Part G): an EDGAR income statement +
@@ -51,7 +52,7 @@ export async function CompanyFinancials({
   if (!statement && (!estimates || estimates.length === 0)) return null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-5">
+    <Card as="section" className="p-5">
       <div className="mb-5">
         <h2 className="t-title">Financials and filings</h2>
         <p className="t-meta mt-1">Official filing data with consensus earnings context.</p>
@@ -90,7 +91,7 @@ export async function CompanyFinancials({
       {statement && statement.periods.length > 0 && (
         <div>
           <h3 className="t-meta mb-2">Income statement</h3>
-          <div className="overflow-x-auto rounded-panel border border-border bg-surface">
+          <Card className="overflow-x-auto">
             <table className="w-full border-collapse text-body">
               <thead className="bg-surface">
                 <tr>
@@ -124,7 +125,7 @@ export async function CompanyFinancials({
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
           {statement.source?.asOf && (
             <p className="t-meta mt-1.5 text-ticker">Source: EDGAR, last filed {statement.source.asOf}</p>
           )}
@@ -134,7 +135,7 @@ export async function CompanyFinancials({
       {estimates && estimates.length > 0 && (
         <div>
           <h3 className="t-meta mb-2">EPS estimates vs actuals</h3>
-          <div className="overflow-x-auto rounded-panel border border-border bg-surface">
+          <Card className="overflow-x-auto">
             <table className="w-full border-collapse text-body">
               <thead className="bg-surface">
                 <tr>
@@ -182,10 +183,10 @@ export async function CompanyFinancials({
                 })}
               </tbody>
             </table>
-          </div>
+          </Card>
         </div>
       )}
       </div>
-    </section>
+    </Card>
   );
 }

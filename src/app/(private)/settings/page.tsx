@@ -9,6 +9,7 @@ import { PrivacyToggle } from "@/components/settings/privacy-toggle";
 import { MarketingOptInToggle } from "@/components/settings/marketing-opt-in-toggle";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -46,7 +47,7 @@ export default async function SettingsPage() {
       {/* Account */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Account</SectionLabel>
-        <div className="flex flex-col gap-4 rounded-panel border border-border bg-surface p-6">
+        <Card className="flex flex-col gap-4 p-6">
           <div className="flex items-center justify-between gap-4 text-body">
             <span className="text-text-mute">Email</span>
             <span className="num">{email}</span>
@@ -54,7 +55,7 @@ export default async function SettingsPage() {
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4 text-body">
             <span>Password</span>
-            <Link href="/reset-password" className={buttonClass("secondary", "sm")}>
+            <Link href="/reset-password" className={buttonClass("ghost", "sm")}>
               Change password
             </Link>
           </div>
@@ -65,60 +66,60 @@ export default async function SettingsPage() {
               Managed by your sign-in provider
             </span>
           </div>
-        </div>
+        </Card>
       </section>
 
       {/* Display */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Display</SectionLabel>
-        <div className="flex flex-col gap-5 rounded-panel border border-border bg-surface p-6">
+        <Card className="flex flex-col gap-5 p-6">
           <DensityToggle />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4">
             <span className="text-body">Theme</span>
             <ThemeToggle />
           </div>
-        </div>
+        </Card>
       </section>
 
       {/* Privacy */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Privacy</SectionLabel>
-        <div className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-6">
+        <Card className="flex flex-col gap-3 p-6">
           <PrivacyToggle label="Show who I follow on my public page" defaultOn={false} />
           <div className="h-px bg-border" />
           <MarketingOptInToggle defaultOn={Boolean(profile.marketing_opt_in)} />
           <p className="num text-ticker text-text-faint">
             Your purchases and library are always private.
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Your data */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Your data</SectionLabel>
-        <div className="rounded-panel border border-border bg-surface p-6">
+        <Card className="p-6">
           <p className="t-body text-text-mute">
             Download a JSON copy of your profile, consents, subscriptions, and authored reports.
           </p>
-          <a href="/api/account/export" className={buttonClass("secondary", "sm", "mt-4 inline-flex")} download>
+          <a href="/api/account/export" className={buttonClass("ghost", "sm", "mt-4 inline-flex")} download>
             Export my data
           </a>
-        </div>
+        </Card>
       </section>
 
       {/* Danger zone */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Danger zone</SectionLabel>
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-border bg-surface p-6">
+        <Card className="flex flex-wrap items-center justify-between gap-4 p-6">
           <div>
             <p className="text-body font-medium">Deactivate account</p>
             <p className="t-meta mt-1">Hide your profile and stop all activity. This can be undone by signing back in.</p>
           </div>
-          <button type="button" disabled className={buttonClass("secondary", "sm")}>
+          <button type="button" disabled className={buttonClass("ghost", "sm")}>
             Deactivate
           </button>
-        </div>
+        </Card>
       </section>
     </div>
   );

@@ -21,8 +21,6 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { Avatar } from "@/components/ui/avatar";
-import { TickerChip } from "@/components/ui/ticker-chip";
-import { DirectionTag, Tag } from "@/components/ui/tag";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
 import { ReportActions } from "@/components/report/report-actions";
@@ -42,6 +40,7 @@ import { BuyReportButton } from "@/components/wallet/buy-report-button";
 import { SubscribeButton } from "@/components/wallet/subscribe-button";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { ScrollFrame } from "@/components/layout/scroll-frame";
+import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -172,9 +171,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Tag>{publicTypeLabel(report.type)}</Tag>
+        <Chip>{publicTypeLabel(report.type)}</Chip>
         {report.ticker && <TickerChip ticker={report.ticker} />}
-        {report.ticker && report.stance ? <DirectionTag direction={report.stance} /> : null}
+        {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
         <span className="t-meta">
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
         </span>

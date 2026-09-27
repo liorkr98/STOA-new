@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { SheetTickerChip } from "@/components/markets/instrument-sheet";
-import { DirectionTag } from "@/components/ui/tag";
 import { SaveToggle } from "@/components/today/save-toggle";
 import { ClipSlot } from "@/components/today/clip-slot";
 import { sinceLabel, typeLabel } from "@/lib/today/format";
 import { cn } from "@/lib/design/cn";
 import type { TodayItem } from "@/lib/today/types";
+import { StanceChip } from "@/components/ui/chip";
 
 /**
  * The reading-list unit for every Today band. Mono meta line, serif headline,
@@ -37,7 +37,7 @@ export function HeadlineRow({
           ) : item.themeTag ? (
             <span className="today-theme-chip">{item.themeTag}</span>
           ) : null}
-          {item.direction ? <DirectionTag direction={item.direction} /> : null}
+          {item.direction ? <StanceChip direction={item.direction} /> : null}
           <span className="today-meta-badge">{item.contentBadge.join(" · ")}</span>
         </div>
 

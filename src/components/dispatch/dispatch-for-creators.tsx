@@ -19,7 +19,7 @@ export function DispatchForCreators() {
           Publish conviction-backed research. The dispatch features the day&apos;s best work,
           chosen on merit, never bought.
         </p>
-        <Link href="/become-analyst" className={`${buttonClass("secondary", "md")} mt-5`}>
+        <Link href="/become-analyst" className={`${buttonClass("ghost", "md")} mt-5`}>
           Start publishing
         </Link>
       </div>

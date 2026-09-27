@@ -269,7 +269,7 @@ export function DiscussionThread({
               placeholder={replyTo ? "Write a reply" : "Ask the analyst, or add to the discussion"}
               className="user-copy min-w-0 flex-1 rounded-field border border-border bg-surface px-3 py-2 text-body text-text focus-ring"
             />
-            <button type="button" disabled={pending || !text.trim()} onClick={submit} className={buttonClass("primary", "sm")}>
+            <button type="button" disabled={pending || !text.trim()} onClick={submit} className={buttonClass("ink", "sm")}>
               {pending ? "Posting" : "Post"}
             </button>
           </div>

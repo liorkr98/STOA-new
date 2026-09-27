@@ -77,7 +77,7 @@ export function ConfirmSpendDialog({
               <p className="font-semibold">You are all set</p>
               <p className="t-meta">New balance {usd(result!.new_balance ?? newBalance, { cents: true })}</p>
               <Dialog.Close asChild>
-                <Button variant="secondary" className="mt-3">
+                <Button variant="ghost" className="mt-3">
                   Done
                 </Button>
               </Dialog.Close>
@@ -117,7 +117,7 @@ export function ConfirmSpendDialog({
 
               <div className="mt-5 flex gap-3">
                 <Dialog.Close asChild>
-                  <Button variant="secondary" className="flex-1">
+                  <Button variant="ghost" className="flex-1">
                     Cancel
                   </Button>
                 </Dialog.Close>

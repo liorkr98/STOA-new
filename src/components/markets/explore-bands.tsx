@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Band } from "@/components/ui/band";
-import { TickerChip } from "@/components/ui/ticker-chip";
-import { DirectionTag } from "@/components/ui/tag";
 import { DayChange } from "@/components/markets/day-change";
 import { FollowSector, FollowTicker } from "@/components/markets/follow-control";
 import { sinceLabel } from "@/lib/today/format";
@@ -17,6 +15,7 @@ import type {
   TapeQuote,
   ThemeCard,
 } from "@/lib/markets/types";
+import { StanceChip, TickerChip } from "@/components/ui/chip";
 
 function Px({ value }: { value: number | null }) {
   if (value == null) return <span className="markets-pending">No price</span>;
@@ -180,7 +179,7 @@ export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
                 {r.analyst.displayName}
               </span>
             </Link>
-            <DirectionTag direction={r.direction} />
+            <StanceChip direction={r.direction} />
             <span className="markets-row-meta num">Covered {sinceLabel(r.coveredAt).toLowerCase()}</span>
           </div>
         ))}

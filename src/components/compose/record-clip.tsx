@@ -373,10 +373,10 @@ export function RecordClip({
             title="Record with your camera"
             body="Stoa needs your camera and microphone to record. The clip stays on this device until you publish; nothing is sent before then."
           >
-            <Button variant="primary" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
+            <Button variant="ink" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
               Turn on camera
             </Button>
-            <Button variant="ghost" size="md" className={ON_STAGE_GHOST} onClick={leave}>
+            <Button variant="plain" size="md" className={ON_STAGE_GHOST} onClick={leave}>
               <Upload size={16} strokeWidth={1.6} /> Upload a file instead
             </Button>
           </Notice>
@@ -392,10 +392,10 @@ export function RecordClip({
             title="Camera access was refused"
             body="To record, allow the camera and microphone for this site in your browser's settings, then try again. Or upload a clip you already have."
           >
-            <Button variant="primary" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
+            <Button variant="ink" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
               Try again
             </Button>
-            <Button variant="ghost" size="md" className={ON_STAGE_GHOST} onClick={leave}>
+            <Button variant="plain" size="md" className={ON_STAGE_GHOST} onClick={leave}>
               <Upload size={16} strokeWidth={1.6} /> Upload a file instead
             </Button>
           </Notice>
@@ -407,10 +407,10 @@ export function RecordClip({
             title="The camera is busy"
             body="Another app or tab is using it. Close that and try again, or upload a clip you already have."
           >
-            <Button variant="primary" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
+            <Button variant="ink" size="md" className={ON_STAGE_PRIMARY} onClick={() => void start()}>
               Try again
             </Button>
-            <Button variant="ghost" size="md" className={ON_STAGE_GHOST} onClick={leave}>
+            <Button variant="plain" size="md" className={ON_STAGE_GHOST} onClick={leave}>
               <Upload size={16} strokeWidth={1.6} /> Upload a file instead
             </Button>
           </Notice>
@@ -422,7 +422,7 @@ export function RecordClip({
             title="No camera on this device"
             body="Recording needs a camera and a microphone this browser can reach. Upload a clip you already have instead."
           >
-            <Button variant="primary" size="md" className={ON_STAGE_PRIMARY} onClick={leave}>
+            <Button variant="ink" size="md" className={ON_STAGE_PRIMARY} onClick={leave}>
               <Upload size={16} strokeWidth={1.6} /> Upload a file
             </Button>
           </Notice>
@@ -452,7 +452,7 @@ export function RecordClip({
 
         {phase === "live" ? (
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-4 pt-10">
-            <Button variant="ghost" size="sm" className={ON_STAGE_GHOST} onClick={leave}>
+            <Button variant="plain" size="sm" className={ON_STAGE_GHOST} onClick={leave}>
               Cancel
             </Button>
             <button
@@ -464,7 +464,7 @@ export function RecordClip({
               <span aria-hidden className="h-12 w-12 rounded-full bg-[var(--coral)]" />
             </button>
             <span className="invisible" aria-hidden>
-              <Button variant="ghost" size="sm" tabIndex={-1}>
+              <Button variant="plain" size="sm" tabIndex={-1}>
                 Cancel
               </Button>
             </span>
@@ -505,10 +505,10 @@ export function RecordClip({
 
       {phase === "review" && take ? (
         <div className="flex w-full items-center justify-center gap-2 px-4 py-4">
-          <Button variant="secondary" size="md" onClick={again}>
+          <Button variant="ghost" size="md" onClick={again}>
             <RotateCcw size={16} strokeWidth={1.6} /> Record again
           </Button>
-          <Button variant="primary" size="md" onClick={keep}>
+          <Button variant="ink" size="md" onClick={keep}>
             Use this clip
           </Button>
         </div>

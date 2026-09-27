@@ -10,6 +10,7 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { checkHandleAvailable, saveOnboardingBrand } from "@/app/actions/profile";
 import type { Profile } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
+import { Card } from "@/components/ui/card";
 
 type Availability = "idle" | "checking" | "available" | "taken" | "invalid";
 type BannerStyle = NonNullable<ProfileConfig["banner_style"]>;
@@ -168,7 +169,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
 
       <div>
         <p className="t-meta mb-2">Live preview</p>
-        <div className="overflow-hidden rounded-panel border border-border bg-surface">
+        <Card className="overflow-hidden">
           <div className={cn("h-16 w-full", bannerClass)} />
           <div className="-mt-6 flex flex-col gap-3 px-5 pb-5">
             <Avatar src={avatarUrl} name={displayName || "?"} size="lg" className="ring-4 ring-[var(--surface)]" />
@@ -178,7 +179,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
               {bio && <p className="t-body mt-2 text-body text-text-mute">{bio}</p>}
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

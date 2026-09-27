@@ -1464,7 +1464,6 @@ body {
   justify-content: space-between;
   gap: var(--space-3);
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--ink);
 }
 
 .band-title {

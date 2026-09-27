@@ -11,7 +11,7 @@ export function CancelSubscriptionButton({ analystId }: { analystId: string }) {
     <button
       type="button"
       disabled={pending}
-      className={buttonClass("secondary", "sm")}
+      className={buttonClass("ghost", "sm")}
       onClick={() => {
         if (!confirm("Cancel this subscription? You keep access until the current period ends.")) return;
         start(async () => {

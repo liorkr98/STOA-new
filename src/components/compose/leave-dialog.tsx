@@ -49,7 +49,7 @@ export function LeaveDialog({
           <div className="mt-5 flex flex-wrap justify-end gap-2">
             {nothingToKeep ? (
               <>
-                <Button variant="secondary" size="sm" onClick={onStay} disabled={saving}>
+                <Button variant="ghost" size="sm" onClick={onStay} disabled={saving}>
                   Stay
                 </Button>
                 <Button size="sm" onClick={onLeave} disabled={saving}>
@@ -58,10 +58,10 @@ export function LeaveDialog({
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={onLeave} disabled={saving} className="text-[var(--error)]">
+                <Button variant="plain" size="sm" onClick={onLeave} disabled={saving} className="text-[var(--error)]">
                   Leave without saving
                 </Button>
-                <Button variant="secondary" size="sm" onClick={onStay} disabled={saving}>
+                <Button variant="ghost" size="sm" onClick={onStay} disabled={saving}>
                   Stay
                 </Button>
                 <Button size="sm" onClick={onSaveAndLeave} disabled={saving}>

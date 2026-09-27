@@ -9,6 +9,7 @@ import { buttonClass } from "@/components/ui/button";
 import { useSubscribeToPlan } from "@/hooks/use-spend";
 import { ConfirmSpendDialog } from "./confirm-spend-dialog";
 import type { Plan } from "@/lib/db/plans";
+import { Card } from "@/components/ui/card";
 
 /**
  * PlanPicker (Part C checkout): the storefront subscribe surface when a creator
@@ -35,7 +36,7 @@ export function PlanPicker({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full")}>
         Sign in to subscribe
       </Link>
     );
@@ -51,9 +52,9 @@ export function PlanPicker({
       {plans.map((plan) => {
         const free = plan.price_cents <= 0;
         return (
-          <div
+          <Card
             key={plan.id}
-            className="rounded-panel border border-border bg-surface p-3"
+            className="p-3"
           >
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-body font-semibold">{plan.name}</span>
@@ -80,12 +81,12 @@ export function PlanPicker({
               disabled={mutation.isPending}
               onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
               className={cn(
-                buttonClass("secondary", "sm", "mt-2 w-full"),
+                buttonClass("ghost", "sm", "mt-2 w-full"),
               )}
             >
               {free ? "Join free" : `Subscribe - ${usd(price(plan))}`}
             </button>
-          </div>
+          </Card>
         );
       })}
       {mutation.data?.error && (

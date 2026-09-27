@@ -50,14 +50,14 @@ export function CookieConsentBanner() {
         <div className="flex shrink-0 flex-wrap gap-2">
           <button
             type="button"
-            className={buttonClass("secondary", "sm")}
+            className={buttonClass("ghost", "sm")}
             onClick={() => save("essential")}
           >
             Essential only
           </button>
           <button
             type="button"
-            className={buttonClass("primary", "sm")}
+            className={buttonClass("ink", "sm")}
             onClick={() => save("all")}
           >
             Accept

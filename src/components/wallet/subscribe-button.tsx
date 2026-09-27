@@ -27,21 +27,21 @@ export function SubscribeButton({
 
   if (!isAuthed) {
     return (
-      <Link href="/sign-in" className={buttonClass("secondary", "lg", "w-full")}>
+      <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full")}>
         Sign in to subscribe
       </Link>
     );
   }
   if (subscribed) {
     return (
-      <Button variant="secondary" size="lg" className="w-full" disabled>
+      <Button variant="ghost" size="lg" className="w-full" disabled>
         Subscribed
       </Button>
     );
   }
   if (!price) {
     return (
-      <Button variant="secondary" size="lg" className="w-full" disabled>
+      <Button variant="ghost" size="lg" className="w-full" disabled>
         Not accepting subscribers
       </Button>
     );
@@ -49,7 +49,7 @@ export function SubscribeButton({
 
   return (
     <>
-      <Button variant="secondary" size="lg" className="w-full" onClick={() => setOpen(true)}>
+      <Button variant="ghost" size="lg" className="w-full" onClick={() => setOpen(true)}>
         Subscribe · {usd(price)}/mo
       </Button>
       <ConfirmSpendDialog

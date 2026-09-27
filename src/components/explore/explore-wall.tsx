@@ -6,7 +6,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Play } from "lucide-react";
-import { DirectionTag } from "@/components/ui/tag";
 import { packTiles, type Placed } from "@/lib/explore/pack";
 import type { ExploreTile } from "@/lib/explore/wall";
 import { ClipThumb } from "@/components/ui/clip-thumb";
@@ -14,6 +13,7 @@ import { FilterPicker } from "@/components/explore/filter-picker";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { cn } from "@/lib/design/cn";
 import type { FeedComment } from "@/lib/feed/types";
+import { StanceChip } from "@/components/ui/chip";
 
 const FeedSurface = dynamic(
   () => import("@/components/feed/feed-surface").then((m) => ({ default: m.FeedSurface })),
@@ -81,7 +81,7 @@ function Tile({
 
       <div className="absolute left-2 right-9 top-2 flex flex-wrap items-center gap-1">
         {p.ticker ? <Chip>{p.ticker}</Chip> : p.themeTag ? <Chip>{p.themeTag}</Chip> : null}
-        {p.direction ? <DirectionTag direction={p.direction} /> : null}
+        {p.direction ? <StanceChip direction={p.direction} /> : null}
       </div>
       <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-[2px]">
         <Play size={10} fill="currentColor" strokeWidth={0} className="ml-px" />

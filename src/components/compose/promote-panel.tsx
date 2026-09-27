@@ -8,6 +8,7 @@ import {
   type PromoteModel,
   type PromoteState,
 } from "@/lib/compose/promote";
+import { Card } from "@/components/ui/card";
 
 /**
  * Promote, on the publish side of the screen because it is a setting applied
@@ -33,7 +34,7 @@ export function PromotePanel({
   const on = state.boostOnPublish;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-4" aria-label="Promote">
+    <Card as="section" className="p-4" aria-label="Promote">
       <p className="t-meta mb-2.5">Promote</p>
 
       <label className="flex cursor-pointer items-start gap-2.5">
@@ -95,6 +96,6 @@ export function PromotePanel({
       <p className="num mt-3 border-t border-border pt-2.5 text-ticker leading-relaxed text-text-faint">
         {PROMOTED_LABEL} content is always labelled as {PROMOTED_LABEL.toLowerCase()}, wherever it appears
       </p>
-    </section>
+    </Card>
   );
 }

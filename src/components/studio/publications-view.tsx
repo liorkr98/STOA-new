@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Play, Pencil, Eye, Pin, Loader2, FileText, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
-import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { setPinnedProfileReport } from "@/app/actions/profile";
 import { PromoteDialog } from "@/components/compose/promote-dialog";
 import { ArchiveDialog } from "@/components/studio/archive-dialog";
@@ -14,6 +13,7 @@ import { DeleteDialog, DeleteDraftDialog } from "@/components/studio/delete-dial
 import { EditedFlag } from "@/components/report/edited-flag";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
+import { ThemeChip, TickerChip } from "@/components/ui/chip";
 
 export type PubState = "draft" | "scheduled" | "published" | "archived";
 
@@ -182,7 +182,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
-                    {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeTag label={p.tag} />)}
+                    {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeChip label={p.tag} />)}
                     {p.badge ? (
                       <span className="num text-ticker text-text-faint">{p.badge}</span>
                     ) : null}

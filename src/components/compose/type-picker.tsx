@@ -8,6 +8,7 @@ import { ComposeBackLink } from "@/components/compose/compose-back-link";
 import { PUBLICATION_TYPES, type PublicationType, type PublicationTypeDef } from "@/lib/compose/modes";
 import type { DraftSummary } from "@/lib/compose/drafts";
 import { DeleteDraftDialog } from "@/components/studio/delete-dialog";
+import { Card } from "@/components/ui/card";
 
 /**
  * The first screen of Compose: what are you publishing?
@@ -97,7 +98,7 @@ function Progress({ percent, label }: { percent: number; label?: boolean }) {
 function DraftRowWide({ d }: { d: PickerDraft }) {
   const meta = [d.ticker, d.where, `Edited ${d.editedLabel}`].filter(Boolean).join(" · ");
   return (
-    <li className="flex items-center gap-4 rounded-panel border border-border bg-surface px-4 py-3.5">
+    <Card as="li" className="flex items-center gap-4 px-4 py-3.5">
       <span className="num w-[5.5rem] shrink-0 text-ticker text-text-mute">
         {d.typeLabel}
       </span>
@@ -119,13 +120,13 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
       <span className="num shrink-0 text-ticker text-text-faint">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
-    </li>
+    </Card>
   );
 }
 
 function DraftRowCompact({ d }: { d: PickerDraft }) {
   return (
-    <li className="flex items-center gap-2 rounded-panel border border-border bg-surface pr-3">
+    <Card as="li" className="flex items-center gap-2 pr-3">
       <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-panel px-3.5 py-3">
         <span className="min-w-0 flex-1">
           <span className="num block truncate text-ticker text-text-mute">
@@ -140,7 +141,7 @@ function DraftRowCompact({ d }: { d: PickerDraft }) {
       <span className="num shrink-0 text-ticker text-text-faint">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
-    </li>
+    </Card>
   );
 }
 

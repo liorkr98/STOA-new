@@ -36,10 +36,10 @@ export function ErrorPanel({
         Feed.
       </p>
       <div className="mt-2 flex gap-3">
-        <button type="button" onClick={reset} className={buttonClass("primary", "md")}>
+        <button type="button" onClick={reset} className={buttonClass("ink", "md")}>
           Try again
         </button>
-        <Link href="/feed" className={buttonClass("secondary", "md")}>
+        <Link href="/feed" className={buttonClass("ghost", "md")}>
           Go to Feed
         </Link>
       </div>

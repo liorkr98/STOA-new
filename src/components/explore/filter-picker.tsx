@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { Card } from "@/components/ui/card";
 
 /**
  * External browser state, subscribed to rather than measured in an effect.
@@ -271,9 +272,9 @@ export function FilterPicker({
             {panel}
           </div>
         ) : (
-          <div className="menu-pop absolute right-0 z-20 mt-2 w-[240px] overflow-hidden rounded-panel border border-border bg-surface">
+          <Card className="menu-pop absolute right-0 z-20 mt-2 w-[240px] overflow-hidden">
             {panel}
-          </div>
+          </Card>
         )
       ) : null}
     </div>

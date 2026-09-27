@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/design/cn";
+import { SectionHeading } from "@/components/ui/section-heading";
 
 /**
- * A full-width department of a page: serif section header, an optional note in
- * the reader's register, a hairline rule, and a mono SEE ALL link. Bands are
+ * A full-width department of a page: a SectionHeading (headline, optional
+ * note, "See all" link) over its content. Bands are
  * peers stacked down the page, never nested, and each shows only its top few
  * items while pointing at a fuller page.
  *
@@ -32,23 +33,16 @@ export function Band({
 }) {
   return (
     <section className={cn("band", className)} aria-label={title}>
-      <div className="band-head">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="band-title">{title}</h2>
-          {badge}
-          {note ? <p className="band-note">{note}</p> : null}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-4">
-          {controls}
-          {seeAllHref ? (
-            <Link href={seeAllHref} className="band-see-all focus-ring">
-              {seeAllLabel}
-              <span aria-hidden> →</span>
-            </Link>
-          ) : null}
-        </div>
-      </div>
+      <SectionHeading
+        className="band-head"
+        title={title}
+        note={note}
+        href={seeAllHref}
+        linkLabel={seeAllLabel}
+      >
+        {badge}
+        {controls}
+      </SectionHeading>
 
       {children}
     </section>

@@ -8,6 +8,7 @@ import type { Plan } from "@/lib/db/plans";
 import type { SymbolLookup } from "@/lib/market/use-symbol-lookup";
 import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
+import { Card } from "@/components/ui/card";
 
 const inputClass =
   "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute";
@@ -176,8 +177,8 @@ export function StancePanel({
 }) {
   if (frozen) {
     return (
-      <section
-        className="rounded-panel border border-border bg-surface p-4"
+      <Card as="section"
+        className="p-4"
         aria-label="The stance"
       >
         <p className="t-meta mb-2">The stance</p>
@@ -199,7 +200,7 @@ export function StancePanel({
             to it now.
           </p>
         )}
-      </section>
+      </Card>
     );
   }
 
@@ -308,7 +309,7 @@ export function PublishPanel({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <section className="rounded-panel border border-border bg-surface p-4">
+      <Card as="section" className="p-4">
         <p className="t-meta mb-2.5">Access</p>
         <div className="flex flex-col gap-1.5 text-body">
           {(
@@ -389,7 +390,7 @@ export function PublishPanel({
             />
           </>
         )}
-      </section>
+      </Card>
 
       {promote}
 

@@ -7,13 +7,13 @@ import { Play, ArrowRight, Lock, ShieldCheck } from "lucide-react";
 import { PlaceholderThumb } from "@/components/ui/placeholder-thumb";
 import { cn } from "@/lib/design/cn";
 import { Avatar } from "@/components/ui/avatar";
-import { DirectionTag } from "@/components/ui/tag";
 import { trackVideoEvent } from "@/lib/video/track-client";
 import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { NativeClip } from "@/components/video/native-clip";
 import { ScrubBar } from "@/components/video/scrub-bar";
 import { isDirectVideoUrl } from "@/lib/video/direct";
 import type { VideoCardData } from "@/lib/video/card-data";
+import { StanceChip } from "@/components/ui/chip";
 
 function formatDuration(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
@@ -248,7 +248,7 @@ export function VideoCard({
               {data.ticker}
             </span>
           )}
-          {data.direction && <DirectionTag direction={data.direction} />}
+          {data.direction && <StanceChip direction={data.direction} />}
         </div>
 
         <Link href={reportHref} className="focus-ring rounded-button">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/design/cn";
 import { toggleFollow } from "@/app/actions/social";
+import { Avatar } from "@/components/ui/avatar";
 
 export interface FollowCreator {
   id: string;
@@ -45,9 +46,7 @@ function CreatorRow({ c }: { c: FollowCreator }) {
         unfollowed && "opacity-50",
       )}
     >
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-body text-[var(--paper)]">
-        {c.initials}
-      </span>
+      <Avatar name={c.name} size={36} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2.5">
           <Link href={c.href} className="font-display text-title font-semibold tracking-tight hover:underline">

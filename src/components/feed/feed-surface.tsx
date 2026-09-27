@@ -17,8 +17,6 @@ import {
 import { toggleFollow, toggleLike, toggleSave } from "@/app/actions/social";
 import { loadFeedComments } from "@/app/actions/feed";
 import { Avatar } from "@/components/ui/avatar";
-import { DirectionTag } from "@/components/ui/tag";
-import { TickerChip, ThemeTag } from "@/components/ui/ticker-chip";
 import { FeedCardView } from "@/components/feed/feed-cards";
 import { DiscussionThread, type DiscussionActions } from "@/components/discussion/discussion-thread";
 import { trackEngagement } from "@/lib/engagement/track-client";
@@ -35,6 +33,7 @@ import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { FeedComment, FeedPublication } from "@/lib/feed/types";
+import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
 
 /**
  * The Feed: the only video discovery surface, and the whole viewport.
@@ -869,8 +868,8 @@ const FeedItem = function FeedItem({
                         </span>
                       ) : null}
                       {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
-                      {pub.direction ? <DirectionTag direction={pub.direction} /> : null}
-                      {!pub.ticker && pub.themeTag ? <ThemeTag label={pub.themeTag} /> : null}
+                      {pub.direction ? <StanceChip direction={pub.direction} /> : null}
+                      {!pub.ticker && pub.themeTag ? <ThemeChip label={pub.themeTag} /> : null}
                     </div>
                   </div>
                   <div className="pointer-events-auto flex flex-none items-start gap-2">
@@ -1048,10 +1047,10 @@ function EndOfFeed({ snapClass }: { snapClass: string }) {
           browse analysts by sector on Explore.
         </p>
         <div className="mt-2 flex gap-2">
-          <Link href="/home" className={buttonClass("primary", "md")}>
+          <Link href="/home" className={buttonClass("ink", "md")}>
             Go to Today
           </Link>
-          <Link href="/explore" className={buttonClass("secondary", "md")}>
+          <Link href="/explore" className={buttonClass("ghost", "md")}>
             Open Explore
           </Link>
         </div>
@@ -1114,7 +1113,7 @@ function DiscussionPanel({
               {pub.headline}
             </p>
           </div>
-          <button type="button" onClick={onClose} className={buttonClass("secondary", "sm", "flex-none")}>
+          <button type="button" onClick={onClose} className={buttonClass("ghost", "sm", "flex-none")}>
             Close
           </button>
         </div>

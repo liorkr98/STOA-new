@@ -23,7 +23,7 @@ export function ContactStatusButtons({
       {status !== "read" && (
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           disabled={pending}
           onClick={() => setStatus("read")}
@@ -34,7 +34,7 @@ export function ContactStatusButtons({
       {status !== "archived" && (
         <Button
           type="button"
-          variant="ghost"
+          variant="plain"
           size="sm"
           disabled={pending}
           onClick={() => setStatus("archived")}
@@ -45,7 +45,7 @@ export function ContactStatusButtons({
       {status !== "new" && (
         <Button
           type="button"
-          variant="ghost"
+          variant="plain"
           size="sm"
           disabled={pending}
           onClick={() => setStatus("new")}

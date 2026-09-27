@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { ALL_TAGS, TAG_GROUPS, TAG_LIMITS, tagBySlug, tagForSector, type PublicationTag } from "@/lib/tags/taxonomy";
+import { Card } from "@/components/ui/card";
 
 export interface TagSelection {
   primary: string | null;
@@ -144,7 +145,7 @@ function TagSearch({
   const openMatches = matches?.filter((t) => !taken(t)) ?? [];
 
   return (
-    <div className="menu-pop mt-2 rounded-panel border border-border bg-surface p-2">
+    <Card className="menu-pop mt-2 p-2">
       <input
         ref={inputRef}
         type="text"
@@ -192,7 +193,7 @@ function TagSearch({
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -249,7 +250,7 @@ export function TagPicker({
   };
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-4" aria-label="Tags">
+    <Card as="section" className="p-4" aria-label="Tags">
       <p className="t-meta mb-3">Tags</p>
 
       <div className="num mb-1.5 text-ticker text-text-mute">Primary</div>
@@ -336,6 +337,6 @@ export function TagPicker({
           onClose={() => setOpen(null)}
         />
       ) : null}
-    </section>
+    </Card>
   );
 }

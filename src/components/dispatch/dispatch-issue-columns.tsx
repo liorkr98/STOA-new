@@ -3,6 +3,7 @@ import { BookOpen, Radio } from "lucide-react";
 import { FadeIn } from "@/components/motion/fade-in";
 import type { DispatchStory } from "@/lib/dispatch/types";
 import { cn } from "@/lib/design/cn";
+import { Card } from "@/components/ui/card";
 
 function IssueCard({
   story,
@@ -17,7 +18,7 @@ function IssueCard({
 
   return (
     <FadeIn delay={Math.min(index, 6) * 0.04}>
-      <article className="dispatch-issue-card group flex flex-col gap-2.5 rounded-panel border border-border bg-surface p-4 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
+      <Card as="article" className="dispatch-issue-card group flex flex-col gap-2.5 p-4 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {ticker ? (
@@ -51,7 +52,7 @@ function IssueCard({
             {story.author.display_name}
           </Link>
         </div>
-      </article>
+      </Card>
     </FadeIn>
   );
 }

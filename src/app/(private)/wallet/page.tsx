@@ -8,6 +8,7 @@ import { buttonClass } from "@/components/ui/button";
 import { TopUpButton } from "@/components/wallet/top-up-button";
 import { ConvertCreditsButton } from "@/components/wallet/convert-credits-button";
 import type { TxnType } from "@/lib/types";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Wallet" };
 
@@ -68,7 +69,7 @@ export default async function WalletPage() {
       {/* Payment method */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Payment method</SectionLabel>
-        <div className="flex items-center gap-4 rounded-panel border border-border bg-surface p-5">
+        <Card className="flex items-center gap-4 p-5">
           <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-body font-medium">
             PP
           </span>
@@ -76,10 +77,10 @@ export default async function WalletPage() {
             <p className="text-body">PayPal</p>
             <p className="num mt-1 text-ticker text-[var(--error)]">Not connected</p>
           </div>
-          <button type="button" className={buttonClass("secondary", "sm")} disabled>
+          <button type="button" className={buttonClass("ghost", "sm")} disabled>
             Connect
           </button>
-        </div>
+        </Card>
       </section>
 
       {/* Activity */}

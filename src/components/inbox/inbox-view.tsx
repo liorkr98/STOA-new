@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { markAllNotificationsRead, markNotificationRead } from "@/app/actions/notifications";
+import { Card } from "@/components/ui/card";
 
 export type InboxCategory = "publications" | "money" | "audience" | "social";
 
@@ -193,13 +194,13 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
       </div>
 
       {prefsOpen && (
-        <div className="flex flex-col gap-6 rounded-panel border border-border bg-surface p-6">
+        <Card className="flex flex-col gap-6 p-6">
           <PrefGroup title="Reading" rows={READING_PREFS} />
           {isAnalyst && <PrefGroup title="Your research" rows={RESEARCH_PREFS} />}
           <p className="num text-ticker text-text-faint">
             These choices are not saved yet, so they reset when you leave.
           </p>
-        </div>
+        </Card>
       )}
 
       <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">

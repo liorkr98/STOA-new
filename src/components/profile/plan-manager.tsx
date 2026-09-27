@@ -98,7 +98,7 @@ export function PlanManager({
             keep their locked-in price.
           </p>
         </div>
-        <Button type="button" variant="secondary" size="sm" onClick={addTier} disabled={pending}>
+        <Button type="button" variant="ghost" size="sm" onClick={addTier} disabled={pending}>
           <Plus size={15} /> Add tier
         </Button>
       </div>
@@ -293,7 +293,7 @@ function PlanRow({
             placeholder="Add a perk (e.g. Full reports)"
             className={cn(inputClass, "flex-1")}
           />
-          <Button type="button" variant="ghost" size="sm" onClick={addPerk}>
+          <Button type="button" variant="plain" size="sm" onClick={addPerk}>
             Add
           </Button>
         </div>

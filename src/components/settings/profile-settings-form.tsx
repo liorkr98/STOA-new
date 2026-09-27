@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import type { Profile } from "@/lib/types";
+import { cardClass } from "@/components/ui/card";
 
 const inputClass =
   "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring";
@@ -28,7 +29,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-panel border border-border bg-surface p-6">
+    <form onSubmit={onSubmit} className={cn(cardClass, "flex flex-col gap-5 p-6")}>
       {/* Avatar — Settings is the single place identity (name, bio, headline, photo) is edited. */}
       <AvatarUpload
         userId={profile.id}

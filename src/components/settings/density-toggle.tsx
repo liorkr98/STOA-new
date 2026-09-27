@@ -3,6 +3,7 @@
 import { DENSITY_STORAGE_KEY, DENSITY_EVENT, parseDensity, type Density } from "@/lib/design/density";
 import { useStoredValue } from "@/lib/hooks/use-stored-value";
 import { cn } from "@/lib/design/cn";
+import { Card } from "@/components/ui/card";
 
 /**
  * Persists comfortable/compact for dense surfaces only. Reader pages ignore this.
@@ -16,7 +17,7 @@ export function DensityToggle() {
   }
 
   return (
-    <fieldset className="rounded-panel border border-border bg-surface p-5">
+    <Card as="fieldset" className="p-5">
       <legend className="t-title px-1">Density</legend>
       <p className="t-meta mt-1">
         Compact tightens tables and dashboards. Report reading stays editorial either way.
@@ -40,6 +41,6 @@ export function DensityToggle() {
           </button>
         ))}
       </div>
-    </fieldset>
+    </Card>
   );
 }

@@ -93,7 +93,7 @@ export default async function FeedPage({
           title="Nothing to watch yet"
           body="Analysts are still recording. Once a publication carries a clip it appears here."
           action={
-            <Link href="/explore" className={buttonClass("secondary", "md")}>
+            <Link href="/explore" className={buttonClass("ghost", "md")}>
               Open Explore
             </Link>
           }

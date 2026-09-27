@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Headphones, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/design/cn";
+import { Card } from "@/components/ui/card";
 
 /**
  * AudioBrief (H4): "Listen to the bottom line" -- a ~60s TTS brief of the
@@ -69,7 +70,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
   if (status === "loading" && !isAuthor) return null;
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-panel border border-border bg-surface px-4 py-3">
+    <Card className="mt-4 flex flex-wrap items-center gap-3 px-4 py-3">
       <span className="flex items-center gap-2 text-text-mute">
         <Headphones size={15} className="text-text-faint" />
         <span className="t-meta">Audio brief</span>
@@ -100,6 +101,6 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
         </button>
       )}
       {error && <span className="w-full text-ticker text-[var(--error)]">{error}</span>}
-    </div>
+    </Card>
   );
 }

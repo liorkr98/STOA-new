@@ -40,7 +40,7 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
       </Button>
       <Button
         type="button"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         disabled={isPending}
         onClick={() => setRejectMode(false)}
@@ -65,7 +65,7 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
       </Button>
       <Button
         type="button"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         disabled={isPending}
         onClick={() => setRejectMode(true)}

@@ -1,5 +1,6 @@
 import { compact } from "@/lib/format";
 import type { CompanyFundamentals } from "@/lib/engine/market";
+import { Card } from "@/components/ui/card";
 
 function fmtPct(n: number | null) {
   if (n == null) return "-";
@@ -21,7 +22,7 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
   if (!hasLive && !hasFiling) return null;
 
   return (
-    <section className="rounded-panel border border-border bg-surface p-6">
+    <Card as="section" className="p-6">
       <h2 className="t-title mb-4">Fundamentals</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {data.marketCap != null && (
@@ -53,7 +54,7 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
         Live metrics via Yahoo Finance
         {hasFiling ? "; SEC filings from Kaggle import" : ""}.
       </p>
-    </section>
+    </Card>
   );
 }
 

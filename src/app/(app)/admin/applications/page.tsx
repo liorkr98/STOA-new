@@ -7,6 +7,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/ui/avatar";
 import { ApproveRejectButtons } from "./comps/approve-reject-buttons";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Applications · Admin" };
 
@@ -61,9 +62,9 @@ export default async function AdminApplicationsPage() {
           const applicant = app.profiles as { handle: string; display_name: string; avatar_url?: string } | null;
 
           return (
-            <div
+            <Card
               key={app.id}
-              className="rounded-panel border border-border bg-surface p-5 flex flex-col gap-4"
+              className="p-5 flex flex-col gap-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-4">
@@ -120,7 +121,7 @@ export default async function AdminApplicationsPage() {
               {app.status === "pending" && (
                 <ApproveRejectButtons applicationId={app.id} />
               )}
-            </div>
+            </Card>
           );
         })}
       </div>

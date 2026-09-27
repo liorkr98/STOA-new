@@ -73,7 +73,7 @@ export function TierPickerModal({
         <p className="t-body mt-2">Cancel anytime.</p>
 
         {!isAuthed ? (
-          <Link href="/sign-in" className={buttonClass("primary", "lg", "mt-6 w-full")}>
+          <Link href="/sign-in" className={buttonClass("ink", "lg", "mt-6 w-full")}>
             Sign in to subscribe
           </Link>
         ) : plans.length === 0 ? (

@@ -33,15 +33,11 @@ export function FollowButton({
 
   return (
     <Button
-      variant={following ? "secondary" : "primary"}
+      variant={following ? "ghost" : "coral"}
       onClick={onClick}
       disabled={pending}
       size="lg"
-      className={
-        following
-          ? "min-w-[9.5rem] border-[var(--border-strong)]"
-          : "min-w-[9.5rem] font-semibold"
-      }
+      className="min-w-[9.5rem]"
     >
       {following ? <Check size={16} weight="bold" /> : <Plus size={16} weight="bold" />}
       {following ? "Following" : "Follow"}

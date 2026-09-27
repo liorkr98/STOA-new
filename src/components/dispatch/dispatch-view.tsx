@@ -9,6 +9,7 @@ import { DispatchVideoLead } from "@/components/dispatch/dispatch-video-lead";
 import { VideoGrid } from "@/components/video/video-grid";
 import type { DispatchPayload, DispatchStory, DispatchViewMode } from "@/lib/dispatch/types";
 import type { VideoCardData } from "@/lib/video/card-data";
+import { Card } from "@/components/ui/card";
 
 function splitColumns(dispatch: DispatchPayload): {
   research: DispatchStory[];
@@ -129,21 +130,21 @@ export function DispatchView({
       />
 
       {thinHome ? (
-        <div className="dispatch-section rounded-panel border border-border bg-surface px-5 py-6 text-center">
+        <Card className="dispatch-section px-5 py-6 text-center">
           <p className="text-body text-text-mute">
             Thin briefing today. Follow more analysts to fill tomorrow&apos;s issue.
           </p>
           <div className="mt-4">
-            <Link href="/explore" className={buttonClass("secondary", "sm")}>
+            <Link href="/explore" className={buttonClass("ghost", "sm")}>
               Find analysts
             </Link>
           </div>
-        </div>
+        </Card>
       ) : null}
 
       {isHome ? (
         <div className="dispatch-section text-center">
-          <Link href="/explore" className={buttonClass("ghost", "sm")}>
+          <Link href="/explore" className={buttonClass("plain", "sm")}>
             Browse all research in Explore →
           </Link>
         </div>
@@ -154,10 +155,10 @@ export function DispatchView({
             Next issue tomorrow. Read it again then, or browse the archive now.
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/feed" className={buttonClass("secondary", "sm")}>
+            <Link href="/feed" className={buttonClass("ghost", "sm")}>
               Browse all research
             </Link>
-            <Link href="/sign-up" className={buttonClass("primary", "sm")}>
+            <Link href="/sign-up" className={buttonClass("ink", "sm")}>
               Get your briefing
             </Link>
           </div>

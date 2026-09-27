@@ -19,7 +19,6 @@ import { Trash2, ChartCandlestick, MousePointer2, Minus, TrendingUp, Eraser } fr
 import { nanoid } from "nanoid";
 import { BarChart2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
-import { TickerChip } from "@/components/ui/ticker-chip";
 import { CHART_RANGES, type Candle, type ChartRange } from "@/lib/market/candle-types";
 import {
   parseAnnotations,
@@ -40,6 +39,7 @@ import {
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
 import { TradingViewChartPanel } from "@/components/editor/tiptap/nodes/trading-view-chart-panel";
 import { canvasColor, canvasFont } from "@/lib/design/canvas-color";
+import { TickerChip } from "@/components/ui/chip";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
