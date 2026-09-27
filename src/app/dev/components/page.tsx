@@ -5,9 +5,7 @@ import { EditedFlag } from "@/components/report/edited-flag";
 import type { ReportEdit } from "@/lib/db/report-edits";
 import { DisclosureBlock } from "@/components/ui/disclosure-block";
 import { DyorBar } from "@/components/ui/dyor-bar";
-import { PaywallGate } from "@/components/ui/paywall-gate";
 import { FactCheckLayer, FactCheckedText } from "@/components/report/fact-check-layer";
-import { Button } from "@/components/ui/button";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
 const sampleClaims: FactClaim[] = [
@@ -87,26 +85,7 @@ export default function ComponentPreviewPage() {
         <DyorBar />
       </div>
 
-      <p className="t-meta mb-4">PaywallGate (single CTA, real-world case)</p>
-      <div className="max-w-2xl mb-12">
-        <PaywallGate
-          previewText="Nvidia's data center revenue accelerated again this quarter, and the setup into the next print looks asymmetric. The read-through for the broader AI capex cycle is the part most investors are still underpricing, and here's why the entry point matters more than the headline number..."
-          onUnlock={<Button variant="ghost" className="w-full">Unlock this report -- $4</Button>}
-          onSubscribe={null}
-          isAuthed={false}
-          loginHref="/sign-in"
-        />
-      </div>
-
-      <p className="t-meta mb-4">PaywallGate (both CTAs, if access model allowed it)</p>
-      <div className="max-w-2xl mb-12">
-        <PaywallGate
-          onUnlock={<Button variant="ghost" className="w-full">Unlock this report -- $4</Button>}
-          onSubscribe={<Button variant="ghost" className="w-full">Subscribe to @maren_vos -- $12/mo</Button>}
-          isAuthed={false}
-          loginHref="/sign-in"
-        />
-      </div>
+      <p className="t-meta mb-4">The locked section lives on the publication page: see /dev/report?access=subscribers</p>
 
       <p className="t-meta mb-4">FactCheckLayer</p>
       <div className="max-w-2xl mb-12">
