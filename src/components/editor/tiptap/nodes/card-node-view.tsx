@@ -5,6 +5,8 @@ import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { CardPreview } from "@/components/compose/card-preview";
 import { useComposeCard } from "@/lib/compose/card-store";
+import { FeedCardView } from "@/components/feed/feed-cards";
+import { useReaderCards } from "@/components/report/reader-cards";
 
 /**
  * cardNode -- an evidence card sitting inline in the research body. It holds
@@ -15,7 +17,20 @@ import { useComposeCard } from "@/lib/compose/card-store";
 export function CardNodeView({ node, deleteNode, selected, editor }: NodeViewProps) {
   const cardId = String(node.attrs.cardId ?? "");
   const card = useComposeCard(cardId);
+  const reader = useReaderCards();
   const isEditable = editor?.isEditable ?? true;
+
+  if (reader) {
+    // A card the reader may not see is absent from the deck; say nothing
+    // rather than claim it was removed.
+    const placed = reader.cards.find((c) => c.id === cardId);
+    if (!placed) return <NodeViewWrapper data-card-node="" className="hidden" />;
+    return (
+      <NodeViewWrapper data-card-node="" contentEditable={false} className="report-card-slot">
+        <FeedCardView card={placed} ticker={reader.ticker} onSealedTap={reader.onSealedTap} />
+      </NodeViewWrapper>
+    );
+  }
 
   return (
     <NodeViewWrapper

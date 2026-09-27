@@ -7,6 +7,8 @@ import { buildExtensions } from "@/lib/editor/tiptap/extensions";
 import { TickerHoverLayer } from "@/components/report/ticker-hover-layer";
 import { TiptapClaimHighlighter } from "@/components/report/tiptap-claim-highlighter";
 import type { FactClaim } from "@/lib/ai/fact-check";
+import type { FeedCard } from "@/lib/feed/types";
+import { ReaderCardsContext } from "@/components/report/reader-cards";
 
 function containsMath(node: JSONContent): boolean {
   const t = node.type ?? "";
@@ -25,14 +27,31 @@ export function TiptapReportRenderer({
   claims = [],
   isAuthed = false,
   reportId,
+  cards,
+  ticker = null,
 }: {
   json: JSONContent;
   claims?: FactClaim[];
   isAuthed?: boolean;
   reportId?: string;
+  /** The reader-safe deck, for cards placed inside the body. */
+  cards?: FeedCard[];
+  ticker?: string | null;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const extensions = useMemo(() => buildExtensions({ editable: false }), []);
+  const readerCards = useMemo(
+    () =>
+      cards
+        ? {
+            cards,
+            ticker,
+            onSealedTap: () =>
+              document.getElementById("report-gate")?.scrollIntoView({ behavior: "smooth", block: "center" }),
+          }
+        : null,
+    [cards, ticker],
+  );
   const editor = useEditor({
     immediatelyRender: false,
     editable: false,
@@ -51,7 +70,9 @@ export function TiptapReportRenderer({
   if (!editor) return null;
   return (
     <div ref={rootRef}>
-      <EditorContent editor={editor} />
+      <ReaderCardsContext.Provider value={readerCards}>
+        <EditorContent editor={editor} />
+      </ReaderCardsContext.Provider>
       <TickerHoverLayer />
       {claims.length > 0 && (
         <TiptapClaimHighlighter
