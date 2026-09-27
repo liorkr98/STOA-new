@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore, type ComponentProps } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentProps } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -149,10 +149,10 @@ export function ExploreWall({
     () => false,
   );
 
-  const setQuery = (mutate: (q: URLSearchParams) => void) => {
+  const setQuery = (mutate: (q: URLSearchParams) => void, how: "replace" | "push" = "replace") => {
     const q = new URLSearchParams(search.toString());
     mutate(q);
-    router.replace(`${basePath}${q.toString() ? `?${q}` : ""}`, { scroll: false });
+    router[how](`${basePath}${q.toString() ? `?${q}` : ""}`, { scroll: false });
   };
 
   const setFilter = (key: "ticker" | "sector", v: string | null) => {
@@ -171,18 +171,28 @@ export function ExploreWall({
    * and the catalogue is what makes a stranger want an account in the first
    * place.
    */
+  const openedWatch = useRef(false);
   const openWatch = (id: string) => {
     if (!canWatch) {
       const back = `${basePath}?${new URLSearchParams({ watch: id })}`;
       router.push(`/sign-in?next=${encodeURIComponent(back)}`);
       return;
     }
+    // Its own history entry, so Back (the phone's gesture included) closes the
+    // video and lands on the wall. It used to replace the wall's entry, and Back
+    // skipped Explore altogether.
     setQuery((q) => {
       q.set("watch", id);
-    });
+    }, "push");
+    openedWatch.current = true;
   };
 
   const closeWatch = () => {
+    if (openedWatch.current) {
+      openedWatch.current = false;
+      router.back();
+      return;
+    }
     setQuery((q) => {
       q.delete("watch");
     });
