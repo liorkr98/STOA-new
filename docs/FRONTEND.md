@@ -236,7 +236,7 @@ phone width, and so do we.
   `.breakout-under-tabs` and every `<ScrollFrame>` carries `.frame-under-tabs`, both of which
   cancel the shell's tab clearance so the frame reaches the bottom of the viewport. The
   clearance then moves inside: the Feed's caption block pads `--tab-h`, `SCROLL_COLUMN` pads
-  `--tab-h + --main-pad-y`, and a frame that is its own scroller (the report page, the branding
+  `--tab-h + --main-pad-y`, and a frame that is its own scroller (the report page, the Storefront
   studio on a phone) pads the same. Content passes behind the glass while scrolling; nothing
   ends underneath it. `frameHeight` counts the frame's own negative margin for this.
 - **The current tab is marked by one travelling lens**, `.app-tabs-lens`: a translucent
@@ -892,10 +892,8 @@ phone, 3 from `md`, 4 from `xl`), newest first, 24 at a time with Show more
 two is the lead and a single tile. No filler, no encouraging empty panels.
 With nothing published the page says "Nothing published yet."
 
-The Storefront theming (accent tint, font pairing, texture) is applied to
-the whole page. The Storefront editor still offers sections, specialties,
-featured tickers and social links that this page does not render (see
-CHANGELOG 2026-09-27).
+The storefront's own style (headline face and paper texture, §6.7) is applied
+to the whole page.
 
 ---
 
@@ -1658,20 +1656,36 @@ and audience, `/studio/insights`), which never scores them.
   dashboard-link endpoint — this page doesn't rebuild PayPal's own payout UI, it hands off to it)
 - Payout history table: date, amount, status
 
-### 6.7 Page Branding — `/dashboard/branding`
+### 6.7 Storefront editor — `/studio/branding` (trimmed 2026-09-27)
 
-**Layout.** Under the page heading, the studio is a `<ScrollFrame>`: the form scrolls in its column
-and the live preview stays beside it; below `xl` the frame is the scroller and they stack. The
-preview used to be a sticky column pinned `top-20` inside the app's scrolling column, where the nav
-is not. `/dev/branding` mounts the studio inside the private-shell fixture for review without a
-session.
+It offers only what the public storefront (§3.3) shows. Filling in something that never
+appears is worse than not being asked, so everything else was removed with the storefront
+rebuild.
 
-Same two-column form-plus-live-preview pattern as onboarding Step 2 (§4.2), now as a persistent
-settings page: handle, display name, bio, avatar, banner, color theme (from the curated set
-defined in §1.4/§4.2 — not an open color picker). **Custom domain field** (full vision item): a
-text input for a creator's own domain with a "Connect domain" flow, positioned as an
-advanced/optional section beneath the core branding fields, clearly marked "Optional — most
-creators don't need this."
+**Layout.** Under the page heading, a `<ScrollFrame>`: the form scrolls in its column and the
+live preview (`ProfilePreview`: the real `StorefrontHero` in compact form, and the card a shared
+link produces) stays beside it; below `xl` the frame is the scroller and they stack. The tab row
+is `shrink-0`: without it the frame's flex column squashed it to zero height, and before
+2026-09-27 the Style and Pricing tabs could not be reached on a desktop. `/dev/branding` mounts
+the editor inside the private-shell fixture.
+
+**Three tabs.**
+
+- **Profile.** The identity (face, name, handle, headline, bio) shown read-only, with a link to
+  Settings where it is edited. The pinned publication (or "Your latest publication"), saved on
+  click, the same setting Publications' "Pin to profile" writes. The audience line's member
+  count switch, saved on click. The share image (`profiles.cover_url`): the picture a shared
+  link carries, cropped at 1.91:1; the storefront itself draws no banner.
+- **Style.** The headline face (Grotesque or Modern, `profile_config.font_pairing`) and the
+  faint paper texture (`profile_config.texture`). No colour: coral, green and red mean the same
+  thing on every page, and the ink accent had nothing left to tint on the storefront.
+- **Pricing & tiers.** `PlanManager`, and the single-price fields being retired.
+
+**Removed on 2026-09-27:** specialties, featured tickers, social links, section order and the
+addable sections, colour themes, the accent colour, the report layout presets, and the AI brand
+analyzer (its suggestions were mostly for specialties and social links, and its Apply did
+nothing for the headline and bio, which Settings owns). Onboarding's banner style choice went
+with them. The keys stay in `ProfileConfig`, marked retired, because some rows still carry them.
 
 ### 6.8 Pricing Settings — `/dashboard/pricing`
 

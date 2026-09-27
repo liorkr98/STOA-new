@@ -38,6 +38,22 @@ the work itself.
 - The Storefront editor's preview now shows this hero instead of an old
   header with a cover banner, and no longer claims pricing appears below it.
 
+**What an analyst notices in the Storefront editor**
+
+- It offers only what the storefront shows. Three tabs: Profile (identity,
+  shown with a link to Settings; the pinned publication; the member count
+  switch; the share image), Style (headline face and paper texture), and
+  Pricing & tiers.
+- Gone: specialties, featured tickers, social links, section order and extra
+  sections, colour themes, the accent colour, report layouts, and the AI
+  brand analyzer. None of them appeared on the page. The analyzer charged
+  credits for suggestions that were mostly for specialties and social links,
+  and its Apply did nothing for the headline and bio.
+- Onboarding no longer asks for a banner style, and its preview is the real
+  storefront hero.
+- The cover image is now called the share image: it is what a shared link
+  to the profile shows. The storefront draws no banner.
+
 **What a visitor notices about going back**
 
 - In the app added to an iPhone home screen, swiping from the left edge now
@@ -61,20 +77,25 @@ the work itself.
 - The audience line said "214 MEMBERS" in capitals.
 - Explore's Ticker and Sector buttons each showed two arrows.
 - The in-app Back helper read a counter the App Router never writes, so it
-  always thought nothing was behind the page (the Compose bug above).
+  always thought nothing was behind the page (the Compose bug above). Its
+  test now runs in CI (approved by Bar).
+- The Storefront editor's tab row had squashed to zero height on a desktop,
+  so Style and Pricing could not be reached there.
+- The Storefront style panel said "Saved" in the price green and warned in
+  the price red; onboarding's handle check used the price red for a cross.
 
 **Left for a decision**
 
-- The Storefront editor still offers sections, specialties, featured tickers
-  and social links, and the public profile shows none of them (it did not
-  before this batch either). Either the storefront shows them or the editor
-  stops offering them.
+- Today shows a seeded one-word beat (`profile_config.specialty`) under
+  each face, which 40 of 43 analysts have and none can edit; the profile
+  shows their headline. The two can describe the same person differently.
+- Onboarding never asks what an analyst covers, so a new storefront reads
+  "Independent analyst on Stoa" until they add a headline in Settings.
+- The AI credit price list still carries an entry for the removed analyzer.
 - The Feed's full-width card track is the one screen where a sideways
   scroller covers the left edge. On Android the system back gesture is
   unaffected; on a Chrome setup whose back is a sideways overscroll it would
   catch it. Left as is.
-- `npm run test:nav` exists but CI does not run it; adding it changes the CI
-  workflow.
 - The private area's phone menu still has a hairline under it (old system).
 
 **What needs Krisi**

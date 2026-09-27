@@ -97,8 +97,9 @@ gain 7.3, on loss 4.7.
   own meaning tokens (`--ok`, `--pending`, `--notice-*`, `--mark-edited`, `--highlight`,
   `--chart-1..3`), split by meaning so any one of them can change in one place.
 - `--accent` is **ink**, despite the name: the filled ink button, selected tabs, the selection
-  highlight. It must never be repointed at coral. The creator storefront may tint `--accent`;
-  it cannot change coral.
+  highlight. It must never be repointed at coral. The creator storefront no longer tints it
+  (the accent colour was removed on 2026-09-27); an analyst chooses only the headline face and
+  a paper texture.
 
 ## 2. Type
 
@@ -213,7 +214,6 @@ These hold literal copies of the tokens and must be updated by hand when a token
 | App manifest | `src/app/manifest.ts` |
 | PWA and Apple icons | `src/lib/pwa/icon-response.tsx` (bump `CACHE` in `public/sw.js` when they change) |
 | Ticker share image | `src/app/api/og/stock/route.tsx` (fonts fetched by name in `src/lib/seo/og-fonts.ts`) |
-| Storefront accent checker | `src/lib/profile/accent.ts` (`PAPER_LIGHT` / `PAPER_DARK`; the test checks they match) |
 | TradingView embed | `src/components/shared/TradingViewChart/TradingViewChart.tsx` |
 | Chart fallbacks | `price-chart.tsx`, `card-chart.tsx` (used only if a token fails to resolve) |
 | Email templates | `docs/email-templates/*.html` (pasted into Supabase by hand) |
