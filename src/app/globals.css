@@ -2705,3 +2705,31 @@ body {
     padding-bottom: calc(var(--main-pad-y) + 40px);
   }
 }
+
+/*
+ * The edge-swipe back indicator (installed app only, `<EdgeSwipeBack>`): an
+ * ink disc that follows the finger in from the left edge and firms up once
+ * letting go will go back.
+ */
+.edge-back {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-avatar);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: translate3d(-44px, -50%, 0);
+  pointer-events: none;
+}
+.edge-back[data-ready="true"] {
+  outline: 2px solid var(--paper);
+  outline-offset: -5px;
+}

@@ -7,6 +7,7 @@ import { useState, type ReactNode } from "react";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { InstallHint } from "@/components/layout/install-hint";
 import { PwaRegister } from "@/components/layout/pwa-register";
+import { EdgeSwipeBack, HistoryDepth } from "@/components/layout/edge-swipe-back";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -29,6 +30,8 @@ export function Providers({ children }: { children: ReactNode }) {
         <CookieConsentBanner />
         <InstallHint />
         <PwaRegister />
+        <HistoryDepth />
+        <EdgeSwipeBack />
         <Toaster
           position="bottom-center"
           aria-live="polite"
