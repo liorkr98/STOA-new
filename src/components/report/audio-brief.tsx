@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 
 /**
  * AudioBrief (H4): "Listen to the bottom line" -- a ~60s TTS brief of the
- * thesis and call. Playback URL is a short-lived signed link minted by the
+ * thesis and stance. Playback URL is a short-lived signed link minted by the
  * gated route (canReadReport), so premium briefs stay premium. The author sees
  * a generate/regenerate control; readers just get the player when one exists.
  */

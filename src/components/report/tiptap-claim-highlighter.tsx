@@ -75,15 +75,22 @@ export function TiptapClaimHighlighter({
     done.current = true;
 
     return () => {
-      for (const r of rootsRef.current) {
-        try {
-          r.unmount();
-        } catch {
-          // Host may already be gone on navigation.
-        }
-      }
+      // Unmounted on the next tick: this cleanup runs inside React's own
+      // commit, and unmounting another root synchronously there is the race
+      // React warns about ("synchronously unmount a root while React was
+      // already rendering").
+      const roots = rootsRef.current;
       rootsRef.current = [];
       done.current = false;
+      setTimeout(() => {
+        for (const r of roots) {
+          try {
+            r.unmount();
+          } catch {
+            // Host may already be gone on navigation.
+          }
+        }
+      }, 0);
     };
   }, [claims, rootRef, isAuthed, reportId]);
 
