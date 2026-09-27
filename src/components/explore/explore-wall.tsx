@@ -275,14 +275,14 @@ export function ExploreWall({
         </div>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <FilterPicker
-            label="Ticker ▾"
+            label="Ticker"
             searchLabel="Search tickers"
             value={ticker}
             options={tickers}
             onChange={(v) => setFilter("ticker", v)}
           />
           <FilterPicker
-            label="Sector ▾"
+            label="Sector"
             searchLabel="Search sectors"
             value={sector}
             options={sectors}
