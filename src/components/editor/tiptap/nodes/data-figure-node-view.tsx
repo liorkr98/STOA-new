@@ -119,17 +119,18 @@ export function DataFigureNodeView({
   // Reading mode: static figure with its source line.
   if (!isEditable) {
     return (
-      <NodeViewWrapper
-        contentEditable={false}
-        className="my-4 max-w-sm rounded-panel border border-border bg-surface p-4"
-      >
-        {label && <span className="t-meta">{label}</span>}
-        <div className="mt-1 flex items-baseline gap-2">
-          {value && <span className="num text-headline font-semibold">{value}</span>}
-          {note && <span className="num text-body text-[var(--up)]">{note}</span>}
-        </div>
+      <NodeViewWrapper contentEditable={false} className="report-figure rounded-panel bg-surface-2 p-4">
+        {label && <span className="block text-ticker leading-snug text-text-mute">{label}</span>}
+        {value && (
+          <span className="num mt-1 block font-display text-headline font-extrabold leading-none tracking-[-0.03em] text-text">
+            {value}
+          </span>
+        )}
+        {/* Plain words, never green or red: a figure is not always a price, and
+            the note used to be green whatever it said, so a fall read as a gain. */}
+        {note && <span className="num mt-1.5 block text-ticker text-text-mute">{note}</span>}
         {(sourceRef || source) && (
-          <div className="mt-2 border-t border-border pt-2">
+          <div className="mt-2">
             {sourceRef ? (
               <a
                 href={sourceRef.url ?? source}
