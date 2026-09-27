@@ -210,8 +210,7 @@ they are back, and the fixture `/dev/compose?shape=video` opens on them.
 ## The video editor
 
 One picture above one timeline, trim by dragging the ends of the
-filmstrip (brass today; the colour is pending replacement with the rest of
-the visual system, see `docs/FRONTEND.md`), text and insets dragged on the picture, timed by dragging the
+filmstrip (ink brackets), text and insets dragged on the picture, timed by dragging the
 ends of their bar. At rest, under the timeline, there is one control: **Add
 overlay**. It opens a short menu (text, a card, a chart, a diagram, an
 image); choosing one adds it at the playhead and selects it, and only then

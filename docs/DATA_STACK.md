@@ -200,4 +200,4 @@ Server-only secrets never appear in client components or `NEXT_PUBLIC_*` (AGENTS
 3. Scrapers/AGPL code stay in the isolated Data Service; never forked into the app.
 4. EDGAR/Finnhub are authoritative; Data Service + FMP are labeled modeled/delayed and attributed.
 5. Reader-facing numbers are cached in node attrs at publish, not recomputed on read.
-6. All figures render in `.num` (IBM Plex Mono, tabular). See `docs/DESIGN_LANGUAGE.md`.
+6. All figures render in `.num` (Inter, tabular figures). See `docs/DESIGN_LANGUAGE.md`.

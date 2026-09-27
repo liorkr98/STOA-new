@@ -4,9 +4,8 @@
 > Score Ring, HIT / MISS stamps and the Track Score odometer are deleted, and this document no
 > longer specifies them. Nothing is graded, scored, locked or resolved; a publication may declare a
 > stance (a ticker and long, short or hold), and publishing is one press with no ceremony. The
-> motion laws below are unaffected by the coming visual replacement
-> (`docs/design/direction-b.html`); the re-skin rules in Part B that name today's fonts and radii
-> are marked pending replacement.
+> motion laws below are unaffected by the move to Direction B (2026-09-27); the re-skin rule in
+> Part B maps onto the tokens in `docs/DESIGN_LANGUAGE.md`.
 
 ### The go-live elevation pass. Extends `docs/FRONTEND.md` §1.5 — where they differ, this doc wins on motion; FRONTEND.md wins on everything else.
 
@@ -116,9 +115,8 @@ the precise generic look our design system exists to avoid. Rules:
    performance, subscriber list, payout history), settings forms, the Compose editor toolbar,
    pricing tier cards, date pickers.
 2. **Mandatory re-skin pass before commit** — every Magic-generated component gets: fonts,
-   colors and radii mapped to the project's tokens (today Plex Sans / Plex Mono, the six colours
-   and 6/12 radii, all **pending replacement** by `docs/design/direction-b.html`), all literal
-   hex deleted; every `shadow-*` class removed; gradients removed; spacing snapped to the
+   colors and radii mapped to the project's tokens (`docs/DESIGN_LANGUAGE.md`: the five sizes,
+   the colour tokens, radius by role, the shared primitives), all literal hex deleted; every `shadow-*` class removed; gradients removed; spacing snapped to the
    `--space-*` scale. A Magic component with a stray `shadow-lg` or a hard-coded hex in the diff
    fails review.
 3. **Forbidden surfaces.** Magic never touches the trust surfaces: DisclosureBlock, the stance

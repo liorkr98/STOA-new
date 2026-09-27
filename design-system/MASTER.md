@@ -7,9 +7,9 @@
 > are followed and paid for their judgement, not scored on it. Where this document says otherwise,
 > it is history. Current sources: `AGENTS.md`, `docs/PRODUCT_MODEL.md`.
 >
-> **The visual system described here is being retired** for `docs/design/direction-b.html`
-> (Fraunces, cream paper, brass, the seal, hairline broadsheet rules, zero-radius corners and
-> uppercase letterspaced mono labels are all pending replacement). Do not treat it as law.
+> **The visual system described here was retired on 2026-09-27** (Fraunces, cream paper, brass,
+> the seal, hairline broadsheet rules, zero-radius corners, uppercase letterspaced mono labels).
+> The current law is `docs/DESIGN_LANGUAGE.md` (Direction B). Do not treat this file as law.
 
 **Deprecated as of this rewrite.** `docs/FRONTEND.md` is now the single source of truth for
 tokens, type, color, radii, screens, and components. This file is kept only as a short reference
