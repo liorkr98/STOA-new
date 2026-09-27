@@ -10,6 +10,79 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-27: The profile as a storefront, and swipe-back
+
+A profile used to be built around a track record. That is gone and nothing
+replaces it: the page is now a storefront, and the case for subscribing is
+the work itself.
+
+**What a visitor notices on a profile**
+
+- A large round face, the name at display size, one line on what the
+  analyst covers, the bio, and a quiet line: `@handle · followers ·
+  members` (members only when the analyst turned it on).
+- Subscribe is the one coral button; Follow and Share are outlined. Someone
+  who already subscribes sees "Subscribed" instead. The analyst's own view
+  shows Share and a link to the Storefront editor.
+- The latest publication leads (or the pinned one), whatever its form: a
+  picture beside the headline and stance for a video, the headline alone
+  for a written piece. It used to prefer the newest video.
+- Then everything else as a grid: videos as picture tiles with their real
+  thumbnails, written pieces as type-only cards with no picture area. Once
+  there are six or more pieces, two quiet menus narrow it by subject or by
+  type. 24 at a time with Show more.
+- A new analyst with one or two pieces gets exactly that: the lead, and at
+  most one tile. No empty panels.
+- Dropped: the "Most watched" row, the view count on every piece, the join
+  year, and the phone's sticky Subscribe bar.
+- The Storefront editor's preview now shows this hero instead of an old
+  header with a cover banner, and no longer claims pricing appears below it.
+
+**What a visitor notices about going back**
+
+- In the app added to an iPhone home screen, swiping from the left edge now
+  goes back, with a small arrow following the finger. iOS gives an
+  installed app no back gesture of its own, which is why swiping back from a
+  publication opened on Today did nothing. In a browser tab nothing changes:
+  the browser's own gesture was never blocked there.
+- An edge swipe in the stories overlay closes it rather than jumping to the
+  previous analyst.
+- Back from a video opened on Explore returns to Explore. It used to skip
+  Explore and leave for the page before it.
+- Compose's Back returns to the page Compose was opened from. It always went
+  to Studio.
+
+**Found and fixed on the way**
+
+- The profile's sticky Subscribe bar on phones sat behind the floating tab
+  bar; only a sliver of coral showed.
+- The profile only ever loaded an analyst's 50 most recently started pieces,
+  ordered by when the draft was started rather than when it was published.
+- The audience line said "214 MEMBERS" in capitals.
+- Explore's Ticker and Sector buttons each showed two arrows.
+- The in-app Back helper read a counter the App Router never writes, so it
+  always thought nothing was behind the page (the Compose bug above).
+
+**Left for a decision**
+
+- The Storefront editor still offers sections, specialties, featured tickers
+  and social links, and the public profile shows none of them (it did not
+  before this batch either). Either the storefront shows them or the editor
+  stops offering them.
+- The Feed's full-width card track is the one screen where a sideways
+  scroller covers the left edge. On Android the system back gesture is
+  unaffected; on a Chrome setup whose back is a sideways overscroll it would
+  catch it. Left as is.
+- `npm run test:nav` exists but CI does not run it; adding it changes the CI
+  workflow.
+- The private area's phone menu still has a hairline under it (old system).
+
+**What needs Krisi**
+
+- Nothing: no migrations, no backend changes.
+
+---
+
 ## 2026-09-27: The publication page in Direction B
 
 The page where a reader decides whether to pay, rebuilt in the new design.

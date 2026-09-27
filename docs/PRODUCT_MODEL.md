@@ -27,7 +27,7 @@ publishing is the stance, the type, the access and the price.
 **There is no scoring.** No score, rating, rank, percentile, hit rate or leaderboard appears
 anywhere, and no surface ever aggregates analysts into a verdict (no long/short splits, average
 targets or consensus). Analysts appear as an avatar and a name; the one exception is the public
-profile's audience line (`4.3K FOLLOWERS · 214 MEMBERS`, members opt-in). Placement across the
+profile's audience line (`@handle · 4.3K followers · 214 members`, members opt-in). Placement across the
 product is driven by the lifecycle model below.
 
 ## The content model (video-first)
@@ -76,7 +76,8 @@ Stoa is organized around five surfaces.
 - **Markets** — instrument exploration: stocks, ETFs, and sectors, and the Stoa coverage on each.
 - **Compose** — the authoring workspace where analysts build a publication: the video, the
   research, the cards, and the stance.
-- **Profile** — the public analyst storefront, plus one private area that covers both the
+- **Profile** — the public analyst storefront (who they are, what they cover, their latest work
+  and everything they have published; the work is the case for subscribing), plus one private area that covers both the
   investor sections (library, subscriptions, following) and the creator sections (publications,
   insights, audience, earnings, storefront).
 

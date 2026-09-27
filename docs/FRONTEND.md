@@ -553,7 +553,7 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    Markets row thumbnail return `null`, and carry their own link so a call
    site cannot leave an empty anchor behind).
 
-   This holds on every surface: Today's lead and bands, the profile's lead tier
+   This holds on every surface: Today's lead and bands, the profile's lead
    and grid, Markets publication rows (which render through Today's row), the
    landing lead, Explore and the Feed. Explore and the Feed only ever query
    publications that have a clip, so the question does not arise there.
@@ -588,9 +588,10 @@ towards what a reader can watch.
 - **Your Desk** stays newest-first, because it is the reader's own memberships
   and follows and chronology is the promise there.
 
-A profile's lead still prefers the analyst's video, because a profile is a
-storefront. Every band obeys rule 1 when a chosen publication turns out to have
-no clip.
+A profile's lead is the analyst's newest publication (or the pinned one),
+whatever its form: the page argues for a subscription with the latest of the
+work, so it no longer leans towards video (changed 2026-09-27). Every band
+obeys rule 1 when a chosen publication turns out to have no clip.
 
 ### 2.13 `<FilterPicker>` — a filter you type into
 
@@ -663,6 +664,33 @@ These sit one row apart in the Publications list and **must never read alike**.
 The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed
 inside an **error-bordered** block (`--error-edge`), states that archive is the reversible option,
 and requires the creator to type `DELETE` before the confirm button turns on.
+
+---
+
+### 2.16 Going back: `<HistoryDepth>` and `<EdgeSwipeBack>`
+
+Both live in `src/components/layout/edge-swipe-back.tsx` and are mounted once
+in `src/app/providers.tsx`.
+
+- **Knowing what is behind a page.** Every history entry carries its depth in
+  the app (`stoaDepth`, `src/lib/nav/back.ts`): `installHistoryDepth` wraps
+  `pushState` and `replaceState`, so any push (the router, Explore's
+  `?watch=`, the stories overlay) is one deeper and a replace keeps its
+  depth. `canPopHistory()` is true above depth 0. Compose's Back and the edge
+  swipe use it. (Until 2026-09-27 it read the Pages Router's `idx`, which the
+  App Router never writes, so it was always false.)
+- **Swipe from the left edge to go back, in the installed app only.** An app
+  added to the iPhone home screen has no browser and iOS gives it no back
+  gesture. A drag that starts within 24px of the left edge and travels 80px
+  goes back (or to Today when nothing is behind); an ink disc with a chevron
+  follows the finger. It listens in the capture phase and claims the drag
+  once it is clearly sideways, so the Feed's card track and the stories
+  overlay do not act on it too. Off in a browser tab (the browser owns the
+  gesture there, and two backs would fire) and on Compose (leaving it has its
+  own unsaved-work guard).
+- **Overlays are history entries.** The stories overlay and Explore's video
+  overlay each push one entry, so Back closes them and lands where the reader
+  was. The stories overlay ignores drags that start at the left edge.
 
 ---
 
@@ -810,44 +838,64 @@ Empty filters say so and offer to clear them.
 
 ---
 
-### 3.3 Public creator profile — `/@handle`
+### 3.3 Public creator profile — `/analyst/[handle]` (rebuilt 2026-09-27)
 
-**Layout, top to bottom:**
+A profile is a **storefront**: who this is, what they cover, their work, and
+subscribe if you like how they think. The argument for subscribing is the body
+of work, never a record of accuracy: there is no track record, no Receipts, no
+resolved calls and no hit rate, and nothing takes their place. Letterboxd is
+the shape: you follow a person for how they think, and their page is the
+evidence. Built in `AnalystProfileView` (`src/components/profile/analyst-profile-view.tsx`)
+from `buildProfileView` (`src/lib/profile/build-profile-view.ts`); the owner's
+copy at `/profile` renders the same view. Fixture: `/dev/profile`
+(`?state=new|one|empty`, `?pinned=r4`, `?clip=processing`, `?viewer=self|subscribed`).
 
-**Header band** (full-width, ~200px tall):
+**Hero** (`StorefrontHero`, shared with the Storefront editor's preview in
+compact form):
 
-- Creator's banner image/color (their branding control, per Part 4's Page Branding spec) fills
-  the background
-- Avatar (`--radius-md`, 96px) overlaps the bottom edge of the banner by half its height (a
-  deliberate anchor point — same treatment on every profile so it reads as a system, not a
-  per-creator layout choice)
-- Beside the avatar: display name (Bricolage, headline size,
-  since this is UI chrome identifying a person, not editorial content), handle in `--text-sm`
-  muted, a small verified-identity check icon with tooltip "Identity verified — not a credential
-  claim"
+- A large circular face (88px on a phone, 128px from `sm`), the name at display
+  size with the verified check, the one-line specialty (`profiles.headline`)
+  and the bio in muted text under it.
+- The **audience line** as a quiet meta line: `@handle · 4.3K followers · 214 members`.
+  Members only when the analyst turned it on (`profile_config.show_member_count`).
+  This is the only number on the page; publications show no view counts.
+- Actions: **Subscribe** is the one coral fill; **Follow** and **Share** are
+  outlined (ghost). A viewer who already subscribes sees an outlined
+  **Subscribed** linking to `/subscriptions` instead of the coral button. The
+  owner sees only Share and a line linking to the Storefront editor. There is
+  no sticky action bar on a phone (it sat behind the floating tab pill), and
+  never a message or DM entry point (§5.4).
 
-**Audience line** — `4.3K FOLLOWERS · 214 MEMBERS` (members only if the analyst opts in). This
-is the only number shown about an analyst. There is no score, rank or track record.
+**Lead:** the pinned publication (`profile_config.pinned_report_id`),
+otherwise the newest by publication date, labelled "Pinned" or "Latest".
+With a clip: a 16:10 frame with the play disc beside the headline, deck,
+stance chips and a meta line (type, what it carries, date). Without one: no
+frame, the headline across the width. A clip still processing keeps its
+frame and says so.
 
-**Bio** — one line, Inter body size, creator-written, max ~140 characters enforced at
-input time (Part 4, Page Branding)
+**More from {first name}:** everything else, as a grid (2 columns on a
+phone, 3 from `md`, 4 from `xl`), newest first, 24 at a time with Show more
+(up to 500 publications are loaded).
 
-**Pricing card** (ledger-card styling):
+- A video is a 4:5 poster tile (`ClipThumb`, the analyst's `PlaceholderThumb`
+  colour only while a poster is not made yet, the processing frame while
+  the clip itself is), then its headline, stance chips and meta line.
+- A written piece is a type-only card: meta line, the headline in extra-bold
+  display type, the deck and its chips. No image area, as tall as its words.
+- **Narrowing** is two quiet `<FilterPicker>` menus beside the heading,
+  Subject (tickers and themes covered) and Type (videos, briefs, theses),
+  never a row of tabs. They appear only once there are six or more
+  publications and more than one option. With a filter chosen the grid shows
+  every match, lead included.
 
-- Subscription price if enabled: "$[X]/mo" large, Inter tabular figures, **"Subscribe"** coral button
-- Per-report price if enabled, shown as a secondary line: "or $[X] per report"
-- If a viewer is already subscribed: card swaps to "You're subscribed" state with a small
-  "Manage" link instead of a Subscribe button
+**Sparse by design:** one publication is the hero and the lead, nothing else;
+two is the lead and a single tile. No filler, no encouraging empty panels.
+With nothing published the page says "Nothing published yet."
 
-**Report archive** — reverse chronological list, full width:
-
-- Each row: the type label, ticker and direction chips when the publication declares a stance
-  (a theme tag when it has no ticker), headline, content badge, small fact-check summary
-  (`9 fact · 2 unproven`)
-- Pagination: simple "Load more" button at the bottom (not infinite scroll)
-- **Empty state (brand-new creator, zero published reports):** replaces the list with: "No
-  reports published yet." — and if the viewer is logged in and not this creator, a **"Follow"**
-  button so they can come back when there's something to read
+The Storefront theming (accent tint, font pairing, texture) is applied to
+the whole page. The Storefront editor still offers sections, specialties,
+featured tickers and social links that this page does not render (see
+CHANGELOG 2026-09-27).
 
 ---
 
@@ -1130,7 +1178,7 @@ reading-progress bar follows the nearest scroller.
 
 Identical to the public version (§3.3) with two additions:
 
-- Subscribe button reflects real state (Subscribed / Follow toggle both present and
+- Subscribe button reflects real state (Subscribed / Follow both present and
   independent — following is free and just affects feed ranking + notifications; subscribing is
   the paid relationship. These are two different actions and should never be merged into one
   button.)
