@@ -1,15 +1,26 @@
 ---
 name: stoa-design-system
-description: Stoa's visual language for any UI or data surface. Use this skill when building or restyling any Stoa screen, chart, table, dashboard, editor block, or storefront element - it encodes the six-token palette, surface/elevation rules, the data-visualization scales, density model, and the reserved trust treatments so generated UI stays on-brand.
+description: Stoa's visual language for any UI or data surface. Use this skill when building or restyling any Stoa screen, chart, table, dashboard, editor block, or storefront element - it encodes the six-token palette, surface/elevation rules, the data-visualization scales, density model, and the reserved trust treatments so generated UI stays on-brand. The visual system is pending replacement by docs/design/direction-b.html, and grading (seals, calls, HIT/MISS) is retired.
 license: proprietary
 metadata:
   author: Stoa
   version: "1.0.0"
   organization: Stoa
-  abstract: The tokens, backgrounds, data-viz scales, density model, and component patterns that keep every generated Stoa surface on the ledger-and-seal register. Pointer skill; the durable specs it references are the source of truth.
+  abstract: The tokens, backgrounds, data-viz scales, density model, and component patterns of the current (retiring) Stoa system. Pointer skill; the durable specs it references are the source of truth.
 ---
 
 # Stoa Design System
+
+> **Describes a retired model (noted 2026-09-27).** This document predates the removal of grading
+> on 2026-09-24. Nothing is graded, scored, locked or resolved: there is no track record, no Track
+> Score, no seal, no Verdict type, no entry price, no target and no horizon. A publication is a
+> video, a brief or a thesis and may declare a stance (a ticker and long, short or hold); analysts
+> are followed and paid for their judgement, not scored on it. Where this document says otherwise,
+> it is history. Current sources: `AGENTS.md`, `docs/PRODUCT_MODEL.md`.
+>
+> **The visual system described here is being retired** for `docs/design/direction-b.html`
+> (Fraunces, cream paper, brass, the seal, hairline broadsheet rules, zero-radius corners and
+> uppercase letterspaced mono labels are all pending replacement). Do not treat it as law.
 
 The notary's ledger, not a trading terminal: ink on paper, a seal that makes a claim permanent.
 Quiet, dense, credible. This skill is the always-loaded pointer; the source of truth is:

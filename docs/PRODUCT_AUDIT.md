@@ -1,5 +1,12 @@
 # Stoa product audit
 
+> **Describes a retired model (noted 2026-09-27).** This document predates the removal of grading
+> on 2026-09-24. Nothing is graded, scored, locked or resolved: there is no track record, no Track
+> Score, no seal, no Verdict type, no entry price, no target and no horizon. A publication is a
+> video, a brief or a thesis and may declare a stance (a ticker and long, short or hold); analysts
+> are followed and paid for their judgement, not scored on it. Where this document says otherwise,
+> it is history. Current sources: `AGENTS.md`, `docs/PRODUCT_MODEL.md`.
+
 Walked production (`https://www.stoamarket.ai`) as a signed-in analyst on 8 September 2026. Desktop 1440x900 and iPhone 390x844. Account: `marcus_webb@stoa.demo`. No code was changed.
 
 This is a notes-and-plan document. Nothing here has been fixed yet.

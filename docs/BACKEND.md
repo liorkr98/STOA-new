@@ -2,7 +2,7 @@
 
 > **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
 
-Server contract for schema, RLS, scoring, payments, storage, and API routes. See also `docs/Stoa_Backend_Deep_Dive.md` for PM-framework amendments.
+Server contract for schema, RLS, payments, storage, and API routes. Grading was retired on 2026-09-24: nothing is graded or scored, and a publication's stance (`reports.ticker`, `reports.stance`) is never resolved. See also `docs/Stoa_Backend_Deep_Dive.md` for PM-framework amendments.
 
 ## Report bodies
 
@@ -43,9 +43,9 @@ Daily editorial digest for the homepage (`/`). Server-assembled ranking — clie
 | `GET /api/dispatch` | Optional | Public dispatch issue |
 | `GET /api/dispatch?personalized=true` | Signed in | Lead/secondary/ledger scoped to followed + subscribed creators |
 
-**Response shape** (`DispatchPayload`): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (Today's Record — empty array omits UI), `leaderboard[]` (personalized only).
+**Response shape** (`DispatchPayload`): `cycle` (issue №, NY dateline, 24h window, `fallbackCycle`), `readMinutes`, `lead`, `secondary[]`, `resolved[]` (retired with grading; always empty), `leaderboard[]` (personalized only).
 
-**Ranking** (`src/lib/dispatch/ranking.ts`): conviction + recency + Track Score. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
+**Ranking** (`src/lib/dispatch/ranking.ts`): recency + a declared stance (+25) + engagement; nothing about the analyst's record enters. If the current NY cycle has no published reports, walks back up to 7 prior cycles (`fallbackCycle: true`).
 
 **Issue counter:** migration `0026_dispatch_meta.sql` — `dispatch_meta` singleton + `bump_dispatch_issue()` RPC increments once per NY calendar day.
 
@@ -61,7 +61,7 @@ Requires `NAPKIN_API_KEY` (server-only). Editor: `napkinNode`, `/napkin` slash c
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Publishable/anon key (browser-safe) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only; audit log inserts, grading |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only; audit log inserts, seeds, server jobs |
 | `SUPABASE_STORAGE_URL` | Yes* | `{NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public` — chart screenshot URL validation |
 | `CRON_SECRET` | Prod | Protects the `/api/cron/*` jobs |
 | `TWELVE_DATA_API_KEY` | No | Live quote fallback |
@@ -84,13 +84,13 @@ Stripe/PayPal disputes are handled as **ledger events**, not silent balance edit
 
 This is a policy addendum only; it does not change the earnings split architecture.
 
-## §12 — Deletion requests and immutable-call history
+## §12 — Deletion requests and frozen publication history
 
 Right-to-erasure handling uses **pseudonymization + key severance** for immutable market records.
 
 - Personally identifying profile attributes are erased or replaced with neutral placeholders.
 - Authentication data is removed through the auth provider deletion workflow.
-- Locked-call artifacts needed for historical scoring/market integrity remain, but are detached from identifying profile fields.
+- Published stances (and the read-only `predictions` archive until it is dropped) needed for market integrity remain, but are detached from identifying profile fields.
 - Keep a minimal compliance record of request execution (request id, timestamp, operator/system actor, scope), excluding personal content.
 
 This is an engineering pattern note, not legal advice; legal/compliance sign-off is required before launch.
@@ -111,7 +111,7 @@ Baseline controls:
 
 ## Profile branding & boosts
 
-`profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. Track Score badge and disclosure blocks are **not** brandable.
+`profiles.profile_config` (JSONB) stores storefront layout: `theme_id`, `sections[]`, `specialties`, `social`, `featured_tickers`. Disclosure blocks are **not** brandable.
 
 | Route | Auth | Purpose |
 |-------|------|---------|

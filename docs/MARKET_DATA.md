@@ -1,8 +1,8 @@
 # Market Data
 
-Stoa uses a layered data stack: live quotes for grading and publishing, plus optional static reference data for fundamentals and benchmark history.
+Stoa uses a layered data stack: live quotes for the markets UI and publishing, plus optional static reference data for fundamentals and benchmark history.
 
-## Live quotes (grading + markets UI)
+## Live quotes (markets UI)
 
 | Priority | Provider | Key required | Limits |
 |----------|----------|--------------|--------|
@@ -59,16 +59,16 @@ These are good candidates if you need more coverage later:
 2. **Kaggle API credentials** — or manual ZIP extract into `data/kaggle/`.
 3. **Optional fallback API keys** — Yahoo works without keys; add Twelve Data / Alpha Vantage for resilience.
 4. **FINNHUB_API_KEY removed** — no longer used; delete from `.env.local` if present.
-5. **CRON_SECRET** — still required for hourly grading on Vercel.
-6. **Historical backtesting** — current engine only needs spot prices at publish + resolve; OHLCV would need new tables + UI if you want chart backtests.
+5. **CRON_SECRET** — required for the daily cron jobs on Vercel (ticker metrics, subscription expiry and the rest; there is no grading job).
+6. **Historical backtesting** — nothing is graded, so no spot price is stored at publish; OHLCV would need new tables + UI if you want chart backtests.
 7. **News / sentiment** — not in scope yet; Finnhub or Polygon news APIs are options.
-8. **International tickers** — Yahoo supports many; grading assumes US-style symbols today.
+8. **International tickers** — Yahoo supports many; the stance lookup assumes US-style symbols today.
 9. **Rate-limit monitoring** — log when fallbacks trigger (future improvement).
 
 ## Environment summary
 
 ```bash
-# Required for app + grading
+# Required for the app
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=

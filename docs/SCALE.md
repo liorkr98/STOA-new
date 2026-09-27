@@ -11,10 +11,10 @@ separate project and is intentionally not covered here.
 2. Edge/API - Next.js on Vercel, auto-scales per request.
 3. Cache - Upstash Redis (hot reads, rate limits, non-money idempotency keys).
 4. Postgres - Supabase + Supavisor pooling.
-5. Background jobs - Upstash QStash (grading, notification fan-out, video pipeline).
+5. Background jobs - Upstash QStash (notification fan-out, video pipeline).
 
-The core product objects are immutable (a locked report, a published video, a
-resolved call never change), so they cache at maximum aggression with zero
+The core product objects barely change (a published report's ticker, stance,
+type and price are frozen, and a published video never changes), so they cache at maximum aggression with zero
 staleness risk. Trust architecture doubles as performance architecture.
 
 ## Environment
@@ -55,8 +55,9 @@ migrate the hottest to Redis as load grows to keep limiter traffic off Postgres.
 
 `src/lib/jobs` publishes; consumer routes under `src/app/api/jobs/*` verify the
 QStash signature. Jobs are idempotent, retried with backoff, and dead-letter to
-`#bugs` via `notifySlack`. Migrated: grading/resolution, notification fan-out,
-video transcription/fact-check. Cron still triggers grading (enqueues batches).
+`#bugs` via `notifySlack`. Migrated: notification fan-out, video
+transcription/fact-check. (Grading was migrated here too until it was retired on
+2026-09-24.)
 
 ## Caching
 
@@ -64,8 +65,7 @@ video transcription/fact-check. Cron still triggers grading (enqueues batches).
   (`src/lib/cache`): L1 in-memory per instance, L2 Redis shared across instances.
   TTLs by data class (`src/lib/market/cache.ts`): quote 15s, intraday 60s, etc.
 - Report and profile reads use tag-based `unstable_cache`; `revalidateTag` fires
-  on resolution (grade job), publish, and profile edit. Locked/resolved content
-  is immutable so it caches hard.
+  on publish, edit and profile edit. A published piece's frozen fields cache hard.
 - CDN `Cache-Control` headers stay on public market/stats routes.
 
 ## Database
@@ -90,7 +90,7 @@ video transcription/fact-check. Cron still triggers grading (enqueues batches).
 - Sentry captures errors + performance traces; sample rate is
   `SENTRY_TRACES_SAMPLE_RATE` (default 0.1 in prod, 1.0 in dev).
 - A daily `#ops` system-health post (`postSystemHealth`) reports cache/queue
-  status, last grade snapshot, and the grading backlog (open calls past due).
+  status.
 - Trace one full request path (app -> API -> cache -> DB) manually before
   assuming where time goes.
 
@@ -136,8 +136,9 @@ Drill steps:
 1. In the Supabase dashboard, note a target timestamp (a few minutes ago).
 2. Create a new scratch project (same region as production).
 3. Restore the production backup / PITR snapshot into the scratch project.
-4. Verify integrity: row counts on `reports`, `predictions`, `wallet_transactions`,
-   `profiles` match expectations; spot-check a locked call and a wallet balance.
+4. Verify integrity: row counts on `reports`, `wallet_transactions`, `profiles`
+   (and the `predictions` archive until it is dropped) match expectations;
+   spot-check a published stance and a wallet balance.
 5. Time the whole restore end to end.
 6. Delete the scratch project.
 

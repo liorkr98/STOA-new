@@ -72,12 +72,12 @@ Bull / base / bear, each with a price and a probability. **Validator: probabilit
   `.num` with the `pricing-panel.tsx` adornment convention.
 - Never show false precision (a $ target to 4 decimals reads as a machine, not a notary).
 
-## Driving the locked target
+## The retired `drivesTarget` switch
 
-Both A1 and A2 can set `drivesTarget` to push the computed value into the Lock & Publish target.
-**They are mutually exclusive** — a report drives its target from at most one block. A locked
-`valuationNode` that drives the target is trust-critical: render it as a `.ledger-card` and cache
-its `computed` result in the node attributes at publish.
+A1 and A2 used to set `drivesTarget` to push the computed value into a locked price target. Grading
+is retired (2026-09-24): there is no locked target, and nothing outside the nodes reads
+`drivesTarget` now. Do not build on it. Still cache each node's `computed` result in its
+attributes at publish.
 
 ## Do / don't
 

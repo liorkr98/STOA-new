@@ -1,6 +1,11 @@
 # Stoa Backend — Deep Dive
 
-> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+> **Describes a retired model (noted 2026-09-27).** This document predates the removal of grading
+> on 2026-09-24. Nothing is graded, scored, locked or resolved: there is no track record, no Track
+> Score, no seal, no Verdict type, no entry price, no target and no horizon. A publication is a
+> video, a brief or a thesis and may declare a stance (a ticker and long, short or hold); analysts
+> are followed and paid for their judgement, not scored on it. Where this document says otherwise,
+> it is history. Current sources: `AGENTS.md`, `docs/PRODUCT_MODEL.md`.
 
 Living backend spec for STOA-new. Amended per PM framework review (Edge Cases, Launch Checklist, G/W/T acceptance criteria, MoSCoW).
 

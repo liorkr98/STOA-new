@@ -67,7 +67,7 @@ Two smaller judgement calls:
 | 11. Sector index | Not started. The ETF-proxy route is a day. |
 | 12. Smaller items | Not started; independent, pick off in any order. |
 | 13. Pricing consolidation | Blocked on a product decision, not on engineering. |
-| 14. Scoring formula | Dormant until a score is shown publicly again. |
+| 14. Scoring formula | Retired with grading on 2026-09-24. Nothing to build. |
 
 ## Follow-up when the scale-hardening PR merges
 

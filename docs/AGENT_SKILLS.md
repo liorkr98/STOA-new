@@ -35,7 +35,7 @@ skills, with a `computedHash` per skill). Never install a skill that persists ge
 
 > **Hard ban (repeat of `docs/MOTION.md` Part C.1):** never run any design-system generator with
 > `--persist` against this repo. `ui-ux-pro-max --design-system --persist` writes to
-> `design-system/MASTER.md` and would overwrite the ledger-and-seal system with a generic one. This
+> `design-system/MASTER.md` and would overwrite the design system with a generic one. This
 > is almost certainly how the repo got its original rogue spec. Domain **searches** are encouraged;
 > **persisting generated systems is forbidden.**
 

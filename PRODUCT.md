@@ -1,5 +1,16 @@
 # Product
 
+> **Describes a retired model (noted 2026-09-27).** This document predates the removal of grading
+> on 2026-09-24. Nothing is graded, scored, locked or resolved: there is no track record, no Track
+> Score, no seal, no Verdict type, no entry price, no target and no horizon. A publication is a
+> video, a brief or a thesis and may declare a stance (a ticker and long, short or hold); analysts
+> are followed and paid for their judgement, not scored on it. Where this document says otherwise,
+> it is history. Current sources: `AGENTS.md`, `docs/PRODUCT_MODEL.md`.
+>
+> **The visual system described here is being retired** for `docs/design/direction-b.html`
+> (Fraunces, cream paper, brass, the seal, hairline broadsheet rules, zero-radius corners and
+> uppercase letterspaced mono labels are all pending replacement). Do not treat it as law.
+
 ## Register
 
 product — app UI. Design serves the task (recording, watching, reading, and buying verified stock

@@ -5,7 +5,7 @@ Every paid/freemium service this project integrates with, and where to manage it
 | Service | Purpose | Dashboard | Required? |
 |---|---|---|---|
 | [Supabase](https://supabase.com) | Postgres, Auth, Storage, RLS | https://supabase.com/dashboard | Yes |
-| [Yahoo Finance](https://finance.yahoo.com) (via `yahoo-finance2`) | Primary market data provider — quotes for locking/resolving calls | No dashboard, no key required | Yes (default provider) |
+| [Yahoo Finance](https://finance.yahoo.com) (via `yahoo-finance2`) | Primary market data provider — quotes for Markets, the stance lookup and the tape | No dashboard, no key required | Yes (default provider) |
 | [Twelve Data](https://twelvedata.com) | Fallback market data if Yahoo fails | https://twelvedata.com/account | No — optional fallback |
 | [Alpha Vantage](https://www.alphavantage.co) | Last-resort fallback market data | https://www.alphavantage.co/support/#api-key | No — optional fallback |
 | [Kaggle](https://www.kaggle.com) | Reference datasets (SEC financials, S&P futures) via `npm run import:kaggle` | https://www.kaggle.com/settings | No — optional |
