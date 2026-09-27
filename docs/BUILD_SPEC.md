@@ -1,5 +1,20 @@
 # Stoa — Build Spec
 
+> **HISTORY. This document describes a product that has since changed.** It is the August 2026
+> build spec, kept for the reasons behind what was built. Do not build from it, and do not cite
+> it as a rule. Two changes in particular make it wrong as a description of Stoa today:
+>
+> - **Grading is retired (2026-09-24).** This spec assumes locked calls with a target price, a
+>   horizon, an attested entry price, resolution into HIT/MISS, seals and a track record. None of
+>   that exists now. A publication is a video, a brief or a thesis, and may declare a stance (a
+>   ticker and long, short or hold), which is never graded. Analysts are followed and paid for
+>   their judgement, not scored on it. Edit markers stay, independent of grading.
+> - **The visual system is being replaced** by `docs/design/direction-b.html`; the tokens this
+>   spec defers to are pending replacement.
+>
+> Where it says "every design decision here is settled", that is no longer true. The current
+> sources are `AGENTS.md`, `docs/PRODUCT_MODEL.md`, `docs/COMPOSE.md` and `docs/FRONTEND.md`.
+
 **Purpose.** This is the complete remaining frontend implementation for Stoa, written so it can be
 worked through end to end. Every design decision here is settled — do not redesign, reinterpret, or
 improve on it. Where something is genuinely undecided it is marked **DECISION REQUIRED**, and those
