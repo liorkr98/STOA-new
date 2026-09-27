@@ -6,7 +6,7 @@
  *
  *   import { edgar, finnhub, fmp, normalizeSymbol, MarketDataError } from "@/lib/market";
  *
- * Live quotes/candles for the scoring engine still live in @/lib/engine/market
+ * Live quotes/candles still live in @/lib/engine/market
  * (Yahoo, Node-only); this layer adds the citable + deep-fundamentals providers.
  */
 

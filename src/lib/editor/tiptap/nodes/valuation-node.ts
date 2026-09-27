@@ -6,9 +6,9 @@ import { ValuationNodeView } from "@/components/editor/tiptap/nodes/lazy-node-vi
  * valuationNode -- a DCF in one block (A1). Inputs left, output card right (fair
  * value/share, upside, PV-by-year, 5x5 sensitivity). Math lives in the pure,
  * tested src/lib/valuation/model.ts (decimal.js); the computed result is cached
- * in `computed` at publish (invariant #2). When `drivesTarget` is on it feeds
- * the Lock & Publish target and renders as a trust-critical ledger card
- * (mutually exclusive with scenarioNode).
+ * in `computed` at publish (invariant #2). `drivesTarget` is a leftover from
+ * grading, when it fed the locked price target: nothing outside the node reads
+ * it now (mutually exclusive with scenarioNode).
  */
 export const ValuationNode = Node.create({
   name: "valuationNode",

@@ -9,8 +9,8 @@ const BUCKET = "chart-snapshots";
 /**
  * Capture a PNG of every chartNode in the document and upload it to the
  * chart-snapshots bucket, then write each public URL back onto its node's
- * screenshotUrl attr in a single transaction. Runs between "Lock it in" and
- * the publish call. A failed capture or upload never blocks publish -- the
+ * screenshotUrl attr in a single transaction. Runs when Publish is pressed,
+ * before the publish request. A failed capture or upload never blocks publish -- the
  * reading view falls back to the live chart when screenshotUrl is null.
  */
 export async function captureChartScreenshots(editor: Editor, reportId: string): Promise<void> {

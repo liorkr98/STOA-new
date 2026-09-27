@@ -4,8 +4,10 @@ import { ScenarioNodeView } from "@/components/editor/tiptap/nodes/scenario-node
 
 /**
  * scenarioNode -- bull / base / bear x price x probability (A2). Probabilities
- * must sum to 100. Produces a probability-weighted target + expected upside and
- * can drive the Lock & Publish target (mutually exclusive with valuationNode).
+ * must sum to 100. Produces a probability-weighted target + expected upside.
+ * Its `drivesTarget` switch is a leftover from grading, when it fed the locked
+ * price target; nothing outside the node reads it now (mutually exclusive with
+ * valuationNode).
  * The computed result is cached in attrs at publish (invariant #2).
  */
 export const ScenarioNode = Node.create({

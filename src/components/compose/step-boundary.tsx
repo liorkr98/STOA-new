@@ -9,7 +9,7 @@ import { RotateCcw } from "lucide-react";
  *
  * Without this, a rendering error anywhere in compose fell through to the
  * route's error page, and its Try again remounted the whole workspace at
- * step one: trim, overlays, the chosen clip, the call, everything held in
+ * step one: trim, overlays, the chosen clip, the stance, everything held in
  * memory, gone. The workspace holds all of that state above the steps, so
  * a boundary drawn around each step's content lets the step redraw on its
  * own while the rest of the publication, and the creator's place in the

@@ -396,7 +396,8 @@ export async function listByTicker(ticker: string, limit = 30): Promise<Report[]
  * both the /markets/[ticker] noindex decision and sitemap.ts's inclusion
  * filter. One query shape in one place so the two can't drift out of sync (a
  * ticker page and its sitemap entry disagreeing on indexability is its own
- * SEO bug). Locked (not just published) means genuinely immutable content.
+ * SEO bug). `locked_at` is set at publication; the name predates the grading
+ * removal and means nothing more than published.
  */
 export const publishedReportCount = cache(async (ticker: string): Promise<number> => {
   const supabase = createPublicClient();

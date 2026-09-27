@@ -7,7 +7,7 @@ import { cacheKeys } from "@/lib/cache/keys";
 export const dynamic = "force-dynamic";
 
 /**
- * Returns the curated daily dispatch: lead story, secondary list, today's record.
+ * Returns the curated daily dispatch: lead story and secondary list.
  * ?personalized=true scopes content to followed/subscribed creators (signed-in).
  */
 async function handleDispatch(req: Request) {

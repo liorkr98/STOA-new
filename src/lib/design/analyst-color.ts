@@ -7,11 +7,11 @@
  *
  * The palette is muted and editorial so it sits on `--paper` without competing
  * with the type. It deliberately excludes the semantic hues: `--verdigris`
- * (Fact / Hit) and `--rust` (Contradicted / Miss) carry meaning in this product
+ * (Fact / long) and `--rust` (Contradicted / short) carry meaning in this product
  * and must never be spent on decoration. The sage and clay entries below are
  * held well away from both -- sage is greyer and lighter than verdigris, clay
  * is browner and softer than rust -- so a placeholder can never be misread as
- * a verdict.
+ * a direction.
  */
 
 /** Base tones. Everything else is derived from these with `color-mix`. */

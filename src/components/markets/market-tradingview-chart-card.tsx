@@ -4,9 +4,9 @@ import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingVi
 import { toTradingViewRange } from "@/lib/market/tradingview-symbol";
 
 /**
- * TradingView Advanced Chart embed for Markets. HIT/MISS dots cannot be drawn
- * inside the iframe (the licensed Charting Library is not in this repo), so
- * the Stoa record still lives on the annotated tape beside this widget.
+ * TradingView Advanced Chart embed for Markets. Stoa's own markers cannot be
+ * drawn inside the iframe (the licensed Charting Library is not in this repo),
+ * so Stoa's coverage lives on the tape beside this widget.
  */
 export function MarketTradingViewChartCard({
   ticker,

@@ -9,7 +9,7 @@ export const revalidate = 3600;
  * Coverage-count tiering, deliberately not a full scoring formula -- the
  * spec calling for this explicitly says a simple tier is enough here. A
  * ticker with more analyst coverage ranks slightly higher; that's the whole
- * signal, nothing MOAT/Track-Score-weighted layered on top.
+ * signal.
  */
 function priorityForCoverage(count: number): number {
   if (count >= 10) return 0.9;

@@ -590,9 +590,9 @@ body {
   inset: min(0px, calc((100% - 44px) / 2));
 }
 
-/* Ledger-entry treatment. Reserved for trust-critical blocks: the call
- * block, the disclosure block. Never used for ordinary cards -- a double
- * rule should keep meaning something. */
+/* Ledger-entry treatment. Reserved for trust-critical blocks: the
+ * disclosure block. Never used for ordinary cards -- a double rule should
+ * keep meaning something. */
 .ledger-card {
   background: var(--surface);
   border: 1px solid var(--ink);
@@ -1906,7 +1906,7 @@ body {
 
 /* ------------------------------------------------------------------ *
  * Stock page — the instrument destination. The chart is the signature
- * element: a price line with Stoa calls drawn on it.
+ * element: a price line with Stoa's coverage beside it.
  * ------------------------------------------------------------------ */
 
 .markets-crumb {

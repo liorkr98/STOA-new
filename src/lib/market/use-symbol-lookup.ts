@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ResolvedSymbol } from "@/lib/market/resolve-symbol";
 
 /**
- * What the call block knows about the symbol in its field, right now.
+ * What the stance field knows about the symbol in it, right now.
  *
  * "checking" is the honest state while the answer is on its way: the step's
  * forward button reads it and waits rather than advancing on a symbol nobody

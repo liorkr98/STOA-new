@@ -25,7 +25,7 @@ export interface ResolvedSymbol {
   exchange: string | null;
   /** How the level is read, e.g. "$ / oz" or "% yield". Null for an equity. */
   unit: string | null;
-  /** The live level, which is what a call would lock at. */
+  /** The live level. */
   price: number | null;
   /**
    * Last refreshed market capitalisation in USD, from the listing row. Null

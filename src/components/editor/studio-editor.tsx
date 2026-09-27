@@ -1369,7 +1369,7 @@ export function StudioEditor({
      thought but rarely one line, and an input clips whatever a 390px screen
      cannot hold. It grows with its words and Enter moves on rather than
      breaking the line. Rendered once, on the type's content screen: above
-     the take and the report, under the clip and the call. */
+     the take and the report, under the clip. */
   const headlineFields = (
     <>
       <label htmlFor="report-title" className="sr-only">

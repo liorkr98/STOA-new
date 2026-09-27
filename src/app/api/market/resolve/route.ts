@@ -4,9 +4,9 @@ import { ApiError } from "@/lib/http/errors";
 import { resolveSymbol } from "@/lib/market/resolve-symbol";
 
 /**
- * Is this symbol something a call can be locked on, and what is it?
+ * Is this symbol something a stance can be taken on, and what is it?
  *
- * The compose call block asks this as the creator types, so the answer has to
+ * The compose stance field asks this as the creator types, so the answer has to
  * be cheap: the quote behind it is the same 15-second cached quote the rest
  * of the site reads, and the listing row is cached for five minutes.
  */
