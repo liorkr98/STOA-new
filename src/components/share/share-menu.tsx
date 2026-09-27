@@ -63,10 +63,13 @@ export function ShareMenu({
   target,
   className,
   label = "Share",
+  size = "sm",
 }: {
   target: ShareTarget;
   className?: string;
   label?: string;
+  /** "lg" sits in a row of large actions, such as a profile's. */
+  size?: "sm" | "lg";
 }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -127,9 +130,9 @@ export function ShareMenu({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={buttonClass("ghost", "sm", "text-text-mute hover:text-text")}
+        className={buttonClass("ghost", size, size === "lg" ? "w-full" : "text-text-mute hover:text-text")}
       >
-        <Share2 size={15} />
+        <Share2 size={size === "lg" ? 16 : 15} />
         {label}
       </button>
 
