@@ -72,9 +72,9 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame>
           <CardHead label="The edge" />
-          <div className="mt-3 grid flex-1 grid-cols-2 divide-x divide-[var(--border)]">
-            <div className="pr-4">
-              <div className="num border-b border-border pb-1.5 text-ticker text-text-mute">The Street says</div>
+          <div className="mt-3 grid flex-1 grid-cols-2 gap-2.5">
+            <div className="rounded-inner bg-surface-2 p-3.5">
+              <div className="num text-ticker text-text-mute">The Street says</div>
               <ul className="mt-2 flex flex-col gap-2 text-body leading-snug text-text-mute">
                 {card.street.map((v, i) => (
                   <li key={i}>
@@ -83,8 +83,8 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                 ))}
               </ul>
             </div>
-            <div className="pl-4">
-              <div className="num border-b border-[var(--ink)] pb-1.5 text-ticker text-text">I say</div>
+            <div className="rounded-inner p-3.5 shadow-[inset_0_0_0_1.5px_var(--ink)]">
+              <div className="num text-ticker font-semibold text-text">I say</div>
               <ul className="mt-2 flex flex-col gap-2 font-display text-body leading-snug text-text">
                 {card.mine.map((v, i) => (
                   <li key={i}>
@@ -102,14 +102,14 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="Path to target" />
           <dl className="num mt-4 flex flex-1 flex-col justify-center gap-2 text-body">
             {card.steps.map((s, i) => (
-              <div key={i} className="flex items-baseline justify-between gap-4 border-b border-dotted border-[var(--border)] pb-2">
+              <div key={i} className="flex items-baseline justify-between gap-4">
                 <dt className="text-text-mute">{s.label}</dt>
                 <dd className="text-text">
                   <Ink v={s.value} />
                 </dd>
               </div>
             ))}
-            <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-[var(--ink)] pt-3 font-display text-title font-semibold">
+            <div className="mt-2 flex items-baseline justify-between gap-4 rounded-inner bg-surface-2 px-3 py-2.5 font-display text-title font-semibold">
               <dt>= Target</dt>
               <dd>
                 <Ink v={card.result} />
@@ -123,12 +123,12 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
         <CardFrame>
           <CardHead label="The kill switch" />
           <div className="mt-4 flex flex-1 flex-col justify-center">
-            <div className="rounded-inner border border-[var(--ink)] p-4">
+            <div className="rounded-inner bg-surface-2 p-4">
               <div className="font-display text-title font-semibold tracking-tight">I&apos;m wrong if</div>
               <ul className="mt-2.5 flex flex-col gap-2 text-body leading-snug text-text-mute">
                 {card.conditions.map((c, i) => (
                   <li key={i} className="flex gap-2">
-                    <span aria-hidden className="text-text-mute">—</span>
+                    <span aria-hidden className="mt-[0.6em] h-1 w-1 flex-none rounded-full bg-[var(--text-mute)]" />
                     <Ink v={c} />
                   </li>
                 ))}
@@ -166,7 +166,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="Checklist" />
           <ul className="num mt-4 flex flex-1 flex-col justify-center gap-2 text-ticker">
             {card.rows.map((r, i) => (
-              <li key={i} className="flex items-center gap-3 border-b border-dotted border-[var(--border)] pb-2">
+              <li key={i} className="flex items-center gap-3">
                 <span
                   aria-label={r.status}
                   className={cn(
@@ -191,7 +191,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame>
           <CardHead label={card.caption} />
-          <div className="relative mt-3 flex-1 overflow-hidden rounded-inner border border-border bg-surface-2">
+          <div className="relative mt-3 flex-1 overflow-hidden rounded-inner bg-surface-2">
             {card.imageUrl ? (
               <Image src={card.imageUrl} alt={card.caption} fill sizes="480px" className="object-contain" />
             ) : ticker ? (
@@ -239,7 +239,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
               <p className="mt-1.5 text-body leading-relaxed text-text">{card.answer}</p>
             </div>
           </div>
-          <p className="num mt-4 border-t border-border pt-3 text-ticker text-text-mute">
+          <p className="num mt-4 text-ticker text-text-mute">
             The analyst chose to be challenged and answered on the record.
           </p>
         </CardFrame>
@@ -252,7 +252,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
             Read the full report
           </h3>
           <p className="mt-2 max-w-[28ch] text-body text-text-mute">
-            The thesis, the call and the disclosure, on the report page. Nothing here is behind a
+            The thesis, the stance and the disclosure, on the report page. Nothing here is behind a
             paywall.
           </p>
           <Link href={card.href} className={buttonClass("ink", "md", "mt-4")}>
