@@ -21,13 +21,13 @@ function IssueCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {ticker ? (
-              <span className="num text-[11px] font-semibold uppercase tracking-wider text-text">
+              <span className="num text-ticker font-semibold text-text">
                 {ticker}
               </span>
             ) : null}
           </div>
           {meta ? (
-            <span className="num text-[10px] uppercase tracking-wider text-text-faint">{meta}</span>
+            <span className="num text-ticker text-text-faint">{meta}</span>
           ) : null}
         </div>
 
@@ -35,18 +35,18 @@ function IssueCard({
           href={`/report/${story.report.id}`}
           className="focus-ring rounded-button"
         >
-          <h3 className="dispatch-issue-title font-display text-[1.05rem] font-semibold leading-snug text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent">
+          <h3 className="dispatch-issue-title font-display text-body font-semibold leading-snug text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent">
             {story.headline}
           </h3>
           {story.dek ? (
-            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-text-mute">{story.dek}</p>
+            <p className="mt-2 line-clamp-3 text-body leading-relaxed text-text-mute">{story.dek}</p>
           ) : null}
         </Link>
 
         <div className="mt-auto flex items-center gap-2 pt-1">
           <Link
             href={`/analyst/${story.author.handle}`}
-            className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-chip"
+            className="text-ticker font-medium text-text-mute hover:text-text focus-ring rounded-chip"
           >
             {story.author.display_name}
           </Link>
@@ -80,11 +80,11 @@ function Column({
         >
           <Icon size={14} aria-hidden />
         </span>
-        <h2 className="text-sm font-semibold tracking-wide text-text">{title}</h2>
-        <span className="num ml-auto text-[11px] text-text-faint">{stories.length}</span>
+        <h2 className="text-body font-semibold text-text">{title}</h2>
+        <span className="num ml-auto text-ticker text-text-faint">{stories.length}</span>
       </div>
       {stories.length === 0 ? (
-        <p className="text-sm text-text-faint">{empty}</p>
+        <p className="text-body text-text-faint">{empty}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {stories.map((s, i) => (

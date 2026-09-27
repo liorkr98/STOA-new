@@ -43,7 +43,7 @@ export default async function AdminApplicationsPage() {
 
   return (
     <div className="mx-auto max-w-[var(--w-reading)] py-8">
-      <h1 className="t-h1">Analyst Applications</h1>
+      <h1 className="t-headline">Analyst Applications</h1>
       <p className="t-body mt-1 text-text-mute">
         {pending.length} pending · {reviewed.length} reviewed · applicants apply at{" "}
         <a href="/become-analyst" className="text-accent underline hover:no-underline">
@@ -75,21 +75,21 @@ export default async function AdminApplicationsPage() {
                   />
                   <div>
                     <p className="font-semibold">{applicant?.display_name ?? "Unknown"}</p>
-                    <p className="text-sm text-text-mute">@{applicant?.handle}</p>
+                    <p className="text-body text-text-mute">@{applicant?.handle}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${badge.className}`}>
+                  <span className={`rounded-chip px-2 py-0.5 text-ticker font-medium ${badge.className}`}>
                     {badge.label}
                   </span>
-                  <span className="text-xs text-text-mute">
+                  <span className="text-ticker text-text-mute">
                     {formatDistanceToNow(new Date(app.submitted_at), { addSuffix: true })}
                   </span>
                 </div>
               </div>
 
               {/* Answers */}
-              <div className="flex flex-col gap-3 text-sm">
+              <div className="flex flex-col gap-3 text-body">
                 <QA label="Why they want to publish" answer={app.why_analyst} />
                 <QA label="Background" answer={app.background} />
                 <QA label="Coverage areas" answer={app.coverage_areas} />
@@ -111,7 +111,7 @@ export default async function AdminApplicationsPage() {
 
               {/* Review note */}
               {app.review_note && (
-                <p className="rounded-inner bg-surface-2 px-3 py-2 text-sm text-text-mute">
+                <p className="rounded-inner bg-surface-2 px-3 py-2 text-body text-text-mute">
                   Note: {app.review_note}
                 </p>
               )}
@@ -131,7 +131,7 @@ export default async function AdminApplicationsPage() {
 function QA({ label, answer }: { label: string; answer: string }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-mute">{label}</p>
+      <p className="text-ticker font-medium text-text-mute">{label}</p>
       <p className="mt-0.5 whitespace-pre-wrap">{answer}</p>
     </div>
   );

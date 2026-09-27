@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Settings" };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="num border-b border-[var(--ink)] pb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">
+    <div className="num border-b border-[var(--ink)] pb-3 text-ticker text-text-mute">
       {children}
     </div>
   );
@@ -33,7 +33,7 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-10">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Settings</h1>
         <p className="t-body mt-2">Your account and identity.</p>
       </div>
 
@@ -47,21 +47,21 @@ export default async function SettingsPage() {
       <section className="flex flex-col gap-4">
         <SectionLabel>Account</SectionLabel>
         <div className="flex flex-col gap-4 rounded-panel border border-border bg-surface p-6">
-          <div className="flex items-center justify-between gap-4 text-sm">
+          <div className="flex items-center justify-between gap-4 text-body">
             <span className="text-text-mute">Email</span>
             <span className="num">{email}</span>
           </div>
           <div className="h-px bg-border" />
-          <div className="flex items-center justify-between gap-4 text-sm">
+          <div className="flex items-center justify-between gap-4 text-body">
             <span>Password</span>
             <Link href="/reset-password" className={buttonClass("secondary", "sm")}>
               Change password
             </Link>
           </div>
           <div className="h-px bg-border" />
-          <div className="flex items-center justify-between gap-4 text-sm">
+          <div className="flex items-center justify-between gap-4 text-body">
             <span>Connected accounts</span>
-            <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+            <span className="num text-ticker text-text-faint">
               Managed by your sign-in provider
             </span>
           </div>
@@ -75,7 +75,7 @@ export default async function SettingsPage() {
           <DensityToggle />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm">Theme</span>
+            <span className="text-body">Theme</span>
             <ThemeToggle />
           </div>
         </div>
@@ -88,7 +88,7 @@ export default async function SettingsPage() {
           <PrivacyToggle label="Show who I follow on my public page" defaultOn={false} />
           <div className="h-px bg-border" />
           <MarketingOptInToggle defaultOn={Boolean(profile.marketing_opt_in)} />
-          <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          <p className="num text-ticker text-text-faint">
             Your purchases and library are always private.
           </p>
         </div>
@@ -112,7 +112,7 @@ export default async function SettingsPage() {
         <SectionLabel>Danger zone</SectionLabel>
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-border bg-surface p-6">
           <div>
-            <p className="text-sm font-medium">Deactivate account</p>
+            <p className="text-body font-medium">Deactivate account</p>
             <p className="t-meta mt-1">Hide your profile and stop all activity. This can be undone by signing back in.</p>
           </div>
           <button type="button" disabled className={buttonClass("secondary", "sm")}>

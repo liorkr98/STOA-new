@@ -23,18 +23,18 @@ import { InkTag } from "@/components/feed/feed-cards";
 function UsageMarks({ usage }: { usage: CardUsage }) {
   if (!usage.inVideo && !usage.inResearch) {
     return (
-      <span className="num text-[10px] uppercase tracking-[0.12em] text-text-faint">Not placed</span>
+      <span className="num text-ticker text-text-faint">Not placed</span>
     );
   }
   return (
     <span className="flex items-center gap-2">
       {usage.inVideo ? (
-        <span className="num flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-text-mute">
+        <span className="num flex items-center gap-1 text-ticker text-text-mute">
           <Film size={10} aria-hidden /> Video
         </span>
       ) : null}
       {usage.inResearch ? (
-        <span className="num flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-text-mute">
+        <span className="num flex items-center gap-1 text-ticker text-text-mute">
           <FileText size={10} aria-hidden /> Research
         </span>
       ) : null}
@@ -111,16 +111,16 @@ function TrayCard({
           className="focus-ring min-w-0 flex-1 rounded text-left"
         >
           <span className="flex items-baseline gap-1">
-            <span className="truncate text-[0.8125rem] font-medium leading-snug text-text">{cardName(card)}</span>
+            <span className="truncate text-ticker font-medium leading-snug text-text">{cardName(card)}</span>
             <InkTag ink={cardInk(card)} />
           </span>
-          <span className="mt-0.5 block truncate text-[0.75rem] leading-snug text-text-mute">
+          <span className="mt-0.5 block truncate text-ticker leading-snug text-text-mute">
             {cardSummary(card)}
           </span>
           <span className="mt-1 flex items-center gap-2">
             <UsageMarks usage={usage} />
             {card.locked ? (
-              <span className="num flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+              <span className="num flex items-center gap-1 text-ticker text-text-faint">
                 <Lock size={10} aria-hidden /> Locked
               </span>
             ) : null}
@@ -148,7 +148,7 @@ function TrayCard({
                       onPlaceInVideo();
                       setMenuOpen(false);
                     }}
-                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-[0.8125rem] text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
+                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
                   >
                     <Film size={13} aria-hidden /> Place in video
                   </button>
@@ -159,7 +159,7 @@ function TrayCard({
                       onPlaceInResearch();
                       setMenuOpen(false);
                     }}
-                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-[0.8125rem] text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
+                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
                   >
                     <FileText size={13} aria-hidden /> Insert in research
                   </button>
@@ -201,14 +201,14 @@ export function CardTray({
   return (
     <section aria-label="Cards" className="min-w-0">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="t-eyebrow">Cards</h2>
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <h2 className="t-meta">Cards</h2>
+        <span className="num text-ticker text-text-faint">
           {count === 0 ? "None yet" : `${count} in the deck`}
         </span>
       </div>
 
       {cards.length === 0 ? (
-        <p className="mt-2 text-[0.8125rem] leading-snug text-text-mute">
+        <p className="mt-2 text-ticker leading-snug text-text-mute">
           Cards are your evidence. Build them once and use them in the video, in the research, or in both.
         </p>
       ) : (
@@ -234,7 +234,7 @@ export function CardTray({
       <button
         type="button"
         onClick={onAdd}
-        className="focus-ring mt-2 flex w-full items-center justify-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+        className="focus-ring mt-2 flex w-full items-center justify-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-ticker text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
       >
         <Plus size={14} aria-hidden /> Add a card
       </button>

@@ -24,9 +24,9 @@ export type InsightTotals = {
 function Metric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <div className="rounded-panel bg-surface-2 px-5 py-4">
-      <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{label}</div>
-      <div className="num mt-2.5 text-[24px] font-semibold tracking-tight">{value}</div>
-      <p className="mt-2 text-[12px] leading-snug text-text-faint">{note}</p>
+      <div className="num text-ticker text-text-mute">{label}</div>
+      <div className="num mt-2.5 text-headline font-semibold tracking-tight">{value}</div>
+      <p className="mt-2 text-ticker leading-snug text-text-faint">{note}</p>
     </div>
   );
 }
@@ -45,7 +45,7 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
   return (
     <div className="mx-auto flex w-full max-w-[var(--w-wide)] flex-col gap-10">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Insights</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Insights</h1>
         <p className="t-body mt-2">Plays on your clips, and opens of the written page. Two different counts.</p>
       </div>
 
@@ -73,7 +73,7 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
       </div>
 
       <section className="flex flex-col gap-4">
-        <div className="num border-b border-[var(--ink)] pb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">
+        <div className="num border-b border-[var(--ink)] pb-3 text-ticker text-text-mute">
           By video
         </div>
         {rows.length === 0 ? (
@@ -83,19 +83,19 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
             <table className="w-full min-w-[36rem] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="num py-2 pr-4 text-[10px] font-medium uppercase tracking-[0.16em] text-text-faint">
+                  <th className="num py-2 pr-4 text-ticker font-medium text-text-faint">
                     Publication
                   </th>
-                  <th className="num py-2 pr-4 text-right text-[10px] font-medium uppercase tracking-[0.16em] text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
                     Plays
                   </th>
-                  <th className="num py-2 pr-4 text-right text-[10px] font-medium uppercase tracking-[0.16em] text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
                     Finished
                   </th>
-                  <th className="num py-2 pr-4 text-right text-[10px] font-medium uppercase tracking-[0.16em] text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
                     Finish rate
                   </th>
-                  <th className="num py-2 text-right text-[10px] font-medium uppercase tracking-[0.16em] text-text-faint">
+                  <th className="num py-2 text-right text-ticker font-medium text-text-faint">
                     Page views
                   </th>
                 </tr>
@@ -104,21 +104,21 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
                 {rows.map((r) => (
                   <tr key={r.id} className="border-b border-border">
                     <td className="py-3 pr-4">
-                      <Link href={r.href} className="text-sm font-medium text-text hover:underline">
+                      <Link href={r.href} className="text-body font-medium text-text hover:underline">
                         {r.title}
                       </Link>
                       {r.status !== "ready" ? (
-                        <p className="num mt-0.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+                        <p className="num mt-0.5 text-ticker text-text-faint">
                           {r.status === "processing" ? "Processing" : "Failed"}
                         </p>
                       ) : !r.published ? (
-                        <p className="num mt-0.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">Draft</p>
+                        <p className="num mt-0.5 text-ticker text-text-faint">Draft</p>
                       ) : null}
                     </td>
-                    <td className="num py-3 pr-4 text-right text-sm">{compact(r.plays)}</td>
-                    <td className="num py-3 pr-4 text-right text-sm">{compact(r.completions)}</td>
-                    <td className="num py-3 pr-4 text-right text-sm">{rate(r.completions, r.plays)}</td>
-                    <td className="num py-3 text-right text-sm">{compact(r.pageViews)}</td>
+                    <td className="num py-3 pr-4 text-right text-body">{compact(r.plays)}</td>
+                    <td className="num py-3 pr-4 text-right text-body">{compact(r.completions)}</td>
+                    <td className="num py-3 pr-4 text-right text-body">{rate(r.completions, r.plays)}</td>
+                    <td className="num py-3 text-right text-body">{compact(r.pageViews)}</td>
                   </tr>
                 ))}
               </tbody>

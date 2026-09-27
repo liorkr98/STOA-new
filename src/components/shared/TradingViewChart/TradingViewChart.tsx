@@ -111,7 +111,7 @@ export function TradingViewChart({
           href="https://www.tradingview.com/"
           rel="noopener noreferrer nofollow"
           target="_blank"
-          className="text-[10px] text-text-faint hover:text-text-mute"
+          className="text-ticker text-text-faint hover:text-text-mute"
         >
           Chart by TradingView
         </a>

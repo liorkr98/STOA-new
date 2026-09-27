@@ -18,7 +18,7 @@ function initialsOf(name: string): string {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="num border-b border-[var(--ink)] pb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">
+    <div className="num border-b border-[var(--ink)] pb-3 text-ticker text-text-mute">
       {children}
     </div>
   );
@@ -40,7 +40,7 @@ export default async function SubscriptionsPage() {
   return (
     <div className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-10">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Subscriptions</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Subscriptions</h1>
         <p className="t-body mt-2">Analysts you support.</p>
       </div>
 
@@ -68,18 +68,18 @@ export default async function SubscriptionsPage() {
                   className={`flex flex-col rounded-panel border border-border bg-surface p-5 ${cancelling ? "opacity-70" : ""}`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-sm text-[var(--paper)]">
+                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-body text-[var(--paper)]">
                       {initialsOf(name)}
                     </span>
-                    <span className="flex-1 font-display text-lg font-semibold tracking-tight">{name}</span>
+                    <span className="flex-1 font-display text-title font-semibold tracking-tight">{name}</span>
                   </div>
-                  <div className="mt-4 text-[15px]">Monthly subscription</div>
+                  <div className="mt-4 text-body">Monthly subscription</div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-2xl font-semibold tracking-tight">{usd(s.price)}</span>
-                    <span className="num text-[11px] text-text-mute">/mo</span>
+                    <span className="text-headline font-semibold tracking-tight">{usd(s.price)}</span>
+                    <span className="num text-ticker text-text-mute">/mo</span>
                   </div>
                   <div
-                    className={`num mt-3.5 text-[10px] uppercase tracking-[0.14em] ${cancelling ? "text-text-faint" : "text-text-mute"}`}
+                    className={`num mt-3.5 text-ticker ${cancelling ? "text-text-faint" : "text-text-mute"}`}
                   >
                     {cancelling
                       ? `CANCELS ${format(new Date(s.renews_at), "MMM d, yyyy")} · ACCESS UNTIL THEN`
@@ -89,7 +89,7 @@ export default async function SubscriptionsPage() {
                     {s.analyst?.handle && (
                       <Link
                         href={`/analyst/${s.analyst.handle}`}
-                        className="text-sm underline decoration-border-strong underline-offset-4 hover:decoration-[var(--ink)]"
+                        className="text-body underline decoration-border-strong underline-offset-4 hover:decoration-[var(--ink)]"
                       >
                         Manage
                       </Link>
@@ -107,12 +107,12 @@ export default async function SubscriptionsPage() {
       <section className="flex flex-col gap-4">
         <SectionLabel>Payment method</SectionLabel>
         <div className="flex items-center gap-4 rounded-panel border border-border bg-surface p-5">
-          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-sm font-medium">
+          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-body font-medium">
             PP
           </span>
           <div className="flex-1">
-            <p className="text-sm">PayPal</p>
-            <p className="num mt-1 text-[10px] uppercase tracking-[0.14em] text-[var(--rust)]">
+            <p className="text-body">PayPal</p>
+            <p className="num mt-1 text-ticker text-[var(--rust)]">
               Not connected — renewals will fail
             </p>
           </div>
@@ -129,7 +129,7 @@ export default async function SubscriptionsPage() {
           <p className="t-meta mt-3">No report unlocks yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-[10px] uppercase tracking-[0.16em] text-text-faint md:grid">
+            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-ticker text-text-faint md:grid">
               <div>Date</div>
               <div>Report</div>
               <div>Analyst</div>
@@ -138,18 +138,18 @@ export default async function SubscriptionsPage() {
             {unlocked.map((u) => (
               <div
                 key={u.report.id}
-                className="num flex flex-col gap-1 border-b border-border py-3 text-[12.5px] md:grid md:grid-cols-[110px_1fr_200px_90px] md:items-center md:gap-5"
+                className="num flex flex-col gap-1 border-b border-border py-3 text-ticker md:grid md:grid-cols-[110px_1fr_200px_90px] md:items-center md:gap-5"
               >
                 <div className="text-text-mute">
                   {u.unlockedAt ? format(new Date(u.unlockedAt), "MMM d, yyyy").toUpperCase() : "—"}
                 </div>
-                <div dir="auto" className="user-copy font-sans text-[14.5px]">{u.report.title ?? "Untitled"}</div>
+                <div dir="auto" className="user-copy font-sans text-body">{u.report.title ?? "Untitled"}</div>
                 <div className="text-text-mute">{u.report.author?.display_name ?? "—"}</div>
                 <div className="md:text-right">{u.price != null ? usd(u.price) : "—"}</div>
               </div>
             ))}
-            <div className="num grid grid-cols-[1fr_90px] gap-5 py-4 text-[12.5px] md:grid-cols-[110px_1fr_200px_90px]">
-              <div className="text-[10px] uppercase tracking-[0.16em] text-text-faint md:col-start-2">
+            <div className="num grid grid-cols-[1fr_90px] gap-5 py-4 text-ticker md:grid-cols-[110px_1fr_200px_90px]">
+              <div className="text-ticker text-text-faint md:col-start-2">
                 Total spend · unlocks
               </div>
               <div className="text-right font-medium">{usd(totalSpend)}</div>

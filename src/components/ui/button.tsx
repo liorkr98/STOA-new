@@ -19,9 +19,9 @@ const variants: Record<ButtonVariant, string> = {
 
 // Explicit heights: button height is a design decision, not a spacing step.
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-[34px] px-3 text-[0.8125rem]",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-6 text-[0.95rem]",
+  sm: "h-[34px] px-3 text-ticker",
+  md: "h-10 px-4 text-body",
+  lg: "h-12 px-6 text-body",
 };
 
 export function buttonClass(

@@ -41,7 +41,7 @@ export function CookieConsentBanner() {
       style={{ bottom: "var(--tab-h, 0px)" }}
     >
       <div className="mx-auto flex max-w-[var(--w-wide)] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-text-mute">
+        <p className="text-body text-text-mute">
           We use essential cookies to run Stoa. Optional analytics stay off unless you accept.{" "}
           <Link href="/cookies" className="underline hover:no-underline">
             Cookie policy

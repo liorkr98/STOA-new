@@ -32,7 +32,7 @@ export function EditedFlag({
       )}
     >
       <PencilLine size={10} aria-hidden />
-      <span className="num text-[10px] uppercase tracking-[0.14em]">Edited</span>
+      <span className="num text-ticker">Edited</span>
     </span>
   );
 }

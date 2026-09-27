@@ -22,16 +22,16 @@ function ShareLinkPreview({
 }) {
   return (
     <div className="rounded-panel border border-border bg-bg p-3">
-      <p className="t-meta mb-2 text-[10px] uppercase tracking-wide">Share preview</p>
+      <p className="t-meta mb-2 text-ticker">Share preview</p>
       <div className="overflow-hidden rounded-inner border border-border bg-surface">
         {imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt="" className="h-24 w-full object-cover" />
         )}
         <div className="p-3">
-          <p className="line-clamp-1 text-sm font-semibold">{title}</p>
-          <p className="t-meta mt-0.5 line-clamp-2 text-[12px]">{description}</p>
-          <p className="t-meta mt-1 truncate text-[10px]">{url}</p>
+          <p className="line-clamp-1 text-body font-semibold">{title}</p>
+          <p className="t-meta mt-0.5 line-clamp-2 text-ticker">{description}</p>
+          <p className="t-meta mt-1 truncate text-ticker">{url}</p>
         </div>
       </div>
     </div>
@@ -72,8 +72,8 @@ export function ProfilePreview({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="t-eyebrow">Live preview</p>
-        <div className="inline-flex rounded-button border border-border bg-bg p-0.5 text-[11px]">
+        <p className="t-meta">Live preview</p>
+        <div className="inline-flex rounded-button border border-border bg-bg p-0.5 text-ticker">
           {(["desktop", "mobile"] as const).map((m) => (
             <button
               key={m}
@@ -106,7 +106,7 @@ export function ProfilePreview({
         imageUrl={previewProfile.cover_url || previewProfile.avatar_url}
       />
 
-      <p className="t-meta text-[11px]">
+      <p className="t-meta text-ticker">
         Pricing is platform-controlled and always appears below this hero on your public page.
       </p>
     </div>

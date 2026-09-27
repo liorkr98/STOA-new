@@ -54,7 +54,7 @@ export function StepNav({
               >
                 <span
                   className={cn(
-                    "num flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-[10px] tabular-nums",
+                    "num flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border text-ticker tabular-nums",
                     active
                       ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                       : done
@@ -68,7 +68,7 @@ export function StepNav({
                 </span>
                 <span
                   className={cn(
-                    "num text-[11px] uppercase tracking-[0.14em]",
+                    "num text-ticker",
                     active ? "text-text" : open ? "text-text-mute" : "text-text-faint",
                   )}
                 >
@@ -117,12 +117,12 @@ export function StepFrame({
   return (
     <section aria-label={title}>
       <div className="mb-5">
-        <p className="num text-[10px] uppercase tracking-[0.18em] text-text-faint">{eyebrow}</p>
-        <h2 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.25rem]">
+        <p className="num text-ticker text-text-faint">{eyebrow}</p>
+        <h2 className="mt-1 font-display text-headline font-semibold leading-tight tracking-tight md:text-headline">
           {title}
         </h2>
         {blurb ? (
-          <p className="mt-1.5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-text-mute md:text-[1.0625rem]">
+          <p className="mt-1.5 max-w-[62ch] text-body leading-relaxed text-text-mute md:text-body">
             {blurb}
           </p>
         ) : null}
@@ -138,7 +138,7 @@ export function StepFrame({
             <button
               type="button"
               onClick={back.onPress}
-              className="num focus-ring rounded-button border border-border px-3.5 py-2.5 text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:border-border-strong hover:text-text"
+              className="num focus-ring rounded-button border border-border px-3.5 py-2.5 text-ticker text-text-mute transition-colors hover:border-border-strong hover:text-text"
             >
               {back.label}
             </button>
@@ -146,7 +146,7 @@ export function StepFrame({
           {status ? <div className="min-w-0 flex-1 basis-[10rem]">{status}</div> : null}
           <div className="ml-auto flex min-w-0 items-center gap-3">
             {note ? (
-              <p role="alert" className="max-w-[44ch] text-right text-[0.8125rem] leading-snug text-[var(--rust)]">
+              <p role="alert" className="max-w-[44ch] text-right text-ticker leading-snug text-[var(--rust)]">
                 {note}
               </p>
             ) : null}
@@ -154,7 +154,7 @@ export function StepFrame({
               <button
                 type="button"
                 onClick={next.onPress}
-                className="focus-ring shrink-0 rounded-button bg-[var(--ink)] px-5 py-2.5 text-[0.9375rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                className="focus-ring shrink-0 rounded-button bg-[var(--ink)] px-5 py-2.5 text-body font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
               >
                 {next.label}
               </button>

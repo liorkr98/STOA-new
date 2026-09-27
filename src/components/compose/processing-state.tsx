@@ -53,15 +53,15 @@ export function ProcessingState({
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="t-eyebrow">{status === "ready" ? "Published" : status === "failed" ? "Video failed" : "Publishing"}</p>
-          <h3 className="mt-1 font-display text-[1.25rem] font-semibold tracking-tight">
+          <p className="t-meta">{status === "ready" ? "Published" : status === "failed" ? "Video failed" : "Publishing"}</p>
+          <h3 className="mt-1 font-display text-title font-semibold tracking-tight">
             {status === "ready"
               ? "Your publication is live."
               : status === "failed"
                 ? "The video did not process."
                 : "Your publication exists. The video is still processing."}
           </h3>
-          <p className="mt-1.5 max-w-[52ch] text-[0.875rem] text-text-mute">
+          <p className="mt-1.5 max-w-[52ch] text-body text-text-mute">
             {status === "processing"
               ? `Usually a few minutes for a 90-second clip. You can leave this page; the video appears on your publication when it is ready${hasOverlays ? ", with its overlays" : ""}.`
               : status === "ready"
@@ -69,7 +69,7 @@ export function ProcessingState({
                 : "Nothing was published to readers. Try the upload again from the publication."}
           </p>
         </div>
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <span className="num text-ticker text-text-faint">
           {status === "processing" ? (minutes < 1 ? "Started under a minute ago" : `Started ${minutes} min ago`) : null}
         </span>
       </div>
@@ -92,7 +92,7 @@ export function ProcessingState({
               >
                 {done ? <Check size={11} strokeWidth={2.2} /> : failed ? <AlertTriangle size={11} /> : active ? <Loader2 size={11} className="animate-spin" /> : null}
               </span>
-              <span className={cn("text-[12px]", done || active ? "text-text" : "text-text-faint")}>{s.label}</span>
+              <span className={cn("text-ticker", done || active ? "text-text" : "text-text-faint")}>{s.label}</span>
             </li>
           );
         })}
@@ -100,10 +100,10 @@ export function ProcessingState({
 
       {!compact ? (
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <Link href={reportHref} className="num text-[11px] uppercase tracking-[0.14em] text-text underline underline-offset-4 focus-ring rounded">
+          <Link href={reportHref} className="num text-ticker text-text underline underline-offset-4 focus-ring rounded">
             Open the publication →
           </Link>
-          <Link href="/studio" className="num text-[11px] uppercase tracking-[0.14em] text-text-mute hover:text-text focus-ring rounded">
+          <Link href="/studio" className="num text-ticker text-text-mute hover:text-text focus-ring rounded">
             Back to publications
           </Link>
         </div>

@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = { title: "Apply to publish" };
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute";
 const textareaClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute resize-none";
 
 async function getExistingApplication(userId: string) {
   const supabase = await createClient();
@@ -48,7 +48,7 @@ export default async function BecomeAnalystPage({
       <div className="mx-auto max-w-[var(--w-reading)] py-8">
         <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
           <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
-          <h1 className="t-h2">Application submitted!</h1>
+          <h1 className="t-title">Application submitted!</h1>
           <p className="t-body text-text-mute max-w-sm">
             We&apos;ll review your application and notify you by email and in-app notification.
             Usually within 1-2 business days.
@@ -60,7 +60,7 @@ export default async function BecomeAnalystPage({
 
   return (
     <div className="mx-auto max-w-[var(--w-reading)] py-8">
-      <h1 className="t-h1">Apply to publish research</h1>
+      <h1 className="t-headline">Apply to publish research</h1>
       <p className="t-body mt-2 text-text-mute">
         Stoa is invite quality. We review every application to keep the signal high. Once
         approved you can publish videos, reports and short notes.
@@ -68,12 +68,12 @@ export default async function BecomeAnalystPage({
 
       <form action={submitAnalystApplication} className="mt-8 flex flex-col gap-6">
         <fieldset className="flex flex-col gap-5">
-          <legend className="text-sm font-semibold uppercase tracking-wide text-text-mute">
+          <legend className="text-body font-semibold text-text-mute">
             Required
           </legend>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="why_analyst" className="text-sm font-medium">
+            <label htmlFor="why_analyst" className="text-body font-medium">
               Why do you want to publish on Stoa?
               <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
@@ -89,7 +89,7 @@ export default async function BecomeAnalystPage({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="background" className="text-sm font-medium">
+            <label htmlFor="background" className="text-body font-medium">
               What is your financial or professional background?
               <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
@@ -105,7 +105,7 @@ export default async function BecomeAnalystPage({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="coverage_areas" className="text-sm font-medium">
+            <label htmlFor="coverage_areas" className="text-body font-medium">
               What markets or sectors will you cover?
               <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
@@ -121,12 +121,12 @@ export default async function BecomeAnalystPage({
         </fieldset>
 
         <fieldset className="flex flex-col gap-5">
-          <legend className="text-sm font-semibold uppercase tracking-wide text-text-mute">
+          <legend className="text-body font-semibold text-text-mute">
             Optional (helps us review faster)
           </legend>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="sample_thesis" className="text-sm font-medium">
+            <label htmlFor="sample_thesis" className="text-body font-medium">
               Share a quick investment thesis
             </label>
             <textarea
@@ -140,7 +140,7 @@ export default async function BecomeAnalystPage({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="linkedin_url" className="text-sm font-medium">
+            <label htmlFor="linkedin_url" className="text-body font-medium">
               LinkedIn profile URL
             </label>
             <input
@@ -175,7 +175,7 @@ function ApplicationStatus({
     return (
       <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
         <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
-        <h2 className="t-h2">Application under review</h2>
+        <h2 className="t-title">Application under review</h2>
         <p className="t-body text-text-mute max-w-sm">
           Your application was submitted on{" "}
           {new Date(application.submitted_at).toLocaleDateString()}. We&apos;ll notify you once
@@ -189,14 +189,14 @@ function ApplicationStatus({
     return (
       <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
         <CheckCircle size={48} weight="duotone" className="text-[var(--up)]" />
-        <h2 className="t-h2">You&apos;re approved!</h2>
+        <h2 className="t-title">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
           Your account has been upgraded. Set up your profile and publish your first report.
         </p>
-        <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-button bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
+        <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-button bg-accent px-6 text-body font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
           Set up your profile
         </a>
-        <a href="/studio/compose" className="text-sm text-accent underline hover:no-underline">
+        <a href="/studio/compose" className="text-body text-accent underline hover:no-underline">
           Go to Studio
         </a>
       </div>
@@ -207,14 +207,14 @@ function ApplicationStatus({
   return (
     <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
       <XCircle size={48} weight="duotone" className="text-[var(--down)]" />
-      <h2 className="t-h2">Application not approved</h2>
+      <h2 className="t-title">Application not approved</h2>
       {application.review_note && (
         <p className="t-body text-text-mute max-w-sm">{application.review_note}</p>
       )}
-      <p className="text-sm text-text-mute">
+      <p className="text-body text-text-mute">
         You can update your answers and re-apply below.
       </p>
-      <a href="/become-analyst?reapply=1" className="inline-flex h-10 items-center justify-center gap-2 rounded-button border border-border bg-surface px-4 text-sm font-medium transition hover:bg-surface-2 focus-ring">
+      <a href="/become-analyst?reapply=1" className="inline-flex h-10 items-center justify-center gap-2 rounded-button border border-border bg-surface px-4 text-body font-medium transition hover:bg-surface-2 focus-ring">
         Update and re-apply
       </a>
     </div>

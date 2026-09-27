@@ -182,14 +182,14 @@ export function ClaimMark({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className={`popover-content ledger-card z-40 max-w-xs p-3 text-sm ${instant ? "popover-instant" : ""}`}
+          className={`popover-content ledger-card z-40 max-w-xs p-3 text-body ${instant ? "popover-instant" : ""}`}
           sideOffset={6}
           onOpenAutoFocus={(e) => e.preventDefault()}
           onEscapeKeyDown={() => setOpenGrouped(false)}
         >
           <div className="mb-1 flex items-center gap-1.5">
             <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
-            <span className="t-eyebrow" style={{ color }}>
+            <span className="t-meta" style={{ color }}>
               {label}
             </span>
             {claim.confidence && <span className="t-meta">&middot; {claim.confidence} confidence</span>}

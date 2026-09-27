@@ -38,10 +38,10 @@ export function TodayNews({
               rel="noopener noreferrer"
               className="focus-ring block rounded"
             >
-              <p className="text-[0.9375rem] leading-snug text-text">
+              <p className="text-body leading-snug text-text">
                 {n.headline}
               </p>
-              <p className="num mt-1 text-[0.625rem] uppercase tracking-[0.12em] text-text-faint">
+              <p className="num mt-1 text-ticker text-text-faint">
                 {n.source ?? "Yahoo Finance"}
                 <span aria-hidden> · </span>
                 {newsTime(n.datetime)}

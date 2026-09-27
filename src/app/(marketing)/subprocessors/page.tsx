@@ -49,7 +49,7 @@ export default function SubprocessorsPage() {
         vendors change.
       </p>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-body">
           <thead>
             <tr className="border-b border-border text-left">
               <th scope="col" className="py-2 pr-4 font-medium">

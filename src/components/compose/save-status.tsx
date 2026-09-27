@@ -57,7 +57,7 @@ export function SaveStatus({
     <p
       aria-live="polite"
       className={cn(
-        "num min-w-0 truncate text-[10px] uppercase tracking-[0.14em]",
+        "num min-w-0 truncate text-ticker",
         tone === "bad" ? "text-[var(--rust)]" : tone === "live" ? "text-text" : "text-text-faint",
         className,
       )}

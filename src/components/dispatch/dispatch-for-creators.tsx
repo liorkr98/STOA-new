@@ -9,13 +9,13 @@ export function DispatchForCreators() {
   return (
     <section className="dispatch-section dispatch-for-creators">
       <div className="border-y border-border bg-surface/50 px-6 py-8 text-center sm:px-10">
-        <p className="t-eyebrow text-text-mute">
+        <p className="t-meta text-text-mute">
           For analysts
         </p>
-        <h2 className="mt-3 font-display text-xl font-semibold text-text">
+        <h2 className="mt-3 font-display text-title font-semibold text-text">
           Your next piece could lead this page
         </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-mute">
+        <p className="mx-auto mt-2 max-w-md text-body leading-relaxed text-text-mute">
           Publish conviction-backed research. The dispatch features the day&apos;s best work,
           chosen on merit, never bought.
         </p>

@@ -26,7 +26,7 @@ export default async function SearchPage({
   return (
     <div className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-8">
       <div>
-        <h1 className="t-h1">Search</h1>
+        <h1 className="t-headline">Search</h1>
         <p className="t-body mt-1">Find analysts, tickers, and published research.</p>
       </div>
 
@@ -48,7 +48,7 @@ export default async function SearchPage({
 
           {results.tickers.length > 0 && (
             <section>
-              <h2 className="t-h3 mb-4">Markets</h2>
+              <h2 className="t-title mb-4">Markets</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {results.tickers.map((t) => (
                   <Link
@@ -69,7 +69,7 @@ export default async function SearchPage({
 
           {analysts.length > 0 && (
             <section>
-              <h2 className="t-h3 mb-4">Analysts</h2>
+              <h2 className="t-title mb-4">Analysts</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {analysts.map((analyst) => (
                   <AnalystCard key={analyst.id} analyst={analyst} />
@@ -80,7 +80,7 @@ export default async function SearchPage({
 
           {results.reports.length > 0 && (
             <section>
-              <h2 className="t-h3 mb-4">Research</h2>
+              <h2 className="t-title mb-4">Research</h2>
               <div className="flex flex-col gap-5">
                 {results.reports.map((r) => (
                   <ReportCard key={r.id} report={r} />

@@ -287,8 +287,8 @@ export function AddVideoFlow({
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="font-display text-lg font-semibold text-text">Add a video</h2>
-            <p className="mt-0.5 text-xs text-text-mute">
+            <h2 className="font-display text-title font-semibold text-text">Add a video</h2>
+            <p className="mt-0.5 text-ticker text-text-mute">
               A short teaser for “{reportTitle}”. Max {MAX_VIDEO_DURATION_SECONDS}s.
             </p>
           </div>
@@ -304,7 +304,7 @@ export function AddVideoFlow({
 
         <div className="px-5 py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2 text-sm text-[var(--rust)]">
+            <div className="mb-4 flex items-start gap-2 rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2 text-body text-[var(--rust)]">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
               <span>{error}</span>
             </div>
@@ -319,8 +319,8 @@ export function AddVideoFlow({
               >
                 <Video size={20} className="shrink-0 text-text" aria-hidden />
                 <span>
-                  <span className="block text-sm font-semibold text-text">Record now</span>
-                  <span className="block text-xs text-text-mute">
+                  <span className="block text-body font-semibold text-text">Record now</span>
+                  <span className="block text-ticker text-text-mute">
                     Use your camera. Stops automatically at {MAX_VIDEO_DURATION_SECONDS}s.
                   </span>
                 </span>
@@ -329,8 +329,8 @@ export function AddVideoFlow({
               <label className="focus-within:ring-2 focus-within:ring-[var(--ink)] flex cursor-pointer items-center gap-3 rounded-panel border border-border bg-surface-2 px-4 py-4 transition-colors hover:border-border-strong">
                 <Upload size={20} className="shrink-0 text-text" aria-hidden />
                 <span>
-                  <span className="block text-sm font-semibold text-text">Upload a file</span>
-                  <span className="block text-xs text-text-mute">MP4, MOV, or WebM.</span>
+                  <span className="block text-body font-semibold text-text">Upload a file</span>
+                  <span className="block text-ticker text-text-mute">MP4, MOV, or WebM.</span>
                 </span>
                 <input
                   type="file"
@@ -350,7 +350,7 @@ export function AddVideoFlow({
               <div className="relative overflow-hidden rounded-panel bg-[var(--ink)]">
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                 <video ref={videoPreviewRef} muted playsInline className="aspect-video w-full object-cover" />
-                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-chip bg-[var(--rust)] px-2 py-0.5 text-xs font-semibold text-[var(--paper)]">
+                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-chip bg-[var(--rust)] px-2 py-0.5 text-ticker font-semibold text-[var(--paper)]">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--paper)]" />
                   {countdown}s
                 </span>
@@ -363,7 +363,7 @@ export function AddVideoFlow({
 
           {step === "uploading" && (
             <div className="flex flex-col gap-3 py-4">
-              <div className="flex items-center gap-2 text-sm text-text">
+              <div className="flex items-center gap-2 text-body text-text">
                 <Loader2 size={16} className="animate-spin" aria-hidden /> Uploading… {progress}%
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
@@ -378,8 +378,8 @@ export function AddVideoFlow({
           {step === "processing" && (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
               <Loader2 size={22} className="animate-spin text-text-mute" aria-hidden />
-              <p className="text-sm font-medium text-text">Processing and transcribing…</p>
-              <p className="text-xs text-text-mute">
+              <p className="text-body font-medium text-text">Processing and transcribing…</p>
+              <p className="text-ticker text-text-mute">
                 Bunny is encoding the video and generating captions. This usually takes under a minute.
               </p>
             </div>
@@ -388,17 +388,17 @@ export function AddVideoFlow({
           {step === "review" && (
             <div className="flex flex-col gap-4">
               <div className="rounded-inner border border-border bg-surface-2 px-3 py-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-text">
+                <div className="flex items-center gap-1.5 text-ticker font-semibold text-text">
                   <ShieldCheck size={13} aria-hidden /> Disclosure overlay (read-only)
                 </div>
-                <p className="mt-1 text-xs text-text-mute">{disclosureLine}</p>
+                <p className="mt-1 text-ticker text-text-mute">{disclosureLine}</p>
               </div>
 
               <div>
-                <label htmlFor="video-transcript" className="mb-1.5 block text-xs font-semibold text-text">
+                <label htmlFor="video-transcript" className="mb-1.5 block text-ticker font-semibold text-text">
                   Captions / transcript {captionsReady ? "" : "(edit if needed)"}
                 </label>
-                <p className="mb-2 text-xs text-text-mute">
+                <p className="mb-2 text-ticker text-text-mute">
                   These captions ship with the video and are what the fact-checker reads. Correct any
                   errors before publishing.
                 </p>
@@ -408,19 +408,19 @@ export function AddVideoFlow({
                   onChange={(e) => setTranscript(e.target.value)}
                   rows={6}
                   placeholder="Transcript text…"
-                  className="focus-ring w-full resize-y rounded-field border border-border bg-surface px-3 py-2 text-sm text-text"
+                  className="focus-ring w-full resize-y rounded-field border border-border bg-surface px-3 py-2 text-body text-text"
                 />
               </div>
 
               {blockingClaims.length > 0 && (
                 <div className="rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2">
-                  <p className="text-xs font-semibold text-[var(--rust)]">
+                  <p className="text-ticker font-semibold text-[var(--rust)]">
                     These spoken claims block publishing:
                   </p>
                   <ul className="mt-1.5 flex flex-col gap-1.5">
                     {blockingClaims.map((c, i) => (
-                      <li key={i} className="text-xs text-text">
-                        <span className="font-mono uppercase text-[var(--rust)]">{c.verdict}</span> · {c.text}
+                      <li key={i} className="text-ticker text-text">
+                        <span className="text-[var(--rust)]">{c.verdict}</span> · {c.text}
                       </li>
                     ))}
                   </ul>
@@ -449,8 +449,8 @@ export function AddVideoFlow({
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--verdigris)]/12 text-[var(--verdigris)]">
                 <Check size={22} aria-hidden />
               </span>
-              <p className="text-sm font-semibold text-text">Video published</p>
-              <p className="text-xs text-text-mute">
+              <p className="text-body font-semibold text-text">Video published</p>
+              <p className="text-ticker text-text-mute">
                 It is now attached to your report and will appear in the Feed, on Explore and in the Dispatch.
               </p>
               <Button variant="secondary" onClick={onClose}>

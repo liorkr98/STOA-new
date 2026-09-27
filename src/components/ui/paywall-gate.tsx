@@ -45,8 +45,8 @@ export function PaywallGate({
       )}
 
       <div className={cn("ledger-card p-6 text-center", previewText && "-mt-2")}>
-        <h2 className="t-h3">{headline}</h2>
-        <p className="t-body mx-auto mt-2 max-w-md text-sm">{body}</p>
+        <h2 className="t-title">{headline}</h2>
+        <p className="t-body mx-auto mt-2 max-w-md text-body">{body}</p>
         <ul className="t-meta mx-auto mt-4 max-w-sm space-y-1.5 text-left">
           <li>Fact-checked claims stay on the record</li>
           <li>Platform fee is shown as its own line at checkout (10%)</li>

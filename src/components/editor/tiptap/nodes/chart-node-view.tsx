@@ -266,7 +266,7 @@ function LightweightChartNodeView({
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: axis,
         fontFamily: canvasFont(),
-        fontSize: 11,
+        fontSize: 13,
         attributionLogo: false,
       },
       grid: { vertLines: { visible: false }, horzLines: { color: grid } },
@@ -539,7 +539,7 @@ function LightweightChartNodeView({
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), commitTicker())}
             onMouseDown={stopEditorCapture}
             placeholder="Ticker"
-            className="num w-16 bg-transparent text-sm font-semibold focus:outline-none"
+            className="num w-16 bg-transparent text-body font-semibold focus:outline-none"
           />
         </span>
 
@@ -562,7 +562,7 @@ function LightweightChartNodeView({
             onMouseDown={stopEditorCapture}
             onClick={() => toggleIndicator(preset.indicator)}
             className={cn(
-              "rounded-button px-2 py-0.5 text-[10px] font-medium transition-colors focus-ring",
+              "rounded-button px-2 py-0.5 text-ticker font-medium transition-colors focus-ring",
               hasIndicator(preset.indicator)
                 ? "bg-accent-weak text-accent"
                 : "text-text-faint hover:bg-surface-2 hover:text-text",
@@ -626,7 +626,7 @@ function LightweightChartNodeView({
       )}
 
       {ticker && (
-        <div className="flex flex-wrap items-center gap-3 px-3 pt-2 text-[11px] text-text-mute">
+        <div className="flex flex-wrap items-center gap-3 px-3 pt-2 text-ticker text-text-mute">
           <TickerChip ticker={ticker} />
           {readout ? (
             readout.o != null ? (
@@ -640,13 +640,13 @@ function LightweightChartNodeView({
               <span className="num text-text">{readout.c.toFixed(2)}</span>
             )
           ) : (
-            <span className="t-meta text-[11px]">Hover for price</span>
+            <span className="t-meta text-ticker">Hover for price</span>
           )}
           {drawMode === "hline" && status === "ready" && (
-            <span className="t-meta text-[11px] text-accent">Click chart to add a level</span>
+            <span className="t-meta text-ticker text-accent">Click chart to add a level</span>
           )}
           {drawMode === "trend" && status === "ready" && (
-            <span className="t-meta text-[11px] text-accent">
+            <span className="t-meta text-ticker text-accent">
               {trendDraft ? "Click second point" : "Click first point"}
             </span>
           )}
@@ -668,20 +668,20 @@ function LightweightChartNodeView({
           (!isEditable && (status === "empty" || status === "auth") ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
               <BarChart2 size={22} className="text-text-faint" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }} />
-              <p className="text-sm" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }}>
+              <p className="text-body" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }}>
                 Chart unavailable
               </p>
             </div>
           ) : (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <p className="t-meta text-[12px]">{statusMessage}</p>
+              <p className="t-meta text-ticker">{statusMessage}</p>
             </div>
           ))}
       </div>
 
       {sourceText && (
-        <p className="border-t border-border px-3 py-2 text-[11px] leading-relaxed text-text-faint">
-          <span className="t-eyebrow text-[10px] text-text-mute">From selection · </span>
+        <p className="border-t border-border px-3 py-2 text-ticker leading-relaxed text-text-faint">
+          <span className="t-meta text-ticker text-text-mute">From selection · </span>
           {sourceText.length > 220 ? `${sourceText.slice(0, 220)}…` : sourceText}
         </p>
       )}
@@ -710,7 +710,7 @@ function Segmented<T extends string>({
           }}
           onMouseDown={stopEditorCapture}
           className={cn(
-            "rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition-colors",
+            "rounded-[4px] px-2 py-0.5 text-ticker font-medium transition-colors",
             value === o.key ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
           )}
         >

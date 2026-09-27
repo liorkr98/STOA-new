@@ -19,8 +19,8 @@ export function FirstReportBanner() {
     <div className="mb-5 rounded-panel border border-accent/30 bg-accent-weak p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="t-h3">Your first report</p>
-          <p className="t-body mt-1 text-sm">
+          <p className="t-title">Your first report</p>
+          <p className="t-body mt-1 text-body">
             Write in the center, then publish from the last step: tags, access and disclosures.
           </p>
         </div>
@@ -34,15 +34,15 @@ export function FirstReportBanner() {
       </div>
 
       <ul className="mt-4 grid gap-2.5 sm:grid-cols-3">
-        <li className="flex items-start gap-2 text-sm text-text-mute">
+        <li className="flex items-start gap-2 text-body text-text-mute">
           <LockSimple size={15} className="mt-0.5 shrink-0 text-accent" />
           A ticker and a direction are optional. Once published, they cannot change.
         </li>
-        <li className="flex items-start gap-2 text-sm text-text-mute">
+        <li className="flex items-start gap-2 text-body text-text-mute">
           <Sparkle size={15} className="mt-0.5 shrink-0 text-accent" />
           Run the AI fact-checker before you publish. Optional, and readers see the result.
         </li>
-        <li className="flex items-start gap-2 text-sm text-text-mute">
+        <li className="flex items-start gap-2 text-body text-text-mute">
           <ListChecks size={15} className="mt-0.5 shrink-0 text-accent" />
           The disclosure checklist is required -- investors always see it.
         </li>

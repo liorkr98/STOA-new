@@ -23,7 +23,7 @@ const txnLabel: Record<TxnType, string> = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="num border-b border-[var(--ink)] pb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">
+    <div className="num border-b border-[var(--ink)] pb-3 text-ticker text-text-mute">
       {children}
     </div>
   );
@@ -44,7 +44,7 @@ export default async function WalletPage() {
     <div className="mx-auto flex max-w-[var(--w-reading)] flex-col gap-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Wallet</h1>
+          <h1 className="font-display text-headline font-semibold tracking-tight">Wallet</h1>
           <p className="t-body mt-2">Credits and spending.</p>
         </div>
         <TopUpButton />
@@ -53,12 +53,12 @@ export default async function WalletPage() {
       {/* Metric strip */}
       <div className="grid grid-cols-2 gap-2.5 md:gap-3.5">
         <div className="rounded-panel bg-surface-2 px-5 py-4">
-          <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">Balance</div>
-          <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{usd(balance, { cents: true })}</div>
+          <div className="num text-ticker text-text-mute">Balance</div>
+          <div className="mt-2.5 text-headline font-semibold tracking-tight">{usd(balance, { cents: true })}</div>
         </div>
         <div className="rounded-panel bg-surface-2 px-5 py-4">
-          <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">AI credits</div>
-          <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{wallet?.ai_credits ?? 0}</div>
+          <div className="num text-ticker text-text-mute">AI credits</div>
+          <div className="mt-2.5 text-headline font-semibold tracking-tight">{wallet?.ai_credits ?? 0}</div>
         </div>
       </div>
 
@@ -69,12 +69,12 @@ export default async function WalletPage() {
       <section className="flex flex-col gap-4">
         <SectionLabel>Payment method</SectionLabel>
         <div className="flex items-center gap-4 rounded-panel border border-border bg-surface p-5">
-          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-sm font-medium">
+          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-body font-medium">
             PP
           </span>
           <div className="flex-1">
-            <p className="text-sm">PayPal</p>
-            <p className="num mt-1 text-[10px] uppercase tracking-[0.14em] text-[var(--rust)]">Not connected</p>
+            <p className="text-body">PayPal</p>
+            <p className="num mt-1 text-ticker text-[var(--rust)]">Not connected</p>
           </div>
           <button type="button" className={buttonClass("secondary", "sm")} disabled>
             Connect
@@ -89,7 +89,7 @@ export default async function WalletPage() {
           <p className="t-meta mt-3">No activity yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-[10px] uppercase tracking-[0.16em] text-text-faint md:grid">
+            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-ticker text-text-faint md:grid">
               <div>Date</div>
               <div>Description</div>
               <div className="text-right">Amount</div>
@@ -100,13 +100,13 @@ export default async function WalletPage() {
               return (
                 <div
                   key={t.id}
-                  className="num flex items-center justify-between gap-5 border-b border-border py-3 text-[12.5px] md:grid md:grid-cols-[120px_1fr_110px]"
+                  className="num flex items-center justify-between gap-5 border-b border-border py-3 text-ticker md:grid md:grid-cols-[120px_1fr_110px]"
                 >
                   <div className="hidden text-text-mute md:block">
                     {format(new Date(t.created_at), "MMM d, yyyy").toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <span className="font-sans text-[14px]">{txnLabel[t.type]}</span>
+                    <span className="font-sans text-body">{txnLabel[t.type]}</span>
                     {t.memo && <span className="ml-2 text-text-faint">{t.memo}</span>}
                     <span className="ml-2 text-text-faint md:hidden">
                       {format(new Date(t.created_at), "MMM d").toUpperCase()}

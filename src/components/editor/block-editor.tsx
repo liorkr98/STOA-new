@@ -7,7 +7,7 @@ import { FactCheckedText } from "@/components/report/fact-check-layer";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg/80 px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg/80 px-3 py-2 text-body focus-ring";
 
 export function BlockEditor({
   block,
@@ -27,7 +27,7 @@ export function BlockEditor({
 
   if (block.type === "heading") {
     if (readOnly) {
-      return <h2 className="t-h2 font-semibold" dir="auto">{String(c.text ?? "")}</h2>;
+      return <h2 className="t-title font-semibold" dir="auto">{String(c.text ?? "")}</h2>;
     }
     return (
       <input
@@ -35,7 +35,7 @@ export function BlockEditor({
         onChange={(e) => onChange({ ...c, text: e.target.value })}
         placeholder="Section heading"
         dir="auto"
-        className="t-h2 user-copy w-full bg-transparent font-semibold placeholder:text-text-mute focus:outline-none"
+        className="t-title user-copy w-full bg-transparent font-semibold placeholder:text-text-mute focus:outline-none"
       />
     );
   }
@@ -70,13 +70,13 @@ export function BlockEditor({
     return (
       <div className="rounded-inner border border-accent/30 bg-accent-weak/50 p-4">
         {readOnly ? (
-          <p className="user-copy whitespace-pre-wrap text-sm leading-relaxed" dir="auto">{text}</p>
+          <p className="user-copy whitespace-pre-wrap text-body leading-relaxed" dir="auto">{text}</p>
         ) : (
           <textarea
             value={text}
             onChange={(e) => onChange({ ...c, text: e.target.value })}
             rows={3}
-            className="user-copy w-full resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
+            className="user-copy w-full resize-none bg-transparent text-body leading-relaxed focus:outline-none"
             dir="auto"
           />
         )}
@@ -122,28 +122,28 @@ export function BlockEditor({
     return (
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-inner border border-[color-mix(in_srgb,var(--up)_35%,transparent)] bg-[color-mix(in_srgb,var(--up)_8%,transparent)] p-3">
-          <p className="t-eyebrow mb-2 text-[var(--up)]">Bull case</p>
+          <p className="t-meta mb-2 text-[var(--up)]">Bull case</p>
           {readOnly ? (
-            <p className="whitespace-pre-wrap text-sm">{bull}</p>
+            <p className="whitespace-pre-wrap text-body">{bull}</p>
           ) : (
             <textarea
               value={bull}
               onChange={(e) => onChange({ ...c, bull: e.target.value })}
               rows={4}
-              className="w-full resize-none bg-transparent text-sm focus:outline-none"
+              className="w-full resize-none bg-transparent text-body focus:outline-none"
             />
           )}
         </div>
         <div className="rounded-inner border border-[color-mix(in_srgb,var(--down)_35%,transparent)] bg-[color-mix(in_srgb,var(--down)_8%,transparent)] p-3">
-          <p className="t-eyebrow mb-2 text-[var(--down)]">Bear case</p>
+          <p className="t-meta mb-2 text-[var(--down)]">Bear case</p>
           {readOnly ? (
-            <p className="whitespace-pre-wrap text-sm">{bear}</p>
+            <p className="whitespace-pre-wrap text-body">{bear}</p>
           ) : (
             <textarea
               value={bear}
               onChange={(e) => onChange({ ...c, bear: e.target.value })}
               rows={4}
-              className="w-full resize-none bg-transparent text-sm focus:outline-none"
+              className="w-full resize-none bg-transparent text-body focus:outline-none"
             />
           )}
         </div>
@@ -158,12 +158,12 @@ export function BlockEditor({
         {items.map((m, i) => (
           <div key={i} className="rounded-inner border border-border bg-bg/50 p-3">
             <div className="t-meta">{m.label}</div>
-            <div className="num mt-1 text-lg font-semibold">{m.value}</div>
+            <div className="num mt-1 text-title font-semibold">{m.value}</div>
           </div>
         ))}
         {!readOnly && (
           <input
-            className={cn(inputClass, "col-span-full text-xs")}
+            className={cn(inputClass, "col-span-full text-ticker")}
             value={String(c.items ?? "")}
             onChange={(e) => onChange({ ...c, items: e.target.value })}
             placeholder="Label|Value|Label|Value (pipe-separated pairs)"

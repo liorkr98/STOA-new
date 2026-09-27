@@ -46,7 +46,7 @@ export function ProfileSections({
                 {specialties.map((s) => (
                   <span
                     key={s}
-                    className="rounded-chip border border-border bg-bg px-2 py-0.5 text-xs text-text-mute"
+                    className="rounded-chip border border-border bg-bg px-2 py-0.5 text-ticker text-text-mute"
                   >
                     {s}
                   </span>
@@ -63,7 +63,7 @@ export function ProfileSections({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-chip border border-border bg-bg px-2.5 py-1 text-xs font-medium text-accent hover:border-accent/40"
+                    className="rounded-chip border border-border bg-bg px-2.5 py-1 text-ticker font-medium text-accent hover:border-accent/40"
                   >
                     {link.label}
                   </a>
@@ -74,12 +74,12 @@ export function ProfileSections({
           if (section.type === "featured" && tickers.length > 0) {
             return (
               <div key={section.id} className="flex flex-wrap items-center gap-2">
-                <span className="t-meta text-[11px]">Watching</span>
+                <span className="t-meta text-ticker">Watching</span>
                 {tickers.map((t) => (
                   <Link
                     key={t}
                     href={`/markets/${t}`}
-                    className="num rounded-chip border border-border bg-bg px-2 py-0.5 text-xs font-semibold hover:border-accent/40"
+                    className="num rounded-chip border border-border bg-bg px-2 py-0.5 text-ticker font-semibold hover:border-accent/40"
                   >
                     {t}
                   </Link>

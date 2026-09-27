@@ -105,6 +105,13 @@
   /* Tickers only. Prices and other figures are Inter with tabular figures. */
   --font-mono: var(--font-jetbrains), ui-monospace, Menlo, monospace;
 
+  /* The five type sizes. Mirrored into Tailwind as text-display ... text-ticker. */
+  --type-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
+  --type-headline: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+  --type-title: 1.1875rem;
+  --type-body: 0.9375rem;
+  --type-ticker: 0.8125rem;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -469,18 +476,18 @@
   /* Five sizes. Tailwind's own scale (text-xs ... text-9xl) is deleted so a
    * sixth size cannot creep back in through a utility. */
   --text-*: initial;
-  --text-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
+  --text-display: var(--type-display);
   --text-display--line-height: 0.96;
   --text-display--letter-spacing: -0.045em;
-  --text-headline: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+  --text-headline: var(--type-headline);
   --text-headline--line-height: 1.08;
   --text-headline--letter-spacing: -0.03em;
-  --text-title: 1.1875rem;
+  --text-title: var(--type-title);
   --text-title--line-height: 1.25;
   --text-title--letter-spacing: -0.015em;
-  --text-body: 0.9375rem;
+  --text-body: var(--type-body);
   --text-body--line-height: 1.5;
-  --text-ticker: 0.8125rem;
+  --text-ticker: var(--type-ticker);
   --text-ticker--line-height: 1.4;
 
   /* The --space-N ramp (docs/FRONTEND.md 7.2) is for hand-written CSS only.
@@ -547,6 +554,10 @@ html {
 
 body {
   font-family: var(--font-sans);
+  font-size: var(--type-body);
+  line-height: 1.5;
+  /* Tabular figures everywhere, so prices and counts line up. */
+  font-feature-settings: "tnum" 1;
   background: var(--paper);
   color: var(--text);
 }
@@ -557,76 +568,79 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
- * Type scale
+ * Type: five sizes, three faces. docs/DESIGN_LANGUAGE.md section 3.
+ *
+ *   display   Bricolage 800   page mastheads
+ *   headline  Bricolage 800   section heads, lead headlines
+ *   title     Bricolage 700   card titles, dialog titles
+ *   body      Inter 400/500   reading and UI; tabular figures on
+ *   ticker    13px            the ticker symbol (JetBrains Mono) and, in
+ *                             Inter, every caption, chip and meta line
+ *
+ * Tailwind utilities text-display / -headline / -title / -body / -ticker
+ * set the size alone; the .t-* classes below set face, weight and colour.
+ * No uppercase, no letterspaced labels, and mono only on a ticker.
  * ------------------------------------------------------------------ */
 
 .t-display {
   font-family: var(--font-display);
-  font-weight: 680;
-  letter-spacing: -0.01em;
-  line-height: 1.04;
-  font-size: clamp(2.5rem, 1.6rem + 4.4vw, 4rem);
+  font-weight: 800;
+  font-size: var(--type-display);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
 }
 
-.t-h1 {
+.t-headline {
   font-family: var(--font-display);
-  font-weight: 640;
-  letter-spacing: -0.008em;
-  line-height: 1.1;
-  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 2.75rem);
+  font-weight: 800;
+  font-size: var(--type-headline);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
-.t-h2 {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  font-size: clamp(1.375rem, 1.15rem + 1vw, 1.5rem);
-}
-
-.t-h3 {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.3;
-  font-size: 1.125rem;
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--type-title);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
 }
 
 .t-body {
   font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: var(--type-body);
+  line-height: 1.6;
   color: var(--text-mute);
   max-width: 65ch;
 }
 
+/* Long-form reading: the body size with a longer line and full ink. */
 .t-body-editorial {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  font-size: var(--type-body);
+  line-height: 1.75;
   color: var(--text);
   max-width: 68ch;
 }
 
 .t-meta {
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: var(--type-ticker);
   line-height: 1.4;
-  color: var(--text-faint);
-}
-
-.t-eyebrow {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
-.num {
+/* A ticker symbol. The only place JetBrains Mono appears. */
+.t-ticker {
   font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Figures: Inter with tabular, lining numerals so columns of prices align.
+ * Not mono: mono is for tickers alone. */
+.num {
   font-feature-settings: "tnum" 1, "lnum" 1;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -634,9 +648,9 @@ body {
 /* User-written copy (headlines, comments, report body). First strong
  * character picks the direction so Hebrew is not shaped as LTR gibberish. */
 .user-copy,
-.t-h1,
-.t-h2,
-.t-h3,
+.t-display,
+.t-headline,
+.t-title,
 .t-body,
 .t-body-editorial,
 .today-headline,
@@ -969,21 +983,21 @@ body {
 .stoa-prose {
   font-family: var(--font-sans);
   color: var(--text);
-  font-size: 1.0625rem;
+  font-size: var(--type-body);
   line-height: 1.7;
   padding-inline-start: 1.75rem; /* gutter the drag handle sits in (dir-aware) */
   text-align: start; /* follows block dir; never hardcoded left (Phase 1.3) */
 }
 .stoa-prose > * + * { margin-top: 0.85em; }
 .stoa-prose h2 {
-  font-size: 1.5rem;
+  font-size: var(--type-headline);
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.25;
   margin-top: 1.6em;
 }
 .stoa-prose h3 {
-  font-size: 1.2rem;
+  font-size: var(--type-title);
   font-weight: 600;
   line-height: 1.3;
   margin-top: 1.3em;
@@ -1022,6 +1036,8 @@ body {
 /* $TICKER mark (H1): a quiet accent chip, never sentiment-colored -- a
  * reference, not a call. The hover card supplies the live data. */
 .stoa-ticker {
+  font-family: var(--font-mono);
+  font-weight: 600;
   color: var(--accent);
   background: var(--accent-weak);
   border-radius: var(--r-chip);
@@ -1035,7 +1051,7 @@ body {
   text-underline-offset: 2px;
 }
 .stoa-prose code {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.9em;
   background: var(--surface-2);
   border-radius: var(--r-inner);
@@ -1224,9 +1240,7 @@ body {
 .dispatch-wordmark {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(2.75rem, 1.9rem + 4vw, 4.5rem);
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
+  font-size: var(--type-display);
   color: var(--text);
   line-height: 1;
   text-align: center;
@@ -1234,7 +1248,7 @@ body {
 
 /* On the Today front page the wordmark is the dominant element. */
 .dispatch-page--home .dispatch-wordmark {
-  font-size: clamp(3.5rem, 2rem + 7vw, 6.5rem);
+  font-size: var(--type-display);
   font-weight: 600;
 }
 
@@ -1242,17 +1256,14 @@ body {
 .dispatch-sublabel {
   display: block;
   margin-top: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.55em;
-  text-indent: 0.55em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
 .dispatch-corner {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   line-height: 1.05;
   color: var(--text);
@@ -1260,18 +1271,15 @@ body {
 
 .dispatch-corner-big {
   display: block;
-  font-size: clamp(1.125rem, 0.9rem + 1vw, 1.625rem);
+  font-size: var(--type-headline);
   font-weight: 600;
-  letter-spacing: 0.04em;
 }
 
 .dispatch-corner-small {
   display: block;
   margin-top: 0.125rem;
-  font-size: 0.6875rem;
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
@@ -1317,11 +1325,9 @@ body {
   row-gap: 0.25rem;
   padding-block: var(--space-3);
   border-bottom: 1px dotted var(--border-strong);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
@@ -1336,10 +1342,8 @@ body {
   align-items: center;
   gap: var(--space-4);
   font-family: var(--font-sans);
-  font-size: 0.6875rem;
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--text-faint);
 }
 /* Dotted rules are the reference's signature section divider. */
@@ -1357,7 +1361,7 @@ body {
 .dispatch-lead-headline {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(1.875rem, 1.3rem + 2.6vw, 3rem);
+  font-size: var(--type-display);
   line-height: 1.08;
   letter-spacing: -0.015em;
   color: var(--text);
@@ -1366,7 +1370,7 @@ body {
 
 .dispatch-lead-dek {
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
+  font-size: var(--type-body);
   line-height: 1.65;
   color: var(--text-mute);
   max-width: 58ch;
@@ -1401,7 +1405,7 @@ body {
 .dispatch-story-headline {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: var(--type-title);
   line-height: 1.25;
   letter-spacing: -0.005em;
   color: var(--text);
@@ -1424,11 +1428,9 @@ body {
 }
 
 .dispatch-end-slug {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
   color: var(--text-faint);
 }
 
@@ -1464,7 +1466,7 @@ body {
 .band-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  font-size: var(--type-headline);
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -1474,17 +1476,15 @@ body {
  * explains the department, it does not compete to name it. */
 .band-note {
   font-family: var(--font-sans);
-  font-size: 0.8125rem;
+  font-size: var(--type-ticker);
   line-height: 1.4;
   color: var(--text-mute);
 }
 
 .band-see-all {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text-mute);
   white-space: nowrap;
   border-radius: var(--r-button);
@@ -1497,11 +1497,9 @@ body {
 .band-badge {
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--verdigris);
   border: 1px solid color-mix(in srgb, var(--verdigris) 35%, transparent);
   border-radius: var(--r-chip);
@@ -1519,10 +1517,8 @@ body {
 
 .band-col-title {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--text);
 }
 
@@ -1545,21 +1541,18 @@ body {
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
 .today-meta-badge {
-  letter-spacing: 0.12em;
 }
 
 .today-headline {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.3125rem;
+  font-size: var(--type-title);
   line-height: 1.2;
   letter-spacing: -0.005em;
   color: var(--text);
@@ -1573,7 +1566,7 @@ body {
 .today-deck {
   margin-top: 0.4375rem;
   font-family: var(--font-sans);
-  font-size: 0.9375rem;
+  font-size: var(--type-body);
   line-height: 1.45;
   color: var(--text-mute);
   text-wrap: pretty;
@@ -1597,11 +1590,9 @@ body {
 }
 
 .today-row-tag {
-  font-family: var(--font-mono);
-  font-size: 0.5938rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   white-space: nowrap;
   border-radius: var(--r-chip);
   padding: 0.1875rem 0.4375rem;
@@ -1667,9 +1658,8 @@ body {
   position: absolute;
   bottom: 0.25rem;
   inset-inline-end: 0.25rem;
-  font-size: 0.5938rem;
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.04em;
   color: var(--paper);
   background: color-mix(in srgb, var(--ink) 72%, transparent);
   border-radius: var(--r-inner);
@@ -1686,7 +1676,7 @@ body {
 .markets-title {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);
+  font-size: var(--type-display);
   line-height: 1.05;
   letter-spacing: -0.015em;
   color: var(--text);
@@ -1694,11 +1684,9 @@ body {
 
 .markets-dateline {
   margin-top: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
@@ -1722,10 +1710,8 @@ body {
 
 .markets-search-hint {
   margin-top: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
@@ -1748,7 +1734,7 @@ body {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  font-size: 0.875rem;
+  font-size: var(--type-body);
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
@@ -1804,15 +1790,13 @@ body {
   display: inline-flex;
   align-items: baseline;
   gap: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   flex: 0 0 auto;
 }
 
 .markets-tape-label {
-  font-size: 0.625rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
@@ -1847,7 +1831,7 @@ body {
 .markets-theme-name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: var(--type-title);
   line-height: 1.2;
   letter-spacing: -0.005em;
   color: var(--text);
@@ -1856,7 +1840,7 @@ body {
 
 .markets-theme-deck {
   margin-top: var(--space-2);
-  font-size: 0.875rem;
+  font-size: var(--type-body);
   line-height: 1.45;
   color: var(--text-mute);
   text-wrap: pretty;
@@ -1873,16 +1857,14 @@ body {
   gap: var(--space-2);
   padding-block: var(--space-2);
   border-bottom: 1px solid var(--border);
-  font-size: 0.8125rem;
+  font-size: var(--type-ticker);
   color: var(--text);
 }
 
 .markets-theme-foot {
   margin-top: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
@@ -1911,9 +1893,7 @@ body {
 }
 
 .markets-row-meta {
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
@@ -1959,32 +1939,29 @@ body {
 .markets-sector-name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--type-body);
   color: var(--text);
 }
 
 /* ---- reserved / missing data ---- */
 
 .markets-pending {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
 .markets-gap-note {
   margin-top: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
 .markets-empty {
   margin-top: var(--space-4);
   padding-block: var(--space-5);
-  font-size: 0.875rem;
+  font-size: var(--type-body);
   line-height: 1.6;
   color: var(--text-mute);
   max-width: 60ch;
@@ -1999,11 +1976,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--text-mute);
   border-radius: var(--r-button);
 }
@@ -2014,7 +1989,7 @@ body {
 .stock-name {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: clamp(1.875rem, 1.4rem + 2.2vw, 2.75rem);
+  font-size: var(--type-display);
   line-height: 1.08;
   letter-spacing: -0.012em;
   color: var(--text);
@@ -2022,17 +1997,15 @@ body {
 
 .stock-sub {
   margin-top: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-mute);
 }
 
 .stock-price {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem);
+  font-size: var(--type-headline);
   font-variant-numeric: tabular-nums;
   line-height: 1;
   color: var(--text);
@@ -2051,26 +2024,22 @@ body {
   display: inline-flex;
   align-items: baseline;
   gap: var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text);
 }
 
 .stock-meta-key {
-  font-size: 0.625rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
 /* The provenance mark from the Card Engine's three inks: this number is a
  * market fact pulled automatically, not the analyst's estimate. */
 .auto-tag {
-  font-family: var(--font-mono);
-  font-size: 0.5313rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--border);
   border-radius: var(--r-chip);
@@ -2107,11 +2076,9 @@ body {
  * same control, so the rule has to cover each. */
 .calls-tf a,
 .calls-tf button {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   padding: 0.25rem 0.625rem;
   color: var(--text-mute);
   border-inline-end: 1px solid var(--border);
@@ -2141,9 +2108,8 @@ body {
   border: 1px solid var(--border-strong);
   border-radius: var(--r-panel);
   box-shadow: var(--shadow-card);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.06em;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text);
 }
 
@@ -2172,19 +2138,17 @@ body {
 }
 
 .stock-consensus-figure {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 1.375rem;
+  font-size: var(--type-title);
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
 
 .stock-consensus-key {
   margin-top: var(--space-1);
-  font-family: var(--font-mono);
-  font-size: 0.5938rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-faint);
 }
 
@@ -2197,11 +2161,9 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .stock-table th {
-  font-family: var(--font-mono);
-  font-size: 0.5938rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text-faint);
   text-align: left;
   padding-bottom: var(--space-2);
@@ -2210,7 +2172,7 @@ body {
 .stock-table td {
   padding-block: var(--space-3);
   border-bottom: 1px solid var(--border);
-  font-size: 0.8125rem;
+  font-size: var(--type-ticker);
   color: var(--text);
 }
 
@@ -2261,11 +2223,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r-chip);
   padding: 0.125rem 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text-mute);
 }
 
@@ -2278,23 +2238,21 @@ body {
   padding: 0.25rem var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--r-field);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-mute);
 }
 .calls-tf-custom input {
   background: transparent;
   color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   border: none;
   outline: none;
 }
 .calls-tf-custom button {
-  font-size: 0.625rem;
+  font-size: var(--type-ticker);
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--paper);
   background: var(--ink);
   border-radius: var(--r-button);
@@ -2326,7 +2284,7 @@ body {
 }
 
 .etf-exposure-label {
-  font-size: 0.8125rem;
+  font-size: var(--type-ticker);
   color: var(--text);
 }
 
@@ -2429,7 +2387,7 @@ body {
 .sheet-name {
   font-family: var(--font-display);
   font-weight: 640;
-  font-size: 1.5rem;
+  font-size: var(--type-headline);
   line-height: 1.15;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -2437,10 +2395,8 @@ body {
 
 .sheet-sub {
   margin-top: var(--space-1);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-mute);
 }
 
@@ -2468,9 +2424,9 @@ body {
 }
 
 .sheet-price {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: var(--type-headline);
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
@@ -2480,11 +2436,9 @@ body {
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-6);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text);
   border-radius: var(--r-button);
 }
@@ -2538,16 +2492,14 @@ body {
 .rail-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9375rem);
+  font-size: var(--type-headline);
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--text);
 }
 .rail-note {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-mute);
 }
 .rail-arrow {
@@ -2596,10 +2548,8 @@ body {
  * snaps to a row when scrolled, and never scrolls sideways. The row is 44px
  * so a Follow pill's 44px tap area fits inside it instead of spilling out. */
 .today-kicker {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   color: var(--text-mute);
 }
 
@@ -2638,7 +2588,7 @@ body {
  * scrollbar rather than firing on a timer; browsers without animation-timeline
  * simply show the content, and reduced motion collapses it. */
 .landing-wordmark {
-  font-size: clamp(3.5rem, 2rem + 8vw, 7rem);
+  font-size: var(--type-display);
   font-weight: 600;
 }
 .landing-reveal {
@@ -2697,10 +2647,8 @@ body {
 .ts-nameplate-word {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 54px;
+  font-size: var(--type-display);
   line-height: 1;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
   text-align: center;
   color: var(--text);
 }
@@ -2708,12 +2656,10 @@ body {
   border-top: 2px solid var(--ink);
 }
 .ts-dateline {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
   line-height: 1.4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--text-mute);
   white-space: nowrap;
   overflow: hidden;
@@ -2722,17 +2668,15 @@ body {
 
 /* The five sizes. Nothing else on the page sets a headline size. */
 .ts-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
   line-height: 1.3;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--today-accent);
 }
 .ts-byline {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--type-body);
   line-height: 1.3;
   color: var(--text-faint);
 }
@@ -2761,18 +2705,18 @@ body {
 .ts-headline {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 22px;
+  font-size: var(--type-title);
   line-height: 1.2;
   letter-spacing: -0.005em;
   color: var(--text);
   text-wrap: pretty;
 }
 .ts-headline--dense {
-  font-size: 18px;
+  font-size: var(--type-title);
   line-height: 1.25;
 }
 .ts-headline--lead {
-  font-size: 34px;
+  font-size: var(--type-headline);
   line-height: 1.1;
   letter-spacing: -0.01em;
   text-wrap: balance;
@@ -2780,7 +2724,7 @@ body {
 .ts-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 40px;
+  font-size: var(--type-display);
   line-height: 1.05;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -2788,16 +2732,15 @@ body {
 .ts-numeral {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 40px;
+  font-size: var(--type-display);
   line-height: 1;
   color: var(--today-accent);
   font-variant-numeric: tabular-nums;
 }
 .ts-mono {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   line-height: 1.3;
-  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
@@ -2854,11 +2797,9 @@ body {
 
 /* The rail: text rows on hairlines, nothing solid. */
 .ts-rail-head {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-family: var(--font-sans);
+  font-size: var(--type-ticker);
   font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--text-mute);
   padding-bottom: 8px;
   border-bottom: 1px dashed var(--today-rule);
@@ -2873,7 +2814,7 @@ body {
 }
 .ts-follow {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: var(--type-ticker);
   font-weight: 500;
   white-space: nowrap;
   color: var(--today-accent);
@@ -2887,16 +2828,16 @@ body {
 
 @media (max-width: 767px) {
   .ts-nameplate-word {
-    font-size: 40px;
+    font-size: var(--type-display);
   }
   .ts-headline--lead {
-    font-size: 26px;
+    font-size: var(--type-headline);
   }
   .ts-title {
-    font-size: 32px;
+    font-size: var(--type-headline);
   }
   .ts-numeral {
-    font-size: 32px;
+    font-size: var(--type-headline);
   }
 }
 

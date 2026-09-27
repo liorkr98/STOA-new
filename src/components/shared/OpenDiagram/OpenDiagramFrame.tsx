@@ -14,10 +14,10 @@ function LabelBlock({
 }) {
   return (
     <div className={align === "right" ? "text-right" : "text-left"}>
-      <h3 className="text-sm font-semibold" style={{ color }}>
+      <h3 className="text-body font-semibold" style={{ color }}>
         {point.title}
       </h3>
-      <p className="mt-0.5 text-xs text-muted-foreground">{point.content}</p>
+      <p className="mt-0.5 text-ticker text-muted-foreground">{point.content}</p>
     </div>
   );
 }

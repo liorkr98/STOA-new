@@ -133,7 +133,7 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
           <div key={r.symbol} className="markets-row">
             <Link href={`/markets/${r.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={r.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{r.company}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
             <Px value={r.price} />
             <DayChange percent={r.changePercent} />
@@ -169,14 +169,14 @@ export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
           <div key={r.symbol} className="markets-row">
             <Link href={`/markets/${r.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={r.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{r.company}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
             <Link
               href={`/analyst/${r.analyst.handle}`}
               className="focus-ring inline-flex items-center gap-2.5 rounded-button"
             >
               <Avatar src={r.analyst.avatarUrl} name={r.analyst.displayName} size="sm" />
-              <span className="hidden text-[0.8125rem] font-semibold text-text sm:inline">
+              <span className="hidden text-ticker font-semibold text-text sm:inline">
                 {r.analyst.displayName}
               </span>
             </Link>
@@ -245,7 +245,7 @@ export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
           <div key={e.symbol} className="markets-row">
             <Link href={`/markets/${e.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={e.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{e.name}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{e.name}</span>
             </Link>
             <DayChange percent={e.changePercent} />
             {e.publications > 0 && (
@@ -275,7 +275,7 @@ export function ExploreUncovered({ rows }: { rows: MarketRow[] }) {
           <div key={r.symbol} className="markets-row">
             <Link href={`/markets/${r.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={r.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{r.company}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
             <span className="num tabular-nums text-text-mute">
               {r.marketCap == null ? (

@@ -49,12 +49,12 @@ export function FinancialTableNodeView({
       )}
     >
       <div className="flex items-center justify-between border-b border-border px-3 py-2">
-        <p className="t-eyebrow">Table</p>
+        <p className="t-meta">Table</p>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={addColumn}
-            className="flex h-7 items-center gap-1 rounded-button px-2 text-[11px] text-text-mute transition-colors hover:text-text focus-ring"
+            className="flex h-7 items-center gap-1 rounded-button px-2 text-ticker text-text-mute transition-colors hover:text-text focus-ring"
           >
             <Plus size={12} /> Column
           </button>
@@ -70,7 +70,7 @@ export function FinancialTableNodeView({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-body">
           <thead>
             <tr className="border-b border-border">
               {columns.map((c, i) => (
@@ -80,7 +80,7 @@ export function FinancialTableNodeView({
                     onChange={(e) => setColumn(i, e.target.value)}
                     placeholder="Column"
                     className={cn(
-                      "w-full bg-transparent text-xs font-semibold uppercase tracking-wide text-text-mute focus:outline-none placeholder:text-text-mute",
+                      "w-full bg-transparent text-ticker font-semibold text-text-mute focus:outline-none placeholder:text-text-mute",
                       i === 0 ? "text-left" : "text-right",
                     )}
                   />
@@ -124,19 +124,19 @@ export function FinancialTableNodeView({
       <button
         type="button"
         onClick={addRow}
-        className="flex w-full items-center gap-1.5 border-t border-border px-3 py-2 text-left text-xs text-text-mute transition-colors hover:text-text focus-ring"
+        className="flex w-full items-center gap-1.5 border-t border-border px-3 py-2 text-left text-ticker text-text-mute transition-colors hover:text-text focus-ring"
       >
         <Plus size={13} />
         Add row
       </button>
 
       <div className="flex items-center gap-1.5 border-t border-border px-3 py-2">
-        <span className="t-eyebrow text-[10px]">Source</span>
+        <span className="t-meta text-ticker">Source</span>
         <input
           value={source}
           onChange={(e) => updateAttributes({ source: e.target.value })}
           placeholder="Optional source"
-          className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-mute"
+          className="t-meta flex-1 bg-transparent text-ticker focus:outline-none placeholder:text-text-mute"
         />
       </div>
     </NodeViewWrapper>

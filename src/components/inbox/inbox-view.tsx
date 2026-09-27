@@ -72,14 +72,14 @@ function Toggle({ defaultOn }: { defaultOn?: boolean }) {
 function PrefGroup({ title, rows }: { title: string; rows: string[] }) {
   return (
     <div>
-      <div className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{title}</div>
+      <div className="num text-ticker text-text-mute">{title}</div>
       <div className="mt-2 flex flex-col">
-        <div className="num flex items-center justify-end gap-6 pb-1 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <div className="num flex items-center justify-end gap-6 pb-1 text-ticker text-text-faint">
           <span className="w-9 text-center">In-app</span>
           <span className="w-9 text-center">Email</span>
         </div>
         {rows.map((r) => (
-          <div key={r} className="flex items-center justify-between gap-4 border-t border-border py-2.5 text-sm">
+          <div key={r} className="flex items-center justify-between gap-4 border-t border-border py-2.5 text-body">
             <span>{r}</span>
             <div className="flex items-center gap-6">
               <Toggle defaultOn />
@@ -107,20 +107,20 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className={cn("text-[15px] leading-snug", it.danger && "text-[var(--rust)]")}>
+            <p className={cn("text-body leading-snug", it.danger && "text-[var(--rust)]")}>
               {it.confirmed && (
                 <Check size={14} strokeWidth={2} className="mr-1.5 inline text-[var(--verdigris)]" aria-hidden />
               )}
               {it.title}
             </p>
             <div className="mt-1.5 flex items-center gap-3">
-              <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{it.timeLabel}</span>
+              <span className="num text-ticker text-text-faint">{it.timeLabel}</span>
               {it.action &&
                 (needs ? (
                   <Link
                     href={it.href ?? "#"}
                     className={cn(
-                      "rounded-button px-3 py-1.5 text-[13px] font-medium",
+                      "rounded-button px-3 py-1.5 text-ticker font-medium",
                       it.danger
                         ? "bg-[var(--rust)] text-[var(--paper)]"
                         : "bg-[var(--ink)] text-[var(--paper)]",
@@ -131,7 +131,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
                 ) : (
                   <Link
                     href={it.href ?? "#"}
-                    className="num text-[10px] uppercase tracking-[0.14em] text-text hover:text-text-mute"
+                    className="num text-ticker text-text hover:text-text-mute"
                   >
                     {it.action} →
                   </Link>
@@ -175,19 +175,19 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Inbox</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Inbox</h1>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setPrefsOpen((v) => !v)}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-sm hover:border-border-strong"
+            className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-body hover:border-border-strong"
           >
             <SlidersHorizontal size={14} /> Preferences
           </button>
           <button
             type="button"
             onClick={() => start(async () => { await markAllNotificationsRead(); router.refresh(); })}
-            className="num rounded-full border border-border px-3.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text-mute hover:border-border-strong"
+            className="num rounded-full border border-border px-3.5 py-1.5 text-ticker text-text-mute hover:border-border-strong"
           >
             Mark all read
           </button>
@@ -198,7 +198,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
         <div className="flex flex-col gap-6 rounded-panel border border-border bg-surface p-6">
           <PrefGroup title="Reading" rows={READING_PREFS} />
           {isAnalyst && <PrefGroup title="Your research" rows={RESEARCH_PREFS} />}
-          <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          <p className="num text-ticker text-text-faint">
             These choices are not saved yet, so they reset when you leave.
           </p>
         </div>
@@ -211,7 +211,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
             type="button"
             onClick={() => setFilter(c.key)}
             className={cn(
-              "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
+              "num shrink-0 rounded-full border px-4 py-1.5 text-ticker transition-colors",
               filter === c.key
                 ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                 : "border-border text-text-mute hover:border-border-strong",
@@ -224,8 +224,8 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
 
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline gap-2.5">
-          <h2 className="font-display text-xl font-semibold tracking-tight">Needs you</h2>
-          <span className="num text-[11px] text-text-mute">{needs.length}</span>
+          <h2 className="font-display text-title font-semibold tracking-tight">Needs you</h2>
+          <span className="num text-ticker text-text-mute">{needs.length}</span>
         </div>
         {needs.length === 0 ? (
           <p className="t-meta">Nothing needs your attention right now.</p>
@@ -240,8 +240,8 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
 
       <section className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2.5">
-          <h2 className="font-display text-xl font-semibold tracking-tight">Good to know</h2>
-          <span className="num text-[11px] text-text-mute">{good.length}</span>
+          <h2 className="font-display text-title font-semibold tracking-tight">Good to know</h2>
+          <span className="num text-ticker text-text-mute">{good.length}</span>
         </div>
         {good.length === 0 ? (
           <p className="t-meta">Nothing here.</p>

@@ -61,9 +61,9 @@ export default function ComponentPreviewPage() {
 
   return (
     <div className="min-h-screen bg-paper p-12">
-      <p className="t-eyebrow mb-8">Scratch preview -- delete before ship</p>
+      <p className="t-meta mb-8">Scratch preview -- delete before ship</p>
 
-      <p className="t-eyebrow mb-4">EditedMarker (on the publication) and EditedFlag (in a list)</p>
+      <p className="t-meta mb-4">EditedMarker (on the publication) and EditedFlag (in a list)</p>
       <div className="flex flex-wrap items-center gap-6 mb-12">
         <span className="flex items-center gap-2">
           <span className="t-meta">@ana_petrova · 3 days ago</span>
@@ -72,7 +72,7 @@ export default function ComponentPreviewPage() {
         <EditedFlag editedAt="2026-08-29T14:32:00.000Z" />
       </div>
 
-      <p className="t-eyebrow mb-4">DisclosureBlock</p>
+      <p className="t-meta mb-4">DisclosureBlock</p>
       <div className="grid max-w-md gap-4 mb-12">
         <DisclosureBlock holdsPosition={false} compensationTied={false} />
         <DisclosureBlock
@@ -82,12 +82,12 @@ export default function ComponentPreviewPage() {
         />
       </div>
 
-      <p className="t-eyebrow mb-4">DyorBar</p>
+      <p className="t-meta mb-4">DyorBar</p>
       <div className="max-w-md mb-12">
         <DyorBar />
       </div>
 
-      <p className="t-eyebrow mb-4">PaywallGate (single CTA, real-world case)</p>
+      <p className="t-meta mb-4">PaywallGate (single CTA, real-world case)</p>
       <div className="max-w-2xl mb-12">
         <PaywallGate
           previewText="Nvidia's data center revenue accelerated again this quarter, and the setup into the next print looks asymmetric. The read-through for the broader AI capex cycle is the part most investors are still underpricing, and here's why the entry point matters more than the headline number..."
@@ -98,7 +98,7 @@ export default function ComponentPreviewPage() {
         />
       </div>
 
-      <p className="t-eyebrow mb-4">PaywallGate (both CTAs, if access model allowed it)</p>
+      <p className="t-meta mb-4">PaywallGate (both CTAs, if access model allowed it)</p>
       <div className="max-w-2xl mb-12">
         <PaywallGate
           onUnlock={<Button variant="secondary" className="w-full">Unlock this report -- $4</Button>}
@@ -108,7 +108,7 @@ export default function ComponentPreviewPage() {
         />
       </div>
 
-      <p className="t-eyebrow mb-4">FactCheckLayer</p>
+      <p className="t-meta mb-4">FactCheckLayer</p>
       <div className="max-w-2xl mb-12">
         <FactCheckLayer claims={sampleClaims} />
         <div className="t-body-editorial whitespace-pre-wrap mt-4">

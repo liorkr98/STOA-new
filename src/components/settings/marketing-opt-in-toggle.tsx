@@ -24,7 +24,7 @@ export function MarketingOptInToggle({ defaultOn }: { defaultOn: boolean }) {
 
   return (
     <div>
-      <label className="flex items-center justify-between gap-4 text-sm">
+      <label className="flex items-center justify-between gap-4 text-body">
         <span>Product and research emails</span>
         <button
           type="button"
@@ -46,11 +46,11 @@ export function MarketingOptInToggle({ defaultOn }: { defaultOn: boolean }) {
           />
         </button>
       </label>
-      <p className="mt-1 text-[0.8125rem] leading-snug text-text-mute">
+      <p className="mt-1 text-ticker leading-snug text-text-mute">
         Off unless you opt in. Required account mail (sign-in, receipts) is separate.
       </p>
       {error ? (
-        <p className="mt-1 text-[0.8125rem] text-[var(--down)]" role="alert">
+        <p className="mt-1 text-ticker text-[var(--down)]" role="alert">
           {error}
         </p>
       ) : null}

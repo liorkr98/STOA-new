@@ -115,14 +115,14 @@ export default function PortfolioPage() {
     <DensityRoot className="mx-auto w-full max-w-[var(--w-standard)] flex flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="t-h1">Portfolio</h1>
+          <h1 className="t-headline">Portfolio</h1>
           <p className="t-body mt-1">Track holdings, cost basis, and live P/L.</p>
         </div>
         {rows.length > 0 && (
           <div className="text-right">
-            <div className="num text-2xl font-semibold">{money(totals.value)}</div>
+            <div className="num text-headline font-semibold">{money(totals.value)}</div>
             <div
-              className="num text-sm"
+              className="num text-body"
               style={{ color: totals.pl >= 0 ? "var(--up)" : "var(--down)" }}
             >
               {totals.pl >= 0 ? "+" : ""}
@@ -164,7 +164,7 @@ function AddHoldingForm({ onAdd }: { onAdd: (h: Holding) => void }) {
     setCost("");
   }
 
-  const field = "h-10 rounded-field border border-border bg-surface px-3 text-sm focus-ring";
+  const field = "h-10 rounded-field border border-border bg-surface px-3 text-body focus-ring";
 
   return (
     <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
@@ -194,7 +194,7 @@ function AddHoldingForm({ onAdd }: { onAdd: (h: Holding) => void }) {
       />
       <button
         type="submit"
-        className="inline-flex h-10 items-center gap-1.5 rounded-button bg-accent px-3 text-sm font-semibold text-accent-ink focus-ring"
+        className="inline-flex h-10 items-center gap-1.5 rounded-button bg-accent px-3 text-body font-semibold text-accent-ink focus-ring"
       >
         <Plus size={15} /> Add
       </button>

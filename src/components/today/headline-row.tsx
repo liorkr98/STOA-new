@@ -52,12 +52,12 @@ export function HeadlineRow({
             className="focus-ring inline-flex items-center gap-2.5 rounded-button"
           >
             <Avatar src={item.author.avatarUrl} name={item.author.displayName} size="sm" />
-            <span dir="auto" className="user-copy text-[0.8125rem] font-semibold text-text">
+            <span dir="auto" className="user-copy text-ticker font-semibold text-text">
               {item.author.displayName}
             </span>
           </Link>
           {time ? (
-            <span className="num text-[0.6875rem] tracking-[0.08em] text-text-faint">
+            <span className="num text-ticker text-text-faint">
               <span aria-hidden>· </span>
               {time}
             </span>

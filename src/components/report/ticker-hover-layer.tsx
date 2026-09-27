@@ -81,16 +81,16 @@ export function TickerHoverLayer({ containerRef }: { containerRef?: React.RefObj
       onMouseLeave={() => setCard(null)}
     >
       <div className="flex items-baseline justify-between gap-2">
-        <span className="num text-sm font-semibold">{card.ticker}</span>
+        <span className="num text-body font-semibold">{card.ticker}</span>
         {data?.price != null ? (
-          <span className="num text-sm">${data.price.toFixed(2)}</span>
+          <span className="num text-body">${data.price.toFixed(2)}</span>
         ) : (
-          <span className="t-meta text-[11px]">{data ? "no data" : "loading..."}</span>
+          <span className="t-meta text-ticker">{data ? "no data" : "loading..."}</span>
         )}
       </div>
       {data?.change != null && (
         <span
-          className="num text-[11px]"
+          className="num text-ticker"
           style={{ color: data.change >= 0 ? "var(--up)" : "var(--down)" }}
         >
           {data.change >= 0 ? "+" : ""}
@@ -104,7 +104,7 @@ export function TickerHoverLayer({ containerRef }: { containerRef?: React.RefObj
       )}
       <Link
         href={`/markets/${card.ticker}`}
-        className="t-meta mt-2 block text-[11px] underline hover:text-text"
+        className="t-meta mt-2 block text-ticker underline hover:text-text"
       >
         Open {card.ticker} coverage
       </Link>

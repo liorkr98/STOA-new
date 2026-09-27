@@ -27,7 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 function InkSwitch({ value, onChange }: { value: ProvenanceInk; onChange: (i: ProvenanceInk) => void }) {
   if (value === "auto") {
     return (
-      <span className="num shrink-0 rounded-chip border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+      <span className="num shrink-0 rounded-chip border border-border px-1.5 py-0.5 text-ticker text-text-faint">
         Auto
       </span>
     );
@@ -42,7 +42,7 @@ function InkSwitch({ value, onChange }: { value: ProvenanceInk; onChange: (i: Pr
           aria-checked={value === i}
           onClick={() => onChange(i)}
           className={cn(
-            "num px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] focus-ring first:rounded-l-[3px] last:rounded-r-[3px]",
+            "num px-1.5 py-0.5 text-ticker focus-ring first:rounded-l-[3px] last:rounded-r-[3px]",
             value === i
               ? i === "creator_est"
                 ? "bg-[var(--brass)] text-[var(--paper)]"
@@ -78,7 +78,7 @@ function InkField({
         onChange={(e) => onChange({ ...value, text: e.target.value })}
         aria-label={isAuto ? `${value.text} (imported market data, not editable)` : placeholder}
         className={cn(
-          "min-w-0 flex-1 rounded-[4px] border border-border px-2 py-1 text-[0.8125rem] text-text focus-ring",
+          "min-w-0 flex-1 rounded-[4px] border border-border px-2 py-1 text-ticker text-text focus-ring",
           isAuto ? "bg-surface-2 text-text-mute" : "bg-bg",
         )}
       />
@@ -102,7 +102,7 @@ function AddLine({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="num focus-ring mt-1.5 flex items-center gap-1 rounded text-[10px] uppercase tracking-[0.14em] text-text-mute hover:text-text"
+      className="num focus-ring mt-1.5 flex items-center gap-1 rounded text-ticker text-text-mute hover:text-text"
     >
       <Plus size={11} /> {label}
     </button>
@@ -112,7 +112,7 @@ function AddLine({ label, onClick }: { label: string; onClick: () => void }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="num mb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">{label}</div>
+      <div className="num mb-1 text-ticker text-text-faint">{label}</div>
       {children}
     </div>
   );
@@ -121,7 +121,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const CARD_IMAGE_BUCKET = "report-images";
 
 const inputClass =
-  "w-full rounded-[4px] border border-border bg-bg px-2 py-1.5 text-[0.8125rem] text-text focus-ring";
+  "w-full rounded-[4px] border border-border bg-bg px-2 py-1.5 text-ticker text-text focus-ring";
 
 export function CardEditor({
   card,
@@ -177,17 +177,17 @@ export function CardEditor({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
         <div className="min-w-0">
-          <p className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">
+          <p className="num text-ticker text-text-mute">
             {kindSpec(card.kind)?.label ?? cardName(card)}
           </p>
-          <p className="mt-0.5 truncate text-[0.8125rem] text-text-mute">{kindSpec(card.kind)?.blurb}</p>
+          <p className="mt-0.5 truncate text-ticker text-text-mute">{kindSpec(card.kind)?.blurb}</p>
         </div>
         <button
           type="button"
           onClick={() => onChange({ ...card, locked: !card.locked })}
           aria-pressed={card.locked}
           className={cn(
-            "num focus-ring flex items-center gap-1.5 rounded-button border px-2 py-1 text-[10px] uppercase tracking-[0.12em]",
+            "num focus-ring flex items-center gap-1.5 rounded-button border px-2 py-1 text-ticker",
             card.locked ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]" : "border-border text-text-mute hover:text-text",
           )}
         >
@@ -240,7 +240,7 @@ export function CardEditor({
                       ),
                     })
                   }
-                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-[0.8125rem] text-text focus-ring"
+                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-ticker text-text focus-ring"
                 />
                 <div className="min-w-0 flex-1">
                   <InkField
@@ -299,15 +299,15 @@ export function CardEditor({
                   value={e.dateISO}
                   onChange={(ev) => edit({ dateISO: ev.target.value })}
                   aria-label="Date"
-                  className="num shrink-0 rounded-[4px] border border-border bg-bg px-2 py-1 text-[0.8125rem] text-text focus-ring"
+                  className="num shrink-0 rounded-[4px] border border-border bg-bg px-2 py-1 text-ticker text-text focus-ring"
                 />
                 <input
                   value={e.label}
                   placeholder="What happens"
                   onChange={(ev) => edit({ label: ev.target.value })}
-                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-[0.8125rem] text-text focus-ring"
+                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-ticker text-text focus-ring"
                 />
-                <label className="num flex shrink-0 items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-text-mute">
+                <label className="num flex shrink-0 items-center gap-1 text-ticker text-text-mute">
                   <input type="checkbox" checked={e.past} onChange={(ev) => edit({ past: ev.target.checked })} />
                   Past
                 </label>
@@ -343,13 +343,13 @@ export function CardEditor({
                   value={r.label}
                   placeholder="The check"
                   onChange={(ev) => edit({ label: ev.target.value })}
-                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-[0.8125rem] text-text focus-ring"
+                  className="min-w-0 flex-1 rounded-[4px] border border-border bg-bg px-2 py-1 text-ticker text-text focus-ring"
                 />
                 <select
                   value={r.status}
                   onChange={(ev) => edit({ status: ev.target.value })}
                   aria-label="Result"
-                  className="num shrink-0 rounded-[4px] border border-border bg-bg px-1.5 py-1 text-[10px] uppercase tracking-[0.1em] text-text focus-ring"
+                  className="num shrink-0 rounded-[4px] border border-border bg-bg px-1.5 py-1 text-ticker text-text focus-ring"
                 >
                   <option value="done">Held</option>
                   <option value="pending">Pending</option>
@@ -423,13 +423,13 @@ export function CardEditor({
                   setUploadingImage(false);
                 }
               }}
-              className="text-[0.8125rem] text-text-mute file:mr-2 file:rounded-[4px] file:border file:border-border file:bg-surface file:px-2 file:py-1 file:text-[0.8125rem] file:text-text"
+              className="text-ticker text-text-mute file:mr-2 file:rounded-[4px] file:border file:border-border file:bg-surface file:px-2 file:py-1 file:text-ticker file:text-text"
             />
             {uploadingImage ? (
-              <p className="mt-1.5 text-[0.75rem] text-text-mute">Uploading...</p>
+              <p className="mt-1.5 text-ticker text-text-mute">Uploading...</p>
             ) : null}
             {imageError ? (
-              <p className="mt-1.5 text-[0.75rem] text-rust">{imageError}</p>
+              <p className="mt-1.5 text-ticker text-rust">{imageError}</p>
             ) : null}
             {p.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -466,7 +466,7 @@ export function CardEditor({
             />
           </Field>
           <div className="rounded-panel border border-border bg-paper p-3">
-            <p className="num mb-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">Preview</p>
+            <p className="num mb-2 text-ticker text-text-faint">Preview</p>
             <CardPreview card={card} compact />
           </div>
         </>
@@ -496,14 +496,14 @@ export function CardEditor({
       ) : null}
 
       {card.kind === "unlock" ? (
-        <p className="text-[0.8125rem] leading-snug text-text-mute">
+        <p className="text-ticker leading-snug text-text-mute">
           The call to action. It is always last and always free, because it is what sells the rest.
           Its price comes from Access when you publish.
         </p>
       ) : null}
 
       <div className="border-t border-border pt-3">
-        <p className="num text-[10px] uppercase leading-relaxed tracking-[0.12em] text-text-faint">
+        <p className="num text-ticker leading-relaxed text-text-faint">
           Est. is your number · Auto is imported and cannot be edited
         </p>
         {/* One way out that reads as finishing, not as abandoning. Done is
@@ -514,13 +514,13 @@ export function CardEditor({
             <button
               type="button"
               onClick={onDelete}
-              className="focus-ring flex items-center gap-1.5 rounded-button px-2 py-1.5 text-[0.8125rem] text-text-mute transition-colors hover:text-[var(--rust)]"
+              className="focus-ring flex items-center gap-1.5 rounded-button px-2 py-1.5 text-ticker text-text-mute transition-colors hover:text-[var(--rust)]"
             >
               <Trash2 size={13} /> Delete card
             </button>
           )}
           <div className="ml-auto flex items-center gap-3">
-            <span className="max-w-[26ch] text-right text-[11px] leading-snug text-text-mute">
+            <span className="max-w-[26ch] text-right text-ticker leading-snug text-text-mute">
               {doneNote}
             </span>
             <Button size="sm" onClick={onDone}>
@@ -561,7 +561,7 @@ export function CardEditorDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
         <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,620px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-panel border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
           <div className="flex items-start justify-between gap-3">
-            <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
+            <Dialog.Title className="font-display text-title font-semibold tracking-tight">
               {card ? cardName(card) : "Card"}
             </Dialog.Title>
             <Dialog.Close aria-label="Close" className="focus-ring rounded-[4px] p-1 text-text-mute hover:text-text">

@@ -28,7 +28,7 @@ function FollowControl({ id, onUnfollow }: { id: string; onUnfollow: () => void 
           await toggleFollow(id);
         });
       }}
-      className="group/btn shrink-0 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:border-[var(--ink)]"
+      className="group/btn shrink-0 rounded-full border border-border px-4 py-2 text-body transition-colors hover:border-[var(--ink)]"
     >
       <span className="group-hover/btn:hidden">Following</span>
       <span className="hidden group-hover/btn:inline">Unfollow</span>
@@ -45,20 +45,20 @@ function CreatorRow({ c }: { c: FollowCreator }) {
         unfollowed && "opacity-50",
       )}
     >
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-sm text-[var(--paper)]">
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--ink)] font-display text-body text-[var(--paper)]">
         {c.initials}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2.5">
-          <Link href={c.href} className="font-display text-lg font-semibold tracking-tight hover:underline">
+          <Link href={c.href} className="font-display text-title font-semibold tracking-tight hover:underline">
             {c.name}
           </Link>
         </div>
-        <div className="num mt-1 text-[10px] uppercase tracking-[0.13em] text-text-mute">{c.specialty}</div>
-        <div className="num mt-1 text-[10px] uppercase tracking-[0.13em] text-text-faint">{c.pubs}</div>
+        <div className="num mt-1 text-ticker text-text-mute">{c.specialty}</div>
+        <div className="num mt-1 text-ticker text-text-faint">{c.pubs}</div>
       </div>
       {unfollowed ? (
-        <span className="num shrink-0 text-[10px] uppercase tracking-[0.16em] text-text-faint">Unfollowed</span>
+        <span className="num shrink-0 text-ticker text-text-faint">Unfollowed</span>
       ) : (
         <FollowControl id={c.id} onUnfollow={() => setUnfollowed(true)} />
       )}
@@ -92,7 +92,7 @@ export function FollowingView({ creators }: { creators: FollowCreator[] }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Following</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Following</h1>
         <p className="t-body mt-2">Creators, tickers, ETFs, and sectors you track.</p>
       </div>
 
@@ -106,7 +106,7 @@ export function FollowingView({ creators }: { creators: FollowCreator[] }) {
                 type="button"
                 onClick={() => setTab(t.key)}
                 className={cn(
-                  "num relative whitespace-nowrap pb-3 text-[11px] uppercase tracking-[0.18em] transition-colors",
+                  "num relative whitespace-nowrap pb-3 text-ticker transition-colors",
                   active ? "text-text" : "text-text-mute hover:text-text",
                 )}
               >

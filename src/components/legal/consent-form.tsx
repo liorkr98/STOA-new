@@ -30,7 +30,7 @@ export function ConsentForm({
 
   return (
     <div className="mx-auto w-full max-w-md">
-      <h1 className="t-h1">Review and accept</h1>
+      <h1 className="t-headline">Review and accept</h1>
       <p className="t-body mt-2 text-text-mute">
         Our terms or privacy policy have been updated, or your account needs a recorded acceptance
         before you can continue.
@@ -45,7 +45,7 @@ export function ConsentForm({
         )}
 
         {(pendingTypes.includes("terms") || pendingTypes.includes("privacy")) && (
-          <label className="flex items-start gap-3 text-sm">
+          <label className="flex items-start gap-3 text-body">
             <input
               type="checkbox"
               name="legal_consent"
@@ -67,7 +67,7 @@ export function ConsentForm({
         )}
 
         {requireAge && (
-          <label className="flex items-start gap-3 text-sm">
+          <label className="flex items-start gap-3 text-body">
             <input
               type="checkbox"
               name="age_attestation"
@@ -79,7 +79,7 @@ export function ConsentForm({
           </label>
         )}
 
-        <label className="flex items-start gap-3 text-sm">
+        <label className="flex items-start gap-3 text-body">
           <input
             type="checkbox"
             name="marketing_opt_in"
@@ -96,7 +96,7 @@ export function ConsentForm({
         </label>
 
         {state?.error && (
-          <p role="alert" className="text-sm text-[var(--down)]" id="consent-error">
+          <p role="alert" className="text-body text-[var(--down)]" id="consent-error">
             {state.error}
           </p>
         )}

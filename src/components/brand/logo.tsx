@@ -34,16 +34,7 @@ export function StoaLogo({
   return (
     <span className={cn("inline-flex items-center gap-2 text-text", className)}>
       {withMark && <StoaMark />}
-      <span
-        className="font-semibold"
-        style={{
-          fontFamily: "var(--font-display)",
-          letterSpacing: "0.26em",
-          fontSize: "1.05rem",
-        }}
-      >
-        STOA
-      </span>
+      <span className="font-display text-title font-extrabold tracking-[-0.04em]">stoa</span>
     </span>
   );
 }

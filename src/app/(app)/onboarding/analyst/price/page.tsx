@@ -11,7 +11,7 @@ export default async function AnalystPricePage() {
   return (
     <div>
       <div className="text-center">
-        <h1 className="t-h1">Set your pricing</h1>
+        <h1 className="t-headline">Set your pricing</h1>
         <p className="t-body mt-2">You can change these later in Settings.</p>
       </div>
       <PriceStep subPrice={profile.sub_price} reportPrice={profile.report_price} />

@@ -75,7 +75,7 @@ function CreatorItem({ row, signedIn }: { row: TodayCreatorRow; signedIn: boolea
     <li className="ts-rail-row">
       <Link
         href={`/analyst/${row.handle}`}
-        className="focus-ring min-w-0 flex-1 truncate rounded font-sans text-[14px] text-text hover:underline"
+        className="focus-ring min-w-0 flex-1 truncate rounded font-sans text-body text-text hover:underline"
       >
         {row.displayName}
       </Link>

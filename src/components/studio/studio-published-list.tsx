@@ -21,7 +21,7 @@ export function StudioPublishedList({
           key={r.id}
           className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3.5 last:border-0"
         >
-          <Link href={`/report/${r.id}`} className="min-w-0 flex-1 truncate text-sm font-medium hover:text-accent">
+          <Link href={`/report/${r.id}`} className="min-w-0 flex-1 truncate text-body font-medium hover:text-accent">
             {r.title || r.summary || "Untitled"}
           </Link>
           <span className="flex shrink-0 items-center gap-2">

@@ -35,18 +35,18 @@ function ClaimRow({ claim }: { claim: FactClaim }) {
     >
       <div className="mb-1.5 flex items-center gap-2">
         <Icon size={14} style={{ color: cfg.color }} weight="fill" />
-        <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
+        <span className="text-ticker font-semibold" style={{ color: cfg.color }}>
           {cfg.label}
         </span>
         {claim.confidence && claim.type !== "Unverified" && (
-          <span className="t-meta text-[10px]">{claim.confidence}</span>
+          <span className="t-meta text-ticker">{claim.confidence}</span>
         )}
       </div>
-      <p className="text-sm leading-relaxed text-text">{claim.text}</p>
+      <p className="text-body leading-relaxed text-text">{claim.text}</p>
       {claim.note && <p className="t-meta mt-1 italic">{claim.note}</p>}
       {claim.yahooCheck && (
         <p
-          className="mt-1.5 text-[11px]"
+          className="mt-1.5 text-ticker"
           style={{ color: claim.yahooCheck.match ? "var(--up)" : "var(--down)" }}
         >
           Yahoo: {claim.yahooCheck.detail}
@@ -113,9 +113,9 @@ export function FactCheckerPanel({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <MagnifyingGlass size={16} className="text-accent" />
-          <p className="t-eyebrow">Fact-check</p>
+          <p className="t-meta">Fact-check</p>
         </div>
-        <span className="flex items-center gap-1 t-meta text-[11px]">
+        <span className="flex items-center gap-1 t-meta text-ticker">
           <Coins size={13} />
           {credits} credits
         </span>
@@ -131,10 +131,10 @@ export function FactCheckerPanel({
         {pending ? "Checking..." : `Run fact-check (${AI_COST.factCheck} credits)`}
       </Button>
 
-      {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--down)]">{error}</p>}
 
       {!result && !pending && (
-        <p className="t-meta text-[11px]">
+        <p className="t-meta text-ticker">
           Optional, and worth the credits: claims are classified and checked against live market
           data, and readers see the result on the published piece.
         </p>
@@ -142,7 +142,7 @@ export function FactCheckerPanel({
 
       {result && (
         <>
-          <p className="t-meta text-[11px]">
+          <p className="t-meta text-ticker">
             {result.claims.length} claim{result.claims.length === 1 ? "" : "s"} checked
             {result.claims.some((c) => c.type === "Yahoo-Disputed" || c.type === "Misleading")
               ? " · some need attention"

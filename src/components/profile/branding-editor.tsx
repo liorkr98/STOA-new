@@ -57,9 +57,9 @@ function SortableSection({
         >
           <DotsSixVertical size={18} />
         </button>
-        <span className="text-sm capitalize">{section.type}</span>
+        <span className="text-body capitalize">{section.type}</span>
       </div>
-      <label className="flex items-center gap-2 text-xs text-text-mute">
+      <label className="flex items-center gap-2 text-ticker text-text-mute">
         <input type="checkbox" checked={section.visible} onChange={onToggle} />
         Visible
       </label>
@@ -137,7 +137,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
   return (
     <div className="surface flex flex-col gap-6 p-6">
       <div>
-        <h2 className="t-h3">Profile layout</h2>
+        <h2 className="t-title">Profile layout</h2>
         <p className="t-meta mt-1">Drag sections to reorder what visitors see on your public profile.</p>
       </div>
 
@@ -158,14 +158,14 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
       </DndContext>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-sm">
+        <label className="text-body">
           Banner style
           <select
             value={bannerStyle}
             onChange={(e) =>
               setBannerStyle(e.target.value as NonNullable<ProfileConfig["banner_style"]>)
             }
-            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-body"
           >
             <option value="gradient-accent">Signal gradient</option>
             <option value="gradient-cool">Cool gradient</option>
@@ -173,13 +173,13 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
             <option value="cover">Cover image</option>
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-body">
           Specialties (comma-separated)
           <input
             value={specialties}
             onChange={(e) => setSpecialties(e.target.value)}
             placeholder="Semiconductors, AI, Macro"
-            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-body"
           />
         </label>
       </div>
@@ -195,7 +195,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
       </div>
 
       {aiHint && (
-        <div className="rounded-inner border border-border bg-surface-2 p-4 text-sm text-text-mute">{aiHint}</div>
+        <div className="rounded-inner border border-border bg-surface-2 p-4 text-body text-text-mute">{aiHint}</div>
       )}
     </div>
   );

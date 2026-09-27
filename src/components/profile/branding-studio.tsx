@@ -54,7 +54,7 @@ const TABS: [Tab, string][] = [
   ["ai", "AI analyzer"],
 ];
 
-const inputClass = "mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm";
+const inputClass = "mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-body";
 
 function SortableSection({ section, onToggle }: { section: ProfileSection; onToggle: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id });
@@ -68,9 +68,9 @@ function SortableSection({ section, onToggle }: { section: ProfileSection; onTog
         <button type="button" className="cursor-grab text-text-faint hover:text-text" {...attributes} {...listeners}>
           <DotsSixVertical size={18} />
         </button>
-        <span className="text-sm capitalize">{section.type}</span>
+        <span className="text-body capitalize">{section.type}</span>
       </div>
-      <label className="flex items-center gap-2 text-xs text-text-mute">
+      <label className="flex items-center gap-2 text-ticker text-text-mute">
         <input type="checkbox" checked={section.visible} onChange={onToggle} />
         Visible
       </label>
@@ -195,7 +195,7 @@ export function BrandingStudio({
               type="button"
               onClick={() => setTab(key)}
               className={cn(
-                "num relative shrink-0 whitespace-nowrap pb-3 text-[11px] uppercase tracking-[0.16em] transition-colors",
+                "num relative shrink-0 whitespace-nowrap pb-3 text-ticker transition-colors",
                 tab === key ? "text-text" : "text-text-mute hover:text-text",
               )}
             >
@@ -214,19 +214,19 @@ export function BrandingStudio({
               <div className="flex items-center gap-4">
                 <Avatar src={avatarUrl} name={displayName} size="lg" />
                 <div className="min-w-0">
-                  <p className="text-base font-semibold text-text">{displayName}</p>
-                  <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">@{profile.handle}</p>
+                  <p className="text-body font-semibold text-text">{displayName}</p>
+                  <p className="num text-ticker text-text-faint">@{profile.handle}</p>
                 </div>
               </div>
               <div>
-                <span className="t-eyebrow">Headline</span>
-                <p className="mt-1 text-sm text-text">{headline || <span className="text-text-faint">Not set</span>}</p>
+                <span className="t-meta">Headline</span>
+                <p className="mt-1 text-body text-text">{headline || <span className="text-text-faint">Not set</span>}</p>
               </div>
               <div>
-                <span className="t-eyebrow">Bio</span>
-                <p className="mt-1 whitespace-pre-line text-sm text-text-mute">{bio || <span className="text-text-faint">Not set</span>}</p>
+                <span className="t-meta">Bio</span>
+                <p className="mt-1 whitespace-pre-line text-body text-text-mute">{bio || <span className="text-text-faint">Not set</span>}</p>
               </div>
-              <Link href="/settings" className="num text-[11px] uppercase tracking-[0.14em] text-accent hover:underline">
+              <Link href="/settings" className="num text-ticker text-accent hover:underline">
                 Edit your name, bio, and photo in Settings →
               </Link>
             </div>
@@ -238,28 +238,28 @@ export function BrandingStudio({
               onUploaded={setCoverUrl}
               onUseCoverTheme={() => setThemeId("cover")}
             />
-            <label className="text-sm">
+            <label className="text-body">
               Specialties (comma-separated)
               <input value={specialties} onChange={(e) => setSpecialties(e.target.value)} className={inputClass} />
             </label>
 
-            <label className="text-sm">
+            <label className="text-body">
               Featured tickers
               <input value={tickers} onChange={(e) => setTickers(e.target.value.toUpperCase())} placeholder="NVDA, AMD, TSM" className={inputClass} />
             </label>
 
             <div>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Social links</p>
-                <button type="button" onClick={() => setSocial([...social, { label: "Link", url: "" }])} className="flex items-center gap-1 text-xs text-accent">
+                <p className="text-body font-medium">Social links</p>
+                <button type="button" onClick={() => setSocial([...social, { label: "Link", url: "" }])} className="flex items-center gap-1 text-ticker text-accent">
                   <Plus size={14} /> Add
                 </button>
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {social.map((row, i) => (
                   <div key={i} className="flex gap-2">
-                    <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-sm" />
-                    <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2 py-1.5 text-sm" />
+                    <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
+                    <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
                     <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-faint hover:text-[var(--down)]">
                       <Trash size={16} />
                     </button>
@@ -270,15 +270,15 @@ export function BrandingStudio({
 
             {/* Pinned video */}
             <div>
-              <p className="text-sm font-medium">Pinned video</p>
+              <p className="text-body font-medium">Pinned video</p>
               <p className="t-meta mt-1">Shown at the top of your public profile. Also settable from Publications.</p>
               <div className="mt-2 flex flex-col gap-1.5">
-                <button type="button" onClick={() => pin(null)} className={cn("flex items-center justify-between rounded-inner border px-3 py-2 text-left text-sm", pinnedId === null ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
+                <button type="button" onClick={() => pin(null)} className={cn("flex items-center justify-between rounded-inner border px-3 py-2 text-left text-body", pinnedId === null ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
                   <span>Most recent (default)</span>
                   {pinnedId === null && <PushPin size={14} weight="fill" />}
                 </button>
                 {publishedReports.slice(0, 6).map((r) => (
-                  <button key={r.id} type="button" onClick={() => pin(r.id)} className={cn("flex items-center justify-between gap-3 rounded-inner border px-3 py-2 text-left text-sm", pinnedId === r.id ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
+                  <button key={r.id} type="button" onClick={() => pin(r.id)} className={cn("flex items-center justify-between gap-3 rounded-inner border px-3 py-2 text-left text-body", pinnedId === r.id ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
                     <span className="truncate">{r.title ?? "Untitled"}</span>
                     {pinnedId === r.id && <PushPin size={14} weight="fill" className="shrink-0" />}
                   </button>
@@ -290,12 +290,12 @@ export function BrandingStudio({
                 analyst's call, since a small paying audience should not be a
                 public number unless they want it to be. */}
             <div>
-              <p className="text-sm font-medium">Audience line</p>
+              <p className="text-body font-medium">Audience line</p>
               <p className="t-meta mt-1">
                 Your public profile shows your follower count. You can add your paying member count
                 beside it.
               </p>
-              <label className="mt-2 flex items-center gap-2 text-sm">
+              <label className="mt-2 flex items-center gap-2 text-body">
                 <input
                   type="checkbox"
                   checked={showMembers}
@@ -305,10 +305,10 @@ export function BrandingStudio({
               </label>
             </div>
 
-            <div className="text-sm">
+            <div className="text-body">
               <span className="text-text-mute">Handle: </span>
               <span className="num">@{profile.handle}</span>
-              <span className="num ml-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">Locked after onboarding</span>
+              <span className="num ml-2 text-ticker text-text-faint">Locked after onboarding</span>
             </div>
           </div>
         )}
@@ -317,10 +317,10 @@ export function BrandingStudio({
         {tab === "style" && (
           <div className="flex flex-col gap-6">
             <div className="surface p-6">
-              <p className="text-sm font-medium">Theme</p>
+              <p className="text-body font-medium">Theme</p>
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {PROFILE_THEMES.map((t) => (
-                  <button key={t.id} type="button" onClick={() => setThemeId(t.id)} className={cn("overflow-hidden rounded-inner border p-2 text-left text-[10px] font-medium transition-colors", themeId === t.id ? "border-accent text-accent" : "border-border text-text-mute")}>
+                  <button key={t.id} type="button" onClick={() => setThemeId(t.id)} className={cn("overflow-hidden rounded-inner border p-2 text-left text-ticker font-medium transition-colors", themeId === t.id ? "border-accent text-accent" : "border-border text-text-mute")}>
                     <div className={cn("mb-1.5 h-6 w-full rounded-[4px]", t.className || "bg-muted")} />
                     {t.label}
                   </button>
@@ -340,7 +340,7 @@ export function BrandingStudio({
         {tab === "sections" && (
           <div className="flex flex-col gap-6">
             <div className="surface p-6">
-              <h3 className="text-sm font-medium">Section order</h3>
+              <h3 className="text-body font-medium">Section order</h3>
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
                   <div className="mt-2 flex flex-col gap-2">
@@ -363,7 +363,7 @@ export function BrandingStudio({
           <div className="flex flex-col gap-6">
             <PlanManager initialPlans={plans} handle={profile.handle} />
             <div className="rounded-panel border border-border bg-surface-2 p-5">
-              <p className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">Legacy pricing — being retired</p>
+              <p className="num text-ticker text-text-mute">Legacy pricing — being retired</p>
               <p className="t-meta mt-1">
                 These single-price fields predate tiers. Kept working for now; tiers above are the primary control.
               </p>
@@ -396,7 +396,7 @@ export function BrandingStudio({
             <Button type="button" disabled={pending} onClick={save}>
               {pending ? "Saving..." : "Save branding"}
             </Button>
-            {saved && <span className="text-sm text-[var(--up)]">Saved</span>}
+            {saved && <span className="text-body text-[var(--up)]">Saved</span>}
           </div>
         )}
       </div>
@@ -404,14 +404,14 @@ export function BrandingStudio({
       {/* Live preview */}
       <div className="scroll-area flex flex-col gap-3 xl:min-h-0 xl:w-[360px] xl:shrink-0 xl:overflow-y-auto">
         <div className="flex items-center justify-between">
-          <div className="num flex gap-1 text-[10px] uppercase tracking-[0.14em]">
+          <div className="num flex gap-1 text-ticker">
             {(["desktop", "mobile"] as const).map((d) => (
               <button key={d} type="button" onClick={() => setDevice(d)} className={cn("rounded-full border px-2.5 py-1", device === d ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]" : "border-border text-text-mute")}>
                 {d}
               </button>
             ))}
           </div>
-          <Link href={`/analyst/${profile.handle}`} className="num text-[10px] uppercase tracking-[0.14em] text-text hover:text-text-mute">
+          <Link href={`/analyst/${profile.handle}`} className="num text-ticker text-text hover:text-text-mute">
             View my public profile →
           </Link>
         </div>

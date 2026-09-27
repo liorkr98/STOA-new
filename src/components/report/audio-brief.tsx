@@ -72,13 +72,13 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
     <div className="mt-4 flex flex-wrap items-center gap-3 rounded-panel border border-border bg-surface px-4 py-3">
       <span className="flex items-center gap-2 text-text-mute">
         <Headphones size={15} className="text-text-faint" />
-        <span className="t-eyebrow">Audio brief</span>
+        <span className="t-meta">Audio brief</span>
       </span>
 
       {status === "ready" && url ? (
         <audio controls preload="none" src={url} className="h-9 min-w-0 flex-1" />
       ) : (
-        <span className="t-meta flex-1 text-[12px]">
+        <span className="t-meta flex-1 text-ticker">
           {status === "loading" ? "Checking..." : "No audio brief yet"}
         </span>
       )}
@@ -89,7 +89,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
           onClick={generate}
           disabled={pending}
           className={cn(
-            "focus-ring inline-flex h-8 items-center gap-1.5 rounded-button px-2.5 text-[12px] font-medium",
+            "focus-ring inline-flex h-8 items-center gap-1.5 rounded-button px-2.5 text-ticker font-medium",
             status === "ready"
               ? "text-text-mute hover:bg-surface-2"
               : "bg-accent text-accent-ink",
@@ -99,7 +99,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
           {pending ? "Generating..." : status === "ready" ? "Regenerate" : "Generate (3 credits)"}
         </button>
       )}
-      {error && <span className="w-full text-[12px] text-[var(--down)]">{error}</span>}
+      {error && <span className="w-full text-ticker text-[var(--down)]">{error}</span>}
     </div>
   );
 }

@@ -45,11 +45,11 @@ export function Footer() {
         </div>
         {groups.map((g) => (
           <div key={g.title} className="flex flex-col gap-3">
-            <span className="t-eyebrow">{g.title}</span>
+            <span className="t-meta">{g.title}</span>
             <ul className="flex flex-col gap-2">
               {g.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-sm text-text-mute hover:text-text">
+                  <Link href={l.href} className="text-body text-text-mute hover:text-text">
                     {l.label}
                   </Link>
                 </li>
@@ -63,7 +63,7 @@ export function Footer() {
           Stoa publishes research and education, not investment advice. Stoa is not a broker or
           investment adviser. Past performance does not guarantee future results.
         </p>
-        <p className="t-meta text-[11px]">
+        <p className="t-meta text-ticker">
           Charts by{" "}
           <a
             href="https://www.tradingview.com"

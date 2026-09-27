@@ -57,7 +57,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <div className="flex items-start justify-between gap-4">
-            <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
+            <Dialog.Title className="font-display text-title font-semibold tracking-tight">
               Delete this publication for good?
             </Dialog.Title>
             <Dialog.Close className="focus-ring rounded p-1 text-text-mute hover:text-text">
@@ -66,12 +66,12 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
             </Dialog.Close>
           </div>
 
-          <p dir="auto" className="user-copy mt-2 truncate text-sm text-text-mute">
+          <p dir="auto" className="user-copy mt-2 truncate text-body text-text-mute">
             {title}
           </p>
 
           <Dialog.Description asChild>
-            <div className="mt-4 space-y-3 text-[13px] leading-relaxed text-text">
+            <div className="mt-4 space-y-3 text-ticker leading-relaxed text-text">
               <p className="rounded-panel border border-[var(--rust)]/40 bg-[var(--rust)]/10 p-3">
                 <span className="font-semibold">This cannot be undone.</span> The text, the
                 video, the cards and the tags are destroyed. Existing links stop working, and
@@ -89,7 +89,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
             </div>
           </Dialog.Description>
 
-          <label htmlFor={`confirm-delete-${id}`} className="mt-4 block text-[13px] text-text">
+          <label htmlFor={`confirm-delete-${id}`} className="mt-4 block text-ticker text-text">
             Type <span className="num font-semibold">{CONFIRM_WORD}</span> to confirm.
           </label>
           <input
@@ -98,7 +98,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
             onChange={(e) => setTyped(e.target.value)}
             autoComplete="off"
             spellCheck={false}
-            className="focus-ring mt-1.5 w-full rounded-field border border-border bg-paper px-3 py-2 text-sm text-text placeholder:text-text-faint"
+            className="focus-ring mt-1.5 w-full rounded-field border border-border bg-paper px-3 py-2 text-body text-text placeholder:text-text-faint"
             placeholder={CONFIRM_WORD}
           />
 
@@ -149,7 +149,7 @@ export function DeleteDraftDialog({ id, title }: { id: string; title: string }) 
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <div className="flex items-start justify-between gap-4">
-            <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
+            <Dialog.Title className="font-display text-title font-semibold tracking-tight">
               Delete this draft?
             </Dialog.Title>
             <Dialog.Close className="focus-ring rounded p-1 text-text-mute hover:text-text">
@@ -158,11 +158,11 @@ export function DeleteDraftDialog({ id, title }: { id: string; title: string }) 
             </Dialog.Close>
           </div>
 
-          <p dir="auto" className="user-copy mt-2 truncate text-sm text-text-mute">
+          <p dir="auto" className="user-copy mt-2 truncate text-body text-text-mute">
             {title}
           </p>
 
-          <Dialog.Description className="mt-4 text-[13px] leading-relaxed text-text-mute">
+          <Dialog.Description className="mt-4 text-ticker leading-relaxed text-text-mute">
             It was never published, so nothing is on the record. The words, the cards and the
             tags go with it, and it cannot be brought back.
           </Dialog.Description>

@@ -112,7 +112,7 @@ export function OAuthButtons({
             onClick={() => void signInWith(p.key)}
             className={cn(
               "focus-ring flex h-11 items-center justify-center gap-2 rounded-button",
-              "border border-border bg-surface text-sm font-medium text-text",
+              "border border-border bg-surface text-body font-medium text-text",
               "transition-colors hover:border-border-strong hover:bg-surface-2 disabled:opacity-60",
             )}
           >
@@ -121,10 +121,10 @@ export function OAuthButtons({
           </button>
         ))}
       </div>
-      {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--down)]">{error}</p>}
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="t-meta text-[11px]">or with email</span>
+        <span className="t-meta text-ticker">or with email</span>
         <span className="h-px flex-1 bg-border" />
       </div>
     </div>

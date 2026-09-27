@@ -52,7 +52,7 @@ export default async function AdminContactPage({
       <div className="flex items-start gap-3">
         <Mail className="mt-1 h-6 w-6 text-text-mute" aria-hidden />
         <div>
-          <h1 className="t-h1">Customer contact</h1>
+          <h1 className="t-headline">Customer contact</h1>
           <p className="t-body mt-1 text-text-mute">
             {open.filter((m) => m.status === "new").length} new · {open.length} open ·{" "}
             {archived.length} archived · public form at{" "}
@@ -75,7 +75,7 @@ export default async function AdminContactPage({
 
       {archived.length > 0 && (
         <>
-          <h2 className="t-h3 mt-10">Archived</h2>
+          <h2 className="t-title mt-10">Archived</h2>
           <div className="mt-4 flex flex-col gap-4">
             {archived.map((msg) => (
               <ContactCard key={msg.id} msg={msg} highlighted={msg.id === highlightId} muted />
@@ -119,22 +119,22 @@ function ContactCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-semibold">{msg.name}</p>
-          <a href={`mailto:${msg.email}`} className="text-sm text-accent underline hover:no-underline">
+          <a href={`mailto:${msg.email}`} className="text-body text-accent underline hover:no-underline">
             {msg.email}
           </a>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${badge.className}`}>
+          <span className={`rounded-chip px-2 py-0.5 text-ticker font-medium ${badge.className}`}>
             {badge.label}
           </span>
-          <span className="text-xs text-text-mute">
+          <span className="text-ticker text-text-mute">
             {formatDistanceToNow(new Date(msg.submitted_at), { addSuffix: true })}
           </span>
         </div>
       </div>
 
-      <div className="text-sm">
-        <p className="text-xs font-medium uppercase tracking-wide text-text-mute">
+      <div className="text-body">
+        <p className="text-ticker font-medium text-text-mute">
           {topicLabels[msg.topic] ?? msg.topic} · {msg.subject}
         </p>
         <p className="mt-2 whitespace-pre-wrap">{msg.message}</p>

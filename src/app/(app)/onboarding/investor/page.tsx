@@ -14,7 +14,7 @@ export default async function InvestorOnboardingPage() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-[var(--w-reading)] flex-col justify-center gap-8">
       <div>
-        <h1 className="t-h1">What are you interested in?</h1>
+        <h1 className="t-headline">What are you interested in?</h1>
         <p className="t-body mt-2">
           We will use this to shape your feed. You can change it anytime.
         </p>

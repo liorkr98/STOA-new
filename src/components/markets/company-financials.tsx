@@ -53,22 +53,22 @@ export async function CompanyFinancials({
   return (
     <section className="rounded-panel border border-border bg-surface p-5">
       <div className="mb-5">
-        <h2 className="t-h3">Financials and filings</h2>
+        <h2 className="t-title">Financials and filings</h2>
         <p className="t-meta mt-1">Official filing data with consensus earnings context.</p>
       </div>
 
       {filings.length > 0 && (
         <div className="mb-6">
-          <h3 className="t-eyebrow mb-2">Latest filings</h3>
+          <h3 className="t-meta mb-2">Latest filings</h3>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {filings.map((filing) => (
               <article
                 key={`${filing.symbol}-${filing.period_end}-${filing.frequency}`}
                 className="rounded-inner border border-border bg-[var(--paper)] px-3 py-2.5"
               >
-                <p className="num text-xs text-text-faint">{filing.period_end}</p>
-                <p className="mt-0.5 text-sm font-medium text-text">{freqLabel(filing.frequency)}</p>
-                <div className="mt-2 space-y-1 text-xs text-text-mute">
+                <p className="num text-ticker text-text-faint">{filing.period_end}</p>
+                <p className="mt-0.5 text-body font-medium text-text">{freqLabel(filing.frequency)}</p>
+                <div className="mt-2 space-y-1 text-ticker text-text-mute">
                   <p className="flex items-center justify-between gap-2">
                     <span>Revenue</span>
                     <span className="num text-text">{filing.revenue == null ? "-" : fmtNum(filing.revenue)}</span>
@@ -89,18 +89,18 @@ export async function CompanyFinancials({
       <div className="grid gap-8 lg:grid-cols-2">
       {statement && statement.periods.length > 0 && (
         <div>
-          <h3 className="t-eyebrow mb-2">Income statement</h3>
+          <h3 className="t-meta mb-2">Income statement</h3>
           <div className="overflow-x-auto rounded-panel border border-border bg-surface">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full border-collapse text-body">
               <thead className="bg-surface">
                 <tr>
-                  <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-left">
+                  <th className="t-meta border-b border-border-strong px-4 py-2.5 text-left">
                     Line
                   </th>
                   {statement.periods.map((p) => (
                     <th
                       key={p}
-                      className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right"
+                      className="t-meta border-b border-border-strong px-4 py-2.5 text-right"
                     >
                       {p}
                     </th>
@@ -126,28 +126,28 @@ export async function CompanyFinancials({
             </table>
           </div>
           {statement.source?.asOf && (
-            <p className="t-meta mt-1.5 text-[11px]">Source: EDGAR, last filed {statement.source.asOf}</p>
+            <p className="t-meta mt-1.5 text-ticker">Source: EDGAR, last filed {statement.source.asOf}</p>
           )}
         </div>
       )}
 
       {estimates && estimates.length > 0 && (
         <div>
-          <h3 className="t-eyebrow mb-2">EPS estimates vs actuals</h3>
+          <h3 className="t-meta mb-2">EPS estimates vs actuals</h3>
           <div className="overflow-x-auto rounded-panel border border-border bg-surface">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full border-collapse text-body">
               <thead className="bg-surface">
                 <tr>
-                  <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-left">
+                  <th className="t-meta border-b border-border-strong px-4 py-2.5 text-left">
                     Period
                   </th>
-                  <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                  <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                     Est.
                   </th>
-                  <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                  <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                     Actual
                   </th>
-                  <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                  <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                     Surprise
                   </th>
                 </tr>

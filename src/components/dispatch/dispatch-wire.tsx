@@ -25,14 +25,14 @@ export function DispatchWire({ stories }: { stories: DispatchStory[] }) {
                 href={`/report/${story.report.id}`}
                 className="dispatch-wire-row group focus-ring rounded-button"
               >
-                <span className="num w-14 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-text-mute">
+                <span className="num w-14 shrink-0 text-ticker font-semibold text-text-mute">
                   {ticker || "-"}
                 </span>
-                <span className="min-w-0 flex-1 truncate font-display text-[15px] leading-snug text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent">
+                <span className="min-w-0 flex-1 truncate font-display text-body leading-snug text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent">
                   {story.headline}
                 </span>
                 <span className="hidden shrink-0 items-center gap-2 sm:flex">
-                  <span className="text-xs text-text-faint">{story.author.display_name}</span>
+                  <span className="text-ticker text-text-faint">{story.author.display_name}</span>
                 </span>
                 <ArrowRight
                   size={13}

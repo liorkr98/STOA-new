@@ -44,19 +44,19 @@ export function renderLegalMarkdown(markdown: string): string {
 
     if (line.startsWith("### ")) {
       closeList();
-      parts.push(`<h3 class="t-h3 mt-6 text-text">${inlineFormat(line.slice(4))}</h3>`);
+      parts.push(`<h3 class="t-title mt-6 text-text">${inlineFormat(line.slice(4))}</h3>`);
       continue;
     }
 
     if (line.startsWith("## ")) {
       closeList();
-      parts.push(`<h2 class="t-h2 mt-10 text-text">${inlineFormat(line.slice(3))}</h2>`);
+      parts.push(`<h2 class="t-title mt-10 text-text">${inlineFormat(line.slice(3))}</h2>`);
       continue;
     }
 
     if (line.startsWith("# ")) {
       closeList();
-      parts.push(`<h1 class="t-h1 text-text">${inlineFormat(line.slice(2))}</h1>`);
+      parts.push(`<h1 class="t-headline text-text">${inlineFormat(line.slice(2))}</h1>`);
       continue;
     }
 

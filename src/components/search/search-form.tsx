@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 
 const inputClass =
-  "w-full rounded-field border border-border bg-surface py-2.5 pl-10 pr-4 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-surface py-2.5 pl-10 pr-4 text-body focus-ring";
 
 export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
   const router = useRouter();

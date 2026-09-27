@@ -18,10 +18,10 @@ export function ArchivedBanner({ reportId, isAuthor }: { reportId: string; isAut
 
   return (
     <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-panel border border-border bg-surface-2 px-4 py-3">
-      <span className="num flex items-center gap-1.5 rounded-chip bg-[var(--ink)] px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
+      <span className="num flex items-center gap-1.5 rounded-chip bg-[var(--ink)] px-2 py-1 text-ticker text-[var(--paper)]">
         <Archive size={12} strokeWidth={1.8} /> Archived
       </span>
-      <p className="min-w-0 flex-1 text-[0.8125rem] text-text-mute">
+      <p className="min-w-0 flex-1 text-ticker text-text-mute">
         {isAuthor
           ? "Hidden from the public. Only you can see this page."
           : "This publication has been archived by its author."}
@@ -41,7 +41,7 @@ export function ArchivedBanner({ reportId, isAuthor }: { reportId: string; isAut
               router.refresh();
             })
           }
-          className="focus-ring num shrink-0 rounded-button border border-[var(--ink)] px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] text-text transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+          className="focus-ring num shrink-0 rounded-button border border-[var(--ink)] px-3 py-1.5 text-ticker text-text transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
         >
           {pending ? "Restoring..." : "Restore"}
         </button>

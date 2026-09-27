@@ -60,7 +60,7 @@ export function ConfirmSpendDialog({
           style={{ boxShadow: "var(--shadow-card)" }}
         >
           <div className="flex items-start justify-between">
-            <Dialog.Title className="t-h3">{title}</Dialog.Title>
+            <Dialog.Title className="t-title">{title}</Dialog.Title>
             <Dialog.Close asChild>
               <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-chip" aria-label="Close">
                 <X size={18} />
@@ -84,7 +84,7 @@ export function ConfirmSpendDialog({
             </div>
           ) : (
             <>
-              <dl className="mt-5 flex flex-col gap-2.5 text-sm">
+              <dl className="mt-5 flex flex-col gap-2.5 text-body">
                 <Row label="Cost" value={usd(amount, { cents: true })} strong />
                 <Row label="To the analyst (90%)" value={usd(toAnalyst, { cents: true })} />
                 <Row label="Platform fee (10%)" value={usd(fee, { cents: true })} />
@@ -99,7 +99,7 @@ export function ConfirmSpendDialog({
               </dl>
 
               {insufficient && (
-                <div className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                <div className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
                   <p>Not enough balance. Top up your wallet to continue.</p>
                   <Link
                     href="/wallet"
@@ -110,7 +110,7 @@ export function ConfirmSpendDialog({
                 </div>
               )}
               {result?.error && (
-                <p className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                <p className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
                   {result.error}
                 </p>
               )}

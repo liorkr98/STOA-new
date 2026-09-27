@@ -10,7 +10,7 @@ import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute";
 
 export interface DisclosureState {
   positionHeld: boolean | null;
@@ -42,7 +42,7 @@ function YesNo({
           aria-checked={value === v}
           onClick={() => onChange(v)}
           className={cn(
-            "rounded-button border px-3 py-1 text-xs font-medium transition-colors focus-ring",
+            "rounded-button border px-3 py-1 text-ticker font-medium transition-colors focus-ring",
             value === v
               ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
               : "border-border text-text-mute hover:border-border-strong hover:text-text",
@@ -72,7 +72,7 @@ function SymbolStatus({
   if (lookup.status === "idle") return null;
   if (lookup.status === "checking") {
     return (
-      <p className="t-meta mt-2 text-[11px]" aria-live="polite">
+      <p className="t-meta mt-2 text-ticker" aria-live="polite">
         Checking {lookup.symbol}...
       </p>
     );
@@ -80,7 +80,7 @@ function SymbolStatus({
   if (lookup.status === "missing") {
     return (
       <p
-        className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--down)]"
+        className="mt-2 flex items-start gap-1.5 text-ticker leading-snug text-[var(--down)]"
         role="alert"
       >
         <X size={13} aria-hidden className="mt-px shrink-0" />
@@ -94,7 +94,7 @@ function SymbolStatus({
   if (lookup.status === "failed") {
     return (
       <p
-        className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-[var(--down)]"
+        className="mt-2 flex items-start gap-1.5 text-ticker leading-snug text-[var(--down)]"
         role="alert"
       >
         <X size={13} aria-hidden className="mt-px shrink-0" />
@@ -122,7 +122,7 @@ function SymbolStatus({
           .join(" · ");
   return (
     <div className="mt-2" aria-live="polite">
-      <p className="flex items-start gap-1.5 text-[11px] leading-snug text-text-mute">
+      <p className="flex items-start gap-1.5 text-ticker leading-snug text-text-mute">
         <Check
           size={13}
           aria-hidden
@@ -138,7 +138,7 @@ function SymbolStatus({
         </span>
       </p>
       {r.directionNote ? (
-        <p className="t-meta mt-1 pl-[19px] text-[11px] leading-snug">
+        <p className="t-meta mt-1 pl-[19px] text-ticker leading-snug">
           {r.directionNote}
         </p>
       ) : null}
@@ -180,21 +180,21 @@ export function StancePanel({
         className="rounded-panel border border-border bg-surface p-4"
         aria-label="The stance"
       >
-        <p className="t-eyebrow mb-2">The stance</p>
+        <p className="t-meta mb-2">The stance</p>
         {ticker.trim() ? (
           <>
-            <p className="num text-lg font-semibold">
+            <p className="num text-title font-semibold">
               {ticker.trim().toUpperCase()}
               {direction ? (
                 <span className="ml-2 capitalize">{direction}</span>
               ) : null}
             </p>
-            <p className="t-meta mt-1 text-[11px] leading-relaxed">
+            <p className="t-meta mt-1 text-ticker leading-relaxed">
               Set when this was published. It cannot change.
             </p>
           </>
         ) : (
-          <p className="t-meta text-[11px] leading-relaxed">
+          <p className="t-meta text-ticker leading-relaxed">
             This publication went out without a stance, and one cannot be added
             to it now.
           </p>
@@ -208,9 +208,9 @@ export function StancePanel({
       className="rounded-panel border border-dashed border-border-strong bg-surface p-4"
       aria-label="The stance"
     >
-      <p className="t-eyebrow mb-3">The stance</p>
+      <p className="t-meta mb-3">The stance</p>
 
-      <label className="block text-xs font-medium text-text-mute">
+      <label className="block text-ticker font-medium text-text-mute">
         Ticker
         <input
           value={ticker}
@@ -228,7 +228,7 @@ export function StancePanel({
       <SymbolStatus lookup={lookup} onRetry={onRetryLookup} />
 
       <div className="mt-2.5" role="radiogroup" aria-label="Direction">
-        <p className="text-xs font-medium text-text-mute">Direction</p>
+        <p className="text-ticker font-medium text-text-mute">Direction</p>
         <div className="mt-1 flex gap-1.5">
           {(["long", "short", "hold"] as Direction[]).map((d) => (
             <button
@@ -238,7 +238,7 @@ export function StancePanel({
               aria-checked={direction === d}
               onClick={() => onDirection(direction === d ? null : d)}
               className={cn(
-                "flex-1 rounded-button border py-1.5 text-xs font-medium capitalize transition-colors focus-ring",
+                "flex-1 rounded-button border py-1.5 text-ticker font-medium capitalize transition-colors focus-ring",
                 direction === d
                   ? "border-accent bg-accent-weak text-accent"
                   : "border-border text-text-mute hover:text-text",
@@ -309,8 +309,8 @@ export function PublishPanel({
   return (
     <div className="flex flex-col gap-4">
       <section className="rounded-panel border border-border bg-surface p-4">
-        <p className="t-eyebrow mb-2.5">Access</p>
-        <div className="flex flex-col gap-1.5 text-sm">
+        <p className="t-meta mb-2.5">Access</p>
+        <div className="flex flex-col gap-1.5 text-body">
           {(
             [
               { key: "free", label: "Free", hint: "Anyone can read" },
@@ -339,18 +339,18 @@ export function PublishPanel({
                   onChange={() => onAccess(a.key)}
                   className="accent-[var(--accent)]"
                 />
-                <span className="text-sm font-medium">{a.label}</span>
+                <span className="text-body font-medium">{a.label}</span>
               </span>
-              <span className="t-meta text-[11px]">{a.hint}</span>
+              <span className="t-meta text-ticker">{a.hint}</span>
             </label>
           ))}
         </div>
         {access === "paid" && (
           <>
-            <label className="mt-2.5 block text-xs font-medium text-text-mute">
+            <label className="mt-2.5 block text-ticker font-medium text-text-mute">
               Price (you keep 90%)
               <div className="relative mt-1">
-                <span className="num pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-faint">
+                <span className="num pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-text-faint">
                   $
                 </span>
                 <input
@@ -362,7 +362,7 @@ export function PublishPanel({
                 />
               </div>
             </label>
-            <label className="mt-2.5 flex cursor-pointer items-start gap-2 text-sm">
+            <label className="mt-2.5 flex cursor-pointer items-start gap-2 text-body">
               <input
                 type="checkbox"
                 checked={membersIncluded}
@@ -394,10 +394,10 @@ export function PublishPanel({
       {promote}
 
       <section className="ledger-card p-4" aria-label="Disclosures">
-        <p className="t-eyebrow mb-3">Disclosures</p>
+        <p className="t-meta mb-3">Disclosures</p>
         <div className="flex flex-col gap-3.5">
           <div className="flex items-center justify-between gap-3">
-            <span id="disc-position" className="text-xs leading-snug text-text">
+            <span id="disc-position" className="text-ticker leading-snug text-text">
               Do you hold a position in {ticker.trim() ? ticker : "this ticker"}
               ?
             </span>
@@ -409,7 +409,7 @@ export function PublishPanel({
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <span id="disc-comp" className="text-xs leading-snug text-text">
+            <span id="disc-comp" className="text-ticker leading-snug text-text">
               Is any compensation tied to this publication?
             </span>
             <YesNo
@@ -425,13 +425,13 @@ export function PublishPanel({
               onChange={(e) =>
                 onDisclosure({ ...disclosure, compDetail: e.target.value })
               }
-              className={cn(inputClass, "text-xs")}
+              className={cn(inputClass, "text-ticker")}
               placeholder="Describe the arrangement (shown to readers)"
               maxLength={500}
             />
           )}
 
-          <label className="flex items-start gap-2.5 text-xs leading-snug text-text">
+          <label className="flex items-start gap-2.5 text-ticker leading-snug text-text">
             <input
               type="checkbox"
               checked={disclosure.viewsCertified}
@@ -457,11 +457,11 @@ export function PublishPanel({
           {pending ? (busyLabel ?? "Publishing...") : publishLabel}
         </Button>
         {publishDisabledReason && (
-          <p className="t-meta text-center text-[11px]">
+          <p className="t-meta text-center text-ticker">
             {publishDisabledReason}
           </p>
         )}
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+        {error && <p className="text-body text-[var(--down)]">{error}</p>}
       </div>
     </div>
   );

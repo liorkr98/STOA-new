@@ -87,14 +87,14 @@ export function BrandStep({ profile }: { profile: Profile }) {
           onUploaded={setAvatarUrl}
         />
 
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Handle</span>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">@</span>
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value.toLowerCase())}
-              className="h-11 w-full rounded-field border border-border bg-bg pl-7 pr-9 text-sm focus-ring"
+              className="h-11 w-full rounded-field border border-border bg-bg pl-7 pr-9 text-body focus-ring"
               maxLength={20}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -105,22 +105,22 @@ export function BrandStep({ profile }: { profile: Profile }) {
               )}
             </span>
           </div>
-          {availability === "taken" && <span className="text-xs text-[var(--down)]">That handle is taken.</span>}
+          {availability === "taken" && <span className="text-ticker text-[var(--down)]">That handle is taken.</span>}
           {availability === "invalid" && (
-            <span className="text-xs text-[var(--down)]">3-20 characters: letters, numbers, underscore.</span>
+            <span className="text-ticker text-[var(--down)]">3-20 characters: letters, numbers, underscore.</span>
           )}
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Display name</span>
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="h-11 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring"
+            className="h-11 w-full rounded-field border border-border bg-bg px-3 text-body focus-ring"
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-body">
           <div className="flex items-center justify-between">
             <span className="font-medium">One-line bio</span>
             <span className="t-meta">{bio.length}/140</span>
@@ -130,11 +130,11 @@ export function BrandStep({ profile }: { profile: Profile }) {
             onChange={(e) => setBio(e.target.value.slice(0, 140))}
             rows={2}
             placeholder="What you cover and how you think"
-            className="w-full resize-none rounded-field border border-border bg-bg px-3 py-2.5 text-sm focus-ring"
+            className="w-full resize-none rounded-field border border-border bg-bg px-3 py-2.5 text-body focus-ring"
           />
         </label>
 
-        <div className="flex flex-col gap-1.5 text-sm">
+        <div className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Banner style</span>
           <div className="flex gap-2">
             {BANNER_OPTIONS.map((b) => (
@@ -143,7 +143,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
                 type="button"
                 onClick={() => setBannerStyle(b.value)}
                 className={cn(
-                  "flex-1 rounded-button border px-3 py-2 text-xs font-medium transition-colors",
+                  "flex-1 rounded-button border px-3 py-2 text-ticker font-medium transition-colors",
                   bannerStyle === b.value
                     ? "border-accent text-accent"
                     : "border-border text-text-mute hover:border-border-strong",
@@ -156,7 +156,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
         </div>
 
         {error && (
-          <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+          <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
             {error}
           </p>
         )}
@@ -167,15 +167,15 @@ export function BrandStep({ profile }: { profile: Profile }) {
       </div>
 
       <div>
-        <p className="t-eyebrow mb-2">Live preview</p>
+        <p className="t-meta mb-2">Live preview</p>
         <div className="overflow-hidden rounded-panel border border-border bg-surface">
           <div className={cn("h-16 w-full", bannerClass)} />
           <div className="-mt-6 flex flex-col gap-3 px-5 pb-5">
             <Avatar src={avatarUrl} name={displayName || "?"} size="lg" className="ring-4 ring-[var(--surface)]" />
             <div>
-              <p className="t-h3">{displayName || "Your name"}</p>
+              <p className="t-title">{displayName || "Your name"}</p>
               <p className="t-meta mt-0.5">@{handle || "handle"}</p>
-              {bio && <p className="t-body mt-2 text-sm text-text-mute">{bio}</p>}
+              {bio && <p className="t-body mt-2 text-body text-text-mute">{bio}</p>}
             </div>
           </div>
         </div>

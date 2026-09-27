@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute";
 const textareaClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring placeholder:text-text-mute resize-none";
 
 const topics = [
   { value: "general", label: "General question" },
@@ -39,12 +39,12 @@ export default async function ContactPage({
       <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
         <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-[var(--verdigris)]" aria-hidden />
-          <h1 className="t-h2">Message sent</h1>
+          <h1 className="t-title">Message sent</h1>
           <p className="t-body max-w-sm text-text-mute">
             Thanks for reaching out. We read every message and usually reply within one to two
             business days.
           </p>
-          <Link href="/feed" className="text-sm text-accent underline hover:no-underline">
+          <Link href="/feed" className="text-body text-accent underline hover:no-underline">
             Back to the Feed
           </Link>
         </div>
@@ -54,7 +54,7 @@ export default async function ContactPage({
 
   return (
     <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
-      <h1 className="t-h1">Contact us</h1>
+      <h1 className="t-headline">Contact us</h1>
       <p className="t-body mt-2 text-text-mute">
         Questions about Stoa, your account, analyst applications, or accessibility? Send us a note
         and we will get back to you.
@@ -68,7 +68,7 @@ export default async function ContactPage({
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <label htmlFor="name" className="text-sm font-medium">
+            <label htmlFor="name" className="text-body font-medium">
               Name
               <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
@@ -83,7 +83,7 @@ export default async function ContactPage({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="text-sm font-medium">
+            <label htmlFor="email" className="text-body font-medium">
               Email
               <span className="ml-1 text-[var(--rust)]">*</span>
             </label>
@@ -99,7 +99,7 @@ export default async function ContactPage({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="topic" className="text-sm font-medium">
+          <label htmlFor="topic" className="text-body font-medium">
             Topic
           </label>
           <select id="topic" name="topic" className={inputClass} defaultValue={defaultTopic}>
@@ -112,7 +112,7 @@ export default async function ContactPage({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="subject" className="text-sm font-medium">
+          <label htmlFor="subject" className="text-body font-medium">
             Subject
             <span className="ml-1 text-[var(--rust)]">*</span>
           </label>
@@ -126,7 +126,7 @@ export default async function ContactPage({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="message" className="text-sm font-medium">
+          <label htmlFor="message" className="text-body font-medium">
             Message
             <span className="ml-1 text-[var(--rust)]">*</span>
           </label>

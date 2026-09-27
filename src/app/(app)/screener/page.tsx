@@ -90,12 +90,12 @@ export default function ScreenerPage() {
   ];
 
   const field =
-    "h-9 rounded-field border border-border bg-surface px-2.5 text-sm focus-ring";
+    "h-9 rounded-field border border-border bg-surface px-2.5 text-body focus-ring";
 
   return (
     <DensityRoot className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">
       <div>
-        <h1 className="t-h1">Screener</h1>
+        <h1 className="t-headline">Screener</h1>
         <p className="t-body mt-1">Filter the covered universe by fundamentals.</p>
       </div>
 

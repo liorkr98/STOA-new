@@ -20,7 +20,7 @@ export default async function AdminIntegrationsPage() {
       <div className="flex items-start gap-3">
         <Plug className="mt-1 h-6 w-6 text-text-mute" aria-hidden />
         <div>
-          <h1 className="t-h1">Integrations</h1>
+          <h1 className="t-headline">Integrations</h1>
           <p className="t-body mt-1 text-text-mute">
             Configure alert delivery, verify Slack webhooks, and test Sentry after each deploy.
           </p>

@@ -115,13 +115,13 @@ export function ClipPendingPlayer({
             >
               {failed ? <AlertTriangle size={18} strokeWidth={1.6} /> : <Loader2 size={18} strokeWidth={1.6} className="animate-spin" />}
             </span>
-            <p className="num text-[10px] uppercase tracking-[0.2em] opacity-80">
+            <p className="num text-ticker opacity-80">
               {failed ? "Video failed" : "Video processing"}
             </p>
-            <p className="font-display text-[1.0625rem] font-semibold leading-snug">
+            <p className="font-display text-body font-semibold leading-snug">
               {failed ? "The video did not process." : `${analystName}'s video is being prepared.`}
             </p>
-            <p className="max-w-[26ch] text-[0.8125rem] leading-relaxed opacity-80">
+            <p className="max-w-[26ch] text-ticker leading-relaxed opacity-80">
               {failed
                 ? isAuthor
                   ? "Nothing reached readers. Choose the clip again here."
@@ -135,20 +135,20 @@ export function ClipPendingPlayer({
             ) : failed && isAuthor ? (
               <Link
                 href="/studio"
-                className="num focus-ring mt-1 rounded text-[10px] uppercase tracking-[0.16em] underline underline-offset-4"
+                className="num focus-ring mt-1 rounded text-ticker underline underline-offset-4"
               >
                 Open publications
               </Link>
             ) : null}
             {!failed ? (
-              <p className="num text-[10px] uppercase tracking-[0.14em] opacity-60">
+              <p className="num text-ticker opacity-60">
                 {minutes < 1 ? "Started under a minute ago" : `Started ${minutes} min ago`}
               </p>
             ) : null}
           </div>
         </div>
       </div>
-      <figcaption className="num mt-2 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+      <figcaption className="num mt-2 text-ticker text-text-faint">
         {failed ? "No video yet" : "Video on the way"}
       </figcaption>
     </figure>
@@ -170,7 +170,7 @@ export function ClipPendingThumb({ className, label = true }: { className?: stri
       )}
     >
       <Loader2 size={14} strokeWidth={1.6} className="animate-spin opacity-80" aria-hidden />
-      {label ? <span className="num text-[9px] uppercase tracking-[0.16em] opacity-80">Processing</span> : null}
+      {label ? <span className="num text-ticker opacity-80">Processing</span> : null}
     </span>
   );
 }

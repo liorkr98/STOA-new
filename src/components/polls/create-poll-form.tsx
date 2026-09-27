@@ -22,7 +22,7 @@ const KINDS: { key: PollKind; label: string; hint: string }[] = [
 ];
 
 const inputClass =
-  "h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
+  "h-10 w-full rounded-field border border-border bg-bg px-3 text-body focus-ring";
 
 function defaultOptions(kind: PollKind): string[] {
   if (kind === "sentiment") return ["Bull", "Bear", "Hold"];
@@ -71,7 +71,7 @@ export function CreatePollForm() {
   return (
     <div className="surface flex flex-col gap-4 p-5">
       <div>
-        <h2 className="t-h3">New poll</h2>
+        <h2 className="t-title">New poll</h2>
         <p className="t-meta mt-1">
           Ask your audience. Results are community sentiment.
         </p>
@@ -85,7 +85,7 @@ export function CreatePollForm() {
             onClick={() => pickKind(k.key)}
             title={k.hint}
             className={cn(
-              "rounded-button border px-3 py-1.5 text-sm transition-colors focus-ring",
+              "rounded-button border px-3 py-1.5 text-body transition-colors focus-ring",
               kind === k.key
                 ? "border-accent bg-accent-weak text-text"
                 : "border-border bg-bg text-text-mute hover:border-border-strong",
@@ -121,7 +121,7 @@ export function CreatePollForm() {
           className={cn(inputClass, "num w-40")}
           aria-label="Closes on"
         />
-        <label className="flex items-center gap-2 text-[11px] text-text-mute">
+        <label className="flex items-center gap-2 text-ticker text-text-mute">
           Min tier rank
           <input
             type="number"
@@ -160,14 +160,14 @@ export function CreatePollForm() {
           <button
             type="button"
             onClick={() => setOptions((prev) => [...prev, ""])}
-            className="flex items-center gap-1.5 self-start text-[12px] text-text-mute hover:text-text focus-ring"
+            className="flex items-center gap-1.5 self-start text-ticker text-text-mute hover:text-text focus-ring"
           >
             <Plus size={13} /> Add option
           </button>
         )}
       </div>
 
-      {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--down)]">{error}</p>}
 
       <Button type="button" onClick={submit} disabled={pending} className="self-start">
         {pending ? "Creating..." : "Create poll"}

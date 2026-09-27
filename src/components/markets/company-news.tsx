@@ -60,10 +60,10 @@ export function CompanyNews({ ticker }: { ticker: string }) {
     <section className="rounded-panel border border-border bg-surface p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 className="t-h3">Latest news</h2>
+          <h2 className="t-title">Latest news</h2>
           <p className="t-meta mt-1">Recent company headlines for research context.</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-chip border border-border bg-surface-2 px-2.5 py-1 text-xs text-text-mute">
+        <span className="inline-flex items-center gap-1.5 rounded-chip border border-border bg-surface-2 px-2.5 py-1 text-ticker text-text-mute">
           <Newspaper size={13} />
           Finnhub
         </span>
@@ -98,10 +98,10 @@ export function CompanyNews({ ticker }: { ticker: string }) {
                 className="group block rounded-button focus-ring"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-medium text-text group-hover:text-accent">{item.headline}</p>
+                  <p className="text-body font-medium text-text group-hover:text-accent">{item.headline}</p>
                   <ExternalLink size={14} className="mt-0.5 shrink-0 text-text-faint group-hover:text-text-mute" />
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-faint">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-ticker text-text-faint">
                   <span>{item.source ?? "Unknown source"}</span>
                   <span aria-hidden>·</span>
                   <span className="num">{formatRelativeDate(item.datetime)}</span>

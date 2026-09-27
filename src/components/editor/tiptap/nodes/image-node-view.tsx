@@ -114,7 +114,7 @@ export function ImageNodeView({
       {url ? (
         <>
           <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-            <span className="t-eyebrow flex-1">Image</span>
+            <span className="t-meta flex-1">Image</span>
             <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
               {WIDTHS.map((w) => (
                 <button
@@ -123,7 +123,7 @@ export function ImageNodeView({
                   onMouseDown={stop}
                   onClick={() => updateAttributes({ widthPct: w })}
                   className={cn(
-                    "num rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition-colors",
+                    "num rounded-[4px] px-2 py-0.5 text-ticker font-medium transition-colors",
                     widthPct === w
                       ? "bg-[var(--ink)] text-[var(--paper)]"
                       : "text-text-mute hover:text-text",
@@ -137,7 +137,7 @@ export function ImageNodeView({
               type="button"
               onMouseDown={stop}
               onClick={() => inputRef.current?.click()}
-              className="h-7 rounded-button px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+              className="h-7 rounded-button px-2 text-ticker text-text-mute hover:bg-surface-2 focus-ring"
             >
               Replace
             </button>
@@ -166,14 +166,14 @@ export function ImageNodeView({
                 onChange={(e) => updateAttributes({ caption: e.target.value })}
                 onMouseDown={stop}
                 placeholder="Caption (optional)"
-                className="w-full bg-transparent text-center text-sm text-text-mute focus:outline-none"
+                className="w-full bg-transparent text-center text-body text-text-mute focus:outline-none"
               />
               <input
                 value={alt}
                 onChange={(e) => updateAttributes({ alt: e.target.value })}
                 onMouseDown={stop}
                 placeholder="Alt text (accessibility)"
-                className="t-meta w-full bg-transparent text-center text-[11px] focus:outline-none"
+                className="t-meta w-full bg-transparent text-center text-ticker focus:outline-none"
               />
             </div>
           </div>
@@ -187,8 +187,8 @@ export function ImageNodeView({
           className="flex w-full flex-col items-center justify-center gap-2 px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
         >
           <ImagePlus size={22} className="text-text-faint" />
-          <span className="text-sm">{uploading ? "Uploading..." : "Upload an image"}</span>
-          {error && <span className="text-[11px] text-[var(--down)]">{error}</span>}
+          <span className="text-body">{uploading ? "Uploading..." : "Upload an image"}</span>
+          {error && <span className="text-ticker text-[var(--down)]">{error}</span>}
         </button>
       )}
     </NodeViewWrapper>

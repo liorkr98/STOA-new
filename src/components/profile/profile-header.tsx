@@ -62,7 +62,7 @@ export function ProfileHeader({
           />
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className={isCompact ? "t-h3" : "t-h2"}>{profile.display_name || "Your name"}</h1>
+              <h1 className={isCompact ? "t-title" : "t-title"}>{profile.display_name || "Your name"}</h1>
               {profile.verified && <BadgeCheck size={20} className="text-text" aria-label="Verified" />}
             </div>
             <p className="t-meta mt-1">
@@ -83,7 +83,7 @@ export function ProfileHeader({
             />
           </div>
           {showEditLink && (
-            <Link href="/studio/branding" className="text-sm text-accent hover:underline">
+            <Link href="/studio/branding" className="text-body text-accent hover:underline">
               Edit branding
             </Link>
           )}

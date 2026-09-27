@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { AuthState } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-field border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus-ring";
+  "w-full rounded-field border border-border bg-surface px-3 py-2 text-body text-text placeholder:text-text-faint focus-ring";
 
 function Submit({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
@@ -24,31 +24,31 @@ export function ForgotPasswordForm({ sent }: { sent: boolean }) {
   const [state, formAction] = useActionState<AuthState, FormData>(requestPasswordReset, null);
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="t-h1">Forgot your password?</h1>
+      <h1 className="t-headline">Forgot your password?</h1>
       <p className="t-body mt-2">
         Enter the email you signed up with. If it has an account, a link to set a new password is on its way.
       </p>
       {sent ? (
-        <p role="status" className="mt-6 rounded-inner border border-border bg-surface px-3 py-2 text-sm text-text">
+        <p role="status" className="mt-6 rounded-inner border border-border bg-surface px-3 py-2 text-body text-text">
           Check your inbox. The link signs you in and opens the page to set a new password.
         </p>
       ) : (
         <form action={formAction} className="mt-8 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="text-sm font-medium">
+            <label htmlFor="email" className="text-body font-medium">
               Email
             </label>
             <input id="email" name="email" type="email" required className={inputClass} placeholder="you@example.com" />
           </div>
           {state?.error && (
-            <p role="alert" className="text-sm text-[var(--down)]">
+            <p role="alert" className="text-body text-[var(--down)]">
               {state.error}
             </p>
           )}
           <Submit label="Send the link" pendingLabel="Sending…" />
         </form>
       )}
-      <p className="mt-6 text-sm text-text-mute">
+      <p className="mt-6 text-body text-text-mute">
         <Link href="/sign-in" className="text-accent hover:underline">
           Back to sign in
         </Link>
@@ -62,11 +62,11 @@ export function ResetPasswordForm() {
   const [state, formAction] = useActionState<AuthState, FormData>(updatePassword, null);
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="t-h1">Set a new password</h1>
+      <h1 className="t-headline">Set a new password</h1>
       <p className="t-body mt-2">You are signed in. Choose a new password and you are done.</p>
       <form action={formAction} className="mt-8 flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <label htmlFor="password" className="text-sm font-medium">
+          <label htmlFor="password" className="text-body font-medium">
             New password
           </label>
           <input
@@ -81,7 +81,7 @@ export function ResetPasswordForm() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="confirm" className="text-sm font-medium">
+          <label htmlFor="confirm" className="text-body font-medium">
             Again, to be sure
           </label>
           <input
@@ -95,7 +95,7 @@ export function ResetPasswordForm() {
           />
         </div>
         {state?.error && (
-          <p role="alert" className="text-sm text-[var(--down)]">
+          <p role="alert" className="text-body text-[var(--down)]">
             {state.error}
           </p>
         )}

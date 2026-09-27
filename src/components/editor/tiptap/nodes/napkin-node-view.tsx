@@ -229,7 +229,7 @@ export function NapkinNodeView({
               caption={caption}
             />
           {caption ? <p className="t-meta mt-1.5 text-center">{caption}</p> : null}
-          <p className="t-meta mt-1 text-center text-[10px] text-text-faint">AI diagram</p>
+          <p className="t-meta mt-1 text-center text-ticker text-text-faint">AI diagram</p>
         </div>
       </NodeViewWrapper>
     );
@@ -247,7 +247,7 @@ export function NapkinNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <Wand2 size={14} className="text-accent" />
-        <span className="t-eyebrow flex-1">
+        <span className="t-meta flex-1">
           {chartMode ? `Chart diagram${chartTicker ? ` · ${chartTicker}` : ""}` : "AI diagram"}
         </span>
         {hasDiagram ? (
@@ -259,7 +259,7 @@ export function NapkinNodeView({
                 onMouseDown={stop}
                 onClick={() => updateAttributes({ widthPct: w })}
                 className={cn(
-                  "num rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition-colors",
+                  "num rounded-[4px] px-2 py-0.5 text-ticker font-medium transition-colors",
                   widthPct === w
                     ? "bg-[var(--ink)] text-[var(--paper)]"
                     : "text-text-mute hover:text-text",
@@ -285,13 +285,13 @@ export function NapkinNodeView({
         {generating && !hasDiagram ? (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <Loader2 size={28} className="animate-spin text-accent" />
-            <p className="text-sm font-medium text-text">Generating diagram from your selection…</p>
-            <p className="max-w-sm text-xs text-text-mute line-clamp-4">{sourceText}</p>
+            <p className="text-body font-medium text-text">Generating diagram from your selection…</p>
+            <p className="max-w-sm text-ticker text-text-mute line-clamp-4">{sourceText}</p>
           </div>
         ) : editing || !hasDiagram ? (
           <>
             <div className="flex items-center justify-between gap-2">
-              <p className="t-meta text-[11px] text-text-mute">
+              <p className="t-meta text-ticker text-text-mute">
                 {hasDiagram ? "Edit the prompt and regenerate" : "Describe what the diagram should show"}
               </p>
               {hasDiagram && editing ? (
@@ -299,7 +299,7 @@ export function NapkinNodeView({
                   type="button"
                   onMouseDown={stop}
                   onClick={() => setEditing(false)}
-                  className="flex h-7 items-center gap-1 rounded-button px-2 text-xs text-text-mute hover:bg-surface-2"
+                  className="flex h-7 items-center gap-1 rounded-button px-2 text-ticker text-text-mute hover:bg-surface-2"
                 >
                   <X size={14} />
                   Cancel
@@ -307,37 +307,37 @@ export function NapkinNodeView({
               ) : null}
             </div>
             <label className="block">
-              <span className="t-meta mb-1 block text-[11px]">Engine</span>
+              <span className="t-meta mb-1 block text-ticker">Engine</span>
               <select
                 value={provider}
                 onChange={(e) => updateAttributes({ provider: e.target.value })}
                 onMouseDown={stop}
-                className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
+                className="h-9 w-full rounded-field border border-border bg-bg px-2 text-body"
               >
                 <option value="open">Built-in diagram</option>
                 <option value="cloud">Cloud image (optional API key)</option>
               </select>
             </label>
             <label className="block">
-              <span className="t-meta mb-1 block text-[11px]">Text to visualize</span>
+              <span className="t-meta mb-1 block text-ticker">Text to visualize</span>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onMouseDown={stop}
                 rows={chartMode ? 6 : 4}
                 placeholder="Edit levels, ticker, or thesis. The diagram redraws from your text."
-                className="w-full resize-y rounded-field border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-mute focus:border-accent focus:outline-none"
+                className="w-full resize-y rounded-field border border-border bg-bg px-3 py-2 text-body text-text placeholder:text-text-mute focus:border-accent focus:outline-none"
               />
             </label>
             {provider === "open" ? (
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="block">
-                  <span className="t-meta mb-1 block text-[11px]">Template</span>
+                  <span className="t-meta mb-1 block text-ticker">Template</span>
                   <select
                     value={diagramId}
                     onChange={(e) => updateAttributes({ diagramId: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-body"
                   >
                     {DIAGRAM_IDS.map((id) => (
                       <option key={id} value={id}>
@@ -347,12 +347,12 @@ export function NapkinNodeView({
                   </select>
                 </label>
                 <label className="block">
-                  <span className="t-meta mb-1 block text-[11px]">Theme</span>
+                  <span className="t-meta mb-1 block text-ticker">Theme</span>
                   <select
                     value={diagramTheme}
                     onChange={(e) => updateAttributes({ diagramTheme: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-body"
                   >
                     {DIAGRAM_THEMES.map((t) => (
                       <option key={t} value={t}>
@@ -361,7 +361,7 @@ export function NapkinNodeView({
                     ))}
                   </select>
                 </label>
-                <label className="flex items-end gap-2 pb-1 text-sm">
+                <label className="flex items-end gap-2 pb-1 text-body">
                   <input
                     type="checkbox"
                     checked={isRough}
@@ -375,12 +375,12 @@ export function NapkinNodeView({
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
-                  <span className="t-meta mb-1 block text-[11px]">Style</span>
+                  <span className="t-meta mb-1 block text-ticker">Style</span>
                   <select
                     value={styleId}
                     onChange={(e) => updateAttributes({ styleId: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-body"
                   >
                     {styleGroups.map((group) => (
                       <optgroup key={group} label={group}>
@@ -395,12 +395,12 @@ export function NapkinNodeView({
                 </label>
                 {!chartMode ? (
                   <label className="block">
-                    <span className="t-meta mb-1 block text-[11px]">Visual type</span>
+                    <span className="t-meta mb-1 block text-ticker">Visual type</span>
                     <select
                       value={visualQuery}
                       onChange={(e) => updateAttributes({ visualQuery: e.target.value })}
                       onMouseDown={stop}
-                      className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
+                      className="h-9 w-full rounded-field border border-border bg-bg px-2 text-body"
                     >
                       {NAPKIN_VISUAL_TYPES.map((t) => (
                         <option key={t.value || "auto"} value={t.value}>
@@ -417,7 +417,7 @@ export function NapkinNodeView({
               disabled={generating}
               onMouseDown={stop}
               onClick={() => generate()}
-              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-button bg-accent text-sm font-medium text-accent-ink transition hover:brightness-[1.06] disabled:opacity-60 focus-ring"
+              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-button bg-accent text-body font-medium text-accent-ink transition hover:brightness-[1.06] disabled:opacity-60 focus-ring"
             >
               {generating ? (
                 <>
@@ -447,7 +447,7 @@ export function NapkinNodeView({
             </div>
             {provider === "cloud" && variationUrls.length > 1 ? (
               <div>
-                <p className="t-meta mb-2 text-center text-[11px] text-text-mute">Choose a variation</p>
+                <p className="t-meta mb-2 text-center text-ticker text-text-mute">Choose a variation</p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {variationUrls.map((v, i) => (
                     <button
@@ -460,7 +460,7 @@ export function NapkinNodeView({
                         v === url ? "border-accent ring-2 ring-accent/20" : "border-border hover:border-accent/50",
                       )}
                     >
-                      <span className="num absolute left-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--ink)] text-[10px] font-semibold text-[var(--paper)]">
+                      <span className="num absolute left-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--ink)] text-ticker font-semibold text-[var(--paper)]">
                         {i + 1}
                       </span>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -475,7 +475,7 @@ export function NapkinNodeView({
               onChange={(e) => updateAttributes({ caption: e.target.value })}
               onMouseDown={stop}
               placeholder="Caption (optional)"
-              className="w-full bg-transparent text-center text-sm text-text-mute focus:outline-none"
+              className="w-full bg-transparent text-center text-body text-text-mute focus:outline-none"
             />
             <div className="flex gap-2">
               <button
@@ -486,7 +486,7 @@ export function NapkinNodeView({
                   setText(sourceText);
                   setEditing(true);
                 }}
-                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-ticker font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
               >
                 <Pencil size={14} />
                 Edit prompt
@@ -496,7 +496,7 @@ export function NapkinNodeView({
                 disabled={generating}
                 onMouseDown={stop}
                 onClick={() => generate()}
-                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-ticker font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
               >
                 {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 Regenerate
@@ -504,8 +504,8 @@ export function NapkinNodeView({
             </div>
           </>
         )}
-        {error ? <p className="text-center text-[11px] text-[var(--down)]">{error}</p> : null}
-        <p className="t-meta text-center text-[10px]">
+        {error ? <p className="text-center text-ticker text-[var(--down)]">{error}</p> : null}
+        <p className="t-meta text-center text-ticker">
           Built-in diagrams use DEEPSEEK_API_KEY · cloud engine uses NAPKIN_API_KEY if set
         </p>
       </div>

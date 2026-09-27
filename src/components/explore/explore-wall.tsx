@@ -32,7 +32,7 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   return (
     <span
       className={cn(
-        "num inline-flex items-center rounded-chip border border-white/35 bg-black/35 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-[2px]",
+        "num inline-flex items-center rounded-chip border border-white/35 bg-black/35 px-1.5 py-0.5 text-ticker font-semibold text-white backdrop-blur-[2px]",
         className,
       )}
     >
@@ -90,23 +90,23 @@ function Tile({
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2.5 md:p-3">
         <div className="min-w-0">
           {p.stageMarker === "TRENDING" || (spotlight && tile.trending) ? (
-            <div className="num mb-1 text-[10px] uppercase tracking-[0.18em] text-[var(--brass)]">Trending</div>
+            <div className="num mb-1 text-ticker text-[var(--brass)]">Trending</div>
           ) : p.stageMarker === "NEW" ? (
-            <div className="num mb-1 text-[10px] uppercase tracking-[0.18em] text-white/90">New</div>
+            <div className="num mb-1 text-ticker text-white/90">New</div>
           ) : null}
           <h3
             dir="auto"
             className={cn(
               "user-copy font-display font-semibold leading-[1.15] tracking-tight [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]",
-              spotlight ? "line-clamp-3 text-[1.25rem] md:text-[1.75rem]" : "line-clamp-2 text-[0.8125rem] md:text-[0.9375rem]",
+              spotlight ? "line-clamp-3 text-title md:text-headline" : "line-clamp-2 text-ticker md:text-body",
             )}
           >
             {p.headline}
           </h3>
-          {spotlight && p.deck ? <p dir="auto" className="user-copy mt-1 hidden line-clamp-2 text-[0.8125rem] text-white/85 md:block">{p.deck}</p> : null}
-          <div dir="auto" className="user-copy mt-1 truncate text-[10px] text-white/85 md:text-[11px]">{p.analyst.displayName}</div>
+          {spotlight && p.deck ? <p dir="auto" className="user-copy mt-1 hidden line-clamp-2 text-ticker text-white/85 md:block">{p.deck}</p> : null}
+          <div dir="auto" className="user-copy mt-1 truncate text-ticker text-white/85 md:text-ticker">{p.analyst.displayName}</div>
         </div>
-        <span className="num flex-none text-[10px] text-white/85">{dur}</span>
+        <span className="num flex-none text-ticker text-white/85">{dur}</span>
       </div>
     </button>
   );
@@ -241,16 +241,16 @@ export function ExploreWall({
         <div className="min-w-0">
           {ticker ? (
             <>
-              <Link href={basePath} className="num focus-ring rounded text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text">
+              <Link href={basePath} className="num focus-ring rounded text-ticker text-text-mute hover:text-text">
                 ← All of Explore
               </Link>
-              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-5xl">{ticker}</h1>
-              <div className="num mt-1.5 text-[11px] uppercase tracking-[0.18em] text-text-mute">Every take on this name</div>
+              <h1 className="mt-2 font-display text-headline font-semibold tracking-tight md:text-display">{ticker}</h1>
+              <div className="num mt-1.5 text-ticker text-text-mute">Every take on this name</div>
             </>
           ) : (
             <>
-              <h1 className="font-display text-3xl font-semibold tracking-tight md:text-5xl">{sector ? sector : "Explore"}</h1>
-              <div className="num mt-1.5 text-[11px] uppercase tracking-[0.18em] text-text-mute">
+              <h1 className="font-display text-headline font-semibold tracking-tight md:text-display">{sector ? sector : "Explore"}</h1>
+              <div className="num mt-1.5 text-ticker text-text-mute">
                 {sector ? (
                   <Link href={basePath} className="focus-ring rounded hover:text-text">
                     ← All of Explore
@@ -281,7 +281,7 @@ export function ExploreWall({
       </div>
 
       {shown.length === 0 ? (
-        <p className="mt-16 text-center font-display text-lg text-text-mute">Nothing to explore yet for this filter.</p>
+        <p className="mt-16 text-center font-display text-title text-text-mute">Nothing to explore yet for this filter.</p>
       ) : (
         <div className="explore-wall mt-4">
           <div className="explore-grid">

@@ -39,7 +39,7 @@ export function SaveToNotebookButton({
       onClick={save}
       disabled={pending || state === "saved"}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-button text-[11px] text-text-mute transition-colors hover:text-text focus-ring disabled:opacity-70",
+        "inline-flex items-center gap-1.5 rounded-button text-ticker text-text-mute transition-colors hover:text-text focus-ring disabled:opacity-70",
         !compact && "border border-border bg-surface px-2 py-1",
         className,
       )}

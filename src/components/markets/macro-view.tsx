@@ -69,12 +69,12 @@ export function MacroView({
           </div>
         </div>
 
-        <p className="mt-5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-text-mute">
+        <p className="mt-5 max-w-[62ch] text-body leading-relaxed text-text-mute">
           {instrument.about}
         </p>
 
         {instrument.directionNote ? (
-          <p className="mt-3 max-w-[62ch] rounded-panel border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-3 py-2 text-[0.8125rem] leading-relaxed text-text">
+          <p className="mt-3 max-w-[62ch] rounded-panel border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-3 py-2 text-ticker leading-relaxed text-text">
             {instrument.directionNote}
           </p>
         ) : null}

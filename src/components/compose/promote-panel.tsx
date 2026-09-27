@@ -34,7 +34,7 @@ export function PromotePanel({
 
   return (
     <section className="rounded-panel border border-border bg-surface p-4" aria-label="Promote">
-      <p className="t-eyebrow mb-2.5">Promote</p>
+      <p className="t-meta mb-2.5">Promote</p>
 
       <label className="flex cursor-pointer items-start gap-2.5">
         <input
@@ -51,7 +51,7 @@ export function PromotePanel({
           className="mt-0.5 accent-[var(--ink)]"
         />
         <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-[0.875rem] font-medium text-text">
+          <span className="flex items-center gap-1.5 text-body font-medium text-text">
             <Megaphone size={14} className="text-text-mute" aria-hidden />
             {published ? "Promote this publication" : "Boost on publish"}
           </span>
@@ -75,24 +75,24 @@ export function PromotePanel({
                   )}
                 >
                   <span className="min-w-0">
-                    <span className="block text-[0.8125rem] text-text">{o.label}</span>
+                    <span className="block text-ticker text-text">{o.label}</span>
                     {o.detail ? (
-                      <span className="block text-[0.75rem] leading-snug text-text-mute">{o.detail}</span>
+                      <span className="block text-ticker leading-snug text-text-mute">{o.detail}</span>
                     ) : null}
                   </span>
-                  <span className="num shrink-0 text-[0.8125rem] text-text">{o.costLabel}</span>
+                  <span className="num shrink-0 text-ticker text-text">{o.costLabel}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="rounded-inner border border-dashed border-border p-2.5 text-[0.8125rem] leading-snug text-text-mute">
+            <p className="rounded-inner border border-dashed border-border p-2.5 text-ticker leading-snug text-text-mute">
               {model.placeholder}
             </p>
           )}
         </div>
       ) : null}
 
-      <p className="num mt-3 border-t border-border pt-2.5 text-[10px] uppercase leading-relaxed tracking-[0.12em] text-text-faint">
+      <p className="num mt-3 border-t border-border pt-2.5 text-ticker leading-relaxed text-text-faint">
         {PROMOTED_LABEL} content is always labelled as {PROMOTED_LABEL.toLowerCase()}, wherever it appears
       </p>
     </section>

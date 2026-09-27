@@ -36,14 +36,14 @@ function TypeCard({ def }: { def: PublicationTypeDef }) {
       className="focus-ring flex min-h-[19rem] flex-col rounded-panel border border-border bg-surface p-5 text-left transition-colors hover:border-[var(--ink)]"
     >
       <div className="flex items-center gap-2">
-        <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{def.label}</span>
+        <span className="num text-ticker text-text-mute">{def.label}</span>
       </div>
-      <p className="mt-3 font-display text-[1.5rem] font-semibold leading-[1.15] tracking-tight text-text">
+      <p className="mt-3 font-display text-headline font-semibold leading-[1.15] tracking-tight text-text">
         {def.purpose}
       </p>
-      <p className="mt-3 text-[0.9375rem] leading-relaxed text-text-mute">{def.detail}</p>
+      <p className="mt-3 text-body leading-relaxed text-text-mute">{def.detail}</p>
       <div className="mt-auto border-t border-border pt-3">
-        <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <p className="num text-ticker text-text-faint">
           Seen by · {def.seenBy}
         </p>
       </div>
@@ -66,12 +66,12 @@ function TypeRow({ def }: { def: PublicationTypeDef }) {
       >
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{def.label}</span>
+            <span className="num text-ticker text-text-mute">{def.label}</span>
           </span>
-          <span className="mt-1 line-clamp-2 block font-display text-[1.125rem] font-semibold leading-tight tracking-tight text-text">
+          <span className="mt-1 line-clamp-2 block font-display text-title font-semibold leading-tight tracking-tight text-text">
             {def.purpose}
           </span>
-          <span className="num mt-1 block truncate text-[9px] uppercase tracking-[0.14em] text-text-faint">
+          <span className="num mt-1 block truncate text-ticker text-text-faint">
             Seen by · {def.seenBy}
           </span>
         </span>
@@ -88,7 +88,7 @@ function Progress({ percent, label }: { percent: number; label?: boolean }) {
         <div className="h-full bg-[var(--ink)]" style={{ width: `${percent}%` }} />
       </div>
       {label ? (
-        <p className="num mt-1 text-[9px] uppercase tracking-[0.14em] text-text-faint">{percent}% there</p>
+        <p className="num mt-1 text-ticker text-text-faint">{percent}% there</p>
       ) : null}
     </div>
   );
@@ -98,25 +98,25 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
   const meta = [d.ticker, d.where, `Edited ${d.editedLabel}`].filter(Boolean).join(" · ");
   return (
     <li className="flex items-center gap-4 rounded-panel border border-border bg-surface px-4 py-3.5">
-      <span className="num w-[5.5rem] shrink-0 text-[10px] uppercase tracking-[0.16em] text-text-mute">
+      <span className="num w-[5.5rem] shrink-0 text-ticker text-text-mute">
         {d.typeLabel}
       </span>
       <div className="min-w-0 flex-1">
-        <p className={cn("user-copy truncate font-display text-[1.125rem] font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
+        <p className={cn("user-copy truncate font-display text-title font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
           {d.title}
         </p>
-        <p className="num mt-0.5 truncate text-[10px] uppercase tracking-[0.14em] text-text-faint">{meta}</p>
+        <p className="num mt-0.5 truncate text-ticker text-text-faint">{meta}</p>
       </div>
       <Progress percent={d.percent} label />
       <Link
         href={d.href}
-        className="num focus-ring shrink-0 rounded-button border border-border px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-text transition-colors hover:border-[var(--ink)]"
+        className="num focus-ring shrink-0 rounded-button border border-border px-3 py-1.5 text-ticker text-text transition-colors hover:border-[var(--ink)]"
       >
         Resume
       </Link>
       {/* Delete sits on the row itself: a draft that should not have been
           kept must be one press away from going, not a trip to Studio. */}
-      <span className="num shrink-0 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+      <span className="num shrink-0 text-ticker text-text-faint">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
     </li>
@@ -128,16 +128,16 @@ function DraftRowCompact({ d }: { d: PickerDraft }) {
     <li className="flex items-center gap-2 rounded-panel border border-border bg-surface pr-3">
       <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-panel px-3.5 py-3">
         <span className="min-w-0 flex-1">
-          <span className="num block truncate text-[9px] uppercase tracking-[0.14em] text-text-mute">
+          <span className="num block truncate text-ticker text-text-mute">
             {d.typeLabel} · {d.where}
           </span>
-          <span className={cn("user-copy mt-0.5 block truncate font-display text-[1rem] font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
+          <span className={cn("user-copy mt-0.5 block truncate font-display text-body font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
             {d.title}
           </span>
         </span>
         <Progress percent={d.percent} />
       </Link>
-      <span className="num shrink-0 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+      <span className="num shrink-0 text-ticker text-text-faint">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
     </li>
@@ -148,17 +148,17 @@ export function ComposePicker({ drafts }: { drafts: PickerDraft[] }) {
   return (
     <div className="flex min-h-full flex-col">
       <ComposeHeader>
-        <span className="num hidden text-[10px] uppercase tracking-[0.16em] text-text-faint md:inline">
+        <span className="num hidden text-ticker text-text-faint md:inline">
           Nothing to save yet
         </span>
       </ComposeHeader>
 
       <div className="mx-auto w-full max-w-[var(--w-standard)] px-4 py-5 md:px-8 md:py-10">
-        <p className="num text-[10px] uppercase tracking-[0.18em] text-text-faint md:hidden">New publication</p>
-        <h1 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-text md:mt-0 md:text-[2.75rem]">
+        <p className="num text-ticker text-text-faint md:hidden">New publication</p>
+        <h1 className="mt-1 font-display text-headline font-semibold leading-tight tracking-tight text-text md:mt-0 md:text-display">
           What are you publishing?
         </h1>
-        <p className="mt-2 hidden max-w-[58ch] text-[1.0625rem] leading-relaxed text-text-mute md:block">
+        <p className="mt-2 hidden max-w-[58ch] text-body leading-relaxed text-text-mute md:block">
           Three jobs, not three file types. Pick the one that matches what you are trying to do today.
           Everything after it is two short steps.
         </p>
@@ -178,12 +178,12 @@ export function ComposePicker({ drafts }: { drafts: PickerDraft[] }) {
 
         <section aria-label="Drafts" className="mt-8 border-t border-border pt-5 md:mt-12 md:pt-6">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">
+            <p className="num text-ticker text-text-mute">
               <span className="hidden md:inline">Or pick up something unfinished · </span>
               <span className="md:hidden">Unfinished · </span>
               {drafts.length} {drafts.length === 1 ? "draft" : "drafts"}
             </p>
-            <p className="hidden font-display text-[0.9375rem] italic text-text-mute md:block">
+            <p className="hidden font-display text-body italic text-text-mute md:block">
               Drafts open at the step you stopped on.
             </p>
             <ComposeBackLink className="rounded-button border border-border px-2.5 py-1 md:hidden">
@@ -192,7 +192,7 @@ export function ComposePicker({ drafts }: { drafts: PickerDraft[] }) {
           </div>
 
           {drafts.length === 0 ? (
-            <p className="mt-4 text-[0.875rem] leading-relaxed text-text-mute">
+            <p className="mt-4 text-body leading-relaxed text-text-mute">
               Nothing unfinished. Whatever you start above saves itself as you go.
             </p>
           ) : (

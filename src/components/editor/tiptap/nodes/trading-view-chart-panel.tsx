@@ -78,7 +78,7 @@ export function TradingViewChartPanel({
       {isEditable && (
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
           <ChartCandlestick size={14} className="text-accent" />
-          <span className="t-eyebrow text-[11px]">TradingView</span>
+          <span className="t-meta text-ticker">TradingView</span>
           <input
             defaultValue={ticker}
             key={ticker}
@@ -91,7 +91,7 @@ export function TradingViewChartPanel({
             }}
             onMouseDown={stopEditorCapture}
             placeholder="Ticker"
-            className="num w-20 rounded-field border border-border bg-bg px-2 py-1 text-sm font-semibold focus:border-accent focus:outline-none"
+            className="num w-20 rounded-field border border-border bg-bg px-2 py-1 text-body font-semibold focus:border-accent focus:outline-none"
           />
           <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
             {CHART_RANGES.map((r) => (
@@ -101,7 +101,7 @@ export function TradingViewChartPanel({
                 onMouseDown={stopEditorCapture}
                 onClick={() => updateAttributes({ range: r })}
                 className={cn(
-                  "rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition-colors",
+                  "rounded-[4px] px-2 py-0.5 text-ticker font-medium transition-colors",
                   range === r ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
                 )}
               >
@@ -117,7 +117,7 @@ export function TradingViewChartPanel({
                 onMouseDown={stopEditorCapture}
                 onClick={() => toggleStudy(s.id)}
                 className={cn(
-                  "rounded-button border px-2 py-0.5 text-[10px] font-medium transition-colors",
+                  "rounded-button border px-2 py-0.5 text-ticker font-medium transition-colors",
                   studies.includes(s.id)
                     ? "border-accent bg-accent-weak text-accent"
                     : "border-border text-text-mute hover:text-text",
@@ -144,11 +144,11 @@ export function TradingViewChartPanel({
           <TradingViewChart ticker={ticker} range={range} studies={studies} height={isEditable ? 520 : 480} />
         ) : (
           <div className="flex h-[320px] items-center justify-center">
-            <p className="t-meta text-sm text-text-mute">Enter a ticker to load TradingView</p>
+            <p className="t-meta text-body text-text-mute">Enter a ticker to load TradingView</p>
           </div>
         )}
         {isEditable ? (
-          <p className="t-meta px-2 py-1.5 text-center text-[10px] text-text-faint">
+          <p className="t-meta px-2 py-1.5 text-center text-ticker text-text-faint">
             Toggle RSI / Volume / MACD above — saved with your draft. Freehand drawings inside TradingView reset on reload.
           </p>
         ) : null}

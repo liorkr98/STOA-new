@@ -65,7 +65,7 @@ export function IntegrationsPanel({
   return (
     <div className="flex flex-col gap-8">
       <section className="rounded-panel border border-border bg-surface p-5">
-        <h2 className="t-h3">Alert delivery</h2>
+        <h2 className="t-title">Alert delivery</h2>
         <p className="t-body mt-1 text-text-mute">
           Choose immediate Slack pings, a once-daily digest (8:00 UTC), or off. Revenue and
           marketing default to daily digest.
@@ -83,7 +83,7 @@ export function IntegrationsPanel({
                 </p>
               </div>
               <select
-                className="rounded-field border border-border bg-surface px-3 py-2 text-sm"
+                className="rounded-field border border-border bg-surface px-3 py-2 text-body"
                 value={row.delivery}
                 disabled={pending}
                 onChange={(e) => onDeliveryChange(row.alertKey, e.target.value as AlertDelivery)}
@@ -126,7 +126,7 @@ export function IntegrationsPanel({
       </section>
 
       <section className="rounded-panel border border-border bg-surface p-5">
-        <h2 className="t-h3">Sentry</h2>
+        <h2 className="t-title">Sentry</h2>
         <p className="t-body mt-1 text-text-mute">
           Error monitoring. Connect Sentry to Slack in the Sentry dashboard (Integrations → Slack →
           #bugs).
@@ -168,12 +168,12 @@ export function IntegrationsPanel({
       </section>
 
       <section className="rounded-panel border border-border bg-surface p-5">
-        <h2 className="t-h3">STOA bot (#bugs)</h2>
+        <h2 className="t-title">STOA bot (#bugs)</h2>
         <p className="t-body mt-1 text-text-mute">
           The bot posts thread replies on error alerts in #bugs. Manual posts in Slack only work after
           Event Subscriptions are configured on the same Slack app as the bot token.
         </p>
-        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-text-mute">
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-body text-text-mute">
           <li>
             <a
               href="https://api.slack.com/apps"
@@ -187,13 +187,13 @@ export function IntegrationsPanel({
           </li>
           <li>
             Request URL:{" "}
-            <code className="font-mono text-xs">https://www.stoamarket.ai/api/webhooks/slack/events</code>
+            <code className="text-ticker">https://www.stoamarket.ai/api/webhooks/slack/events</code>
           </li>
-          <li>Subscribe to bot events: <code className="font-mono text-xs">message.channels</code></li>
+          <li>Subscribe to bot events: <code className="text-ticker">message.channels</code></li>
           <li>Reinstall the app to the workspace after changing scopes</li>
-          <li>Invite the bot to #bugs with <code className="font-mono text-xs">/invite @STOA</code></li>
+          <li>Invite the bot to #bugs with <code className="text-ticker">/invite @STOA</code></li>
         </ol>
-        <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-mute">
+        <ul className="mt-3 flex flex-col gap-1.5 text-body text-text-mute">
           <li>
             Bot token:{" "}
             <span
@@ -233,7 +233,7 @@ export function IntegrationsPanel({
             </span>
           </li>
           <li>
-            Bugs channel ID: <code className="font-mono text-xs">{slackBot.bugsChannelId}</code>
+            Bugs channel ID: <code className="text-ticker">{slackBot.bugsChannelId}</code>
           </li>
           {slackBot.error && (
             <li className="text-[var(--rust)]">Slack API: {slackBot.error}</li>
@@ -259,7 +259,7 @@ export function IntegrationsPanel({
       <section className="rounded-panel border border-border bg-surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="t-h3">Slack channels</h2>
+            <h2 className="t-title">Slack channels</h2>
             <p className="t-body mt-1 text-text-mute">
               One incoming webhook URL per channel in Vercel env vars.
             </p>
@@ -314,7 +314,7 @@ export function IntegrationsPanel({
       <section className="rounded-panel border border-border bg-surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="t-h3">Alert smoke tests</h2>
+            <h2 className="t-title">Alert smoke tests</h2>
             <p className="t-body mt-1 text-text-mute">
               Sends a [TEST] immediate sample of each alert type (ignores digest settings).
             </p>
@@ -339,7 +339,7 @@ export function IntegrationsPanel({
             {alertTests.map((row) => (
               <li
                 key={row.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-inner border border-border bg-bg px-4 py-2.5 text-sm"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-inner border border-border bg-bg px-4 py-2.5 text-body"
               >
                 <span>{row.label}</span>
                 <span className="t-meta">
@@ -355,7 +355,7 @@ export function IntegrationsPanel({
       </section>
 
       {message && (
-        <p className="rounded-inner border border-border bg-surface-2 px-4 py-3 text-sm">
+        <p className="rounded-inner border border-border bg-surface-2 px-4 py-3 text-body">
           {message}
         </p>
       )}

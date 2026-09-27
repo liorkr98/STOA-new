@@ -12,20 +12,20 @@ export default function DevVideoStatesPage() {
   const [startedAt] = useState(() => new Date(Date.now() - 3 * 60_000).toISOString());
   return (
     <div className="mx-auto w-full max-w-[var(--w-standard)] px-5 py-10">
-      <p className="t-eyebrow">Video states</p>
-      <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">A clip on the way</h1>
+      <p className="t-meta">Video states</p>
+      <h1 className="mt-2 font-display text-headline font-semibold tracking-tight">A clip on the way</h1>
       <div className="mt-8 grid gap-10 lg:grid-cols-[380px_380px]">
         <section>
-          <h2 className="num mb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">Report page · processing</h2>
+          <h2 className="num mb-3 text-ticker text-text-mute">Report page · processing</h2>
           <ClipPendingPlayer status="processing" startedAt={startedAt} analystName="Lena Kowalczyk" isAuthor={false} />
         </section>
         <section>
-          <h2 className="num mb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">Report page · failed, seen by the creator</h2>
+          <h2 className="num mb-3 text-ticker text-text-mute">Report page · failed, seen by the creator</h2>
           <ClipPendingPlayer status="failed" startedAt={startedAt} analystName="Lena Kowalczyk" isAuthor />
         </section>
       </div>
       <section className="mt-12">
-        <h2 className="num mb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">Today and profile frames</h2>
+        <h2 className="num mb-3 text-ticker text-text-mute">Today and profile frames</h2>
         <div className="flex flex-wrap items-end gap-6">
           <span className="today-thumb">
             <ClipPendingThumb />

@@ -49,21 +49,21 @@ export class StepErrorBoundary extends Component<
         role="alert"
         className="rounded-panel border border-[var(--rust)]/50 bg-surface p-4"
       >
-        <p className="num text-[10px] uppercase tracking-[0.16em] text-[var(--rust)]">
+        <p className="num text-ticker text-[var(--rust)]">
           {this.props.label} hit a problem
         </p>
-        <p className="mt-1.5 text-[0.875rem] leading-relaxed text-text">
+        <p className="mt-1.5 text-body leading-relaxed text-text">
           Something in this step failed to draw. Nothing else was touched: your other steps,
           your cards, the clip and what is placed on it are still here, and the draft stands as
           of its last save.
         </p>
-        <p className="num mt-2 break-words text-[11px] leading-snug text-text-faint">
+        <p className="num mt-2 break-words text-ticker leading-snug text-text-faint">
           {error.message || String(error)}
         </p>
         <button
           type="button"
           onClick={this.retry}
-          className="focus-ring mt-3 flex items-center gap-1.5 rounded-button bg-[var(--ink)] px-3 py-1.5 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+          className="focus-ring mt-3 flex items-center gap-1.5 rounded-button bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
         >
           <RotateCcw size={13} aria-hidden /> Redraw this step
         </button>

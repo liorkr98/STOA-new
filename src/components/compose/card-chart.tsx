@@ -62,7 +62,7 @@ export function CardChart({
   if (!symbol) {
     return (
       <div className={cn("flex h-full min-h-24 items-center justify-center border border-dashed border-border bg-surface-2", className)}>
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">Set a ticker</span>
+        <span className="num text-ticker text-text-faint">Set a ticker</span>
       </div>
     );
   }
@@ -71,8 +71,8 @@ export function CardChart({
     return (
       <div className={cn("flex h-full min-h-0 flex-col", className)}>
         <div className="flex items-baseline justify-between gap-2">
-          <span className="num text-[0.8125rem] tracking-tight">{symbol}</span>
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">TradingView</span>
+          <span className="num text-ticker tracking-tight">{symbol}</span>
+          <span className="num text-ticker text-text-faint">TradingView</span>
         </div>
         <div
           className="mt-2 min-h-0 flex-1 overflow-hidden rounded-inner border border-border bg-paper"
@@ -80,7 +80,7 @@ export function CardChart({
         >
           <TradingViewChart ticker={symbol} range="3M" height={compact ? 168 : 240} compact />
         </div>
-        {caption ? <p className="mt-2 text-[0.8125rem] leading-snug text-text-mute">{caption}</p> : null}
+        {caption ? <p className="mt-2 text-ticker leading-snug text-text-mute">{caption}</p> : null}
       </div>
     );
   }
@@ -205,17 +205,17 @@ function LightweightCardChart({
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="num text-[0.8125rem] tracking-tight">
+        <span className="num text-ticker tracking-tight">
           {symbol}
           {compare && compare !== symbol ? <span className="text-text-faint"> · {compare}</span> : null}
         </span>
         {changePct != null ? (
-          <span className={cn("num text-[0.75rem]", up ? "text-[var(--up)]" : "text-[var(--down)]")}>
+          <span className={cn("num text-ticker", up ? "text-[var(--up)]" : "text-[var(--down)]")}>
             {up ? "+" : ""}
             {changePct.toFixed(1)}%
           </span>
         ) : (
-          <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">TradingView</span>
+          <span className="num text-ticker text-text-faint">TradingView</span>
         )}
       </div>
       <div
@@ -225,9 +225,9 @@ function LightweightCardChart({
         aria-busy={status === "loading"}
       />
       {status === "empty" ? (
-        <p className="mt-2 text-[0.8125rem] text-text-faint">No tape for {symbol} yet.</p>
+        <p className="mt-2 text-ticker text-text-faint">No tape for {symbol} yet.</p>
       ) : null}
-      {caption ? <p className="mt-2 text-[0.8125rem] leading-snug text-text-mute">{caption}</p> : null}
+      {caption ? <p className="mt-2 text-ticker leading-snug text-text-mute">{caption}</p> : null}
     </div>
   );
 }

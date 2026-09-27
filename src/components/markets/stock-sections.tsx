@@ -149,7 +149,7 @@ export function StockFundamentals({
             <p className="stock-consensus-key">
               {r.key} <Auto />
             </p>
-            <p className="num mt-1 text-base font-semibold tabular-nums text-text">
+            <p className="num mt-1 text-body font-semibold tabular-nums text-text">
               {r.value ?? <span className="markets-pending">Not available</span>}
             </p>
           </div>
@@ -174,9 +174,9 @@ export function StockPeers({
         {peers.map((p) => (
           <Link key={p.symbol} href={`/markets/${p.symbol}`} className="stock-peer focus-ring">
             <TickerChip ticker={p.symbol} />
-            <p className="mt-2 truncate text-[0.8125rem] text-text">{p.name}</p>
+            <p className="mt-2 truncate text-ticker text-text">{p.name}</p>
             <div className="mt-1 flex items-baseline justify-between gap-2">
-              <span className="num text-[0.8125rem] tabular-nums text-text">
+              <span className="num text-ticker tabular-nums text-text">
                 {p.last_price == null ? (
                   <span className="markets-pending">-</span>
                 ) : (

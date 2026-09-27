@@ -40,7 +40,7 @@ export function SectorPicker({ sectors, initial }: { sectors: string[]; initial:
               onClick={() => toggle(s)}
               aria-pressed={active}
               className={cn(
-                "flex items-center justify-between gap-2 rounded-button border px-4 py-3 text-sm font-medium transition-[transform,border-color,background-color] duration-[var(--dur-1)] ease-[var(--ease-out)] active:scale-[0.97]",
+                "flex items-center justify-between gap-2 rounded-button border px-4 py-3 text-body font-medium transition-[transform,border-color,background-color] duration-[var(--dur-1)] ease-[var(--ease-out)] active:scale-[0.97]",
                 active
                   ? "border-accent bg-accent-weak text-accent"
                   : "border-border text-text-mute hover:border-border-strong hover:text-text",

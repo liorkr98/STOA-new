@@ -257,11 +257,11 @@ export function ReportClip({
                 <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_94%,transparent)] text-[var(--ink)] shadow-lg transition-transform duration-[var(--dur-1)] group-hover:scale-105">
                   <Play size={24} fill="currentColor" strokeWidth={0} className="ml-1" />
                 </span>
-                <span className="num absolute bottom-3 left-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
+                <span className="num absolute bottom-3 left-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-2 py-1 text-ticker text-[var(--paper)]">
                   Watch the analyst
                 </span>
                 {duration ? (
-                  <span className="num absolute bottom-3 right-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
+                  <span className="num absolute bottom-3 right-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-1.5 py-0.5 text-ticker text-[var(--paper)]">
                     {duration}
                   </span>
                 ) : null}
@@ -277,7 +277,7 @@ export function ReportClip({
               <button
                 type="button"
                 onClick={returnToArticle}
-                className="focus-ring num rounded px-1.5 py-1 text-[9px] uppercase tracking-[0.14em] text-white/90 hover:text-white"
+                className="focus-ring num rounded px-1.5 py-1 text-ticker text-white/90 hover:text-white"
               >
                 Back
               </button>
@@ -293,7 +293,7 @@ export function ReportClip({
           ) : null}
         </div>
       </div>
-      <figcaption className="num mt-2 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+      <figcaption className="num mt-2 text-ticker text-text-faint">
         {analystName} makes the case{duration ? ` · ${duration}` : ""}
       </figcaption>
     </figure>

@@ -31,7 +31,7 @@ export function StockQuoteHeader({
         <div className="flex items-start gap-3">
           <WatchlistButton ticker={ticker} className="mt-1 shrink-0" />
           <div>
-            <h1 className="num t-display text-5xl">{ticker}</h1>
+            <h1 className="num t-display text-display">{ticker}</h1>
             {(name || sector) && (
               <p className="t-meta mt-1">
                 {[name, sector].filter(Boolean).join(" · ")}
@@ -43,11 +43,11 @@ export function StockQuoteHeader({
         <div className="flex flex-col items-end gap-2 text-right">
           {hasPrice ? (
             <>
-              <span className="num text-3xl font-semibold">${price(quote.price!)}</span>
+              <span className="num text-headline font-semibold">${price(quote.price!)}</span>
               {changePercent != null && (
                 <span
                   className={cn(
-                    "num text-sm font-semibold",
+                    "num text-body font-semibold",
                     up ? "text-[var(--verdigris)]" : "text-[var(--rust)]",
                   )}
                 >
@@ -60,16 +60,16 @@ export function StockQuoteHeader({
             <span className="t-meta">Live quote unavailable</span>
           )}
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+            <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-ticker">
               {hasPrice ? `via ${quote.source}` : "check market hours / symbol"}
             </span>
             {reportCount > 0 && (
-              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-ticker">
                 {reportCount} Stoa report{reportCount === 1 ? "" : "s"}
               </span>
             )}
             {metricsUpdatedAt && (
-              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-ticker">
                 Mkt cap cached {formatDistanceToNow(new Date(metricsUpdatedAt), { addSuffix: true })}
               </span>
             )}
@@ -103,12 +103,12 @@ export function StockKeyStats({ snapshot }: { snapshot: StockSnapshot }) {
 
   return (
     <section className="rounded-panel border border-border bg-surface p-5">
-      <h2 className="t-h3 mb-4">Key statistics</h2>
+      <h2 className="t-title mb-4">Key statistics</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
           <div key={s.label}>
             <div className="t-meta">{s.label}</div>
-            <div className="num mt-1 text-base font-semibold">{s.value}</div>
+            <div className="num mt-1 text-body font-semibold">{s.value}</div>
           </div>
         ))}
       </div>
@@ -123,7 +123,7 @@ export function StockRangeBar({ snapshot }: { snapshot: StockSnapshot }) {
 
   return (
     <section className="rounded-panel border border-border bg-surface p-5">
-      <h2 className="t-h3 mb-4">Trading ranges</h2>
+      <h2 className="t-title mb-4">Trading ranges</h2>
       <div className="grid gap-6 md:grid-cols-2">
         {dayLow != null && dayHigh != null && (
           <RangeRow label="Day range" low={dayLow} high={dayHigh} current={quote.price} />
@@ -157,7 +157,7 @@ function RangeRow({
 
   return (
     <div>
-      <div className="mb-2 flex justify-between text-xs text-text-mute">
+      <div className="mb-2 flex justify-between text-ticker text-text-mute">
         <span>{label}</span>
         <span className="num">
           ${low.toFixed(2)} to ${high.toFixed(2)}
@@ -186,13 +186,13 @@ export async function SectorPeers({
 
   return (
     <section className="rounded-panel border border-border bg-surface p-5">
-      <h2 className="t-h3 mb-3">Peers in {sector}</h2>
+      <h2 className="t-title mb-3">Peers in {sector}</h2>
       <div className="flex flex-wrap gap-2">
         {peers.map((p) => (
           <Link
             key={p.symbol}
             href={`/markets/${p.symbol}`}
-            className="rounded-chip border border-border bg-surface-2 px-3 py-1.5 text-sm transition-colors hover:border-border-strong hover:bg-accent/10"
+            className="rounded-chip border border-border bg-surface-2 px-3 py-1.5 text-body transition-colors hover:border-border-strong hover:bg-accent/10"
           >
             <span className="num font-semibold">{p.symbol}</span>
             <span className="t-meta ml-2">{p.name}</span>

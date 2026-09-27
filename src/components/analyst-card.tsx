@@ -39,7 +39,7 @@ export function AnalystCard({
         </div>
         <div className="flex flex-col items-end gap-1">
           {promoted && (
-            <span className="rounded-chip bg-accent-weak px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">
+            <span className="rounded-chip bg-accent-weak px-1.5 py-0.5 text-ticker font-medium text-accent">
               Promoted
             </span>
           )}

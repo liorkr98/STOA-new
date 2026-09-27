@@ -104,12 +104,12 @@ export function EmbedNodeView({
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-1">
         <span className="flex items-center gap-1.5 text-text-mute">
           <Icon size={13} className="shrink-0 text-text-faint" />
-          <span className="t-eyebrow">{meta.label}</span>
+          <span className="t-meta">{meta.label}</span>
         </span>
-        <span className="truncate text-sm text-text group-hover/card:underline">
+        <span className="truncate text-body text-text group-hover/card:underline">
           {caption || url}
         </span>
-        <span className="num flex items-center gap-1 text-[11px] text-text-faint">
+        <span className="num flex items-center gap-1 text-ticker text-text-faint">
           {hostLabel(url)}
           <ExternalLink size={10} />
         </span>
@@ -151,7 +151,7 @@ export function EmbedNodeView({
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), commit())}
             onMouseDown={stop}
             placeholder="Paste an X, YouTube, or SEC link"
-            className="w-full bg-transparent text-sm focus:outline-none"
+            className="w-full bg-transparent text-body focus:outline-none"
           />
         </span>
         <button
@@ -172,7 +172,7 @@ export function EmbedNodeView({
             onChange={(e) => updateAttributes({ caption: e.target.value })}
             onMouseDown={stop}
             placeholder="Caption (optional)"
-            className="w-full bg-transparent text-sm text-text-mute focus:outline-none"
+            className="w-full bg-transparent text-body text-text-mute focus:outline-none"
           />
         </div>
       )}

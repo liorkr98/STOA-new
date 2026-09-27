@@ -46,7 +46,7 @@ export function PlanPicker({
   return (
     <div className="flex w-full flex-col gap-2">
       {subscribed && (
-        <p className="t-meta text-center text-[11px]">You are subscribed - switch tier anytime</p>
+        <p className="t-meta text-center text-ticker">You are subscribed - switch tier anytime</p>
       )}
       {plans.map((plan) => {
         const free = plan.price_cents <= 0;
@@ -56,16 +56,16 @@ export function PlanPicker({
             className="rounded-panel border border-border bg-surface p-3"
           >
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-sm font-semibold">{plan.name}</span>
-              <span className="num text-sm">
+              <span className="text-body font-semibold">{plan.name}</span>
+              <span className="num text-body">
                 {free ? "Free" : `${usd(price(plan))}/${plan.interval === "year" ? "yr" : "mo"}`}
               </span>
             </div>
-            {plan.description && <p className="t-meta mt-0.5 text-[11px]">{plan.description}</p>}
+            {plan.description && <p className="t-meta mt-0.5 text-ticker">{plan.description}</p>}
             {plan.perks.length > 0 && (
               <ul className="mt-1.5 flex flex-col gap-0.5">
                 {plan.perks.slice(0, 4).map((perk) => (
-                  <li key={perk} className="flex items-center gap-1.5 text-[11px] text-text-mute">
+                  <li key={perk} className="flex items-center gap-1.5 text-ticker text-text-mute">
                     <Check size={11} className="shrink-0 text-text-mute" aria-hidden />
                     {perk}
                   </li>
@@ -73,7 +73,7 @@ export function PlanPicker({
               </ul>
             )}
             {!free && (plan.trial_days ?? 0) > 0 && (
-              <p className="t-meta mt-1 text-[11px]">{plan.trial_days}-day free trial</p>
+              <p className="t-meta mt-1 text-ticker">{plan.trial_days}-day free trial</p>
             )}
             <button
               type="button"
@@ -89,7 +89,7 @@ export function PlanPicker({
         );
       })}
       {mutation.data?.error && (
-        <p className="text-center text-[12px] text-[var(--down)]">{mutation.data.error}</p>
+        <p className="text-center text-ticker text-[var(--down)]">{mutation.data.error}</p>
       )}
 
       {confirming && (

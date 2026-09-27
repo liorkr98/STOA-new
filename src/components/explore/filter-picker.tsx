@@ -195,7 +195,7 @@ export function FilterPicker({
           aria-label={searchLabel}
           autoComplete="off"
           spellCheck={false}
-          className="num w-full bg-transparent px-1.5 py-1 text-[11px] uppercase tracking-[0.14em] text-text outline-none placeholder:text-text-faint"
+          className="num w-full bg-transparent px-1.5 py-1 text-ticker text-text outline-none placeholder:text-text-faint"
         />
       </div>
       <ul
@@ -216,7 +216,7 @@ export function FilterPicker({
               onMouseEnter={() => setActive(i)}
               onClick={() => choose(opt)}
               className={cn(
-                "num flex w-full items-center px-3 text-left text-[11px] uppercase tracking-[0.14em]",
+                "num flex w-full items-center px-3 text-left text-ticker",
                 sheet ? "py-3" : "py-2",
                 i === active && "bg-surface-2",
                 value === opt ? "text-text" : "text-text-mute",
@@ -227,7 +227,7 @@ export function FilterPicker({
           </li>
         ))}
         {matches.length === 0 ? (
-          <li className="num px-3 py-3 text-[11px] uppercase tracking-[0.14em] text-text-faint">
+          <li className="num px-3 py-3 text-ticker text-text-faint">
             Nothing matches
           </li>
         ) : null}
@@ -242,7 +242,7 @@ export function FilterPicker({
         onClick={() => (open ? close() : setOpen(true))}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="num focus-ring flex items-center gap-1.5 rounded text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text"
+        className="num focus-ring flex items-center gap-1.5 rounded text-ticker text-text-mute hover:text-text"
       >
         {value ?? label}
         <ChevronDown size={12} strokeWidth={1.6} aria-hidden />
@@ -259,11 +259,11 @@ export function FilterPicker({
             }
           >
             <div className="flex items-center justify-between border-b border-border px-3 py-2">
-              <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">{label}</span>
+              <span className="num text-ticker text-text-mute">{label}</span>
               <button
                 type="button"
                 onClick={close}
-                className="num focus-ring rounded px-1 text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text"
+                className="num focus-ring rounded px-1 text-ticker text-text-mute hover:text-text"
               >
                 Close
               </button>

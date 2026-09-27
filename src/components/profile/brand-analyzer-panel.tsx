@@ -55,7 +55,7 @@ export function BrandAnalyzerPanel({
   return (
     <div className="surface flex flex-col gap-5 p-6">
       <div>
-        <h2 className="t-h3">AI brand analyzer</h2>
+        <h2 className="t-title">AI brand analyzer</h2>
         <p className="t-meta mt-1">
           Scores your storefront copy and suggests improvements. Uses {2} AI credits per run.
         </p>
@@ -66,11 +66,11 @@ export function BrandAnalyzerPanel({
           <Sparkle size={16} className="text-accent" />
           {loading ? "Analyzing..." : "Analyze my brand"}
         </Button>
-        <span className="t-meta text-[11px]">{credits} credits left</span>
+        <span className="t-meta text-ticker">{credits} credits left</span>
       </div>
 
       {error && (
-        <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+        <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
           {error}
         </p>
       )}
@@ -80,8 +80,8 @@ export function BrandAnalyzerPanel({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Object.entries(result.scores).map(([key, score]) => (
               <div key={key} className="rounded-inner border border-border bg-bg p-3">
-                <p className="t-meta text-[10px] capitalize">{key.replace("_", " ")}</p>
-                <p className="num mt-1 text-xl font-semibold">{score}</p>
+                <p className="t-meta text-ticker capitalize">{key.replace("_", " ")}</p>
+                <p className="num mt-1 text-title font-semibold">{score}</p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
                   <div className="h-full bg-accent" style={{ width: `${score}%` }} />
                 </div>
@@ -90,7 +90,7 @@ export function BrandAnalyzerPanel({
           </div>
 
           {result.warnings.length > 0 && (
-            <ul className="list-inside list-disc text-sm text-text-mute">
+            <ul className="list-inside list-disc text-body text-text-mute">
               {result.warnings.map((w) => (
                 <li key={w}>{w}</li>
               ))}
@@ -101,8 +101,8 @@ export function BrandAnalyzerPanel({
             <div className="flex flex-col gap-3">
               {result.suggestions.map((s, i) => (
                 <div key={i} className="rounded-inner border border-border bg-surface-2 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-text-faint">{s.field}</p>
-                  <p className="mt-2 text-sm">
+                  <p className="text-ticker font-medium text-text-faint">{s.field}</p>
+                  <p className="mt-2 text-body">
                     {Array.isArray(s.proposed) ? s.proposed.join(", ") : s.proposed}
                   </p>
                   <p className="t-meta mt-1">{s.reason}</p>

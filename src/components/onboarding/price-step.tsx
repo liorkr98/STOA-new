@@ -41,7 +41,7 @@ export function PriceStep({
             onClick={() => setMode(m.value)}
             aria-pressed={mode === m.value}
             className={cn(
-              "flex-1 rounded-button border px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex-1 rounded-button border px-3 py-2.5 text-body font-medium transition-colors",
               mode === m.value
                 ? "border-accent bg-accent-weak text-accent"
                 : "border-border text-text-mute hover:border-border-strong hover:text-text",
@@ -53,7 +53,7 @@ export function PriceStep({
       </div>
 
       {showSub && (
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Monthly subscription</span>
           <div className="relative">
             <input
@@ -63,7 +63,7 @@ export function PriceStep({
               max={200}
               value={sub}
               onChange={(e) => setSub(Number(e.target.value))}
-              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-10 text-sm focus-ring"
+              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-10 text-body focus-ring"
             />
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-faint">/mo</span>
@@ -72,7 +72,7 @@ export function PriceStep({
       )}
 
       {showReport && (
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Default per-report price</span>
           <div className="relative">
             <input
@@ -82,7 +82,7 @@ export function PriceStep({
               max={50}
               value={report}
               onChange={(e) => setReport(Number(e.target.value))}
-              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-3 text-sm focus-ring"
+              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-3 text-body focus-ring"
             />
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
           </div>
@@ -93,7 +93,7 @@ export function PriceStep({
       {!showReport && <input type="hidden" name="report_price" value={0} />}
 
       <div className="rounded-panel border border-border bg-surface-2 p-4">
-        <p className="text-sm font-medium">Stoa takes 10% of what you earn. You keep 90%.</p>
+        <p className="text-body font-medium">Stoa takes 10% of what you earn. You keep 90%.</p>
         <p className="t-meta mt-1">
           Example: a {showSub ? `$${sub}/mo subscriber` : `$${report} report`} pays you{" "}
           {showSub ? `$${(sub * 0.9).toFixed(2)}` : `$${(report * 0.9).toFixed(2)}`}, after the platform fee.

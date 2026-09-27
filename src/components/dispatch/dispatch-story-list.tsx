@@ -28,7 +28,7 @@ export function DispatchStoryList({
             <article key={story.report.id} className="flex flex-col gap-2.5">
               <div className="flex items-center gap-2">
                 {ticker && (
-                  <span className="num text-[11px] font-semibold uppercase tracking-wider text-text">
+                  <span className="num text-ticker font-semibold text-text">
                     {ticker}
                   </span>
                 )}
@@ -42,7 +42,7 @@ export function DispatchStoryList({
                   {story.headline}
                 </h3>
                 {story.dek && (
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-mute">
+                  <p className="mt-2 line-clamp-2 text-body leading-relaxed text-text-mute">
                     {story.dek}
                   </p>
                 )}
@@ -51,7 +51,7 @@ export function DispatchStoryList({
               <div className="mt-auto flex items-center gap-2 pt-1">
                 <Link
                   href={`/analyst/${story.author.handle}`}
-                  className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-chip"
+                  className="text-ticker font-medium text-text-mute hover:text-text focus-ring rounded-chip"
                 >
                   {story.author.display_name}
                 </Link>

@@ -72,7 +72,7 @@ export default function DashboardPage() {
   return (
     <DensityRoot className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">
       <div>
-        <h1 className="t-h1">Dashboard</h1>
+        <h1 className="t-headline">Dashboard</h1>
         <p className="t-body mt-1">Your board. Drag widgets to arrange it.</p>
       </div>
       <DashboardBoard ids={order} onReorder={reorder} className="rounded-panel bg-surface-2 p-4">
@@ -85,10 +85,10 @@ export default function DashboardPage() {
 function Row({ ticker, price }: { ticker: string; price: number | null }) {
   return (
     <li className="flex items-center justify-between border-b border-border py-1.5 last:border-0">
-      <Link href={`/markets/${ticker}`} className="num text-sm font-medium hover:underline">
+      <Link href={`/markets/${ticker}`} className="num text-body font-medium hover:underline">
         {ticker}
       </Link>
-      <span className="num text-sm text-text-mute">
+      <span className="num text-body text-text-mute">
         {price != null ? `$${price.toFixed(2)}` : "-"}
       </span>
     </li>
@@ -133,11 +133,11 @@ function PortfolioWidget() {
         </p>
       ) : (
         <div className="flex flex-col gap-1">
-          <span className="num text-2xl font-semibold">
+          <span className="num text-headline font-semibold">
             ${totals.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
           <span
-            className="num text-sm"
+            className="num text-body"
             style={{ color: totals.pl >= 0 ? "var(--up)" : "var(--down)" }}
           >
             {totals.pl >= 0 ? "+" : ""}

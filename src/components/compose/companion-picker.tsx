@@ -48,11 +48,11 @@ export function CompanionPicker({
 
   return (
     <section className="rounded-panel border border-border bg-surface p-4">
-      <p className="t-eyebrow mb-2.5">Connected piece · optional</p>
+      <p className="t-meta mb-2.5">Connected piece · optional</p>
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value || null)}
-        className="w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring"
+        className="w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring"
       >
         <option value="">None</option>
         {rows.map((r) => (

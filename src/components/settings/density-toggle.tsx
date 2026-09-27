@@ -17,7 +17,7 @@ export function DensityToggle() {
 
   return (
     <fieldset className="rounded-panel border border-border bg-surface p-5">
-      <legend className="t-h3 px-1">Density</legend>
+      <legend className="t-title px-1">Density</legend>
       <p className="t-meta mt-1">
         Compact tightens tables and dashboards. Report reading stays editorial either way.
       </p>
@@ -30,7 +30,7 @@ export function DensityToggle() {
             aria-checked={density === option}
             onClick={() => choose(option)}
             className={cn(
-              "focus-ring flex-1 rounded-button border px-3 py-2 text-sm capitalize transition-colors",
+              "focus-ring flex-1 rounded-button border px-3 py-2 text-body capitalize transition-colors",
               density === option
                 ? "border-border-strong bg-surface-2 font-medium text-text"
                 : "border-border text-text-mute hover:text-text",

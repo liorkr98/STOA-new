@@ -59,7 +59,7 @@ export const SlashMenuList = forwardRef<
 
   if (items.length === 0) {
     return (
-      <div className="w-72 rounded-panel border border-border bg-surface p-3 text-sm text-text-mute shadow-[var(--shadow-card)]">
+      <div className="w-72 rounded-panel border border-border bg-surface p-3 text-body text-text-mute shadow-[var(--shadow-card)]">
         No blocks match.
       </div>
     );
@@ -79,7 +79,7 @@ export const SlashMenuList = forwardRef<
         return (
           <div key={item.title}>
             {showGroup && (
-              <p className="t-eyebrow px-2.5 pb-1 pt-2 text-[10px]">{item.group}</p>
+              <p className="t-meta px-2.5 pb-1 pt-2 text-ticker">{item.group}</p>
             )}
             <button
               type="button"
@@ -100,8 +100,8 @@ export const SlashMenuList = forwardRef<
                 <Icon size={16} />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-medium text-text">{item.title}</span>
-                <span className="block truncate text-xs text-text-faint">{item.subtitle}</span>
+                <span className="block text-body font-medium text-text">{item.title}</span>
+                <span className="block truncate text-ticker text-text-faint">{item.subtitle}</span>
               </span>
             </button>
           </div>

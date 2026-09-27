@@ -11,7 +11,7 @@ export default function SentryExamplePage() {
 
   return (
     <div className="mx-auto max-w-xl px-5 py-16">
-      <h1 className="t-h1">Sentry example</h1>
+      <h1 className="t-headline">Sentry example</h1>
       <p className="t-body mt-2 text-text-mute">
         Development only. Click the button below to send a test error to Sentry.
       </p>

@@ -62,7 +62,7 @@ export function SectorNames({ names }: { names: SectorName[] }) {
           <div key={n.symbol} className="markets-row">
             <Link href={`/markets/${n.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={n.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{n.company}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{n.company}</span>
             </Link>
             <span className="num tabular-nums text-text">
               {n.price == null ? <span className="markets-pending">No price</span> : price(n.price)}
@@ -125,7 +125,7 @@ export function SectorAnalysts({
           <div key={a.handle} className="markets-row">
             <Link href={`/analyst/${a.handle}`} className="markets-row-name focus-ring">
               <Avatar src={a.avatarUrl} name={a.displayName} size="sm" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text">
+              <span className="min-w-0 flex-1 truncate text-body font-semibold text-text">
                 {a.displayName}
               </span>
             </Link>

@@ -137,10 +137,10 @@ function DraggableCard({
         <Icon size={14} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[12px] font-medium leading-tight text-text">{card.label}</span>
-        <span className="block truncate text-[10px] text-text-faint">{card.subtitle}</span>
+        <span className="block text-ticker font-medium leading-tight text-text">{card.label}</span>
+        <span className="block truncate text-ticker text-text-faint">{card.subtitle}</span>
       </span>
-      <span className="hidden items-center gap-0.5 text-[10px] uppercase tracking-wide text-text-faint group-hover:flex">
+      <span className="hidden items-center gap-0.5 text-ticker text-text-faint group-hover:flex">
         <GripVertical size={11} />
         Drag
       </span>
@@ -148,7 +148,7 @@ function DraggableCard({
         type="button"
         onClick={() => onInsert(card.node)}
         className={cn(
-          "inline-flex shrink-0 items-center gap-1 rounded-[6px] px-2 py-1 text-[11px] font-medium focus-ring",
+          "inline-flex shrink-0 items-center gap-1 rounded-[6px] px-2 py-1 text-ticker font-medium focus-ring",
           "bg-[var(--ink)] text-[var(--paper)] hover:opacity-90",
         )}
         aria-label={`Insert ${card.label}`}
@@ -359,8 +359,8 @@ export function AskPanel({
     >
       <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
         <Sparkle size={15} className="text-accent" />
-        <p className="text-sm font-semibold">Research AI</p>
-        <span className="t-meta text-[11px]">{credits} credits</span>
+        <p className="text-body font-semibold">Research AI</p>
+        <span className="t-meta text-ticker">{credits} credits</span>
         <button
           type="button"
           onClick={onClose}
@@ -374,12 +374,12 @@ export function AskPanel({
       <div ref={scrollRef} className="scroll-area flex-1 space-y-3 overflow-y-auto p-3">
         {messages.length === 0 && (
           <div className="space-y-3">
-            <p className="text-sm text-text-mute">
+            <p className="text-body text-text-mute">
             Ask me to draft sections, insert live data blocks, or build a diagram. Highlight text
             first for rewrite / visualize. Add a stance with its ticker so blocks wire correctly.
             </p>
             <div>
-              <p className="t-eyebrow mb-1.5 flex items-center gap-1 text-[10px]">
+              <p className="t-meta mb-1.5 flex items-center gap-1 text-ticker">
                 <FileText size={11} /> Report templates
               </p>
               <button
@@ -388,8 +388,8 @@ export function AskPanel({
                 className="flex w-full items-center justify-between rounded-inner border border-border bg-paper px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
               >
                 <span>
-                  <span className="block text-[12px] font-medium text-text">Browse templates</span>
-                  <span className="block text-[10px] text-text-faint">
+                  <span className="block text-ticker font-medium text-text">Browse templates</span>
+                  <span className="block text-ticker text-text-faint">
                     11 layouts: coverage, factsheet, comps, earnings, and more
                   </span>
                 </span>
@@ -403,7 +403,7 @@ export function AskPanel({
           <div key={i} className="flex flex-col gap-2">
             <div
               className={cn(
-                "rounded-inner px-3 py-2 text-sm leading-relaxed",
+                "rounded-inner px-3 py-2 text-body leading-relaxed",
                 m.role === "user"
                   ? "ml-6 bg-[var(--ink)] text-[var(--paper)]"
                   : "mr-1 border border-border bg-bg text-text",
@@ -413,11 +413,11 @@ export function AskPanel({
             </div>
             {m.applied && m.applied.length > 0 && (
               <div className="mr-1 rounded-inner border border-border bg-surface-2 px-3 py-2">
-                <p className="flex items-center gap-1.5 text-[11px] font-medium text-text">
+                <p className="flex items-center gap-1.5 text-ticker font-medium text-text">
                   <CheckCircle2 size={13} />
                   Applied in your report
                 </p>
-                <ul className="mt-1 space-y-0.5 text-[11px] text-text-mute">
+                <ul className="mt-1 space-y-0.5 text-ticker text-text-mute">
                   {m.applied.map((a) => (
                     <li key={a}>· {a}</li>
                   ))}
@@ -425,11 +425,11 @@ export function AskPanel({
               </div>
             )}
             {m.actionErrors && m.actionErrors.length > 0 && (
-              <p className="mr-1 text-[11px] text-[var(--rust)]">{m.actionErrors.join(" · ")}</p>
+              <p className="mr-1 text-ticker text-[var(--rust)]">{m.actionErrors.join(" · ")}</p>
             )}
             {m.cards && m.cards.length > 0 && (
               <div className="mr-1 flex flex-col gap-1.5">
-                <p className="t-meta flex items-center gap-1 px-1 text-[10px]">
+                <p className="t-meta flex items-center gap-1 px-1 text-ticker">
                   <Wand2 size={11} /> Drag or insert
                 </p>
                 {m.cards.map((c, j) => (
@@ -450,7 +450,7 @@ export function AskPanel({
               type="button"
               onClick={() => send(q)}
               disabled={pending}
-              className="rounded-[6px] border border-border bg-bg px-2 py-1 text-[10px] text-text-mute transition-colors hover:border-border-strong hover:text-text focus-ring disabled:opacity-50"
+              className="rounded-[6px] border border-border bg-bg px-2 py-1 text-ticker text-text-mute transition-colors hover:border-border-strong hover:text-text focus-ring disabled:opacity-50"
             >
               {q}
             </button>
@@ -458,7 +458,7 @@ export function AskPanel({
         </div>
         {error && (
           <p
-            className="mb-2 rounded-inner border border-border bg-surface-2 px-2.5 py-2 text-[11px] text-text-mute"
+            className="mb-2 rounded-inner border border-border bg-surface-2 px-2.5 py-2 text-ticker text-text-mute"
             role="alert"
           >
             {error}
@@ -471,7 +471,7 @@ export function AskPanel({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
             placeholder="Ask Research AI…"
-            className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2.5 py-1.5 text-sm focus-ring placeholder:text-text-mute"
+            className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2.5 py-1.5 text-body focus-ring placeholder:text-text-mute"
           />
           <button
             type="button"

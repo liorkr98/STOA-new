@@ -61,7 +61,7 @@ export function DashboardWidget({
             <GripVertical size={15} />
           </button>
         )}
-        <h3 className="t-h3 flex-1 truncate text-[0.9375rem]">{title}</h3>
+        <h3 className="t-title flex-1 truncate text-body">{title}</h3>
         {actions && (
           <div className="relative">
             <button

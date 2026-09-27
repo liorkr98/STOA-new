@@ -68,7 +68,7 @@ export function InstallHint() {
       style={{ bottom: "var(--tab-h, 0px)" }}
     >
       <div className="mx-auto flex max-w-[var(--w-wide)] items-start justify-between gap-3">
-        <p className="text-sm text-text">
+        <p className="text-body text-text">
           {ios
             ? "Add Stoa to your Home Screen: tap Share, then Add to Home Screen."
             : "Install Stoa for full-screen video, without the browser chrome."}

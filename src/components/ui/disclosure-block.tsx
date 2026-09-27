@@ -47,7 +47,7 @@ export function DisclosureBlock({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-start gap-2 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <span className="t-eyebrow shrink-0">{label}</span>
+      <span className="t-meta shrink-0">{label}</span>
       {children}
     </div>
   );
@@ -57,7 +57,7 @@ function Chip({ tone, children }: { tone: "neutral" | "quiet"; children: React.R
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-chip border px-2 py-0.5 text-xs font-medium text-left sm:text-right",
+        "inline-flex items-center rounded-chip border px-2 py-0.5 text-ticker font-medium text-left sm:text-right",
         tone === "neutral" ? "border-border-strong text-text" : "border-border text-text-mute",
       )}
     >

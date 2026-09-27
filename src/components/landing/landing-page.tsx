@@ -55,16 +55,16 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
     <section aria-label="Stoa" className="landing-doors">
       <div className="gutter-x mx-auto flex max-w-[var(--w-reading)] flex-col items-center pt-16 text-center md:pt-24">
         <h1 className="dispatch-wordmark landing-wordmark">STOA</h1>
-        <p className="mt-5 font-display text-[1.375rem] tracking-tight text-text md:text-[1.625rem]">Think clearly. Invest better.</p>
-        <p className="mt-6 max-w-[46ch] font-display text-[1.0625rem] leading-relaxed text-text-mute">
+        <p className="mt-5 font-display text-title tracking-tight text-text md:text-headline">Think clearly. Invest better.</p>
+        <p className="mt-6 max-w-[46ch] font-display text-body leading-relaxed text-text-mute">
           Independent analysts publish their research on video.
         </p>
         <div className="mt-8">{ACTIONS}</div>
-        <p className="mt-4 text-[0.8125rem] text-text-mute">Free to join. Watching needs an account.</p>
+        <p className="mt-4 text-ticker text-text-mute">Free to join. Watching needs an account.</p>
         {quiet ? null : (
-          <p className="num mt-6 text-[11px] uppercase tracking-[0.18em] text-text-mute">{activity.toUpperCase()}</p>
+          <p className="num mt-6 text-ticker text-text-mute">{activity.toUpperCase()}</p>
         )}
-        <p className="num mt-10 text-[10px] uppercase tracking-[0.18em] text-text-faint">or scroll to see today ↓</p>
+        <p className="num mt-10 text-ticker text-text-faint">or scroll to see today ↓</p>
       </div>
       <div className="mt-8">
         {tape ?? <MarketTape quotes={data.tape} />}
@@ -79,8 +79,8 @@ function HeadlineRow({ h }: { h: LandingHeadline }) {
   return (
     <article className="border-b border-border py-4">
       <div className="today-kicker">{h.kicker}</div>
-      <h3 className="mt-1 font-display text-[1.25rem] font-semibold leading-[1.15] tracking-tight">{h.headline}</h3>
-      <div className="mt-1.5 text-[0.8125rem] font-semibold text-text-mute">{h.analyst}</div>
+      <h3 className="mt-1 font-display text-title font-semibold leading-[1.15] tracking-tight">{h.headline}</h3>
+      <div className="mt-1.5 text-ticker font-semibold text-text-mute">{h.analyst}</div>
     </article>
   );
 }
@@ -92,8 +92,8 @@ function TodayLite({ data }: { data: LandingPayload }) {
     <section aria-label="Today, a glimpse" className="landing-today gutter-x mx-auto mt-20 max-w-[var(--w-standard)]">
       <Reveal>
         <div className="flex flex-col gap-1 border-y border-[var(--ink)] py-2 sm:flex-row sm:items-baseline sm:justify-between">
-          <span className="font-display text-[1.125rem] font-semibold tracking-[0.2em]">STOA · TODAY</span>
-          <span className="num text-[10px] uppercase tracking-[0.16em] text-text-mute">
+          <span className="font-display text-title font-semibold">STOA · TODAY</span>
+          <span className="num text-ticker text-text-mute">
             Issue №{data.issue.issueNumber} · {formatDispatchDateline(data.issue.dateISO)}
           </span>
         </div>
@@ -124,7 +124,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
               <div className="today-kicker mt-5">The lead · {lead.kicker}</div>
               <h2 className="dispatch-lead-headline mt-2">{lead.headline}</h2>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-[0.875rem] font-semibold text-text">{lead.analyst}</span>
+                <span className="text-body font-semibold text-text">{lead.analyst}</span>
                 {lead.ticker ? <TickerChip ticker={lead.ticker} /> : null}
                 {lead.direction ? <DirectionTag direction={lead.direction} /> : null}
               </div>
@@ -141,7 +141,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
         {/* The withholding is visible: the section fades into the paper. */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent,var(--paper))]" />
       </div>
-      <p className="num mt-6 text-center text-[11px] uppercase tracking-[0.16em] text-text-mute">
+      <p className="num mt-6 text-center text-ticker text-text-mute">
         Members get the full issue, shaped around what they follow.
       </p>
     </section>
@@ -184,14 +184,14 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
             {f.avatarUrl ? (
               <Image src={f.avatarUrl} alt={f.displayName} fill sizes="200px" className="object-cover" />
             ) : (
-              <span className="absolute inset-0 flex items-center justify-center font-display text-[1.5rem] font-semibold text-text-mute">
+              <span className="absolute inset-0 flex items-center justify-center font-display text-headline font-semibold text-text-mute">
                 {initials(f.displayName)}
               </span>
             )}
             <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)]" />
             <div className="absolute inset-x-0 bottom-0 p-2 text-white">
-              <div className={cn("truncate font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]", p.size === "standard" ? "text-[0.75rem]" : "text-[0.9375rem]")}>{f.displayName}</div>
-              {p.size !== "standard" ? <div className="truncate text-[0.6875rem] text-white/85">{f.specialty}</div> : null}
+              <div className={cn("truncate font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]", p.size === "standard" ? "text-ticker" : "text-body")}>{f.displayName}</div>
+              {p.size !== "standard" ? <div className="truncate text-ticker text-white/85">{f.specialty}</div> : null}
             </div>
           </Link>
         );
@@ -208,8 +208,8 @@ function Split({ data }: { data: LandingPayload }) {
       <div className="grid gap-12 md:grid-cols-2 md:divide-x md:divide-[var(--border)]">
         <div className="md:pl-12">
           <Reveal>
-            <h2 className="font-display text-[1.75rem] font-semibold tracking-tight">Most popular creators</h2>
-            <p className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-mute">Analysts people follow. A face, a name, a specialty.</p>
+            <h2 className="font-display text-headline font-semibold tracking-tight">Most popular creators</h2>
+            <p className="num mt-2 text-ticker text-text-mute">Analysts people follow. A face, a name, a specialty.</p>
             <div className="mt-6 hidden md:block">
               <FacesWall faces={data.faces} cols={4} />
             </div>

@@ -186,8 +186,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         <EditedMarker edits={edits} />
       </div>
 
-      <h1 className="t-h1 mt-3" dir="auto">{headline}</h1>
-      {dek && <p className="t-body mt-3 text-lg" dir="auto">{dek}</p>}
+      <h1 className="t-headline mt-3" dir="auto">{headline}</h1>
+      {dek && <p className="t-body mt-3 text-title" dir="auto">{dek}</p>}
 
       {author && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
@@ -195,7 +195,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3 focus-ring rounded-button">
               <Avatar src={author.avatar_url} name={author.display_name} size="md" />
               <div className="leading-tight">
-                <span className="flex items-center gap-1.5 text-sm font-semibold">
+                <span className="flex items-center gap-1.5 text-body font-semibold">
                   {author.display_name}
                   {author.verified && <BadgeCheck size={13} className="text-accent" />}
                 </span>

@@ -33,7 +33,7 @@ export function StorefrontSections({
           if (!body.trim()) return null;
           return (
             <section key={section.id} className="surface p-6">
-              {title && <h2 className="t-h3">{title}</h2>}
+              {title && <h2 className="t-title">{title}</h2>}
               <p className="t-body mt-2 whitespace-pre-wrap">{body}</p>
             </section>
           );
@@ -45,14 +45,14 @@ export function StorefrontSections({
           if (filled.length === 0) return null;
           return (
             <section key={section.id} className="surface p-6">
-              <h2 className="t-h3">FAQ</h2>
+              <h2 className="t-title">FAQ</h2>
               <div className="mt-3 flex flex-col">
                 {filled.map((item, i) => (
                   <details key={i} className="group border-t border-border py-3 first:border-0">
-                    <summary className="cursor-pointer list-none text-sm font-medium text-text hover:text-accent focus-ring rounded-chip">
+                    <summary className="cursor-pointer list-none text-body font-medium text-text hover:text-accent focus-ring rounded-chip">
                       {item.q}
                     </summary>
-                    <p className="t-body mt-2 text-sm">{item.a}</p>
+                    <p className="t-body mt-2 text-body">{item.a}</p>
                   </details>
                 ))}
               </div>
@@ -66,7 +66,7 @@ export function StorefrontSections({
           if (!report) return null;
           return (
             <section key={section.id}>
-              <h2 className="t-eyebrow mb-3">Featured research</h2>
+              <h2 className="t-meta mb-3">Featured research</h2>
               <ReportCard report={report} />
             </section>
           );

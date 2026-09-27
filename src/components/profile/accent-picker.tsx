@@ -77,7 +77,7 @@ export function AccentPicker({
   return (
     <div className="surface flex flex-col gap-5 p-6">
       <div>
-        <h2 className="t-h3">Storefront style</h2>
+        <h2 className="t-title">Storefront style</h2>
         <p className="t-meta mt-1">
           A custom accent and font pairing for your public profile. Bounded on purpose: only the
           accent and display face change; low-contrast colors are rejected for readability.
@@ -85,7 +85,7 @@ export function AccentPicker({
       </div>
 
       <div>
-        <span className="t-eyebrow">Font pairing</span>
+        <span className="t-meta">Font pairing</span>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {FONT_PAIRINGS.map((p) => (
             <button
@@ -98,8 +98,8 @@ export function AccentPicker({
                   : "border-border bg-bg hover:border-border-strong"
               }`}
             >
-              <span className="block text-sm font-medium">{p.label}</span>
-              <span className="t-meta block text-[11px]">{p.description}</span>
+              <span className="block text-body font-medium">{p.label}</span>
+              <span className="t-meta block text-ticker">{p.description}</span>
             </button>
           ))}
         </div>
@@ -128,7 +128,7 @@ export function AccentPicker({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="#2f6e5d or oklch(...)"
-          className="num h-8 w-40 rounded-field border border-border bg-bg px-2 text-sm focus-ring"
+          className="num h-8 w-40 rounded-field border border-border bg-bg px-2 text-body focus-ring"
         />
       </div>
 
@@ -136,24 +136,24 @@ export function AccentPicker({
       <div className="flex items-center gap-3 rounded-inner border border-border bg-bg p-3" style={previewVars as CSSProperties}>
         <button
           type="button"
-          className="h-9 rounded-button bg-accent px-3 text-sm font-semibold text-accent-ink"
+          className="h-9 rounded-button bg-accent px-3 text-body font-semibold text-accent-ink"
         >
           Subscribe
         </button>
-        <span className="text-sm font-medium text-accent">Accent link</span>
+        <span className="text-body font-medium text-accent">Accent link</span>
         <span
-          className="rounded-chip px-2 py-0.5 text-[11px]"
+          className="rounded-chip px-2 py-0.5 text-ticker"
           style={{ background: "var(--accent-weak)", color: "var(--accent)" }}
         >
           tag
         </span>
-        <span className="num ml-auto text-[11px] text-text-faint">
+        <span className="num ml-auto text-ticker text-text-faint">
           contrast {check.contrast.toFixed(1)}:1
         </span>
       </div>
 
       <div>
-        <span className="t-eyebrow">Report layout</span>
+        <span className="t-meta">Report layout</span>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {LAYOUTS.map((l) => (
             <button
@@ -166,24 +166,24 @@ export function AccentPicker({
                   : "border-border bg-bg hover:border-border-strong"
               }`}
             >
-              <span className="block text-sm font-medium">{l.label}</span>
-              <span className="t-meta block text-[11px]">{l.description}</span>
+              <span className="block text-body font-medium">{l.label}</span>
+              <span className="t-meta block text-ticker">{l.description}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-text-mute">
+      <label className="flex items-center gap-2 text-body text-text-mute">
         <input type="checkbox" checked={texture} onChange={(e) => setTexture(e.target.checked)} />
         Paper texture on the storefront (subtle, off for reduced-motion visitors)
       </label>
 
       {!check.valid && (
-        <p className="flex items-center gap-1.5 text-sm text-[var(--down)]">
+        <p className="flex items-center gap-1.5 text-body text-[var(--down)]">
           <AlertTriangle size={14} /> {check.reason}
         </p>
       )}
-      {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--down)]">{error}</p>}
 
       <div className="flex items-center gap-3">
         <Button type="button" onClick={save} disabled={pending || !check.valid}>
@@ -193,7 +193,7 @@ export function AccentPicker({
           <RotateCcw size={14} /> Reset to default
         </Button>
         {saved && !pending && (
-          <span className="flex items-center gap-1 text-sm text-[var(--up)]">
+          <span className="flex items-center gap-1 text-body text-[var(--up)]">
             <Check size={14} /> Saved
           </span>
         )}

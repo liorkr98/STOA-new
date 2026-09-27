@@ -12,7 +12,7 @@ export default async function EarningsPage() {
 
   return (
     <div className="mx-auto max-w-[var(--w-reading)]">
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Earnings</h1>
+      <h1 className="font-display text-headline font-semibold tracking-tight">Earnings</h1>
       <p className="t-body mt-2">Payouts are not live yet.</p>
       <div className="mt-8">
         <EmptyState

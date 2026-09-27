@@ -52,7 +52,7 @@ export function TopUpButton() {
         </Button>
       </div>
       {error && (
-        <p className="text-xs text-[var(--down)]" role="alert">
+        <p className="text-ticker text-[var(--down)]" role="alert">
           {error}
         </p>
       )}

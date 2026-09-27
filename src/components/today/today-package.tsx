@@ -29,7 +29,7 @@ function Lead({ lead }: { lead: TodayItem }) {
             {lead.headline}
           </Link>
         </h1>
-        {lead.deck ? <p className="mt-3 max-w-[60ch] font-sans text-[16px] leading-relaxed text-text-mute">{lead.deck}</p> : null}
+        {lead.deck ? <p className="mt-3 max-w-[60ch] font-sans text-body leading-relaxed text-text-mute">{lead.deck}</p> : null}
         <p className="ts-byline mt-3">
           <Link href={`/analyst/${lead.author.handle}`} className="focus-ring rounded">
             {lead.author.displayName}

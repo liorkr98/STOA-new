@@ -87,8 +87,8 @@ export function EstimatesNodeView({
       <>
         {pt && (pt.mean != null || pt.high != null) && (
           <div className="border-b border-border px-4 py-3">
-            <div className="flex items-center justify-between text-[11px] text-text-mute">
-              <span className="t-eyebrow">Analyst price target</span>
+            <div className="flex items-center justify-between text-ticker text-text-mute">
+              <span className="t-meta">Analyst price target</span>
               {pt.count != null && <span className="num">{pt.count} analysts</span>}
             </div>
             <div className="mt-2 flex items-end gap-4">
@@ -99,19 +99,19 @@ export function EstimatesNodeView({
           </div>
         )}
         <div className="scroll-area-x overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
+          <table className="w-full border-collapse text-body">
             <thead className="bg-surface">
               <tr>
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-left">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-left">
                   Period
                 </th>
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                   EPS est.
                 </th>
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                   EPS actual
                 </th>
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                   Surprise
                 </th>
               </tr>
@@ -166,7 +166,7 @@ export function EstimatesNodeView({
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <Target size={14} className="text-text-faint" />
           <TickerChip ticker={ticker} />
-          <span className="t-eyebrow">Estimates</span>
+          <span className="t-meta">Estimates</span>
         </div>
         {renderBody(estimates, priceTarget)}
       </NodeViewWrapper>
@@ -201,14 +201,14 @@ export function EstimatesNodeView({
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), pull())}
             onMouseDown={stop}
             placeholder="Ticker"
-            className="num w-16 bg-transparent text-sm font-semibold focus:outline-none"
+            className="num w-16 bg-transparent text-body font-semibold focus:outline-none"
           />
         </span>
         <button
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
         >
           Pull estimates
         </button>
@@ -227,7 +227,7 @@ export function EstimatesNodeView({
         renderBody(estimates, priceTarget)
       ) : (
         <div className="flex items-center justify-center px-4 py-10">
-          <p className="t-meta text-[12px]">{statusMessage}</p>
+          <p className="t-meta text-ticker">{statusMessage}</p>
         </div>
       )}
     </NodeViewWrapper>
@@ -245,8 +245,8 @@ function TargetStat({
 }) {
   return (
     <div className="flex flex-col">
-      <span className="t-eyebrow text-[10px]">{label}</span>
-      <span className={cn("num", emphasis ? "text-lg font-semibold text-text" : "text-sm text-text-mute")}>
+      <span className="t-meta text-ticker">{label}</span>
+      <span className={cn("num", emphasis ? "text-title font-semibold text-text" : "text-body text-text-mute")}>
         {value == null ? "-" : `$${value.toFixed(2)}`}
       </span>
     </div>

@@ -68,7 +68,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
         >
           <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
             <History size={14} className="text-text-faint" />
-            <span className="t-eyebrow flex-1">History</span>
+            <span className="t-meta flex-1">History</span>
             <button
               type="button"
               aria-label="Close"
@@ -81,9 +81,9 @@ export function VersionHistory({ reportId }: { reportId: string }) {
 
           <div className="scroll-area flex-1 overflow-y-auto p-2">
             {versions === null ? (
-              <p className="t-meta px-2 py-4 text-center text-[12px]">Loading...</p>
+              <p className="t-meta px-2 py-4 text-center text-ticker">Loading...</p>
             ) : versions.length === 0 ? (
-              <p className="t-meta px-2 py-4 text-center text-[12px]">
+              <p className="t-meta px-2 py-4 text-center text-ticker">
                 No snapshots yet. Versions save automatically as you write.
               </p>
             ) : (
@@ -93,8 +93,8 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                   className="group flex items-center gap-2 rounded-inner px-2 py-2 hover:bg-surface-2"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm">{v.title || "Untitled"}</p>
-                    <p className="num t-meta text-[11px]">
+                    <p className="truncate text-body">{v.title || "Untitled"}</p>
+                    <p className="num t-meta text-ticker">
                       {formatDistanceToNow(new Date(v.created_at), { addSuffix: true })}
                     </p>
                   </div>
@@ -103,7 +103,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                       type="button"
                       disabled={pending}
                       onClick={() => restore(v.id)}
-                      className="rounded-button bg-accent px-2 py-1 text-[11px] font-semibold text-accent-ink focus-ring disabled:opacity-60"
+                      className="rounded-button bg-accent px-2 py-1 text-ticker font-semibold text-accent-ink focus-ring disabled:opacity-60"
                     >
                       {pending ? "..." : "Confirm"}
                     </button>
@@ -113,7 +113,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                       aria-label="Restore this version"
                       onClick={() => setConfirmId(v.id)}
                       className={cn(
-                        "flex items-center gap-1 rounded-button px-2 py-1 text-[11px] text-text-mute opacity-0 transition-opacity hover:bg-bg focus-ring",
+                        "flex items-center gap-1 rounded-button px-2 py-1 text-ticker text-text-mute opacity-0 transition-opacity hover:bg-bg focus-ring",
                         "group-hover:opacity-100 focus-visible:opacity-100",
                       )}
                     >
@@ -123,10 +123,10 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                 </div>
               ))
             )}
-            {error && <p className="px-2 py-1 text-[12px] text-[var(--down)]">{error}</p>}
+            {error && <p className="px-2 py-1 text-ticker text-[var(--down)]">{error}</p>}
           </div>
 
-          <p className="t-meta border-t border-border px-3 py-2 text-[10px]">
+          <p className="t-meta border-t border-border px-3 py-2 text-ticker">
             Restoring saves your current draft as a new snapshot first.
           </p>
         </aside>

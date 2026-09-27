@@ -99,7 +99,7 @@ export function NotebookBoard({
       <aside className="flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
           <BookOpen size={16} className="text-text-faint" />
-          <h2 className="t-eyebrow">Notebooks</h2>
+          <h2 className="t-meta">Notebooks</h2>
         </div>
         <ul className="flex flex-col gap-0.5">
           {notebooks.map((n) => (
@@ -108,7 +108,7 @@ export function NotebookBoard({
                 type="button"
                 onClick={() => selectNotebook(n.id)}
                 className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-inner px-2.5 py-2 text-left text-sm transition-colors",
+                  "flex w-full items-center justify-between gap-2 rounded-inner px-2.5 py-2 text-left text-body transition-colors",
                   n.id === selectedId
                     ? "bg-surface text-text"
                     : "text-text-mute hover:bg-surface/60",
@@ -116,7 +116,7 @@ export function NotebookBoard({
               >
                 <span className="truncate">{n.title}</span>
                 {typeof n.entry_count === "number" && (
-                  <span className="num text-[11px] text-text-faint">{n.entry_count}</span>
+                  <span className="num text-ticker text-text-faint">{n.entry_count}</span>
                 )}
               </button>
             </li>
@@ -128,7 +128,7 @@ export function NotebookBoard({
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createNotebook()}
             placeholder="New notebook"
-            className="h-8 flex-1 rounded-field border border-border bg-surface px-2 text-sm focus-ring"
+            className="h-8 flex-1 rounded-field border border-border bg-surface px-2 text-body focus-ring"
           />
           <button
             type="button"
@@ -144,7 +144,7 @@ export function NotebookBoard({
       {/* Board */}
       <section className="flex min-w-0 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="t-h3 flex-1 truncate">{selected?.title ?? "Notebook"}</h1>
+          <h1 className="t-title flex-1 truncate">{selected?.title ?? "Notebook"}</h1>
           {selected && (
             <button
               type="button"
@@ -153,7 +153,7 @@ export function NotebookBoard({
                   `${mode === "analyst" ? "/studio/compose" : "/studio/compose"}?notebook=${selected.id}`,
                 )
               }
-              className="inline-flex h-8 items-center gap-1.5 rounded-button bg-accent px-3 text-[13px] font-semibold text-accent-ink focus-ring"
+              className="inline-flex h-8 items-center gap-1.5 rounded-button bg-accent px-3 text-ticker font-semibold text-accent-ink focus-ring"
             >
               <Pencil size={14} /> Compose from notebook
             </button>
@@ -170,7 +170,7 @@ export function NotebookBoard({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search entries"
-              className="h-9 w-full rounded-field border border-border bg-surface pl-8 pr-3 text-sm focus-ring"
+              className="h-9 w-full rounded-field border border-border bg-surface pl-8 pr-3 text-body focus-ring"
             />
           </span>
           {allTags.map((tag) => (
@@ -179,7 +179,7 @@ export function NotebookBoard({
               type="button"
               onClick={() => setActiveTag((t) => (t === tag ? null : tag))}
               className={cn(
-                "rounded-chip border px-2 py-1 text-[11px] transition-colors",
+                "rounded-chip border px-2 py-1 text-ticker transition-colors",
                 activeTag === tag
                   ? "border-transparent bg-[var(--ink)] text-[var(--paper)]"
                   : "border-border bg-surface text-text-mute hover:text-text",
@@ -227,7 +227,7 @@ export function NotebookBoard({
                     type="button"
                     aria-label="Delete entry"
                     onClick={() => removeEntry(entry.id)}
-                    className="inline-flex items-center gap-1 text-[11px] text-text-faint hover:text-[var(--down)] focus-ring"
+                    className="inline-flex items-center gap-1 text-ticker text-text-faint hover:text-[var(--down)] focus-ring"
                   >
                     <Trash2 size={12} /> Remove
                   </button>

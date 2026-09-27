@@ -383,7 +383,7 @@ export function RecordClip({
         ) : null}
 
         {phase === "starting" ? (
-          <p className="absolute inset-x-0 bottom-4 text-center text-[13px] text-white/80">Waiting for the camera…</p>
+          <p className="absolute inset-x-0 bottom-4 text-center text-ticker text-white/80">Waiting for the camera…</p>
         ) : null}
 
         {phase === "denied" ? (
@@ -429,7 +429,7 @@ export function RecordClip({
         ) : null}
 
         {phase === "recording" || phase === "paused" ? (
-          <div className="num absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1 text-[12px] tracking-[0.08em] text-white">
+          <div className="num absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1 text-ticker text-white">
             <span
               aria-hidden
               className={cn("h-2 w-2 rounded-full", phase === "paused" ? "bg-white/70" : "bg-[var(--rust)]")}
@@ -440,12 +440,12 @@ export function RecordClip({
           </div>
         ) : null}
         {phase === "live" ? (
-          <p className="num absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-white/90">
+          <p className="num absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-ticker text-white/90">
             Up to {mmss(maxSeconds)}
           </p>
         ) : null}
         {phase === "review" && take ? (
-          <p className="num absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-white/90">
+          <p className="num absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-ticker text-white/90">
             {mmss(take.seconds)} recorded
           </p>
         ) : null}
@@ -496,7 +496,7 @@ export function RecordClip({
               </button>
               <span aria-hidden className="h-11 w-11" />
             </div>
-            <p className="num text-[11px] uppercase tracking-[0.14em] text-white/90">
+            <p className="num text-ticker text-white/90">
               {phase === "paused" ? "Paused" : `${mmss(remaining)} left`}
             </p>
           </div>
@@ -534,8 +534,8 @@ function Notice({
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white">
       <span className="text-white/90">{icon}</span>
-      <p className="font-display text-[1.125rem] font-semibold leading-tight">{title}</p>
-      <p className="text-[13px] leading-relaxed text-white/80">{body}</p>
+      <p className="font-display text-title font-semibold leading-tight">{title}</p>
+      <p className="text-ticker leading-relaxed text-white/80">{body}</p>
       <div className="mt-2 flex flex-col items-center gap-2">{children}</div>
     </div>
   );

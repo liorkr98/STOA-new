@@ -24,7 +24,7 @@ export function DayChange({
 }) {
   const base = cn(
     "num inline-block text-right tabular-nums",
-    size === "lg" ? "min-w-[5.5rem] text-base" : "min-w-[3.75rem] text-[0.6875rem]",
+    size === "lg" ? "min-w-[5.5rem] text-body" : "min-w-[3.75rem] text-ticker",
     className,
   );
 

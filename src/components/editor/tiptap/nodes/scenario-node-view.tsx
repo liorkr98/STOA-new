@@ -81,12 +81,12 @@ export function ScenarioNodeView({
   const resultCard = (
     <div className="flex flex-col gap-2">
       <div>
-        <span className="t-eyebrow">Weighted target</span>
+        <span className="t-meta">Weighted target</span>
         <div className="mt-0.5 flex items-baseline gap-2">
-          <span className="num text-2xl font-semibold">${shown.weightedTarget.toFixed(2)}</span>
+          <span className="num text-headline font-semibold">${shown.weightedTarget.toFixed(2)}</span>
           {shown.expectedUpside != null && (
             <span
-              className="num text-sm font-medium"
+              className="num text-body font-medium"
               style={{ color: shown.expectedUpside >= 0 ? "var(--up)" : "var(--down)" }}
             >
               {pct(shown.expectedUpside)}
@@ -107,7 +107,7 @@ export function ScenarioNodeView({
         ))}
       </div>
       {!shown.valid && (
-        <span className="text-[11px] text-[var(--down)]">
+        <span className="text-ticker text-[var(--down)]">
           Probabilities total {shown.probabilityTotal}% (must be 100%)
         </span>
       )}
@@ -125,13 +125,13 @@ export function ScenarioNodeView({
         <div className="mb-2 flex items-center gap-2">
           <BarChart2 size={14} className="text-text-faint" />
           {ticker && <TickerChip ticker={ticker} />}
-          <span className="t-eyebrow">Scenario analysis</span>
-          {drivesTarget && <span className="t-meta text-[11px]">drives target</span>}
+          <span className="t-meta">Scenario analysis</span>
+          {drivesTarget && <span className="t-meta text-ticker">drives target</span>}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             {cases.map((c, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
+              <div key={i} className="flex items-center justify-between text-body">
                 <span className="flex items-center gap-1.5">
                   <span
                     className="inline-block h-2 w-2 rounded-[2px]"
@@ -169,18 +169,18 @@ export function ScenarioNodeView({
           onChange={(e) => updateAttributes({ ticker: e.target.value.toUpperCase() })}
           onMouseDown={stop}
           placeholder="Ticker"
-          className="num h-7 w-20 rounded-field border border-border bg-bg px-2 text-sm font-semibold focus:outline-none"
+          className="num h-7 w-20 rounded-field border border-border bg-bg px-2 text-body font-semibold focus:outline-none"
         />
         <button
           type="button"
           onMouseDown={stop}
           onClick={pullPrice}
           disabled={pulling}
-          className="h-7 rounded-button border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+          className="h-7 rounded-button border border-border px-2 text-ticker text-text-mute hover:bg-surface-2 focus-ring"
         >
           {pulling ? "..." : lastPrice != null ? `$${lastPrice.toFixed(2)}` : "Pull price"}
         </button>
-        <label className="ml-auto flex items-center gap-1.5 text-[11px] text-text-mute">
+        <label className="ml-auto flex items-center gap-1.5 text-ticker text-text-mute">
           <input
             type="checkbox"
             checked={drivesTarget}
@@ -201,14 +201,14 @@ export function ScenarioNodeView({
 
       <div className="grid gap-4 p-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[10px] text-text-faint">
-            <span className="t-eyebrow">Case</span>
-            <span className="t-eyebrow w-20 text-right">Price</span>
-            <span className="t-eyebrow w-16 text-right">Prob %</span>
+          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-ticker text-text-faint">
+            <span className="t-meta">Case</span>
+            <span className="t-meta w-20 text-right">Price</span>
+            <span className="t-meta w-16 text-right">Prob %</span>
           </div>
           {cases.map((c, i) => (
             <div key={i} className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
-              <span className="flex items-center gap-1.5 text-sm">
+              <span className="flex items-center gap-1.5 text-body">
                 <span
                   className="inline-block h-2 w-2 rounded-[2px]"
                   style={{ background: CASE_COLOR[c.label] ?? "var(--text-faint)" }}
@@ -220,14 +220,14 @@ export function ScenarioNodeView({
                 value={c.price}
                 onChange={(e) => updateCase(i, { price: Number(e.target.value) })}
                 onMouseDown={stop}
-                className="num h-8 w-20 rounded-field border border-border bg-bg px-2 text-right text-sm focus-ring"
+                className="num h-8 w-20 rounded-field border border-border bg-bg px-2 text-right text-body focus-ring"
               />
               <input
                 type="number"
                 value={c.probability}
                 onChange={(e) => updateCase(i, { probability: Number(e.target.value) })}
                 onMouseDown={stop}
-                className="num h-8 w-16 rounded-field border border-border bg-bg px-2 text-right text-sm focus-ring"
+                className="num h-8 w-16 rounded-field border border-border bg-bg px-2 text-right text-body focus-ring"
               />
             </div>
           ))}

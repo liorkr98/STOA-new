@@ -69,7 +69,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
       )}
     >
       <div className="flex items-center justify-between border-b border-border px-3 py-2">
-        <p className="t-eyebrow">Peer comparison</p>
+        <p className="t-meta">Peer comparison</p>
         <button
           type="button"
           aria-label="Delete comparison"
@@ -80,7 +80,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
         </button>
       </div>
 
-      <table className="w-full text-sm">
+      <table className="w-full text-body">
         <thead>
           <tr className="border-b border-border">
             <th className="w-40 px-3 py-2 text-left" />
@@ -158,7 +158,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
       <button
         type="button"
         onClick={addRow}
-        className="flex w-full items-center gap-1.5 border-t border-border px-3 py-2 text-left text-xs text-text-mute transition-colors hover:text-text focus-ring"
+        className="flex w-full items-center gap-1.5 border-t border-border px-3 py-2 text-left text-ticker text-text-mute transition-colors hover:text-text focus-ring"
       >
         <Plus size={13} />
         Add metric

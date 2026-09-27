@@ -136,11 +136,11 @@ function ThreadBody({
     <>
       <div className="flex items-start justify-between gap-3 border-b border-border p-4">
         <div>
-          <Title className="t-eyebrow flex items-center gap-1.5">
+          <Title className="t-meta flex items-center gap-1.5">
             <MessageCircle size={13} className="fill-current" />
             Debate
           </Title>
-          <Description className="t-body-editorial mt-1 text-sm italic">
+          <Description className="t-body-editorial mt-1 text-body italic">
             &ldquo;{claimText}&rdquo;
           </Description>
         </div>
@@ -165,13 +165,13 @@ function ThreadBody({
               <li key={r.id} className="flex gap-2.5">
                 <Avatar src={r.author?.avatar_url} name={r.author?.display_name ?? "User"} size="sm" />
                 <div className="flex flex-col gap-0.5">
-                  <span className="flex flex-wrap items-center gap-1.5 text-sm">
+                  <span className="flex flex-wrap items-center gap-1.5 text-body">
                     <span className="font-semibold">{r.author?.display_name ?? "User"}</span>
                     <span className="t-meta">
                       {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
                     </span>
                   </span>
-                  <p className="text-sm text-text">{r.body}</p>
+                  <p className="text-body text-text">{r.body}</p>
                 </div>
               </li>
             ))}
@@ -187,7 +187,7 @@ function ThreadBody({
               onChange={(e) => setBody(e.target.value)}
               rows={2}
               placeholder="Reply..."
-              className="w-full resize-none rounded-field border border-border bg-surface p-2.5 text-sm focus-ring"
+              className="w-full resize-none rounded-field border border-border bg-surface p-2.5 text-body focus-ring"
             />
             <Button size="sm" className="self-end" disabled={pending || !body.trim()} onClick={submit}>
               {pending ? "Posting..." : "Reply"}

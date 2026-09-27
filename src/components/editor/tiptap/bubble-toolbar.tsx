@@ -105,7 +105,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
             <button
               type="button"
               onClick={() => editor.chain().focus().unsetHighlight().run()}
-              className="rounded-button px-2 py-1 text-xs text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
+              className="rounded-button px-2 py-1 text-ticker text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
             >
               None
             </button>

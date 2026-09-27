@@ -42,8 +42,8 @@ export function OverlayVisualBody({
     >
       {sealed ? (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 p-4 text-center">
-          <span className="t-eyebrow">Sealed</span>
-          <span className="t-meta text-[11px]">This card is for subscribers. Open the publication to unlock it.</span>
+          <span className="t-meta">Sealed</span>
+          <span className="t-meta text-ticker">This card is for subscribers. Open the publication to unlock it.</span>
         </div>
       ) : card ? (
         <CardPreview card={card} compact className="h-full w-full overflow-hidden border-0 bg-transparent" />
@@ -64,10 +64,10 @@ export function OverlayVisualBody({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={source.imageUrl} alt="" className="h-full w-full object-contain" />
         ) : (
-          <span className="num p-3 text-[10px] uppercase tracking-[0.14em] text-text-mute">{sourceLabel(source)}</span>
+          <span className="num p-3 text-ticker text-text-mute">{sourceLabel(source)}</span>
         )
       ) : (
-        <span className="num p-3 text-[10px] uppercase tracking-[0.14em] text-text-mute">{sourceLabel(source)}</span>
+        <span className="num p-3 text-ticker text-text-mute">{sourceLabel(source)}</span>
       )}
     </div>
   );
@@ -113,25 +113,25 @@ export function OverlayVisualizeFields({
 
   return (
     <div className="mt-3 space-y-2">
-      <label className="block text-[11px] text-text-mute">
+      <label className="block text-ticker text-text-mute">
         What to visualize
         <textarea
           value={prompt}
           onChange={(e) => onChange({ prompt: e.target.value, imageUrl })}
           rows={3}
           placeholder="The three steps in the margin expansion, as a simple diagram"
-          className="mt-1 w-full rounded-field border border-border bg-bg px-2 py-1.5 text-sm text-text focus-ring"
+          className="mt-1 w-full rounded-field border border-border bg-bg px-2 py-1.5 text-body text-text focus-ring"
         />
       </label>
       <button
         type="button"
         disabled={pending || !prompt.trim()}
         onClick={generate}
-        className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[11px] font-medium text-[var(--paper)] disabled:opacity-50"
+        className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)] disabled:opacity-50"
       >
         {pending ? "Generating..." : imageUrl ? "Regenerate with Napkin" : "Generate with Napkin"}
       </button>
-      {error ? <p className="text-[11px] text-[var(--down)]">{error}</p> : null}
+      {error ? <p className="text-ticker text-[var(--down)]">{error}</p> : null}
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={imageUrl} alt="" className="max-h-36 w-full rounded-inner border border-border object-contain" />
@@ -153,22 +153,22 @@ export function OverlayChartFields({
 }) {
   return (
     <div className="mt-3 flex flex-wrap items-end gap-2">
-      <label className="text-[11px] text-text-mute">
+      <label className="text-ticker text-text-mute">
         Ticker
         <input
           value={ticker}
           onChange={(e) => onChange({ ticker: e.target.value.toUpperCase(), compareTicker: compareTicker ?? "" })}
           placeholder={fallbackTicker || "NVDA"}
-          className="num mt-1 block w-24 rounded-field border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
+          className="num mt-1 block w-24 rounded-field border border-border bg-bg px-2 py-1.5 text-body focus-ring"
         />
       </label>
-      <label className="text-[11px] text-text-mute">
+      <label className="text-ticker text-text-mute">
         Compare line
         <input
           value={compareTicker ?? ""}
           onChange={(e) => onChange({ ticker: ticker || fallbackTicker || "SPY", compareTicker: e.target.value.toUpperCase() })}
           placeholder="Optional, e.g. SPY"
-          className="num mt-1 block w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
+          className="num mt-1 block w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-body focus-ring"
         />
       </label>
     </div>

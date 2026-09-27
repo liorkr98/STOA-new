@@ -46,7 +46,7 @@ export function BoostPanel({
   return (
     <div className="surface flex flex-col gap-5 p-6">
       <div>
-        <h2 className="t-h3">Boost visibility</h2>
+        <h2 className="t-title">Boost visibility</h2>
         <p className="t-meta mt-1">
           Promote your profile in Researchers + sidebar, or a report in Trending. Labeled
           &quot;Promoted&quot; for transparency.
@@ -65,19 +65,19 @@ export function BoostPanel({
             )}
           >
             <p className="font-medium">{p.label}</p>
-            <p className="t-meta mt-1 text-[12px]">{p.description}</p>
-            <p className="num mt-2 text-lg font-semibold">${p.price}</p>
+            <p className="t-meta mt-1 text-ticker">{p.description}</p>
+            <p className="num mt-2 text-title font-semibold">${p.price}</p>
           </button>
         ))}
       </div>
 
       {needsReport && (
-        <label className="text-sm">
+        <label className="text-body">
           Report to promote
           <select
             value={reportId}
             onChange={(e) => setReportId(e.target.value)}
-            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-body"
           >
             {reports.length === 0 ? (
               <option value="">Publish a report first</option>
@@ -101,17 +101,17 @@ export function BoostPanel({
           <RocketLaunch size={16} />
           {pending ? "Processing..." : `Boost for $${pkg.price}`}
         </Button>
-        <span className="t-meta text-[11px]">Wallet balance: ${walletBalance.toFixed(2)}</span>
+        <span className="t-meta text-ticker">Wallet balance: ${walletBalance.toFixed(2)}</span>
       </div>
 
       {activeBoosts.length > 0 && (
         <div>
-          <p className="text-sm font-medium">Active boosts</p>
+          <p className="text-body font-medium">Active boosts</p>
           <ul className="mt-2 flex flex-col gap-2">
             {activeBoosts.map((b) => (
               <li
                 key={b.id}
-                className="rounded-inner border border-border bg-bg px-3 py-2 text-sm"
+                className="rounded-inner border border-border bg-bg px-3 py-2 text-body"
               >
                 {b.target_type === "profile" ? "Profile" : "Report"} · {b.placement} · ends{" "}
                 {new Date(b.ends_at).toLocaleString()}

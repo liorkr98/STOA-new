@@ -31,7 +31,7 @@ const ADDABLE: { type: ProfileSection["type"]; label: string }[] = [
 ];
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring";
 
 function emptySection(type: ProfileSection["type"]): ProfileSection {
   const base = { id: nanoid(8), type, visible: true };
@@ -77,7 +77,7 @@ export function StorefrontSectionsEditor({
   return (
     <div className="surface flex flex-col gap-5 p-6">
       <div>
-        <h2 className="t-h3">Storefront sections</h2>
+        <h2 className="t-title">Storefront sections</h2>
         <p className="t-meta mt-1">
           Add content blocks to your public profile: an about section, an FAQ, or a featured
           report. Drag order matters; hidden sections stay saved.
@@ -93,7 +93,7 @@ export function StorefrontSectionsEditor({
               setSaved(false);
               setSections((prev) => [...prev, emptySection(a.type)]);
             }}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border bg-bg px-2.5 py-1.5 text-sm text-text-mute hover:border-border-strong hover:text-text"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border bg-bg px-2.5 py-1.5 text-body text-text-mute hover:border-border-strong hover:text-text"
           >
             <Plus size={14} /> {a.label}
           </button>
@@ -101,7 +101,7 @@ export function StorefrontSectionsEditor({
       </div>
 
       {sections.length === 0 ? (
-        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
+        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-body text-text-mute">
           No sections yet. Add one above.
         </p>
       ) : (
@@ -129,7 +129,7 @@ export function StorefrontSectionsEditor({
                     <ChevronDown size={14} />
                   </button>
                 </div>
-                <span className="t-eyebrow">
+                <span className="t-meta">
                   {ADDABLE.find((a) => a.type === section.type)?.label ?? section.type}
                 </span>
                 <button
@@ -221,7 +221,7 @@ export function StorefrontSectionsEditor({
           {pending ? "Saving..." : "Save sections"}
         </Button>
         {saved && !pending && (
-          <span className="flex items-center gap-1 text-sm text-[var(--up)]">
+          <span className="flex items-center gap-1 text-body text-[var(--up)]">
             <Check size={14} /> Saved
           </span>
         )}
@@ -263,7 +263,7 @@ function FaqEditor({ items, onChange }: { items: FaqItem[]; onChange: (items: Fa
       <button
         type="button"
         onClick={() => onChange([...items, { q: "", a: "" }])}
-        className="flex items-center gap-1.5 self-start text-[12px] text-text-mute hover:text-text focus-ring"
+        className="flex items-center gap-1.5 self-start text-ticker text-text-mute hover:text-text focus-ring"
       >
         <Plus size={13} /> Add question
       </button>

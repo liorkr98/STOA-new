@@ -27,11 +27,11 @@ function when(iso: string): string {
 function Change({ label, before, after }: { label: string; before: string; after: string }) {
   return (
     <div className="mt-2">
-      <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{label}</p>
-      <p className="user-copy mt-0.5 text-[12px] leading-snug text-text-mute line-through decoration-[var(--rust)]/50">
+      <p className="num text-ticker text-text-faint">{label}</p>
+      <p className="user-copy mt-0.5 text-ticker leading-snug text-text-mute line-through decoration-[var(--rust)]/50">
         {before}
       </p>
-      <p className="user-copy mt-0.5 text-[12px] leading-snug text-text">{after}</p>
+      <p className="user-copy mt-0.5 text-ticker leading-snug text-text">{after}</p>
     </div>
   );
 }
@@ -73,7 +73,7 @@ export function EditedMarker({
         aria-label={`Edited ${when(latest.editedAt)}. See what changed.`}
       >
         <PencilLine size={11} aria-hidden />
-        <span className="num text-[10px] uppercase tracking-[0.14em]">Edited</span>
+        <span className="num text-ticker">Edited</span>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
@@ -83,10 +83,10 @@ export function EditedMarker({
           collisionPadding={12}
           className="z-50 w-[min(92vw,22rem)] rounded-panel border border-border bg-surface p-3.5 shadow-lg"
         >
-          <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
+          <p className="num text-ticker text-text-faint">
             Revised after publication
           </p>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-text-mute">
+          <p className="mt-1.5 text-ticker leading-relaxed text-text-mute">
             The ticker and its direction can never change. Everything below is a change
             the analyst made in the open.
           </p>
@@ -94,12 +94,12 @@ export function EditedMarker({
           <ul className="mt-3 space-y-3 border-t border-border pt-3">
             {edits.slice(0, compact ? 3 : 12).map((e) => (
               <li key={e.id}>
-                <p className="num text-[11px] text-text">
+                <p className="num text-ticker text-text">
                   {e.sections.length > 0
                     ? e.sections.map((s) => SECTION_LABEL[s]).join(" · ")
                     : "Edited"}
                 </p>
-                <p className="num mt-0.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+                <p className="num mt-0.5 text-ticker text-text-faint">
                   {when(e.editedAt)}
                 </p>
 
@@ -110,7 +110,7 @@ export function EditedMarker({
                   <Change label="Standfirst" before={e.dekBefore} after={e.dekAfter} />
                 ) : null}
                 {e.sections.includes("thesis") ? (
-                  <p className="mt-2 text-[11.5px] leading-snug text-text-mute">
+                  <p className="mt-2 text-ticker leading-snug text-text-mute">
                     The thesis was revised. The wording is not shown here because the
                     text is the publication itself; the previous version is kept.
                   </p>
@@ -120,7 +120,7 @@ export function EditedMarker({
           </ul>
 
           {edits.length > (compact ? 3 : 12) ? (
-            <p className="num mt-3 border-t border-border pt-2 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+            <p className="num mt-3 border-t border-border pt-2 text-ticker text-text-faint">
               {edits.length - (compact ? 3 : 12)} earlier {edits.length - (compact ? 3 : 12) === 1 ? "edit" : "edits"}
             </p>
           ) : null}

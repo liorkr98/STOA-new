@@ -24,10 +24,10 @@ export function PublishDetailsDialog({
         <Dialog.Content className="scroll-area fixed inset-y-0 right-0 z-50 flex w-[min(100vw,420px)] flex-col overflow-y-auto border-l border-border bg-paper p-5 shadow-[var(--shadow-card)]">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
+              <Dialog.Title className="font-display text-title font-semibold tracking-tight">
                 Before you publish
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-[0.8125rem] leading-snug text-text-mute">
+              <Dialog.Description className="mt-1 text-ticker leading-snug text-text-mute">
                 Tags, who can read it, and an optional stance. Same idea as filling in the details after an upload.
               </Dialog.Description>
             </div>

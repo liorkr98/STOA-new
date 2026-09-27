@@ -22,7 +22,7 @@ export function ApproveRejectButtons({ applicationId }: { applicationId: string 
     return (
       <div className="flex flex-col gap-2">
         <textarea
-          className="w-full rounded-field border border-border bg-bg px-3 py-2 text-sm resize-none"
+          className="w-full rounded-field border border-border bg-bg px-3 py-2 text-body resize-none"
           rows={2}
           placeholder="Optional note to the applicant…"
           value={note}

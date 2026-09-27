@@ -20,7 +20,7 @@ import type { Plan } from "@/lib/db/plans";
  */
 
 const inputClass =
-  "h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
+  "h-10 w-full rounded-field border border-border bg-bg px-3 text-body focus-ring";
 
 export function PlanManager({
   initialPlans,
@@ -92,7 +92,7 @@ export function PlanManager({
     <div className="surface flex flex-col gap-5 p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="t-h3">Subscription tiers</h2>
+          <h2 className="t-title">Subscription tiers</h2>
           <p className="t-meta mt-1">
             Offer multiple tiers. Drag to reorder; rank 0 is your free tier. Existing subscribers
             keep their locked-in price.
@@ -104,7 +104,7 @@ export function PlanManager({
       </div>
 
       {plans.length === 0 ? (
-        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
+        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-body text-text-mute">
           No tiers yet. Add your first tier to start selling subscriptions.
         </p>
       ) : (
@@ -124,7 +124,7 @@ export function PlanManager({
         </div>
       )}
 
-      <p className="rounded-inner border border-border bg-bg px-3 py-2 text-sm text-text-mute">
+      <p className="rounded-inner border border-border bg-bg px-3 py-2 text-body text-text-mute">
         Stoa takes 10% of what you earn. You keep 90%.
       </p>
     </div>
@@ -200,8 +200,8 @@ function PlanRow({
             <ChevronDown size={14} />
           </button>
         </div>
-        <span className="t-eyebrow">Rank {index}</span>
-        {index === 0 && <span className="t-meta text-[11px]">free tier</span>}
+        <span className="t-meta">Rank {index}</span>
+        {index === 0 && <span className="t-meta text-ticker">free tier</span>}
         <button
           type="button"
           aria-label="Archive tier"
@@ -213,11 +213,11 @@ function PlanRow({
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label className="text-sm">
+        <label className="text-body">
           Name
           <input value={name} onChange={(e) => setName(e.target.value)} className={cn(inputClass, "mt-1")} />
         </label>
-        <label className="text-sm">
+        <label className="text-body">
           Price
           <div className="mt-1 flex gap-2">
             <div className="relative flex-1">
@@ -236,14 +236,14 @@ function PlanRow({
             <select
               value={interval}
               onChange={(e) => setInterval(e.target.value as Plan["interval"])}
-              className="h-10 rounded-field border border-border bg-bg px-2 text-sm focus-ring"
+              className="h-10 rounded-field border border-border bg-bg px-2 text-body focus-ring"
             >
               <option value="month">/mo</option>
               <option value="year">/yr</option>
             </select>
           </div>
         </label>
-        <label className="text-sm">
+        <label className="text-body">
           Description
           <input
             value={description}
@@ -252,7 +252,7 @@ function PlanRow({
             className={cn(inputClass, "mt-1")}
           />
         </label>
-        <label className="text-sm">
+        <label className="text-body">
           Free trial (days)
           <input
             type="number"
@@ -266,12 +266,12 @@ function PlanRow({
       </div>
 
       <div className="mt-3">
-        <span className="t-eyebrow">Perks</span>
+        <span className="t-meta">Perks</span>
         <div className="mt-1 flex flex-wrap gap-1.5">
           {perks.map((perk, pi) => (
             <span
               key={`${perk}-${pi}`}
-              className="inline-flex items-center gap-1 rounded-chip border border-border bg-surface px-2 py-0.5 text-[11px] text-text-mute"
+              className="inline-flex items-center gap-1 rounded-chip border border-border bg-surface px-2 py-0.5 text-ticker text-text-mute"
             >
               {perk}
               <button
@@ -305,7 +305,7 @@ function PlanRow({
               onClick={() => {
                 if (!perks.includes(s)) setPerks((prev) => [...prev, s]);
               }}
-              className="rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] text-text-mute hover:border-accent hover:text-text"
+              className="rounded-full border border-dashed border-border px-2 py-0.5 text-ticker text-text-mute hover:border-accent hover:text-text"
             >
               + {s}
             </button>
@@ -317,7 +317,7 @@ function PlanRow({
         <Button type="button" size="sm" onClick={save} disabled={pending}>
           {pending ? "Saving..." : "Save tier"}
         </Button>
-        {saved && !pending && <span className="text-sm text-[var(--up)]">Saved</span>}
+        {saved && !pending && <span className="text-body text-[var(--up)]">Saved</span>}
       </div>
     </div>
   );

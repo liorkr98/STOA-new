@@ -181,26 +181,26 @@ export function StatementNodeView({
     const visibleLines = isEditable ? lines : lines.filter((l) => !hiddenRows.includes(l.concept));
     return (
       <div className="scroll-area-x overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-body">
           <thead className="sticky top-0 z-10 bg-surface">
             <tr>
               {isEditable && <th className="w-8 border-b border-border-strong px-2 py-2.5" />}
-              <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-left">Line</th>
+              <th className="t-meta border-b border-border-strong px-4 py-2.5 text-left">Line</th>
               {s.periods.map((p) => (
                 <th
                   key={p}
-                  className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right whitespace-nowrap"
+                  className="t-meta border-b border-border-strong px-4 py-2.5 text-right whitespace-nowrap"
                 >
                   {p}
                 </th>
               ))}
               {showYoY && (
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                   YoY
                 </th>
               )}
               {showCagr && (
-                <th className="t-eyebrow border-b border-border-strong px-4 py-2.5 text-right">
+                <th className="t-meta border-b border-border-strong px-4 py-2.5 text-right">
                   CAGR
                 </th>
               )}
@@ -324,12 +324,12 @@ export function StatementNodeView({
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
           <span className="flex items-center gap-2">
             <Landmark size={14} className="text-text-faint" />
-            <span className="num text-sm font-semibold">{statement.symbol}</span>
-            <span className="t-eyebrow">{kindLabel}</span>
+            <span className="num text-body font-semibold">{statement.symbol}</span>
+            <span className="t-meta">{kindLabel}</span>
           </span>
           <span className="flex items-center gap-2">
             {statement.source?.provider && (
-              <span className="t-meta text-[11px]">
+              <span className="t-meta text-ticker">
                 Source: {statement.source.provider.toUpperCase()}
                 {statement.source.asOf ? ` - filed ${statement.source.asOf}` : ""}
               </span>
@@ -385,7 +385,7 @@ export function StatementNodeView({
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), pull())}
             onMouseDown={stop}
             placeholder="Ticker"
-            className="num w-16 bg-transparent text-sm font-semibold focus:outline-none"
+            className="num w-16 bg-transparent text-body font-semibold focus:outline-none"
           />
         </span>
 
@@ -395,7 +395,7 @@ export function StatementNodeView({
           value={years}
           onMouseDown={stop}
           onChange={(e) => pull(kind, Number(e.target.value))}
-          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-ticker text-text-mute focus-ring"
         >
           {[3, 5, 8, 10].map((n) => (
             <option key={n} value={n}>
@@ -411,7 +411,7 @@ export function StatementNodeView({
           onMouseDown={stop}
           onClick={() => updateAttributes({ showYoY: !showYoY })}
           className={cn(
-            "h-7 rounded-button px-2 text-[11px] font-medium transition-colors focus-ring",
+            "h-7 rounded-button px-2 text-ticker font-medium transition-colors focus-ring",
             showYoY ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:bg-surface-2",
           )}
         >
@@ -422,7 +422,7 @@ export function StatementNodeView({
           onMouseDown={stop}
           onClick={() => updateAttributes({ showCagr: !showCagr })}
           className={cn(
-            "h-7 rounded-button px-2 text-[11px] font-medium transition-colors focus-ring",
+            "h-7 rounded-button px-2 text-ticker font-medium transition-colors focus-ring",
             showCagr ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:bg-surface-2",
           )}
         >
@@ -433,7 +433,7 @@ export function StatementNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
         >
           Pull financials
         </button>
@@ -466,7 +466,7 @@ export function StatementNodeView({
           {renderTable(statement)}
           {statement.source?.asOf && (
             <div className="border-t border-border px-4 py-1.5">
-              <span className="t-meta text-[11px]">
+              <span className="t-meta text-ticker">
                 Source: EDGAR - last filed {statement.source.asOf}
               </span>
             </div>
@@ -474,7 +474,7 @@ export function StatementNodeView({
         </>
       ) : (
         <div className="flex items-center justify-center px-4 py-10">
-          <p className="t-meta text-[12px]">{statusMessage}</p>
+          <p className="t-meta text-ticker">{statusMessage}</p>
         </div>
       )}
     </NodeViewWrapper>
@@ -502,7 +502,7 @@ function Seg<T extends string>({
             onChange(o.key);
           }}
           className={cn(
-            "rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition-colors",
+            "rounded-[4px] px-2 py-0.5 text-ticker font-medium transition-colors",
             value === o.key
               ? "bg-[var(--ink)] text-[var(--paper)]"
               : "text-text-mute hover:text-text",

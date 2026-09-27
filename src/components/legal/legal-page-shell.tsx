@@ -5,7 +5,7 @@ export function LegalPlaceholderBanner() {
   return (
     <div
       role="note"
-      className="mb-8 rounded-inner border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-4 py-3 text-sm text-text"
+      className="mb-8 rounded-inner border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-4 py-3 text-body text-text"
     >
       <span aria-hidden="true">⚠ </span>
       <strong>ATTORNEY REVIEW REQUIRED</strong> — placeholder content, do not treat as final.
@@ -22,7 +22,7 @@ export function LegalPageShell({ title, children }: LegalPageShellProps) {
   return (
     <div className="mx-auto max-w-[var(--w-reading)] gutter-x py-16">
       <LegalPlaceholderBanner />
-      <h1 className="t-h1">{title}</h1>
+      <h1 className="t-headline">{title}</h1>
       <div className="mt-8 flex flex-col gap-6">{children}</div>
     </div>
   );
@@ -33,7 +33,7 @@ export function PlaceholderSection({ title }: { title: string }) {
     <section aria-labelledby={`section-${title.replace(/\s+/g, "-").toLowerCase()}`}>
       <h2
         id={`section-${title.replace(/\s+/g, "-").toLowerCase()}`}
-        className="t-h3 text-text"
+        className="t-title text-text"
       >
         {title}
       </h2>
@@ -54,7 +54,7 @@ export function LegalSection({ title, paragraphs, bullets }: LegalSectionProps) 
   const id = `section-${title.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <section aria-labelledby={id}>
-      <h2 id={id} className="t-h3 text-text">
+      <h2 id={id} className="t-title text-text">
         {title}
       </h2>
       {paragraphs?.map((p) => (

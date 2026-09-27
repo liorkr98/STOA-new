@@ -16,7 +16,7 @@ export function PrivacyToggle({
 }) {
   const [on, setOn] = useState(defaultOn);
   return (
-    <label className="flex items-center justify-between gap-4 text-sm">
+    <label className="flex items-center justify-between gap-4 text-body">
       <span>{label}</span>
       <button
         type="button"

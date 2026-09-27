@@ -178,7 +178,7 @@ export function VideoCard({
               />
             )}
             {showDisclosure && disclosure && (
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-1.5 bg-[var(--ink)]/85 px-3 py-2 text-[11px] font-medium text-[var(--paper)]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-1.5 bg-[var(--ink)]/85 px-3 py-2 text-ticker font-medium text-[var(--paper)]">
                 <ShieldCheck size={12} aria-hidden />
                 <span>{disclosure}</span>
               </div>
@@ -227,11 +227,11 @@ export function VideoCard({
               </span>
             </span>
             {/* Duration badge */}
-            <span className="num absolute bottom-2 right-2 z-10 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--paper)]">
+            <span className="num absolute bottom-2 right-2 z-10 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-ticker font-semibold text-[var(--paper)]">
               {formatDuration(data.durationSeconds)}
             </span>
             {accessLabel && (
-              <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-medium text-[var(--paper)]">
+              <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-ticker font-medium text-[var(--paper)]">
                 <Lock size={10} aria-hidden />
                 {accessLabel}
               </span>
@@ -242,7 +242,7 @@ export function VideoCard({
 
       {/* Metadata: identical trust surface to the report card, just anchored under video. */}
       <div className={cn("flex flex-1 flex-col gap-2 p-4", isLead && "sm:p-5")}>
-        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+        <div className="flex flex-wrap items-center gap-2 text-ticker">
           {data.ticker && (
             <span className="num rounded-chip border border-border px-1.5 py-px font-semibold">
               {data.ticker}
@@ -255,7 +255,7 @@ export function VideoCard({
           <h3
             className={cn(
               "font-display font-semibold text-text transition-colors duration-[var(--dur-2)] group-hover:text-text-mute",
-              isLead ? "text-xl leading-tight sm:text-2xl" : "text-base leading-snug",
+              isLead ? "text-title leading-tight sm:text-headline" : "text-body leading-snug",
             )}
           >
             {data.headline}
@@ -268,7 +268,7 @@ export function VideoCard({
             className="flex min-w-0 items-center gap-2 focus-ring rounded-chip"
           >
             <Avatar src={data.analyst.avatarUrl} name={data.analyst.displayName} size="sm" />
-            <span className="truncate text-xs font-medium text-text">{data.analyst.displayName}</span>
+            <span className="truncate text-ticker font-medium text-text">{data.analyst.displayName}</span>
           </Link>
         </div>
 
@@ -276,7 +276,7 @@ export function VideoCard({
         <button
           type="button"
           onClick={goToReport}
-          className="focus-ring mt-1 inline-flex items-center justify-center gap-1.5 rounded-button border border-border px-2.5 py-1.5 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2"
+          className="focus-ring mt-1 inline-flex items-center justify-center gap-1.5 rounded-button border border-border px-2.5 py-1.5 text-ticker font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2"
         >
           {accessLabel ? `Read the full report · ${accessLabel}` : "Read the full report"}
           <ArrowRight size={13} aria-hidden />

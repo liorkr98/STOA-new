@@ -129,7 +129,7 @@ function TagSearch({
         if (matches) setActive(matches.filter((m) => !taken(m)).indexOf(t));
       }}
       className={cn(
-        "focus-ring rounded-chip border px-2 py-0.5 text-[11px]",
+        "focus-ring rounded-chip border px-2 py-0.5 text-ticker",
         taken(t)
           ? "border-border text-text-faint"
           : highlighted
@@ -158,12 +158,12 @@ function TagSearch({
         aria-label={`Search tags for the ${slot} tag`}
         autoComplete="off"
         spellCheck={false}
-        className="num mb-2 w-full rounded-field border border-border bg-bg px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
+        className="num mb-2 w-full rounded-field border border-border bg-bg px-2.5 py-1.5 text-ticker text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
       />
       <div role="listbox" aria-label="Tags" className="scroll-area max-h-[280px] overflow-y-auto">
         {matches ? (
           matches.length === 0 ? (
-            <p className="num px-1 py-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+            <p className="num px-1 py-2 text-ticker text-text-faint">
               Nothing matches. Tags are a fixed list; try a sector or a theme.
             </p>
           ) : (
@@ -175,7 +175,7 @@ function TagSearch({
           <>
             {mostUsed.length > 0 ? (
               <div className="mb-2">
-                <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                <div className="num px-1 pb-1 text-ticker text-text-faint">
                   Most used
                 </div>
                 <div className="flex flex-wrap gap-1">{mostUsed.map((t) => chip(t))}</div>
@@ -183,7 +183,7 @@ function TagSearch({
             ) : null}
             {TAG_GROUPS.map((g) => (
               <div key={g.key} className="mb-2 last:mb-0">
-                <div className="num px-1 pb-1 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                <div className="num px-1 pb-1 text-ticker text-text-faint">
                   {g.label}
                 </div>
                 <div className="flex flex-wrap gap-1">{g.tags.map((t) => chip(t))}</div>
@@ -250,14 +250,14 @@ export function TagPicker({
 
   return (
     <section className="rounded-panel border border-border bg-surface p-4" aria-label="Tags">
-      <p className="t-eyebrow mb-3">Tags</p>
+      <p className="t-meta mb-3">Tags</p>
 
-      <div className="num mb-1.5 text-[10px] uppercase tracking-[0.16em] text-text-mute">Primary</div>
+      <div className="num mb-1.5 text-ticker text-text-mute">Primary</div>
       <div className="flex flex-wrap items-center gap-2">
         {primary ? (
-          <span className="inline-flex items-center gap-1.5 rounded-chip bg-[var(--ink)] px-2.5 py-1 text-[12px] font-medium text-[var(--paper)]">
+          <span className="inline-flex items-center gap-1.5 rounded-chip bg-[var(--ink)] px-2.5 py-1 text-ticker font-medium text-[var(--paper)]">
             {primary.label}
-            {autoFilled ? <span className="num text-[10px] uppercase tracking-[0.12em] opacity-70">Auto</span> : null}
+            {autoFilled ? <span className="num text-ticker opacity-70">Auto</span> : null}
             <button
               type="button"
               aria-label="Clear primary tag"
@@ -279,7 +279,7 @@ export function TagPicker({
             setOpenedByPress(true);
             setOpen("primary");
           }}
-          className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
+          className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-ticker text-text-mute hover:text-text"
         >
           {primary ? "Change" : "Choose primary"}
         </button>
@@ -296,12 +296,12 @@ export function TagPicker({
         />
       ) : null}
 
-      <div className="num mb-1.5 mt-4 text-[10px] uppercase tracking-[0.16em] text-text-mute">
+      <div className="num mb-1.5 mt-4 text-ticker text-text-mute">
         Secondary · search only · {secondaries.length}/{TAG_LIMITS.secondary}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {secondaries.map((t) => (
-          <span key={t.slug} className="inline-flex items-center gap-1.5 rounded-chip border border-border-strong px-2.5 py-1 text-[12px] text-text">
+          <span key={t.slug} className="inline-flex items-center gap-1.5 rounded-chip border border-border-strong px-2.5 py-1 text-ticker text-text">
             {t.label}
             <button
               type="button"
@@ -320,7 +320,7 @@ export function TagPicker({
             setOpenedByPress(true);
             setOpen(open === "secondary" ? null : "secondary");
           }}
-            className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
+            className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-ticker text-text-mute hover:text-text"
           >
             Add secondary
           </button>

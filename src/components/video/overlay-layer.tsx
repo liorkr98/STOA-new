@@ -107,7 +107,7 @@ export function OverlayLayer({
           className={cn(
             "absolute max-w-[80%] px-1 font-sans font-semibold leading-tight",
             "text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]",
-            o.size === "sm" ? "text-[0.875rem]" : o.size === "md" ? "text-[1.25rem]" : "text-[1.75rem]",
+            o.size === "sm" ? "text-body" : o.size === "md" ? "text-title" : "text-headline",
           )}
           style={gridStyle(o.position)}
         >

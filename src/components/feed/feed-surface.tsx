@@ -756,7 +756,7 @@ const FeedItem = function FeedItem({
       <div className="flex h-full w-full max-w-none flex-col justify-center gap-0 md:max-w-[420px] md:gap-2">
         {/* The dateline strip, above the frame on desktop. On a phone it sits on the picture. */}
         <div className="hidden items-center justify-between gap-3 md:flex">
-          <span className="num truncate text-[10px] uppercase tracking-[0.18em] text-text-mute">
+          <span className="num truncate text-ticker text-text-mute">
             {dateline}
           </span>
         </div>
@@ -859,7 +859,7 @@ const FeedItem = function FeedItem({
                       {pub.stageMarker ? (
                         <span
                           className={cn(
-                            "num inline-flex items-center rounded-chip border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                            "num inline-flex items-center rounded-chip border px-1.5 py-0.5 text-ticker font-semibold",
                             pub.stageMarker === "TRENDING"
                               ? "border-[var(--brass)]/70 bg-black/35 text-[var(--brass)]"
                               : "border-white/35 bg-black/35 text-white",
@@ -903,7 +903,7 @@ const FeedItem = function FeedItem({
                 <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-12">
                   <h2
                     dir="auto"
-                    className="user-copy mb-2 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
+                    className="user-copy mb-2 line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
                   >
                     {pub.headline}
                   </h2>
@@ -936,7 +936,7 @@ const FeedItem = function FeedItem({
                       type="button"
                       onClick={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
                       aria-label={`Panel ${card + 1} of ${panelCount}`}
-                      className="num focus-ring flex-none rounded text-[11px] tracking-[0.12em] text-white/80"
+                      className="num focus-ring flex-none rounded text-ticker text-white/80"
                     >
                       {card + 1} / {panelCount}
                     </button>
@@ -953,10 +953,10 @@ const FeedItem = function FeedItem({
                         className="!border-white/30"
                       />
                       <span className="min-w-0">
-                        <span dir="auto" className="user-copy block truncate text-[0.875rem] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+                        <span dir="auto" className="user-copy block truncate text-body font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
                           {pub.analyst.displayName}
                         </span>
-                        <span className="num block truncate text-[10px] uppercase tracking-[0.14em] text-white/75">
+                        <span className="num block truncate text-ticker text-white/75">
                           @{pub.analyst.handle}
                         </span>
                       </span>
@@ -968,7 +968,7 @@ const FeedItem = function FeedItem({
                       }
                       aria-pressed={following}
                       className={cn(
-                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-chip px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors",
+                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-chip px-3 py-1.5 text-ticker font-semibold transition-colors",
                         following
                           ? "border border-white/80 bg-white/20 text-white"
                           : "bg-[var(--paper)] text-[var(--ink)] hover:bg-[var(--surface)]",
@@ -1021,7 +1021,7 @@ const FeedItem = function FeedItem({
 
             {!onClip ? (
               <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-8 md:hidden">
-                <p dir="auto" className="user-copy line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] text-white">
+                <p dir="auto" className="user-copy line-clamp-2 font-display text-body font-semibold leading-[1.2] text-white">
                   {pub.headline}
                 </p>
               </div>
@@ -1029,7 +1029,7 @@ const FeedItem = function FeedItem({
           </div>
         </div>
 
-        <h2 dir="auto" className="user-copy hidden line-clamp-2 font-display text-[1.0625rem] font-semibold leading-[1.2] tracking-tight md:block">
+        <h2 dir="auto" className="user-copy hidden line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight md:block">
           {pub.headline}
         </h2>
       </div>
@@ -1041,9 +1041,9 @@ function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
     <section className={cn("flex snap-start items-center justify-center px-4 pb-[var(--tab-h)]", snapClass)} aria-label="End of feed">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-panel border border-border p-9 text-center">
-        <span className="num text-[10px] uppercase tracking-[0.22em] text-text-mute">End of feed</span>
-        <p className="font-display text-[1.75rem] font-semibold leading-tight">You are caught up.</p>
-        <p className="text-[0.875rem] leading-relaxed text-text-mute">
+        <span className="num text-ticker text-text-mute">End of feed</span>
+        <p className="font-display text-headline font-semibold leading-tight">You are caught up.</p>
+        <p className="text-body leading-relaxed text-text-mute">
           New publications appear as analysts post them. Catch the morning edition on Today, or
           browse analysts by sector on Explore.
         </p>
@@ -1107,10 +1107,10 @@ function DiscussionPanel({
       <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-panel bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <span className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">
+            <span className="num text-ticker text-text-mute">
               Discussion{pub.ticker ? ` · ${pub.ticker}` : ""}
             </span>
-            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-[1.0625rem] font-semibold leading-tight">
+            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-body font-semibold leading-tight">
               {pub.headline}
             </p>
           </div>
@@ -1119,7 +1119,7 @@ function DiscussionPanel({
           </button>
         </div>
         {comments === null ? (
-          <p className="mt-8 text-sm text-text-mute">Loading discussion.</p>
+          <p className="mt-8 text-body text-text-mute">Loading discussion.</p>
         ) : (
           <DiscussionThread
             variant="panel"

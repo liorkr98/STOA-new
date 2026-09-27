@@ -1333,7 +1333,7 @@ export function StudioEditor({
               type="button"
               aria-label="Report templates"
               onClick={() => setTemplateOpen(true)}
-              className="flex h-8 w-full items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+              className="flex h-8 w-full items-center gap-1.5 rounded-button border border-border px-2.5 text-ticker font-medium text-text-mute transition-colors hover:text-text focus-ring"
             >
               <SquaresFour size={15} />
               Templates
@@ -1397,7 +1397,7 @@ export function StudioEditor({
         autoFocus={!editingPublished && (stepKey === "brief" || stepKey === "thesis")}
         className={cn(
           "user-copy mb-2 min-h-[2.75rem] w-full resize-none overflow-hidden bg-transparent font-semibold leading-tight tracking-tight text-text placeholder:text-text-mute focus:outline-none",
-          stepKey === "video" ? "text-2xl md:min-h-[3rem] md:text-3xl" : "text-3xl md:min-h-[3.25rem] md:text-4xl",
+          stepKey === "video" ? "text-headline md:min-h-[3rem] md:text-headline" : "text-headline md:min-h-[3.25rem] md:text-headline",
         )}
         style={{ fontFamily: "var(--font-display)" }}
       />
@@ -1420,7 +1420,7 @@ export function StudioEditor({
             }}
             placeholder="One line under the headline. Optional."
             dir="auto"
-            className="user-copy mb-5 w-full bg-transparent text-lg text-text-mute placeholder:text-text-faint focus:outline-none"
+            className="user-copy mb-5 w-full bg-transparent text-title text-text-mute placeholder:text-text-faint focus:outline-none"
           />
         </>
       )}
@@ -1440,7 +1440,7 @@ export function StudioEditor({
       <div className="shrink-0 bg-paper">
         <ComposeHeader crumb={typeDef.label}>
           {captureStatus ? (
-            <span className="t-meta max-w-[16rem] truncate text-[11px] text-text" aria-live="polite">
+            <span className="t-meta max-w-[16rem] truncate text-ticker text-text" aria-live="polite">
               {captureStatus}
             </span>
           ) : null}
@@ -1448,7 +1448,7 @@ export function StudioEditor({
             <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
           ) : null}
           {error && !dirty ? (
-            <span className="t-meta max-w-[14rem] truncate text-[11px] text-[var(--down)]" role="alert">
+            <span className="t-meta max-w-[14rem] truncate text-ticker text-[var(--down)]" role="alert">
               {error}
             </span>
           ) : null}
@@ -1471,7 +1471,7 @@ export function StudioEditor({
             // The draft's state, where the design puts it. On a phone it
             // sits beside the forward button instead, where there is room.
             <span className="hidden md:inline">
-              <span className="num mr-2 text-[10px] uppercase tracking-[0.16em] text-text-faint">
+              <span className="num mr-2 text-ticker text-text-faint">
                 Draft ·
               </span>
               <span className="inline-block align-middle">
@@ -1520,15 +1520,15 @@ export function StudioEditor({
                 open is the right thing to do. */}
             {editingPublished ? (
               <div className="mb-6 rounded-panel border border-[var(--brass)]/50 bg-[var(--brass)]/10 p-3.5">
-                <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
+                <p className="num text-ticker text-text-faint">
                   This publication is live
                 </p>
-                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text">
+                <p className="mt-1.5 text-ticker leading-relaxed text-text">
                   You can change the headline, the standfirst, the text, the cards and
                   the tags. Saving records an EDITED marker on the publication showing what
                   changed and when, which readers can open.
                 </p>
-                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-mute">
+                <p className="mt-1.5 text-ticker leading-relaxed text-text-mute">
                   The type, the stance, the pricing and the access setting cannot change.
                   {videoReplaceable
                     ? " There is no playable clip yet. Attach one on the video step, then save."
@@ -1634,9 +1634,9 @@ export function StudioEditor({
                       placeholder="Say the one thing."
                       rows={6}
                       dir="auto"
-                      className="user-copy w-full resize-none rounded-panel border border-border bg-surface p-4 text-[1.125rem] leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
+                      className="user-copy w-full resize-none rounded-panel border border-border bg-surface p-4 text-title leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
                     />
-                    <p className="num mt-2 text-[11px] uppercase tracking-[0.12em] text-text-faint">
+                    <p className="num mt-2 text-ticker text-text-faint">
                       {summary.trim().length} / {BRIEF_MAX_CHARS}
                     </p>
                   </div>
@@ -1657,7 +1657,7 @@ export function StudioEditor({
                   onDirection={dirtying(setDirection)}
                 />
                 {stanceDraftNote ? (
-                  <p className="mt-3 text-[0.8125rem] leading-snug text-[var(--brass)]" role="status">
+                  <p className="mt-3 text-ticker leading-snug text-[var(--brass)]" role="status">
                     {stanceDraftNote}
                   </p>
                 ) : null}
@@ -1676,7 +1676,7 @@ export function StudioEditor({
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
-                          className="focus-ring rounded-button bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                          className="focus-ring rounded-button bg-[var(--ink)] px-4 py-2 text-ticker font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
                         >
                           Make the first card
                         </button>
@@ -1684,7 +1684,7 @@ export function StudioEditor({
                           <button
                             type="button"
                             onClick={() => runAssistant(ASSISTANT_ACTIONS[0]!)}
-                            className="focus-ring rounded-button border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                            className="focus-ring rounded-button border border-border px-4 py-2 text-ticker text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
                           >
                             Draft them from what I have written
                           </button>
@@ -1709,7 +1709,7 @@ export function StudioEditor({
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
-                          className="focus-ring rounded-button border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                          className="focus-ring rounded-button border border-border px-4 py-2 text-ticker text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
                         >
                           Add another card
                         </button>
@@ -1728,7 +1728,7 @@ export function StudioEditor({
                 <DevCrash step="video" />
                 <div className={cn(stepKey !== "video" && "hidden")}>
                   {clipSeconds > 0 && feedPreviewSeconds ? (
-                    <p className="mb-4 text-[0.8125rem] leading-snug text-text-mute">
+                    <p className="mb-4 text-ticker leading-snug text-text-mute">
                       The Feed plays the first {feedPreviewSeconds} seconds. The full clip stays on the publication.
                     </p>
                   ) : null}
@@ -1756,7 +1756,7 @@ export function StudioEditor({
                       cards, and it is asked for by Continue only once the
                       clip is in. */}
                   <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
-                    <p className="num mb-2 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+                    <p className="num mb-2 text-ticker text-text-faint">
                       Headline
                     </p>
                     {headlineFields}
@@ -1794,7 +1794,7 @@ export function StudioEditor({
                   <button
                     type="button"
                     onClick={() => setPreviewOpen(true)}
-                    className="focus-ring w-full rounded-inner border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)]"
+                    className="focus-ring w-full rounded-inner border border-border bg-surface px-3 py-2 text-left text-ticker text-text hover:border-[var(--ink)]"
                   >
                     Preview publication
                   </button>

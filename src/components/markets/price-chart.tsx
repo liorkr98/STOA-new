@@ -102,7 +102,7 @@ export function PriceChart({
         textColor: muted,
         attributionLogo: true,
         fontFamily: canvasFont(),
-        fontSize: 11,
+        fontSize: 13,
       },
       grid: {
         vertLines: { visible: false },
@@ -187,7 +187,7 @@ export function PriceChart({
     return (
       <div className={compact ? "calls-chart calls-chart--compact" : "calls-chart"}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-text-mute">No tape for {ticker} right now.</p>
+          <p className="text-body text-text-mute">No tape for {ticker} right now.</p>
           <TimeframePicker active={range} from={customFrom} to={customTo} />
         </div>
       </div>
@@ -197,7 +197,7 @@ export function PriceChart({
   return (
     <div className={compact ? "calls-chart calls-chart--compact" : "calls-chart"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-text-mute">
+        <p className="text-body text-text-mute">
           {changePct == null ? (
             "Price on this name."
           ) : (
@@ -216,7 +216,7 @@ export function PriceChart({
               type="button"
               aria-pressed={advanced}
               onClick={() => setAdvanced((v) => !v)}
-              className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border px-2.5 py-1 text-[11px] text-text-mute hover:border-border-strong hover:text-text"
+              className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border px-2.5 py-1 text-ticker text-text-mute hover:border-border-strong hover:text-text"
             >
               <ChartCandlestick size={13} aria-hidden />
               Advanced

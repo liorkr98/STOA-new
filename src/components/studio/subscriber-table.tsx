@@ -28,7 +28,7 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subscribers"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-text-faint"
+            className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
           />
         </div>
       </div>
@@ -37,7 +37,7 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
         <p className="t-meta">No subscribers match.</p>
       ) : (
         <div>
-          <div className="num hidden grid-cols-[1fr_120px_180px] gap-4 border-b border-border py-3 text-[10px] uppercase tracking-[0.16em] text-text-faint md:grid">
+          <div className="num hidden grid-cols-[1fr_120px_180px] gap-4 border-b border-border py-3 text-ticker text-text-faint md:grid">
             <div>Subscriber</div>
             <div>Joined</div>
             <div>Status</div>
@@ -48,14 +48,14 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
               className="flex flex-col gap-1 border-b border-border py-3 md:grid md:grid-cols-[1fr_120px_180px] md:items-center md:gap-4"
             >
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-panel bg-[var(--ink)] text-[10px] text-[var(--paper)]">
+                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-panel bg-[var(--ink)] text-ticker text-[var(--paper)]">
                   {r.initials}
                 </span>
-                <span className="text-sm">{r.name}</span>
+                <span className="text-body">{r.name}</span>
               </div>
-              <div className="num text-[12px] text-text-mute">{r.joined}</div>
+              <div className="num text-ticker text-text-mute">{r.joined}</div>
               <div
-                className="num text-[11px] uppercase tracking-[0.14em]"
+                className="num text-ticker"
                 style={{ color: r.statusTone === "active" ? "var(--text)" : "var(--text-mute)" }}
               >
                 {r.statusLabel}

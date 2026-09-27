@@ -321,8 +321,8 @@ function DevComposeInner() {
       {/* The fixture's own controls sit under the shell rather than above it,
           so the shell fills the window exactly as the real page does. */}
       <div className="mx-auto w-full max-w-6xl px-5 pt-8">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Compose fixture</h1>
-        <p className="mt-1 text-sm text-text-mute">
+        <h1 className="font-display text-headline font-semibold tracking-tight">Compose fixture</h1>
+        <p className="mt-1 text-body text-text-mute">
           The workspace above, on each draft shape. Left is what you build with, right is what you publish as.
         </p>
 
@@ -339,17 +339,17 @@ function DevComposeInner() {
               }}
               className={
                 shape === s.key
-                  ? "focus-ring rounded-inner border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-[0.8125rem] text-[var(--paper)]"
-                  : "focus-ring rounded-inner border border-border px-3 py-1.5 text-left text-[0.8125rem] text-text-mute hover:text-text"
+                  ? "focus-ring rounded-inner border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-ticker text-[var(--paper)]"
+                  : "focus-ring rounded-inner border border-border px-3 py-1.5 text-left text-ticker text-text-mute hover:text-text"
               }
             >
               <span className="block font-medium">{s.label}</span>
-              <span className="block text-[0.75rem] opacity-80">{s.blurb}</span>
+              <span className="block text-ticker opacity-80">{s.blurb}</span>
             </button>
           ))}
           <Link
             href="/dev/compose"
-            className="num focus-ring self-center rounded text-[10px] uppercase tracking-[0.14em] text-text-faint hover:text-text"
+            className="num focus-ring self-center rounded text-ticker text-text-faint hover:text-text"
           >
             Reload
           </Link>
@@ -360,7 +360,7 @@ function DevComposeInner() {
           <button
             type="button"
             onClick={() => void devRefreshRoute()}
-            className="num focus-ring self-center rounded border border-dashed border-border px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-text-faint hover:text-text"
+            className="num focus-ring self-center rounded border border-dashed border-border px-2 py-1 text-ticker text-text-faint hover:text-text"
           >
             Simulate a save refresh
           </button>
@@ -368,14 +368,14 @@ function DevComposeInner() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-5">
-        <h2 className="t-eyebrow mt-12">After publish</h2>
+        <h2 className="t-meta mt-12">After publish</h2>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <ProcessingState status="processing" startedAt={PROCESSING_STARTED_AT} reportHref="/report/p1" hasOverlays />
           <ProcessingState status="ready" startedAt={READY_STARTED_AT} reportHref="/report/p2" hasOverlays={false} />
         </div>
 
-        <h2 className="t-eyebrow mt-12">In the Publications list</h2>
-        <p className="mt-1 text-sm text-text-mute">Promote is reachable here, on a publication that is already out.</p>
+        <h2 className="t-meta mt-12">In the Publications list</h2>
+        <p className="mt-1 text-body text-text-mute">Promote is reachable here, on a publication that is already out.</p>
         <div className="mt-3">
           <PublicationsView pubs={PUBS} />
         </div>

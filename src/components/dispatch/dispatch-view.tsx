@@ -79,10 +79,10 @@ export function DispatchView({
       {isHome ? null : (
         <FadeIn>
           <div className="dispatch-intro mt-8 grid gap-6 border-b border-border pb-10 sm:grid-cols-2">
-            <p className="font-display text-2xl font-semibold leading-snug text-text sm:text-3xl">
+            <p className="font-display text-headline font-semibold leading-snug text-text sm:text-headline">
               Today&apos;s research.
             </p>
-            <p className="text-sm leading-relaxed text-text-mute sm:pt-1">
+            <p className="text-body leading-relaxed text-text-mute sm:pt-1">
               A numbered daily issue. Follow analysts to get a briefing that matches what you
               read.{" "}
               <Link href="/sign-up" className="underline hover:no-underline">
@@ -95,7 +95,7 @@ export function DispatchView({
       )}
 
       {cycle.fallbackCycle ? (
-        <p className="dispatch-fallback-note mb-8 mt-6 text-center font-mono text-[11px] uppercase tracking-widest text-text-faint">
+        <p className="dispatch-fallback-note mb-8 mt-6 text-center text-ticker text-text-faint">
           Quiet cycle. Showing recent highlights from your network.
         </p>
       ) : null}
@@ -109,7 +109,7 @@ export function DispatchView({
           <DispatchLead story={dispatch.lead} align="start" />
         </div>
       ) : hasStories ? null : (
-        <p className="dispatch-section text-center text-sm text-text-mute">
+        <p className="dispatch-section text-center text-body text-text-mute">
           No lead story in this cycle yet. Check back as analysts publish.
         </p>
       )}
@@ -130,7 +130,7 @@ export function DispatchView({
 
       {thinHome ? (
         <div className="dispatch-section rounded-panel border border-border bg-surface px-5 py-6 text-center">
-          <p className="text-sm text-text-mute">
+          <p className="text-body text-text-mute">
             Thin briefing today. Follow more analysts to fill tomorrow&apos;s issue.
           </p>
           <div className="mt-4">
@@ -150,7 +150,7 @@ export function DispatchView({
       ) : (
         <footer className="dispatch-end">
           <p className="dispatch-end-slug">End of issue №{cycle.issueNumber}</p>
-          <p className="mt-2 text-sm text-text-mute">
+          <p className="mt-2 text-body text-text-mute">
             Next issue tomorrow. Read it again then, or browse the archive now.
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">

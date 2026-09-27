@@ -18,7 +18,7 @@ export function StepDots({ steps, current }: { steps: string[]; current: number 
           />
           <span
             className={cn(
-              "t-eyebrow",
+              "t-meta",
               i === current ? "text-accent" : "text-text-faint",
             )}
           >

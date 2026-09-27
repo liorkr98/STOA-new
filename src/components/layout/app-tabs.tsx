@@ -151,7 +151,7 @@ export function AppTabs() {
                 prefetch
                 aria-current={key === routeKey ? "page" : undefined}
                 onClick={() => setPending({ key, from: pathname })}
-                className="focus-ring relative flex w-full flex-col items-center gap-1 rounded-[18px] py-[7px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] text-text"
+                className="focus-ring relative flex w-full flex-col items-center gap-1 rounded-[18px] py-[7px] text-ticker font-medium leading-none text-text"
               >
                 <Icon size={26} strokeWidth={active ? 2.3 : 1.6} aria-hidden />
                 <span>{label}</span>

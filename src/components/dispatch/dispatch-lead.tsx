@@ -38,7 +38,7 @@ export function DispatchLead({
       <article className="dispatch-section">
         <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:gap-10">
           <div className="min-w-0">
-            <p className="num text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--verdigris)]">
+            <p className="num text-ticker font-semibold text-[var(--verdigris)]">
               Today&apos;s Lead
               <span className="mx-1.5 text-text-faint" aria-hidden>
                 ·
@@ -82,17 +82,17 @@ export function DispatchLead({
             <Avatar src={author.avatar_url} name={author.display_name} size="md" />
             <span className="flex flex-col leading-tight">
               <span className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-text">{author.display_name}</span>
+                <span className="text-body font-semibold text-text">{author.display_name}</span>
                 {author.verified && (
                   <BadgeCheck size={15} className="text-[var(--verdigris)]" aria-label="Verified" />
                 )}
               </span>
-              <span className="num text-xs text-text-faint">@{author.handle}</span>
+              <span className="num text-ticker text-text-faint">@{author.handle}</span>
             </span>
           </Link>
 
           <span
-            className="num hidden text-[10px] uppercase tracking-[0.14em] text-text-faint sm:inline"
+            className="num hidden text-ticker text-text-faint sm:inline"
             aria-label="Content in this report"
           >
             {badges.join("  ·  ")}
@@ -100,7 +100,7 @@ export function DispatchLead({
 
           <Link
             href={`/report/${report.id}`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-button text-sm font-medium text-accent focus-ring hover:underline"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-button text-body font-medium text-accent focus-ring hover:underline"
           >
             Read the report
             <ArrowRight size={14} />

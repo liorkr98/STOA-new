@@ -19,7 +19,7 @@ import type { ScreenerRow } from "@/app/api/market/screener/route";
  */
 
 const inputClass =
-  "h-11 w-full rounded-field border border-border bg-surface pl-10 pr-3 text-sm focus-ring";
+  "h-11 w-full rounded-field border border-border bg-surface pl-10 pr-3 text-body focus-ring";
 
 interface Row {
   ticker: string;
@@ -99,7 +99,7 @@ export default function WatchlistPage() {
       render: (r) => (
         <Link href={`/markets/${r.ticker}`} className="hover:underline">
           <span className="num font-semibold">{r.ticker}</span>
-          {r.name && <span className="t-meta ml-2 text-[11px]">{r.name}</span>}
+          {r.name && <span className="t-meta ml-2 text-ticker">{r.name}</span>}
         </Link>
       ),
     },
@@ -161,7 +161,7 @@ export default function WatchlistPage() {
   return (
     <DensityRoot className="mx-auto flex max-w-[var(--w-standard)] flex-col gap-6">
       <div>
-        <h1 className="t-h1">Watchlist</h1>
+        <h1 className="t-headline">Watchlist</h1>
         <p className="t-body mt-1">Tickers you are tracking, with Stoa coverage one tap away.</p>
       </div>
 
@@ -183,7 +183,7 @@ export default function WatchlistPage() {
                     toggle(r.ticker);
                     setQuery("");
                   }}
-                  className="flex w-full items-center justify-between gap-3 rounded-inner px-3 py-2 text-left text-sm hover:bg-surface-2"
+                  className="flex w-full items-center justify-between gap-3 rounded-inner px-3 py-2 text-left text-body hover:bg-surface-2"
                 >
                   <span>
                     <span className="num font-medium">{r.ticker}</span>{" "}

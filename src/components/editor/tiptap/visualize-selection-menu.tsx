@@ -98,7 +98,7 @@ export function VisualizeSelectionMenu({
 
   const triggerClass =
     variant === "button"
-      ? "flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+      ? "flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-ticker font-medium text-text-mute transition-colors hover:text-text focus-ring"
       : cn(
           "flex h-8 items-center justify-center gap-1 rounded-button px-2 transition-colors focus-ring",
           "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -115,7 +115,7 @@ export function VisualizeSelectionMenu({
           className={triggerClass}
         >
           <ChartCandlestick size={15} />
-          <span className={variant === "button" ? "hidden sm:inline" : "hidden text-xs font-medium lg:inline"}>
+          <span className={variant === "button" ? "hidden sm:inline" : "hidden text-ticker font-medium lg:inline"}>
             Visualize
           </span>
           <ChevronDown size={12} className="opacity-60" />
@@ -130,7 +130,7 @@ export function VisualizeSelectionMenu({
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <p className="t-meta px-2 py-1.5 text-[11px]">From your selection</p>
+          <p className="t-meta px-2 py-1.5 text-ticker">From your selection</p>
           {OPTIONS.map((opt) => (
             <button
               key={opt.mode}
@@ -141,8 +141,8 @@ export function VisualizeSelectionMenu({
             >
               <opt.icon size={16} className="mt-0.5 shrink-0 text-accent" />
               <span>
-                <span className="block text-sm font-medium">{opt.title}</span>
-                <span className="t-meta text-[11px]">{opt.hint}</span>
+                <span className="block text-body font-medium">{opt.title}</span>
+                <span className="t-meta text-ticker">{opt.hint}</span>
               </span>
             </button>
           ))}

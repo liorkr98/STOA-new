@@ -59,7 +59,7 @@ function SortableBlock({
           >
             <DotsSixVertical size={18} />
           </button>
-          <span className="t-eyebrow">{BLOCK_META[block.type].label}</span>
+          <span className="t-meta">{BLOCK_META[block.type].label}</span>
         </div>
         <button
           type="button"

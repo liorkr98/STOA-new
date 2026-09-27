@@ -19,7 +19,7 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 const inputClass =
-  "h-11 w-full rounded-field border border-border bg-bg px-3 text-sm text-text placeholder:text-text-mute focus-ring";
+  "h-11 w-full rounded-field border border-border bg-bg px-3 text-body text-text placeholder:text-text-mute focus-ring";
 
 export function AuthForm({
   mode,
@@ -42,7 +42,7 @@ export function AuthForm({
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="t-h1">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
+      <h1 className="t-headline">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
       <p className="t-body mt-2">
         {mode === "sign-in"
           ? "Sign in to follow analysts and manage your subscriptions."
@@ -53,7 +53,7 @@ export function AuthForm({
         {notice && (
           <p
             role="status"
-            className="mb-4 rounded-inner border border-border bg-surface px-3 py-2 text-sm text-text"
+            className="mb-4 rounded-inner border border-border bg-surface px-3 py-2 text-body text-text"
           >
             {notice}
           </p>
@@ -61,11 +61,11 @@ export function AuthForm({
         {oauthError === "confirm" && (
           <div
             role="alert"
-            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
           >
             <p>That link did not work, so you are not signed in. It may have expired or been used already.</p>
             {oauthReason && (
-              <p className="num mt-1.5 break-words text-[0.75rem] opacity-80">{oauthReason}</p>
+              <p className="num mt-1.5 break-words text-ticker opacity-80">{oauthReason}</p>
             )}
             <p className="mt-1.5">
               Sign in below, or{" "}
@@ -79,11 +79,11 @@ export function AuthForm({
         {oauthError === "oauth" && (
           <div
             role="alert"
-            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
           >
             <p>Sign-in did not complete, so you have not been signed in.</p>
             {oauthReason && (
-              <p className="num mt-1.5 break-words text-[0.75rem] opacity-80">{oauthReason}</p>
+              <p className="num mt-1.5 break-words text-ticker opacity-80">{oauthReason}</p>
             )}
           </div>
         )}
@@ -94,7 +94,7 @@ export function AuthForm({
         {refHandle && <input type="hidden" name="ref" value={refHandle} />}
         {mode === "sign-up" && (
           <div className="flex flex-col gap-2">
-            <label htmlFor="display_name" className="text-sm font-medium">
+            <label htmlFor="display_name" className="text-body font-medium">
               Display name
             </label>
             <input
@@ -107,7 +107,7 @@ export function AuthForm({
           </div>
         )}
         <div className="flex flex-col gap-2">
-          <label htmlFor="email" className="text-sm font-medium">
+          <label htmlFor="email" className="text-body font-medium">
             Email
           </label>
           <input
@@ -121,11 +121,11 @@ export function AuthForm({
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-3">
-            <label htmlFor="password" className="text-sm font-medium">
+            <label htmlFor="password" className="text-body font-medium">
               Password
             </label>
             {mode === "sign-in" && (
-              <Link href="/forgot-password" className="text-sm text-text-mute hover:text-text hover:underline">
+              <Link href="/forgot-password" className="text-body text-text-mute hover:text-text hover:underline">
                 Forgot password?
               </Link>
             )}
@@ -146,7 +146,7 @@ export function AuthForm({
             role="alert"
             id="auth-error"
             aria-live="polite"
-            className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
           >
             {state.error}
           </p>
@@ -154,7 +154,7 @@ export function AuthForm({
 
         {mode === "sign-up" && (
           <div className="flex flex-col gap-3 border-t border-border pt-4">
-            <label className="flex items-start gap-3 text-sm">
+            <label className="flex items-start gap-3 text-body">
               <input
                 type="checkbox"
                 name="legal_consent"
@@ -173,7 +173,7 @@ export function AuthForm({
                 </Link>
               </span>
             </label>
-            <label className="flex items-start gap-3 text-sm">
+            <label className="flex items-start gap-3 text-body">
               <input
                 type="checkbox"
                 name="age_attestation"
@@ -183,7 +183,7 @@ export function AuthForm({
               />
               <span id="age-signup">I am 18 years of age or older</span>
             </label>
-            <label className="flex items-start gap-3 text-sm">
+            <label className="flex items-start gap-3 text-body">
               <input
                 type="checkbox"
                 name="marketing_opt_in"
@@ -202,7 +202,7 @@ export function AuthForm({
         )}
 
         {mode === "sign-in" && (
-          <label className="flex items-start gap-3 text-sm">
+          <label className="flex items-start gap-3 text-body">
             <input
               type="checkbox"
               name="marketing_opt_in"
@@ -218,7 +218,7 @@ export function AuthForm({
         <SubmitButton label={mode === "sign-in" ? "Sign in" : "Create account"} />
       </form>
 
-      <p className="mt-6 text-sm text-text-mute">
+      <p className="mt-6 text-body text-text-mute">
         {mode === "sign-in" ? (
           <>
             New to Stoa?{" "}

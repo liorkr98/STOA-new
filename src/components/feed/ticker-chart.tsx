@@ -34,8 +34,8 @@ export function TickerChart({ ticker, caption }: { ticker: string; caption?: str
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="num text-[1.25rem] tracking-tight">{ticker}</span>
-        <span className={`num text-[0.875rem] ${up ? "text-[var(--up)]" : "text-[var(--down)]"}`}>
+        <span className="num text-title tracking-tight">{ticker}</span>
+        <span className={`num text-body ${up ? "text-[var(--up)]" : "text-[var(--down)]"}`}>
           {up ? "+" : ""}
           {change.toFixed(1)}%
         </span>
@@ -43,7 +43,7 @@ export function TickerChart({ ticker, caption }: { ticker: string; caption?: str
       <div className="mt-3 min-h-0 flex-1">
         <Sparkline data={points} width={360} height={160} className="h-full w-full" />
       </div>
-      {caption ? <p className="mt-3 text-[0.8125rem] leading-snug text-text-mute">{caption}</p> : null}
+      {caption ? <p className="mt-3 text-ticker leading-snug text-text-mute">{caption}</p> : null}
     </div>
   );
 }

@@ -36,10 +36,10 @@ export function LeaveDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
-          <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
+          <Dialog.Title className="font-display text-title font-semibold tracking-tight">
             {nothingToKeep ? "Leave this draft behind?" : "Leave with unsaved changes?"}
           </Dialog.Title>
-          <Dialog.Description className="mt-2 text-[13px] leading-relaxed text-text-mute">
+          <Dialog.Description className="mt-2 text-ticker leading-relaxed text-text-mute">
             {nothingToKeep
               ? "Nothing here is filed as a draft yet. A draft is kept once it holds a headline, words, a ticker, a tag, a card or an overlay. A chosen clip cannot be kept between sessions, so it would need choosing again."
               : published

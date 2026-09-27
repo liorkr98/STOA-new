@@ -30,7 +30,7 @@ export function ErrorPanel({
 
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center gap-4 px-5 text-center">
-      <h1 className="t-h1">Something broke on our side</h1>
+      <h1 className="t-headline">Something broke on our side</h1>
       <p className="t-body">
         The page hit an error while loading. Your data is fine. Try again, or head back to the
         Feed.

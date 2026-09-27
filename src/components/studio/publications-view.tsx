@@ -69,18 +69,18 @@ function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publi
         ) : videoStatus === "processing" ? (
           <Loader2 size={14} className="animate-spin text-text-mute" aria-label="Video processing" />
         ) : videoStatus === "failed" ? (
-          <span className="num text-[10px] uppercase tracking-[0.1em] text-[var(--rust)]">Failed</span>
+          <span className="num text-ticker text-[var(--rust)]">Failed</span>
         ) : (
           <FileText size={14} className="text-text-faint" aria-label="Written publication" />
         )}
       </div>
       {videoStatus === "ready" && duration ? (
-        <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-[10px] text-[var(--paper)]">
+        <span className="num absolute bottom-1 right-1 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1 text-ticker text-[var(--paper)]">
           {duration}
         </span>
       ) : null}
       {videoStatus === "processing" ? (
-        <span className="num absolute inset-x-0 bottom-1 text-center text-[10px] uppercase tracking-[0.1em] text-text-mute">Processing</span>
+        <span className="num absolute inset-x-0 bottom-1 text-center text-ticker text-text-mute">Processing</span>
       ) : null}
     </div>
   );
@@ -137,10 +137,10 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Publications</h1>
+          <h1 className="font-display text-headline font-semibold tracking-tight">Publications</h1>
           <p className="t-body mt-2">Everything you&apos;ve made, and everything still open.</p>
         </div>
-        <Link href="/studio/compose" className="rounded-button bg-[var(--ink)] px-4 py-2.5 text-sm font-medium text-[var(--paper)]">
+        <Link href="/studio/compose" className="rounded-button bg-[var(--ink)] px-4 py-2.5 text-body font-medium text-[var(--paper)]">
           New publication
         </Link>
       </div>
@@ -152,7 +152,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
             type="button"
             onClick={() => setFilter(c.key)}
             className={cn(
-              "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
+              "num shrink-0 rounded-full border px-4 py-1.5 text-ticker transition-colors",
               filter === c.key
                 ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                 : "border-border text-text-mute hover:border-border-strong",
@@ -181,24 +181,24 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                 <Thumb duration={p.duration} videoStatus={p.videoStatus} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{p.typeLabel}</span>
+                    <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
                     {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeTag label={p.tag} />)}
                     {p.badge ? (
-                      <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+                      <span className="num text-ticker text-text-faint">{p.badge}</span>
                     ) : null}
                     {p.editedAt ? <EditedFlag editedAt={p.editedAt} /> : null}
                     {p.state === "archived" && (
-                      <span className="num rounded-chip bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
+                      <span className="num rounded-chip bg-[var(--ink)] px-1.5 py-0.5 text-ticker text-[var(--paper)]">
                         Archived
                       </span>
                     )}
                     {p.pinned && (
-                      <span className="num text-[10px] uppercase tracking-[0.14em] text-text">· PINNED TO PROFILE</span>
+                      <span className="num text-ticker text-text">· PINNED TO PROFILE</span>
                     )}
                   </div>
                   <h3
                     className={cn(
-                      "mt-2 font-display text-lg font-semibold leading-snug tracking-tight md:text-xl",
+                      "mt-2 font-display text-title font-semibold leading-snug tracking-tight md:text-title",
                       p.state === "archived" && "text-text-mute",
                     )}
                   >
@@ -206,7 +206,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   </h3>
 
                   {p.stateLine && (
-                    <p className="num mt-2 text-[11px] uppercase tracking-[0.14em] text-text-faint">
+                    <p className="num mt-2 text-ticker text-text-faint">
                       {p.stateLine}
                     </p>
                   )}
@@ -214,7 +214,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   {/* Hover actions */}
                   {/* Visible on touch screens, where there is no hover to
                       reveal them, and wrapping so six actions fit a phone. */}
-                  <div className="num mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-[0.12em] text-text-mute transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+                  <div className="num mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-ticker text-text-mute transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
                     {/* Editing is no longer draft-only. A live publication can
                         be corrected, and the marker on it discloses that it
                         was. */}
@@ -246,8 +246,8 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                 </div>
 
                 <div className="hidden shrink-0 flex-col items-end gap-1 md:flex">
-                  <div className="num text-right text-[11px] text-text-mute">{p.dateLabel}</div>
-                  <div className="num mt-1 flex flex-col items-end gap-0.5 text-[11px]">
+                  <div className="num text-right text-ticker text-text-mute">{p.dateLabel}</div>
+                  <div className="num mt-1 flex flex-col items-end gap-0.5 text-ticker">
                     {p.plays != null ? (
                       <span className="text-text-mute">
                         {p.plays} <span className="text-text-faint">plays</span>

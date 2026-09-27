@@ -12,7 +12,7 @@ import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import type { AccessType, Report } from "@/lib/types";
 
 const inputClass =
-  "h-9 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
+  "h-9 w-full rounded-field border border-border bg-bg px-3 text-body focus-ring";
 
 export function ReportAccessEditor({
   report,
@@ -55,7 +55,7 @@ export function ReportAccessEditor({
         <button
           type="button"
           className={cn(
-            "inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-text-mute transition-colors hover:border-accent hover:text-text focus-ring",
+            "inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-ticker font-medium text-text-mute transition-colors hover:border-accent hover:text-text focus-ring",
           )}
         >
           <Lock size={11} />
@@ -69,8 +69,8 @@ export function ReportAccessEditor({
           sideOffset={8}
           className="z-50 w-80 rounded-panel border border-border bg-surface p-4 shadow-[var(--shadow-card)]"
         >
-          <p className="t-eyebrow mb-2">Report access</p>
-          <div className="flex flex-col gap-1.5 text-sm">
+          <p className="t-meta mb-2">Report access</p>
+          <div className="flex flex-col gap-1.5 text-body">
             {(
               [
                 { key: "free", label: "Free" },
@@ -92,13 +92,13 @@ export function ReportAccessEditor({
                   onChange={() => setAccess(a.key)}
                   className="accent-[var(--accent)]"
                 />
-                <span className="text-sm">{a.label}</span>
+                <span className="text-body">{a.label}</span>
               </label>
             ))}
           </div>
           {access === "paid" && (
             <>
-              <label className="mt-2 block text-xs text-text-mute">
+              <label className="mt-2 block text-ticker text-text-mute">
                 Price
                 <input
                   type="number"
@@ -108,7 +108,7 @@ export function ReportAccessEditor({
                   className={cn(inputClass, "num mt-1")}
                 />
               </label>
-              <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-text">
+              <label className="mt-2 flex cursor-pointer items-start gap-2 text-ticker text-text">
                 <input
                   type="checkbox"
                   checked={membersIncluded}
@@ -125,7 +125,7 @@ export function ReportAccessEditor({
               <PerkAccessSelect plans={plans} value={requiredPerks} onChange={setRequiredPerks} />
             </>
           )}
-          {error ? <p className="mt-2 text-xs text-[var(--down)]">{error}</p> : null}
+          {error ? <p className="mt-2 text-ticker text-[var(--down)]">{error}</p> : null}
           <Button type="button" size="sm" className="mt-3 w-full" disabled={pending} onClick={save}>
             {pending ? "Saving…" : "Save access"}
           </Button>

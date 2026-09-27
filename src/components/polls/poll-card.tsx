@@ -59,17 +59,17 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
     <div className="surface flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
         <BarChart3 size={14} className="text-text-faint" />
-        <span className="t-eyebrow">{KIND_LABEL[poll.kind]}</span>
+        <span className="t-meta">{KIND_LABEL[poll.kind]}</span>
         {poll.ticker && <TickerChip ticker={poll.ticker} />}
         {poll.closes_at && (
-          <span className="t-meta ml-auto flex items-center gap-1 text-[11px]">
+          <span className="t-meta ml-auto flex items-center gap-1 text-ticker">
             <Clock size={11} />
             {closed ? "Closed" : `Closes ${new Date(poll.closes_at).toLocaleDateString()}`}
           </span>
         )}
       </div>
 
-      <p className="text-[0.9375rem] font-medium leading-snug">{poll.question}</p>
+      <p className="text-body font-medium leading-snug">{poll.question}</p>
 
       <div className="flex flex-col gap-1.5">
         {poll.options.map((option, i) => {
@@ -83,7 +83,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
               disabled={closed || !isAuthed || pending}
               onClick={() => vote(option.id)}
               className={cn(
-                "focus-ring relative overflow-hidden rounded-inner border px-3 py-2 text-left text-sm transition-colors",
+                "focus-ring relative overflow-hidden rounded-inner border px-3 py-2 text-left text-body transition-colors",
                 mine ? "border-accent" : "border-border",
                 !closed && isAuthed && "hover:border-border-strong",
                 (closed || !isAuthed) && "cursor-default",
@@ -98,7 +98,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
               )}
               <span className="relative flex items-center justify-between gap-2">
                 <span>{option.label}</span>
-                {showResults && <span className="num text-[11px] text-text-mute">{pct.toFixed(0)}%</span>}
+                {showResults && <span className="num text-ticker text-text-mute">{pct.toFixed(0)}%</span>}
               </span>
             </button>
           );
@@ -106,11 +106,11 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="t-meta text-[11px]">
+        <span className="t-meta text-ticker">
           {total} {total === 1 ? "vote" : "votes"}
           {!isAuthed && !closed ? " - sign in to vote" : ""}
         </span>
-        <span className="t-meta text-[11px]">Community sentiment - not investment advice</span>
+        <span className="t-meta text-ticker">Community sentiment - not investment advice</span>
       </div>
     </div>
   );

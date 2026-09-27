@@ -147,17 +147,17 @@ export function DiscussionThread({
         <Avatar src={c.author.avatarUrl} name={c.author.displayName} size="sm" className="mt-0.5" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span dir="auto" className="user-copy text-[0.8125rem] font-semibold text-text">
+            <span dir="auto" className="user-copy text-ticker font-semibold text-text">
               {c.author.displayName}
             </span>
             {c.author.isAuthor ? (
-              <span className="num rounded-chip border border-[var(--ink)] px-1 text-[10px] uppercase tracking-[0.14em] text-text">
+              <span className="num rounded-chip border border-[var(--ink)] px-1 text-ticker text-text">
                 Author
               </span>
             ) : null}
-            <span className="num text-[10px] uppercase tracking-[0.1em] text-text-faint">{sinceLabel(c.createdAt)}</span>
+            <span className="num text-ticker text-text-faint">{sinceLabel(c.createdAt)}</span>
           </div>
-          <p dir="auto" className="user-copy mt-1 text-[0.9375rem] leading-relaxed text-text">
+          <p dir="auto" className="user-copy mt-1 text-body leading-relaxed text-text">
             {c.replyingTo ? <span className="text-text-mute">@{c.replyingTo} </span> : null}
             {c.text}
           </p>
@@ -169,14 +169,14 @@ export function DiscussionThread({
                 aria-label={liked ? "Unlike" : "Like"}
                 onClick={() => onLike(c)}
                 className={cn(
-                  "num focus-ring inline-flex items-center gap-1 rounded text-[10px] uppercase tracking-[0.1em]",
+                  "num focus-ring inline-flex items-center gap-1 rounded text-ticker",
                   liked ? "text-text" : "text-text-mute hover:text-text",
                 )}
               >
                 <Heart size={11} strokeWidth={1.6} aria-hidden fill={liked ? "currentColor" : "none"} /> {c.likes}
               </button>
             ) : (
-              <span className="num inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-text-faint">
+              <span className="num inline-flex items-center gap-1 text-ticker text-text-faint">
                 <Heart size={11} strokeWidth={1.6} aria-hidden /> {c.likes}
               </span>
             )}
@@ -184,14 +184,14 @@ export function DiscussionThread({
               <button
                 type="button"
                 onClick={() => setReplyTo(c)}
-                className="num focus-ring inline-flex items-center gap-1 rounded text-[10px] uppercase tracking-[0.1em] text-text-mute hover:text-text"
+                className="num focus-ring inline-flex items-center gap-1 rounded text-ticker text-text-mute hover:text-text"
               >
                 <MessageSquare size={11} strokeWidth={1.6} aria-hidden /> Reply
               </button>
             ) : null}
             {canPost && c.mine ? (
               confirming ? (
-                <span className="num inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-text-mute">
+                <span className="num inline-flex items-center gap-2 text-ticker text-text-mute">
                   Delete this comment?
                   <button
                     type="button"
@@ -206,7 +206,7 @@ export function DiscussionThread({
                 </span>
               ) : hasOthersReplies ? (
                 <span
-                  className="num inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-text-faint"
+                  className="num inline-flex items-center gap-1 text-ticker text-text-faint"
                   title="Others have replied, so this comment stays."
                 >
                   <Trash2 size={11} strokeWidth={1.6} aria-hidden /> Has replies
@@ -215,7 +215,7 @@ export function DiscussionThread({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(c.id)}
-                  className="num focus-ring inline-flex items-center gap-1 rounded text-[10px] uppercase tracking-[0.1em] text-text-mute hover:text-[var(--rust)]"
+                  className="num focus-ring inline-flex items-center gap-1 rounded text-ticker text-text-mute hover:text-[var(--rust)]"
                 >
                   <Trash2 size={11} strokeWidth={1.6} aria-hidden /> Delete
                 </button>
@@ -230,7 +230,7 @@ export function DiscussionThread({
   return (
     <section aria-label="Discussion" className={cn(variant === "page" ? "mt-10" : "mt-8", className)}>
       <div className="flex items-center justify-between border-b border-border pb-2">
-        <h3 className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">Discussion · {merged.length}</h3>
+        <h3 className="num text-ticker text-text-mute">Discussion · {merged.length}</h3>
         <div className="flex items-center gap-3" role="radiogroup" aria-label="Sort">
           {(["newest", "liked"] as const).map((k) => (
             <button
@@ -240,7 +240,7 @@ export function DiscussionThread({
               aria-checked={sort === k}
               onClick={() => setSort(k)}
               className={cn(
-                "num focus-ring rounded text-[10px] uppercase tracking-[0.14em]",
+                "num focus-ring rounded text-ticker",
                 sort === k ? "text-text" : "text-text-faint hover:text-text",
               )}
             >
@@ -253,7 +253,7 @@ export function DiscussionThread({
       {canPost && post ? (
         <div className="mt-4">
           {replyTo ? (
-            <div className="num mb-1.5 flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-text-mute">
+            <div className="num mb-1.5 flex items-center gap-2 text-ticker text-text-mute">
               Replying to {replyTo.author.displayName}
               <button type="button" onClick={() => setReplyTo(null)} className="focus-ring rounded underline">
                 cancel
@@ -267,7 +267,7 @@ export function DiscussionThread({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
               placeholder={replyTo ? "Write a reply" : "Ask the analyst, or add to the discussion"}
-              className="user-copy min-w-0 flex-1 rounded-field border border-border bg-surface px-3 py-2 text-sm text-text focus-ring"
+              className="user-copy min-w-0 flex-1 rounded-field border border-border bg-surface px-3 py-2 text-body text-text focus-ring"
             />
             <button type="button" disabled={pending || !text.trim()} onClick={submit} className={buttonClass("primary", "sm")}>
               {pending ? "Posting" : "Post"}
@@ -284,7 +284,7 @@ export function DiscussionThread({
       ) : null}
 
       <div className="mt-5 flex flex-col gap-5">
-        {threads.length === 0 ? <p className="text-sm text-text-mute">No comments yet.</p> : null}
+        {threads.length === 0 ? <p className="text-body text-text-mute">No comments yet.</p> : null}
         {threads.map(({ root, replies }) => (
           <div key={root.id} className="flex flex-col gap-4">
             <Row c={root} hasOthersReplies={replies.some((r) => !r.mine)} />

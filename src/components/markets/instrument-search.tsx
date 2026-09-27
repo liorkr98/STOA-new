@@ -93,7 +93,7 @@ export function InstrumentSearch() {
           onKeyDown={onKeyDown}
           placeholder="Search tickers, ETFs, or sectors"
           aria-label="Search tickers, ETFs, or sectors"
-          className="w-full bg-transparent text-base outline-none placeholder:text-text-faint"
+          className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
         />
       </label>
       <p className="markets-search-hint">Instruments · ETFs · Sectors · Themes</p>
@@ -101,7 +101,7 @@ export function InstrumentSearch() {
       {open && query.trim() && (
         <div className="markets-search-results scroll-area" role="listbox">
           {hits.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-text-mute">No instruments match that.</p>
+            <p className="px-4 py-3 text-body text-text-mute">No instruments match that.</p>
           ) : (
             hits.map((hit, i) => (
               <button
@@ -116,7 +116,7 @@ export function InstrumentSearch() {
                 <span className="num w-16 shrink-0 font-semibold">{hit.symbol}</span>
                 <span className="min-w-0 flex-1 truncate text-left">{hit.company_name}</span>
                 {hit.sector ? (
-                  <span className="num shrink-0 text-[0.625rem] uppercase tracking-[0.12em] text-text-faint">
+                  <span className="num shrink-0 text-ticker text-text-faint">
                     {hit.sector}
                   </span>
                 ) : null}

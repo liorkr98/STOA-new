@@ -69,7 +69,7 @@ export function TierPickerModal({
           <X size={12} strokeWidth={1.6} />
         </button>
 
-        <h2 className="t-h2 font-display">Subscribe to {firstName}</h2>
+        <h2 className="t-title font-display">Subscribe to {firstName}</h2>
         <p className="t-body mt-2">Cancel anytime.</p>
 
         {!isAuthed ? (
@@ -92,36 +92,36 @@ export function TierPickerModal({
                   )}
                 >
                   {popular && (
-                    <span className="num absolute -top-2.5 left-5 rounded-full bg-[var(--ink)] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)]">
+                    <span className="num absolute -top-2.5 left-5 rounded-full bg-[var(--ink)] px-2.5 py-1 text-ticker text-[var(--paper)]">
                       Most popular
                     </span>
                   )}
-                  <span className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">
+                  <span className="num text-ticker text-text-mute">
                     {plan.name}
                   </span>
                   <div className="mt-3 flex items-baseline gap-1.5">
-                    <span className="text-3xl font-semibold tracking-tight">
+                    <span className="text-headline font-semibold tracking-tight">
                       {free ? "Free" : usd(price(plan))}
                     </span>
                     {!free && (
-                      <span className="num text-[11px] text-text-mute">
+                      <span className="num text-ticker text-text-mute">
                         /{plan.interval === "year" ? "yr" : "mo"}
                       </span>
                     )}
                   </div>
                   {plan.description && (
-                    <p className="t-body mt-2.5 min-h-[42px] text-sm">{plan.description}</p>
+                    <p className="t-body mt-2.5 min-h-[42px] text-body">{plan.description}</p>
                   )}
                   <ul className="mt-4 flex flex-1 flex-col gap-2.5">
                     {plan.perks.map((perk) => (
-                      <li key={perk} className="flex items-center gap-2.5 text-sm">
+                      <li key={perk} className="flex items-center gap-2.5 text-body">
                         <Check size={12} strokeWidth={1.6} className="shrink-0 text-[var(--verdigris)]" aria-hidden />
                         {perk}
                       </li>
                     ))}
                   </ul>
                   {!free && (plan.trial_days ?? 0) > 0 && (
-                    <p className="num mt-4 text-[10px] uppercase tracking-[0.14em] text-[var(--verdigris)]">
+                    <p className="num mt-4 text-ticker text-[var(--verdigris)]">
                       {plan.trial_days}-day free trial
                     </p>
                   )}
@@ -130,7 +130,7 @@ export function TierPickerModal({
                     disabled={mutation.isPending}
                     onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
                     className={cn(
-                      "mt-4 w-full rounded-button px-3 py-3 text-sm font-medium transition-opacity hover:opacity-90 focus-ring",
+                      "mt-4 w-full rounded-button px-3 py-3 text-body font-medium transition-opacity hover:opacity-90 focus-ring",
                       popular
                         ? "bg-[var(--ink)] text-[var(--paper)]"
                         : "border border-border bg-transparent text-text",
@@ -145,9 +145,9 @@ export function TierPickerModal({
         )}
 
         {mutation.data?.error && (
-          <p className="mt-3 text-center text-[12px] text-[var(--down)]">{mutation.data.error}</p>
+          <p className="mt-3 text-center text-ticker text-[var(--down)]">{mutation.data.error}</p>
         )}
-        <p className="num mt-6 text-center text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <p className="num mt-6 text-center text-ticker text-text-faint">
           Existing subscribers keep their locked-in price.
         </p>
 

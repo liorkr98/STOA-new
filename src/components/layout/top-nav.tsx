@@ -33,7 +33,7 @@ function initialsOf(name: string) {
 
 function AvatarCircle({ profile, className }: { profile: Profile; className?: string }) {
   return (
-    <span className={cn("flex h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] text-[11px] font-medium text-[var(--paper)]", className)}>
+    <span className={cn("flex h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full bg-[var(--ink)] text-ticker font-medium text-[var(--paper)]", className)}>
       {profile.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
@@ -72,7 +72,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                   href={item.href}
                   prefetch
                   className={cn(
-                    "focus-ring relative rounded-button px-3 py-2 text-sm transition-colors",
+                    "focus-ring relative rounded-button px-3 py-2 text-body transition-colors",
                     active ? "text-text" : "text-text-mute hover:text-text",
                   )}
                 >
@@ -114,7 +114,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             </>
           ) : (
             <>
-              <Link href="/sign-in" className="focus-ring rounded-button px-3 py-1.5 text-sm text-text-mute hover:text-text">
+              <Link href="/sign-in" className="focus-ring rounded-button px-3 py-1.5 text-body text-text-mute hover:text-text">
                 Sign in
               </Link>
               <Link href="/sign-up" className={buttonClass("primary", "sm")}>
@@ -169,7 +169,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             <>
               <Link
                 href="/sign-in"
-                className="focus-ring rounded-button px-2 py-1.5 text-sm text-text-mute"
+                className="focus-ring rounded-button px-2 py-1.5 text-body text-text-mute"
               >
                 Sign in
               </Link>

@@ -43,7 +43,7 @@ export default async function DevComposeRefreshPage() {
         </div>
       </DevPrivateShell>
       <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 pt-6">
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint" data-stamp>
+        <span className="num text-ticker text-text-faint" data-stamp>
           Rendered {stamp}
         </span>
         <RefreshButton />

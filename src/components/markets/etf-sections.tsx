@@ -104,9 +104,9 @@ export function EtfHoldings({
           <div key={h.symbol} className="markets-row">
             <Link href={`/markets/${h.symbol}`} className="markets-row-name focus-ring">
               <TickerChip ticker={h.symbol} />
-              <span className="min-w-0 flex-1 truncate text-sm text-text">{h.company}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-text">{h.company}</span>
             </Link>
-            <span className="num text-[0.8125rem] font-semibold tabular-nums text-text">
+            <span className="num text-ticker font-semibold tabular-nums text-text">
               {h.weightPct.toFixed(2)}%
             </span>
             {/* DAY-CHANGE-PENDING: holdings come from the fund summary, which
@@ -140,7 +140,7 @@ export function EtfSectorExposure({ weights }: { weights: SectorWeight[] }) {
                 style={{ width: `${Math.max(2, (w.weightPct / max) * 100)}%` }}
               />
             </span>
-            <span className="num text-[0.75rem] tabular-nums text-text">
+            <span className="num text-ticker tabular-nums text-text">
               {w.weightPct.toFixed(1)}%
             </span>
           </div>

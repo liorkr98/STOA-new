@@ -33,7 +33,7 @@ function pct(v: number): string {
 }
 
 const inputClass =
-  "num h-8 w-full rounded-field border border-border bg-bg px-2 text-sm focus-ring";
+  "num h-8 w-full rounded-field border border-border bg-bg px-2 text-body focus-ring";
 
 export function ValuationNodeView({
   node,
@@ -145,12 +145,12 @@ export function ValuationNodeView({
       {shown ? (
         <>
           <div>
-            <span className="t-eyebrow">Fair value / share</span>
+            <span className="t-meta">Fair value / share</span>
             <div className="mt-0.5 flex items-baseline gap-2">
-              <span className="num text-3xl font-semibold">${shown.fairValuePerShare.toFixed(2)}</span>
+              <span className="num text-headline font-semibold">${shown.fairValuePerShare.toFixed(2)}</span>
               {shown.upside != null && (
                 <span
-                  className="num text-sm font-medium"
+                  className="num text-body font-medium"
                   style={{ color: shown.upside >= 0 ? "var(--up)" : "var(--down)" }}
                 >
                   {pct(shown.upside)}
@@ -158,12 +158,12 @@ export function ValuationNodeView({
               )}
             </div>
             {lastPrice != null && (
-              <span className="t-meta text-[11px]">vs last ${lastPrice.toFixed(2)}</span>
+              <span className="t-meta text-ticker">vs last ${lastPrice.toFixed(2)}</span>
             )}
           </div>
 
           <div>
-            <span className="t-eyebrow">PV by year</span>
+            <span className="t-meta">PV by year</span>
             <div className="mt-1 flex items-end gap-1" style={{ height: 48 }}>
               {shown.pvByYear.map((v, i) => {
                 const max = Math.max(...shown.pvByYear.map(Math.abs), 1);
@@ -177,7 +177,7 @@ export function ValuationNodeView({
                         opacity: 0.85,
                       }}
                     />
-                    <span className="num text-[10px] text-text-faint">{i + 1}</span>
+                    <span className="num text-ticker text-text-faint">{i + 1}</span>
                   </div>
                 );
               })}
@@ -189,12 +189,12 @@ export function ValuationNodeView({
                     background: "var(--brass)",
                   }}
                 />
-                <span className="num text-[10px] text-text-faint">TV</span>
+                <span className="num text-ticker text-text-faint">TV</span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-ticker">
             <span className="t-meta">Enterprise value</span>
             <span className="num text-right">{fmtMoney(shown.enterpriseValue)}</span>
             <span className="t-meta">Equity value</span>
@@ -219,8 +219,8 @@ export function ValuationNodeView({
         <div className="mb-2 flex items-center gap-2">
           <Calculator size={14} className="text-text-faint" />
           {ticker && <TickerChip ticker={ticker} />}
-          <span className="t-eyebrow">DCF valuation</span>
-          {drivesTarget && <span className="t-meta text-[11px]">drives target</span>}
+          <span className="t-meta">DCF valuation</span>
+          {drivesTarget && <span className="t-meta text-ticker">drives target</span>}
         </div>
         {outputCard}
       </NodeViewWrapper>
@@ -240,8 +240,8 @@ export function ValuationNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <Calculator size={14} className="text-text-faint" />
-        <span className="t-eyebrow flex-1">DCF valuation</span>
-        <label className="flex items-center gap-1.5 text-[11px] text-text-mute">
+        <span className="t-meta flex-1">DCF valuation</span>
+        <label className="flex items-center gap-1.5 text-ticker text-text-mute">
           <input
             type="checkbox"
             checked={drivesTarget}
@@ -264,7 +264,7 @@ export function ValuationNodeView({
         {/* Inputs */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-end gap-2">
-            <label className="flex-1 text-[11px] text-text-mute">
+            <label className="flex-1 text-ticker text-text-mute">
               Ticker
               <input
                 value={ticker}
@@ -279,13 +279,13 @@ export function ValuationNodeView({
               onMouseDown={stop}
               onClick={pullPrice}
               disabled={pullingPrice}
-              className="h-8 rounded-button border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+              className="h-8 rounded-button border border-border px-2 text-ticker text-text-mute hover:bg-surface-2 focus-ring"
             >
               {pullingPrice ? "..." : "Pull price"}
             </button>
           </div>
 
-          <label className="text-[11px] text-text-mute">
+          <label className="text-ticker text-text-mute">
             Free cash flow by year (comma-separated)
             <input
               value={fcfDraft}
@@ -299,7 +299,7 @@ export function ValuationNodeView({
           </label>
 
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-[11px] text-text-mute">
+            <label className="text-ticker text-text-mute">
               WACC %
               <input
                 type="number"
@@ -310,7 +310,7 @@ export function ValuationNodeView({
                 className={cn(inputClass, "mt-0.5")}
               />
             </label>
-            <label className="text-[11px] text-text-mute">
+            <label className="text-ticker text-text-mute">
               Terminal
               <select
                 value={terminalMethod}
@@ -325,7 +325,7 @@ export function ValuationNodeView({
           </div>
 
           {terminalMethod === "gordon" ? (
-            <label className="text-[11px] text-text-mute">
+            <label className="text-ticker text-text-mute">
               Terminal growth %
               <input
                 type="number"
@@ -338,7 +338,7 @@ export function ValuationNodeView({
             </label>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-[11px] text-text-mute">
+              <label className="text-ticker text-text-mute">
                 Exit metric
                 <input
                   type="number"
@@ -348,7 +348,7 @@ export function ValuationNodeView({
                   className={cn(inputClass, "mt-0.5")}
                 />
               </label>
-              <label className="text-[11px] text-text-mute">
+              <label className="text-ticker text-text-mute">
                 Exit multiple
                 <input
                   type="number"
@@ -362,7 +362,7 @@ export function ValuationNodeView({
           )}
 
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-[11px] text-text-mute">
+            <label className="text-ticker text-text-mute">
               Net debt
               <input
                 type="number"
@@ -372,7 +372,7 @@ export function ValuationNodeView({
                 className={cn(inputClass, "mt-0.5")}
               />
             </label>
-            <label className="text-[11px] text-text-mute">
+            <label className="text-ticker text-text-mute">
               Diluted shares
               <input
                 type="number"
@@ -390,7 +390,7 @@ export function ValuationNodeView({
           {outputCard}
           {sensitivity && shown && (
             <div className="mt-3">
-              <span className="t-eyebrow">Sensitivity (WACC x growth)</span>
+              <span className="t-meta">Sensitivity (WACC x growth)</span>
               <div className="mt-1 overflow-hidden rounded-[4px]">
                 {sensitivity.grid.map((row, ri) => {
                   const flat = sensitivity.grid.flat().filter((n) => Number.isFinite(n));
@@ -403,7 +403,7 @@ export function ValuationNodeView({
                         return (
                           <div
                             key={ci}
-                            className="num flex flex-1 items-center justify-center py-1 text-[10px]"
+                            className="num flex flex-1 items-center justify-center py-1 text-ticker"
                             style={{ background: Number.isFinite(cell) ? diverging(t) : "var(--surface-2)" }}
                             title={`WACC ${(sensitivity.waccSteps[ri] * 100).toFixed(1)}% / g ${(sensitivity.growthSteps[ci] * 100).toFixed(1)}%`}
                           >

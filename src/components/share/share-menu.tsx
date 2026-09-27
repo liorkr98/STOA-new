@@ -117,7 +117,7 @@ export function ShareMenu({
   }
 
   const itemClass =
-    "flex w-full items-center gap-2 rounded-inner px-2.5 py-2 text-left text-sm text-text hover:bg-surface-2 focus-ring";
+    "flex w-full items-center gap-2 rounded-inner px-2.5 py-2 text-left text-body text-text hover:bg-surface-2 focus-ring";
 
   return (
     <div ref={rootRef} className={cn("relative inline-block", className)}>
@@ -126,7 +126,7 @@ export function ShareMenu({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-button border border-border bg-surface px-3 text-sm text-text-mute transition-colors hover:border-border-strong hover:text-text"
+        className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-button border border-border bg-surface px-3 text-body text-text-mute transition-colors hover:border-border-strong hover:text-text"
       >
         <Share2 size={15} />
         {label}

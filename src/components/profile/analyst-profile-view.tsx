@@ -144,7 +144,7 @@ function VideoThumb({
         </div>
       )}
       {duration && (
-        <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-[10px] text-[var(--paper)]">
+        <span className="num absolute bottom-2 right-2 rounded bg-[color-mix(in_srgb,var(--ink)_60%,transparent)] px-1.5 py-0.5 text-ticker text-[var(--paper)]">
           {duration}
         </span>
       )}
@@ -156,12 +156,12 @@ function VideoThumb({
 function MetaRow({ p, className }: { p: ProfilePublication; className?: string }) {
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      <span className="num text-[11px] uppercase tracking-[0.16em] text-text-mute">{p.typeLabel}</span>
+      <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
       {p.ticker && <TickerChip ticker={p.ticker} />}
       {p.direction && <DirectionTag direction={p.direction} />}
       {!p.ticker && p.themeTag && <ThemeTag label={p.themeTag} />}
       {p.badge !== p.typeLabel && (
-        <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{p.badge}</span>
+        <span className="num text-ticker text-text-faint">{p.badge}</span>
       )}
     </div>
   );
@@ -170,7 +170,7 @@ function MetaRow({ p, className }: { p: ProfilePublication; className?: string }
 function SectionHead({ label, children }: { label: string; children?: React.ReactNode }) {
   return (
     <div className="flex items-end justify-between gap-4 border-b border-border pb-2.5">
-      <h2 className="num text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</h2>
+      <h2 className="num text-ticker text-text-mute">{label}</h2>
       {children}
     </div>
   );
@@ -178,7 +178,7 @@ function SectionHead({ label, children }: { label: string; children?: React.Reac
 
 function ViewsMeta({ p }: { p: ProfilePublication }) {
   return (
-    <div className="num mt-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+    <div className="num mt-2 text-ticker text-text-faint">
       {p.dateLabel}
       {p.views > 0 ? ` · ${p.views.toLocaleString()} VIEWS` : ""}
     </div>
@@ -189,7 +189,7 @@ function ViewsMeta({ p }: { p: ProfilePublication }) {
 function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: string; analystId: string }) {
   return (
     <section aria-label={`${label} publication`}>
-      <div className="num mb-3 text-[11px] uppercase tracking-[0.2em] text-text-mute">{label}</div>
+      <div className="num mb-3 text-ticker text-text-mute">{label}</div>
       <Link href={p.href} className="group block focus-ring">
         {/*
           No clip, no media area. This slot has been through a bordered empty
@@ -213,11 +213,11 @@ function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: strin
         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
           <div>
             <MetaRow p={p} />
-            <h2 className="mt-3 font-display text-3xl font-semibold leading-[1.1] tracking-tight md:text-[40px]">
+            <h2 className="mt-3 font-display text-headline font-semibold leading-[1.1] tracking-tight md:text-display">
               {p.title}
             </h2>
             {p.deck && (
-              <p className="mt-2.5 max-w-[640px] text-[16px] leading-relaxed text-text-mute line-clamp-2">
+              <p className="mt-2.5 max-w-[640px] text-body leading-relaxed text-text-mute line-clamp-2">
                 {p.deck}
               </p>
             )}
@@ -238,7 +238,7 @@ function MostWatchedTier({ items, analystId }: { items: ProfilePublication[]; an
         {items.map((p) => (
           <Link key={p.id} href={p.href} className="group w-[68vw] flex-none snap-start focus-ring md:w-auto">
             <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo className="aspect-video rounded-[10px]" />
-            <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">
+            <h3 className="mt-3 font-display text-title font-semibold leading-snug tracking-tight line-clamp-2">
               {p.title}
             </h3>
             <ViewsMeta p={p} />
@@ -255,7 +255,7 @@ function VideoTile({ p, analystId }: { p: ProfilePublication; analystId: string 
       <VideoThumb src={p.thumbnailUrl} duration={p.duration} analystId={analystId} isVideo processing={p.processing} className="aspect-video rounded-[10px]" />
       <MetaRow p={p} className="mt-3" />
       <div className="mt-2 flex items-start justify-between gap-3">
-        <h3 dir="auto" className="user-copy font-display text-lg font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
+        <h3 dir="auto" className="user-copy font-display text-title font-semibold leading-snug tracking-tight line-clamp-2">{p.title}</h3>
       </div>
       <ViewsMeta p={p} />
     </Link>
@@ -276,11 +276,11 @@ function WrittenTile({ p }: { p: ProfilePublication }) {
     <Link href={p.href} className="group flex flex-col focus-ring">
       <MetaRow p={p} />
       <div className="mt-2 flex items-start justify-between gap-3">
-        <h3 className="font-display text-xl font-semibold leading-[1.15] tracking-tight line-clamp-3 group-hover:underline">
+        <h3 className="font-display text-title font-semibold leading-[1.15] tracking-tight line-clamp-3 group-hover:underline">
           {p.title}
         </h3>
       </div>
-      {p.deck && <p className="mt-2 text-[0.875rem] leading-relaxed text-text-mute line-clamp-2">{p.deck}</p>}
+      {p.deck && <p className="mt-2 text-body leading-relaxed text-text-mute line-clamp-2">{p.deck}</p>}
       <ViewsMeta p={p} />
     </Link>
   );
@@ -304,7 +304,7 @@ function SubjectFilter({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="num flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-text-mute hover:text-text focus-ring"
+        className="num flex items-center gap-1.5 text-ticker text-text-mute hover:text-text focus-ring"
       >
         Subject: {value ?? "All"}
         <ChevronDown size={12} strokeWidth={1.6} aria-hidden />
@@ -324,7 +324,7 @@ function SubjectFilter({
                 setOpen(false);
               }}
               className={cn(
-                "num flex w-full items-center justify-between px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2",
+                "num flex w-full items-center justify-between px-3 py-2 text-left text-ticker hover:bg-surface-2",
                 value === null ? "text-text" : "text-text-mute",
               )}
             >
@@ -342,7 +342,7 @@ function SubjectFilter({
                   setOpen(false);
                 }}
                 className={cn(
-                  "num flex w-full items-center justify-between gap-6 px-3 py-2 text-left text-[11px] uppercase tracking-[0.14em] hover:bg-surface-2",
+                  "num flex w-full items-center justify-between gap-6 px-3 py-2 text-left text-ticker hover:bg-surface-2",
                   value === s.key ? "text-text" : "text-text-mute",
                 )}
               >
@@ -389,7 +389,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       {/* HERO: identity, audience, actions */}
       <div className="max-w-[720px]">
         <div className="flex items-start gap-4 sm:gap-5">
-          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-panel bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
+          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-panel bg-[var(--ink)] font-display text-headline text-[var(--paper)] md:h-[92px] md:w-[92px]">
             {props.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
@@ -399,28 +399,28 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           </span>
           <div className="min-w-0 pt-1">
             <div className="flex min-w-0 items-center gap-2.5">
-              <h1 className="min-w-0 break-words font-display text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[40px]">
+              <h1 className="min-w-0 break-words font-display text-headline font-semibold leading-tight tracking-tight md:text-display">
                 {props.name}
               </h1>
               {props.verified && (
                 <BadgeCheck size={22} className="flex-none text-[var(--verdigris)]" aria-label="Verified" />
               )}
             </div>
-            <div className="num mt-2 text-[11px] uppercase tracking-[0.16em] text-text-mute">
+            <div className="num mt-2 text-ticker text-text-mute">
               {props.handleLine}
             </div>
-            <div className="num mt-1.5 text-[11px] uppercase tracking-[0.16em] text-text-faint">
+            <div className="num mt-1.5 text-ticker text-text-faint">
               {props.audienceLine}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 text-lg font-semibold tracking-tight">{props.specialty}</div>
+        <div className="mt-6 text-title font-semibold tracking-tight">{props.specialty}</div>
         {props.bio && (
-          <p className="mt-2.5 max-w-[520px] text-[15.5px] leading-relaxed text-text-mute">{props.bio}</p>
+          <p className="mt-2.5 max-w-[520px] text-body leading-relaxed text-text-mute">{props.bio}</p>
         )}
         {props.isSelf && (
-          <div className="num mt-3.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+          <div className="num mt-3.5 text-ticker text-text-faint">
             This is how visitors see your profile ·{" "}
             <Link href="/studio/branding" className="text-text-mute underline">
               Edit in storefront →
@@ -434,7 +434,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="flex-1 rounded-panel bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
+              className="flex-1 rounded-panel bg-[var(--accent)] px-5 py-3.5 text-body font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
             >
               {props.subscribeLabel}
             </button>
@@ -463,7 +463,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="min-w-0 flex-1 truncate rounded-button bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
+            className="min-w-0 flex-1 truncate rounded-button bg-[var(--accent)] px-3 py-3.5 text-body font-medium text-[var(--accent-ink)] focus-ring"
           >
             {props.subscribeLabel}
           </button>

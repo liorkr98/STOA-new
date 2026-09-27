@@ -35,20 +35,20 @@ const ROUTES: { href: string; label: string; note: string }[] = [
 export default function DevIndexPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-12">
-      <p className="t-eyebrow">Fixture routes</p>
-      <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">Every surface, with fictional data</h1>
-      <p className="mt-2 text-sm text-text-mute">
+      <p className="t-meta">Fixture routes</p>
+      <h1 className="mt-2 font-display text-headline font-semibold tracking-tight">Every surface, with fictional data</h1>
+      <p className="mt-2 text-body text-text-mute">
         Fictional analysts, invented headlines, no portraits, no real videos. Nothing here reads or writes real user data.
         On the live site, open any of these once with <span className="num">?dev=1</span> and they stay open on this browser for 30 days.
       </p>
       <ul className="mt-8 flex flex-col divide-y divide-[var(--border)]">
         {ROUTES.map((r) => (
           <li key={r.href} className="py-3">
-            <Link href={r.href} className="focus-ring rounded font-display text-lg font-semibold tracking-tight hover:underline">
+            <Link href={r.href} className="focus-ring rounded font-display text-title font-semibold tracking-tight hover:underline">
               {r.label}
             </Link>
-            <span className="num ml-3 text-[11px] text-text-faint">{r.href}</span>
-            <p className="mt-0.5 text-sm text-text-mute">{r.note}</p>
+            <span className="num ml-3 text-ticker text-text-faint">{r.href}</span>
+            <p className="mt-0.5 text-body text-text-mute">{r.note}</p>
           </li>
         ))}
       </ul>

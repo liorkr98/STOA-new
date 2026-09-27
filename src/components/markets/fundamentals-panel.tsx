@@ -22,7 +22,7 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
 
   return (
     <section className="rounded-panel border border-border bg-surface p-6">
-      <h2 className="t-h3 mb-4">Fundamentals</h2>
+      <h2 className="t-title mb-4">Fundamentals</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {data.marketCap != null && (
           <Stat label="Market cap" value={compact(data.marketCap)} />
@@ -61,7 +61,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="t-meta">{label}</div>
-      <div className="num mt-1 text-lg font-semibold">{value}</div>
+      <div className="num mt-1 text-title font-semibold">{value}</div>
     </div>
   );
 }

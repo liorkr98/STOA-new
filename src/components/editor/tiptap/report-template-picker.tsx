@@ -62,10 +62,10 @@ function TemplateCard({
       <TemplateWireframe preview={template.preview} />
       <div>
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-text">{template.name}</p>
-          <span className="t-meta shrink-0 text-[10px]">{template.length}</span>
+          <p className="text-body font-medium text-text">{template.name}</p>
+          <span className="t-meta shrink-0 text-ticker">{template.length}</span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-text-mute">
+        <p className="mt-0.5 line-clamp-2 text-ticker leading-snug text-text-mute">
           {template.description}
         </p>
       </div>
@@ -150,8 +150,8 @@ export function ReportTemplatePicker({
             <div className="flex items-center gap-2 border-b border-border px-4 py-3">
               <LayoutTemplate size={16} className="text-text-mute" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-text">Report templates</p>
-                <p className="text-[11px] text-text-mute">
+                <p className="text-body font-semibold text-text">Report templates</p>
+                <p className="text-ticker text-text-mute">
                   {ticker
                     ? `Wire blocks to ${ticker.toUpperCase()} · edit every section after applying`
                     : "Add a stance with a ticker for live data blocks"}
@@ -174,7 +174,7 @@ export function ReportTemplatePicker({
                   type="button"
                   onClick={() => setCategory(c.id)}
                   className={cn(
-                    "shrink-0 rounded-[6px] px-2.5 py-1 text-[11px] font-medium transition-colors focus-ring",
+                    "shrink-0 rounded-[6px] px-2.5 py-1 text-ticker font-medium transition-colors focus-ring",
                     category === c.id
                       ? "bg-[var(--ink)] text-[var(--paper)]"
                       : "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -198,7 +198,7 @@ export function ReportTemplatePicker({
                 ))}
               </div>
               {applying && (
-                <p className="t-meta mt-3 text-center text-[11px]" role="status">
+                <p className="t-meta mt-3 text-center text-ticker" role="status">
                   Applying template…
                 </p>
               )}
@@ -233,8 +233,8 @@ export function ReportTemplateStrip({
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="t-eyebrow mb-1 text-[10px]">Start from a template</p>
-          <p className="text-sm text-text-mute">
+          <p className="t-meta mb-1 text-ticker">Start from a template</p>
+          <p className="text-body text-text-mute">
             Institutional layouts with live charts, financials, and valuation blocks. You edit
             every section after applying. Templates stay under Assistant if you want one later.
           </p>

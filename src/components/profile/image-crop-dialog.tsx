@@ -80,7 +80,7 @@ export function ImageCropDialog({
           />
         </div>
         <div className="flex flex-col gap-3 border-t border-border px-4 py-3">
-          <label className="flex items-center gap-3 text-sm text-text-mute">
+          <label className="flex items-center gap-3 text-body text-text-mute">
             Zoom
             <input
               type="range"

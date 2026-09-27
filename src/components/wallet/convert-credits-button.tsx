@@ -19,7 +19,7 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
     <div className="rounded-panel border border-border bg-surface p-4">
       <div className="flex items-center gap-2">
         <Coins size={18} className="text-text-mute" aria-hidden />
-        <p className="text-sm font-semibold">Buy AI credits</p>
+        <p className="text-body font-semibold">Buy AI credits</p>
       </div>
       <p className="t-meta mt-1">
         $1 = {AI_CREDITS_PER_DOLLAR} credits · used for premium tools like Devil&apos;s Advocate and fact-checks

@@ -42,7 +42,7 @@ export function ReportCards({
   return (
     <section className={cn("min-w-0", className)} aria-label="Evidence cards">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">
+        <h2 className="num text-ticker text-text-mute">
           Evidence · {cards.length} card{cards.length === 1 ? "" : "s"}
         </h2>
         <div className="hidden gap-1 sm:flex">

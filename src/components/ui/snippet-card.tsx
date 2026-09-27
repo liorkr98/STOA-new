@@ -55,14 +55,14 @@ export function SnippetCard({
               href={source.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="focus-ring inline-flex items-center gap-1 text-xs hover:text-text hover:underline"
+              className="focus-ring inline-flex items-center gap-1 text-ticker hover:text-text hover:underline"
             >
               <span className="font-medium">{source.label}</span>
               {source.detail && <span className="num text-text-faint">{source.detail}</span>}
               <Link2 size={11} className="text-text-faint" />
             </a>
           ) : (
-            <span className="text-xs">
+            <span className="text-ticker">
               <span className="font-medium">{source.label}</span>
               {source.detail && <span className="num ml-1 text-text-faint">{source.detail}</span>}
             </span>
@@ -70,7 +70,7 @@ export function SnippetCard({
         </div>
       )}
 
-      <blockquote className="border-s-2 border-border-strong ps-3 text-[0.9375rem] leading-relaxed text-text">
+      <blockquote className="border-s-2 border-border-strong ps-3 text-body leading-relaxed text-text">
         {quote}
       </blockquote>
 
@@ -79,7 +79,7 @@ export function SnippetCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[0.6875rem] text-text-mute"
+              className="rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-ticker text-text-mute"
             >
               {tag}
             </span>
@@ -93,7 +93,7 @@ export function SnippetCard({
           <button
             type="button"
             onClick={onInsert}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-button px-2 py-1 text-xs text-text-mute opacity-0 transition-opacity duration-[var(--dur-1)] hover:bg-surface-2 hover:text-text focus-visible:opacity-100 group-hover:opacity-100"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-button px-2 py-1 text-ticker text-text-mute opacity-0 transition-opacity duration-[var(--dur-1)] hover:bg-surface-2 hover:text-text focus-visible:opacity-100 group-hover:opacity-100"
           >
             <Plus size={13} /> Insert into report
           </button>

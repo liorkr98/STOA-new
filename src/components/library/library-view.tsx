@@ -86,9 +86,9 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Library</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Library</h1>
         <p className="t-body mt-2">Everything you saved and everything you own.</p>
-        <p className="num mt-2.5 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <p className="num mt-2.5 text-ticker text-text-faint">
           Saved reports stay locked until you unlock them — access is checked when you open.
         </p>
       </div>
@@ -102,7 +102,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
               type="button"
               onClick={() => setFilter(c.key)}
               className={cn(
-                "num shrink-0 rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors",
+                "num shrink-0 rounded-full border px-4 py-1.5 text-ticker transition-colors",
                 filter === c.key
                   ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                   : "border-border text-text-mute hover:border-border-strong",
@@ -118,7 +118,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search your library"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-text-faint"
+            className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
           />
         </div>
       </div>
@@ -134,20 +134,20 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
             >
               <Link href={it.href} className="block">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{it.typeLabel}</span>
+                  <span className="num text-ticker text-text-mute">{it.typeLabel}</span>
                   {it.tag &&
                     (it.tagIsTicker ? <TickerChip ticker={it.tag} /> : <ThemeTag label={it.tag} />)}
-                  <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">{it.badge}</span>
+                  <span className="num text-ticker text-text-faint">{it.badge}</span>
                 </div>
-                <h3 className="mt-3 max-w-[700px] font-display text-xl font-semibold leading-snug tracking-tight md:text-[23px]">
+                <h3 className="mt-3 max-w-[700px] font-display text-title font-semibold leading-snug tracking-tight md:text-headline">
                   {it.title}
                 </h3>
-                {it.deck && <p className="mt-1.5 max-w-[680px] text-[14.5px] text-text-mute">{it.deck}</p>}
+                {it.deck && <p className="mt-1.5 max-w-[680px] text-body text-text-mute">{it.deck}</p>}
                 <div className="mt-3.5 flex items-center gap-2.5">
-                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--ink)] text-[10px] text-[var(--paper)]">
+                  <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--ink)] text-ticker text-[var(--paper)]">
                     {it.analystInitials}
                   </span>
-                  <span className="text-sm">{it.analystName}</span>
+                  <span className="text-body">{it.analystName}</span>
                 </div>
               </Link>
 
@@ -156,7 +156,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                   <Bmk id={it.id} saved={it.saved} />
                   <span
                     className={cn(
-                      "num flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] uppercase tracking-[0.14em]",
+                      "num flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-ticker",
                       it.chipTone === "ink"
                         ? "bg-[var(--ink)] text-[var(--paper)]"
                         : "border border-border text-text-mute",
@@ -170,12 +170,12 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                   (it.subHref ? (
                     <Link
                       href={it.subHref}
-                      className="num text-[10px] uppercase tracking-[0.14em] text-text transition-colors hover:text-text-mute md:order-1 md:text-right"
+                      className="num text-ticker text-text transition-colors hover:text-text-mute md:order-1 md:text-right"
                     >
                       {it.sub}
                     </Link>
                   ) : (
-                    <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint md:order-1 md:text-right">
+                    <span className="num text-ticker text-text-faint md:order-1 md:text-right">
                       {it.sub}
                     </span>
                   ))}

@@ -23,7 +23,7 @@ export function PlanTierSelect({
 
   return (
     <div className="mt-2.5">
-      <label htmlFor={id} className="t-meta text-[11px]">
+      <label htmlFor={id} className="t-meta text-ticker">
         Minimum subscription tier
       </label>
       <select
@@ -31,7 +31,7 @@ export function PlanTierSelect({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className={cn(
-          "mt-1 h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring",
+          "mt-1 h-10 w-full rounded-field border border-border bg-bg px-3 text-body focus-ring",
         )}
       >
         <option value={0}>Any subscriber (all tiers)</option>
@@ -45,7 +45,7 @@ export function PlanTierSelect({
         ))}
       </select>
       {sorted.length === 0 ? (
-        <p className="t-meta mt-1.5 text-[11px]">
+        <p className="t-meta mt-1.5 text-ticker">
           No tiers yet. Add subscription tiers in{" "}
           <a href="/studio/branding" className="text-accent hover:underline">
             Branding
@@ -53,7 +53,7 @@ export function PlanTierSelect({
           .
         </p>
       ) : (
-        <p className="t-meta mt-1.5 text-[11px]">
+        <p className="t-meta mt-1.5 text-ticker">
           Readers need a plan at or above this tier. Perks on each tier are set in Branding.
         </p>
       )}

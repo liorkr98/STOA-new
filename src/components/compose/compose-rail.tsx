@@ -25,7 +25,7 @@ export function ComposeRail({ children }: { children: React.ReactNode }) {
       className="scroll-area hidden min-h-0 w-[248px] shrink-0 overflow-y-auto border-r border-border lg:block"
     >
       <div className="flex flex-col gap-5 p-3">
-        <span className="num text-[10px] uppercase tracking-[0.2em] text-text-faint">Toolbox</span>
+        <span className="num text-ticker text-text-faint">Toolbox</span>
         {children}
       </div>
     </aside>
@@ -57,7 +57,7 @@ export function ComposeRailDrawer({
         className="scroll-area absolute inset-y-0 left-0 flex w-[min(88vw,320px)] flex-col gap-5 overflow-y-auto border-r border-border bg-paper p-4"
       >
         <div className="flex items-center justify-between">
-          <span className="num text-[10px] uppercase tracking-[0.2em] text-text-faint">Toolbox</span>
+          <span className="num text-ticker text-text-faint">Toolbox</span>
           <button
             type="button"
             onClick={onClose}
@@ -79,12 +79,12 @@ export function RailOpenButton({ onClick, cardCount }: { onClick: () => void; ca
       type="button"
       onClick={onClick}
       aria-label={`Open the toolbox (${cardCount} cards)`}
-      className="focus-ring relative flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text lg:hidden"
+      className="focus-ring relative flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-ticker font-medium text-text-mute transition-colors hover:text-text lg:hidden"
     >
       <PanelLeftOpen size={15} />
       <span className="hidden sm:inline">Toolbox</span>
       {cardCount > 0 ? (
-        <span className="num rounded-full bg-[var(--ink)] px-1.5 text-[10px] text-[var(--paper)]">{cardCount}</span>
+        <span className="num rounded-full bg-[var(--ink)] px-1.5 text-ticker text-[var(--paper)]">{cardCount}</span>
       ) : null}
     </button>
   );

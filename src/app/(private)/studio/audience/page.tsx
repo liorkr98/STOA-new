@@ -18,7 +18,7 @@ function initialsOf(name: string) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="num border-b border-[var(--ink)] pb-3 text-[10px] uppercase tracking-[0.2em] text-text-mute">
+    <div className="num border-b border-[var(--ink)] pb-3 text-ticker text-text-mute">
       {children}
     </div>
   );
@@ -59,7 +59,7 @@ export default async function StudioAudiencePage() {
   return (
     <div className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-10">
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Audience</h1>
+        <h1 className="font-display text-headline font-semibold tracking-tight">Audience</h1>
         <p className="t-body mt-2">Who&apos;s reading, and who&apos;s paying.</p>
       </div>
 
@@ -67,8 +67,8 @@ export default async function StudioAudiencePage() {
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
         {metrics.map((m) => (
           <div key={m.label} className="rounded-panel bg-surface-2 px-5 py-4">
-            <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
-            <div className="mt-2.5 text-[24px] font-semibold tracking-tight">{m.value}</div>
+            <div className="num text-ticker text-text-mute">{m.label}</div>
+            <div className="mt-2.5 text-headline font-semibold tracking-tight">{m.value}</div>
           </div>
         ))}
       </div>
@@ -76,12 +76,12 @@ export default async function StudioAudiencePage() {
       <section className="flex flex-col gap-4">
         <SectionLabel>Referral link</SectionLabel>
         <div className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-5 sm:flex-row sm:items-center">
-          <code className="num min-w-0 flex-1 overflow-x-auto rounded-inner border border-border bg-bg px-3 py-2 text-sm">
+          <code className="num min-w-0 flex-1 overflow-x-auto rounded-inner border border-border bg-bg px-3 py-2 text-body">
             {referralLink}
           </code>
           <CopyButton value={referralLink} label="Copy" />
         </div>
-        <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <p className="num text-ticker text-text-faint">
           Signups attributed to you are counted above.
         </p>
       </section>

@@ -46,7 +46,7 @@ export function ArchiveDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <div className="flex items-start justify-between gap-4">
-            <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
+            <Dialog.Title className="font-display text-title font-semibold tracking-tight">
               Archive this publication?
             </Dialog.Title>
             <Dialog.Close className="focus-ring rounded p-1 text-text-mute hover:text-text">
@@ -55,12 +55,12 @@ export function ArchiveDialog({
             </Dialog.Close>
           </div>
 
-          <p dir="auto" className="user-copy mt-2 truncate text-sm text-text-mute">
+          <p dir="auto" className="user-copy mt-2 truncate text-body text-text-mute">
             {title}
           </p>
 
           <Dialog.Description asChild>
-            <div className="mt-4 space-y-3 text-[13px] leading-relaxed text-text">
+            <div className="mt-4 space-y-3 text-ticker leading-relaxed text-text">
               <p>
                 It comes off the Feed, Explore, search and your public profile. Anyone
                 opening a link to it will no longer find it.

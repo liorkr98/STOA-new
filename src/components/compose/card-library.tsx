@@ -22,10 +22,10 @@ function KindButton({
       onClick={() => onPick(spec.kind)}
       className="focus-ring flex w-full flex-col items-start rounded-inner border border-border bg-bg p-3 text-left transition-colors hover:border-[var(--ink)]"
     >
-      <span className="font-display text-[0.9375rem] font-semibold tracking-tight text-text">
+      <span className="font-display text-body font-semibold tracking-tight text-text">
         {showShape ? spec.shape : spec.label}
       </span>
-      <span className="mt-0.5 text-[0.8125rem] leading-snug text-text-mute">
+      <span className="mt-0.5 text-ticker leading-snug text-text-mute">
         {showShape ? spec.label : spec.blurb}
       </span>
     </button>
@@ -70,10 +70,10 @@ export function CardLibrary({
         <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,640px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-panel border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
+              <Dialog.Title className="font-display text-title font-semibold tracking-tight">
                 {previewSpec ? previewSpec.label : byShape ? "Pick a format" : "Add a card"}
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-[0.8125rem] text-text-mute">
+              <Dialog.Description className="mt-1 text-ticker text-text-mute">
                 {previewSpec
                   ? "This is how the card reads. You can fill it after you add it."
                   : byShape
@@ -98,14 +98,14 @@ export function CardLibrary({
                 <button
                   type="button"
                   onClick={() => addThisKind(previewKind)}
-                  className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[13px] font-medium text-[var(--paper)]"
+                  className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)]"
                 >
                   Use this card
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewKind(null)}
-                  className="num focus-ring flex items-center gap-1.5 rounded text-[10px] uppercase tracking-[0.14em] text-text-mute hover:text-text"
+                  className="num focus-ring flex items-center gap-1.5 rounded text-ticker text-text-mute hover:text-text"
                 >
                   <ArrowLeft size={12} /> Back
                 </button>
@@ -121,7 +121,7 @@ export function CardLibrary({
               <button
                 type="button"
                 onClick={() => setByShape(false)}
-                className="num focus-ring mt-4 flex items-center gap-1.5 rounded text-[10px] uppercase tracking-[0.14em] text-text-mute hover:text-text"
+                className="num focus-ring mt-4 flex items-center gap-1.5 rounded text-ticker text-text-mute hover:text-text"
               >
                 <ArrowLeft size={12} /> Back to intents
               </button>
@@ -130,7 +130,7 @@ export function CardLibrary({
             <>
               {CARD_INTENTS.map((intent) => (
                 <section key={intent.key} className="mt-5">
-                  <h3 className="t-eyebrow">{intent.label}</h3>
+                  <h3 className="t-meta">{intent.label}</h3>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {intent.kinds.map((spec) => (
                       <KindButton key={spec.kind} spec={spec} onPick={setPreviewKind} />
@@ -146,8 +146,8 @@ export function CardLibrary({
               >
                 <Shapes size={16} className="shrink-0 text-text-mute" aria-hidden />
                 <span>
-                  <span className="block font-display text-[0.9375rem] font-semibold tracking-tight">Custom</span>
-                  <span className="mt-0.5 block text-[0.8125rem] leading-snug text-text-mute">
+                  <span className="block font-display text-body font-semibold tracking-tight">Custom</span>
+                  <span className="mt-0.5 block text-ticker leading-snug text-text-mute">
                     Pick a format instead: statement, two columns, steps, timeline, image.
                   </span>
                 </span>

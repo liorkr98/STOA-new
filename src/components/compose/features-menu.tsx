@@ -50,7 +50,7 @@ export function FeaturesMenu({
       className="rounded-panel border border-border bg-surface"
     >
       <div className="border-b border-border px-4 py-3">
-        <p className="t-eyebrow">Add to this {typeNoun}</p>
+        <p className="t-meta">Add to this {typeNoun}</p>
       </div>
       <ul className="divide-y divide-border">
         {rows.map((row) => {
@@ -73,10 +73,10 @@ export function FeaturesMenu({
                 <span className="shrink-0 text-text-mute">{ICONS[row.def.key]}</span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                    <span className="text-[0.9375rem] font-medium text-text">{row.def.label}</span>
+                    <span className="text-body font-medium text-text">{row.def.label}</span>
                     <span
                       className={cn(
-                        "num text-[10px] uppercase tracking-[0.14em]",
+                        "num text-ticker",
                         state.tone === "on"
                           ? "text-[var(--verdigris)]"
                           : state.tone === "bad"
@@ -88,7 +88,7 @@ export function FeaturesMenu({
                     </span>
                   </span>
                   {row.halfDone ? (
-                    <span className="mt-0.5 block text-[0.8125rem] leading-snug text-[var(--rust)]">
+                    <span className="mt-0.5 block text-ticker leading-snug text-[var(--rust)]">
                       {row.halfDone}
                     </span>
                   ) : null}

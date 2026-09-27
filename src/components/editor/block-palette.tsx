@@ -27,10 +27,10 @@ const GROUPS = ["text", "finance", "layout"] as const;
 export function BlockPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="t-eyebrow px-1">Blocks</p>
+      <p className="t-meta px-1">Blocks</p>
       {GROUPS.map((group) => (
         <div key={group} className="flex flex-col gap-1.5">
-          <span className="px-1 text-[10px] font-semibold uppercase tracking-widest text-text-faint">
+          <span className="px-1 text-ticker font-semibold text-text-faint">
             {group}
           </span>
           {(Object.keys(BLOCK_META) as BlockType[])
@@ -46,7 +46,7 @@ export function BlockPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
                 }}
                 onClick={() => onAdd(type)}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-inner border border-transparent px-3 py-2.5 text-left text-sm",
+                  "flex items-center gap-2.5 rounded-inner border border-transparent px-3 py-2.5 text-left text-body",
                   "text-text-mute transition-colors hover:border-border hover:bg-surface-2 hover:text-text",
                 )}
               >

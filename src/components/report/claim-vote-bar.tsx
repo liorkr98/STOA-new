@@ -95,7 +95,7 @@ export function ClaimVoteBar({
           </div>
         )}
       </div>
-      <p className="t-meta mt-1 text-[10px]">Community sentiment - not investment advice</p>
+      <p className="t-meta mt-1 text-ticker">Community sentiment - not investment advice</p>
     </div>
   );
 }
@@ -124,7 +124,7 @@ function StanceButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "focus-ring inline-flex items-center gap-1 rounded-chip border px-1.5 py-0.5 text-[11px] transition-colors",
+        "focus-ring inline-flex items-center gap-1 rounded-chip border px-1.5 py-0.5 text-ticker transition-colors",
         active ? "bg-surface-2" : "hover:bg-surface-2",
         disabled && "cursor-default opacity-70",
       )}

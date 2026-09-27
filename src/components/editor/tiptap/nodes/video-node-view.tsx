@@ -140,14 +140,14 @@ export function VideoNodeView({
             <span className="flex h-10 w-10 items-center justify-center rounded-inner bg-[var(--paper)]/90 text-[var(--ink)]">
               <Lock size={17} />
             </span>
-            <span className="rounded-chip bg-[var(--paper)]/90 px-2.5 py-1 text-[12px] font-medium text-[var(--ink)]">
+            <span className="rounded-chip bg-[var(--paper)]/90 px-2.5 py-1 text-ticker font-medium text-[var(--ink)]">
               {play.reason} - upgrade to watch
             </span>
           </div>
         </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm text-[var(--paper)]/70">
+          <span className="text-body text-[var(--paper)]/70">
             {play.kind === "processing"
               ? "Processing video..."
               : play.kind === "loading"
@@ -195,8 +195,8 @@ export function VideoNodeView({
       />
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <Film size={14} className="text-text-faint" />
-        <span className="t-eyebrow flex-1">Video</span>
-        <label className="flex items-center gap-1.5 text-[11px] text-text-mute">
+        <span className="t-meta flex-1">Video</span>
+        <label className="flex items-center gap-1.5 text-ticker text-text-mute">
           Min tier rank
           <input
             type="number"
@@ -204,7 +204,7 @@ export function VideoNodeView({
             value={minPlanRank}
             onChange={(e) => updateAttributes({ minPlanRank: Math.max(0, Number(e.target.value) || 0) })}
             onMouseDown={stop}
-            className="num h-7 w-14 rounded-field border border-border bg-bg px-1.5 text-right text-sm focus-ring"
+            className="num h-7 w-14 rounded-field border border-border bg-bg px-1.5 text-right text-body focus-ring"
           />
         </label>
         {assetId && (
@@ -212,7 +212,7 @@ export function VideoNodeView({
             type="button"
             onMouseDown={stop}
             onClick={() => inputRef.current?.click()}
-            className="h-7 rounded-button px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+            className="h-7 rounded-button px-2 text-ticker text-text-mute hover:bg-surface-2 focus-ring"
           >
             Replace
           </button>
@@ -237,14 +237,14 @@ export function VideoNodeView({
               onChange={(e) => updateAttributes({ caption: e.target.value })}
               onMouseDown={stop}
               placeholder="Caption (optional)"
-              className="mt-2 w-full bg-transparent text-center text-sm text-text-mute focus:outline-none"
+              className="mt-2 w-full bg-transparent text-center text-body text-text-mute focus:outline-none"
             />
             {play.kind === "processing" && (
               <button
                 type="button"
                 onMouseDown={stop}
                 onClick={() => void fetchToken()}
-                className="mx-auto mt-1 block text-[11px] text-text-faint hover:text-text focus-ring"
+                className="mx-auto mt-1 block text-ticker text-text-faint hover:text-text focus-ring"
               >
                 Check again
               </button>
@@ -259,8 +259,8 @@ export function VideoNodeView({
             className="flex w-full flex-col items-center justify-center gap-2 rounded-inner border border-dashed border-border px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
           >
             <Upload size={22} className="text-text-faint" />
-            <span className="text-sm">{uploading ? "Uploading..." : "Upload a video"}</span>
-            {uploadError && <span className="text-[11px] text-[var(--down)]">{uploadError}</span>}
+            <span className="text-body">{uploading ? "Uploading..." : "Upload a video"}</span>
+            {uploadError && <span className="text-ticker text-[var(--down)]">{uploadError}</span>}
           </button>
         )}
       </div>

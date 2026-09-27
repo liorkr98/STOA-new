@@ -47,7 +47,7 @@ export function StudioSectionNav() {
                 prefetch
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "focus-ring flex shrink-0 items-center border-b-2 px-2.5 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors",
+                  "focus-ring flex shrink-0 items-center border-b-2 px-2.5 py-3 text-ticker font-semibold transition-colors",
                   isActive
                     ? "border-[var(--ink)] text-text"
                     : "border-transparent text-text-mute hover:text-text",

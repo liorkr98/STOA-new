@@ -9,7 +9,7 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import type { Profile } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-body focus-ring";
 
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, start] = useTransition();
@@ -36,12 +36,12 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         currentUrl={profile.avatar_url}
       />
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 text-body">
         Display name
         <input name="display_name" defaultValue={profile.display_name} required className={inputClass} />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 text-body">
         Bio
         <textarea
           name="bio"
@@ -53,7 +53,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 text-body">
         Headline
         <input
           name="headline"
@@ -64,16 +64,16 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         />
       </label>
 
-      <div className="text-sm">
+      <div className="text-body">
         <span className="text-text-mute">Handle: </span>
         <span className="num">@{profile.handle}</span>
-        <span className="num ml-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <span className="num ml-2 text-ticker text-text-faint">
           Locked after onboarding
         </span>
       </div>
 
       {isAnalyst && (
-        <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">
+        <p className="num text-ticker text-text-faint">
           Pricing and storefront design live in Storefront.
         </p>
       )}
@@ -83,7 +83,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
           {pending ? "Saving..." : "Save changes"}
         </Button>
         {saved && (
-          <span className="inline-flex items-center gap-1.5 text-sm text-[var(--up)]">
+          <span className="inline-flex items-center gap-1.5 text-body text-[var(--up)]">
             <CheckCircle size={16} weight="fill" />
             Saved
           </span>

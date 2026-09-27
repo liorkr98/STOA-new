@@ -14,7 +14,7 @@ export function TemplatesPanel({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
         <Layout size={16} className="text-accent" />
-        <p className="t-eyebrow">Templates</p>
+        <p className="t-meta">Templates</p>
       </div>
       <p className="t-meta px-1">One-click structures. Free to apply.</p>
       <div className="flex flex-col gap-2">
@@ -28,7 +28,7 @@ export function TemplatesPanel({
               "hover:border-accent/40 hover:bg-accent-weak/30",
             )}
           >
-            <span className="flex items-center gap-1.5 text-sm font-medium">
+            <span className="flex items-center gap-1.5 text-body font-medium">
               {t.name}
               <Sparkle size={12} className="text-accent opacity-60" />
             </span>

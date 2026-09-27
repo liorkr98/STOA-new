@@ -122,10 +122,10 @@ export function DataFigureNodeView({
         contentEditable={false}
         className="my-4 max-w-sm rounded-panel border border-border bg-surface p-4"
       >
-        {label && <span className="t-eyebrow">{label}</span>}
+        {label && <span className="t-meta">{label}</span>}
         <div className="mt-1 flex items-baseline gap-2">
-          {value && <span className="num text-2xl font-semibold">{value}</span>}
-          {note && <span className="num text-sm text-[var(--up)]">{note}</span>}
+          {value && <span className="num text-headline font-semibold">{value}</span>}
+          {note && <span className="num text-body text-[var(--up)]">{note}</span>}
         </div>
         {(sourceRef || source) && (
           <div className="mt-2 border-t border-border pt-2">
@@ -134,7 +134,7 @@ export function DataFigureNodeView({
                 href={sourceRef.url ?? source}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="t-meta inline-flex items-center gap-1 text-[11px] hover:text-accent"
+                className="t-meta inline-flex items-center gap-1 text-ticker hover:text-accent"
               >
                 {(sourceRef.provider ?? "source").toUpperCase()}
                 {sourceRef.accession ? ` - ${sourceRef.accession}` : ""}
@@ -145,7 +145,7 @@ export function DataFigureNodeView({
                 href={source}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="t-meta inline-flex items-center gap-1 text-[11px] hover:text-accent"
+                className="t-meta inline-flex items-center gap-1 text-ticker hover:text-accent"
               >
                 Source
                 <ArrowUpRight size={11} />
@@ -206,7 +206,7 @@ export function DataFigureNodeView({
         onChange={(e) => updateAttributes({ label: e.target.value })}
         onMouseDown={stop}
         placeholder="Metric"
-        className="t-eyebrow w-full bg-transparent uppercase focus:outline-none placeholder:text-text-mute placeholder:normal-case"
+        className="t-meta w-full bg-transparent focus:outline-none placeholder:text-text-mute placeholder:normal-case"
       />
       <div className="mt-1 flex items-baseline gap-2">
         <input
@@ -214,20 +214,20 @@ export function DataFigureNodeView({
           onChange={(e) => updateAttributes({ value: e.target.value })}
           onMouseDown={stop}
           placeholder="Value"
-          className="num w-full max-w-[9ch] bg-transparent text-2xl font-semibold focus:outline-none placeholder:text-text-mute"
+          className="num w-full max-w-[9ch] bg-transparent text-headline font-semibold focus:outline-none placeholder:text-text-mute"
         />
         <input
           value={note}
           onChange={(e) => updateAttributes({ note: e.target.value })}
           onMouseDown={stop}
           placeholder="context"
-          className="num flex-1 bg-transparent text-sm text-[var(--up)] focus:outline-none placeholder:text-text-mute"
+          className="num flex-1 bg-transparent text-body text-[var(--up)] focus:outline-none placeholder:text-text-mute"
         />
       </div>
 
       {sourceRef ? (
         <div className="mt-2 flex items-center gap-1.5 border-t border-border pt-2">
-          <span className="t-meta flex-1 truncate text-[11px]">
+          <span className="t-meta flex-1 truncate text-ticker">
             {(sourceRef.provider ?? "source").toUpperCase()}
             {sourceRef.concept ? ` - ${sourceRef.concept}` : ""}
             {sourceRef.asOf ? ` - filed ${sourceRef.asOf}` : ""}
@@ -261,7 +261,7 @@ export function DataFigureNodeView({
             onChange={(e) => updateAttributes({ source: e.target.value })}
             onMouseDown={stop}
             placeholder="Source URL"
-            className="t-meta flex-1 bg-transparent text-[11px] focus:outline-none placeholder:text-text-mute"
+            className="t-meta flex-1 bg-transparent text-ticker focus:outline-none placeholder:text-text-mute"
           />
           {source && (
             <a
@@ -287,13 +287,13 @@ export function DataFigureNodeView({
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), search())}
               onMouseDown={stop}
               placeholder="Ticker"
-              className="num h-7 w-16 rounded-field border border-border bg-surface px-1.5 text-sm font-semibold focus:outline-none"
+              className="num h-7 w-16 rounded-field border border-border bg-surface px-1.5 text-body font-semibold focus:outline-none"
             />
             <select
               value={concept}
               onMouseDown={stop}
               onChange={(e) => setConcept(e.target.value)}
-              className="h-7 flex-1 rounded-field border border-border bg-surface px-1.5 text-[11px] text-text-mute focus-ring"
+              className="h-7 flex-1 rounded-field border border-border bg-surface px-1.5 text-ticker text-text-mute focus-ring"
             >
               {COMMON_CONCEPTS.map((c) => (
                 <option key={c.concept} value={c.concept}>
@@ -305,18 +305,18 @@ export function DataFigureNodeView({
               type="button"
               onMouseDown={stop}
               onClick={search}
-              className="h-7 rounded-button bg-accent px-2 text-[11px] font-semibold text-accent-ink focus-ring"
+              className="h-7 rounded-button bg-accent px-2 text-ticker font-semibold text-accent-ink focus-ring"
             >
               Search
             </button>
           </div>
           <div className="mt-2 max-h-40 overflow-auto scroll-area">
-            {status === "loading" && <p className="t-meta px-1 text-[11px]">Searching filings...</p>}
+            {status === "loading" && <p className="t-meta px-1 text-ticker">Searching filings...</p>}
             {status === "auth" && (
-              <p className="t-meta px-1 text-[11px]">Sign in to search filings</p>
+              <p className="t-meta px-1 text-ticker">Sign in to search filings</p>
             )}
             {status === "empty" && (
-              <p className="t-meta px-1 text-[11px]">No values for that concept</p>
+              <p className="t-meta px-1 text-ticker">No values for that concept</p>
             )}
             {results?.map((f) => (
               <button
@@ -324,7 +324,7 @@ export function DataFigureNodeView({
                 type="button"
                 onMouseDown={stop}
                 onClick={() => chooseFigure(f)}
-                className="flex w-full items-center justify-between gap-2 rounded-inner px-2 py-1 text-left text-sm hover:bg-surface-2"
+                className="flex w-full items-center justify-between gap-2 rounded-inner px-2 py-1 text-left text-body hover:bg-surface-2"
               >
                 <span className="num text-text-mute">{periodLabel(f)}</span>
                 <span className="num font-medium">{fmtValue(f.value)}</span>

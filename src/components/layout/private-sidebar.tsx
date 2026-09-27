@@ -90,8 +90,8 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
       >
         <Avatar src={profile.avatar_url} name={profile.display_name} size="sm" />
         <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-sm font-medium text-text">{profile.display_name}</span>
-          <span className="num truncate text-xs text-text-mute">
+          <span className="truncate text-body font-medium text-text">{profile.display_name}</span>
+          <span className="num truncate text-ticker text-text-mute">
             {isAnalyst ? "Your profile" : `@${profile.handle}`}
           </span>
         </span>
@@ -100,7 +100,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
       <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto">
         {groups.map((g) => (
           <div key={g.key} className="flex flex-col gap-0.5">
-            <span className="t-eyebrow px-3 pb-1">{g.label}</span>
+            <span className="t-meta px-3 pb-1">{g.label}</span>
             {g.items.map((it) => {
               const isActive = it.href === active;
               return (
@@ -110,7 +110,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
                   prefetch
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative rounded-button px-3 py-1.5 text-sm transition-colors",
+                    "relative rounded-button px-3 py-1.5 text-body transition-colors",
                     isActive
                       ? "font-medium text-text"
                       : "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -136,7 +136,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
         <form action={signOut}>
           <button
             type="submit"
-            className="focus-ring rounded-button px-2 py-1 text-sm text-text-faint transition-colors hover:text-text"
+            className="focus-ring rounded-button px-2 py-1 text-body text-text-faint transition-colors hover:text-text"
           >
             Sign out
           </button>
@@ -177,7 +177,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                 onClick={() => setOpen(isOpen ? null : g.key)}
                 aria-expanded={isOpen}
                 className={cn(
-                  "focus-ring flex shrink-0 items-center gap-1 border-b-2 px-2 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors",
+                  "focus-ring flex shrink-0 items-center gap-1 border-b-2 px-2 py-3 text-ticker font-semibold transition-colors",
                   groupActive
                     ? "border-[var(--ink)] text-text"
                     : "border-transparent text-text-mute hover:text-text",
@@ -204,7 +204,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                       onClick={() => setOpen(null)}
                       aria-current={it.href === active ? "page" : undefined}
                       className={cn(
-                        "block rounded-button px-2.5 py-2 text-sm transition-colors",
+                        "block rounded-button px-2.5 py-2 text-body transition-colors",
                         it.href === active
                           ? "font-medium text-text"
                           : "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -217,7 +217,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                     <form action={signOut} className="mt-1 border-t border-border pt-1">
                       <button
                         type="submit"
-                        className="block w-full rounded-inner px-2.5 py-2 text-left text-sm text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
+                        className="block w-full rounded-inner px-2.5 py-2 text-left text-body text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
                       >
                         Sign out
                       </button>

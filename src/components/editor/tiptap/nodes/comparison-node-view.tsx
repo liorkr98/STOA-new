@@ -143,12 +143,12 @@ export function ComparisonNodeView({
                 <CartesianGrid stroke="var(--border)" vertical={false} />
                 <XAxis
                   dataKey="period"
-                  tick={{ fill: "var(--text-faint)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-mute)", fontSize: 13 }}
                   tickLine={false}
                   axisLine={{ stroke: "var(--border)" }}
                 />
                 <YAxis
-                  tick={{ fill: "var(--text-faint)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-mute)", fontSize: 13 }}
                   tickLine={false}
                   axisLine={false}
                   width={52}
@@ -160,7 +160,7 @@ export function ComparisonNodeView({
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 13,
                   }}
                   formatter={(v: number | string) =>
                     typeof v === "number" ? fmt(v) : String(v)
@@ -175,12 +175,12 @@ export function ComparisonNodeView({
                 <CartesianGrid stroke="var(--border)" vertical={false} />
                 <XAxis
                   dataKey="period"
-                  tick={{ fill: "var(--text-faint)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-mute)", fontSize: 13 }}
                   tickLine={false}
                   axisLine={{ stroke: "var(--border)" }}
                 />
                 <YAxis
-                  tick={{ fill: "var(--text-faint)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-mute)", fontSize: 13 }}
                   tickLine={false}
                   axisLine={false}
                   width={52}
@@ -192,7 +192,7 @@ export function ComparisonNodeView({
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 13,
                   }}
                   formatter={(v: number | string) =>
                     typeof v === "number" ? fmt(v) : String(v)
@@ -214,9 +214,9 @@ export function ComparisonNodeView({
           </ResponsiveContainer>
         </div>
         <div className="flex flex-wrap items-center gap-3 px-2 pt-1">
-          <span className="t-eyebrow">{metricLabel}</span>
+          <span className="t-meta">{metricLabel}</span>
           {c.series.map((s, i) => (
-            <span key={s.symbol} className="flex items-center gap-1.5 text-[11px] text-text-mute">
+            <span key={s.symbol} className="flex items-center gap-1.5 text-ticker text-text-mute">
               <span
                 className="inline-block h-2 w-2 rounded-[2px]"
                 style={{ background: colors[i] }}
@@ -281,7 +281,7 @@ export function ComparisonNodeView({
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), pull())}
             onMouseDown={stop}
             placeholder="NVDA, AMD, INTC"
-            className="num w-40 bg-transparent text-sm font-semibold focus:outline-none"
+            className="num w-40 bg-transparent text-body font-semibold focus:outline-none"
           />
         </span>
 
@@ -289,7 +289,7 @@ export function ComparisonNodeView({
           value={metric}
           onMouseDown={stop}
           onChange={(e) => pull(e.target.value as ComparisonMetric, years, kind)}
-          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-ticker text-text-mute focus-ring"
         >
           {METRICS.map((m) => (
             <option key={m.key} value={m.key}>
@@ -302,7 +302,7 @@ export function ComparisonNodeView({
           value={years}
           onMouseDown={stop}
           onChange={(e) => pull(metric, Number(e.target.value), kind)}
-          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-ticker text-text-mute focus-ring"
         >
           {[3, 5, 8, 10].map((n) => (
             <option key={n} value={n}>
@@ -319,7 +319,7 @@ export function ComparisonNodeView({
               onMouseDown={stop}
               onClick={() => updateAttributes({ kind: k })}
               className={cn(
-                "rounded-[4px] px-2 py-0.5 text-[11px] font-medium capitalize transition-colors",
+                "rounded-[4px] px-2 py-0.5 text-ticker font-medium capitalize transition-colors",
                 kind === k ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:text-text",
               )}
             >
@@ -332,7 +332,7 @@ export function ComparisonNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
         >
           Pull comparison
         </button>
@@ -352,7 +352,7 @@ export function ComparisonNodeView({
         renderChart(comparison)
       ) : (
         <div className="flex items-center justify-center px-4 py-14">
-          <p className="t-meta text-[12px]">{statusMessage}</p>
+          <p className="t-meta text-ticker">{statusMessage}</p>
         </div>
       )}
     </NodeViewWrapper>

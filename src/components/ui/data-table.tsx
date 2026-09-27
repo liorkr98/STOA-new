@@ -204,7 +204,7 @@ export function DataTable<T>({
             {visibleColumns.map((col, i) => {
               if (i === 0) {
                 return (
-                  <td key={col.key} className={cn(cellPad, "t-eyebrow")}>
+                  <td key={col.key} className={cn(cellPad, "t-meta")}>
                     {stat}
                   </td>
                 );
@@ -238,17 +238,17 @@ export function DataTable<T>({
     >
       {(csvName || columns.length > 0) && (
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
-          {caption ? <span className="t-eyebrow">{caption}</span> : <span />}
+          {caption ? <span className="t-meta">{caption}</span> : <span />}
           <div className="flex items-center gap-1">
             <details className="relative">
-              <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-1.5 rounded-button px-2 text-sm text-text-mute hover:bg-surface-2">
+              <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-1.5 rounded-button px-2 text-body text-text-mute hover:bg-surface-2">
                 <Columns3 size={15} /> Columns
               </summary>
               <div className="menu-pop absolute right-0 z-20 mt-1 w-44 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
                 {columns.map((col) => (
                   <label
                     key={col.key}
-                    className="flex cursor-pointer items-center gap-2 rounded-inner px-2 py-1.5 text-sm hover:bg-surface-2"
+                    className="flex cursor-pointer items-center gap-2 rounded-inner px-2 py-1.5 text-body hover:bg-surface-2"
                   >
                     <input
                       type="checkbox"
@@ -264,7 +264,7 @@ export function DataTable<T>({
               <button
                 type="button"
                 onClick={exportCsv}
-                className="focus-ring flex h-8 items-center gap-1.5 rounded-button px-2 text-sm text-text-mute hover:bg-surface-2"
+                className="focus-ring flex h-8 items-center gap-1.5 rounded-button px-2 text-body text-text-mute hover:bg-surface-2"
               >
                 <Download size={15} /> CSV
               </button>
@@ -274,7 +274,7 @@ export function DataTable<T>({
       )}
 
       <div className="scroll-area max-h-[70vh] overflow-auto">
-        <table className="data-table w-full border-collapse text-sm">
+        <table className="data-table w-full border-collapse text-body">
           <thead className="sticky top-0 z-10 bg-surface">
             <tr>
               {visibleColumns.map((col) => {
@@ -285,7 +285,7 @@ export function DataTable<T>({
                     key={col.key}
                     className={cn(
                       headPad,
-                      "t-eyebrow border-b border-border-strong whitespace-nowrap",
+                      "t-meta border-b border-border-strong whitespace-nowrap",
                       col.numeric ? "text-right" : "text-left",
                     )}
                   >
@@ -324,7 +324,7 @@ export function DataTable<T>({
                     <tr className="bg-surface-2/70">
                       <td
                         colSpan={visibleColumns.length}
-                        className={cn(headPad, "t-eyebrow text-text-mute")}
+                        className={cn(headPad, "t-meta text-text-mute")}
                       >
                         {group}
                       </td>

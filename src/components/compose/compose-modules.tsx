@@ -46,21 +46,21 @@ export function ModuleHeader({
         <span className="shrink-0 text-text-mute" aria-hidden>
           {icon}
         </span>
-        <span className="num text-[11px] uppercase tracking-[0.16em] text-text">{label}</span>
+        <span className="num text-ticker text-text">{label}</span>
         {state ? (
-          <span className="num flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-text-mute">
+          <span className="num flex items-center gap-1 text-ticker text-text-mute">
             <Check size={11} className="text-[var(--verdigris)]" aria-hidden />
             {state}
           </span>
         ) : (
-          <span className="num text-[11px] uppercase tracking-[0.14em] text-text-faint">Empty</span>
+          <span className="num text-ticker text-text-faint">Empty</span>
         )}
       </button>
       {onRemove ? (
         <button
           type="button"
           onClick={onRemove}
-          className="num focus-ring rounded text-[10px] uppercase tracking-[0.12em] text-text-faint hover:text-[var(--rust)]"
+          className="num focus-ring rounded text-ticker text-text-faint hover:text-[var(--rust)]"
         >
           Remove
         </button>
@@ -87,7 +87,7 @@ export function AddModuleRow({
         <button
           type="button"
           onClick={onAddVideo}
-          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-ticker text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
         >
           <Plus size={14} aria-hidden />
           <Film size={14} aria-hidden />
@@ -98,7 +98,7 @@ export function AddModuleRow({
         <button
           type="button"
           onClick={onAddResearch}
-          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-ticker text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
         >
           <Plus size={14} aria-hidden />
           <FileText size={14} aria-hidden />
