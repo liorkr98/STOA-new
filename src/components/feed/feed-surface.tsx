@@ -1044,8 +1044,8 @@ function EndOfFeed({ snapClass }: { snapClass: string }) {
         <span className="num text-[10px] uppercase tracking-[0.22em] text-text-mute">End of feed</span>
         <p className="font-display text-[1.75rem] font-semibold leading-tight">You are caught up.</p>
         <p className="text-[0.875rem] leading-relaxed text-text-mute">
-          New calls publish at market open. Catch the morning edition on Today, or browse analysts by
-          sector on Explore.
+          New publications appear as analysts post them. Catch the morning edition on Today, or
+          browse analysts by sector on Explore.
         </p>
         <div className="mt-2 flex gap-2">
           <Link href="/home" className={buttonClass("primary", "md")}>

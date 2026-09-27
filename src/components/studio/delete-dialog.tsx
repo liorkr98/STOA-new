@@ -83,8 +83,8 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
                 certain, archive instead.
               </p>
               <p className="text-text-mute">
-                This publication carries no call, which is the only reason deleting it is
-                offered at all.
+                This publication declares no stance and nobody has bought it, which is the
+                only reason deleting it is offered at all.
               </p>
             </div>
           </Dialog.Description>

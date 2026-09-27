@@ -376,7 +376,7 @@ export function AskPanel({
           <div className="space-y-3">
             <p className="text-sm text-text-mute">
             Ask me to draft sections, insert live data blocks, or build a diagram. Highlight text
-            first for rewrite / visualize. Set the ticker in the call panel so blocks wire correctly.
+            first for rewrite / visualize. Add a stance with its ticker so blocks wire correctly.
             </p>
             <div>
               <p className="t-eyebrow mb-1.5 flex items-center gap-1 text-[10px]">

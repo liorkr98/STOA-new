@@ -107,8 +107,7 @@ export function ProfilePreview({
       />
 
       <p className="t-meta text-[11px]">
-        Pricing and your call record are platform-controlled and always appear below this hero on
-        your public page.
+        Pricing is platform-controlled and always appears below this hero on your public page.
       </p>
     </div>
   );

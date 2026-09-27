@@ -154,7 +154,7 @@ export function ReportTemplatePicker({
                 <p className="text-[11px] text-text-mute">
                   {ticker
                     ? `Wire blocks to ${ticker.toUpperCase()} · edit every section after applying`
-                    : "Set a ticker in the call panel for live data blocks"}
+                    : "Add a stance with a ticker for live data blocks"}
                 </p>
               </div>
               <button

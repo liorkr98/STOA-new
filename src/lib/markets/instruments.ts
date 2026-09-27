@@ -22,7 +22,7 @@
 export type MacroKind = "commodity" | "rate" | "crypto";
 
 export interface MacroInstrument {
-  /** The Stoa symbol: the URL, the search hit, and what a call block accepts. */
+  /** The Stoa symbol: the URL, the search hit, and what a stance accepts. */
   symbol: string;
   /** What the quote and candle providers are asked for. */
   providerSymbol: string;
@@ -43,7 +43,7 @@ export interface MacroInstrument {
   about: string;
   /**
    * Set where "up" does not mean "worth more". A yield rising is a bond
-   * price falling, and a call block that does not say so invites an analyst
+   * price falling, and a stance that does not say so invites an analyst
    * to pick the direction opposite to the one they mean.
    */
   directionNote?: string;
@@ -98,7 +98,7 @@ export const MACRO_INSTRUMENTS: MacroInstrument[] = [
     about:
       "The discount rate under every long-duration asset on the platform. When the ten-year moves, the present value of distant earnings moves with it, which is why a growth multiple and a Treasury auction are the same conversation.",
     directionNote:
-      "This instrument is quoted as a yield. A call for the level to rise is a call for bond prices to fall.",
+      "This instrument is quoted as a yield. A long stance on the yield is a view that bond prices will fall.",
   },
   {
     symbol: "US30Y",
@@ -112,7 +112,7 @@ export const MACRO_INSTRUMENTS: MacroInstrument[] = [
     about:
       "The long bond: the market's view on inflation and fiscal credibility far past any current forecast. It moves less on the next meeting than on whether the debt path is believed.",
     directionNote:
-      "This instrument is quoted as a yield. A call for the level to rise is a call for bond prices to fall.",
+      "This instrument is quoted as a yield. A long stance on the yield is a view that bond prices will fall.",
   },
   {
     symbol: "US05Y",
@@ -126,7 +126,7 @@ export const MACRO_INSTRUMENTS: MacroInstrument[] = [
     about:
       "The belly of the curve, where policy expectations and inflation expectations meet. It is the tenor that moves most on a change in what the central bank is expected to do next year rather than next month.",
     directionNote:
-      "This instrument is quoted as a yield. A call for the level to rise is a call for bond prices to fall.",
+      "This instrument is quoted as a yield. A long stance on the yield is a view that bond prices will fall.",
   },
   {
     symbol: "BTCUSD",
