@@ -13,7 +13,10 @@ import { saveStorefrontBranding } from "@/app/actions/profile";
  * vs --paper). Swatches are on-brand deeper hues; the color input is free.
  */
 
-const SWATCHES = ["#2f6e5d", "#5b4b6b", "#a6483c", "#24544a", "#34507a", "#7a3b52"];
+// Each clears the 3:1 storefront check against both papers. None is green,
+// red or coral: those mean direction and action everywhere on Stoa.
+const DEFAULT_ACCENT = "#6b7a8f";
+const SWATCHES = [DEFAULT_ACCENT, "#3d7ab8", "#5e6ad2", "#7a5ea8", "#8e5a8a", "#8a6d3b"];
 
 type LayoutId = "list" | "grid" | "magazine";
 
@@ -34,7 +37,7 @@ export function AccentPicker({
   initialLayout?: LayoutId | null;
   initialTexture?: boolean;
 }) {
-  const [value, setValue] = useState(initialAccent ?? "#2f6e5d");
+  const [value, setValue] = useState(initialAccent ?? DEFAULT_ACCENT);
   const [pairing, setPairing] = useState<FontPairingId>(initialFontPairing ?? "ledger");
   const [layout, setLayout] = useState<LayoutId>(initialLayout ?? "list");
   const [texture, setTexture] = useState<boolean>(initialTexture ?? false);
@@ -69,7 +72,7 @@ export function AccentPicker({
     setError(null);
     start(async () => {
       await saveStorefrontBranding({ accent: null });
-      setValue("#2f6e5d");
+      setValue(DEFAULT_ACCENT);
       setSaved(true);
     });
   }
@@ -119,7 +122,7 @@ export function AccentPicker({
         <span className="mx-1 h-6 w-px bg-border" />
         <input
           type="color"
-          value={check.hex ?? "#2f6e5d"}
+          value={check.hex ?? DEFAULT_ACCENT}
           onChange={(e) => setValue(e.target.value)}
           aria-label="Custom color"
           className="h-8 w-10 cursor-pointer rounded-field border border-border bg-transparent"
@@ -127,7 +130,7 @@ export function AccentPicker({
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="#2f6e5d or oklch(...)"
+          placeholder="#6b7a8f or oklch(...)"
           className="num h-8 w-40 rounded-field border border-border bg-bg px-2 text-body focus-ring"
         />
       </div>
