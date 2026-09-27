@@ -10,6 +10,90 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-27 — The rulebook describes the product as it is now
+
+Every session, ours and Krisi's, starts by reading these docs. They still
+described grading and the old design as current, which is how removed work
+comes back. This batch is almost all words: the docs, comments, fixtures and
+a few lines of copy. Nothing about how the site behaves changed.
+
+**What the docs now say, everywhere**
+
+- A publication is a video, a brief or a thesis. It may declare a **stance**:
+  one ticker and a direction, long, short or hold. One stance per
+  publication, frozen once it is published.
+- Nothing is graded, scored, locked or resolved. No track record, no score,
+  no seal, no Verdict type, no locked entry price, no target, no horizon.
+- Edit markers stay, and are independent of grading.
+- Analysts are followed and paid for their judgement, not scored on it.
+- The database column `locked_at` survives under its old name but only
+  records when a piece was published.
+
+**Rewritten:** CLAUDE.md, AGENTS.md, README.md, PRODUCT_MODEL.md,
+FRONTEND.md (its Compose section still walked through four types and the
+Verdict call screen), COMPOSE.md, MOTION.md (the seal animation, the lock
+modal and a score odometer), ROADMAP.md (whose first line still called the
+graded track record the moat), BACKEND_BRIEF.md and DESIGN_LANGUAGE.md.
+BUILD_SPEC.md is kept as history with a notice at the top.
+
+**The design is flagged as on its way out.** FRONTEND.md, DESIGN_LANGUAGE.md,
+AGENTS.md and CLAUDE.md now say the current visual system (Fraunces, cream
+paper, brass, hairline broadsheet rules, zero-radius corners, uppercase
+letterspaced mono labels, black primaries, 6px corners) is pending
+replacement by `docs/design/direction-b.html`. The tokens themselves are
+unchanged; that is the next batch. Direction B's own sample screens still
+show a Verdict type and HIT/MISS receipts, so it now carries a comment
+saying to take its visuals, not its product.
+
+**Found in the sweep and fixed**
+
+- The compose assistant's instructions told the AI that "Stoa grades their
+  published calls against the market". It now gives the real reason the
+  analyst writes their own view.
+- The delete dialog said a piece could be deleted because it "carries no
+  call" (the rule is now: no stance and nobody bought it); the branding
+  preview promised a "call record"; the Feed's last card said "new calls
+  publish at market open"; the template picker and assistant pointed at a
+  "call panel" that no longer exists; the Treasury pages explained yields in
+  terms of a call.
+- The Cursor rule every Cursor session loads described an even older system
+  (signal blue, Space Grotesk, 8px buttons, "grade tags").
+- Comments, `.env.example`, the operations docs (SCALE, MARKET_DATA,
+  BACKEND, platform) and the /dev fixtures. Docs whose whole subject is the
+  retired model (PRODUCT.md, design-system/MASTER.md, the design skill,
+  GROWTH_RESEARCH, PRODUCT_AUDIT, the backend deep dive,
+  BACKEND_DATA_CONTRACTS) carry a notice instead of a rewrite.
+
+**Found and left**
+
+- **CI has failed on every run since 2026-09-24.** The grading removal
+  deleted the `test:engine` script but `.github/workflows/ci.yml` still runs
+  it, so CI stops there and never reaches the ranking, RLS or build checks.
+  Deploys are unaffected. The fix is deleting that one step; it was not made
+  in this batch.
+- **Legal page content** (`src/lib/legal/content.ts`, `constants.ts`) still
+  describes locked price targets, horizons, Hit/Miss and MOAT scores. Left
+  for counsel, with the compliance brief and the landing page.
+- **Dead grading leftovers in code:** the "Drives target" switch on the
+  valuation and scenario blocks (nothing reads it), `benchmarkReturn` in the
+  market engine, the `creatorScore` cache key, `supabase/bootstrap-remote.sql`
+  (recreates the old outcome enum), `scripts/fix-main-conflicts.sh`, and a
+  `.ledger-card` check in `scripts/simulate-users.ts`.
+- **Design leftovers for the token batch:** the email templates, the stock
+  share image, and the design comments in `globals.css` and the Today
+  components all name the retiring system.
+- "Live calls" in the plan perks list probably means live sessions, not
+  grading; worth a look.
+
+**What needs Krisi**
+
+- Nothing to apply. The `prevent_locked_report_edit()` comment set by 0063
+  still mentions `prevent_prediction_terms_edit`, which 0067 dropped; it is a
+  database comment only and can be corrected whenever `predictions` is
+  dropped.
+
+---
+
 ## 2026-09-24 — Removing grading, step two: the grading machinery is gone
 
 Nothing on Stoa is graded, scored or resolved any more. A publication keeps
