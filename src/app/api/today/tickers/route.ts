@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { listTickerRows } from "@/lib/db/tickers";
 import { getQuotesBatch } from "@/lib/engine/market";
-import { countPublicationsThisCycle } from "@/lib/today/build-today";
+import { countPublishedByTickerBetween } from "@/lib/db/reports";
+import { getCycleWindow } from "@/lib/dispatch/cycle";
 import type { TodayTicker } from "@/lib/today/types";
 
 const MAX_SYMBOLS = 12;
@@ -22,9 +23,10 @@ export async function GET(req: Request) {
 
   if (symbols.length === 0) return NextResponse.json({ tickers: [] });
 
+  const { start, end } = getCycleWindow();
   const [rows, counts, quotes] = await Promise.all([
     listTickerRows(symbols),
-    countPublicationsThisCycle(symbols),
+    countPublishedByTickerBetween(symbols, start, end),
     getQuotesBatch(symbols, { fetchBenchmark: false }).catch(() => new Map()),
   ]);
 

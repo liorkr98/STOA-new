@@ -434,3 +434,45 @@ export async function listLockedReportRoutes(
     .limit(limit);
   return (data as { id: string; locked_at: string }[]) ?? [];
 }
+
+/** How many publications went out between two moments, platform-wide. */
+export async function countPublishedBetween(start: Date, end: Date): Promise<number> {
+  return cachedPage(`reports:count:${start.toISOString().slice(0, 13)}`, 60, async () => {
+    const supabase = createPublicClient();
+    const { count } = await supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published")
+      .gte("published_at", start.toISOString())
+      .lte("published_at", end.toISOString());
+    return count ?? 0;
+  });
+}
+
+/**
+ * Publications carrying each symbol that went out between two moments. Backs
+ * Your tickers, whose symbol list lives in the reader's browser rather than
+ * the database.
+ */
+export async function countPublishedByTickerBetween(
+  symbols: string[],
+  start: Date,
+  end: Date,
+): Promise<Map<string, number>> {
+  const wanted = [...new Set(symbols.map((s) => s.toUpperCase()))];
+  const counts = new Map<string, number>(wanted.map((s) => [s, 0]));
+  if (wanted.length === 0) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reports")
+    .select("ticker")
+    .eq("status", "published")
+    .in("ticker", wanted)
+    .gte("published_at", start.toISOString())
+    .lte("published_at", end.toISOString());
+  for (const row of (data as { ticker: string | null }[]) ?? []) {
+    const sym = row.ticker?.toUpperCase();
+    if (sym && counts.has(sym)) counts.set(sym, (counts.get(sym) ?? 0) + 1);
+  }
+  return counts;
+}
