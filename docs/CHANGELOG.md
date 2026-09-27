@@ -5,8 +5,87 @@ What changed on the Stoa site, newest first. One entry per merged batch.
 Each entry says what a visitor would notice and what needs Krisi's attention —
 schema he has to add, decisions waiting on him, or things deliberately left
 unfixed. This is a log, not documentation: for the product model see
-`docs/PRODUCT_MODEL.md`, for design tokens `docs/FRONTEND.md`, and for the
+`docs/PRODUCT_MODEL.md`, for design `docs/DESIGN_LANGUAGE.md`, and for the
 backend handoff `docs/BACKEND_BRIEF.md`.
+
+---
+
+## 2026-09-27 — Direction B: new colours, type and shapes underneath everything
+
+The whole site changes colour and typeface, while every page keeps its old
+layout. That is deliberate: this batch replaces the foundation (tokens and the
+shared building blocks). Pages are rebuilt one at a time on top of it,
+starting with Today. The law is now `docs/DESIGN_LANGUAGE.md`.
+
+**What a visitor notices**
+
+- Cool white paper (`#FAFAFA`), white cards, near-black ink, grey secondary
+  text. The warm cream, brass, verdigris and plum are gone.
+- Coral appears only on the thing you can act on: Subscribe, Follow, Publish,
+  a live recording. Green and red appear only on long/short and price moves.
+  Errors, "saved" ticks, pending states and the edited marker are black and
+  grey now (see "Decisions for Bar").
+- Bricolage Grotesque for headlines, Inter for everything you read, JetBrains
+  Mono only on ticker symbols. Five sizes in total, down from about fifty.
+- No more uppercase letterspaced labels anywhere, including ones that were
+  typed in capitals ("THESIS", "SEP 25", "@MARCUS_WEBB · JOINED 2024").
+- Pill buttons, 14px cards and menus, 10px input boxes, circular faces.
+- **Hebrew now looks right.** Measured in the browser: on the live site
+  today a Hebrew headline is drawn in Times New Roman and Hebrew body text in
+  Arial, because the font loader's built-in fallback caught Hebrew before the
+  Hebrew font. It now draws in Heebo, at the same heavy weight as the
+  English headlines.
+
+**How the contrast rule is enforced**
+
+Each colour has two tones, bright for fills and deep for words. `bg-coral`
+brings its own black text; `text-coral` is the deep tone; the bright tones
+cannot be used as words. `npm run test:contrast` (now in CI) measures every
+word-on-background pair in both themes and fails under 4.5:1, and scans the
+code for white text on a coloured fill, uppercase labels, mono off a ticker
+and the retired colours.
+
+**Found and fixed on the way**
+
+- **Every ticker share image on the live site fails (HTTP 500).** The font
+  name was encoded twice when fetched from Google, which answers 400. Fixed,
+  and the image is redrawn in the new system.
+- Small ink buttons (Join Stoa among them) would have rendered black text on
+  black: the class-merging helper did not know the new size names and threw
+  the text colour away. It now knows them.
+- The faint grey was the colour of 325 pieces of real text (dates, counts,
+  durations) at about 3:1. They now use the readable grey.
+- The storefront font options pointed at fonts that are no longer loaded;
+  four of six storefront colour swatches no longer passed the storefront
+  check; its default was the old green. All replaced.
+- The Saved page labelled the retired verdict type "VIDEO · CALL".
+- The storefront accent checker compared against a paper colour the site
+  had not used for months.
+
+**Primitives, and what moved onto them**
+
+Button (pill: ink, ghost, coral), Chip (ticker, stance, quiet), Card,
+Avatar (circle), SectionHeading. Moved: 48 files onto the new button names,
+18 hand-styled buttons onto the shared recipe, 51 hand-built cards onto Card,
+6 hand-drawn avatars onto Avatar, 21 files onto the new chips. Not moved: see
+the batch report (about 290 raw buttons that are icons, tabs, menu rows and
+tiles; about 80 cards with links, animation or editor wiring; the landing
+page's face mosaic).
+
+**Decisions for Bar**
+
+- Error messages are now black, not red, because the law reserves red for
+  price. Say if errors should keep a red exception.
+- The storefront accent now tints only ink-coloured elements; Subscribe on a
+  storefront is always coral.
+- Five sizes means the smallest step (13px) is shared by tickers and all
+  captions. Long-form reports now read at the body size (15px).
+
+**What needs Krisi**
+
+- Re-paste `docs/email-templates/confirm-signup.html` and
+  `reset-password.html` into Supabase: they now use the new palette.
+- Nothing to apply in the database.
 
 ---
 
