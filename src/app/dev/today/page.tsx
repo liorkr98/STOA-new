@@ -26,9 +26,9 @@ import type {
  * row falls back to the most recent posters under "Recently posted".
  *
  * The faces' post times are relative to the real clock, so the coral ring can
- * be reviewed: set `stoa:today:last-looked` in localStorage to a moment within
- * the last few hours and reload. Watching a face through clears its ring;
- * `stoa:today:watched` holds those marks.
+ * be reviewed: set `stoa:today:since` in localStorage to a moment a day ago
+ * and reload. Every face rings until watched through; `stoa:today:watched`
+ * holds those marks, and a reload leaves them as they are.
  *
  * Tapping a face opens the stories overlay over the Feed fixtures, grouped by
  * analyst. Dana's work is written only (no clips), so the readable-card stage
@@ -143,8 +143,9 @@ export default async function DevTodayPage({
         : lead;
   const news = await getMarketNews(10);
   const quiet = facesMode === "quiet";
+  // Held to the hour so a reload does not look like everyone posting again.
   // eslint-disable-next-line react-hooks/purity -- a fixture page, rendered on request
-  const clock = Date.now();
+  const clock = Math.floor(Date.now() / 3_600_000) * 3_600_000;
   const face = (a: TodayAnalyst, hours: number): TodayFace => ({
     ...a,
     lastPublishedAt: new Date(clock - (quiet ? hours + 30 : hours) * 3_600_000).toISOString(),

@@ -2619,7 +2619,7 @@ body {
   line-height: 1.4;
 }
 
-/* Someone who has posted since the reader last looked: a paper gap, then coral. */
+/* Someone with work the reader has not watched through: a paper gap, then coral. */
 .today-ring {
   box-shadow:
     0 0 0 3px var(--paper),

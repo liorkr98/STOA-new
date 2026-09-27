@@ -19,41 +19,42 @@ const FaceStories = dynamic(() => import("@/components/today/face-stories").then
  * opens that analyst's recent work over Today, watched the way stories are
  * (see FaceStories); Today never navigates away.
  *
- * A coral ring marks someone with something the reader has not seen: they
- * posted since the reader last looked, and the reader has not watched them
- * through since. Both are this browser's own memory, a per-device
- * convenience. "Last looked" is read once per page load and replaced with
- * now, so it describes the visit before this one; a first visit has nothing
- * to compare with and rings nobody. "Watched" is kept per analyst: the time
- * of the newest piece the reader has reached the end of. The rings are drawn
- * after mount, never on the server.
+ * A coral ring marks someone with something the reader has not seen, and
+ * stays until the reader has watched them through: their newest piece is
+ * later than the last one the reader reached the end of. Watching them
+ * through clears it; it returns only when they post again. Reloading Today
+ * changes nothing. Per analyst, this browser's own memory, drawn after mount
+ * and never on the server.
+ *
+ * Only work posted after this browser first saw Today can ring, so a first
+ * visit does not ring everyone for everything they ever posted. That moment
+ * is stored once and never moved.
  *
  * On a phone this is the page's one sideways scroller; on a desktop the
  * faces wrap instead, so nothing on a wide screen scrolls sideways.
  */
 
-const KEY = "stoa:today:last-looked";
+const SINCE_KEY = "stoa:today:since";
+/** The earlier rule's stamp: the last visit, replaced on every load. Read once to seed SINCE_KEY. */
+const LEGACY_KEY = "stoa:today:last-looked";
 const WATCHED_KEY = "stoa:today:watched";
 /** Watched marks older than this describe nothing the row still shows. */
 const WATCHED_KEEP_MS = 30 * 24 * 3_600_000;
 
-// One reading per page load, kept against the load it belongs to: an effect
-// that runs twice (React's development check) must not read back the stamp
-// it just wrote and ring nobody.
-let reading: { at: number; value: number | null } | null = null;
-
-function readAndStamp(): number | null {
-  const loadedAt = performance.timeOrigin;
-  if (reading?.at === loadedAt) return reading.value;
-  reading = { at: loadedAt, value: stamp() };
-  return reading.value;
-}
-
-function stamp(): number | null {
+/**
+ * When this browser first saw Today. Set once and never replaced, so running
+ * twice (React's development check) reads back the same moment. A reader
+ * from before this rule starts from their last visit rather than from now.
+ */
+function firstSeen(): number | null {
   try {
-    const prev = Number(window.localStorage.getItem(KEY));
-    window.localStorage.setItem(KEY, String(Date.now()));
-    return Number.isFinite(prev) && prev > 0 ? prev : null;
+    const stored = Number(window.localStorage.getItem(SINCE_KEY));
+    if (Number.isFinite(stored) && stored > 0) return stored;
+    const legacy = Number(window.localStorage.getItem(LEGACY_KEY));
+    const since = Number.isFinite(legacy) && legacy > 0 ? legacy : Date.now();
+    window.localStorage.setItem(SINCE_KEY, String(since));
+    window.localStorage.removeItem(LEGACY_KEY);
+    return since;
   } catch {
     return null;
   }
@@ -110,11 +111,11 @@ export function TodayFaces({
   fixture?: Record<string, FeedPublication[]>;
   className?: string;
 }) {
-  const [lastLooked, setLastLooked] = useState<number | null>(null);
+  const [since, setSince] = useState<number | null>(null);
   const [watched, setWatched] = useState<Watched>({});
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- browser storage only exists after mount
-    setLastLooked(readAndStamp());
+    setSince(firstSeen());
     setWatched(readWatched());
   }, []);
 
@@ -165,7 +166,7 @@ export function TodayFaces({
       <ul className="scroll-bare -mx-5 mt-5 flex snap-x scroll-px-5 gap-4 overflow-x-auto px-5 pb-1 pt-1.5 md:mx-0 md:flex-wrap md:gap-x-5 md:gap-y-6 md:overflow-visible md:px-0">
         {people.map((p, i) => {
           const posted = Date.parse(p.lastPublishedAt);
-          const fresh = lastLooked != null && posted > lastLooked && posted > (watched[p.id] ?? 0);
+          const fresh = since != null && posted > since && posted > (watched[p.id] ?? 0);
           return (
             <li key={p.id} className="w-[84px] shrink-0 snap-start">
               <button
@@ -180,7 +181,7 @@ export function TodayFaces({
                   setOpen(i);
                 }}
                 className="focus-ring group flex w-full flex-col items-center rounded-inner text-center"
-                aria-label={`${p.displayName}, watch recent work${fresh ? ", new since you last looked" : ""}`}
+                aria-label={`${p.displayName}, watch recent work${fresh ? ", not watched yet" : ""}`}
                 aria-haspopup="dialog"
               >
                 <span className={cn("rounded-avatar", fresh && "today-ring")}>

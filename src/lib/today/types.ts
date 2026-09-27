@@ -107,7 +107,7 @@ export interface TodayDeskItem extends TodayItem {
 
 /** A face in the row of people posting: who, their beat, and when they last posted. */
 export interface TodayFace extends TodayAnalyst {
-  /** Their newest publication in the window, for the ring: posted since the reader last looked and not watched through. */
+  /** Their newest publication in the window, for the ring: newer than the last piece the reader watched them through to. */
   lastPublishedAt: string;
 }
 
