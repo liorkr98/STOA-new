@@ -12,6 +12,8 @@ export interface TodayAnalyst {
   handle: string;
   displayName: string;
   avatarUrl: string | null;
+  /** The analyst's own one-word beat ("Semiconductors"), when they set one. */
+  specialty?: string | null;
 }
 
 /** A video's real thumbnail and duration, from `video_clips`. */
@@ -50,53 +52,12 @@ export interface TodayItem {
   sector?: string | null;
 }
 
-/**
- * Why a saved item is resurfacing. Every reason here is computed from stored
- * data. `price_near_target` from the design brief is deliberately absent: it
- * needs a live quote per saved ticker, which the engine's `Quote` shape does
- * not carry and which would put an external market-data call on the critical
- * path of the signed-in home page.
- */
-export type TodaySavedReason = "follow_up" | "unread";
-
-export interface TodaySavedItem extends TodayItem {
-  reason: TodaySavedReason;
-  savedAt: string;
-}
-
-export interface TodayVideo {
-  reportId: string;
-  videoId: string;
-  headline: string;
-  thumbnailUrl: string | null;
-  durationSeconds: number;
-  ticker: string | null;
-  contentBadge: string[];
-  /**
-   * Publication views (`reports.views`), not video-player views. True
-   * play counts live in `video_view_events`, which RLS exposes only to the
-   * clip's own creator, so a reader cannot be shown them.
-   */
-  publicationViews: number;
-  author: TodayAnalyst;
-}
-
 export interface TodayTicker {
   symbol: string;
   company: string | null;
   price: number | null;
   changePercent?: number | null;
   publicationsToday: number;
-}
-
-export interface TodayPayload {
-  desk: {
-    subscriptions: TodayItem[];
-    following: TodayItem[];
-  };
-  saved: TodaySavedItem[];
-  mostWatched: TodayVideo[];
-  worthReading: TodayItem[];
 }
 
 /* ------------------------------------------------------------------ *
@@ -144,28 +105,39 @@ export interface TodayDeskItem extends TodayItem {
   relationship: "member" | "following";
 }
 
+/** A face in the row of people posting: who, their beat, and when they last posted. */
+export interface TodayFace extends TodayAnalyst {
+  /** Their newest publication in the window, for the "posted since you last looked" ring. */
+  lastPublishedAt: string;
+}
+
 /**
- * The front page: a top package around the lead, then the sections.
- *
- * The package is the lead, two follow-ups under it (coverage on the same
- * name or the same sector first, so the lead and its follow-ups read as one
- * story), two picture stories beside it and four text stories on the other
- * side. Each list is already cut to its slot; nothing on the page is wider
- * than the screen, so nothing needs a rail.
+ * The front page, top to bottom: the lead, the faces of the people posting,
+ * four clips worth a minute, then the reader's desk, the lead's theme, the
+ * written pieces and the wire. Every list is already cut to its slot and may
+ * be empty; an empty band is not drawn.
  */
 export interface TodayPagePayload {
-  issue: { issueNumber: number; dateISO: string };
+  /** The New York calendar day the page is for. */
+  dateISO: string;
+  /** Publications in the last 24 hours, for the dateline. */
+  publishedToday: number;
   personalized: boolean;
+  /** The day's strongest publication, whatever its form. */
   lead: TodayItem | null;
-  /** Two, under the lead: the same ticker, sector or theme when there is any. */
-  followUps: TodayItem[];
-  /** Two picture stories, each with a ready clip. */
-  pictures: TodayItem[];
-  /** Four text-only stories. */
-  textStories: TodayItem[];
-  /** Five, by velocity. */
-  trending: TodayItem[];
+  /**
+   * Analysts who posted in the last 24 hours, newest first. On a quiet day,
+   * when nobody has, the most recent posters instead, and `today` is false so
+   * the heading does not claim today.
+   */
+  faces: { today: boolean; people: TodayFace[] };
+  /** Up to four publications with a ready clip. */
+  minute: TodayItem[];
   desk: TodayDeskItem[];
+  /** More on the lead's ticker, sector or theme; null when nothing shares it. */
+  cluster: { label: string; items: TodayItem[] } | null;
+  /** Written pieces, ranked. */
+  reading: TodayItem[];
   news: NewsItem[];
   sidebar: TodaySidebarPayload;
 }

@@ -42,6 +42,8 @@ export interface ProfileConfig {
   banner_style?: "gradient-accent" | "gradient-cool" | "minimal" | "cover";
   sections?: ProfileSection[];
   specialties?: string[];
+  /** The analyst's one-word beat ("Semiconductors"), shown under their face. */
+  specialty?: string;
   social?: { label: string; url: string }[];
   featured_tickers?: string[];
   /** Investor-side sector picks from onboarding. Shapes the Feed. */

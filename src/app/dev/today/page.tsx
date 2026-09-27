@@ -5,6 +5,7 @@ import type {
   TodayAnalyst,
   TodayCreatorRow,
   TodayDeskItem,
+  TodayFace,
   TodayItem,
   TodayPagePayload,
   TodayTickerRow,
@@ -19,20 +20,27 @@ import type {
  * `?lead=written` swaps in a lead with no clip, which is the case the real page
  * only reaches when the day's strongest publication happens to be written. Both
  * branches of the poster rule are then reviewable here rather than waiting for
- * the data to produce one.
+ * the data to produce one. `?faces=quiet` is a day nobody has posted yet: the
+ * row falls back to the most recent posters under "Recently posted".
+ *
+ * The faces' post times are relative to the real clock, so the coral ring can
+ * be reviewed: set `stoa:today:last-looked` in localStorage to a moment within
+ * the last few hours and reload.
  */
 
 const NOW = Date.parse("2026-08-18T14:00:00Z");
 const hoursAgo = (h: number) => new Date(NOW - h * 3_600_000).toISOString();
 
 // Fixture ids are the handle: stable, so the placeholder colour is stable here too.
-const analyst = (name: string, handle: string): TodayAnalyst => ({ id: handle, handle, displayName: name, avatarUrl: null });
-const LENA = analyst("Lena Kowalczyk", "lenakw");
-const KAI = analyst("Kai Tanaka", "kaitanaka");
-const MARCUS = analyst("Marcus Webb", "marcus_webb");
-const PRIYA = analyst("Priya Nadar", "priyanadar");
-const NOOR = analyst("Noor Haddad", "noorhaddad");
-const DANA = analyst("Dana Fixture", "danafixture");
+const analyst = (name: string, handle: string, specialty: string | null): TodayAnalyst => ({
+  id: handle, handle, displayName: name, avatarUrl: null, specialty,
+});
+const LENA = analyst("Lena Kowalczyk", "lenakw", "Semiconductors");
+const KAI = analyst("Kai Tanaka", "kaitanaka", "Energy");
+const MARCUS = analyst("Marcus Webb", "marcus_webb", "Generalist");
+const PRIYA = analyst("Priya Nadar", "priyanadar", "Banks");
+const NOOR = analyst("Noor Haddad", "noorhaddad", "Materials");
+const DANA = analyst("Dana Fixture", "danafixture", null);
 
 function item(
   id: string,
@@ -94,13 +102,10 @@ const desk: TodayDeskItem[] = [
   { ...item("d4", NOOR, "research", "Freeport at the top of the copper curve", null, { ticker: "FCX", direction: "long", secs: 130, hours: 19 }), relationship: "following" },
   { ...item("d5", MARCUS, "research", "Regional banks: the next shoe", null, { ticker: "KRE", direction: "short", secs: 95, hours: 27 }), relationship: "following" },
 ];
-// The package around the lead: two follow-ups on the same name or sector
-// (the builder's kin rule), two picture stories, four text stories. The
-// trending five come from the rest.
-const followUps = [trending[1], trending[4]];
-const pictures = [secondary[1], trending[0]];
-const textStories = [secondary[0], secondary[2], trending[3], trending[6]];
-const trendingFive = [trending[2], trending[5], trending[7], trending[8], trending[9]];
+// The bands under the lead: four clips, the lead's sector, the written pieces.
+const minute = [secondary[1], trending[0], trending[2], trending[5]];
+const cluster = { label: "Semiconductors", items: [trending[1], trending[4], trending[10]] };
+const reading = [secondary[0], secondary[2], trending[3], trending[6]];
 
 const creator = (a: TodayAnalyst, marker: TodayCreatorRow["marker"] = null, followed = false): TodayCreatorRow => ({
   id: `fx-${a.handle}`, handle: a.handle, displayName: a.displayName, avatarUrl: null, marker, followed,
@@ -112,9 +117,9 @@ const tick = (symbol: string, price: number, publications: number): TodayTickerR
 export default async function DevTodayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ state?: string; lead?: string }>;
+  searchParams: Promise<{ state?: string; lead?: string; faces?: string }>;
 }) {
-  const { state, lead: leadMode } = await searchParams;
+  const { state, lead: leadMode, faces: facesMode } = await searchParams;
   const signedOut = state === "empty";
   // The same lead with its clip taken away, so the no-video branch is reviewable.
   // The VIDEO badge goes with it: on the real page the badge is computed from
@@ -129,16 +134,25 @@ export default async function DevTodayPage({
         ? { ...lead, thumb: { thumbnailUrl: null, durationSeconds: 0, processing: true } }
         : lead;
   const news = await getMarketNews(10);
+  const quiet = facesMode === "quiet";
+  // eslint-disable-next-line react-hooks/purity -- a fixture page, rendered on request
+  const clock = Date.now();
+  const face = (a: TodayAnalyst, hours: number): TodayFace => ({
+    ...a,
+    lastPublishedAt: new Date(clock - (quiet ? hours + 30 : hours) * 3_600_000).toISOString(),
+  });
+  const people = [face(LENA, 0.5), face(KAI, 1.5), face(PRIYA, 3), face(MARCUS, 5), face(NOOR, 7), face(DANA, 11)];
 
   const data: TodayPagePayload = {
-    issue: { issueNumber: 41, dateISO: "2026-08-18" },
+    dateISO: "2026-08-18",
+    publishedToday: quiet ? 0 : 14,
     personalized: !signedOut,
     lead: activeLead,
-    followUps,
-    pictures,
-    textStories,
-    trending: trendingFive,
+    faces: { today: !quiet, people },
+    minute,
     desk: signedOut ? [] : desk,
+    cluster,
+    reading,
     news,
     sidebar: {
       // Followed flags mirror the desk below: PRIYA and KAI are memberships,
@@ -156,7 +170,7 @@ export default async function DevTodayPage({
 
   return (
     <InstrumentSheetProvider>
-      <div className="mx-auto w-full max-w-[1200px] px-5 py-8">
+      <div className="mx-auto w-full max-w-[var(--w-wide)] px-5 py-8">
         <TodayPage data={data} />
       </div>
     </InstrumentSheetProvider>

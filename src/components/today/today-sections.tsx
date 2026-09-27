@@ -1,94 +1,115 @@
-import { TodayCard } from "@/components/today/today-card";
+import type { ReactNode } from "react";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { StoryRow, StoryTile } from "@/components/today/today-bits";
 import { sinceLabel } from "@/lib/today/format";
+import { labelCase } from "@/lib/design/label";
 import { cn } from "@/lib/design/cn";
 import type { NewsItem } from "@/lib/market/types";
 import type { TodayDeskItem, TodayItem } from "@/lib/today/types";
 
 /**
- * The sections under the package. Each is a title in the section size and
- * its content 24px below, and the page keeps 60px between sections. None
- * scrolls sideways on a desktop; on a phone Your Desk is the one that does.
+ * The bands under the lead. Each is a heading and its content, and the page
+ * parts them by space alone. A band with nothing in it is not drawn.
  */
 
-export function TrendingList({ items, className }: { items: TodayItem[]; className?: string }) {
+function Band({
+  title,
+  note,
+  className,
+  children,
+}: {
+  title: string;
+  note?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-label={title} className={className}>
+      <SectionHeading title={title} note={note} />
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+/** Four picture stories across; two across on a phone. */
+export function MinuteBand({ items, className }: { items: TodayItem[]; className?: string }) {
   if (items.length === 0) return null;
   return (
-    <section aria-label="Trending now" className={className}>
-      <h2 className="ts-title">Trending now</h2>
-      <ol className="ts-stack">
-        {items.slice(0, 5).map((it, i) => (
-          <li key={it.reportId} className="flex items-start gap-4">
-            <span className="ts-numeral w-10 shrink-0 md:w-12" aria-hidden>
-              {i + 1}
-            </span>
-            <TodayCard item={it} image={false} className="flex-1" />
+    <Band title="Worth your next minute" className={className}>
+      <div className="grid grid-cols-2 gap-x-3.5 gap-y-8 lg:grid-cols-4 lg:gap-x-5">
+        {items.map((it) => (
+          <StoryTile key={it.reportId} item={it} />
+        ))}
+      </div>
+    </Band>
+  );
+}
+
+function Rows({ items, className }: { items: TodayItem[]; className?: string }) {
+  return (
+    <div className={cn("grid grid-cols-1 gap-x-10 gap-y-7 lg:grid-cols-2", className)}>
+      {items.map((it) => (
+        <StoryRow key={it.reportId} item={it} />
+      ))}
+    </div>
+  );
+}
+
+/** The reader's own people: memberships and follows, newest first. */
+export function DeskBand({ items, className }: { items: TodayDeskItem[]; className?: string }) {
+  if (items.length === 0) return null;
+  return (
+    <Band title="Your desk" note="From the analysts you follow and support" className={className}>
+      <Rows items={items} />
+    </Band>
+  );
+}
+
+/** More on whatever the lead is about. */
+export function ClusterBand({
+  cluster,
+  className,
+}: {
+  cluster: { label: string; items: TodayItem[] } | null;
+  className?: string;
+}) {
+  if (!cluster || cluster.items.length === 0) return null;
+  return (
+    <Band title={`More on ${labelCase(cluster.label)}`} className={className}>
+      <Rows items={cluster.items} />
+    </Band>
+  );
+}
+
+/** The written pieces: the thesis that is not the lead still gets a place. */
+export function ReadingBand({ items, className }: { items: TodayItem[]; className?: string }) {
+  if (items.length === 0) return null;
+  return (
+    <Band title="Worth reading" className={className}>
+      <Rows items={items} />
+    </Band>
+  );
+}
+
+/** Wire headlines: plain text, source and time beneath, two columns on a desktop. */
+export function NewsBand({ items, className }: { items: NewsItem[]; className?: string }) {
+  if (items.length === 0) return null;
+  return (
+    <Band title="Market news" note="Wire headlines, not Stoa research" className={className}>
+      <ul className="grid grid-cols-1 gap-x-10 gap-y-5 lg:grid-cols-2">
+        {items.map((n) => (
+          <li key={n.url} className="min-w-0">
+            <a href={n.url} target="_blank" rel="noopener noreferrer" className="focus-ring group block rounded-inner">
+              <p className="user-copy text-body font-medium text-text group-hover:underline">{n.headline}</p>
+              <p className="num mt-1 text-ticker text-text-mute">
+                {n.source ?? "Yahoo Finance"}
+                <span aria-hidden> · </span>
+                {sinceLabel(n.datetime)}
+              </p>
+            </a>
           </li>
         ))}
-      </ol>
-    </section>
-  );
-}
-
-/**
- * Your Desk: a 2 × 2 of picture stories on a desktop. On a phone it is the
- * page's one sideways scroller, with the next card visibly peeking at the
- * right edge so the scroll is discoverable.
- */
-export function DeskGrid({ items, className }: { items: TodayDeskItem[]; className?: string }) {
-  if (items.length === 0) return null;
-  return (
-    <section aria-label="Your desk" className={className}>
-      <h2 className="ts-title">Your desk</h2>
-      <div className="hidden grid-cols-2 gap-x-5 gap-y-6 md:grid">
-        {items.slice(0, 4).map((it) => (
-          <TodayCard key={it.reportId} item={it} />
-        ))}
-      </div>
-      <div className="scroll-bare -mr-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pr-4 md:hidden">
-        {items.slice(0, 8).map((it) => (
-          <TodayCard key={it.reportId} item={it} className="w-[82%] shrink-0 snap-start" />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function newsTime(iso: string): string {
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return "";
-  const s = sinceLabel(new Date(t).toISOString()).toLowerCase();
-  return s.replace(/^([a-z])/, (c) => c.toUpperCase());
-}
-
-/** Market news in the same serif anatomy: two text lists, source and time as the byline. */
-export function NewsSheet({ items, className }: { items: NewsItem[]; className?: string }) {
-  if (items.length === 0) return null;
-  const half = Math.ceil(items.length / 2);
-  const columns = [items.slice(0, half), items.slice(half)];
-  return (
-    <section aria-label="Market news" className={className}>
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="ts-title">Market news</h2>
-        <p className="ts-mono hidden sm:block">Wire headlines · not Stoa research</p>
-      </div>
-      <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
-        {columns.map((col, i) => (
-          <ul key={i} className={cn("ts-stack", i === 1 && "mt-4 border-t border-dashed border-[var(--today-rule)] pt-4 md:mt-0 md:border-0 md:pt-0")}>
-            {col.map((n) => (
-              <li key={n.url}>
-                <a href={n.url} target="_blank" rel="noopener noreferrer" className="focus-ring block rounded">
-                  <h3 className="ts-headline ts-headline--dense">{n.headline}</h3>
-                  <p className="ts-byline mt-3">
-                    <span className="ts-name">{n.source ?? "Yahoo Finance"}</span>
-                    <span aria-hidden> / </span>
-                    {newsTime(n.datetime)}
-                  </p>
-                </a>
-              </li>
-            ))}
-          </ul>
-        ))}
-      </div>
-    </section>
+      </ul>
+    </Band>
   );
 }

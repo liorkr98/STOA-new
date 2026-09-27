@@ -8,17 +8,21 @@ import { followAnalyst } from "@/app/actions/social";
 import * as Dialog from "@radix-ui/react-dialog";
 import { PanelLeft, X } from "lucide-react";
 import { DayChange } from "@/components/markets/day-change";
+import { Avatar } from "@/components/ui/avatar";
+import { TickerChip } from "@/components/ui/chip";
 import { useInstrumentSheet } from "@/components/markets/instrument-sheet";
 import { useWatchlist } from "@/lib/watchlist";
+import { buttonClass } from "@/components/ui/button";
+import { labelCase } from "@/lib/design/label";
 import { cn } from "@/lib/design/cn";
 import type { TodayCreatorRow, TodaySidebarPayload, TodayTicker, TodayTickerRow } from "@/lib/today/types";
 
 /**
- * Today's rail: grouped lists that belong to the page. Text rows on dashed
- * hairlines, no solid buttons, no prices crowding a row; Follow is a quiet
- * "+ Follow" in the accent. Persistent beside the page on a desktop, where
- * it scrolls on its own; on a phone it is a drawer behind the Lists control
- * in the nameplate's dateline row.
+ * Today's rail: grouped lists that belong to the page. Text rows parted by
+ * space, no rules, no solid buttons, no prices crowding a row; Follow is a
+ * quiet "+ Follow" in coral text. Persistent beside the page on a desktop,
+ * where it scrolls on its own; on a phone it is a drawer behind the Lists
+ * control beside the dateline.
  *
  * One rule for Follow everywhere in it: a row shows "+ Follow" when the
  * reader does not follow it and nothing when they do. The absence of the
@@ -26,15 +30,19 @@ import type { TodayCreatorRow, TodaySidebarPayload, TodayTicker, TodayTickerRow 
  * of what the reader already has, so no row in them ever carries it.
  */
 
+const RAIL_ROW = "flex min-h-11 min-w-0 items-center gap-2 py-1";
+const FOLLOW =
+  "focus-ring shrink-0 whitespace-nowrap rounded-chip py-1 pl-2 text-ticker font-semibold text-coral hover:underline disabled:opacity-50";
+
 function SideList({ title, children, empty }: { title: string; children: ReactNode; empty?: string }) {
   const hasChildren = Array.isArray(children) ? children.flat().some(Boolean) : Boolean(children);
   return (
     <section aria-label={title}>
-      <h3 className="ts-rail-head">{title}</h3>
+      <h3 className="text-body font-semibold text-text">{title}</h3>
       {hasChildren ? (
-        <ul className="flex flex-col">{children}</ul>
+        <ul className="mt-1.5 flex flex-col">{children}</ul>
       ) : empty ? (
-        <p className="ts-mono mt-2">{empty}</p>
+        <p className="mt-1.5 text-ticker text-text-mute">{empty}</p>
       ) : null}
     </section>
   );
@@ -72,16 +80,17 @@ function CreatorItem({ row, signedIn }: { row: TodayCreatorRow; signedIn: boolea
   };
 
   return (
-    <li className="ts-rail-row">
+    <li className={RAIL_ROW}>
       <Link
         href={`/analyst/${row.handle}`}
-        className="focus-ring min-w-0 flex-1 truncate rounded font-sans text-body text-text hover:underline"
+        className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-chip text-body text-text hover:underline"
       >
-        {row.displayName}
+        <Avatar src={row.avatarUrl} name={row.displayName} size={24} />
+        <span className="truncate">{row.displayName}</span>
       </Link>
-      {row.marker ? <span className="ts-eyebrow shrink-0">{row.marker}</span> : null}
+      {row.marker ? <span className="shrink-0 text-ticker text-text-mute">{labelCase(row.marker)}</span> : null}
       {!followed ? (
-        <button type="button" onClick={follow} disabled={pending} aria-label={`Follow ${row.displayName}`} className="ts-follow focus-ring rounded">
+        <button type="button" onClick={follow} disabled={pending} aria-label={`Follow ${row.displayName}`} className={FOLLOW}>
           + Follow
         </button>
       ) : null}
@@ -100,18 +109,18 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
   const { ready, has, toggle } = useWatchlist();
   const showFollow = ready && !has(row.symbol);
   return (
-    <li className="ts-rail-row">
+    <li className={RAIL_ROW}>
       <button
         type="button"
         onClick={() => sheet?.open(row.symbol)}
-        className="ts-mono focus-ring min-w-0 shrink-0 rounded font-semibold !text-text hover:underline"
+        className="focus-ring min-w-0 shrink-0 rounded-chip"
         aria-label={`Open ${row.symbol}`}
       >
-        {row.symbol}
+        <TickerChip ticker={row.symbol} className="hover:border-text" />
       </button>
       <DayChange percent={row.changePercent} className="ml-auto min-w-0" />
       {showFollow ? (
-        <button type="button" onClick={() => toggle(row.symbol)} aria-label={`Follow ${row.symbol}`} className="ts-follow focus-ring rounded">
+        <button type="button" onClick={() => toggle(row.symbol)} aria-label={`Follow ${row.symbol}`} className={FOLLOW}>
           + Follow
         </button>
       ) : null}
@@ -179,7 +188,7 @@ export function TodaySidebarLists({ data }: { data: TodaySidebarPayload }) {
   );
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-8">
       <SideList title="Trending creators" empty="Nothing gaining fast right now">
         {data.trendingCreators.map((c) => (
           <CreatorItem key={c.handle} row={c} signedIn={data.signedIn} />
@@ -218,37 +227,37 @@ export function TodaySidebarLists({ data }: { data: TodaySidebarPayload }) {
 /** Desktop: a column of the frame that scrolls on its own, level with the nameplate. */
 export function TodaySidebar({ data }: { data: TodaySidebarPayload }) {
   return (
-    <aside className={cn("ts-column hidden md:block md:w-[248px] md:shrink-0 md:pr-2")} aria-label="Today lists">
+    <aside className={cn("today-column hidden md:block md:w-[248px] md:shrink-0 md:pr-2 md:pt-4")} aria-label="Today lists">
       <TodaySidebarLists data={data} />
     </aside>
   );
 }
 
-/** Phone: the drawer, behind a control that sits in the nameplate's dateline row. */
+/** Phone: the drawer, behind a control beside the dateline. */
 export function TodayListsButton({ data }: { data: TodaySidebarPayload }) {
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <button
           type="button"
-          className="ts-dateline focus-ring inline-flex h-6 items-center gap-1.5 rounded !text-text"
+          className={buttonClass("ghost", "sm")}
           aria-label="Open Today lists"
         >
-          <PanelLeft size={13} strokeWidth={1.6} aria-hidden />
+          <PanelLeft size={14} strokeWidth={1.8} aria-hidden />
           Lists
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--ink)_40%,transparent)] md:hidden" />
         <Dialog.Content
-          className="today-sheet scroll-area fixed inset-y-0 left-0 z-50 w-[300px] max-w-[85vw] overflow-y-auto border-r border-border bg-bg px-4 py-5 pl-[max(1rem,var(--safe-left))] pt-[max(1.25rem,var(--safe-top))] pb-[max(1.25rem,var(--safe-bottom))] md:hidden"
+          className="scroll-area fixed inset-y-0 left-0 z-50 w-[300px] max-w-[85vw] overflow-y-auto border-r border-border bg-bg px-4 py-5 pl-[max(1rem,var(--safe-left))] pt-[max(1.25rem,var(--safe-top))] pb-[max(1.25rem,var(--safe-bottom))] md:hidden"
           aria-label="Today lists"
         >
           <div className="mb-5 flex items-center justify-between">
-            <Dialog.Title className="ts-dateline">Today</Dialog.Title>
+            <Dialog.Title className="t-title text-text">Lists</Dialog.Title>
             <Dialog.Close asChild>
-              <button type="button" aria-label="Close" className="focus-ring rounded p-1 text-text-mute">
-                <X size={16} strokeWidth={1.6} aria-hidden />
+              <button type="button" aria-label="Close" className={buttonClass("plain", "sm", "w-8 px-0")}>
+                <X size={16} strokeWidth={1.8} aria-hidden />
               </button>
             </Dialog.Close>
           </div>

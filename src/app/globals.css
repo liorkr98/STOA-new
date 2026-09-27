@@ -2637,239 +2637,75 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
- * Today (/home): the broadsheet.
- *
- * One card anatomy, five type sizes, one dashed rule, zero radius on
- * every image. What keeps it Stoa's own is what sits inside the grid: the
- * mono data voice and the accent, which is a single variable so the whole
- * page follows one decision.
+ * Today (/home), Direction B. Layout lives in the components; these are
+ * the few things a utility cannot say: the frame, the band spacing, the
+ * play disc and duration drawn on a picture, and the fresh-post ring.
  * ------------------------------------------------------------------ */
 
-.today-sheet {
-  /* Brass retired with Direction B (2026-09-27). Until Today is rebuilt its
-     labels are muted grey; green and red stay on the direction word alone,
-     and the Follow link is the page's one coral. */
-  --today-accent: var(--text-mute);
-  --today-accent-scrim: rgba(255, 255, 255, 0.85);
-  --today-rule: color-mix(in srgb, var(--ink) 13%, transparent);
+/* Bands part by space alone: no rules between them. */
+.today-band {
+  margin-top: 56px;
+}
+@media (min-width: 768px) {
+  .today-band {
+    margin-top: 72px;
+  }
 }
 
-/* The nameplate: letterspaced serif, one ink rule, one mono dateline. */
-.ts-nameplate-word {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: var(--type-display);
-  line-height: 1;
-  text-align: center;
-  color: var(--text);
-}
-.ts-nameplate-rule {
-  border-top: 2px solid var(--ink);
-}
-.ts-dateline {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--text-mute);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* The five sizes. Nothing else on the page sets a headline size. */
-.ts-eyebrow {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--today-accent);
-}
-.ts-byline {
-  font-family: var(--font-sans);
-  font-size: var(--type-body);
-  line-height: 1.3;
-  color: var(--text-mute);
-}
-.ts-byline a,
-.ts-byline .ts-name {
-  color: var(--text);
-}
-/* The direction word alone carries its sentiment; the label around it is grey. */
-.ts-dir--long {
-  color: var(--up);
-}
-.ts-dir--short {
-  color: var(--down);
-}
-.ts-dir--hold {
-  color: var(--text-mute);
-}
-/* On the lead's scrim: light labels, and the dark theme's gain and loss
-   text tones, which are the ones made for a dark ground. */
-.ts-on-scrim {
-  --today-accent: var(--today-accent-scrim);
-  --up: #34d399;
-  --down: #f87171;
-  --text: #ffffff;
-  --text-mute: rgba(255, 255, 255, 0.78);
-}
-.ts-headline {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--type-title);
-  line-height: 1.2;
-  letter-spacing: -0.005em;
-  color: var(--text);
-  text-wrap: pretty;
-}
-.ts-headline--dense {
-  font-size: var(--type-title);
-  line-height: 1.25;
-}
-.ts-headline--lead {
-  font-size: var(--type-headline);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
-.ts-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--type-display);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.ts-numeral {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--type-display);
-  line-height: 1;
-  color: var(--today-accent);
-  font-variant-numeric: tabular-nums;
-}
-.ts-mono {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  line-height: 1.3;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-mute);
-}
-
-/* One rule style. The nameplate's is the only heavier line. */
-.ts-rule {
-  border-top: 1px dashed var(--today-rule);
-}
-/* Stacked cards: 16px, a hairline, 16px. */
-.ts-stack > * + * {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--today-rule);
-}
-/* Sections: 60px apart, title to content 24px. */
-.ts-section {
-  margin-top: 60px;
-}
-/* Title to content: 24px, wherever the title sits (alone, or in a head row). */
-.ts-title {
-  margin-bottom: 24px;
-}
-
-/* Images: 16:9, square corners, the play glyph small in a corner. */
-.ts-image {
-  position: relative;
-  display: block;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 0;
-  background: var(--surface-2);
-}
-.ts-image--lead {
-  aspect-ratio: 4 / 3;
-}
-.ts-play {
+/* The lead's play control. White in both themes: it sits on a picture. */
+.today-play {
   position: absolute;
-  bottom: 8px;
-  inset-inline-start: 8px;
+  right: 18px;
+  bottom: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--ink) 72%, transparent);
-  color: var(--paper);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-avatar);
+  background: #ffffff;
+  color: #101418;
+  box-shadow: var(--shadow-card);
 }
-.ts-scrim {
+
+/* A clip's length, on the picture's corner. */
+.today-duration {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.42) 34%, rgba(0, 0, 0, 0) 62%);
+  left: 10px;
+  bottom: 10px;
+  padding: 2px 7px;
+  border-radius: var(--r-chip);
+  background: rgba(16, 20, 24, 0.72);
+  color: #ffffff;
+  font-size: var(--type-ticker);
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-/* The rail: text rows on hairlines, nothing solid. */
-.ts-rail-head {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 500;
-  color: var(--text-mute);
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--today-rule);
-}
-.ts-rail-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding-block: 6px;
-  border-bottom: 1px dashed var(--today-rule);
-}
-.ts-follow {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--coral-text);
-  background: none;
-  border: 0;
-  padding: 4px 0 4px 8px;
-}
-.ts-follow:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 767px) {
-  .ts-nameplate-word {
-    font-size: var(--type-display);
-  }
-  .ts-headline--lead {
-    font-size: var(--type-headline);
-  }
-  .ts-title {
-    font-size: var(--type-headline);
-  }
-  .ts-numeral {
-    font-size: var(--type-headline);
-  }
+/* Someone who has posted since the reader last looked: a paper gap, then coral. */
+.today-ring {
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 0 0 5.5px var(--coral);
 }
 
 /* The frame: on a desktop the rail and the page scroll on their own inside
    the room under the nav (see src/lib/layout/frame.ts); on a phone there is
    no frame and the page is the document. */
 @media (min-width: 768px) {
-  .ts-frame {
+  .today-frame {
     display: flex;
-    gap: 40px;
+    gap: 48px;
     height: calc(var(--app-h) - var(--nav-h));
     min-height: 0;
     overflow: hidden;
     margin-bottom: calc(-1 * var(--main-pad-y));
   }
-  .ts-column {
+  .today-column {
     min-height: 0;
     min-width: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: var(--main-pad-y);
+    padding-bottom: calc(var(--main-pad-y) + 40px);
   }
 }

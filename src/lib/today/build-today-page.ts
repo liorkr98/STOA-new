@@ -1,19 +1,17 @@
 import "server-only";
 
 import { getProfilesByIds, listAnalystsByFollowers } from "@/lib/db/profiles";
-import { listPublishedByAuthors, listRecentPublished, tickerCoverage } from "@/lib/db/reports";
+import { countPublishedBetween, listPublishedByAuthors, listRecentPublished, tickerCoverage } from "@/lib/db/reports";
 import { listTickerRows } from "@/lib/db/tickers";
 import { listPendingClipsForReports, listVideoClipCards } from "@/lib/db/video-clips";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
-import { createClient } from "@/lib/supabase/server";
 import { getQuotesBatch } from "@/lib/engine/market";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
-import { getIssueNumber } from "@/lib/dispatch/issue-number";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
 import { cachedPage } from "@/lib/cache/page";
-import { fillBand, preferVideo } from "@/lib/today/video-preference";
+import { preferVideo } from "@/lib/today/video-preference";
 import {
   medianRate,
   publicationAttention,
@@ -29,6 +27,7 @@ import type {
   TodayAnalyst,
   TodayCreatorRow,
   TodayDeskItem,
+  TodayFace,
   TodayItem,
   TodayPagePayload,
   TodaySidebarPayload,
@@ -38,7 +37,13 @@ import { stanceChips } from "@/lib/db/publication-row";
 
 
 function toAnalyst(profile: Profile): TodayAnalyst {
-  return { id: profile.id, handle: profile.handle, displayName: profile.display_name, avatarUrl: profile.avatar_url };
+  return {
+    id: profile.id,
+    handle: profile.handle,
+    displayName: profile.display_name,
+    avatarUrl: profile.avatar_url,
+    specialty: profile.profile_config?.specialty?.trim() || null,
+  };
 }
 
 /**
@@ -55,14 +60,11 @@ export function honestBadge(report: Report, hasVideo: boolean, hasCards = false)
   return badge;
 }
 
-const fetchIssueNumber = getIssueNumber;
-
 interface Ctx {
   clipsByReport: Map<string, VideoClipCard>;
   /** Publications whose clip exists but is not live yet. */
   pendingClipIds: Set<string>;
   sectorByTicker: Map<string, string | null>;
-  savedIds: Set<string>;
   cardIds: Set<string>;
   markerByReport: Map<string, StageMarker>;
   markerByAuthor: Map<string, StageMarker>;
@@ -88,7 +90,7 @@ function toItem(report: Report, ctx: Ctx): TodayItem | null {
     publishedAt: report.published_at ?? report.created_at,
     access: report.access,
     price: report.price,
-    saved: ctx.savedIds.has(report.id),
+    saved: false,
     thumb: clip
       ? { thumbnailUrl: clip.thumbnail_url, durationSeconds: clip.duration_seconds }
       : pending
@@ -115,12 +117,6 @@ function creatorSample(profile: Profile, publications: number): AttentionSample 
   return { since: profile.created_at, total: profile.followers_count ?? 0, publications };
 }
 
-async function fetchSavedIds(userId: string): Promise<Set<string>> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("saved_reports").select("report_id").eq("user_id", userId);
-  return new Set(((data as { report_id: string }[]) ?? []).map((r) => r.report_id));
-}
-
 function creatorRow(p: Profile, marker: StageMarker, followed: boolean): TodayCreatorRow {
   return { id: p.id, handle: p.handle, displayName: p.display_name, avatarUrl: p.avatar_url, marker, followed };
 }
@@ -130,7 +126,7 @@ function creatorRow(p: Profile, marker: StageMarker, followed: boolean): TodayCr
  * issue (no desk, no memberships).
  */
 export async function buildTodayPage(userId: string | null): Promise<TodayPagePayload> {
-  if (!userId) return cachedPage("today-public", 20, () => assembleTodayPage(null));
+  if (!userId) return cachedPage("today-public:direction-b", 20, () => assembleTodayPage(null));
   return assembleTodayPage(userId);
 }
 
@@ -139,17 +135,15 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const cycle = getCycleWindow();
   const dateISO = cycle.dateIso;
 
-  const emptySaved = new Set<string>();
-  const [pool, clips, analysts, coverage, issueNumber, subscribedIds, followedIds, savedIds] =
+  const [pool, clips, analysts, coverage, publishedToday, subscribedIds, followedIds] =
     await Promise.all([
       listRecentPublished(120),
       listVideoClipCards(120),
       listAnalystsByFollowers(40),
       tickerCoverage(),
-      fetchIssueNumber(dateISO),
+      countPublishedBetween(cycle.start, cycle.end),
       userId ? subscribedAnalystIds(userId) : Promise.resolve([] as string[]),
       userId ? followedAnalystIds(userId) : Promise.resolve([] as string[]),
-      userId ? fetchSavedIds(userId) : Promise.resolve(emptySaved),
     ]);
 
   const deskAuthorIds = [...new Set([...subscribedIds, ...followedIds])];
@@ -204,7 +198,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const pendingClipIds = new Set(
     (await listPendingClipsForReports(pool.map((r) => r.id).filter((id) => !clipsByReport.has(id)))).keys(),
   );
-  const ctx: Ctx = { clipsByReport, pendingClipIds, sectorByTicker, savedIds, cardIds, markerByReport, markerByAuthor };
+  const ctx: Ctx = { clipsByReport, pendingClipIds, sectorByTicker, cardIds, markerByReport, markerByAuthor };
   const items = new Map<string, TodayItem>();
   for (const r of pool) {
     const it = toItem(r, ctx);
@@ -239,40 +233,61 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     return list;
   };
 
-  // The two follow-ups under the lead: coverage on the same name first, then
-  // the same sector or theme, then whatever ranks next. The lead and its
-  // follow-ups are meant to read as one package.
-  const kin = (it: TodayItem) =>
-    Boolean(lead) &&
-    ((lead!.ticker != null && it.ticker === lead!.ticker) ||
-      (lead!.sector != null && it.sector === lead!.sector) ||
-      (lead!.themeTag != null && it.themeTag === lead!.themeTag));
-  const followUps = take([...remaining().filter(kin), ...remaining().filter((it) => !kin(it))].slice(0, 2));
-  // Two picture stories beside the lead: they need a ready clip to be pictures.
-  const pictures = take(remaining().filter((it) => it.thumb && !it.thumb.processing).slice(0, 2));
-  // Four text stories on the other side; a clip is not shown there.
-  const textStories = take(remaining().slice(0, 4));
+  // Four clips worth a minute: ready clips only, so every tile is a real
+  // poster. A clip still processing waits for tomorrow's page rather than
+  // taking a tile with nothing to show.
+  const minute = take(remaining().filter((it) => it.thumb && !it.thumb.processing).slice(0, 4));
 
-  // The velocity gate is unweighted and is a filter, not a stopping point: the
-  // order is now the weighted one, so a publication with no velocity can sort
-  // above one that has some, and breaking out at the first zero would drop the
-  // rest of a real trending list on the floor.
-  const trending = fillBand(
-    ranked
-      .filter((r) => !used.has(r.id) && items.has(r.id) && trendingScore(pubSamples.get(r.id)!, now) > 0)
-      .map((r) => items.get(r.id)!),
-    5,
-    (it) => hasClip(it.reportId),
+  // The lead's theme: coverage on the same name, then the same sector, then
+  // the same theme. Only real kin; the band is not padded with anything else.
+  const cluster = (() => {
+    if (!lead) return null;
+    const label = lead.ticker ?? lead.sector ?? lead.themeTag ?? null;
+    if (!label) return null;
+    const kin = remaining().filter(
+      (it) =>
+        (lead.ticker != null && it.ticker === lead.ticker) ||
+        (lead.sector != null && it.sector === lead.sector) ||
+        (lead.themeTag != null && it.themeTag === lead.themeTag),
+    );
+    if (kin.length === 0) return null;
+    return { label: lead.sector ?? lead.themeTag ?? label, items: take(kin.slice(0, 3)) };
+  })();
+
+  // Written pieces: the route onto Today for a thesis that is not the lead.
+  // Pieces without a clip first, since the clips have their own band above.
+  const rest = remaining();
+  const reading = take([...rest.filter((it) => !it.thumb), ...rest.filter((it) => it.thumb)].slice(0, 4));
+
+  // The faces: everyone who posted in the last 24 hours, newest first. On a
+  // quiet day the most recent posters, so the row is never a promise of
+  // "today" that the data cannot keep.
+  const windowStart = cycle.start.getTime();
+  const byRecency = [...pool].sort(
+    (a, b) => Date.parse(b.published_at ?? b.created_at) - Date.parse(a.published_at ?? a.created_at),
   );
+  const postedToday = byRecency.some((r) => Date.parse(r.published_at ?? r.created_at) >= windowStart);
+  const faces: TodayFace[] = [];
+  const seenFace = new Set<string>();
+  for (const r of byRecency) {
+    const at = r.published_at ?? r.created_at;
+    if (postedToday && Date.parse(at) < windowStart) break;
+    if (!r.author || seenFace.has(r.author_id)) continue;
+    seenFace.add(r.author_id);
+    const it = items.get(r.id);
+    const beat = r.author.profile_config?.specialty?.trim() || it?.sector || it?.themeTag || null;
+    faces.push({ ...toAnalyst(r.author), specialty: beat, lastPublishedAt: at });
+    if (faces.length >= 16) break;
+  }
 
-  // Your Desk: memberships and follows merged into one rail, newest first.
+  // Your Desk: memberships and follows merged into one list, newest first.
   const memberSet = new Set(subscribedIds);
   const desk: TodayDeskItem[] = deskReports
     .flatMap((r) => {
       const it = toItem(r, ctx);
       return it ? [{ ...it, relationship: memberSet.has(r.author_id) ? "member" : "following" } as TodayDeskItem] : [];
     })
-    .slice(0, 12);
+    .slice(0, 6);
 
   // Sidebar lists. Every creator row says whether the reader already follows
   // or pays the analyst, so the same row shows Follow in Trending or Popular
@@ -325,14 +340,15 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   };
 
   return {
-    issue: { issueNumber, dateISO },
+    dateISO,
+    publishedToday,
     personalized: Boolean(userId),
     lead,
-    followUps,
-    pictures,
-    textStories,
-    trending,
+    faces: { today: postedToday, people: faces },
+    minute,
     desk,
+    cluster,
+    reading,
     news: [],
     sidebar,
   };
