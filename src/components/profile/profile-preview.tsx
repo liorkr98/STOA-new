@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { cn } from "@/lib/design/cn";
 import type { Profile } from "@/lib/types";
 import type { ProfileConfig } from "@/lib/editor/types";
-import { ProfileHeader } from "@/components/profile/profile-header";
+import { StorefrontHero } from "@/components/profile/analyst-profile-view";
+import { buttonClass } from "@/components/ui/button";
+import { compact } from "@/lib/format";
 import { absoluteUrl } from "@/lib/seo/site";
-
-type PreviewMode = "desktop" | "mobile";
 
 function ShareLinkPreview({
   title,
@@ -38,7 +36,7 @@ function ShareLinkPreview({
   );
 }
 
-/** Live preview pane with desktop/mobile width toggle. */
+/** Live preview: the storefront hero as visitors see it, and the link card a share produces. */
 export function ProfilePreview({
   profile,
   draft,
@@ -53,8 +51,6 @@ export function ProfilePreview({
     config: ProfileConfig;
   };
 }) {
-  const [mode, setMode] = useState<PreviewMode>("desktop");
-
   const previewProfile = {
     ...profile,
     display_name: draft.display_name || profile.display_name,
@@ -71,32 +67,27 @@ export function ProfilePreview({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="t-meta">Live preview</p>
-        <div className="inline-flex rounded-button border border-border bg-bg p-0.5 text-ticker">
-          {(["desktop", "mobile"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={cn(
-                "rounded-[4px] px-2 py-0.5 font-medium capitalize",
-                mode === m ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute",
-              )}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="t-meta">Live preview</p>
 
-      <div
-        className={cn(
-          "mx-auto w-full transition-[max-width]",
-          mode === "mobile" ? "max-w-[320px]" : "max-w-full",
-        )}
-      >
-        <ProfileHeader profile={previewProfile} config={draft.config} compact={mode === "mobile"} />
+      <div>
+        <div className="rounded-panel border border-border bg-bg p-5">
+          <StorefrontHero
+            compact
+            name={previewProfile.display_name || "Your name"}
+            avatarUrl={previewProfile.avatar_url}
+            verified={previewProfile.verified}
+            specialty={previewProfile.headline?.trim() || "Independent analyst on Stoa"}
+            bio={previewProfile.bio}
+            audienceLine={`@${profile.handle} · ${compact(profile.followers_count ?? 0)} followers`}
+            actions={
+              <div aria-hidden className="pointer-events-none flex w-full flex-wrap gap-2.5">
+                <span className={buttonClass("coral", "lg", "w-full")}>Subscribe</span>
+                <span className={buttonClass("ghost", "lg", "flex-1")}>Follow</span>
+                <span className={buttonClass("ghost", "lg", "flex-1")}>Share</span>
+              </div>
+            }
+          />
+        </div>
       </div>
 
       <ShareLinkPreview
@@ -105,10 +96,6 @@ export function ProfilePreview({
         url={publicUrl}
         imageUrl={previewProfile.cover_url || previewProfile.avatar_url}
       />
-
-      <p className="t-meta text-ticker">
-        Pricing is platform-controlled and always appears below this hero on your public page.
-      </p>
     </div>
   );
 }
