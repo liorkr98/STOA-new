@@ -1,11 +1,12 @@
 # Stoa — Motion & Polish Spec
 
-> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
-> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
-> described below are deleted, and nothing may rebuild them. Where this document specifies them,
-> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
-
-> **Product model updated** — see `docs/PRODUCT_MODEL.md`. This document predates that change and needs review.
+> **Updated 2026-09-27.** Grading is retired (2026-09-24): the seal, the lock ceremony, the
+> Score Ring, HIT / MISS stamps and the Track Score odometer are deleted, and this document no
+> longer specifies them. Nothing is graded, scored, locked or resolved; a publication may declare a
+> stance (a ticker and long, short or hold), and publishing is one press with no ceremony. The
+> motion laws below are unaffected by the coming visual replacement
+> (`docs/design/direction-b.html`); the re-skin rules in Part B that name today's fonts and radii
+> are marked pending replacement.
 
 ### The go-live elevation pass. Extends `docs/FRONTEND.md` §1.5 — where they differ, this doc wins on motion; FRONTEND.md wins on everything else.
 
@@ -26,11 +27,11 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
   --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);   /* on-screen movement, morphs */
   --ease-hover:   ease;                                /* color/border hover shifts only */
   --ease-drawer:  cubic-bezier(0.32, 0.72, 0, 1);     /* bottom sheets / drawers */
-  /* Duration — everything under 300ms except the one ceremony */
+  /* Duration — everything under 300ms except the one long travel */
   --dur-1: 120ms;   /* exits, hovers, subsequent-in-group popovers */
   --dur-2: 180ms;   /* popovers, dropdowns, tab underline */
   --dur-3: 240ms;   /* modals, content fades, paywall lift */
-  --dur-ceremony: 400ms;  /* the seal. Nothing else may use this. */
+  --dur-ceremony: 400ms;  /* the phone tab lens's travel. Name kept from the retired seal. */
 }
 ```
 
@@ -40,13 +41,13 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
    `--ease-out`; moving/morphing on screen → `--ease-in-out`; hover color/border → `--ease-hover`;
    constant motion (spinners, progress) → `linear`. Default → `--ease-out`.
 2. **Animate `transform` and `opacity` only.** Never width/height/top/left/margin/padding.
-   `filter: blur()` allowed only in the seal ink-bleed and skeleton crossfade, ≤4px.
+   `filter: blur()` allowed only in the skeleton crossfade, ≤4px.
 3. **Exits faster than enters.** Exit duration = one token step below the enter (enter `--dur-3`
    → exit `--dur-2`). Exits don't stagger.
 4. **The frequency rule.** The more often a user sees an element, the less it should animate.
    Studio, Compose, nav, sidebar, filter chips, feed scrolling: zero entrance animation.
-   The seal and resolution stamps are rare — that's why they've earned ceremony. If someone
-   proposes animating something seen 50×/day, the answer is no.
+   Nothing in the product is ceremonial now that the seal is gone. If someone proposes
+   animating something seen 50×/day, the answer is no.
 5. **Enter distance is 4–8px, never 20+.** `y: 8px → 0` with opacity. No slide-ins from
    off-screen except drawers.
 6. **Origin-aware popovers.** Everything that opens from a trigger scales from that trigger:
@@ -57,7 +58,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 8. **Interruptible by default.** Use CSS transitions or Motion springs that retarget mid-flight;
    avoid fixed keyframe animations on anything interactive.
 9. **`prefers-reduced-motion` is mandatory everywhere.** Reduced = instant state swap with a
-   plain 80ms opacity fade. The seal becomes "already stamped." No exceptions, including toasts.
+   plain 80ms opacity fade. No exceptions, including toasts.
 10. **No stagger-spam.** Stagger only genuinely related list items, groups of 3–7, 40ms steps,
     once per mount — never on scroll, never re-triggered by filtering.
 11. **Scroll reveals: one sanctioned pattern, and only on editorial pages.** Timer-driven,
@@ -77,13 +78,11 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 
 | Component | Motion | Duration / easing |
 |---|---|---|
-| **SealStamp — lock** | The ceremony, refined: (1) press: seal scales 1→0.96, 80ms ease-in — the only sanctioned ease-in, because it's a physical press, not UI; (2) settle: 0.96→1 with 8°→0° rotation, `--ease-out`; (3) ink-bleed: radial opacity + 2px blur→0 overlapping the settle. Total ≤400ms. | `--dur-ceremony` |
-| **SealStamp — resolve (HIT/MISS)** | Same language, smaller: stamp drops in at scale 1.15→1 + opacity, slight rotation settle. Plays once when the resolved card first enters the viewport (IntersectionObserver, once, never re-triggers on scroll). | 300ms `--ease-out` |
 | **FactCheck popover** | Scale 0.96→1 + opacity from the claim's underline (origin-aware). **Group rule (Emil's tooltip pattern):** the first popover a reader opens animates; while the reader keeps hovering claim-to-claim within ~300ms gaps, subsequent popovers appear *instantly* — the reader is scanning, don't make them wait. Group resets after 1.5s idle. | enter `--dur-2`, exit `--dur-1`, in-group: 0ms |
 | **DebateThread (mobile sheet)** | Use **Vaul** — gesture-driven, spring-based, interruptible, drag-to-dismiss. Desktop side panel: x 8px→0 + opacity. | Vaul defaults / `--dur-3` |
-| **Toasts** | Use **Sonner**. Bottom-center desktop, bottom mobile. The "Locked" toast carries the seal glyph. Default timings — don't restyle motion. | Sonner defaults |
-| **LockConfirmModal** | Overlay opacity 0→1; panel scale 0.98→1 + opacity, `--ease-out`. Exit reverse, faster. | enter `--dur-3`, exit `--dur-2` |
-| **Track Score odometer** | Tabular-nums count from previous → new value, `--ease-out`, once per *meaningful* change (page load after a resolve; the resolve notification). Never on rerenders, never looping. | 600ms |
+| **Toasts** | Use **Sonner**. Bottom-center desktop, bottom mobile. Default timings — don't restyle motion. | Sonner defaults |
+| **Modals (archive, delete, leave)** | Overlay opacity 0→1; panel scale 0.98→1 + opacity, `--ease-out`. Exit reverse, faster. | enter `--dur-3`, exit `--dur-2` |
+| **AppTabs lens (phone)** | Travels to the tapped tab, stretching lengthways on the way; `transform` only; jumps under reduced motion. Documented under `AppTabs` in `docs/FRONTEND.md`. | `--dur-ceremony` `--ease-in-out` |
 | **PaywallGate unlock** | The paid moment earns a small lift: scrim gradient fades out while revealed content rises y 8px→0. One-time per unlock. | `--dur-3` `--ease-out` |
 | **FeedCard hover** | Border-color shift + translateY(-1px). **No scale, no shadow-grow** — scale on large surfaces reads cheap and shadows violate the elevation system. | `--dur-1` `--ease-hover` |
 | **Dropdowns / role switcher / bell** | Scale 0.97→1 + opacity, origin at trigger edge. | `--dur-2` / `--dur-1` exit |
@@ -115,15 +114,16 @@ the precise generic look our design system exists to avoid. Rules:
 1. **Scaffold-only tool.** Use it for structure + interaction wiring on complex, undifferentiated
    chrome: the ⌘K command-palette search (creators + tickers), sortable data tables (per-report
    performance, subscriber list, payout history), settings forms, the Compose editor toolbar,
-   pricing tier cards, date/horizon pickers.
-2. **Mandatory re-skin pass before commit** — every Magic-generated component gets: fonts mapped
-   to Plex Sans / Plex Mono (Fraunces only if it's editorial content, which scaffolded chrome
-   never is); colors mapped to the six tokens, all literal hex deleted; radii forced to 6/12;
-   every `shadow-*` class removed; gradients removed; spacing snapped to the `--space-*` scale.
-   A Magic component with a stray `shadow-lg` or `rounded-full` in the diff fails review.
-3. **Forbidden surfaces.** Magic never touches the trust surfaces: SealStamp, DisclosureBlock,
-   the call block, MoatBadge, FactCheckLayer, PaywallGate, LockConfirmModal. These are the
-   product's identity and are hand-built to `docs/FRONTEND.md` Part 2. Scaffolding them from a
+   pricing tier cards, date pickers.
+2. **Mandatory re-skin pass before commit** — every Magic-generated component gets: fonts,
+   colors and radii mapped to the project's tokens (today Plex Sans / Plex Mono, the six colours
+   and 6/12 radii, all **pending replacement** by `docs/design/direction-b.html`), all literal
+   hex deleted; every `shadow-*` class removed; gradients removed; spacing snapped to the
+   `--space-*` scale. A Magic component with a stray `shadow-lg` or a hard-coded hex in the diff
+   fails review.
+3. **Forbidden surfaces.** Magic never touches the trust surfaces: DisclosureBlock, the stance
+   chips, EditedMarker, FactCheckLayer, PaywallGate. These are the product's identity and are
+   hand-built to `docs/FRONTEND.md` Part 2. Scaffolding them from a
    component library would make the most differentiated screens look the most generic.
 4. Setup lives in the IDE's MCP config with a 21st.dev API key — take the exact config block from
    21st.dev's install page for your Cursor/Claude Code version rather than copying a snippet
@@ -140,7 +140,7 @@ the precise generic look our design system exists to avoid. Rules:
   `--domain chart` before touching Recharts, `--stack nextjs` for framework guidance.
 - **Banned on this repo:** the design-system generator with persist
   (`--design-system --persist`). It writes to `design-system/MASTER.md` — the exact file we
-  rewrote — and will overwrite the ledger-and-seal system with a fresh generic one. This is
+  rewrote — and will overwrite the design system with a fresh generic one. This is
   almost certainly how the repo got its original rogue spec. Add to AGENTS.md anti-patterns:
   "Running any design-system generator that persists output into this repo."
 
@@ -151,24 +151,26 @@ against every route in `docs/FRONTEND.md` Parts 3–6:
 
 1. **3-second test:** screenshot the page cold. Can a stranger answer "where am I / what do I do
    here" from the screenshot alone? If the answer requires reading body copy, the hierarchy fails.
-2. **One primary CTA:** exactly one filled `--ink` button visible per screen. Two = demotion bug.
+2. **One primary CTA:** exactly one primary button visible per screen (today filled `--ink`).
+   Two = demotion bug.
 3. **States matrix:** every route × {loading, empty, error, populated}. Any cell that renders a
    blank area, an unexplained spinner, or a raw error string fails. Empty states must contain a
    recovery action, not just a sentence.
-4. **Copy echo:** the verb on the trigger is the verb in the confirmation ("Lock it in" → toast
-   "Locked"). Any "Submitted successfully" anywhere is a fail.
-5. **Trust surface invariance:** call block, DisclosureBlock, MoatBadge render complete at 360px
-   width — nothing trust-critical truncated, collapsed, or hidden behind a tap on mobile.
+4. **Copy echo:** the verb on the trigger is the verb in the confirmation ("Publish" → toast
+   "Published"). Any "Submitted successfully" anywhere is a fail.
+5. **Trust surface invariance:** the stance chips, DisclosureBlock and EditedMarker render
+   complete at 360px width — nothing trust-critical truncated, collapsed, or hidden behind a tap
+   on mobile.
 6. **Touch targets ≥44px** on all mobile interactive elements, including fact-check underlines
    (the tap target is the whole line-height, not the 2px underline).
-7. **Focus:** tab through every page; visible verdigris focus ring on every stop, logical order,
+7. **Focus:** tab through every page; visible focus ring on every stop, logical order,
    modals trap focus, Escape closes popovers/sheets.
-8. **Contrast re-verified against `--paper`** (#EFF1ED), not white — muted `--ink`-at-60% text
-   must still clear 4.5:1 where it carries meaning.
-9. **Reduced-motion QA:** flip `prefers-reduced-motion` on and click through lock → resolve →
-   unlock. Everything must state-swap cleanly; a half-playing seal is a fail.
-10. **Numbers:** every price, score, %, and date renders in Plex Mono with `font-variant-numeric:
-    tabular-nums`. Any proportional-figure number in a column or ticker is a fail.
+8. **Contrast re-verified against the page background** (today `--paper`, #FAF8F4), not white —
+   muted text must still clear 4.5:1 where it carries meaning.
+9. **Reduced-motion QA:** flip `prefers-reduced-motion` on and click through compose → publish →
+   unlock. Everything must state-swap cleanly; a half-played transition is a fail.
+10. **Numbers:** every price, %, and date renders in the mono face (today Plex Mono) with
+    `font-variant-numeric: tabular-nums`. Any proportional-figure number in a column or ticker is a fail.
 11. **Paywall integrity (security, not style):** view-source on a gated report as a logged-out
     user — full `body_markdown` must be absent from HTML and any serialized props. CSS-hidden
     content is a launch blocker. If this fails, the fix is the server-side entitlement gate —
@@ -176,6 +178,6 @@ against every route in `docs/FRONTEND.md` Parts 3–6:
 12. **Dead-end sweep:** no screen may strand the user — every error and empty state links
     somewhere sensible; the 404 offers Explore and search.
 
-Run order: audit the trust loop first (signup → verify → compose → lock → report page → unlock →
-resolve), fix everything there to zero defects, then sweep the remaining routes. Perfection where
+Run order: audit the trust loop first (signup → verify → compose → publish → report page →
+unlock), fix everything there to zero defects, then sweep the remaining routes. Perfection where
 trust is judged; solid everywhere else.
