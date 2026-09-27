@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { StepDef, StepKey, StepState } from "@/lib/compose/steps";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * The spine's tracker: two numbered marks joined by a hairline.
@@ -154,7 +155,7 @@ export function StepFrame({
               <button
                 type="button"
                 onClick={next.onPress}
-                className="focus-ring shrink-0 rounded-button bg-[var(--ink)] px-5 py-2.5 text-body font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                className={buttonClass("ink", "md", "shrink-0")}
               >
                 {next.label}
               </button>

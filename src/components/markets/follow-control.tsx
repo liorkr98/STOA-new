@@ -4,7 +4,7 @@ import { cn } from "@/lib/design/cn";
 import { useSectorWatchlist, useWatchlist } from "@/lib/watchlist";
 
 const pill =
-  "num tap-target focus-ring inline-flex shrink-0 items-center rounded-chip border px-2.5 py-1 text-ticker font-semibold transition-colors duration-[var(--dur-1)]";
+  "tap-target focus-ring inline-flex shrink-0 items-center rounded-chip border px-2.5 py-1 text-ticker font-semibold transition-colors duration-[var(--dur-1)]";
 
 /**
  * Follow as a text pill rather than a star. Reads the same browser-local
@@ -29,7 +29,7 @@ export function FollowTicker({ ticker, className }: { ticker: string; className?
         pill,
         following
           ? "border-border-strong bg-surface text-text"
-          : "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] hover:brightness-[1.06]",
+          : "border-coral text-coral hover:bg-[var(--accent-weak)]",
         className,
       )}
     >
@@ -56,7 +56,7 @@ export function FollowSector({ sector, className }: { sector: string; className?
         pill,
         following
           ? "border-border-strong bg-surface text-text"
-          : "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] hover:brightness-[1.06]",
+          : "border-coral text-coral hover:bg-[var(--accent-weak)]",
         className,
       )}
     >

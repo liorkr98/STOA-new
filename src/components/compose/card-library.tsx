@@ -6,6 +6,7 @@ import { X, Shapes, ArrowLeft } from "lucide-react";
 import { CARD_INTENTS, LIBRARY_KINDS, sampleCard, type CardKindSpec } from "@/lib/compose/cards";
 import type { CardKind } from "@/lib/feed/card-schema";
 import { CardPreview } from "@/components/compose/card-preview";
+import { buttonClass } from "@/components/ui/button";
 
 function KindButton({
   spec,
@@ -98,7 +99,7 @@ export function CardLibrary({
                 <button
                   type="button"
                   onClick={() => addThisKind(previewKind)}
-                  className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)]"
+                  className={buttonClass("ink", "sm", "border-[var(--ink)]")}
                 >
                   Use this card
                 </button>

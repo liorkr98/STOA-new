@@ -2,6 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+import { buttonClass } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
@@ -24,7 +25,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-button border border-border bg-surface px-4 py-2 text-body font-medium"
+            className={buttonClass("ghost", "md")}
           >
             Refresh
           </button>

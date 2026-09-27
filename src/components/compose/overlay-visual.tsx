@@ -7,6 +7,7 @@ import { cn } from "@/lib/design/cn";
 import { NAPKIN_DEFAULT_STYLE_ID } from "@/lib/napkin/styles";
 import { sourceLabel, type VisualSource } from "@/lib/compose/overlays";
 import type { DraftCard } from "@/lib/compose/cards";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * What sits over the clip: a real card, a live tape, or a Napkin visual.
@@ -127,7 +128,7 @@ export function OverlayVisualizeFields({
         type="button"
         disabled={pending || !prompt.trim()}
         onClick={generate}
-        className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)] disabled:opacity-50"
+        className={buttonClass("ink", "sm", "border-[var(--ink)]")}
       >
         {pending ? "Generating..." : imageUrl ? "Regenerate with Napkin" : "Generate with Napkin"}
       </button>

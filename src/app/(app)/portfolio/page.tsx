@@ -8,6 +8,7 @@ import { DensityRoot } from "@/components/layout/density-root";
 import { usePortfolio, type Holding } from "@/lib/portfolio";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * Investor portfolio (Part G): holdings with cost basis, live market value,
@@ -194,7 +195,7 @@ function AddHoldingForm({ onAdd }: { onAdd: (h: Holding) => void }) {
       />
       <button
         type="submit"
-        className="inline-flex h-10 items-center gap-1.5 rounded-button bg-accent px-3 text-body font-semibold text-accent-ink focus-ring"
+        className={buttonClass("ink", "md")}
       >
         <Plus size={15} /> Add
       </button>

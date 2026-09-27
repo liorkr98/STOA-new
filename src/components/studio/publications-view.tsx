@@ -14,6 +14,7 @@ import { EditedFlag } from "@/components/report/edited-flag";
 import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
 import { ThemeChip, TickerChip } from "@/components/ui/chip";
+import { buttonClass } from "@/components/ui/button";
 
 export type PubState = "draft" | "scheduled" | "published" | "archived";
 
@@ -140,7 +141,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
           <h1 className="font-display text-headline font-semibold tracking-tight">Publications</h1>
           <p className="t-body mt-2">Everything you&apos;ve made, and everything still open.</p>
         </div>
-        <Link href="/studio/compose" className="rounded-button bg-[var(--ink)] px-4 py-2.5 text-body font-medium text-[var(--paper)]">
+        <Link href="/studio/compose" className={buttonClass("ink", "md")}>
           New publication
         </Link>
       </div>

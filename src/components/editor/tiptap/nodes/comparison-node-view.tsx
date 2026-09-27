@@ -17,6 +17,7 @@ import { Columns3, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { seriesColor } from "@/lib/design/chart-theme";
 import type { Comparison, ComparisonMetric } from "@/lib/market/types";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * comparisonNode view (A6). Editor pulls a metric time series for 2-8 tickers
@@ -332,7 +333,7 @@ export function ComparisonNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
+          className={buttonClass("ink", "sm")}
         >
           Pull comparison
         </button>

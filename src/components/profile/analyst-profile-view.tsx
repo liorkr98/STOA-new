@@ -13,6 +13,7 @@ import { ShareMenu } from "@/components/share/share-menu";
 import { TierPickerModal } from "@/components/profile/tier-picker-modal";
 import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 /** One publication as the storefront renders it: a video tile or a written tile. */
 export interface ProfilePublication {
@@ -381,6 +382,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       analystId={props.analystId}
       initialFollowing={props.initialFollowing}
       isAuthed={props.isAuthed}
+      quiet={!props.isSelf}
     />
   );
 
@@ -424,13 +426,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
         {/* Desktop action row */}
         {!props.isSelf && (
           <div className="mt-7 hidden items-center gap-2.5 md:flex">
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="flex-1 rounded-panel bg-[var(--accent)] px-5 py-3.5 text-body font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
-            >
+            <Button variant="coral" size="lg" className="flex-1" onClick={() => setModalOpen(true)}>
               {props.subscribeLabel}
-            </button>
+            </Button>
             {followBtn}
             <ShareMenu
               target={{ url: `/analyst/${props.handle}`, title: `${props.name} on Stoa` }}
@@ -453,13 +451,9 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       {/* MOBILE sticky action bar */}
       {!props.isSelf && (
         <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2.5 border-t border-border bg-bg px-[max(1rem,var(--safe-left))] pr-[max(1rem,var(--safe-right))] pt-3 pb-[max(0.75rem,var(--safe-bottom))] md:hidden">
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="min-w-0 flex-1 truncate rounded-button bg-[var(--accent)] px-3 py-3.5 text-body font-medium text-[var(--accent-ink)] focus-ring"
-          >
+          <Button variant="coral" size="lg" className="min-w-0 flex-1 truncate" onClick={() => setModalOpen(true)}>
             {props.subscribeLabel}
-          </button>
+          </Button>
           {followBtn}
         </div>
       )}

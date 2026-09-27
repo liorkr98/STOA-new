@@ -12,6 +12,7 @@ import {
   listEntriesAction,
 } from "@/app/actions/notebooks";
 import type { Notebook, NotebookEntry } from "@/lib/db/notebooks";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * The Notebook board (Part F): a dense --surface-2 field with --surface snippet
@@ -153,7 +154,7 @@ export function NotebookBoard({
                   `${mode === "analyst" ? "/studio/compose" : "/studio/compose"}?notebook=${selected.id}`,
                 )
               }
-              className="inline-flex h-8 items-center gap-1.5 rounded-button bg-accent px-3 text-ticker font-semibold text-accent-ink focus-ring"
+              className={buttonClass("ink", "sm")}
             >
               <Pencil size={14} /> Compose from notebook
             </button>

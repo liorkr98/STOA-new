@@ -20,6 +20,7 @@ import {
   NAPKIN_VARIATION_COUNT,
   NAPKIN_VISUAL_TYPES,
 } from "@/lib/napkin/styles";
+import { buttonClass } from "@/components/ui/button";
 
 const WIDTHS = [50, 75, 100] as const;
 
@@ -417,7 +418,7 @@ export function NapkinNodeView({
               disabled={generating}
               onMouseDown={stop}
               onClick={() => generate()}
-              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-button bg-accent text-body font-medium text-accent-ink transition hover:brightness-[1.06] disabled:opacity-60 focus-ring"
+              className={buttonClass("ink", "sm", "w-full")}
             >
               {generating ? (
                 <>

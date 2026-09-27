@@ -967,10 +967,8 @@ const FeedItem = function FeedItem({
                       }
                       aria-pressed={following}
                       className={cn(
-                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-chip px-3 py-1.5 text-ticker font-semibold transition-colors",
-                        following
-                          ? "border border-white/80 bg-white/20 text-white"
-                          : "bg-[var(--paper)] text-[var(--ink)] hover:bg-[var(--surface)]",
+                        "focus-ring inline-flex flex-none items-center gap-1.5 rounded-button px-3.5 py-1.5 text-ticker font-semibold transition-colors",
+                        following ? "border border-white/80 bg-white/20 text-white" : "bg-coral",
                       )}
                     >
                       {following ? "Following" : "Follow"}

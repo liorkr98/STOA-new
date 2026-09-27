@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition, type CSSProperties } from "react";
 import { Check, AlertTriangle, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { FONT_PAIRINGS, type FontPairingId } from "@/lib/profile/fonts";
 import { saveStorefrontBranding } from "@/app/actions/profile";
@@ -136,7 +136,7 @@ export function AccentPicker({
       <div className="flex items-center gap-3 rounded-inner border border-border bg-bg p-3" style={previewVars as CSSProperties}>
         <button
           type="button"
-          className="h-9 rounded-button bg-accent px-3 text-body font-semibold text-accent-ink"
+          className={buttonClass("ink", "sm")}
         >
           Subscribe
         </button>

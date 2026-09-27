@@ -6,6 +6,7 @@ import { Target, Trash2 } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { Estimate, PriceTarget } from "@/lib/market/types";
 import { TickerChip } from "@/components/ui/chip";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * estimatesNode view (A7). Editor pulls EPS estimates vs actuals + the analyst
@@ -208,7 +209,7 @@ export function EstimatesNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
+          className={buttonClass("ink", "sm")}
         >
           Pull estimates
         </button>

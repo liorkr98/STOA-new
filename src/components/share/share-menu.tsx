@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Link2, Mail, Share2, Smartphone } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { useHydrated } from "@/lib/hooks/use-stored-value";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * ShareMenu: share a report or profile to X, Facebook, LinkedIn, Reddit,
@@ -126,7 +127,7 @@ export function ShareMenu({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-button border border-border bg-surface px-3 text-body text-text-mute transition-colors hover:border-border-strong hover:text-text"
+        className={buttonClass("ghost", "sm", "text-text-mute hover:text-text")}
       >
         <Share2 size={15} />
         {label}

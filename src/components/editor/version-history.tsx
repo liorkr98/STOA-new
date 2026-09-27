@@ -7,6 +7,7 @@ import { History, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { listVersionsAction, restoreVersionAction } from "@/app/actions/reports";
 import type { ReportVersion } from "@/lib/db/report-versions";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * Version history (Part E). A quiet floating control on the compose screen:
@@ -103,7 +104,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                       type="button"
                       disabled={pending}
                       onClick={() => restore(v.id)}
-                      className="rounded-button bg-accent px-2 py-1 text-ticker font-semibold text-accent-ink focus-ring disabled:opacity-60"
+                      className={buttonClass("ink", "sm")}
                     >
                       {pending ? "..." : "Confirm"}
                     </button>

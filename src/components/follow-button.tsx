@@ -10,10 +10,13 @@ export function FollowButton({
   analystId,
   initialFollowing,
   isAuthed,
+  quiet = false,
 }: {
   analystId: string;
   initialFollowing: boolean;
   isAuthed: boolean;
+  /** Outlined instead of coral, for screens where Subscribe is the coral action. */
+  quiet?: boolean;
 }) {
   const router = useRouter();
   const [following, setFollowing] = useState(initialFollowing);
@@ -33,7 +36,7 @@ export function FollowButton({
 
   return (
     <Button
-      variant={following ? "ghost" : "coral"}
+      variant={following || quiet ? "ghost" : "coral"}
       onClick={onClick}
       disabled={pending}
       size="lg"

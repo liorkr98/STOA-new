@@ -49,7 +49,7 @@ export function SubscribeButton({
 
   return (
     <>
-      <Button variant="ghost" size="lg" className="w-full" onClick={() => setOpen(true)}>
+      <Button variant="coral" size="lg" className="w-full" onClick={() => setOpen(true)}>
         Subscribe · {usd(price)}/mo
       </Button>
       <ConfirmSpendDialog

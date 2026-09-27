@@ -16,7 +16,7 @@ import type { JSONContent } from "@tiptap/core";
 import { FloppyDisk, SquaresFour } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/design/cn";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { publishReport, saveDraft, updatePublishedReport } from "@/app/actions/reports";
 import { uploadComposeClip } from "@/lib/video/upload-clip";
 import { documentPlainText, parseDocument } from "@/lib/editor/document";
@@ -1676,7 +1676,7 @@ export function StudioEditor({
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
-                          className="focus-ring rounded-button bg-[var(--ink)] px-4 py-2 text-ticker font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                          className={buttonClass("ink", "sm")}
                         >
                           Make the first card
                         </button>

@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { RotateCcw } from "lucide-react";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * A failure inside one step stays inside that step.
@@ -63,7 +64,7 @@ export class StepErrorBoundary extends Component<
         <button
           type="button"
           onClick={this.retry}
-          className="focus-ring mt-3 flex items-center gap-1.5 rounded-button bg-[var(--ink)] px-3 py-1.5 text-ticker font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+          className={buttonClass("ink", "sm", "mt-3")}
         >
           <RotateCcw size={13} aria-hidden /> Redraw this step
         </button>

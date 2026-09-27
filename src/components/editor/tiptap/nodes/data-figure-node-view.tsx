@@ -6,6 +6,7 @@ import { Trash2, ArrowUpRight, FileSearch, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import type { FilingFigure, SourceRef } from "@/lib/market/types";
 import { SaveToNotebookButton } from "@/components/notebook/save-to-notebook-button";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * dataFigureNode -- a single sourced figure (e.g. "Revenue TTM $24.3B, +18%
@@ -305,7 +306,7 @@ export function DataFigureNodeView({
               type="button"
               onMouseDown={stop}
               onClick={search}
-              className="h-7 rounded-button bg-accent px-2 text-ticker font-semibold text-accent-ink focus-ring"
+              className={buttonClass("ink", "sm")}
             >
               Search
             </button>

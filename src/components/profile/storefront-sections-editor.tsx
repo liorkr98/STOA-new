@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { ChevronDown, ChevronUp, Eye, EyeOff, Plus, Trash2, Check } from "lucide-react";
 import { nanoid } from "nanoid";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { saveStorefrontSections } from "@/app/actions/profile";
 import type { ProfileSection } from "@/lib/editor/types";
@@ -93,7 +93,7 @@ export function StorefrontSectionsEditor({
               setSaved(false);
               setSections((prev) => [...prev, emptySection(a.type)]);
             }}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border bg-bg px-2.5 py-1.5 text-body text-text-mute hover:border-border-strong hover:text-text"
+            className={buttonClass("ghost", "md", "text-text-mute hover:text-text")}
           >
             <Plus size={14} /> {a.label}
           </button>

@@ -451,6 +451,7 @@ export function PublishPanel({
 
       <div className="flex flex-col gap-2">
         <Button
+          variant="coral"
           size="lg"
           disabled={pending || publishDisabledReason != null}
           onClick={onPublish}

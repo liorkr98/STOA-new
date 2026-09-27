@@ -9,6 +9,7 @@ import { buttonClass } from "@/components/ui/button";
 import { useSubscribeToPlan } from "@/hooks/use-spend";
 import { ConfirmSpendDialog } from "@/components/wallet/confirm-spend-dialog";
 import type { Plan } from "@/lib/db/plans";
+import { Button } from "@/components/ui/button";
 
 /**
  * Tier picker. Centred modal on desktop, bottom sheet on mobile (single
@@ -125,19 +126,15 @@ export function TierPickerModal({
                       {plan.trial_days}-day free trial
                     </p>
                   )}
-                  <button
-                    type="button"
+                  <Button
+                    variant={popular ? "coral" : "ghost"}
+                    size="lg"
                     disabled={mutation.isPending}
                     onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
-                    className={cn(
-                      "mt-4 w-full rounded-button px-3 py-3 text-body font-medium transition-opacity hover:opacity-90 focus-ring",
-                      popular
-                        ? "bg-[var(--ink)] text-[var(--paper)]"
-                        : "border border-border bg-transparent text-text",
-                    )}
+                    className="mt-4 w-full"
                   >
                     {free ? "Join free" : (plan.trial_days ?? 0) > 0 ? "Start free trial" : "Subscribe"}
-                  </button>
+                  </Button>
                 </div>
               );
             })}

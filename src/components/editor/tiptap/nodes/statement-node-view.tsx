@@ -6,6 +6,7 @@ import { Landmark, Trash2, Eye, EyeOff, ChevronUp, ChevronDown, Download } from 
 import { cn } from "@/lib/design/cn";
 import type { FinancialStatement, StatementKind } from "@/lib/market/types";
 import { SaveToNotebookButton } from "@/components/notebook/save-to-notebook-button";
+import { buttonClass } from "@/components/ui/button";
 
 /**
  * statementNode view (A4). In the editor an analyst pulls an EDGAR statement via
@@ -433,7 +434,7 @@ export function StatementNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-button bg-accent px-2.5 text-ticker font-semibold text-accent-ink focus-ring"
+          className={buttonClass("ink", "sm")}
         >
           Pull financials
         </button>
