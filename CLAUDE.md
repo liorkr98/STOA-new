@@ -8,8 +8,13 @@ Read **[docs/PRODUCT_MODEL.md](./docs/PRODUCT_MODEL.md)** for the current produc
 video-first content model, the five surfaces, the Card Engine and the lifecycle model. It is the
 reference for what Stoa is today.
 
-Before any visual change, read **[docs/FRONTEND.md](./docs/FRONTEND.md)** — the design system,
-every page, every component, and the single source of truth for tokens.
+Before any visual change, read **[docs/FRONTEND.md](./docs/FRONTEND.md)** — every page, every
+component, and today's tokens. **The current visual system is being retired** in favour of
+**[docs/design/direction-b.html](./docs/design/direction-b.html)**; see the note at the top of
+FRONTEND.md.
+
+`docs/BUILD_SPEC.md` is history: it describes a product that has since changed (graded calls,
+targets, horizons, the old design). Never treat it as a rule.
 
 Before any backend/structural change, check **[docs/BACKEND.md](./docs/BACKEND.md)** and
 [docs/BACKEND_DATA_CONTRACTS.md](./docs/BACKEND_DATA_CONTRACTS.md). Both predate the current
@@ -18,12 +23,16 @@ product model and need review against `docs/PRODUCT_MODEL.md`.
 Quick reminders:
 
 - Next.js App Router + React 19 + TypeScript + Tailwind v4 + Supabase. No Base44.
-- **Video-first content model.** The atomic unit of a publication is a short analyst video; a
-  stance (ticker and direction), evidence cards, and a written thesis are optional enrichment.
-  Three types: video, brief, thesis. See `docs/PRODUCT_MODEL.md`.
-- **Grading is retired (2026-09-24).** Nothing is graded, scored or resolved; there is no seal,
-  track record, Track Score or Verdict type. Do not rebuild any of it. `predictions` is a
-  read-only archive (migration 0067) until it is dropped.
+- **Video-first content model.** A publication is a video, a brief or a thesis. It may declare
+  a **stance**: a ticker and a direction, long, short or hold. One stance per publication, frozen
+  once published. Evidence cards and a written thesis are optional enrichment. See
+  `docs/PRODUCT_MODEL.md`.
+- **Grading is retired (2026-09-24).** Nothing is graded, scored, locked or resolved; there is no
+  track record, no score, no seal, no Verdict type, no locked entry price, no target and no
+  horizon. Do not rebuild any of it. `predictions` is a read-only archive (migration 0067) until
+  it is dropped. `reports.locked_at` only marks the moment of publication.
+- **Analysts are followed and paid for their judgement, not scored on it.**
+- **Edit markers stay.** The public EDITED marker and its edit log are independent of grading.
 - **There is no Discover.** The Feed is the only video discovery surface, it is called Feed, and
   it lives at `/feed`; `/discover` is a permanent redirect. The text mosaic and the video/text
   layout toggle that used to live there are gone. Do not reintroduce a browse-as-text surface:
@@ -33,11 +42,12 @@ Quick reminders:
   opts in, members). Never aggregate analysts into a verdict (no long/short splits, average
   targets or consensus). Placement is driven by the **lifecycle model** (NEW / AVERAGE / RISING /
   TRENDING / POPULAR; only NEW and TRENDING are ever shown).
-- Ledger/notary palette: six tokens — ink, paper, verdigris, brass, plum, rust. Green and red
-  (verdigris/rust) are the only **sentiment** colors (up/down, long/short); brass and plum are
-  non-sentiment accents. **Primary buttons are solid ink; navy is reserved for the wordmark.** A
-  verdigris-green primary button is a bug, not the design.
-- Fraunces for display/editorial, IBM Plex Sans for UI, IBM Plex Mono for numerals.
+- **Design: pending replacement.** Today's tokens (six colours on cream paper, brass accent,
+  Fraunces display, Plex Sans/Mono, hairline broadsheet rules, zero radius on Today, uppercase
+  letterspaced mono labels, ink primaries, 6px/12px corners) are what the code runs on until the
+  next batch rewrites them, so use them for changes now; but they are no longer law. Do not
+  extend them into new surfaces or refuse a change because it breaks one. What survives: green
+  and red are sentiment only (up/down, long/short), never chrome.
 - Money is PayPal, not Stripe — Partner Referrals for onboarding, Orders v2 `platform_fees[]` for
   one-time purchases, multiparty Subscriptions for recurring billing.
 - Icons: Lucide going forward for new components; existing Phosphor usage isn't an urgent

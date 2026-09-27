@@ -8,8 +8,13 @@ editing this file and letting `CLAUDE.md` re-export it.
 
 - `docs/PRODUCT_MODEL.md` — the current product model: the video-first content model, the five
   surfaces, the Card Engine, the lifecycle model. Read this first.
-- `docs/BUILD_SPEC.md` — the frontend build spec that this run implemented, and
-  `docs/BACKEND_BRIEF.md` — the backend gap list handed to Krisi.
+- `docs/BACKEND_BRIEF.md` — the backend gap list handed to Krisi.
+- `docs/BUILD_SPEC.md` — **history.** The August 2026 build spec, written for a product that
+  has since changed (it assumes graded calls, targets, horizons and the old design). Read it
+  for why things were built, never as a rule.
+- `docs/design/direction-b.html` — **the incoming visual system.** The current one (Fraunces,
+  cream paper, brass, broadsheet hairlines, zero-radius corners, letterspaced mono labels) is
+  being retired; see Design below.
 - `docs/BACKEND.md` — schema, RLS, the fact-checker pipeline, payments.
   **Does not exist yet.** No one has supplied the source content for it, so it is not being
   fabricated here. Until it exists, `supabase/migrations/*` and `docs/BACKEND_DATA_CONTRACTS.md`
@@ -30,10 +35,17 @@ Publications are **video-first**: the atomic unit is a short analyst video, opti
 with a stance (a ticker and a direction), evidence cards, and a written thesis. Full model in
 `docs/PRODUCT_MODEL.md`.
 
+**Analysts are followed and paid for their judgement, not scored on it.** A reader decides whom
+to trust by reading, watching and following; the product never ranks analysts on whether they
+were right.
+
 **Grading is retired (2026-09-24).** Nothing is locked as a call, graded, scored or resolved. There
-is no seal, no track record, no Track Score and no Verdict type. Do not rebuild any of it. The
-`predictions` table is a read-only archive until it is dropped (migration 0067), and its only
-remaining read is the fallback for a publication's direction before migration 0065.
+is no seal, no track record, no Track Score, no Verdict type, no locked entry price, no target
+and no horizon. Do not rebuild any of it. The `predictions` table is a read-only archive until it
+is dropped (migration 0067), and its only remaining read is the fallback for a publication's
+direction before migration 0065. `reports.locked_at` survives under its old name but only marks
+the moment of publication (from then the ticker, stance, type, access and price are frozen, and
+edits to the words go through the EDITED marker); it is not a grading lock.
 
 **Not a social network.** The value isn't a follow graph — it's a stranger trusting another
 stranger's paid opinion. Design and copy should reflect that: the trust surface (the stance, the
@@ -48,7 +60,8 @@ The atomic unit of a publication is a short analyst **video**. Everything else i
 enrichment layered on top:
 
 - **Stance** — a ticker (`reports.ticker`) and a direction, long, short or hold
-  (`reports.stance`). Frozen with the ticker once published. Never graded.
+  (`reports.stance`). One stance per publication, on any of the three types. Frozen with the
+  ticker once published. Never graded.
 - **Cards** — a swipeable stack of evidence (the Card Engine; see docs/PRODUCT_MODEL.md).
 - **Thesis** — the full written argument.
 
@@ -79,7 +92,8 @@ percentile, hit rate or leaderboard, and no surface aggregates analysts into a v
 driven by the **lifecycle model** (`src/lib/lifecycle/stages.ts`): NEW / AVERAGE / RISING /
 TRENDING / POPULAR, of which only NEW and TRENDING are ever displayed. What a reader can trust is
 visible on the piece: the stance, frozen once published; the disclosure block; the EDITED marker
-and its public edit log; and the fact-checker's result.
+and its public edit log; and the fact-checker's result. **Edit markers stay, and are independent
+of grading**: they disclose that the words changed, never whether anyone was right.
 
 **Fact-check is a feature.** The AI fact-checker is a **pre-publish bonus, never a
 gate**: a creator may run it and every claim is classified (fact / unproven / opinion /
@@ -194,23 +208,33 @@ scripts/               tsx scripts: seed-demo.ts / seed.ts (demo data), refresh-
 
 ### Design
 
-5. **Read `docs/FRONTEND.md` before any visual change.** It is the single source of truth for
-   tokens, type, color, radii, and components — `design-system/MASTER.md` is deprecated.
-6. **Color: six tokens**, not one accent + neutrals. `--ink`, `--paper`, `--verdigris`, `--brass`,
-   `--plum`, `--rust`. Green and red (verdigris/rust) are the **only sentiment colors** — up/down,
-   long/short, fact/contradicted. Brass (certification, the edit marker) and plum (opinion) are
-   non-sentiment accents. Neutral surfaces/borders/muted text derive from `--ink` and `--paper` at varying
-   opacity. **Primary buttons are solid ink; navy is reserved for the wordmark.** A verdigris-green
-   primary button or accent is a bug, not the design — verdigris appears only as a sentiment
-   signal, never as chrome. Full rationale in `docs/FRONTEND.md` §1.4.
-7. **Fonts by role:** Fraunces for display/editorial (report headlines, analyst names on profile
-   heroes) — replaces Space Grotesk for these uses. IBM Plex Sans for body/UI — replaces Manrope.
-   IBM Plex Mono for all numerals, tickers, prices, scores — new; previously numbers used the
-   display font too.
-8. **No drop shadows for elevation** — unchanged, still correct. Depth comes from surface tints
-   and hairline borders. One soft shadow token exists only for floating overlays (menus, modals).
-9. **Radii:** cards 12px, buttons/inputs/chips 6px. Rounded avatars use the 12px card radius, not
-   full circles.
+**The visual system is being retired.** Fraunces as the display face, the cream-paper ground,
+the brass accent, hairline broadsheet rules, zero-radius corners, uppercase letterspaced mono
+labels, solid-ink ("black") primary buttons and 6px/12px corners are **pending replacement** by
+the system in `docs/design/direction-b.html`. The tokens are not rewritten yet (that is the next
+batch), so today's code still runs on them and a change made now uses them rather than mixing in
+Direction B values piecemeal. But they are no longer law: do not extend them into new surfaces,
+do not refuse a change because it breaks one of them, and do not build new components against
+them. Rules 6, 7, 8 and 9 below describe the retiring system. Direction B's sample screens
+predate the grading removal (a Verdict type, HIT/MISS receipts); take its visuals, not its
+product.
+
+5. **Read `docs/FRONTEND.md` before any visual change.** It documents every page and component
+   and today's tokens, and marks what is pending replacement. `design-system/MASTER.md` is
+   deprecated.
+6. **Color [pending replacement]: six tokens today**, `--ink`, `--paper`, `--verdigris`,
+   `--brass`, `--plum`, `--rust`. What survives the replacement: green and red are the **only
+   sentiment colors** (up/down, long/short, fact/contradicted) and never generic chrome, and the
+   edit marker is never an alarm colour. Brass (the edit marker, unproven) and plum (opinion) are
+   today's non-sentiment accents; ink primaries and navy for the wordmark are today's choices,
+   not settled rules.
+7. **Fonts by role [pending replacement]:** today Fraunces for display/editorial, IBM Plex Sans
+   for body/UI, IBM Plex Mono for numerals, tickers, prices and dates. The three roles stay;
+   Direction B replaces the faces.
+8. **No drop shadows for elevation.** Depth comes from surface tints and borders. One soft shadow
+   token exists only for floating overlays (menus, modals).
+9. **Radii [pending replacement]:** today cards 12px, buttons/inputs/chips 6px, Today's images
+   0. The old reason for square avatars (the seal was the only circle) went with the seal.
 10. **Zero em-dashes** anywhere user-visible — unchanged, still correct.
 11. **The disclosure block cannot accept a theme/branding prop, ever.** Every other surface an
     analyst customizes; this one doesn't. See `docs/FRONTEND.md` §2.3. **Already done.**
@@ -242,7 +266,8 @@ refreshes cached prices and market caps (`src/lib/engine/refresh-ticker-metrics.
 - AI-purple gradients, neon glows, pure black/white, three identical feature cards.
 - Green/red (verdigris/rust) on anything that is not sentiment: fact-check verdicts, market
   direction. Never generic UI.
-- A second accent color anywhere, or a color outside the six-token system.
+- A color invented ad hoc per page. (Today that means outside the six tokens; after the next
+  batch, outside Direction B's.)
 - Drop shadows used for card elevation.
 - Em-dashes in any user-visible string.
 - Components calling Supabase directly. Data flows through `src/lib/db/*` only.
@@ -255,7 +280,7 @@ refreshes cached prices and market caps (`src/lib/engine/refresh-ticker-metrics.
   already RLS-gated for this reason; keep it that way.
 - Dating-app or other casual creator-platform comparisons in any user-facing or internal copy.
 - Running any design-system generator that persists output into this repo (e.g. UI/UX Pro Max
-  `--design-system --persist`) — it overwrites the ledger system with a generic one.
+  `--design-system --persist`) — it overwrites the design system with a generic one.
 
 ## Cursor Cloud specific instructions
 
