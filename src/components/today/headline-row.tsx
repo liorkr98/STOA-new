@@ -41,7 +41,7 @@ export function HeadlineRow({
           <span className="today-meta-badge">{item.contentBadge.join(" · ")}</span>
         </div>
 
-        <Link href={href} className="group focus-ring block rounded-[var(--radius-btn)]">
+        <Link href={href} className="group focus-ring block rounded-button">
           <h4 className="today-headline" dir="auto">{item.headline}</h4>
           {item.deck ? <p className="today-deck" dir="auto">{item.deck}</p> : null}
         </Link>
@@ -49,7 +49,7 @@ export function HeadlineRow({
         <div className="today-byline">
           <Link
             href={`/analyst/${item.author.handle}`}
-            className="focus-ring inline-flex items-center gap-2.5 rounded-[var(--radius-btn)]"
+            className="focus-ring inline-flex items-center gap-2.5 rounded-button"
           >
             <Avatar src={item.author.avatarUrl} name={item.author.displayName} size="sm" />
             <span dir="auto" className="user-copy text-[0.8125rem] font-semibold text-text">

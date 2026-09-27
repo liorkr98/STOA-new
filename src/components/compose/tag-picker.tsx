@@ -129,7 +129,7 @@ function TagSearch({
         if (matches) setActive(matches.filter((m) => !taken(m)).indexOf(t));
       }}
       className={cn(
-        "focus-ring rounded-[var(--radius-tag)] border px-2 py-0.5 text-[11px]",
+        "focus-ring rounded-chip border px-2 py-0.5 text-[11px]",
         taken(t)
           ? "border-border text-text-faint"
           : highlighted
@@ -144,7 +144,7 @@ function TagSearch({
   const openMatches = matches?.filter((t) => !taken(t)) ?? [];
 
   return (
-    <div className="menu-pop mt-2 rounded-[var(--radius-btn)] border border-border bg-surface p-2">
+    <div className="menu-pop mt-2 rounded-panel border border-border bg-surface p-2">
       <input
         ref={inputRef}
         type="text"
@@ -158,7 +158,7 @@ function TagSearch({
         aria-label={`Search tags for the ${slot} tag`}
         autoComplete="off"
         spellCheck={false}
-        className="num mb-2 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
+        className="num mb-2 w-full rounded-field border border-border bg-bg px-2.5 py-1.5 text-[11px] uppercase tracking-[0.14em] text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
       />
       <div role="listbox" aria-label="Tags" className="scroll-area max-h-[280px] overflow-y-auto">
         {matches ? (
@@ -249,13 +249,13 @@ export function TagPicker({
   };
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4" aria-label="Tags">
+    <section className="rounded-panel border border-border bg-surface p-4" aria-label="Tags">
       <p className="t-eyebrow mb-3">Tags</p>
 
       <div className="num mb-1.5 text-[10px] uppercase tracking-[0.16em] text-text-mute">Primary</div>
       <div className="flex flex-wrap items-center gap-2">
         {primary ? (
-          <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-tag)] bg-[var(--ink)] px-2.5 py-1 text-[12px] font-medium text-[var(--paper)]">
+          <span className="inline-flex items-center gap-1.5 rounded-chip bg-[var(--ink)] px-2.5 py-1 text-[12px] font-medium text-[var(--paper)]">
             {primary.label}
             {autoFilled ? <span className="num text-[10px] uppercase tracking-[0.12em] opacity-70">Auto</span> : null}
             <button
@@ -279,7 +279,7 @@ export function TagPicker({
             setOpenedByPress(true);
             setOpen("primary");
           }}
-          className="focus-ring rounded-[var(--radius-tag)] border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
+          className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
         >
           {primary ? "Change" : "Choose primary"}
         </button>
@@ -301,7 +301,7 @@ export function TagPicker({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {secondaries.map((t) => (
-          <span key={t.slug} className="inline-flex items-center gap-1.5 rounded-[var(--radius-tag)] border border-border-strong px-2.5 py-1 text-[12px] text-text">
+          <span key={t.slug} className="inline-flex items-center gap-1.5 rounded-chip border border-border-strong px-2.5 py-1 text-[12px] text-text">
             {t.label}
             <button
               type="button"
@@ -320,7 +320,7 @@ export function TagPicker({
             setOpenedByPress(true);
             setOpen(open === "secondary" ? null : "secondary");
           }}
-            className="focus-ring rounded-[var(--radius-tag)] border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
+            className="focus-ring rounded-chip border border-dashed border-border px-2.5 py-1 text-[12px] text-text-mute hover:text-text"
           >
             Add secondary
           </button>

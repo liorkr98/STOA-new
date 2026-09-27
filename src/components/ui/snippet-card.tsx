@@ -42,7 +42,7 @@ export function SnippetCard({
   return (
     <article
       className={cn(
-        "group flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4",
+        "group flex flex-col gap-3 rounded-panel border border-border bg-surface p-4",
         className,
       )}
       style={accent ? { borderInlineStartColor: accent, borderInlineStartWidth: 2 } : undefined}
@@ -79,7 +79,7 @@ export function SnippetCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[0.6875rem] text-text-mute"
+              className="rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[0.6875rem] text-text-mute"
             >
               {tag}
             </span>
@@ -93,7 +93,7 @@ export function SnippetCard({
           <button
             type="button"
             onClick={onInsert}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] px-2 py-1 text-xs text-text-mute opacity-0 transition-opacity duration-[var(--dur-1)] hover:bg-surface-2 hover:text-text focus-visible:opacity-100 group-hover:opacity-100"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-button px-2 py-1 text-xs text-text-mute opacity-0 transition-opacity duration-[var(--dur-1)] hover:bg-surface-2 hover:text-text focus-visible:opacity-100 group-hover:opacity-100"
           >
             <Plus size={13} /> Insert into report
           </button>

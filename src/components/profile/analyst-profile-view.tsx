@@ -207,7 +207,7 @@ function LeadTier({ p, label, analystId }: { p: ProfilePublication; label: strin
             isVideo
             processing={p.processing}
             glyph="lg"
-            className="-mx-4 aspect-video sm:mx-0 sm:rounded-[var(--radius-card)]"
+            className="-mx-4 aspect-video sm:mx-0 sm:rounded-panel"
           />
         ) : null}
         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
@@ -312,7 +312,7 @@ function SubjectFilter({
       {open && (
         <ul
           role="listbox"
-          className="menu-pop absolute right-0 z-20 mt-2 min-w-[220px] rounded-[var(--radius-btn)] border border-border bg-surface py-1"
+          className="menu-pop absolute right-0 z-20 mt-2 min-w-[220px] rounded-panel border border-border bg-surface py-1"
         >
           <li>
             <button
@@ -389,7 +389,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
       {/* HERO: identity, audience, actions */}
       <div className="max-w-[720px]">
         <div className="flex items-start gap-4 sm:gap-5">
-          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
+          <span className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-panel bg-[var(--ink)] font-display text-2xl text-[var(--paper)] md:h-[92px] md:w-[92px]">
             {props.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={props.avatarUrl} alt={props.name} className="h-full w-full object-cover" />
@@ -434,7 +434,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="flex-1 rounded-[var(--radius-card)] bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
+              className="flex-1 rounded-panel bg-[var(--accent)] px-5 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] transition-opacity hover:opacity-90 focus-ring"
             >
               {props.subscribeLabel}
             </button>
@@ -463,7 +463,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="min-w-0 flex-1 truncate rounded-[var(--radius-btn)] bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
+            className="min-w-0 flex-1 truncate rounded-button bg-[var(--accent)] px-3 py-3.5 text-[15px] font-medium text-[var(--accent-ink)] focus-ring"
           >
             {props.subscribeLabel}
           </button>

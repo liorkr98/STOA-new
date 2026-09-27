@@ -45,7 +45,7 @@ export function SaveToggle({
       aria-label={saved ? "Remove from library" : "Save to library"}
       title={saved ? "Saved" : "Save"}
       className={cn(
-        "tap-target focus-ring inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors duration-[var(--dur-1)] hover:text-text",
+        "tap-target focus-ring inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-button text-text-faint transition-colors duration-[var(--dur-1)] hover:text-text",
         saved && "text-text",
         className,
       )}

@@ -36,7 +36,7 @@ export function DispatchStoryList({
 
               <Link
                 href={`/report/${story.report.id}`}
-                className="group focus-ring rounded-[var(--radius-btn)]"
+                className="group focus-ring rounded-button"
               >
                 <h3 className="dispatch-story-headline transition-colors duration-[var(--dur-2)] group-hover:text-accent">
                   {story.headline}
@@ -51,7 +51,7 @@ export function DispatchStoryList({
               <div className="mt-auto flex items-center gap-2 pt-1">
                 <Link
                   href={`/analyst/${story.author.handle}`}
-                  className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-[var(--r-tag)]"
+                  className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-chip"
                 >
                   {story.author.display_name}
                 </Link>

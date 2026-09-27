@@ -21,9 +21,9 @@ function ShareLinkPreview({
   imageUrl: string | null;
 }) {
   return (
-    <div className="rounded-[var(--radius-card)] border border-border bg-bg p-3">
+    <div className="rounded-panel border border-border bg-bg p-3">
       <p className="t-meta mb-2 text-[10px] uppercase tracking-wide">Share preview</p>
-      <div className="overflow-hidden rounded-[var(--radius-btn)] border border-border bg-surface">
+      <div className="overflow-hidden rounded-inner border border-border bg-surface">
         {imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt="" className="h-24 w-full object-cover" />
@@ -73,7 +73,7 @@ export function ProfilePreview({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <p className="t-eyebrow">Live preview</p>
-        <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5 text-[11px]">
+        <div className="inline-flex rounded-button border border-border bg-bg p-0.5 text-[11px]">
           {(["desktop", "mobile"] as const).map((m) => (
             <button
               key={m}

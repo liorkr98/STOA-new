@@ -55,7 +55,7 @@ function TemplateCard({
       whileHover={reduced ? undefined : { y: -1 }}
       whileTap={reduced ? undefined : { scale: 0.98 }}
       className={cn(
-        "flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-3 text-left",
+        "flex flex-col gap-2 rounded-panel border border-border bg-surface p-3 text-left",
         "transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring",
       )}
     >
@@ -136,10 +136,10 @@ export function ReportTemplatePicker({
             aria-label="Report templates"
             className={cn(
               "fixed z-50 flex max-h-[min(88svh,720px)] w-[min(560px,calc(100svw-1.5rem))] flex-col overflow-hidden",
-              "rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)]",
+              "rounded-panel border border-border bg-paper shadow-[var(--shadow-card)]",
               anchor === "compose"
                 ? "left-1/2 top-[12%] -translate-x-1/2"
-                : "bottom-0 left-1/2 w-full max-w-none -translate-x-1/2 rounded-b-none sm:bottom-auto sm:top-[10%] sm:max-w-[560px] sm:rounded-b-[var(--radius-card)]",
+                : "bottom-0 left-1/2 w-full max-w-none -translate-x-1/2 rounded-b-none sm:bottom-auto sm:top-[10%] sm:max-w-[560px] sm:rounded-b-panel",
             )}
             initial={reduced ? false : { opacity: 0, scale: 0.98, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -161,7 +161,7 @@ export function ReportTemplatePicker({
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="rounded-[var(--radius-btn)] p-1.5 text-text-faint hover:text-text focus-ring"
+                className="rounded-button p-1.5 text-text-faint hover:text-text focus-ring"
               >
                 <X size={16} />
               </button>
@@ -229,7 +229,7 @@ export function ReportTemplateStrip({
       initial={reduced ? false : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduced ? 0.08 : 0.2, ease: [0.23, 1, 0.32, 1] }}
-      className="mb-6 rounded-[var(--radius-card)] border border-border bg-surface-2 p-4"
+      className="mb-6 rounded-panel border border-border bg-surface-2 p-4"
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>

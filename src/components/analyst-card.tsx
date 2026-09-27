@@ -20,7 +20,7 @@ export function AnalystCard({
     <Link
       href={`/analyst/${analyst.handle}`}
       className={cn(
-        "group flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
+        "group flex flex-col gap-4 rounded-panel border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
         className,
       )}
     >
@@ -39,7 +39,7 @@ export function AnalystCard({
         </div>
         <div className="flex flex-col items-end gap-1">
           {promoted && (
-            <span className="rounded-[var(--radius-tag)] bg-accent-weak px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">
+            <span className="rounded-chip bg-accent-weak px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">
               Promoted
             </span>
           )}

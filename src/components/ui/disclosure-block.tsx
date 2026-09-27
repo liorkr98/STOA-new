@@ -57,7 +57,7 @@ function Chip({ tone, children }: { tone: "neutral" | "quiet"; children: React.R
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-[var(--r-tag)] border px-2 py-0.5 text-xs font-medium text-left sm:text-right",
+        "inline-flex items-center rounded-chip border px-2 py-0.5 text-xs font-medium text-left sm:text-right",
         tone === "neutral" ? "border-border-strong text-text" : "border-border text-text-mute",
       )}
     >

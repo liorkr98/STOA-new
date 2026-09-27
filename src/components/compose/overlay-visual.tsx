@@ -36,7 +36,7 @@ export function OverlayVisualBody({
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper text-[var(--ink)]",
+        "relative flex items-center justify-center overflow-hidden rounded-panel border border-border bg-paper text-[var(--ink)]",
         className,
       )}
     >
@@ -120,21 +120,21 @@ export function OverlayVisualizeFields({
           onChange={(e) => onChange({ prompt: e.target.value, imageUrl })}
           rows={3}
           placeholder="The three steps in the margin expansion, as a simple diagram"
-          className="mt-1 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm text-text focus-ring"
+          className="mt-1 w-full rounded-field border border-border bg-bg px-2 py-1.5 text-sm text-text focus-ring"
         />
       </label>
       <button
         type="button"
         disabled={pending || !prompt.trim()}
         onClick={generate}
-        className="focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[11px] font-medium text-[var(--paper)] disabled:opacity-50"
+        className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[11px] font-medium text-[var(--paper)] disabled:opacity-50"
       >
         {pending ? "Generating..." : imageUrl ? "Regenerate with Napkin" : "Generate with Napkin"}
       </button>
       {error ? <p className="text-[11px] text-[var(--down)]">{error}</p> : null}
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="" className="max-h-36 w-full rounded-[var(--radius-btn)] border border-border object-contain" />
+        <img src={imageUrl} alt="" className="max-h-36 w-full rounded-inner border border-border object-contain" />
       ) : null}
     </div>
   );
@@ -159,7 +159,7 @@ export function OverlayChartFields({
           value={ticker}
           onChange={(e) => onChange({ ticker: e.target.value.toUpperCase(), compareTicker: compareTicker ?? "" })}
           placeholder={fallbackTicker || "NVDA"}
-          className="num mt-1 block w-24 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
+          className="num mt-1 block w-24 rounded-field border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
         />
       </label>
       <label className="text-[11px] text-text-mute">
@@ -168,7 +168,7 @@ export function OverlayChartFields({
           value={compareTicker ?? ""}
           onChange={(e) => onChange({ ticker: ticker || fallbackTicker || "SPY", compareTicker: e.target.value.toUpperCase() })}
           placeholder="Optional, e.g. SPY"
-          className="num mt-1 block w-28 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
+          className="num mt-1 block w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-sm focus-ring"
         />
       </label>
     </div>

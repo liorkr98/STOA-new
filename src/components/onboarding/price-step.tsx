@@ -41,7 +41,7 @@ export function PriceStep({
             onClick={() => setMode(m.value)}
             aria-pressed={mode === m.value}
             className={cn(
-              "flex-1 rounded-[var(--radius-btn)] border px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex-1 rounded-button border px-3 py-2.5 text-sm font-medium transition-colors",
               mode === m.value
                 ? "border-accent bg-accent-weak text-accent"
                 : "border-border text-text-mute hover:border-border-strong hover:text-text",
@@ -63,7 +63,7 @@ export function PriceStep({
               max={200}
               value={sub}
               onChange={(e) => setSub(Number(e.target.value))}
-              className="num h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg pl-7 pr-10 text-sm focus-ring"
+              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-10 text-sm focus-ring"
             />
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-faint">/mo</span>
@@ -82,7 +82,7 @@ export function PriceStep({
               max={50}
               value={report}
               onChange={(e) => setReport(Number(e.target.value))}
-              className="num h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg pl-7 pr-3 text-sm focus-ring"
+              className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-3 text-sm focus-ring"
             />
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
           </div>
@@ -92,7 +92,7 @@ export function PriceStep({
       {!showSub && <input type="hidden" name="sub_price" value={0} />}
       {!showReport && <input type="hidden" name="report_price" value={0} />}
 
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface-2 p-4">
+      <div className="rounded-panel border border-border bg-surface-2 p-4">
         <p className="text-sm font-medium">Stoa takes 10% of what you earn. You keep 90%.</p>
         <p className="t-meta mt-1">
           Example: a {showSub ? `$${sub}/mo subscriber` : `$${report} report`} pays you{" "}

@@ -13,7 +13,7 @@ export default function PricingPage() {
       </p>
 
       <div className="mt-10 grid gap-5 md:grid-cols-2">
-        <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="rounded-panel border border-border bg-surface p-6">
           <h2 className="t-h3">For investors</h2>
           <p className="t-body mt-2">
             Free to browse, follow analysts, and read free posts. Pay only when you subscribe to an
@@ -23,7 +23,7 @@ export default function PricingPage() {
             Join free
           </Link>
         </div>
-        <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="rounded-panel border border-border bg-surface p-6">
           <h2 className="t-h3">For analysts</h2>
           <p className="t-body mt-2">
             Set monthly subscriptions ($5 to $200) and per-report prices ($1 to $50). You keep 90%

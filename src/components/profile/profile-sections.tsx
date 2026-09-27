@@ -46,7 +46,7 @@ export function ProfileSections({
                 {specialties.map((s) => (
                   <span
                     key={s}
-                    className="rounded-[var(--radius-tag)] border border-border bg-bg px-2 py-0.5 text-xs text-text-mute"
+                    className="rounded-chip border border-border bg-bg px-2 py-0.5 text-xs text-text-mute"
                   >
                     {s}
                   </span>
@@ -63,7 +63,7 @@ export function ProfileSections({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-[var(--radius-tag)] border border-border bg-bg px-2.5 py-1 text-xs font-medium text-accent hover:border-accent/40"
+                    className="rounded-chip border border-border bg-bg px-2.5 py-1 text-xs font-medium text-accent hover:border-accent/40"
                   >
                     {link.label}
                   </a>
@@ -79,7 +79,7 @@ export function ProfileSections({
                   <Link
                     key={t}
                     href={`/markets/${t}`}
-                    className="num rounded-[var(--radius-tag)] border border-border bg-bg px-2 py-0.5 text-xs font-semibold hover:border-accent/40"
+                    className="num rounded-chip border border-border bg-bg px-2 py-0.5 text-xs font-semibold hover:border-accent/40"
                   >
                     {t}
                   </Link>

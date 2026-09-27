@@ -308,7 +308,7 @@ export function StatementNodeView({
       return (
         <NodeViewWrapper
           contentEditable={false}
-          className="my-4 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-4 py-8 text-center"
+          className="my-4 rounded-panel border border-dashed border-border bg-surface px-4 py-8 text-center"
         >
           <p className="t-meta">Financial statement unavailable</p>
         </NodeViewWrapper>
@@ -319,7 +319,7 @@ export function StatementNodeView({
         contentEditable={false}
         role="figure"
         aria-label={`${statement.symbol} ${kindLabel} statement`}
-        className="fade-up group my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
+        className="fade-up group my-4 overflow-hidden rounded-panel border border-border bg-surface"
       >
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
           <span className="flex items-center gap-2">
@@ -370,14 +370,14 @@ export function StatementNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up group my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up group my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex h-7 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
+        <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
           <Landmark size={13} className="text-text-faint" />
           <input
             value={draftTicker}
@@ -395,7 +395,7 @@ export function StatementNodeView({
           value={years}
           onMouseDown={stop}
           onChange={(e) => pull(kind, Number(e.target.value))}
-          className="h-7 rounded-[var(--radius-btn)] border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
         >
           {[3, 5, 8, 10].map((n) => (
             <option key={n} value={n}>
@@ -411,7 +411,7 @@ export function StatementNodeView({
           onMouseDown={stop}
           onClick={() => updateAttributes({ showYoY: !showYoY })}
           className={cn(
-            "h-7 rounded-[var(--radius-btn)] px-2 text-[11px] font-medium transition-colors focus-ring",
+            "h-7 rounded-button px-2 text-[11px] font-medium transition-colors focus-ring",
             showYoY ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:bg-surface-2",
           )}
         >
@@ -422,7 +422,7 @@ export function StatementNodeView({
           onMouseDown={stop}
           onClick={() => updateAttributes({ showCagr: !showCagr })}
           className={cn(
-            "h-7 rounded-[var(--radius-btn)] px-2 text-[11px] font-medium transition-colors focus-ring",
+            "h-7 rounded-button px-2 text-[11px] font-medium transition-colors focus-ring",
             showCagr ? "bg-[var(--ink)] text-[var(--paper)]" : "text-text-mute hover:bg-surface-2",
           )}
         >
@@ -433,7 +433,7 @@ export function StatementNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-[var(--radius-btn)] bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
         >
           Pull financials
         </button>
@@ -444,7 +444,7 @@ export function StatementNodeView({
             aria-label="Export CSV"
             onMouseDown={stop}
             onClick={exportCsv}
-            className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-text focus-ring"
+            className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-text focus-ring"
           >
             <Download size={14} />
           </button>
@@ -455,7 +455,7 @@ export function StatementNodeView({
           aria-label="Delete statement"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -491,7 +491,7 @@ function Seg<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+    <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
       {options.map((o) => (
         <button
           key={o.key}

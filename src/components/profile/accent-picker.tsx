@@ -92,7 +92,7 @@ export function AccentPicker({
               key={p.id}
               type="button"
               onClick={() => setPairing(p.id)}
-              className={`rounded-[var(--radius-btn)] border px-3 py-2 text-left transition-colors focus-ring ${
+              className={`rounded-inner border px-3 py-2 text-left transition-colors focus-ring ${
                 pairing === p.id
                   ? "border-accent bg-accent-weak"
                   : "border-border bg-bg hover:border-border-strong"
@@ -112,7 +112,7 @@ export function AccentPicker({
             type="button"
             aria-label={`Use ${s}`}
             onClick={() => setValue(s)}
-            className="h-8 w-8 rounded-[var(--radius-btn)] border border-border focus-ring"
+            className="h-8 w-8 rounded-button border border-border focus-ring"
             style={{ background: s }}
           />
         ))}
@@ -122,27 +122,27 @@ export function AccentPicker({
           value={check.hex ?? "#2f6e5d"}
           onChange={(e) => setValue(e.target.value)}
           aria-label="Custom color"
-          className="h-8 w-10 cursor-pointer rounded-[var(--radius-btn)] border border-border bg-transparent"
+          className="h-8 w-10 cursor-pointer rounded-field border border-border bg-transparent"
         />
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="#2f6e5d or oklch(...)"
-          className="num h-8 w-40 rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm focus-ring"
+          className="num h-8 w-40 rounded-field border border-border bg-bg px-2 text-sm focus-ring"
         />
       </div>
 
       {/* Live preview */}
-      <div className="flex items-center gap-3 rounded-[var(--radius-btn)] border border-border bg-bg p-3" style={previewVars as CSSProperties}>
+      <div className="flex items-center gap-3 rounded-inner border border-border bg-bg p-3" style={previewVars as CSSProperties}>
         <button
           type="button"
-          className="h-9 rounded-[var(--radius-btn)] bg-accent px-3 text-sm font-semibold text-accent-ink"
+          className="h-9 rounded-button bg-accent px-3 text-sm font-semibold text-accent-ink"
         >
           Subscribe
         </button>
         <span className="text-sm font-medium text-accent">Accent link</span>
         <span
-          className="rounded-[var(--radius-tag)] px-2 py-0.5 text-[11px]"
+          className="rounded-chip px-2 py-0.5 text-[11px]"
           style={{ background: "var(--accent-weak)", color: "var(--accent)" }}
         >
           tag
@@ -160,7 +160,7 @@ export function AccentPicker({
               key={l.id}
               type="button"
               onClick={() => setLayout(l.id)}
-              className={`rounded-[var(--radius-btn)] border px-3 py-2 text-left transition-colors focus-ring ${
+              className={`rounded-inner border px-3 py-2 text-left transition-colors focus-ring ${
                 layout === l.id
                   ? "border-accent bg-accent-weak"
                   : "border-border bg-bg hover:border-border-strong"

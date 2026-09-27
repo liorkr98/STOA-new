@@ -232,7 +232,7 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface",
+        "overflow-hidden rounded-panel border border-border bg-surface",
         className,
       )}
     >
@@ -241,14 +241,14 @@ export function DataTable<T>({
           {caption ? <span className="t-eyebrow">{caption}</span> : <span />}
           <div className="flex items-center gap-1">
             <details className="relative">
-              <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-1.5 rounded-[var(--radius-btn)] px-2 text-sm text-text-mute hover:bg-surface-2">
+              <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-1.5 rounded-button px-2 text-sm text-text-mute hover:bg-surface-2">
                 <Columns3 size={15} /> Columns
               </summary>
-              <div className="menu-pop absolute right-0 z-20 mt-1 w-44 rounded-[var(--radius-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
+              <div className="menu-pop absolute right-0 z-20 mt-1 w-44 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
                 {columns.map((col) => (
                   <label
                     key={col.key}
-                    className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-btn)] px-2 py-1.5 text-sm hover:bg-surface-2"
+                    className="flex cursor-pointer items-center gap-2 rounded-inner px-2 py-1.5 text-sm hover:bg-surface-2"
                   >
                     <input
                       type="checkbox"
@@ -264,7 +264,7 @@ export function DataTable<T>({
               <button
                 type="button"
                 onClick={exportCsv}
-                className="focus-ring flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] px-2 text-sm text-text-mute hover:bg-surface-2"
+                className="focus-ring flex h-8 items-center gap-1.5 rounded-button px-2 text-sm text-text-mute hover:bg-surface-2"
               >
                 <Download size={15} /> CSV
               </button>

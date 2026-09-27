@@ -48,7 +48,7 @@ export function DispatchLead({
 
             <Link
               href={`/report/${report.id}`}
-              className="group mt-4 block focus-ring rounded-[var(--radius-btn)]"
+              className="group mt-4 block focus-ring rounded-button"
             >
               <h2
                 className={cn(
@@ -77,7 +77,7 @@ export function DispatchLead({
         <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-border pt-5">
           <Link
             href={`/analyst/${author.handle}`}
-            className="flex items-center gap-3 focus-ring rounded-[var(--radius-btn)]"
+            className="flex items-center gap-3 focus-ring rounded-button"
           >
             <Avatar src={author.avatar_url} name={author.display_name} size="md" />
             <span className="flex flex-col leading-tight">
@@ -100,7 +100,7 @@ export function DispatchLead({
 
           <Link
             href={`/report/${report.id}`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] text-sm font-medium text-accent focus-ring hover:underline"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-button text-sm font-medium text-accent focus-ring hover:underline"
           >
             Read the report
             <ArrowRight size={14} />

@@ -39,7 +39,7 @@ export function MiniChart({ ticker }: { ticker: string }) {
   const data = fetched?.ticker === ticker ? fetched.points : placeholder;
 
   return (
-    <div className="h-36 w-full rounded-[var(--radius-btn)] border border-border bg-bg/40 p-2">
+    <div className="h-36 w-full rounded-inner border border-border bg-bg/40 p-2">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <YAxis domain={["auto", "auto"]} hide />

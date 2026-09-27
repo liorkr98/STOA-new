@@ -33,7 +33,7 @@ function TypeCard({ def }: { def: PublicationTypeDef }) {
   return (
     <Link
       href={typeHref(def.key)}
-      className="focus-ring flex min-h-[19rem] flex-col rounded-[var(--radius-card)] border border-border bg-surface p-5 text-left transition-colors hover:border-[var(--ink)]"
+      className="focus-ring flex min-h-[19rem] flex-col rounded-panel border border-border bg-surface p-5 text-left transition-colors hover:border-[var(--ink)]"
     >
       <div className="flex items-center gap-2">
         <span className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">{def.label}</span>
@@ -62,7 +62,7 @@ function TypeRow({ def }: { def: PublicationTypeDef }) {
     <li>
       <Link
         href={typeHref(def.key)}
-        className="focus-ring flex w-full items-start gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-3.5 py-3 text-left"
+        className="focus-ring flex w-full items-start gap-3 rounded-panel border border-border bg-surface px-3.5 py-3 text-left"
       >
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
@@ -97,7 +97,7 @@ function Progress({ percent, label }: { percent: number; label?: boolean }) {
 function DraftRowWide({ d }: { d: PickerDraft }) {
   const meta = [d.ticker, d.where, `Edited ${d.editedLabel}`].filter(Boolean).join(" · ");
   return (
-    <li className="flex items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface px-4 py-3.5">
+    <li className="flex items-center gap-4 rounded-panel border border-border bg-surface px-4 py-3.5">
       <span className="num w-[5.5rem] shrink-0 text-[10px] uppercase tracking-[0.16em] text-text-mute">
         {d.typeLabel}
       </span>
@@ -110,7 +110,7 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
       <Progress percent={d.percent} label />
       <Link
         href={d.href}
-        className="num focus-ring shrink-0 rounded-[var(--radius-btn)] border border-border px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-text transition-colors hover:border-[var(--ink)]"
+        className="num focus-ring shrink-0 rounded-button border border-border px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-text transition-colors hover:border-[var(--ink)]"
       >
         Resume
       </Link>
@@ -125,8 +125,8 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
 
 function DraftRowCompact({ d }: { d: PickerDraft }) {
   return (
-    <li className="flex items-center gap-2 rounded-[var(--radius-card)] border border-border bg-surface pr-3">
-      <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-card)] px-3.5 py-3">
+    <li className="flex items-center gap-2 rounded-panel border border-border bg-surface pr-3">
+      <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-panel px-3.5 py-3">
         <span className="min-w-0 flex-1">
           <span className="num block truncate text-[9px] uppercase tracking-[0.14em] text-text-mute">
             {d.typeLabel} · {d.where}
@@ -186,7 +186,7 @@ export function ComposePicker({ drafts }: { drafts: PickerDraft[] }) {
             <p className="hidden font-display text-[0.9375rem] italic text-text-mute md:block">
               Drafts open at the step you stopped on.
             </p>
-            <ComposeBackLink className="rounded-[var(--radius-btn)] border border-border px-2.5 py-1 md:hidden">
+            <ComposeBackLink className="rounded-button border border-border px-2.5 py-1 md:hidden">
               All
             </ComposeBackLink>
           </div>

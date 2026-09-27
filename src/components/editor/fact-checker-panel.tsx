@@ -30,7 +30,7 @@ function ClaimRow({ claim }: { claim: FactClaim }) {
   const Icon = cfg.icon;
   return (
     <div
-      className="rounded-[var(--radius-btn)] border border-border bg-bg/50 p-3"
+      className="rounded-inner border border-border bg-bg/50 p-3"
       style={{ borderColor: `color-mix(in srgb, ${cfg.color} 25%, var(--border))` }}
     >
       <div className="mb-1.5 flex items-center gap-2">

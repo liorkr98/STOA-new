@@ -54,7 +54,7 @@ const TABS: [Tab, string][] = [
   ["ai", "AI analyzer"],
 ];
 
-const inputClass = "mt-1 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm";
+const inputClass = "mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm";
 
 function SortableSection({ section, onToggle }: { section: ProfileSection; onToggle: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id });
@@ -62,7 +62,7 @@ function SortableSection({ section, onToggle }: { section: ProfileSection; onTog
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className="flex items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2.5"
+      className="flex items-center justify-between gap-3 rounded-inner border border-border bg-surface-2 px-3 py-2.5"
     >
       <div className="flex items-center gap-2">
         <button type="button" className="cursor-grab text-text-faint hover:text-text" {...attributes} {...listeners}>
@@ -210,7 +210,7 @@ export function BrandingStudio({
           <div className="surface flex flex-col gap-6 p-6">
             {/* Name, photo, headline and bio are account identity — read-only here,
                 edited in Settings — so the two surfaces never fight over the same record. */}
-            <div className="flex flex-col gap-5 rounded-[var(--radius-btn)] border border-dashed border-border bg-surface-2/50 p-5">
+            <div className="flex flex-col gap-5 rounded-inner border border-dashed border-border bg-surface-2/50 p-5">
               <div className="flex items-center gap-4">
                 <Avatar src={avatarUrl} name={displayName} size="lg" />
                 <div className="min-w-0">
@@ -258,8 +258,8 @@ export function BrandingStudio({
               <div className="mt-2 flex flex-col gap-2">
                 {social.map((row, i) => (
                   <div key={i} className="flex gap-2">
-                    <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm" />
-                    <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1.5 text-sm" />
+                    <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-sm" />
+                    <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2 py-1.5 text-sm" />
                     <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-faint hover:text-[var(--down)]">
                       <Trash size={16} />
                     </button>
@@ -273,12 +273,12 @@ export function BrandingStudio({
               <p className="text-sm font-medium">Pinned video</p>
               <p className="t-meta mt-1">Shown at the top of your public profile. Also settable from Publications.</p>
               <div className="mt-2 flex flex-col gap-1.5">
-                <button type="button" onClick={() => pin(null)} className={cn("flex items-center justify-between rounded-[var(--radius-btn)] border px-3 py-2 text-left text-sm", pinnedId === null ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
+                <button type="button" onClick={() => pin(null)} className={cn("flex items-center justify-between rounded-inner border px-3 py-2 text-left text-sm", pinnedId === null ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
                   <span>Most recent (default)</span>
                   {pinnedId === null && <PushPin size={14} weight="fill" />}
                 </button>
                 {publishedReports.slice(0, 6).map((r) => (
-                  <button key={r.id} type="button" onClick={() => pin(r.id)} className={cn("flex items-center justify-between gap-3 rounded-[var(--radius-btn)] border px-3 py-2 text-left text-sm", pinnedId === r.id ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
+                  <button key={r.id} type="button" onClick={() => pin(r.id)} className={cn("flex items-center justify-between gap-3 rounded-inner border px-3 py-2 text-left text-sm", pinnedId === r.id ? "border-[var(--ink)]" : "border-border hover:border-border-strong")}>
                     <span className="truncate">{r.title ?? "Untitled"}</span>
                     {pinnedId === r.id && <PushPin size={14} weight="fill" className="shrink-0" />}
                   </button>
@@ -320,7 +320,7 @@ export function BrandingStudio({
               <p className="text-sm font-medium">Theme</p>
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {PROFILE_THEMES.map((t) => (
-                  <button key={t.id} type="button" onClick={() => setThemeId(t.id)} className={cn("overflow-hidden rounded-[var(--radius-btn)] border p-2 text-left text-[10px] font-medium transition-colors", themeId === t.id ? "border-accent text-accent" : "border-border text-text-mute")}>
+                  <button key={t.id} type="button" onClick={() => setThemeId(t.id)} className={cn("overflow-hidden rounded-inner border p-2 text-left text-[10px] font-medium transition-colors", themeId === t.id ? "border-accent text-accent" : "border-border text-text-mute")}>
                     <div className={cn("mb-1.5 h-6 w-full rounded-[4px]", t.className || "bg-muted")} />
                     {t.label}
                   </button>
@@ -362,7 +362,7 @@ export function BrandingStudio({
         {tab === "pricing" && (
           <div className="flex flex-col gap-6">
             <PlanManager initialPlans={plans} handle={profile.handle} />
-            <div className="rounded-[var(--radius-card)] border border-border bg-surface-2 p-5">
+            <div className="rounded-panel border border-border bg-surface-2 p-5">
               <p className="num text-[10px] uppercase tracking-[0.18em] text-text-mute">Legacy pricing — being retired</p>
               <p className="t-meta mt-1">
                 These single-price fields predate tiers. Kept working for now; tiers above are the primary control.

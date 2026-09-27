@@ -111,7 +111,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
                 that has no video.
               */}
               {lead.playbackUrl || lead.embedUrl || lead.thumbnailUrl ? (
-                <div className="relative aspect-video overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
+                <div className="relative aspect-video overflow-hidden rounded-panel bg-[var(--ink)]">
                   <LandingLeadClip
                     playbackUrl={lead.playbackUrl}
                     embedUrl={lead.embedUrl}
@@ -178,7 +178,7 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
           <Link
             key={f.handle}
             href={`/analyst/${f.handle}`}
-            className="landing-face group relative overflow-hidden rounded-[var(--radius-btn)] bg-surface-2 focus-ring"
+            className="landing-face group relative overflow-hidden rounded-panel bg-surface-2 focus-ring"
             style={{ gridColumn: `${p.col + 1} / span ${p.w}`, gridRow: `${p.row + 1} / span ${p.h}` }}
           >
             {f.avatarUrl ? (

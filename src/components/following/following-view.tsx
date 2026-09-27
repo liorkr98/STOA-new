@@ -68,7 +68,7 @@ function CreatorRow({ c }: { c: FollowCreator }) {
 
 function Placeholder({ label }: { label: string }) {
   return (
-    <div className="flex h-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-border">
+    <div className="flex h-40 items-center justify-center rounded-panel border border-dashed border-border">
       <p className="t-meta text-center">
         Following {label} is coming soon.
         <br />

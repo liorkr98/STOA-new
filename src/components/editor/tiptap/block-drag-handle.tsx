@@ -174,7 +174,7 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
             aria-label="Insert block below"
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => hoverTarget && openInsert(e, hoverTarget)}
-            className="flex h-6 w-5 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:bg-surface-2 hover:text-text focus-ring"
+            className="flex h-6 w-5 items-center justify-center rounded-button text-text-faint transition-colors hover:bg-surface-2 hover:text-text focus-ring"
           >
             <Plus size={15} />
           </button>
@@ -183,7 +183,7 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
             aria-label="Block actions"
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => hoverTarget && openActions(e, hoverTarget)}
-            className="flex h-6 w-5 cursor-grab items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:bg-surface-2 hover:text-text active:cursor-grabbing"
+            className="flex h-6 w-5 cursor-grab items-center justify-center rounded-button text-text-faint transition-colors hover:bg-surface-2 hover:text-text active:cursor-grabbing"
           >
             <GripVertical size={15} />
           </button>
@@ -238,7 +238,7 @@ function ActionsMenu({
       id={id}
       data-stoa-pinned-menu
       role="menu"
-      className="menu-pop fixed z-[250] w-44 overflow-hidden rounded-[var(--r-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+      className="menu-pop fixed z-[250] w-44 overflow-hidden rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
       style={{ top: anchor.top, left: anchor.left }}
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -283,7 +283,7 @@ function Item({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-[var(--radius-btn)] px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-surface-2",
+        "flex w-full items-center gap-2 rounded-inner px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-surface-2",
         tone === "down" ? "text-[var(--down)]" : "text-text-mute hover:text-text",
       )}
     >

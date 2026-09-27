@@ -55,7 +55,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-lg md:p-6">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <div className="flex items-start justify-between gap-4">
             <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
               Delete this publication for good?
@@ -72,7 +72,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
 
           <Dialog.Description asChild>
             <div className="mt-4 space-y-3 text-[13px] leading-relaxed text-text">
-              <p className="rounded-[var(--radius-card)] border border-[var(--rust)]/40 bg-[var(--rust)]/10 p-3">
+              <p className="rounded-panel border border-[var(--rust)]/40 bg-[var(--rust)]/10 p-3">
                 <span className="font-semibold">This cannot be undone.</span> The text, the
                 video, the cards and the tags are destroyed. Existing links stop working, and
                 Stoa cannot bring any of it back.
@@ -98,7 +98,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
             onChange={(e) => setTyped(e.target.value)}
             autoComplete="off"
             spellCheck={false}
-            className="focus-ring mt-1.5 w-full rounded-[var(--radius-btn)] border border-border bg-paper px-3 py-2 text-sm text-text placeholder:text-text-faint"
+            className="focus-ring mt-1.5 w-full rounded-field border border-border bg-paper px-3 py-2 text-sm text-text placeholder:text-text-faint"
             placeholder={CONFIRM_WORD}
           />
 
@@ -147,7 +147,7 @@ export function DeleteDraftDialog({ id, title }: { id: string; title: string }) 
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--ink)]/40 backdrop-blur-[2px]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-lg md:p-6">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <div className="flex items-start justify-between gap-4">
             <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
               Delete this draft?

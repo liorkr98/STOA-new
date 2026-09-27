@@ -46,7 +46,7 @@ export function BlockPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
                 }}
                 onClick={() => onAdd(type)}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-[var(--radius-btn)] border border-transparent px-3 py-2.5 text-left text-sm",
+                  "flex items-center gap-2.5 rounded-inner border border-transparent px-3 py-2.5 text-left text-sm",
                   "text-text-mute transition-colors hover:border-border hover:bg-surface-2 hover:text-text",
                 )}
               >

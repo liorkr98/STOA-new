@@ -53,7 +53,7 @@ export function PlanPicker({
         return (
           <div
             key={plan.id}
-            className="rounded-[var(--radius-card)] border border-border bg-surface p-3"
+            className="rounded-panel border border-border bg-surface p-3"
           >
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-semibold">{plan.name}</span>

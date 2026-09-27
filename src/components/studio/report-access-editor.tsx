@@ -12,7 +12,7 @@ import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 import type { AccessType, Report } from "@/lib/types";
 
 const inputClass =
-  "h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm focus-ring";
+  "h-9 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
 
 export function ReportAccessEditor({
   report,
@@ -67,7 +67,7 @@ export function ReportAccessEditor({
           side="left"
           align="start"
           sideOffset={8}
-          className="z-50 w-80 rounded-[var(--radius-card)] border border-border bg-surface p-4 shadow-[var(--shadow-card)]"
+          className="z-50 w-80 rounded-panel border border-border bg-surface p-4 shadow-[var(--shadow-card)]"
         >
           <p className="t-eyebrow mb-2">Report access</p>
           <div className="flex flex-col gap-1.5 text-sm">
@@ -81,7 +81,7 @@ export function ReportAccessEditor({
               <label
                 key={a.key}
                 className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-[var(--radius-btn)] border px-3 py-2",
+                  "flex cursor-pointer items-center gap-2 rounded-inner border px-3 py-2",
                   access === a.key ? "border-accent bg-accent-weak" : "border-border",
                 )}
               >

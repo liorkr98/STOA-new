@@ -55,7 +55,7 @@ export function FactCheckLayer({
             key={v}
             type="button"
             onClick={() => jumpTo(v)}
-            className="inline-flex items-center gap-1 transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]"
+            className="inline-flex items-center gap-1 transition-colors hover:text-text focus-ring rounded-chip"
           >
             <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: VERDICT_STYLE[v].color }} />
             {counts[v]} {VERDICT_STYLE[v].label.toLowerCase()}

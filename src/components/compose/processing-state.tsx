@@ -49,7 +49,7 @@ export function ProcessingState({
   return (
     <section
       aria-live="polite"
-      className={cn("rounded-[var(--radius-card)] border border-border bg-surface", compact ? "p-4" : "p-5 md:p-6")}
+      className={cn("rounded-panel border border-border bg-surface", compact ? "p-4" : "p-5 md:p-6")}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

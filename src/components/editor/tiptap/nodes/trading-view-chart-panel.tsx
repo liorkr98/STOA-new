@@ -49,7 +49,7 @@ export function TradingViewChartPanel({
 
   if (!isEditable && screenshotUrl) {
     return (
-      <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+      <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={screenshotUrl} alt={`TradingView chart for ${ticker}`} className="block w-full" />
       </NodeViewWrapper>
@@ -58,7 +58,7 @@ export function TradingViewChartPanel({
 
   if (!isEditable && ticker) {
     return (
-      <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+      <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface">
         <TradingViewChart ticker={ticker} range={range} studies={studies} height={480} />
       </NodeViewWrapper>
     );
@@ -69,7 +69,7 @@ export function TradingViewChartPanel({
       contentEditable={false}
       role="figure"
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stopEditorCapture}
@@ -91,9 +91,9 @@ export function TradingViewChartPanel({
             }}
             onMouseDown={stopEditorCapture}
             placeholder="Ticker"
-            className="num w-20 rounded-[var(--radius-btn)] border border-border bg-bg px-2 py-1 text-sm font-semibold focus:border-accent focus:outline-none"
+            className="num w-20 rounded-field border border-border bg-bg px-2 py-1 text-sm font-semibold focus:border-accent focus:outline-none"
           />
-          <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+          <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
             {CHART_RANGES.map((r) => (
               <button
                 key={r}
@@ -117,7 +117,7 @@ export function TradingViewChartPanel({
                 onMouseDown={stopEditorCapture}
                 onClick={() => toggleStudy(s.id)}
                 className={cn(
-                  "rounded-[var(--radius-btn)] border px-2 py-0.5 text-[10px] font-medium transition-colors",
+                  "rounded-button border px-2 py-0.5 text-[10px] font-medium transition-colors",
                   studies.includes(s.id)
                     ? "border-accent bg-accent-weak text-accent"
                     : "border-border text-text-mute hover:text-text",
@@ -132,7 +132,7 @@ export function TradingViewChartPanel({
             aria-label="Delete chart"
             onMouseDown={stopEditorCapture}
             onClick={() => deleteNode()}
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
           >
             <Trash2 size={15} />
           </button>

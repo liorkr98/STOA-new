@@ -146,7 +146,7 @@ export function CardPreview({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-border bg-surface",
+        "rounded-panel border border-border bg-surface",
         compact ? "p-3" : "p-4",
         className,
       )}

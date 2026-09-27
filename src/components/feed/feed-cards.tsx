@@ -28,7 +28,7 @@ export function InkTag({ ink }: { ink: ProvenanceInk }) {
   return (
     <span
       className={cn(
-        "num ml-1.5 inline-block rounded-[var(--radius-tag)] border px-1 py-px align-middle text-[10px] uppercase tracking-[0.12em]",
+        "num ml-1.5 inline-block rounded-chip border px-1 py-px align-middle text-[10px] uppercase tracking-[0.12em]",
         ink === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
       )}
     >
@@ -52,7 +52,7 @@ function CardHead({ label }: { label: string }) {
 
 function CardFrame({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex h-full min-h-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface p-5 md:p-6", className)}>
+    <div className={cn("flex h-full min-h-0 flex-col rounded-panel border border-border bg-surface p-5 md:p-6", className)}>
       {children}
     </div>
   );
@@ -123,7 +123,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
         <CardFrame>
           <CardHead label="The kill switch" />
           <div className="mt-4 flex flex-1 flex-col justify-center">
-            <div className="rounded-[var(--radius-btn)] border border-[var(--ink)] p-4">
+            <div className="rounded-inner border border-[var(--ink)] p-4">
               <div className="font-display text-[1.125rem] font-semibold tracking-tight">I&apos;m wrong if</div>
               <ul className="mt-2.5 flex flex-col gap-2 text-[0.9375rem] leading-snug text-text-mute">
                 {card.conditions.map((c, i) => (
@@ -191,7 +191,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame>
           <CardHead label={card.caption} />
-          <div className="relative mt-3 flex-1 overflow-hidden rounded-[var(--radius-btn)] border border-border bg-surface-2">
+          <div className="relative mt-3 flex-1 overflow-hidden rounded-inner border border-border bg-surface-2">
             {card.imageUrl ? (
               <Image src={card.imageUrl} alt={card.caption} fill sizes="480px" className="object-contain" />
             ) : ticker ? (
@@ -207,7 +207,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <div className="mt-2 text-right">
             <span
               className={cn(
-                "num inline-block rounded-[var(--radius-tag)] border px-1 py-px text-[10px] uppercase tracking-[0.12em]",
+                "num inline-block rounded-chip border px-1 py-px text-[10px] uppercase tracking-[0.12em]",
                 card.source === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
               )}
             >
@@ -230,7 +230,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
         <CardFrame>
           <CardHead label="The steelman" />
           <div className="mt-3 flex flex-1 flex-col justify-center gap-4">
-            <div className="rounded-[var(--radius-btn)] bg-surface-2 p-4">
+            <div className="rounded-inner bg-surface-2 p-4">
               <div className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">The counterpoint</div>
               <p className="mt-1.5 font-display text-[1rem] italic leading-snug text-text-mute">&ldquo;{card.objection}&rdquo;</p>
             </div>
@@ -301,7 +301,7 @@ export function FeedCardView({
         <div aria-hidden className="pointer-events-none h-full select-none blur-[6px]">
           <CardBody card={card} ticker={ticker} />
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] bg-[color-mix(in_srgb,var(--paper)_35%,transparent)]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-panel bg-[color-mix(in_srgb,var(--paper)_35%,transparent)]">
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ink)] bg-surface">
             <Lock size={14} strokeWidth={1.6} />
           </span>

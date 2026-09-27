@@ -9,7 +9,7 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import type { Profile } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring";
 
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, start] = useTransition();
@@ -28,7 +28,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+    <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-panel border border-border bg-surface p-6">
       {/* Avatar — Settings is the single place identity (name, bio, headline, photo) is edited. */}
       <AvatarUpload
         userId={profile.id}

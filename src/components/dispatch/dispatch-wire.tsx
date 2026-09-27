@@ -23,7 +23,7 @@ export function DispatchWire({ stories }: { stories: DispatchStory[] }) {
             <li key={story.report.id}>
               <Link
                 href={`/report/${story.report.id}`}
-                className="dispatch-wire-row group focus-ring rounded-[var(--radius-btn)]"
+                className="dispatch-wire-row group focus-ring rounded-button"
               >
                 <span className="num w-14 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-text-mute">
                   {ticker || "-"}

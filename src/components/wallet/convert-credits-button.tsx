@@ -16,7 +16,7 @@ export function ConvertCreditsButton({ balance }: { balance: number }) {
   if (amounts.length === 0) return null;
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
+    <div className="rounded-panel border border-border bg-surface p-4">
       <div className="flex items-center gap-2">
         <Coins size={18} className="text-text-mute" aria-hidden />
         <p className="text-sm font-semibold">Buy AI credits</p>

@@ -27,7 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 function InkSwitch({ value, onChange }: { value: ProvenanceInk; onChange: (i: ProvenanceInk) => void }) {
   if (value === "auto") {
     return (
-      <span className="num shrink-0 rounded-[var(--radius-tag)] border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">
+      <span className="num shrink-0 rounded-chip border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-text-faint">
         Auto
       </span>
     );
@@ -187,7 +187,7 @@ export function CardEditor({
           onClick={() => onChange({ ...card, locked: !card.locked })}
           aria-pressed={card.locked}
           className={cn(
-            "num focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] border px-2 py-1 text-[10px] uppercase tracking-[0.12em]",
+            "num focus-ring flex items-center gap-1.5 rounded-button border px-2 py-1 text-[10px] uppercase tracking-[0.12em]",
             card.locked ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]" : "border-border text-text-mute hover:text-text",
           )}
         >
@@ -465,7 +465,7 @@ export function CardEditor({
               className={inputClass}
             />
           </Field>
-          <div className="rounded-[var(--radius-card)] border border-border bg-paper p-3">
+          <div className="rounded-panel border border-border bg-paper p-3">
             <p className="num mb-2 text-[10px] uppercase tracking-[0.14em] text-text-faint">Preview</p>
             <CardPreview card={card} compact />
           </div>
@@ -514,7 +514,7 @@ export function CardEditor({
             <button
               type="button"
               onClick={onDelete}
-              className="focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] px-2 py-1.5 text-[0.8125rem] text-text-mute transition-colors hover:text-[var(--rust)]"
+              className="focus-ring flex items-center gap-1.5 rounded-button px-2 py-1.5 text-[0.8125rem] text-text-mute transition-colors hover:text-[var(--rust)]"
             >
               <Trash2 size={13} /> Delete card
             </button>
@@ -559,7 +559,7 @@ export function CardEditorDialog({
     <Dialog.Root open={Boolean(card)} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
-        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,620px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
+        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,620px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-panel border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
           <div className="flex items-start justify-between gap-3">
             <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
               {card ? cardName(card) : "Card"}

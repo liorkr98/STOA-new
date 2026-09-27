@@ -158,12 +158,12 @@ export function ReportClip({
         <div
           className={cn(
             docked
-              ? "fixed z-40 w-[132px] overflow-hidden rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-card)] bottom-[max(1rem,var(--safe-bottom))] right-[max(1rem,var(--safe-right))]"
+              ? "fixed z-40 w-[132px] overflow-hidden rounded-panel border border-border shadow-[var(--shadow-card)] bottom-[max(1rem,var(--safe-bottom))] right-[max(1rem,var(--safe-right))]"
               : // In the column it hugs the player, so a portrait clip does not
                 // sit in a band of its own letterboxing. Only there: below `lg`
                 // the clip fills the width, and `w-fit` against a `w-full`
                 // child collapses the box to nothing.
-                "flex justify-center overflow-hidden rounded-[var(--radius-card)] border border-border lg:mx-auto lg:w-fit",
+                "flex justify-center overflow-hidden rounded-panel border border-border lg:mx-auto lg:w-fit",
             "bg-[var(--ink)]",
           )}
         >

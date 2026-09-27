@@ -23,7 +23,7 @@ export type InsightTotals = {
 
 function Metric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
+    <div className="rounded-panel bg-surface-2 px-5 py-4">
       <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{label}</div>
       <div className="num mt-2.5 text-[24px] font-semibold tracking-tight">{value}</div>
       <p className="mt-2 text-[12px] leading-snug text-text-faint">{note}</p>

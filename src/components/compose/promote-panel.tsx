@@ -33,7 +33,7 @@ export function PromotePanel({
   const on = state.boostOnPublish;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4" aria-label="Promote">
+    <section className="rounded-panel border border-border bg-surface p-4" aria-label="Promote">
       <p className="t-eyebrow mb-2.5">Promote</p>
 
       <label className="flex cursor-pointer items-start gap-2.5">
@@ -70,7 +70,7 @@ export function PromotePanel({
                   aria-checked={state.optionId === o.id}
                   onClick={() => onChange({ ...state, optionId: o.id, modelId: model.id })}
                   className={cn(
-                    "focus-ring flex w-full items-baseline justify-between gap-3 rounded-[var(--radius-btn)] border px-2.5 py-2 text-left",
+                    "focus-ring flex w-full items-baseline justify-between gap-3 rounded-inner border px-2.5 py-2 text-left",
                     state.optionId === o.id ? "border-[var(--ink)] bg-surface-2" : "border-border hover:border-border-strong",
                   )}
                 >
@@ -85,7 +85,7 @@ export function PromotePanel({
               ))}
             </div>
           ) : (
-            <p className="rounded-[var(--radius-btn)] border border-dashed border-border p-2.5 text-[0.8125rem] leading-snug text-text-mute">
+            <p className="rounded-inner border border-dashed border-border p-2.5 text-[0.8125rem] leading-snug text-text-mute">
               {model.placeholder}
             </p>
           )}

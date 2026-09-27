@@ -282,7 +282,7 @@ export function AddVideoFlow({
       onClick={onClose}
     >
       <div
-        className="scroll-area max-h-[90vh] w-full max-w-lg overflow-auto rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]"
+        className="scroll-area max-h-[90vh] w-full max-w-lg overflow-auto rounded-panel border border-border bg-surface shadow-[var(--shadow-card)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -296,7 +296,7 @@ export function AddVideoFlow({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="focus-ring rounded-[var(--radius-btn)] p-1 text-text-mute hover:text-text"
+            className="focus-ring rounded-button p-1 text-text-mute hover:text-text"
           >
             <X size={18} />
           </button>
@@ -304,7 +304,7 @@ export function AddVideoFlow({
 
         <div className="px-5 py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-[var(--radius-btn)] border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2 text-sm text-[var(--rust)]">
+            <div className="mb-4 flex items-start gap-2 rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2 text-sm text-[var(--rust)]">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
               <span>{error}</span>
             </div>
@@ -315,7 +315,7 @@ export function AddVideoFlow({
               <button
                 type="button"
                 onClick={startRecording}
-                className="focus-ring flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface-2 px-4 py-4 text-left transition-colors hover:border-border-strong"
+                className="focus-ring flex items-center gap-3 rounded-panel border border-border bg-surface-2 px-4 py-4 text-left transition-colors hover:border-border-strong"
               >
                 <Video size={20} className="shrink-0 text-text" aria-hidden />
                 <span>
@@ -326,7 +326,7 @@ export function AddVideoFlow({
                 </span>
               </button>
 
-              <label className="focus-within:ring-2 focus-within:ring-[var(--ink)] flex cursor-pointer items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface-2 px-4 py-4 transition-colors hover:border-border-strong">
+              <label className="focus-within:ring-2 focus-within:ring-[var(--ink)] flex cursor-pointer items-center gap-3 rounded-panel border border-border bg-surface-2 px-4 py-4 transition-colors hover:border-border-strong">
                 <Upload size={20} className="shrink-0 text-text" aria-hidden />
                 <span>
                   <span className="block text-sm font-semibold text-text">Upload a file</span>
@@ -347,10 +347,10 @@ export function AddVideoFlow({
 
           {step === "recording" && (
             <div className="flex flex-col gap-4">
-              <div className="relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)]">
+              <div className="relative overflow-hidden rounded-panel bg-[var(--ink)]">
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                 <video ref={videoPreviewRef} muted playsInline className="aspect-video w-full object-cover" />
-                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-[var(--r-tag)] bg-[var(--rust)] px-2 py-0.5 text-xs font-semibold text-[var(--paper)]">
+                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-chip bg-[var(--rust)] px-2 py-0.5 text-xs font-semibold text-[var(--paper)]">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--paper)]" />
                   {countdown}s
                 </span>
@@ -387,7 +387,7 @@ export function AddVideoFlow({
 
           {step === "review" && (
             <div className="flex flex-col gap-4">
-              <div className="rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2">
+              <div className="rounded-inner border border-border bg-surface-2 px-3 py-2">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-text">
                   <ShieldCheck size={13} aria-hidden /> Disclosure overlay (read-only)
                 </div>
@@ -408,12 +408,12 @@ export function AddVideoFlow({
                   onChange={(e) => setTranscript(e.target.value)}
                   rows={6}
                   placeholder="Transcript text…"
-                  className="focus-ring w-full resize-y rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text"
+                  className="focus-ring w-full resize-y rounded-field border border-border bg-surface px-3 py-2 text-sm text-text"
                 />
               </div>
 
               {blockingClaims.length > 0 && (
-                <div className="rounded-[var(--radius-btn)] border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2">
+                <div className="rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2">
                   <p className="text-xs font-semibold text-[var(--rust)]">
                     These spoken claims block publishing:
                   </p>

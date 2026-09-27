@@ -87,7 +87,7 @@ export function TierPickerModal({
                 <div
                   key={plan.id}
                   className={cn(
-                    "relative flex flex-col rounded-[var(--radius-card)] bg-surface p-5",
+                    "relative flex flex-col rounded-panel bg-surface p-5",
                     popular ? "border-2 border-[var(--ink)]" : "border border-border",
                   )}
                 >
@@ -130,7 +130,7 @@ export function TierPickerModal({
                     disabled={mutation.isPending}
                     onClick={() => (free ? mutation.mutate(plan.id) : setConfirming(plan))}
                     className={cn(
-                      "mt-4 w-full rounded-[var(--radius-btn)] px-3 py-3 text-sm font-medium transition-opacity hover:opacity-90 focus-ring",
+                      "mt-4 w-full rounded-button px-3 py-3 text-sm font-medium transition-opacity hover:opacity-90 focus-ring",
                       popular
                         ? "bg-[var(--ink)] text-[var(--paper)]"
                         : "border border-border bg-transparent text-text",

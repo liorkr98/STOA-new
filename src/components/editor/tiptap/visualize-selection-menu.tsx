@@ -98,9 +98,9 @@ export function VisualizeSelectionMenu({
 
   const triggerClass =
     variant === "button"
-      ? "flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+      ? "flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
       : cn(
-          "flex h-8 items-center justify-center gap-1 rounded-[var(--radius-btn)] px-2 transition-colors focus-ring",
+          "flex h-8 items-center justify-center gap-1 rounded-button px-2 transition-colors focus-ring",
           "text-text-mute hover:bg-surface-2 hover:text-text",
         );
 
@@ -126,7 +126,7 @@ export function VisualizeSelectionMenu({
           side="top"
           align="start"
           sideOffset={8}
-          className="z-[270] w-56 rounded-[var(--radius-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+          className="z-[270] w-56 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
@@ -137,7 +137,7 @@ export function VisualizeSelectionMenu({
               type="button"
               onMouseDown={stopMouseDown}
               onClick={() => run(opt.mode)}
-              className="flex w-full items-start gap-2.5 rounded-[var(--radius-btn)] px-2 py-2 text-left transition-colors hover:bg-surface-2 focus-ring"
+              className="flex w-full items-start gap-2.5 rounded-inner px-2 py-2 text-left transition-colors hover:bg-surface-2 focus-ring"
             >
               <opt.icon size={16} className="mt-0.5 shrink-0 text-accent" />
               <span>

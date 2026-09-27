@@ -94,7 +94,7 @@ export function AiAssistant({
         onClick={onAsk}
         aria-pressed={askOpen}
         className={cn(
-          "focus-ring mt-2 flex w-full items-center gap-2 rounded-[var(--radius-btn)] border px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors",
+          "focus-ring mt-2 flex w-full items-center gap-2 rounded-inner border px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors",
           askOpen
             ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
             : "border-border bg-surface text-text hover:border-border-strong",
@@ -110,7 +110,7 @@ export function AiAssistant({
             <button
               type="button"
               onClick={() => onRun(a)}
-              className="focus-ring flex w-full items-center gap-2 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 py-1.5 text-left text-[0.8125rem] text-text transition-colors hover:border-border-strong"
+              className="focus-ring flex w-full items-center gap-2 rounded-inner border border-border bg-surface px-2.5 py-1.5 text-left text-[0.8125rem] text-text transition-colors hover:border-border-strong"
             >
               <Sparkles size={13} className="shrink-0 text-text-faint" aria-hidden />
               <span className="min-w-0 flex-1 truncate">{a.label}</span>
@@ -122,7 +122,7 @@ export function AiAssistant({
             type="button"
             onClick={() => onRun(DEVILS_ADVOCATE)}
             className={cn(
-              "focus-ring flex w-full items-center gap-2 rounded-[var(--radius-btn)] border px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors",
+              "focus-ring flex w-full items-center gap-2 rounded-inner border px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors",
               canAfford
                 ? "border-[var(--plum)] bg-[color-mix(in_srgb,var(--plum)_10%,transparent)] text-text hover:border-[var(--plum)]"
                 : "border-border bg-surface text-text-mute",
@@ -130,7 +130,7 @@ export function AiAssistant({
           >
             <Swords size={13} className="shrink-0 text-[var(--plum)]" aria-hidden />
             <span className="min-w-0 flex-1 truncate">{DEVILS_ADVOCATE.label}</span>
-            <span className="num shrink-0 rounded-[var(--radius-tag)] border border-[var(--plum)] px-1 py-px text-[10px] uppercase tracking-[0.1em] text-[var(--plum)]">
+            <span className="num shrink-0 rounded-chip border border-[var(--plum)] px-1 py-px text-[10px] uppercase tracking-[0.1em] text-[var(--plum)]">
               {DEVILS_ADVOCATE.cost} cr
             </span>
           </button>

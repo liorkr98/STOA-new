@@ -192,7 +192,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       {author && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
           <div className="flex items-center gap-3">
-            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3 focus-ring rounded-[var(--radius-btn)]">
+            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3 focus-ring rounded-button">
               <Avatar src={author.avatar_url} name={author.display_name} size="md" />
               <div className="leading-tight">
                 <span className="flex items-center gap-1.5 text-sm font-semibold">
@@ -301,7 +301,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           {claims.length > 0 && (
             <FactCheckLayer
               claims={claims}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--radius-card)] border border-border bg-surface px-3 py-3 t-meta"
+              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-panel border border-border bg-surface px-3 py-3 t-meta"
             />
           )}
             </aside>

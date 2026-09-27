@@ -93,7 +93,7 @@ function TrayCard({
         onReorder(draggedId, index);
       }}
       className={cn(
-        "group relative rounded-[var(--radius-btn)] border transition-colors",
+        "group relative rounded-inner border transition-colors",
         selected ? "border-[var(--ink)] bg-surface-2" : "border-border bg-surface hover:border-border-strong",
         over && "border-[var(--brass)]",
       )}
@@ -140,7 +140,7 @@ function TrayCard({
             {menuOpen ? (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden />
-                <div className="menu-pop absolute right-0 top-7 z-20 w-44 rounded-[var(--radius-btn)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
+                <div className="menu-pop absolute right-0 top-7 z-20 w-44 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
                   <button
                     type="button"
                     disabled={!canPlaceInVideo}
@@ -234,7 +234,7 @@ export function CardTray({
       <button
         type="button"
         onClick={onAdd}
-        className="focus-ring mt-2 flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+        className="focus-ring mt-2 flex w-full items-center justify-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
       >
         <Plus size={14} aria-hidden /> Add a card
       </button>

@@ -24,7 +24,7 @@ export function PromoteDialog({ title }: { title: string }) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
-        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,460px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--radius-card)] border border-border bg-paper p-5 shadow-[var(--shadow-card)]">
+        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,460px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-panel border border-border bg-paper p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <Dialog.Title className="font-display text-[1.25rem] font-semibold tracking-tight">

@@ -26,7 +26,7 @@ export function StockQuoteHeader({
   const hasPrice = quote.available && quote.price != null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5 md:p-6">
+    <section className="rounded-panel border border-border bg-surface p-5 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="flex items-start gap-3">
           <WatchlistButton ticker={ticker} className="mt-1 shrink-0" />
@@ -60,16 +60,16 @@ export function StockQuoteHeader({
             <span className="t-meta">Live quote unavailable</span>
           )}
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+            <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
               {hasPrice ? `via ${quote.source}` : "check market hours / symbol"}
             </span>
             {reportCount > 0 && (
-              <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
                 {reportCount} Stoa report{reportCount === 1 ? "" : "s"}
               </span>
             )}
             {metricsUpdatedAt && (
-              <span className="t-meta rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
+              <span className="t-meta rounded-chip border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
                 Mkt cap cached {formatDistanceToNow(new Date(metricsUpdatedAt), { addSuffix: true })}
               </span>
             )}
@@ -102,7 +102,7 @@ export function StockKeyStats({ snapshot }: { snapshot: StockSnapshot }) {
   if (stats.length === 0) return null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+    <section className="rounded-panel border border-border bg-surface p-5">
       <h2 className="t-h3 mb-4">Key statistics</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
@@ -122,7 +122,7 @@ export function StockRangeBar({ snapshot }: { snapshot: StockSnapshot }) {
   if (dayLow == null && fiftyTwoWeekLow == null) return null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+    <section className="rounded-panel border border-border bg-surface p-5">
       <h2 className="t-h3 mb-4">Trading ranges</h2>
       <div className="grid gap-6 md:grid-cols-2">
         {dayLow != null && dayHigh != null && (
@@ -185,14 +185,14 @@ export async function SectorPeers({
   if (peers.length === 0) return null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+    <section className="rounded-panel border border-border bg-surface p-5">
       <h2 className="t-h3 mb-3">Peers in {sector}</h2>
       <div className="flex flex-wrap gap-2">
         {peers.map((p) => (
           <Link
             key={p.symbol}
             href={`/markets/${p.symbol}`}
-            className="rounded-[var(--radius-tag)] border border-border bg-surface-2 px-3 py-1.5 text-sm transition-colors hover:border-border-strong hover:bg-accent/10"
+            className="rounded-chip border border-border bg-surface-2 px-3 py-1.5 text-sm transition-colors hover:border-border-strong hover:bg-accent/10"
           >
             <span className="num font-semibold">{p.symbol}</span>
             <span className="t-meta ml-2">{p.name}</span>

@@ -50,8 +50,8 @@ export function ConfirmSpendDialog({
         <Dialog.Content
           className={cn(
             "fixed z-50 w-full border-border bg-surface p-6 focus:outline-none",
-            "inset-x-0 bottom-0 rounded-t-[var(--radius-card)] border-t",
-            "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--radius-card)] sm:border",
+            "inset-x-0 bottom-0 rounded-t-panel border-t",
+            "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-panel sm:border",
             "data-[state=open]:animate-[sheet-in-y_var(--dur-3)_var(--ease-drawer)]",
             "data-[state=closed]:animate-[sheet-out-y_var(--dur-2)_var(--ease-out)]",
             "sm:data-[state=open]:animate-[modal-in_var(--dur-3)_var(--ease-out)]",
@@ -62,7 +62,7 @@ export function ConfirmSpendDialog({
           <div className="flex items-start justify-between">
             <Dialog.Title className="t-h3">{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]" aria-label="Close">
+              <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-chip" aria-label="Close">
                 <X size={18} />
               </button>
             </Dialog.Close>
@@ -99,7 +99,7 @@ export function ConfirmSpendDialog({
               </dl>
 
               {insufficient && (
-                <div className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                <div className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
                   <p>Not enough balance. Top up your wallet to continue.</p>
                   <Link
                     href="/wallet"
@@ -110,7 +110,7 @@ export function ConfirmSpendDialog({
                 </div>
               )}
               {result?.error && (
-                <p className="mt-3 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+                <p className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
                   {result.error}
                 </p>
               )}

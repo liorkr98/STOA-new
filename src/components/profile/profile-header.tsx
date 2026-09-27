@@ -41,7 +41,7 @@ export function ProfileHeader({
   const specialties = cfg.specialties ?? [];
 
   return (
-    <div className={cn("overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface", className)}>
+    <div className={cn("overflow-hidden rounded-panel border border-border bg-surface", className)}>
       {profile.cover_url && theme.banner_style === "cover" ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

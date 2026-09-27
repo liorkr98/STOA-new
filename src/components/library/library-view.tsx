@@ -130,7 +130,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
           {shown.map((it) => (
             <div
               key={it.id}
-              className="rounded-[var(--radius-card)] border border-border bg-surface p-5 md:grid md:grid-cols-[1fr_260px] md:items-center md:gap-8 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0 md:py-6"
+              className="rounded-panel border border-border bg-surface p-5 md:grid md:grid-cols-[1fr_260px] md:items-center md:gap-8 md:rounded-none md:border-0 md:border-b md:bg-transparent md:p-0 md:py-6"
             >
               <Link href={it.href} className="block">
                 <div className="flex flex-wrap items-center gap-2">

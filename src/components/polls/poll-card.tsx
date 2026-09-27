@@ -83,7 +83,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
               disabled={closed || !isAuthed || pending}
               onClick={() => vote(option.id)}
               className={cn(
-                "focus-ring relative overflow-hidden rounded-[var(--radius-btn)] border px-3 py-2 text-left text-sm transition-colors",
+                "focus-ring relative overflow-hidden rounded-inner border px-3 py-2 text-left text-sm transition-colors",
                 mine ? "border-accent" : "border-border",
                 !closed && isAuthed && "hover:border-border-strong",
                 (closed || !isAuthed) && "cursor-default",

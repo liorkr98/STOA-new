@@ -46,7 +46,7 @@ export default async function SettingsPage() {
       {/* Account */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Account</SectionLabel>
-        <div className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="flex flex-col gap-4 rounded-panel border border-border bg-surface p-6">
           <div className="flex items-center justify-between gap-4 text-sm">
             <span className="text-text-mute">Email</span>
             <span className="num">{email}</span>
@@ -71,7 +71,7 @@ export default async function SettingsPage() {
       {/* Display */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Display</SectionLabel>
-        <div className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="flex flex-col gap-5 rounded-panel border border-border bg-surface p-6">
           <DensityToggle />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4">
@@ -84,7 +84,7 @@ export default async function SettingsPage() {
       {/* Privacy */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Privacy</SectionLabel>
-        <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-6">
           <PrivacyToggle label="Show who I follow on my public page" defaultOn={false} />
           <div className="h-px bg-border" />
           <MarketingOptInToggle defaultOn={Boolean(profile.marketing_opt_in)} />
@@ -97,7 +97,7 @@ export default async function SettingsPage() {
       {/* Your data */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Your data</SectionLabel>
-        <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="rounded-panel border border-border bg-surface p-6">
           <p className="t-body text-text-mute">
             Download a JSON copy of your profile, consents, subscriptions, and authored reports.
           </p>
@@ -110,7 +110,7 @@ export default async function SettingsPage() {
       {/* Danger zone */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Danger zone</SectionLabel>
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-border bg-surface p-6">
           <div>
             <p className="text-sm font-medium">Deactivate account</p>
             <p className="t-meta mt-1">Hide your profile and stop all activity. This can be undone by signing back in.</p>

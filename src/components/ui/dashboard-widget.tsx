@@ -46,7 +46,7 @@ export function DashboardWidget({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface",
+        "flex flex-col overflow-hidden rounded-panel border border-border bg-surface",
         className,
       )}
     >
@@ -74,7 +74,7 @@ export function DashboardWidget({
               <MoreHorizontal size={16} />
             </button>
             {menuOpen && (
-              <div className="menu-pop absolute right-0 z-20 mt-1 min-w-40 rounded-[var(--radius-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
+              <div className="menu-pop absolute right-0 z-20 mt-1 min-w-40 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
                 {actions}
               </div>
             )}

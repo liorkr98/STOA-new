@@ -7,7 +7,7 @@ function NodeShell({ minHeight }: { minHeight: number }) {
   return (
     <NodeViewWrapper>
       <div
-        className="rounded-[var(--radius-card)] border border-border bg-surface"
+        className="rounded-panel border border-border bg-surface"
         style={{ minHeight }}
         aria-hidden
       />

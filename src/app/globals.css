@@ -652,7 +652,7 @@ body {
 .surface {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   box-shadow: var(--shadow-card);
 }
 
@@ -682,7 +682,7 @@ body {
 .ledger-card {
   background: var(--surface);
   border: 1px solid var(--ink);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
     var(--shadow-card);
@@ -1011,7 +1011,7 @@ body {
 }
 /* Marks: highlight tints + "mark as opinion" (Phase 1.2). */
 .stoa-prose mark {
-  border-radius: var(--r-tag);
+  border-radius: var(--r-inner);
   padding: 0 0.1em;
   color: inherit;
 }
@@ -1024,7 +1024,7 @@ body {
 .stoa-ticker {
   color: var(--accent);
   background: var(--accent-weak);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   padding: 0 0.2em;
   font-size: 0.92em;
   cursor: default;
@@ -1038,7 +1038,7 @@ body {
   font-family: var(--font-mono);
   font-size: 0.9em;
   background: var(--surface-2);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-inner);
   padding: 0.1em 0.35em;
 }
 .stoa-prose hr {
@@ -1050,7 +1050,7 @@ body {
 .stoa-callout {
   border: 1px solid var(--border);
   background: var(--accent-weak);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   padding: 0.7em 1em;
   color: var(--text);
 }
@@ -1487,7 +1487,7 @@ body {
   text-transform: uppercase;
   color: var(--text-mute);
   white-space: nowrap;
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
   transition: color var(--dur-1) var(--ease-hover);
 }
 .band-see-all:hover {
@@ -1504,7 +1504,7 @@ body {
   text-transform: uppercase;
   color: var(--verdigris);
   border: 1px solid color-mix(in srgb, var(--verdigris) 35%, transparent);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   padding: 0.125rem 0.5rem;
 }
 
@@ -1603,7 +1603,7 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   padding: 0.1875rem 0.4375rem;
 }
 .today-row-tag--quiet {
@@ -1629,7 +1629,7 @@ body {
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-inner);
   background: var(--surface-2);
 }
 
@@ -1672,7 +1672,7 @@ body {
   letter-spacing: 0.04em;
   color: var(--paper);
   background: color-mix(in srgb, var(--ink) 72%, transparent);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-inner);
   padding: 0.0625rem 0.25rem;
 }
 
@@ -1715,7 +1715,7 @@ body {
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-field);
   background: var(--surface);
   transition: border-color var(--dur-1) var(--ease-hover);
 }
@@ -1738,7 +1738,7 @@ body {
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-panel);
   box-shadow: var(--shadow-card);
 }
 
@@ -1840,7 +1840,7 @@ body {
   flex-direction: column;
   padding: var(--space-5);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   background: var(--surface);
 }
 
@@ -1907,7 +1907,7 @@ body {
   flex: 1 1 12rem;
   align-items: center;
   gap: var(--space-3);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-inner);
 }
 
 .markets-row-meta {
@@ -1953,7 +1953,7 @@ body {
 .markets-sector {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-inner);
 }
 
 .markets-sector-name {
@@ -2005,7 +2005,7 @@ body {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-mute);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
 }
 .markets-crumb:hover {
   color: var(--text);
@@ -2073,7 +2073,7 @@ body {
   text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--border);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   padding: 0 0.25rem;
 }
 
@@ -2083,7 +2083,7 @@ body {
   position: relative;
   margin-top: var(--space-5);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   background: var(--surface);
   padding: var(--space-5);
 }
@@ -2091,7 +2091,7 @@ body {
 .calls-tape {
   width: 100%;
   overflow: hidden;
-  border-radius: var(--r-btn);
+  border-radius: var(--r-inner);
   background: var(--paper);
 }
 
@@ -2099,7 +2099,7 @@ body {
   display: inline-flex;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
   overflow: hidden;
 }
 
@@ -2139,7 +2139,7 @@ body {
   padding: var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-panel);
   box-shadow: var(--shadow-card);
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -2155,7 +2155,7 @@ body {
   margin-top: var(--space-5);
   padding: var(--space-5);
   border: 1px solid var(--ink);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   background: var(--surface);
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
@@ -2234,7 +2234,7 @@ body {
 .stock-peer {
   padding: var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
 }
 
 .stock-fundamentals {
@@ -2243,7 +2243,7 @@ body {
   margin-top: var(--space-5);
   padding: var(--space-5);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
   background: var(--surface);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -2259,7 +2259,7 @@ body {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--border);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   padding: 0.125rem 0.5rem;
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -2277,7 +2277,7 @@ body {
   gap: var(--space-2);
   padding: 0.25rem var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-field);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: var(--text-mute);
@@ -2297,7 +2297,7 @@ body {
   text-transform: uppercase;
   color: var(--paper);
   background: var(--ink);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-button);
   padding: 0.1875rem 0.5rem;
 }
 
@@ -2333,7 +2333,7 @@ body {
 .etf-exposure-track {
   display: block;
   height: 6px;
-  border-radius: var(--r-tag);
+  border-radius: var(--r-chip);
   background: var(--surface-2);
   overflow: hidden;
 }
@@ -2354,7 +2354,7 @@ body {
   margin-top: var(--space-5);
   min-height: 12rem;
   border: 1px dashed var(--border-strong);
-  border-radius: var(--r-card);
+  border-radius: var(--r-panel);
 }
 
 /* ------------------------------------------------------------------ *
@@ -2405,8 +2405,8 @@ body {
     max-height: min(88svh, 88dvh);
     border-inline-start: none;
     border-top: 1px solid var(--border-strong);
-    border-start-start-radius: var(--r-card);
-    border-start-end-radius: var(--r-card);
+    border-start-start-radius: var(--r-panel);
+    border-start-end-radius: var(--r-panel);
     animation: sheet-in-y var(--dur-3) var(--ease-drawer) both;
     padding-bottom: max(var(--space-8), var(--safe-bottom));
   }
@@ -2451,7 +2451,7 @@ body {
   width: 2rem;
   height: 2rem;
   flex: 0 0 auto;
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
   color: var(--text-mute);
 }
 .sheet-close:hover {
@@ -2486,7 +2486,7 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
 }
 .sheet-full:hover {
   text-decoration: underline;
@@ -2557,7 +2557,7 @@ body {
   width: 28px;
   height: 28px;
   border: 1px solid var(--border);
-  border-radius: var(--r-btn);
+  border-radius: var(--r-button);
   color: var(--text-mute);
   background: transparent;
   transition: color var(--dur-1) var(--ease-hover), border-color var(--dur-1) var(--ease-hover);

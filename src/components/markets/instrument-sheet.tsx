@@ -141,7 +141,7 @@ function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => v
 export function SheetTickerChip({ ticker }: { ticker: string }) {
   const sheet = useInstrumentSheet();
   const chip =
-    "inline-flex items-center rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 num text-[0.6875rem] font-semibold uppercase tracking-wider text-text transition-colors hover:border-border-strong focus-ring";
+    "inline-flex items-center rounded-chip border border-border bg-surface-2 px-2 py-0.5 num text-[0.6875rem] font-semibold uppercase tracking-wider text-text transition-colors hover:border-border-strong focus-ring";
 
   if (!sheet) {
     return (

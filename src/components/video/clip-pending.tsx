@@ -103,7 +103,7 @@ export function ClipPendingPlayer({
       <div
         role="status"
         aria-live="polite"
-        className="flex justify-center overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--ink)] lg:mx-auto lg:w-fit"
+        className="flex justify-center overflow-hidden rounded-panel border border-border bg-[var(--ink)] lg:mx-auto lg:w-fit"
       >
         <div className="relative mx-auto aspect-[9/16] w-[min(100%,18rem)] sm:h-[min(60vh,520px)] sm:w-auto lg:h-[min(50vh,440px)]">
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-[var(--paper)]">

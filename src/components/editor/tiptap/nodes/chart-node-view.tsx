@@ -503,7 +503,7 @@ function LightweightChartNodeView({
         contentEditable={false}
         role="figure"
         aria-label={`Price chart for ${ticker} over ${range}`}
-        className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
+        className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -522,7 +522,7 @@ function LightweightChartNodeView({
       role="figure"
       aria-label={ariaLabel}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stopEditorCapture}
@@ -530,7 +530,7 @@ function LightweightChartNodeView({
     >
       {isEditable && (
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex h-7 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
+        <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
           <ChartCandlestick size={13} className="text-text-faint" />
           <input
             value={draftTicker}
@@ -562,7 +562,7 @@ function LightweightChartNodeView({
             onMouseDown={stopEditorCapture}
             onClick={() => toggleIndicator(preset.indicator)}
             className={cn(
-              "rounded-[var(--radius-btn)] px-2 py-0.5 text-[10px] font-medium transition-colors focus-ring",
+              "rounded-button px-2 py-0.5 text-[10px] font-medium transition-colors focus-ring",
               hasIndicator(preset.indicator)
                 ? "bg-accent-weak text-accent"
                 : "text-text-faint hover:bg-surface-2 hover:text-text",
@@ -589,7 +589,7 @@ function LightweightChartNodeView({
                   if (tool.key !== "trend") setTrendDraft(null);
                 }}
                 className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] transition-colors focus-ring",
+                  "flex h-7 w-7 items-center justify-center rounded-button transition-colors focus-ring",
                   drawMode === tool.key
                     ? "bg-[var(--ink)] text-[var(--paper)]"
                     : "text-text-faint hover:bg-surface-2 hover:text-text",
@@ -606,7 +606,7 @@ function LightweightChartNodeView({
               aria-label="Clear lines"
               onMouseDown={stopEditorCapture}
               onClick={clearAnnotations}
-              className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
+              className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
             >
               <Eraser size={14} />
             </button>
@@ -618,7 +618,7 @@ function LightweightChartNodeView({
           aria-label="Delete chart"
           onMouseDown={stopEditorCapture}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint transition-colors hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -699,7 +699,7 @@ function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+    <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
       {options.map((o) => (
         <button
           key={o.key}

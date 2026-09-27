@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
 const textareaClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
 
 const topics = [
   { value: "general", label: "General question" },
@@ -37,7 +37,7 @@ export default async function ContactPage({
   if (submitted === "1") {
     return (
       <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
-        <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
+        <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-[var(--verdigris)]" aria-hidden />
           <h1 className="t-h2">Message sent</h1>
           <p className="t-body max-w-sm text-text-mute">

@@ -37,7 +37,7 @@ export function Providers({ children }: { children: ReactNode }) {
               background: "var(--surface)",
               color: "var(--text)",
               border: "1px solid var(--border)",
-              borderRadius: "var(--r-card)",
+              borderRadius: "var(--radius-panel)",
               fontFamily: "var(--font-sans)",
             },
           }}

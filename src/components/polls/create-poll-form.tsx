@@ -22,7 +22,7 @@ const KINDS: { key: PollKind; label: string; hint: string }[] = [
 ];
 
 const inputClass =
-  "h-10 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm focus-ring";
+  "h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
 
 function defaultOptions(kind: PollKind): string[] {
   if (kind === "sentiment") return ["Bull", "Bear", "Hold"];
@@ -85,7 +85,7 @@ export function CreatePollForm() {
             onClick={() => pickKind(k.key)}
             title={k.hint}
             className={cn(
-              "rounded-[var(--radius-btn)] border px-3 py-1.5 text-sm transition-colors focus-ring",
+              "rounded-button border px-3 py-1.5 text-sm transition-colors focus-ring",
               kind === k.key
                 ? "border-accent bg-accent-weak text-text"
                 : "border-border bg-bg text-text-mute hover:border-border-strong",

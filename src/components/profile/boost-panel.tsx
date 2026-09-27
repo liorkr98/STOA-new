@@ -60,7 +60,7 @@ export function BoostPanel({
             type="button"
             onClick={() => setPackageId(p.id)}
             className={cn(
-              "rounded-[var(--radius-card)] border p-4 text-left transition-colors",
+              "rounded-panel border p-4 text-left transition-colors",
               packageId === p.id ? "border-accent bg-accent-weak/30" : "border-border hover:border-border-strong",
             )}
           >
@@ -77,7 +77,7 @@ export function BoostPanel({
           <select
             value={reportId}
             onChange={(e) => setReportId(e.target.value)}
-            className="mt-1 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
           >
             {reports.length === 0 ? (
               <option value="">Publish a report first</option>
@@ -111,7 +111,7 @@ export function BoostPanel({
             {activeBoosts.map((b) => (
               <li
                 key={b.id}
-                className="rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm"
+                className="rounded-inner border border-border bg-bg px-3 py-2 text-sm"
               >
                 {b.target_type === "profile" ? "Profile" : "Report"} · {b.placement} · ends{" "}
                 {new Date(b.ends_at).toLocaleString()}

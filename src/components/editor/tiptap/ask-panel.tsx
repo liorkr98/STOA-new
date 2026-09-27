@@ -128,7 +128,7 @@ function DraggableCard({
         e.dataTransfer.effectAllowed = "copy";
       }}
       className={cn(
-        "group flex cursor-grab items-center gap-2 rounded-[var(--radius-btn)] border border-border bg-paper transition-colors",
+        "group flex cursor-grab items-center gap-2 rounded-inner border border-border bg-paper transition-colors",
         "hover:border-border-strong hover:bg-surface-2 active:cursor-grabbing",
         compact ? "p-2" : "p-2.5",
       )}
@@ -365,7 +365,7 @@ export function AskPanel({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="tap-target ml-auto rounded-[var(--r-tag)] p-1 text-text-faint transition-colors hover:text-text focus-ring"
+          className="tap-target ml-auto rounded-chip p-1 text-text-faint transition-colors hover:text-text focus-ring"
         >
           <X size={16} />
         </button>
@@ -385,7 +385,7 @@ export function AskPanel({
               <button
                 type="button"
                 onClick={() => setTemplateOpen(true)}
-                className="flex w-full items-center justify-between rounded-[var(--radius-btn)] border border-border bg-paper px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
+                className="flex w-full items-center justify-between rounded-inner border border-border bg-paper px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-ring"
               >
                 <span>
                   <span className="block text-[12px] font-medium text-text">Browse templates</span>
@@ -403,7 +403,7 @@ export function AskPanel({
           <div key={i} className="flex flex-col gap-2">
             <div
               className={cn(
-                "rounded-[var(--radius-btn)] px-3 py-2 text-sm leading-relaxed",
+                "rounded-inner px-3 py-2 text-sm leading-relaxed",
                 m.role === "user"
                   ? "ml-6 bg-[var(--ink)] text-[var(--paper)]"
                   : "mr-1 border border-border bg-bg text-text",
@@ -412,7 +412,7 @@ export function AskPanel({
               {m.content}
             </div>
             {m.applied && m.applied.length > 0 && (
-              <div className="mr-1 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2">
+              <div className="mr-1 rounded-inner border border-border bg-surface-2 px-3 py-2">
                 <p className="flex items-center gap-1.5 text-[11px] font-medium text-text">
                   <CheckCircle2 size={13} />
                   Applied in your report
@@ -458,7 +458,7 @@ export function AskPanel({
         </div>
         {error && (
           <p
-            className="mb-2 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-2.5 py-2 text-[11px] text-text-mute"
+            className="mb-2 rounded-inner border border-border bg-surface-2 px-2.5 py-2 text-[11px] text-text-mute"
             role="alert"
           >
             {error}
@@ -471,7 +471,7 @@ export function AskPanel({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
             placeholder="Ask Research AI…"
-            className="min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-sm focus-ring placeholder:text-text-mute"
+            className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2.5 py-1.5 text-sm focus-ring placeholder:text-text-mute"
           />
           <button
             type="button"

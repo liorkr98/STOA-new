@@ -75,7 +75,7 @@ export function TickerHoverLayer({ containerRef }: { containerRef?: React.RefObj
   return (
     <div
       role="tooltip"
-      className="menu-pop fixed z-50 w-56 rounded-[var(--radius-card)] border border-border bg-surface p-3 shadow-[var(--shadow-card)]"
+      className="menu-pop fixed z-50 w-56 rounded-panel border border-border bg-surface p-3 shadow-[var(--shadow-card)]"
       style={{ left: Math.min(card.x, typeof window !== "undefined" ? window.innerWidth - 240 : card.x), top: card.y }}
       onMouseEnter={() => hideTimer.current && clearTimeout(hideTimer.current)}
       onMouseLeave={() => setCard(null)}

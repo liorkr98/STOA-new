@@ -271,7 +271,7 @@ export function FilterPicker({
             {panel}
           </div>
         ) : (
-          <div className="menu-pop absolute right-0 z-20 mt-2 w-[240px] overflow-hidden rounded-[var(--radius-btn)] border border-border bg-surface">
+          <div className="menu-pop absolute right-0 z-20 mt-2 w-[240px] overflow-hidden rounded-panel border border-border bg-surface">
             {panel}
           </div>
         )

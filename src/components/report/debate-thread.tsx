@@ -55,12 +55,12 @@ export function DebateThread({
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
           <Drawer.Content
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[80vh] flex-col rounded-t-[var(--r-card)] border-t border-border bg-paper focus:outline-none"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[80vh] flex-col rounded-t-panel border-t border-border bg-paper focus:outline-none"
             aria-describedby={undefined}
           >
             <div
               aria-hidden
-              className="mx-auto mt-2.5 h-1 w-9 rounded-[var(--radius-tag)] bg-border-strong"
+              className="mx-auto mt-2.5 h-1 w-9 rounded-chip bg-border-strong"
             />
             <ThreadBody
               claimText={claimText}
@@ -146,7 +146,7 @@ function ThreadBody({
         </div>
         <Close asChild>
           <button
-            className="tap-target shrink-0 text-text-faint transition-colors hover:text-text focus-ring rounded-[var(--r-tag)]"
+            className="tap-target shrink-0 text-text-faint transition-colors hover:text-text focus-ring rounded-chip"
             aria-label="Close"
           >
             <X size={18} />
@@ -187,7 +187,7 @@ function ThreadBody({
               onChange={(e) => setBody(e.target.value)}
               rows={2}
               placeholder="Reply..."
-              className="w-full resize-none rounded-[var(--r-btn)] border border-border bg-surface p-2.5 text-sm focus-ring"
+              className="w-full resize-none rounded-field border border-border bg-surface p-2.5 text-sm focus-ring"
             />
             <Button size="sm" className="self-end" disabled={pending || !body.trim()} onClick={submit}>
               {pending ? "Posting..." : "Reply"}

@@ -47,7 +47,7 @@ export class StepErrorBoundary extends Component<
     return (
       <div
         role="alert"
-        className="rounded-[var(--radius-card)] border border-[var(--rust)]/50 bg-surface p-4"
+        className="rounded-panel border border-[var(--rust)]/50 bg-surface p-4"
       >
         <p className="num text-[10px] uppercase tracking-[0.16em] text-[var(--rust)]">
           {this.props.label} hit a problem
@@ -63,7 +63,7 @@ export class StepErrorBoundary extends Component<
         <button
           type="button"
           onClick={this.retry}
-          className="focus-ring mt-3 flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-[var(--ink)] px-3 py-1.5 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+          className="focus-ring mt-3 flex items-center gap-1.5 rounded-button bg-[var(--ink)] px-3 py-1.5 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
         >
           <RotateCcw size={13} aria-hidden /> Redraw this step
         </button>

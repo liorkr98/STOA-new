@@ -16,7 +16,7 @@ export function FirstReportBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="mb-5 rounded-[var(--radius-card)] border border-accent/30 bg-accent-weak p-4">
+    <div className="mb-5 rounded-panel border border-accent/30 bg-accent-weak p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="t-h3">Your first report</p>

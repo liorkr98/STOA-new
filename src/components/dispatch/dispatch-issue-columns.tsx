@@ -17,7 +17,7 @@ function IssueCard({
 
   return (
     <FadeIn delay={Math.min(index, 6) * 0.04}>
-      <article className="dispatch-issue-card group flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-border bg-surface p-4 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
+      <article className="dispatch-issue-card group flex flex-col gap-2.5 rounded-panel border border-border bg-surface p-4 transition-[border-color,transform] duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:-translate-y-px hover:border-border-strong">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {ticker ? (
@@ -33,7 +33,7 @@ function IssueCard({
 
         <Link
           href={`/report/${story.report.id}`}
-          className="focus-ring rounded-[var(--radius-btn)]"
+          className="focus-ring rounded-button"
         >
           <h3 className="dispatch-issue-title font-display text-[1.05rem] font-semibold leading-snug text-text transition-colors duration-[var(--dur-2)] group-hover:text-accent">
             {story.headline}
@@ -46,7 +46,7 @@ function IssueCard({
         <div className="mt-auto flex items-center gap-2 pt-1">
           <Link
             href={`/analyst/${story.author.handle}`}
-            className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-[var(--r-tag)]"
+            className="text-xs font-medium text-text-mute hover:text-text focus-ring rounded-chip"
           >
             {story.author.display_name}
           </Link>
@@ -74,7 +74,7 @@ function Column({
       <div className="mb-4 flex items-center gap-2.5 border-b border-border pb-3">
         <span
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-[var(--r-tag)] border border-border",
+            "flex h-7 w-7 items-center justify-center rounded-chip border border-border",
             accentClass,
           )}
         >

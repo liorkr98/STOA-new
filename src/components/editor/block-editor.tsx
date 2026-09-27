@@ -7,7 +7,7 @@ import { FactCheckedText } from "@/components/report/fact-check-layer";
 import type { FactClaim } from "@/lib/ai/fact-check";
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg/80 px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg/80 px-3 py-2 text-sm focus-ring";
 
 export function BlockEditor({
   block,
@@ -68,7 +68,7 @@ export function BlockEditor({
   if (block.type === "callout") {
     const text = String(c.text ?? "");
     return (
-      <div className="rounded-[var(--radius-btn)] border border-accent/30 bg-accent-weak/50 p-4">
+      <div className="rounded-inner border border-accent/30 bg-accent-weak/50 p-4">
         {readOnly ? (
           <p className="user-copy whitespace-pre-wrap text-sm leading-relaxed" dir="auto">{text}</p>
         ) : (
@@ -121,7 +121,7 @@ export function BlockEditor({
     const bear = String(c.bear ?? "");
     return (
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="rounded-[var(--radius-btn)] border border-[color-mix(in_srgb,var(--up)_35%,transparent)] bg-[color-mix(in_srgb,var(--up)_8%,transparent)] p-3">
+        <div className="rounded-inner border border-[color-mix(in_srgb,var(--up)_35%,transparent)] bg-[color-mix(in_srgb,var(--up)_8%,transparent)] p-3">
           <p className="t-eyebrow mb-2 text-[var(--up)]">Bull case</p>
           {readOnly ? (
             <p className="whitespace-pre-wrap text-sm">{bull}</p>
@@ -134,7 +134,7 @@ export function BlockEditor({
             />
           )}
         </div>
-        <div className="rounded-[var(--radius-btn)] border border-[color-mix(in_srgb,var(--down)_35%,transparent)] bg-[color-mix(in_srgb,var(--down)_8%,transparent)] p-3">
+        <div className="rounded-inner border border-[color-mix(in_srgb,var(--down)_35%,transparent)] bg-[color-mix(in_srgb,var(--down)_8%,transparent)] p-3">
           <p className="t-eyebrow mb-2 text-[var(--down)]">Bear case</p>
           {readOnly ? (
             <p className="whitespace-pre-wrap text-sm">{bear}</p>
@@ -156,7 +156,7 @@ export function BlockEditor({
     return (
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {items.map((m, i) => (
-          <div key={i} className="rounded-[var(--radius-btn)] border border-border bg-bg/50 p-3">
+          <div key={i} className="rounded-inner border border-border bg-bg/50 p-3">
             <div className="t-meta">{m.label}</div>
             <div className="num mt-1 text-lg font-semibold">{m.value}</div>
           </div>

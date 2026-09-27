@@ -66,7 +66,7 @@ export default async function StudioAudiencePage() {
       {/* Metric strip */}
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
         {metrics.map((m) => (
-          <div key={m.label} className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
+          <div key={m.label} className="rounded-panel bg-surface-2 px-5 py-4">
             <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">{m.label}</div>
             <div className="mt-2.5 text-[24px] font-semibold tracking-tight">{m.value}</div>
           </div>
@@ -75,8 +75,8 @@ export default async function StudioAudiencePage() {
 
       <section className="flex flex-col gap-4">
         <SectionLabel>Referral link</SectionLabel>
-        <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-5 sm:flex-row sm:items-center">
-          <code className="num min-w-0 flex-1 overflow-x-auto rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm">
+        <div className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-5 sm:flex-row sm:items-center">
+          <code className="num min-w-0 flex-1 overflow-x-auto rounded-inner border border-border bg-bg px-3 py-2 text-sm">
             {referralLink}
           </code>
           <CopyButton value={referralLink} label="Copy" />

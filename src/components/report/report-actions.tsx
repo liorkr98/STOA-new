@@ -68,7 +68,7 @@ export function ReportActions({
         aria-label={liked ? "Unlike" : "Like"}
         aria-pressed={liked}
         className={cn(
-          "focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
+          "focus-ring inline-flex items-center gap-1.5 rounded-button border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
           liked && "text-accent",
         )}
       >
@@ -81,7 +81,7 @@ export function ReportActions({
         aria-label={saved ? "Unsave" : "Save"}
         aria-pressed={saved}
         className={cn(
-          "focus-ring inline-flex items-center rounded-[var(--radius-btn)] border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
+          "focus-ring inline-flex items-center rounded-button border border-border px-3 py-2 text-sm transition-colors hover:border-border-strong",
           saved && "text-accent",
         )}
       >

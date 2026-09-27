@@ -48,7 +48,7 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
               className="flex flex-col gap-1 border-b border-border py-3 md:grid md:grid-cols-[1fr_120px_180px] md:items-center md:gap-4"
             >
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-[var(--radius-card)] bg-[var(--ink)] text-[10px] text-[var(--paper)]">
+                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-panel bg-[var(--ink)] text-[10px] text-[var(--paper)]">
                   {r.initials}
                 </span>
                 <span className="text-sm">{r.name}</span>

@@ -31,7 +31,7 @@ const ADDABLE: { type: ProfileSection["type"]; label: string }[] = [
 ];
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring";
 
 function emptySection(type: ProfileSection["type"]): ProfileSection {
   const base = { id: nanoid(8), type, visible: true };
@@ -93,7 +93,7 @@ export function StorefrontSectionsEditor({
               setSaved(false);
               setSections((prev) => [...prev, emptySection(a.type)]);
             }}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2.5 py-1.5 text-sm text-text-mute hover:border-border-strong hover:text-text"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-button border border-border bg-bg px-2.5 py-1.5 text-sm text-text-mute hover:border-border-strong hover:text-text"
           >
             <Plus size={14} /> {a.label}
           </button>
@@ -101,13 +101,13 @@ export function StorefrontSectionsEditor({
       </div>
 
       {sections.length === 0 ? (
-        <p className="rounded-[var(--radius-btn)] border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
+        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
           No sections yet. Add one above.
         </p>
       ) : (
         <div className="flex flex-col gap-3">
           {sections.map((section, i) => (
-            <div key={section.id} className="rounded-[var(--radius-card)] border border-border bg-bg p-4">
+            <div key={section.id} className="rounded-panel border border-border bg-bg p-4">
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
                   <button
@@ -234,7 +234,7 @@ function FaqEditor({ items, onChange }: { items: FaqItem[]; onChange: (items: Fa
   return (
     <div className="flex flex-col gap-3">
       {items.map((item, i) => (
-        <div key={i} className="flex flex-col gap-1.5 rounded-[var(--radius-btn)] border border-border p-3">
+        <div key={i} className="flex flex-col gap-1.5 rounded-inner border border-border p-3">
           <div className="flex items-center gap-2">
             <input
               value={item.q}

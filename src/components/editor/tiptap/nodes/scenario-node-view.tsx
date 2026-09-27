@@ -155,7 +155,7 @@ export function ScenarioNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
         drivesTarget && "ledger-card",
       )}
@@ -169,14 +169,14 @@ export function ScenarioNodeView({
           onChange={(e) => updateAttributes({ ticker: e.target.value.toUpperCase() })}
           onMouseDown={stop}
           placeholder="Ticker"
-          className="num h-7 w-20 rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm font-semibold focus:outline-none"
+          className="num h-7 w-20 rounded-field border border-border bg-bg px-2 text-sm font-semibold focus:outline-none"
         />
         <button
           type="button"
           onMouseDown={stop}
           onClick={pullPrice}
           disabled={pulling}
-          className="h-7 rounded-[var(--radius-btn)] border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+          className="h-7 rounded-button border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
         >
           {pulling ? "..." : lastPrice != null ? `$${lastPrice.toFixed(2)}` : "Pull price"}
         </button>
@@ -193,7 +193,7 @@ export function ScenarioNodeView({
           aria-label="Delete scenario"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -220,19 +220,19 @@ export function ScenarioNodeView({
                 value={c.price}
                 onChange={(e) => updateCase(i, { price: Number(e.target.value) })}
                 onMouseDown={stop}
-                className="num h-8 w-20 rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-right text-sm focus-ring"
+                className="num h-8 w-20 rounded-field border border-border bg-bg px-2 text-right text-sm focus-ring"
               />
               <input
                 type="number"
                 value={c.probability}
                 onChange={(e) => updateCase(i, { probability: Number(e.target.value) })}
                 onMouseDown={stop}
-                className="num h-8 w-16 rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-right text-sm focus-ring"
+                className="num h-8 w-16 rounded-field border border-border bg-bg px-2 text-right text-sm focus-ring"
               />
             </div>
           ))}
         </div>
-        <div className="rounded-[var(--radius-btn)] border border-border bg-bg p-3">{resultCard}</div>
+        <div className="rounded-inner border border-border bg-bg p-3">{resultCard}</div>
       </div>
     </NodeViewWrapper>
   );

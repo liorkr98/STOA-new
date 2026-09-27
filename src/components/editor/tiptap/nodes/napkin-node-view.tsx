@@ -68,7 +68,7 @@ function DiagramPreview({
       <img
         src={url}
         alt={caption || "Diagram"}
-        className="block w-full rounded-[var(--radius-btn)] border border-border"
+        className="block w-full rounded-inner border border-border"
       />
     );
   }
@@ -239,7 +239,7 @@ export function NapkinNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
@@ -251,7 +251,7 @@ export function NapkinNodeView({
           {chartMode ? `Chart diagram${chartTicker ? ` · ${chartTicker}` : ""}` : "AI diagram"}
         </span>
         {hasDiagram ? (
-          <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+          <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
             {WIDTHS.map((w) => (
               <button
                 key={w}
@@ -275,7 +275,7 @@ export function NapkinNodeView({
           aria-label="Delete diagram block"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -299,7 +299,7 @@ export function NapkinNodeView({
                   type="button"
                   onMouseDown={stop}
                   onClick={() => setEditing(false)}
-                  className="flex h-7 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-xs text-text-mute hover:bg-surface-2"
+                  className="flex h-7 items-center gap-1 rounded-button px-2 text-xs text-text-mute hover:bg-surface-2"
                 >
                   <X size={14} />
                   Cancel
@@ -312,7 +312,7 @@ export function NapkinNodeView({
                 value={provider}
                 onChange={(e) => updateAttributes({ provider: e.target.value })}
                 onMouseDown={stop}
-                className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
               >
                 <option value="open">Built-in diagram</option>
                 <option value="cloud">Cloud image (optional API key)</option>
@@ -326,7 +326,7 @@ export function NapkinNodeView({
                 onMouseDown={stop}
                 rows={chartMode ? 6 : 4}
                 placeholder="Edit levels, ticker, or thesis. The diagram redraws from your text."
-                className="w-full resize-y rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-mute focus:border-accent focus:outline-none"
+                className="w-full resize-y rounded-field border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-mute focus:border-accent focus:outline-none"
               />
             </label>
             {provider === "open" ? (
@@ -337,7 +337,7 @@ export function NapkinNodeView({
                     value={diagramId}
                     onChange={(e) => updateAttributes({ diagramId: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
                   >
                     {DIAGRAM_IDS.map((id) => (
                       <option key={id} value={id}>
@@ -352,7 +352,7 @@ export function NapkinNodeView({
                     value={diagramTheme}
                     onChange={(e) => updateAttributes({ diagramTheme: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
                   >
                     {DIAGRAM_THEMES.map((t) => (
                       <option key={t} value={t}>
@@ -380,7 +380,7 @@ export function NapkinNodeView({
                     value={styleId}
                     onChange={(e) => updateAttributes({ styleId: e.target.value })}
                     onMouseDown={stop}
-                    className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                    className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
                   >
                     {styleGroups.map((group) => (
                       <optgroup key={group} label={group}>
@@ -400,7 +400,7 @@ export function NapkinNodeView({
                       value={visualQuery}
                       onChange={(e) => updateAttributes({ visualQuery: e.target.value })}
                       onMouseDown={stop}
-                      className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm"
+                      className="h-9 w-full rounded-field border border-border bg-bg px-2 text-sm"
                     >
                       {NAPKIN_VISUAL_TYPES.map((t) => (
                         <option key={t.value || "auto"} value={t.value}>
@@ -417,7 +417,7 @@ export function NapkinNodeView({
               disabled={generating}
               onMouseDown={stop}
               onClick={() => generate()}
-              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-accent text-sm font-medium text-accent-ink transition hover:brightness-[1.06] disabled:opacity-60 focus-ring"
+              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-button bg-accent text-sm font-medium text-accent-ink transition hover:brightness-[1.06] disabled:opacity-60 focus-ring"
             >
               {generating ? (
                 <>
@@ -456,7 +456,7 @@ export function NapkinNodeView({
                       onMouseDown={stop}
                       onClick={() => updateAttributes({ url: v })}
                       className={cn(
-                        "relative overflow-hidden rounded-[var(--radius-btn)] border-2 transition-colors focus-ring",
+                        "relative overflow-hidden rounded-button border-2 transition-colors focus-ring",
                         v === url ? "border-accent ring-2 ring-accent/20" : "border-border hover:border-accent/50",
                       )}
                     >
@@ -486,7 +486,7 @@ export function NapkinNodeView({
                   setText(sourceText);
                   setEditing(true);
                 }}
-                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
               >
                 <Pencil size={14} />
                 Edit prompt
@@ -496,7 +496,7 @@ export function NapkinNodeView({
                 disabled={generating}
                 onMouseDown={stop}
                 onClick={() => generate()}
-                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-button border border-border text-xs font-medium text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
               >
                 {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 Regenerate

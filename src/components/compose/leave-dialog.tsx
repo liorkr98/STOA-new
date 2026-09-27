@@ -35,7 +35,7 @@ export function LeaveDialog({
     <Dialog.Root open={href !== null} onOpenChange={(o) => !o && onStay()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-lg md:p-6">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-lg md:p-6">
           <Dialog.Title className="font-display text-xl font-semibold tracking-tight">
             {nothingToKeep ? "Leave this draft behind?" : "Leave with unsaved changes?"}
           </Dialog.Title>

@@ -60,7 +60,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
       <div className="mx-auto flex h-14 w-full min-w-0 max-w-[var(--w-wide)] items-center justify-between gap-2 md:gap-4 lg:gap-6">
         {/* Wordmark + nav items */}
         <div className="flex min-w-0 items-center gap-6 lg:gap-8">
-          <Link href={logoHref} className="focus-ring shrink-0 rounded-[var(--radius-btn)]">
+          <Link href={logoHref} className="focus-ring shrink-0 rounded-button">
             <StoaLogo />
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
@@ -72,7 +72,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
                   href={item.href}
                   prefetch
                   className={cn(
-                    "focus-ring relative rounded-[var(--radius-btn)] px-3 py-2 text-sm transition-colors",
+                    "focus-ring relative rounded-button px-3 py-2 text-sm transition-colors",
                     active ? "text-text" : "text-text-mute hover:text-text",
                   )}
                 >
@@ -97,7 +97,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               <Link
                 href="/inbox"
                 aria-label="Notifications"
-                className="focus-ring relative rounded-[var(--radius-btn)] p-2 text-text-mute hover:bg-surface-2 hover:text-text"
+                className="focus-ring relative rounded-button p-2 text-text-mute hover:bg-surface-2 hover:text-text"
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
@@ -114,7 +114,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             </>
           ) : (
             <>
-              <Link href="/sign-in" className="focus-ring rounded-[var(--radius-btn)] px-3 py-1.5 text-sm text-text-mute hover:text-text">
+              <Link href="/sign-in" className="focus-ring rounded-button px-3 py-1.5 text-sm text-text-mute hover:text-text">
                 Sign in
               </Link>
               <Link href="/sign-up" className={buttonClass("primary", "sm")}>
@@ -131,7 +131,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
           <Link
             href="/search"
             aria-label="Search"
-            className="focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-btn)] text-text-mute"
+            className="focus-ring flex h-10 w-10 items-center justify-center rounded-button text-text-mute"
           >
             <Search size={19} strokeWidth={1.7} />
           </Link>
@@ -140,14 +140,14 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               <Link
                 href={isAnalyst ? "/studio/compose" : "/become-analyst"}
                 aria-label={isAnalyst ? "Compose" : "Become an analyst"}
-                className="focus-ring flex h-10 w-10 items-center justify-center rounded-[var(--radius-btn)] text-text-mute"
+                className="focus-ring flex h-10 w-10 items-center justify-center rounded-button text-text-mute"
               >
                 <PenLine size={19} strokeWidth={1.7} />
               </Link>
               <Link
                 href="/inbox"
                 aria-label={unreadCount > 0 ? `Inbox, ${unreadCount} unread` : "Inbox"}
-                className="focus-ring relative flex h-10 w-10 items-center justify-center rounded-[var(--radius-btn)] text-text-mute"
+                className="focus-ring relative flex h-10 w-10 items-center justify-center rounded-button text-text-mute"
               >
                 <Inbox size={19} strokeWidth={1.7} />
                 {unreadCount > 0 && (
@@ -169,7 +169,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             <>
               <Link
                 href="/sign-in"
-                className="focus-ring rounded-[var(--radius-btn)] px-2 py-1.5 text-sm text-text-mute"
+                className="focus-ring rounded-button px-2 py-1.5 text-sm text-text-mute"
               >
                 Sign in
               </Link>

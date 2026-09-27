@@ -46,7 +46,7 @@ function SortableSection({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-surface-2 px-3 py-2.5"
+      className="flex items-center justify-between gap-3 rounded-inner border border-border bg-surface-2 px-3 py-2.5"
     >
       <div className="flex items-center gap-2">
         <button
@@ -165,7 +165,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
             onChange={(e) =>
               setBannerStyle(e.target.value as NonNullable<ProfileConfig["banner_style"]>)
             }
-            className="mt-1 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
           >
             <option value="gradient-accent">Signal gradient</option>
             <option value="gradient-cool">Cool gradient</option>
@@ -179,7 +179,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
             value={specialties}
             onChange={(e) => setSpecialties(e.target.value)}
             placeholder="Semiconductors, AI, Macro"
-            className="mt-1 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-field border border-border bg-bg px-3 py-2 text-sm"
           />
         </label>
       </div>
@@ -195,7 +195,7 @@ export function BrandingEditor({ profile }: { profile: Profile }) {
       </div>
 
       {aiHint && (
-        <div className="rounded-[var(--radius-btn)] border border-border bg-surface-2 p-4 text-sm text-text-mute">{aiHint}</div>
+        <div className="rounded-inner border border-border bg-surface-2 p-4 text-sm text-text-mute">{aiHint}</div>
       )}
     </div>
   );

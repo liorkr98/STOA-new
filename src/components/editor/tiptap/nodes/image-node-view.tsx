@@ -81,7 +81,7 @@ export function ImageNodeView({
           <img
             src={url}
             alt={alt}
-            className="block w-full rounded-[var(--radius-card)] border border-border"
+            className="block w-full rounded-panel border border-border"
           />
           {caption && <p className="t-meta mt-1.5 text-center">{caption}</p>}
         </div>
@@ -93,7 +93,7 @@ export function ImageNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
@@ -115,7 +115,7 @@ export function ImageNodeView({
         <>
           <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
             <span className="t-eyebrow flex-1">Image</span>
-            <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+            <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
               {WIDTHS.map((w) => (
                 <button
                   key={w}
@@ -137,7 +137,7 @@ export function ImageNodeView({
               type="button"
               onMouseDown={stop}
               onClick={() => inputRef.current?.click()}
-              className="h-7 rounded-[var(--radius-btn)] px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+              className="h-7 rounded-button px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
             >
               Replace
             </button>
@@ -146,7 +146,7 @@ export function ImageNodeView({
               aria-label="Delete image"
               onMouseDown={stop}
               onClick={() => deleteNode()}
-              className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+              className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
             >
               <Trash2 size={15} />
             </button>
@@ -157,7 +157,7 @@ export function ImageNodeView({
               <img
                 src={url}
                 alt={alt}
-                className="block w-full rounded-[var(--radius-btn)] border border-border"
+                className="block w-full rounded-inner border border-border"
               />
             </div>
             <div className="mt-2 flex flex-col gap-1">

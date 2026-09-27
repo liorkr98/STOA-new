@@ -64,7 +64,7 @@ export function ImageCropDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/60 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]">
+      <div className="w-full max-w-lg overflow-hidden rounded-panel border border-border bg-surface shadow-[var(--shadow-card)]">
         <div className="border-b border-border px-4 py-3">
           <h3 className="font-semibold">{title}</h3>
         </div>

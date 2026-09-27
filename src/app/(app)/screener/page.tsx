@@ -90,7 +90,7 @@ export default function ScreenerPage() {
   ];
 
   const field =
-    "h-9 rounded-[var(--radius-btn)] border border-border bg-surface px-2.5 text-sm focus-ring";
+    "h-9 rounded-field border border-border bg-surface px-2.5 text-sm focus-ring";
 
   return (
     <DensityRoot className="mx-auto w-full max-w-[var(--w-wide)] flex flex-col gap-5">

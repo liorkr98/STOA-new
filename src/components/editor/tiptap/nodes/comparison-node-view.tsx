@@ -235,7 +235,7 @@ export function ComparisonNodeView({
       return (
         <NodeViewWrapper
           contentEditable={false}
-          className="my-4 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-4 py-8 text-center"
+          className="my-4 rounded-panel border border-dashed border-border bg-surface px-4 py-8 text-center"
         >
           <p className="t-meta">Comparison unavailable</p>
         </NodeViewWrapper>
@@ -246,7 +246,7 @@ export function ComparisonNodeView({
         contentEditable={false}
         role="figure"
         aria-label={`Comparison of ${comparison.series.map((s) => s.symbol).join(", ")}`}
-        className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
+        className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface"
       >
         {renderChart(comparison)}
       </NodeViewWrapper>
@@ -266,14 +266,14 @@ export function ComparisonNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex h-7 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
+        <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
           <Columns3 size={13} className="text-text-faint" />
           <input
             value={draft}
@@ -289,7 +289,7 @@ export function ComparisonNodeView({
           value={metric}
           onMouseDown={stop}
           onChange={(e) => pull(e.target.value as ComparisonMetric, years, kind)}
-          className="h-7 rounded-[var(--radius-btn)] border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
         >
           {METRICS.map((m) => (
             <option key={m.key} value={m.key}>
@@ -302,7 +302,7 @@ export function ComparisonNodeView({
           value={years}
           onMouseDown={stop}
           onChange={(e) => pull(metric, Number(e.target.value), kind)}
-          className="h-7 rounded-[var(--radius-btn)] border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
+          className="h-7 rounded-field border border-border bg-bg px-1.5 text-[11px] text-text-mute focus-ring"
         >
           {[3, 5, 8, 10].map((n) => (
             <option key={n} value={n}>
@@ -311,7 +311,7 @@ export function ComparisonNodeView({
           ))}
         </select>
 
-        <div className="inline-flex rounded-[var(--radius-btn)] border border-border bg-bg p-0.5">
+        <div className="inline-flex rounded-button border border-border bg-bg p-0.5">
           {(["line", "bar"] as const).map((k) => (
             <button
               key={k}
@@ -332,7 +332,7 @@ export function ComparisonNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-[var(--radius-btn)] bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
         >
           Pull comparison
         </button>
@@ -342,7 +342,7 @@ export function ComparisonNodeView({
           aria-label="Delete comparison"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

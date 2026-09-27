@@ -87,7 +87,7 @@ export function AddModuleRow({
         <button
           type="button"
           onClick={onAddVideo}
-          className="focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
         >
           <Plus size={14} aria-hidden />
           <Film size={14} aria-hidden />
@@ -98,7 +98,7 @@ export function AddModuleRow({
         <button
           type="button"
           onClick={onAddResearch}
-          className="focus-ring flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+          className="focus-ring flex items-center gap-1.5 rounded-button border border-dashed border-border px-3 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
         >
           <Plus size={14} aria-hidden />
           <FileText size={14} aria-hidden />

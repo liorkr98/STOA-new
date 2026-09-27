@@ -20,7 +20,7 @@ import type { Plan } from "@/lib/db/plans";
  */
 
 const inputClass =
-  "h-10 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm focus-ring";
+  "h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring";
 
 export function PlanManager({
   initialPlans,
@@ -104,7 +104,7 @@ export function PlanManager({
       </div>
 
       {plans.length === 0 ? (
-        <p className="rounded-[var(--radius-btn)] border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
+        <p className="rounded-inner border border-dashed border-border bg-bg px-3 py-6 text-center text-sm text-text-mute">
           No tiers yet. Add your first tier to start selling subscriptions.
         </p>
       ) : (
@@ -124,7 +124,7 @@ export function PlanManager({
         </div>
       )}
 
-      <p className="rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm text-text-mute">
+      <p className="rounded-inner border border-border bg-bg px-3 py-2 text-sm text-text-mute">
         Stoa takes 10% of what you earn. You keep 90%.
       </p>
     </div>
@@ -178,7 +178,7 @@ function PlanRow({
   }
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-border bg-bg p-4">
+    <div className="rounded-panel border border-border bg-bg p-4">
       <div className="flex items-center gap-2">
         <div className="flex flex-col">
           <button
@@ -236,7 +236,7 @@ function PlanRow({
             <select
               value={interval}
               onChange={(e) => setInterval(e.target.value as Plan["interval"])}
-              className="h-10 rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm focus-ring"
+              className="h-10 rounded-field border border-border bg-bg px-2 text-sm focus-ring"
             >
               <option value="month">/mo</option>
               <option value="year">/yr</option>
@@ -271,7 +271,7 @@ function PlanRow({
           {perks.map((perk, pi) => (
             <span
               key={`${perk}-${pi}`}
-              className="inline-flex items-center gap-1 rounded-[var(--radius-tag)] border border-border bg-surface px-2 py-0.5 text-[11px] text-text-mute"
+              className="inline-flex items-center gap-1 rounded-chip border border-border bg-surface px-2 py-0.5 text-[11px] text-text-mute"
             >
               {perk}
               <button

@@ -120,7 +120,7 @@ export function DataFigureNodeView({
     return (
       <NodeViewWrapper
         contentEditable={false}
-        className="my-4 max-w-sm rounded-[var(--radius-card)] border border-border bg-surface p-4"
+        className="my-4 max-w-sm rounded-panel border border-border bg-surface p-4"
       >
         {label && <span className="t-eyebrow">{label}</span>}
         <div className="mt-1 flex items-baseline gap-2">
@@ -175,7 +175,7 @@ export function DataFigureNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "group relative my-4 max-w-sm select-none rounded-[var(--radius-card)] border bg-surface p-4",
+        "group relative my-4 max-w-sm select-none rounded-panel border bg-surface p-4",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
@@ -186,7 +186,7 @@ export function DataFigureNodeView({
           aria-label="Find in filings"
           onMouseDown={stop}
           onClick={() => setPickerOpen((o) => !o)}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-accent focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-accent focus-ring"
         >
           <FileSearch size={14} />
         </button>
@@ -195,7 +195,7 @@ export function DataFigureNodeView({
           aria-label="Delete figure"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={14} />
         </button>
@@ -279,7 +279,7 @@ export function DataFigureNodeView({
       )}
 
       {pickerOpen && (
-        <div className="mt-2 rounded-[var(--radius-btn)] border border-border bg-bg p-2">
+        <div className="mt-2 rounded-inner border border-border bg-bg p-2">
           <div className="flex items-center gap-1.5">
             <input
               value={symbol}
@@ -287,13 +287,13 @@ export function DataFigureNodeView({
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), search())}
               onMouseDown={stop}
               placeholder="Ticker"
-              className="num h-7 w-16 rounded-[var(--radius-btn)] border border-border bg-surface px-1.5 text-sm font-semibold focus:outline-none"
+              className="num h-7 w-16 rounded-field border border-border bg-surface px-1.5 text-sm font-semibold focus:outline-none"
             />
             <select
               value={concept}
               onMouseDown={stop}
               onChange={(e) => setConcept(e.target.value)}
-              className="h-7 flex-1 rounded-[var(--radius-btn)] border border-border bg-surface px-1.5 text-[11px] text-text-mute focus-ring"
+              className="h-7 flex-1 rounded-field border border-border bg-surface px-1.5 text-[11px] text-text-mute focus-ring"
             >
               {COMMON_CONCEPTS.map((c) => (
                 <option key={c.concept} value={c.concept}>
@@ -305,7 +305,7 @@ export function DataFigureNodeView({
               type="button"
               onMouseDown={stop}
               onClick={search}
-              className="h-7 rounded-[var(--radius-btn)] bg-accent px-2 text-[11px] font-semibold text-accent-ink focus-ring"
+              className="h-7 rounded-button bg-accent px-2 text-[11px] font-semibold text-accent-ink focus-ring"
             >
               Search
             </button>
@@ -324,7 +324,7 @@ export function DataFigureNodeView({
                 type="button"
                 onMouseDown={stop}
                 onClick={() => chooseFigure(f)}
-                className="flex w-full items-center justify-between gap-2 rounded-[var(--radius-btn)] px-2 py-1 text-left text-sm hover:bg-surface-2"
+                className="flex w-full items-center justify-between gap-2 rounded-inner px-2 py-1 text-left text-sm hover:bg-surface-2"
               >
                 <span className="num text-text-mute">{periodLabel(f)}</span>
                 <span className="num font-medium">{fmtValue(f.value)}</span>

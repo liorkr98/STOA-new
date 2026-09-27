@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { AuthState } from "@/lib/types";
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus-ring";
+  "w-full rounded-field border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus-ring";
 
 function Submit({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
@@ -29,7 +29,7 @@ export function ForgotPasswordForm({ sent }: { sent: boolean }) {
         Enter the email you signed up with. If it has an account, a link to set a new password is on its way.
       </p>
       {sent ? (
-        <p role="status" className="mt-6 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text">
+        <p role="status" className="mt-6 rounded-inner border border-border bg-surface px-3 py-2 text-sm text-text">
           Check your inbox. The link signs you in and opens the page to set a new password.
         </p>
       ) : (

@@ -173,7 +173,7 @@ export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
             </Link>
             <Link
               href={`/analyst/${r.analyst.handle}`}
-              className="focus-ring inline-flex items-center gap-2.5 rounded-[var(--radius-btn)]"
+              className="focus-ring inline-flex items-center gap-2.5 rounded-button"
             >
               <Avatar src={r.analyst.avatarUrl} name={r.analyst.displayName} size="sm" />
               <span className="hidden text-[0.8125rem] font-semibold text-text sm:inline">
@@ -200,7 +200,7 @@ export function ExploreSectors({ sectors }: { sectors: SectorTile[] }) {
           <div key={s.name} className="markets-sector">
             <Link
               href={`/markets/sector/${encodeURIComponent(s.name)}`}
-              className="focus-ring flex items-baseline justify-between gap-2 rounded-[var(--radius-btn)]"
+              className="focus-ring flex items-baseline justify-between gap-2 rounded-button"
             >
               <span className="markets-sector-name">{s.name}</span>
             </Link>

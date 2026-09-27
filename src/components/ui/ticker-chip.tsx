@@ -9,7 +9,7 @@ import { cn } from "@/lib/design/cn";
  * publications with no single ticker ("MACRO / OIL & ENERGY", "SEMIS").
  */
 const chipBase =
-  "inline-flex items-center rounded-[var(--radius-tag)] border border-border bg-surface-2 px-2 py-0.5 num text-[0.6875rem] font-semibold uppercase tracking-wider text-text";
+  "inline-flex items-center rounded-chip border border-border bg-surface-2 px-2 py-0.5 num text-[0.6875rem] font-semibold uppercase tracking-wider text-text";
 const chipLink = "transition-colors hover:border-border-strong hover:text-text focus-ring";
 
 function Pill({ label, href, className }: { label: string; href?: string; className?: string }) {

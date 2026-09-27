@@ -59,7 +59,7 @@ export const SlashMenuList = forwardRef<
 
   if (items.length === 0) {
     return (
-      <div className="w-72 rounded-[var(--r-card)] border border-border bg-surface p-3 text-sm text-text-mute shadow-[var(--shadow-card)]">
+      <div className="w-72 rounded-panel border border-border bg-surface p-3 text-sm text-text-mute shadow-[var(--shadow-card)]">
         No blocks match.
       </div>
     );
@@ -70,7 +70,7 @@ export const SlashMenuList = forwardRef<
   return (
     <div
       ref={listRef}
-      className="max-h-80 w-72 overflow-y-auto rounded-[var(--r-card)] border border-border bg-surface p-1.5 shadow-[var(--shadow-card)] scroll-area"
+      className="max-h-80 w-72 overflow-y-auto rounded-panel border border-border bg-surface p-1.5 shadow-[var(--shadow-card)] scroll-area"
     >
       {items.map((item, i) => {
         const Icon = item.icon;
@@ -87,13 +87,13 @@ export const SlashMenuList = forwardRef<
               onMouseEnter={() => setSelected(i)}
               onClick={() => command(item)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-[var(--radius-btn)] px-2.5 py-2 text-left transition-colors",
+                "flex w-full items-center gap-2.5 rounded-inner px-2.5 py-2 text-left transition-colors",
                 i === selected ? "bg-accent-weak" : "hover:bg-surface-2",
               )}
             >
               <span
                 className={cn(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-btn)] border",
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-inner border",
                   i === selected ? "border-accent/40 text-accent" : "border-border text-text-mute",
                 )}
               >

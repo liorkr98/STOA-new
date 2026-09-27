@@ -79,7 +79,7 @@ export function RailOpenButton({ onClick, cardCount }: { onClick: () => void; ca
       type="button"
       onClick={onClick}
       aria-label={`Open the toolbox (${cardCount} cards)`}
-      className="focus-ring relative flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text lg:hidden"
+      className="focus-ring relative flex h-8 items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text lg:hidden"
     >
       <PanelLeftOpen size={15} />
       <span className="hidden sm:inline">Toolbox</span>

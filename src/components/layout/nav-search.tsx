@@ -140,7 +140,7 @@ export function NavSearch() {
         aria-label="Search tickers, analysts"
         aria-expanded={false}
         onClick={() => setExpanded(true)}
-        className="focus-ring flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius-btn)] text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
+        className="focus-ring flex h-[34px] w-[34px] items-center justify-center rounded-button text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
       >
         <Search size={17} aria-hidden />
       </button>
@@ -185,7 +185,7 @@ export function NavSearch() {
           aria-controls={listId}
           aria-expanded={showPanel}
           aria-busy={loading}
-          className="h-[34px] w-full appearance-none rounded-[var(--radius-btn)] border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
+          className="h-[34px] w-full appearance-none rounded-field border border-border bg-surface py-1 pl-8 pr-7 text-left text-xs text-text placeholder:text-text-mute focus-ring"
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -200,7 +200,7 @@ export function NavSearch() {
               inputRef.current?.focus();
             }}
             tabIndex={-1}
-            className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-[var(--radius-btn)] p-0.5 text-text-faint hover:text-text focus-ring"
+            className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-button p-0.5 text-text-faint hover:text-text focus-ring"
           >
             <X size={12} aria-hidden />
           </button>
@@ -211,7 +211,7 @@ export function NavSearch() {
         <div
           id={listId}
           role="listbox"
-          className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[16rem] overflow-hidden rounded-[var(--radius-card)] border border-border bg-paper shadow-[var(--shadow-card)] sm:w-[18rem]"
+          className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[16rem] overflow-hidden rounded-panel border border-border bg-paper shadow-[var(--shadow-card)] sm:w-[18rem]"
         >
           {loading && !hasHits ? (
             <p className="px-3 py-2.5 text-[11px] text-text-faint" role="status">
@@ -226,7 +226,7 @@ export function NavSearch() {
                   collapse();
                   router.push(`/search?q=${encodeURIComponent(q.trim())}`);
                 }}
-                className="mt-1.5 text-[11px] font-medium text-text underline hover:no-underline focus-ring rounded-[var(--radius-btn)]"
+                className="mt-1.5 text-[11px] font-medium text-text underline hover:no-underline focus-ring rounded-button"
               >
                 Search all
               </button>
@@ -244,7 +244,7 @@ export function NavSearch() {
                       href={`/markets/${t.symbol}`}
                       role="option"
                       onClick={collapse}
-                      className="flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
+                      className="flex items-center justify-between rounded-inner px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
                     >
                       <span className="num font-semibold">{t.symbol}</span>
                       <span className="truncate pl-2 text-[11px] text-text-mute">{t.company_name}</span>
@@ -264,7 +264,7 @@ export function NavSearch() {
                       role="option"
                       onClick={collapse}
                       className={cn(
-                        "flex items-center justify-between rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring",
+                        "flex items-center justify-between rounded-inner px-2 py-1 text-xs hover:bg-surface-2 focus-ring",
                       )}
                     >
                       <span className="truncate font-medium">{c.display_name}</span>
@@ -284,7 +284,7 @@ export function NavSearch() {
                       href={`/report/${r.id}`}
                       role="option"
                       onClick={collapse}
-                      className="block rounded-[var(--radius-btn)] px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
+                      className="block rounded-button px-2 py-1 text-xs hover:bg-surface-2 focus-ring"
                     >
                       <span className="line-clamp-1 font-medium">{r.title}</span>
                       <span className="num text-[10px] text-text-faint">

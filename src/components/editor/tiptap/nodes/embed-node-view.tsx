@@ -87,7 +87,7 @@ export function EmbedNodeView({
       className="group/card flex items-stretch gap-3 focus-ring"
     >
       {kind === "youtube" && ytId && (
-        <span className="relative block w-40 shrink-0 overflow-hidden rounded-[var(--radius-btn)] bg-surface-2">
+        <span className="relative block w-40 shrink-0 overflow-hidden rounded-inner bg-surface-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
@@ -124,7 +124,7 @@ export function EmbedNodeView({
     return (
       <NodeViewWrapper
         contentEditable={false}
-        className="fade-up my-4 rounded-[var(--radius-card)] border border-border bg-surface p-3"
+        className="fade-up my-4 rounded-panel border border-border bg-surface p-3"
       >
         {card}
       </NodeViewWrapper>
@@ -135,14 +135,14 @@ export function EmbedNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex h-7 flex-1 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
+        <span className="flex h-7 flex-1 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
           <Link2 size={13} className="text-text-faint" />
           <input
             value={draft}
@@ -159,7 +159,7 @@ export function EmbedNodeView({
           aria-label="Delete embed"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

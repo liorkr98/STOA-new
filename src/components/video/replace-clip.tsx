@@ -81,7 +81,7 @@ export function ReplaceClipControl({
         type="button"
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        className="num focus-ring rounded-[var(--radius-btn)] border border-[color-mix(in_srgb,var(--paper)_40%,transparent)] px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)] disabled:opacity-50"
+        className="num focus-ring rounded-button border border-[color-mix(in_srgb,var(--paper)_40%,transparent)] px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[var(--paper)] disabled:opacity-50"
       >
         {busy ? (
           <span className="inline-flex items-center gap-2">

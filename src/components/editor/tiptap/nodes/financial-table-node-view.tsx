@@ -44,7 +44,7 @@ export function FinancialTableNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "group my-4 select-none overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "group my-4 select-none overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
     >
@@ -54,7 +54,7 @@ export function FinancialTableNodeView({
           <button
             type="button"
             onClick={addColumn}
-            className="flex h-7 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-[11px] text-text-mute transition-colors hover:text-text focus-ring"
+            className="flex h-7 items-center gap-1 rounded-button px-2 text-[11px] text-text-mute transition-colors hover:text-text focus-ring"
           >
             <Plus size={12} /> Column
           </button>
@@ -62,7 +62,7 @@ export function FinancialTableNodeView({
             type="button"
             aria-label="Delete table"
             onClick={() => deleteNode()}
-            className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint opacity-0 transition-opacity hover:text-[var(--down)] focus-ring group-hover:opacity-100"
+            className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint opacity-0 transition-opacity hover:text-[var(--down)] focus-ring group-hover:opacity-100"
           >
             <Trash2 size={14} />
           </button>

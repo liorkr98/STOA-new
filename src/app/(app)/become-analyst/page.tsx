@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = { title: "Apply to publish" };
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
 const textareaClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute resize-none";
 
 async function getExistingApplication(userId: string) {
   const supabase = await createClient();
@@ -46,7 +46,7 @@ export default async function BecomeAnalystPage({
   if (submitted === "1") {
     return (
       <div className="mx-auto max-w-[var(--w-reading)] py-8">
-        <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
+        <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
           <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
           <h1 className="t-h2">Application submitted!</h1>
           <p className="t-body text-text-mute max-w-sm">
@@ -173,7 +173,7 @@ function ApplicationStatus({
 }) {
   if (application.status === "pending") {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
         <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
         <h2 className="t-h2">Application under review</h2>
         <p className="t-body text-text-mute max-w-sm">
@@ -187,13 +187,13 @@ function ApplicationStatus({
 
   if (application.status === "approved") {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
         <CheckCircle size={48} weight="duotone" className="text-[var(--up)]" />
         <h2 className="t-h2">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
           Your account has been upgraded. Set up your profile and publish your first report.
         </p>
-        <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
+        <a href="/onboarding/analyst" className={`inline-flex h-12 items-center justify-center gap-2 rounded-button bg-accent px-6 text-[0.95rem] font-medium text-accent-ink transition-[filter] hover:brightness-[1.06] focus-ring`}>
           Set up your profile
         </a>
         <a href="/studio/compose" className="text-sm text-accent underline hover:no-underline">
@@ -205,7 +205,7 @@ function ApplicationStatus({
 
   // rejected
   return (
-    <div className="flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-8 text-center">
+    <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
       <XCircle size={48} weight="duotone" className="text-[var(--down)]" />
       <h2 className="t-h2">Application not approved</h2>
       {application.review_note && (
@@ -214,7 +214,7 @@ function ApplicationStatus({
       <p className="text-sm text-text-mute">
         You can update your answers and re-apply below.
       </p>
-      <a href="/become-analyst?reapply=1" className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-btn)] border border-border bg-surface px-4 text-sm font-medium transition hover:bg-surface-2 focus-ring">
+      <a href="/become-analyst?reapply=1" className="inline-flex h-10 items-center justify-center gap-2 rounded-button border border-border bg-surface px-4 text-sm font-medium transition hover:bg-surface-2 focus-ring">
         Update and re-apply
       </a>
     </div>

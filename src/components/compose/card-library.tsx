@@ -20,7 +20,7 @@ function KindButton({
     <button
       type="button"
       onClick={() => onPick(spec.kind)}
-      className="focus-ring flex w-full flex-col items-start rounded-[var(--radius-btn)] border border-border bg-bg p-3 text-left transition-colors hover:border-[var(--ink)]"
+      className="focus-ring flex w-full flex-col items-start rounded-inner border border-border bg-bg p-3 text-left transition-colors hover:border-[var(--ink)]"
     >
       <span className="font-display text-[0.9375rem] font-semibold tracking-tight text-text">
         {showShape ? spec.shape : spec.label}
@@ -67,7 +67,7 @@ export function CardLibrary({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-[color-mix(in_srgb,var(--ink)_45%,transparent)]" />
-        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,640px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
+        <Dialog.Content className="scroll-area fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[min(94vw,640px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-panel border border-border bg-surface p-5 shadow-[var(--shadow-card)] md:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <Dialog.Title className="font-display text-[1.375rem] font-semibold tracking-tight">
@@ -98,7 +98,7 @@ export function CardLibrary({
                 <button
                   type="button"
                   onClick={() => addThisKind(previewKind)}
-                  className="focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[13px] font-medium text-[var(--paper)]"
+                  className="focus-ring rounded-button border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-[13px] font-medium text-[var(--paper)]"
                 >
                   Use this card
                 </button>
@@ -142,7 +142,7 @@ export function CardLibrary({
               <button
                 type="button"
                 onClick={() => setByShape(true)}
-                className="focus-ring mt-5 flex w-full items-center gap-3 rounded-[var(--radius-btn)] border border-dashed border-border p-3 text-left transition-colors hover:border-[var(--ink)]"
+                className="focus-ring mt-5 flex w-full items-center gap-3 rounded-inner border border-dashed border-border p-3 text-left transition-colors hover:border-[var(--ink)]"
               >
                 <Shapes size={16} className="shrink-0 text-text-mute" aria-hidden />
                 <span>

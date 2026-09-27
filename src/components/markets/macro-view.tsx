@@ -74,7 +74,7 @@ export function MacroView({
         </p>
 
         {instrument.directionNote ? (
-          <p className="mt-3 max-w-[62ch] rounded-[var(--radius-card)] border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-3 py-2 text-[0.8125rem] leading-relaxed text-text">
+          <p className="mt-3 max-w-[62ch] rounded-panel border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-3 py-2 text-[0.8125rem] leading-relaxed text-text">
             {instrument.directionNote}
           </p>
         ) : null}

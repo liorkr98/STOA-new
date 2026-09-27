@@ -30,7 +30,7 @@ export function AddVideoButton({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "focus-ring inline-flex items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 py-1 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2",
+          "focus-ring inline-flex items-center gap-1.5 rounded-button border border-border px-2.5 py-1 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2",
           className,
         )}
       >

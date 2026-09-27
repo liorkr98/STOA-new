@@ -24,7 +24,7 @@ export function TemplatesPanel({
             type="button"
             onClick={() => onApply(t.blocks(), t.type)}
             className={cn(
-              "rounded-[var(--radius-btn)] border border-border bg-bg/40 px-3 py-2.5 text-left transition-colors",
+              "rounded-inner border border-border bg-bg/40 px-3 py-2.5 text-left transition-colors",
               "hover:border-accent/40 hover:bg-accent-weak/30",
             )}
           >

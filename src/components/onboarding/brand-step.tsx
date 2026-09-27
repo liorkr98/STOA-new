@@ -94,7 +94,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value.toLowerCase())}
-              className="h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg pl-7 pr-9 text-sm focus-ring"
+              className="h-11 w-full rounded-field border border-border bg-bg pl-7 pr-9 text-sm focus-ring"
               maxLength={20}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -116,7 +116,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm focus-ring"
+            className="h-11 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring"
           />
         </label>
 
@@ -130,7 +130,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
             onChange={(e) => setBio(e.target.value.slice(0, 140))}
             rows={2}
             placeholder="What you cover and how you think"
-            className="w-full resize-none rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2.5 text-sm focus-ring"
+            className="w-full resize-none rounded-field border border-border bg-bg px-3 py-2.5 text-sm focus-ring"
           />
         </label>
 
@@ -143,7 +143,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
                 type="button"
                 onClick={() => setBannerStyle(b.value)}
                 className={cn(
-                  "flex-1 rounded-[var(--radius-btn)] border px-3 py-2 text-xs font-medium transition-colors",
+                  "flex-1 rounded-button border px-3 py-2 text-xs font-medium transition-colors",
                   bannerStyle === b.value
                     ? "border-accent text-accent"
                     : "border-border text-text-mute hover:border-border-strong",
@@ -156,7 +156,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
         </div>
 
         {error && (
-          <p className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+          <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
             {error}
           </p>
         )}
@@ -168,7 +168,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
 
       <div>
         <p className="t-eyebrow mb-2">Live preview</p>
-        <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+        <div className="overflow-hidden rounded-panel border border-border bg-surface">
           <div className={cn("h-16 w-full", bannerClass)} />
           <div className="-mt-6 flex flex-col gap-3 px-5 pb-5">
             <Avatar src={avatarUrl} name={displayName || "?"} size="lg" className="ring-4 ring-[var(--surface)]" />

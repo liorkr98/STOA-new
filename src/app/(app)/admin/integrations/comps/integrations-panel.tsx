@@ -64,7 +64,7 @@ export function IntegrationsPanel({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <section className="rounded-panel border border-border bg-surface p-5">
         <h2 className="t-h3">Alert delivery</h2>
         <p className="t-body mt-1 text-text-mute">
           Choose immediate Slack pings, a once-daily digest (8:00 UTC), or off. Revenue and
@@ -74,7 +74,7 @@ export function IntegrationsPanel({
           {alertSettings.map((row) => (
             <li
               key={row.alertKey}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-bg px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-inner border border-border bg-bg px-4 py-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{row.label}</p>
@@ -83,7 +83,7 @@ export function IntegrationsPanel({
                 </p>
               </div>
               <select
-                className="rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm"
+                className="rounded-field border border-border bg-surface px-3 py-2 text-sm"
                 value={row.delivery}
                 disabled={pending}
                 onChange={(e) => onDeliveryChange(row.alertKey, e.target.value as AlertDelivery)}
@@ -125,7 +125,7 @@ export function IntegrationsPanel({
         </div>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <section className="rounded-panel border border-border bg-surface p-5">
         <h2 className="t-h3">Sentry</h2>
         <p className="t-body mt-1 text-text-mute">
           Error monitoring. Connect Sentry to Slack in the Sentry dashboard (Integrations → Slack →
@@ -167,7 +167,7 @@ export function IntegrationsPanel({
         </div>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <section className="rounded-panel border border-border bg-surface p-5">
         <h2 className="t-h3">STOA bot (#bugs)</h2>
         <p className="t-body mt-1 text-text-mute">
           The bot posts thread replies on error alerts in #bugs. Manual posts in Slack only work after
@@ -256,7 +256,7 @@ export function IntegrationsPanel({
         </div>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <section className="rounded-panel border border-border bg-surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="t-h3">Slack channels</h2>
@@ -283,7 +283,7 @@ export function IntegrationsPanel({
           {slack.map((row) => (
             <li
               key={row.channel}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-bg px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-inner border border-border bg-bg px-4 py-3"
             >
               <div>
                 <p className="font-medium">#{row.channel}</p>
@@ -311,7 +311,7 @@ export function IntegrationsPanel({
         </ul>
       </section>
 
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+      <section className="rounded-panel border border-border bg-surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="t-h3">Alert smoke tests</h2>
@@ -339,7 +339,7 @@ export function IntegrationsPanel({
             {alertTests.map((row) => (
               <li
                 key={row.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-btn)] border border-border bg-bg px-4 py-2.5 text-sm"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-inner border border-border bg-bg px-4 py-2.5 text-sm"
               >
                 <span>{row.label}</span>
                 <span className="t-meta">
@@ -355,7 +355,7 @@ export function IntegrationsPanel({
       </section>
 
       {message && (
-        <p className="rounded-[var(--radius-btn)] border border-border bg-surface-2 px-4 py-3 text-sm">
+        <p className="rounded-inner border border-border bg-surface-2 px-4 py-3 text-sm">
           {message}
         </p>
       )}

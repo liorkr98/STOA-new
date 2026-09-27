@@ -19,7 +19,7 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 const inputClass =
-  "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm text-text placeholder:text-text-mute focus-ring";
+  "h-11 w-full rounded-field border border-border bg-bg px-3 text-sm text-text placeholder:text-text-mute focus-ring";
 
 export function AuthForm({
   mode,
@@ -53,7 +53,7 @@ export function AuthForm({
         {notice && (
           <p
             role="status"
-            className="mb-4 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text"
+            className="mb-4 rounded-inner border border-border bg-surface px-3 py-2 text-sm text-text"
           >
             {notice}
           </p>
@@ -61,7 +61,7 @@ export function AuthForm({
         {oauthError === "confirm" && (
           <div
             role="alert"
-            className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
           >
             <p>That link did not work, so you are not signed in. It may have expired or been used already.</p>
             {oauthReason && (
@@ -79,7 +79,7 @@ export function AuthForm({
         {oauthError === "oauth" && (
           <div
             role="alert"
-            className="mb-4 rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
           >
             <p>Sign-in did not complete, so you have not been signed in.</p>
             {oauthReason && (
@@ -146,7 +146,7 @@ export function AuthForm({
             role="alert"
             id="auth-error"
             aria-live="polite"
-            className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
+            className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]"
           >
             {state.error}
           </p>

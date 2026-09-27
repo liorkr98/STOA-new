@@ -150,7 +150,7 @@ export function EstimatesNodeView({
       return (
         <NodeViewWrapper
           contentEditable={false}
-          className="my-4 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-4 py-8 text-center"
+          className="my-4 rounded-panel border border-dashed border-border bg-surface px-4 py-8 text-center"
         >
           <p className="t-meta">Estimates unavailable</p>
         </NodeViewWrapper>
@@ -161,7 +161,7 @@ export function EstimatesNodeView({
         contentEditable={false}
         role="figure"
         aria-label={`${ticker} estimates`}
-        className="fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface"
+        className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface"
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
           <Target size={14} className="text-text-faint" />
@@ -186,14 +186,14 @@ export function EstimatesNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex h-7 items-center gap-1.5 rounded-[var(--radius-btn)] border border-border bg-bg px-2">
+        <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
           <Target size={13} className="text-text-faint" />
           <input
             value={draftTicker}
@@ -208,7 +208,7 @@ export function EstimatesNodeView({
           type="button"
           onMouseDown={stop}
           onClick={() => pull()}
-          className="h-7 rounded-[var(--radius-btn)] bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
+          className="h-7 rounded-button bg-accent px-2.5 text-[11px] font-semibold text-accent-ink focus-ring"
         >
           Pull estimates
         </button>
@@ -217,7 +217,7 @@ export function EstimatesNodeView({
           aria-label="Delete estimates"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

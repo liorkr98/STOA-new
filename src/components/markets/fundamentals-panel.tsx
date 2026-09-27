@@ -21,7 +21,7 @@ export function FundamentalsPanel({ data }: { data: CompanyFundamentals }) {
   if (!hasLive && !hasFiling) return null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+    <section className="rounded-panel border border-border bg-surface p-6">
       <h2 className="t-h3 mb-4">Fundamentals</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {data.marketCap != null && (

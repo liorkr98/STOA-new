@@ -51,7 +51,7 @@ export function ReportCards({
             onClick={() => nudge(-1)}
             disabled={atStart}
             aria-label="Previous card"
-            className="focus-ring flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] border border-border text-text disabled:opacity-35"
+            className="focus-ring flex h-7 w-7 items-center justify-center rounded-button border border-border text-text disabled:opacity-35"
           >
             <ChevronLeft size={14} strokeWidth={1.6} />
           </button>
@@ -60,7 +60,7 @@ export function ReportCards({
             onClick={() => nudge(1)}
             disabled={atEnd}
             aria-label="Next card"
-            className="focus-ring flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] border border-border text-text disabled:opacity-35"
+            className="focus-ring flex h-7 w-7 items-center justify-center rounded-button border border-border text-text disabled:opacity-35"
           >
             <ChevronRight size={14} strokeWidth={1.6} />
           </button>

@@ -70,7 +70,7 @@ export function BrandAnalyzerPanel({
       </div>
 
       {error && (
-        <p className="rounded-[var(--radius-btn)] border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
+        <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-sm text-[var(--down)]">
           {error}
         </p>
       )}
@@ -79,7 +79,7 @@ export function BrandAnalyzerPanel({
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Object.entries(result.scores).map(([key, score]) => (
-              <div key={key} className="rounded-[var(--radius-btn)] border border-border bg-bg p-3">
+              <div key={key} className="rounded-inner border border-border bg-bg p-3">
                 <p className="t-meta text-[10px] capitalize">{key.replace("_", " ")}</p>
                 <p className="num mt-1 text-xl font-semibold">{score}</p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
@@ -100,7 +100,7 @@ export function BrandAnalyzerPanel({
           {result.suggestions.length > 0 && (
             <div className="flex flex-col gap-3">
               {result.suggestions.map((s, i) => (
-                <div key={i} className="rounded-[var(--radius-btn)] border border-border bg-surface-2 p-4">
+                <div key={i} className="rounded-inner border border-border bg-surface-2 p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-text-faint">{s.field}</p>
                   <p className="mt-2 text-sm">
                     {Array.isArray(s.proposed) ? s.proposed.join(", ") : s.proposed}

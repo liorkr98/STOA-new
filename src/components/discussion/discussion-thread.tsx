@@ -151,7 +151,7 @@ export function DiscussionThread({
               {c.author.displayName}
             </span>
             {c.author.isAuthor ? (
-              <span className="num rounded-[var(--radius-tag)] border border-[var(--ink)] px-1 text-[10px] uppercase tracking-[0.14em] text-text">
+              <span className="num rounded-chip border border-[var(--ink)] px-1 text-[10px] uppercase tracking-[0.14em] text-text">
                 Author
               </span>
             ) : null}
@@ -267,7 +267,7 @@ export function DiscussionThread({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
               placeholder={replyTo ? "Write a reply" : "Ask the analyst, or add to the discussion"}
-              className="user-copy min-w-0 flex-1 rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-sm text-text focus-ring"
+              className="user-copy min-w-0 flex-1 rounded-field border border-border bg-surface px-3 py-2 text-sm text-text focus-ring"
             />
             <button type="button" disabled={pending || !text.trim()} onClick={submit} className={buttonClass("primary", "sm")}>
               {pending ? "Posting" : "Post"}

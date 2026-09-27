@@ -15,7 +15,7 @@ export function StudioPublishedList({
   plans: Plan[];
 }) {
   return (
-    <ul className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+    <ul className="overflow-hidden rounded-panel border border-border bg-surface">
       {reports.map((r) => (
         <li
           key={r.id}

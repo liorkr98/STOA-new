@@ -140,7 +140,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
           <h1 className="font-display text-4xl font-semibold tracking-tight">Publications</h1>
           <p className="t-body mt-2">Everything you&apos;ve made, and everything still open.</p>
         </div>
-        <Link href="/studio/compose" className="rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2.5 text-sm font-medium text-[var(--paper)]">
+        <Link href="/studio/compose" className="rounded-button bg-[var(--ink)] px-4 py-2.5 text-sm font-medium text-[var(--paper)]">
           New publication
         </Link>
       </div>
@@ -173,7 +173,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
               <div
                 key={p.id}
                 className={cn(
-                  "group flex gap-4 rounded-[var(--radius-card)] p-5 md:rounded-none md:border-b md:border-border md:p-0 md:py-5",
+                  "group flex gap-4 rounded-panel p-5 md:rounded-none md:border-b md:border-border md:p-0 md:py-5",
                   "border border-border md:border-0",
                   draft && "opacity-70",
                 )}
@@ -188,7 +188,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     ) : null}
                     {p.editedAt ? <EditedFlag editedAt={p.editedAt} /> : null}
                     {p.state === "archived" && (
-                      <span className="num rounded-[var(--radius-tag)] bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
+                      <span className="num rounded-chip bg-[var(--ink)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--paper)]">
                         Archived
                       </span>
                     )}

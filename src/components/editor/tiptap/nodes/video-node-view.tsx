@@ -121,7 +121,7 @@ export function VideoNodeView({
   }
 
   const frame = (
-    <div className="relative w-full overflow-hidden rounded-[var(--radius-btn)] bg-[var(--ink)]" style={{ paddingBottom: aspectPadding(aspectRatio) }}>
+    <div className="relative w-full overflow-hidden rounded-inner bg-[var(--ink)]" style={{ paddingBottom: aspectPadding(aspectRatio) }}>
       {play.kind === "ready" ? (
         <iframe
           src={play.iframeSrc}
@@ -137,10 +137,10 @@ export function VideoNodeView({
             <img src={posterUrl} alt="" className="h-full w-full object-cover opacity-40 blur-[6px]" />
           )}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-btn)] bg-[var(--paper)]/90 text-[var(--ink)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-inner bg-[var(--paper)]/90 text-[var(--ink)]">
               <Lock size={17} />
             </span>
-            <span className="rounded-[var(--radius-tag)] bg-[var(--paper)]/90 px-2.5 py-1 text-[12px] font-medium text-[var(--ink)]">
+            <span className="rounded-chip bg-[var(--paper)]/90 px-2.5 py-1 text-[12px] font-medium text-[var(--ink)]">
               {play.reason} - upgrade to watch
             </span>
           </div>
@@ -176,7 +176,7 @@ export function VideoNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
       )}
       onMouseDown={stop}
@@ -204,7 +204,7 @@ export function VideoNodeView({
             value={minPlanRank}
             onChange={(e) => updateAttributes({ minPlanRank: Math.max(0, Number(e.target.value) || 0) })}
             onMouseDown={stop}
-            className="num h-7 w-14 rounded-[var(--radius-btn)] border border-border bg-bg px-1.5 text-right text-sm focus-ring"
+            className="num h-7 w-14 rounded-field border border-border bg-bg px-1.5 text-right text-sm focus-ring"
           />
         </label>
         {assetId && (
@@ -212,7 +212,7 @@ export function VideoNodeView({
             type="button"
             onMouseDown={stop}
             onClick={() => inputRef.current?.click()}
-            className="h-7 rounded-[var(--radius-btn)] px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+            className="h-7 rounded-button px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
           >
             Replace
           </button>
@@ -222,7 +222,7 @@ export function VideoNodeView({
           aria-label="Delete video"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -256,7 +256,7 @@ export function VideoNodeView({
             onMouseDown={stop}
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-[var(--radius-btn)] border border-dashed border-border px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-inner border border-dashed border-border px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
           >
             <Upload size={22} className="text-text-faint" />
             <span className="text-sm">{uploading ? "Uploading..." : "Upload a video"}</span>

@@ -359,7 +359,7 @@ function Stage({
   return (
     <div
       ref={stageRef}
-      className="relative aspect-video w-full select-none overflow-hidden rounded-[var(--radius-card)] bg-[var(--ink)] text-white"
+      className="relative aspect-video w-full select-none overflow-hidden rounded-panel bg-[var(--ink)] text-white"
       onPointerDown={() => !faithful && onSelect(null)}
     >
       {src ? (
@@ -652,7 +652,7 @@ function Timeline({
     <div
       ref={ref}
       className={cn(
-        "relative touch-none select-none rounded-[var(--radius-btn)] border border-border bg-surface pt-3 transition-colors",
+        "relative touch-none select-none rounded-inner border border-border bg-surface pt-3 transition-colors",
         dropActive && "bg-[color-mix(in_srgb,var(--brass)_12%,transparent)] ring-2 ring-[var(--brass)]",
       )}
       onPointerMove={onPointerMove}
@@ -675,7 +675,7 @@ function Timeline({
     >
       {/* The filmstrip. Press anywhere to scrub; the ends are the trim. */}
       <div
-        className="relative flex h-16 overflow-hidden rounded-t-[var(--radius-btn)] bg-[var(--ink)]"
+        className="relative flex h-16 overflow-hidden rounded-t-inner bg-[var(--ink)]"
         role="slider"
         aria-label="Scrub"
         aria-valuemin={0}
@@ -827,7 +827,7 @@ function Selected({
     );
 
   return (
-    <div className="rounded-[var(--radius-btn)] border border-[var(--ink)] bg-surface p-3" role="group" aria-label="Selected">
+    <div className="rounded-inner border border-[var(--ink)] bg-surface p-3" role="group" aria-label="Selected">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="num text-[10px] uppercase tracking-[0.16em] text-text">
           {overlay.kind === "text" ? "Text" : sourceLabel(overlay.source, new Map(cards.map((c) => [c.id, cardName(c)])))}
@@ -1008,7 +1008,7 @@ function AddOverlay({
           <>
             <div className="fixed inset-0 z-10" onClick={() => setOpen(null)} aria-hidden />
             <div
-              className="menu-pop absolute left-0 top-9 z-20 w-60 rounded-[var(--radius-btn)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+              className="menu-pop absolute left-0 top-9 z-20 w-60 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
               role="menu"
               aria-label={open === "card" ? "Which card" : "Add at the playhead"}
               onKeyDown={(e) => e.key === "Escape" && setOpen(null)}
@@ -1100,7 +1100,7 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
     chosen?.type === "upload" ? chosen.url : chosen?.type === "frame" ? (frames.find((f) => Math.abs(f.time - chosen.time) < 0.05)?.url ?? null) : null;
 
   return (
-    <section aria-label="Cover" className="rounded-[var(--radius-btn)] border border-border bg-surface p-3">
+    <section aria-label="Cover" className="rounded-inner border border-border bg-surface p-3">
       <div className="flex items-center gap-3">
         <div className="relative aspect-[4/5] w-10 shrink-0 overflow-hidden rounded-[4px] bg-[var(--ink)]">
           {chosenUrl ? (
@@ -1434,7 +1434,7 @@ export function VideoRung({
   return (
     <section
       aria-label="Video"
-      className={cn(chrome && "mb-10 rounded-[var(--radius-card)] border border-border bg-surface p-4 md:p-5")}
+      className={cn(chrome && "mb-10 rounded-panel border border-border bg-surface p-4 md:p-5")}
     >
       {chrome || choosing ? (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -1502,7 +1502,7 @@ export function VideoRung({
               <button
                 type="button"
                 onClick={() => setPicking("camera")}
-                className="focus-ring flex min-h-[11rem] w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-6 text-center hover:border-[var(--ink)]"
+                className="focus-ring flex min-h-[11rem] w-full flex-col items-center justify-center gap-3 rounded-panel border border-border bg-surface px-6 text-center hover:border-[var(--ink)]"
               >
                 <Video size={22} strokeWidth={1.6} className="text-text-mute" />
                 <span className="text-sm text-text">Record with your camera</span>
@@ -1512,7 +1512,7 @@ export function VideoRung({
               </button>
             ) : null}
             <label
-              className="flex min-h-[11rem] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-6 text-center"
+              className="flex min-h-[11rem] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-panel border border-dashed border-border bg-surface px-6 text-center"
               onDragOver={(e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = "copy";
@@ -1529,7 +1529,7 @@ export function VideoRung({
                 ref={fileRef}
                 type="file"
                 accept="video/*"
-                className="mt-1 max-w-full text-sm text-text-mute file:mr-3 file:rounded-[var(--radius-btn)] file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
+                className="mt-1 max-w-full text-sm text-text-mute file:mr-3 file:rounded-field file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-sm file:text-text"
                 onChange={(e) => {
                   takeFile(e.target.files?.[0]);
                   e.target.value = "";

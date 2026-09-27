@@ -339,8 +339,8 @@ function DevComposeInner() {
               }}
               className={
                 shape === s.key
-                  ? "focus-ring rounded-[var(--radius-btn)] border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-[0.8125rem] text-[var(--paper)]"
-                  : "focus-ring rounded-[var(--radius-btn)] border border-border px-3 py-1.5 text-left text-[0.8125rem] text-text-mute hover:text-text"
+                  ? "focus-ring rounded-inner border border-[var(--ink)] bg-[var(--ink)] px-3 py-1.5 text-left text-[0.8125rem] text-[var(--paper)]"
+                  : "focus-ring rounded-inner border border-border px-3 py-1.5 text-left text-[0.8125rem] text-text-mute hover:text-text"
               }
             >
               <span className="block font-medium">{s.label}</span>

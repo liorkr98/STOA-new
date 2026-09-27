@@ -61,7 +61,7 @@ export function PaywallGate({
         {!isAuthed && (
           <p className="t-meta mt-3">
             Already subscribed?{" "}
-            <a href={loginHref} className="underline hover:no-underline focus-ring rounded-[var(--r-tag)]">
+            <a href={loginHref} className="underline hover:no-underline focus-ring rounded-chip">
               Log in
             </a>
           </p>

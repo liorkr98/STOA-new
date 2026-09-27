@@ -47,7 +47,7 @@ export function FeaturesMenu({
   return (
     <section
       aria-label={`Add to this ${typeNoun}`}
-      className="rounded-[var(--radius-card)] border border-border bg-surface"
+      className="rounded-panel border border-border bg-surface"
     >
       <div className="border-b border-border px-4 py-3">
         <p className="t-eyebrow">Add to this {typeNoun}</p>

@@ -49,7 +49,7 @@ export function StorefrontSections({
               <div className="mt-3 flex flex-col">
                 {filled.map((item, i) => (
                   <details key={i} className="group border-t border-border py-3 first:border-0">
-                    <summary className="cursor-pointer list-none text-sm font-medium text-text hover:text-accent focus-ring rounded-[var(--r-tag)]">
+                    <summary className="cursor-pointer list-none text-sm font-medium text-text hover:text-accent focus-ring rounded-chip">
                       {item.q}
                     </summary>
                     <p className="t-body mt-2 text-sm">{item.a}</p>

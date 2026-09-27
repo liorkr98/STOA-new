@@ -75,7 +75,7 @@ export function CardChart({
           <span className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">TradingView</span>
         </div>
         <div
-          className="mt-2 min-h-0 flex-1 overflow-hidden rounded-[var(--radius-btn)] border border-border bg-paper"
+          className="mt-2 min-h-0 flex-1 overflow-hidden rounded-inner border border-border bg-paper"
           style={{ height: compact ? 168 : 240 }}
         >
           <TradingViewChart ticker={symbol} range="3M" height={compact ? 168 : 240} compact />
@@ -220,7 +220,7 @@ function LightweightCardChart({
       </div>
       <div
         ref={hostRef}
-        className="mt-2 min-h-0 flex-1 overflow-hidden rounded-[var(--radius-btn)] border border-border bg-paper"
+        className="mt-2 min-h-0 flex-1 overflow-hidden rounded-inner border border-border bg-paper"
         style={{ height: compact ? 160 : 220 }}
         aria-busy={status === "loading"}
       />

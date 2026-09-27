@@ -51,7 +51,7 @@ export async function CompanyFinancials({
   if (!statement && (!estimates || estimates.length === 0)) return null;
 
   return (
-    <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+    <section className="rounded-panel border border-border bg-surface p-5">
       <div className="mb-5">
         <h2 className="t-h3">Financials and filings</h2>
         <p className="t-meta mt-1">Official filing data with consensus earnings context.</p>
@@ -64,7 +64,7 @@ export async function CompanyFinancials({
             {filings.map((filing) => (
               <article
                 key={`${filing.symbol}-${filing.period_end}-${filing.frequency}`}
-                className="rounded-[var(--radius-btn)] border border-border bg-[var(--paper)] px-3 py-2.5"
+                className="rounded-inner border border-border bg-[var(--paper)] px-3 py-2.5"
               >
                 <p className="num text-xs text-text-faint">{filing.period_end}</p>
                 <p className="mt-0.5 text-sm font-medium text-text">{freqLabel(filing.frequency)}</p>
@@ -90,7 +90,7 @@ export async function CompanyFinancials({
       {statement && statement.periods.length > 0 && (
         <div>
           <h3 className="t-eyebrow mb-2">Income statement</h3>
-          <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
+          <div className="overflow-x-auto rounded-panel border border-border bg-surface">
             <table className="w-full border-collapse text-sm">
               <thead className="bg-surface">
                 <tr>
@@ -134,7 +134,7 @@ export async function CompanyFinancials({
       {estimates && estimates.length > 0 && (
         <div>
           <h3 className="t-eyebrow mb-2">EPS estimates vs actuals</h3>
-          <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
+          <div className="overflow-x-auto rounded-panel border border-border bg-surface">
             <table className="w-full border-collapse text-sm">
               <thead className="bg-surface">
                 <tr>

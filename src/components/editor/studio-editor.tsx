@@ -1333,7 +1333,7 @@ export function StudioEditor({
               type="button"
               aria-label="Report templates"
               onClick={() => setTemplateOpen(true)}
-              className="flex h-8 w-full items-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
+              className="flex h-8 w-full items-center gap-1.5 rounded-button border border-border px-2.5 text-xs font-medium text-text-mute transition-colors hover:text-text focus-ring"
             >
               <SquaresFour size={15} />
               Templates
@@ -1519,7 +1519,7 @@ export function StudioEditor({
                 before they type. Brass, not rust: correcting yourself in the
                 open is the right thing to do. */}
             {editingPublished ? (
-              <div className="mb-6 rounded-[var(--radius-card)] border border-[var(--brass)]/50 bg-[var(--brass)]/10 p-3.5">
+              <div className="mb-6 rounded-panel border border-[var(--brass)]/50 bg-[var(--brass)]/10 p-3.5">
                 <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
                   This publication is live
                 </p>
@@ -1595,7 +1595,7 @@ export function StudioEditor({
                       onDragLeave={() => setResearchDropActive(false)}
                       onDrop={onResearchDrop}
                       className={cn(
-                        "rounded-[var(--radius-card)] transition-colors",
+                        "rounded-panel transition-colors",
                         researchDropActive &&
                           "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
                       )}
@@ -1634,7 +1634,7 @@ export function StudioEditor({
                       placeholder="Say the one thing."
                       rows={6}
                       dir="auto"
-                      className="user-copy w-full resize-none rounded-[var(--radius-card)] border border-border bg-surface p-4 text-[1.125rem] leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
+                      className="user-copy w-full resize-none rounded-panel border border-border bg-surface p-4 text-[1.125rem] leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
                     />
                     <p className="num mt-2 text-[11px] uppercase tracking-[0.12em] text-text-faint">
                       {summary.trim().length} / {BRIEF_MAX_CHARS}
@@ -1671,12 +1671,12 @@ export function StudioEditor({
                 <DevCrash step="cards" />
                 <div>
                   {cards.length === 0 ? (
-                    <div className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-5">
+                    <div className="rounded-panel border border-dashed border-border-strong bg-surface p-5">
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
-                          className="focus-ring rounded-[var(--radius-btn)] bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                          className="focus-ring rounded-button bg-[var(--ink)] px-4 py-2 text-[0.8125rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
                         >
                           Make the first card
                         </button>
@@ -1684,7 +1684,7 @@ export function StudioEditor({
                           <button
                             type="button"
                             onClick={() => runAssistant(ASSISTANT_ACTIONS[0]!)}
-                            className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                            className="focus-ring rounded-button border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
                           >
                             Draft them from what I have written
                           </button>
@@ -1699,7 +1699,7 @@ export function StudioEditor({
                             key={c.id}
                             type="button"
                             onClick={() => setSelectedCardId(c.id)}
-                            className="focus-ring w-[220px] shrink-0 rounded-[var(--radius-card)] text-left"
+                            className="focus-ring w-[220px] shrink-0 rounded-panel text-left"
                           >
                             <CardPreview card={c} compact />
                           </button>
@@ -1709,7 +1709,7 @@ export function StudioEditor({
                         <button
                           type="button"
                           onClick={() => setLibraryOpen(true)}
-                          className="focus-ring rounded-[var(--radius-btn)] border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
+                          className="focus-ring rounded-button border border-border px-4 py-2 text-[0.8125rem] text-text-mute transition-colors hover:border-[var(--ink)] hover:text-text"
                         >
                           Add another card
                         </button>
@@ -1794,7 +1794,7 @@ export function StudioEditor({
                   <button
                     type="button"
                     onClick={() => setPreviewOpen(true)}
-                    className="focus-ring w-full rounded-[var(--radius-btn)] border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)]"
+                    className="focus-ring w-full rounded-inner border border-border bg-surface px-3 py-2 text-left text-[0.8125rem] text-text hover:border-[var(--ink)]"
                   >
                     Preview publication
                   </button>

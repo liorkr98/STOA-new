@@ -97,7 +97,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
   return (
     <div
       className={cn(
-        "relative flex items-start gap-3 rounded-[var(--radius-card)] py-4 pl-5 pr-4",
+        "relative flex items-start gap-3 rounded-panel py-4 pl-5 pr-4",
         needs ? "border border-border bg-surface" : "border-b border-border",
         needs && "border-l-2 border-l-[var(--ink)]",
         it.danger && "border-l-[var(--rust)]",
@@ -120,7 +120,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
                   <Link
                     href={it.href ?? "#"}
                     className={cn(
-                      "rounded-[var(--radius-btn)] px-3 py-1.5 text-[13px] font-medium",
+                      "rounded-button px-3 py-1.5 text-[13px] font-medium",
                       it.danger
                         ? "bg-[var(--rust)] text-[var(--paper)]"
                         : "bg-[var(--ink)] text-[var(--paper)]",
@@ -195,7 +195,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
       </div>
 
       {prefsOpen && (
-        <div className="flex flex-col gap-6 rounded-[var(--radius-card)] border border-border bg-surface p-6">
+        <div className="flex flex-col gap-6 rounded-panel border border-border bg-surface p-6">
           <PrefGroup title="Reading" rows={READING_PREFS} />
           {isAnalyst && <PrefGroup title="Your research" rows={RESEARCH_PREFS} />}
           <p className="num text-[10px] uppercase tracking-[0.14em] text-text-faint">

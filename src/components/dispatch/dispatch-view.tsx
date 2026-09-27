@@ -129,7 +129,7 @@ export function DispatchView({
       />
 
       {thinHome ? (
-        <div className="dispatch-section rounded-[var(--radius-card)] border border-border bg-surface px-5 py-6 text-center">
+        <div className="dispatch-section rounded-panel border border-border bg-surface px-5 py-6 text-center">
           <p className="text-sm text-text-mute">
             Thin briefing today. Follow more analysts to fill tomorrow&apos;s issue.
           </p>

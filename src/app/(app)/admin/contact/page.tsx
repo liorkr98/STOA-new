@@ -111,7 +111,7 @@ function ContactCard({
     <article
       id={msg.id}
       className={[
-        "rounded-[var(--radius-card)] border bg-surface p-5 flex flex-col gap-4",
+        "rounded-panel border bg-surface p-5 flex flex-col gap-4",
         highlighted ? "border-[var(--verdigris)]" : "border-border",
         muted ? "opacity-80" : "",
       ].join(" ")}
@@ -124,7 +124,7 @@ function ContactCard({
           </a>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className={`rounded-[var(--radius-tag)] px-2 py-0.5 text-xs font-medium ${badge.className}`}>
+          <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${badge.className}`}>
             {badge.label}
           </span>
           <span className="text-xs text-text-mute">

@@ -69,7 +69,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
   if (status === "loading" && !isAuthor) return null;
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-4 py-3">
+    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-panel border border-border bg-surface px-4 py-3">
       <span className="flex items-center gap-2 text-text-mute">
         <Headphones size={15} className="text-text-faint" />
         <span className="t-eyebrow">Audio brief</span>
@@ -89,7 +89,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
           onClick={generate}
           disabled={pending}
           className={cn(
-            "focus-ring inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] px-2.5 text-[12px] font-medium",
+            "focus-ring inline-flex h-8 items-center gap-1.5 rounded-button px-2.5 text-[12px] font-medium",
             status === "ready"
               ? "text-text-mute hover:bg-surface-2"
               : "bg-accent text-accent-ink",

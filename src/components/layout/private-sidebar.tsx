@@ -84,7 +84,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
         href={isAnalyst ? "/profile" : "/saved"}
         aria-current={pathname === "/profile" ? "page" : undefined}
         className={cn(
-          "focus-ring relative flex items-center gap-2.5 rounded-[var(--radius-btn)] px-2 py-1.5",
+          "focus-ring relative flex items-center gap-2.5 rounded-inner px-2 py-1.5",
           pathname === "/profile" ? "bg-surface-2" : "hover:bg-surface-2",
         )}
       >
@@ -110,7 +110,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
                   prefetch
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative rounded-[var(--radius-btn)] px-3 py-1.5 text-sm transition-colors",
+                    "relative rounded-button px-3 py-1.5 text-sm transition-colors",
                     isActive
                       ? "font-medium text-text"
                       : "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -136,7 +136,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
         <form action={signOut}>
           <button
             type="submit"
-            className="focus-ring rounded-[var(--radius-btn)] px-2 py-1 text-sm text-text-faint transition-colors hover:text-text"
+            className="focus-ring rounded-button px-2 py-1 text-sm text-text-faint transition-colors hover:text-text"
           >
             Sign out
           </button>
@@ -204,7 +204,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                       onClick={() => setOpen(null)}
                       aria-current={it.href === active ? "page" : undefined}
                       className={cn(
-                        "block rounded-[var(--radius-btn)] px-2.5 py-2 text-sm transition-colors",
+                        "block rounded-button px-2.5 py-2 text-sm transition-colors",
                         it.href === active
                           ? "font-medium text-text"
                           : "text-text-mute hover:bg-surface-2 hover:text-text",
@@ -217,7 +217,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                     <form action={signOut} className="mt-1 border-t border-border pt-1">
                       <button
                         type="submit"
-                        className="block w-full rounded-[var(--radius-btn)] px-2.5 py-2 text-left text-sm text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
+                        className="block w-full rounded-inner px-2.5 py-2 text-left text-sm text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
                       >
                         Sign out
                       </button>

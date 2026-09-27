@@ -3,7 +3,7 @@ import { cn } from "@/lib/design/cn";
 import type { Direction } from "@/lib/types";
 
 const tagBase =
-  "inline-flex items-center gap-1 rounded-[var(--radius-tag)] px-2 py-0.5 text-[0.6875rem] font-semibold tracking-wide uppercase";
+  "inline-flex items-center gap-1 rounded-chip px-2 py-0.5 text-[0.6875rem] font-semibold tracking-wide uppercase";
 
 /** Neutral label. The default tag has no sentiment color. */
 export function Tag({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {

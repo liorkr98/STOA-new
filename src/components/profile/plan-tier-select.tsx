@@ -31,7 +31,7 @@ export function PlanTierSelect({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className={cn(
-          "mt-1 h-10 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 text-sm focus-ring",
+          "mt-1 h-10 w-full rounded-field border border-border bg-bg px-3 text-sm focus-ring",
         )}
       >
         <option value={0}>Any subscriber (all tiers)</option>

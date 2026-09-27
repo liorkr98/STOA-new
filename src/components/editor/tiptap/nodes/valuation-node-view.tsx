@@ -33,7 +33,7 @@ function pct(v: number): string {
 }
 
 const inputClass =
-  "num h-8 w-full rounded-[var(--radius-btn)] border border-border bg-bg px-2 text-sm focus-ring";
+  "num h-8 w-full rounded-field border border-border bg-bg px-2 text-sm focus-ring";
 
 export function ValuationNodeView({
   node,
@@ -231,7 +231,7 @@ export function ValuationNodeView({
     <NodeViewWrapper
       contentEditable={false}
       className={cn(
-        "fade-up my-4 overflow-hidden rounded-[var(--radius-card)] border bg-surface",
+        "fade-up my-4 overflow-hidden rounded-panel border bg-surface",
         selected ? "border-accent" : "border-border",
         drivesTarget && "ledger-card",
       )}
@@ -254,7 +254,7 @@ export function ValuationNodeView({
           aria-label="Delete valuation"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-btn)] text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -279,7 +279,7 @@ export function ValuationNodeView({
               onMouseDown={stop}
               onClick={pullPrice}
               disabled={pullingPrice}
-              className="h-8 rounded-[var(--radius-btn)] border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
+              className="h-8 rounded-button border border-border px-2 text-[11px] text-text-mute hover:bg-surface-2 focus-ring"
             >
               {pullingPrice ? "..." : "Pull price"}
             </button>
@@ -386,7 +386,7 @@ export function ValuationNodeView({
         </div>
 
         {/* Output */}
-        <div className="rounded-[var(--radius-btn)] border border-border bg-bg p-3">
+        <div className="rounded-inner border border-border bg-bg p-3">
           {outputCard}
           {sensitivity && shown && (
             <div className="mt-3">

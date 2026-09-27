@@ -111,7 +111,7 @@ export function OAuthButtons({
             disabled={pending !== null}
             onClick={() => void signInWith(p.key)}
             className={cn(
-              "focus-ring flex h-11 items-center justify-center gap-2 rounded-[var(--radius-btn)]",
+              "focus-ring flex h-11 items-center justify-center gap-2 rounded-button",
               "border border-border bg-surface text-sm font-medium text-text",
               "transition-colors hover:border-border-strong hover:bg-surface-2 disabled:opacity-60",
             )}

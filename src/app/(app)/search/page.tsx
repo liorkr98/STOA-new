@@ -54,7 +54,7 @@ export default async function SearchPage({
                   <Link
                     key={t.ticker}
                     href={`/markets/${t.ticker}`}
-                    className="rounded-[var(--radius-card)] border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
+                    className="rounded-panel border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
                   >
                     <div className="num font-semibold">{t.ticker}</div>
                     <div className="t-meta">

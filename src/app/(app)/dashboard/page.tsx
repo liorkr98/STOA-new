@@ -75,7 +75,7 @@ export default function DashboardPage() {
         <h1 className="t-h1">Dashboard</h1>
         <p className="t-body mt-1">Your board. Drag widgets to arrange it.</p>
       </div>
-      <DashboardBoard ids={order} onReorder={reorder} className="rounded-[var(--radius-card)] bg-surface-2 p-4">
+      <DashboardBoard ids={order} onReorder={reorder} className="rounded-panel bg-surface-2 p-4">
         {order.map((id) => widgets[id])}
       </DashboardBoard>
     </DensityRoot>

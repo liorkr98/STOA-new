@@ -52,7 +52,7 @@ export function CoverUpload({
 
   return (
     <>
-      <div className="relative h-40 overflow-hidden rounded-[var(--radius-card)] border border-border">
+      <div className="relative h-40 overflow-hidden rounded-panel border border-border">
         {url && theme.banner_style === "cover" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="" className="h-full w-full object-cover" />

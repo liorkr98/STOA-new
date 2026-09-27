@@ -57,7 +57,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
       editor={editor}
       options={{ placement: "top", offset: 8 }}
       shouldShow={({ editor: e, from, to }) => from !== to && e.isEditable && !e.isActive("codeBlock")}
-      className="flex items-center gap-0.5 rounded-[var(--r-card)] border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
+      className="flex items-center gap-0.5 rounded-panel border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
     >
       <Btn icon={Type} label="Text" active={editor.isActive("paragraph")} onClick={() => editor.chain().focus().setParagraph().run()} />
       <Btn icon={Heading2} label="Heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
@@ -78,7 +78,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
             aria-label="Highlight"
             title="Highlight (Cmd+Shift+H)"
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] transition-colors focus-ring",
+              "flex h-8 w-8 items-center justify-center rounded-button transition-colors focus-ring",
               editor.isActive("highlight") ? "bg-accent-weak text-accent" : "text-text-mute hover:bg-surface-2 hover:text-text",
             )}
           >
@@ -88,7 +88,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
         <Popover.Portal>
           <Popover.Content
             sideOffset={6}
-            className="popover-content z-50 flex items-center gap-1.5 rounded-[var(--r-card)] border border-border bg-surface p-2 shadow-[var(--shadow-card)]"
+            className="popover-content z-50 flex items-center gap-1.5 rounded-panel border border-border bg-surface p-2 shadow-[var(--shadow-card)]"
           >
             {TINTS.map((t) => (
               <button
@@ -97,7 +97,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
                 aria-label={`Highlight ${t.label}`}
                 title={t.label}
                 onClick={() => editor.chain().focus().toggleHighlight({ color: t.color }).run()}
-                className="h-6 w-6 rounded-[var(--radius-btn)] border border-border focus-ring"
+                className="h-6 w-6 rounded-button border border-border focus-ring"
                 style={{ background: t.color }}
               />
             ))}
@@ -105,7 +105,7 @@ export function BubbleToolbar({ editor, reportTicker }: { editor: Editor; report
             <button
               type="button"
               onClick={() => editor.chain().focus().unsetHighlight().run()}
-              className="rounded-[var(--radius-btn)] px-2 py-1 text-xs text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
+              className="rounded-button px-2 py-1 text-xs text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
             >
               None
             </button>
@@ -154,7 +154,7 @@ function Btn({
       title={label}
       onClick={onClick}
       className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] transition-colors focus-ring",
+        "flex h-8 w-8 items-center justify-center rounded-button transition-colors focus-ring",
         active ? "bg-accent-weak text-accent" : "text-text-mute hover:bg-surface-2 hover:text-text",
       )}
     >

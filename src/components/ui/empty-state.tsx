@@ -12,7 +12,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-border bg-surface px-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-panel border border-dashed border-border bg-surface px-6 py-16 text-center">
       {icon && <div className="text-text-faint">{icon}</div>}
       <h3 className="t-h3">{title}</h3>
       {body && <p className="t-body mx-auto text-center">{body}</p>}

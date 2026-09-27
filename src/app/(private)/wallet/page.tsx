@@ -52,11 +52,11 @@ export default async function WalletPage() {
 
       {/* Metric strip */}
       <div className="grid grid-cols-2 gap-2.5 md:gap-3.5">
-        <div className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
+        <div className="rounded-panel bg-surface-2 px-5 py-4">
           <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">Balance</div>
           <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{usd(balance, { cents: true })}</div>
         </div>
-        <div className="rounded-[var(--radius-card)] bg-surface-2 px-5 py-4">
+        <div className="rounded-panel bg-surface-2 px-5 py-4">
           <div className="num text-[11px] uppercase tracking-[0.18em] text-text-mute">AI credits</div>
           <div className="mt-2.5 text-[28px] font-semibold tracking-tight">{wallet?.ai_credits ?? 0}</div>
         </div>
@@ -68,8 +68,8 @@ export default async function WalletPage() {
       {/* Payment method */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Payment method</SectionLabel>
-        <div className="flex items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface p-5">
-          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-[var(--radius-btn)] bg-surface-2 text-sm font-medium">
+        <div className="flex items-center gap-4 rounded-panel border border-border bg-surface p-5">
+          <span className="num flex h-10 w-10 flex-none items-center justify-center rounded-inner bg-surface-2 text-sm font-medium">
             PP
           </span>
           <div className="flex-1">

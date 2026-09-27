@@ -55,7 +55,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
         onClick={toggle}
         aria-label="Version history"
         title="Version history"
-        className="fixed bottom-5 left-5 z-40 flex h-10 w-10 items-center justify-center rounded-[var(--radius-btn)] border border-border bg-surface text-text-mute shadow-[var(--shadow-card)] transition-colors hover:text-text focus-ring"
+        className="fixed bottom-5 left-5 z-40 flex h-10 w-10 items-center justify-center rounded-button border border-border bg-surface text-text-mute shadow-[var(--shadow-card)] transition-colors hover:text-text focus-ring"
       >
         <History size={17} />
       </button>
@@ -64,7 +64,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
         <aside
           role="dialog"
           aria-label="Version history"
-          className="menu-pop fixed bottom-[4.5rem] left-5 z-40 flex max-h-[60vh] w-72 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]"
+          className="menu-pop fixed bottom-[4.5rem] left-5 z-40 flex max-h-[60vh] w-72 flex-col overflow-hidden rounded-panel border border-border bg-surface shadow-[var(--shadow-card)]"
         >
           <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
             <History size={14} className="text-text-faint" />
@@ -90,7 +90,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
               versions.map((v) => (
                 <div
                   key={v.id}
-                  className="group flex items-center gap-2 rounded-[var(--radius-btn)] px-2 py-2 hover:bg-surface-2"
+                  className="group flex items-center gap-2 rounded-inner px-2 py-2 hover:bg-surface-2"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm">{v.title || "Untitled"}</p>
@@ -103,7 +103,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                       type="button"
                       disabled={pending}
                       onClick={() => restore(v.id)}
-                      className="rounded-[var(--radius-btn)] bg-accent px-2 py-1 text-[11px] font-semibold text-accent-ink focus-ring disabled:opacity-60"
+                      className="rounded-button bg-accent px-2 py-1 text-[11px] font-semibold text-accent-ink focus-ring disabled:opacity-60"
                     >
                       {pending ? "..." : "Confirm"}
                     </button>
@@ -113,7 +113,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                       aria-label="Restore this version"
                       onClick={() => setConfirmId(v.id)}
                       className={cn(
-                        "flex items-center gap-1 rounded-[var(--radius-btn)] px-2 py-1 text-[11px] text-text-mute opacity-0 transition-opacity hover:bg-bg focus-ring",
+                        "flex items-center gap-1 rounded-button px-2 py-1 text-[11px] text-text-mute opacity-0 transition-opacity hover:bg-bg focus-ring",
                         "group-hover:opacity-100 focus-visible:opacity-100",
                       )}
                     >

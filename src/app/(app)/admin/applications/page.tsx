@@ -63,7 +63,7 @@ export default async function AdminApplicationsPage() {
           return (
             <div
               key={app.id}
-              className="rounded-[var(--radius-card)] border border-border bg-surface p-5 flex flex-col gap-4"
+              className="rounded-panel border border-border bg-surface p-5 flex flex-col gap-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-4">
@@ -79,7 +79,7 @@ export default async function AdminApplicationsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-[var(--radius-tag)] px-2 py-0.5 text-xs font-medium ${badge.className}`}>
+                  <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${badge.className}`}>
                     {badge.label}
                   </span>
                   <span className="text-xs text-text-mute">
@@ -111,7 +111,7 @@ export default async function AdminApplicationsPage() {
 
               {/* Review note */}
               {app.review_note && (
-                <p className="rounded-[var(--radius-btn)] bg-surface-2 px-3 py-2 text-sm text-text-mute">
+                <p className="rounded-inner bg-surface-2 px-3 py-2 text-sm text-text-mute">
                   Note: {app.review_note}
                 </p>
               )}

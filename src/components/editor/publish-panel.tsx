@@ -10,7 +10,7 @@ import { PlanTierSelect } from "@/components/profile/plan-tier-select";
 import { PerkAccessSelect } from "@/components/profile/perk-access-select";
 
 const inputClass =
-  "w-full rounded-[var(--radius-btn)] border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
+  "w-full rounded-field border border-border bg-bg px-3 py-2 text-sm focus-ring placeholder:text-text-mute";
 
 export interface DisclosureState {
   positionHeld: boolean | null;
@@ -42,7 +42,7 @@ function YesNo({
           aria-checked={value === v}
           onClick={() => onChange(v)}
           className={cn(
-            "rounded-[var(--radius-btn)] border px-3 py-1 text-xs font-medium transition-colors focus-ring",
+            "rounded-button border px-3 py-1 text-xs font-medium transition-colors focus-ring",
             value === v
               ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
               : "border-border text-text-mute hover:border-border-strong hover:text-text",
@@ -177,7 +177,7 @@ export function StancePanel({
   if (frozen) {
     return (
       <section
-        className="rounded-[var(--radius-card)] border border-border bg-surface p-4"
+        className="rounded-panel border border-border bg-surface p-4"
         aria-label="The stance"
       >
         <p className="t-eyebrow mb-2">The stance</p>
@@ -205,7 +205,7 @@ export function StancePanel({
 
   return (
     <section
-      className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-4"
+      className="rounded-panel border border-dashed border-border-strong bg-surface p-4"
       aria-label="The stance"
     >
       <p className="t-eyebrow mb-3">The stance</p>
@@ -238,7 +238,7 @@ export function StancePanel({
               aria-checked={direction === d}
               onClick={() => onDirection(direction === d ? null : d)}
               className={cn(
-                "flex-1 rounded-[var(--radius-btn)] border py-1.5 text-xs font-medium capitalize transition-colors focus-ring",
+                "flex-1 rounded-button border py-1.5 text-xs font-medium capitalize transition-colors focus-ring",
                 direction === d
                   ? "border-accent bg-accent-weak text-accent"
                   : "border-border text-text-mute hover:text-text",
@@ -308,7 +308,7 @@ export function PublishPanel({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-4">
+      <section className="rounded-panel border border-border bg-surface p-4">
         <p className="t-eyebrow mb-2.5">Access</p>
         <div className="flex flex-col gap-1.5 text-sm">
           {(
@@ -325,7 +325,7 @@ export function PublishPanel({
             <label
               key={a.key}
               className={cn(
-                "flex cursor-pointer items-center justify-between rounded-[var(--radius-btn)] border px-3 py-2 transition-colors",
+                "flex cursor-pointer items-center justify-between rounded-inner border px-3 py-2 transition-colors",
                 access === a.key
                   ? "border-accent bg-accent-weak"
                   : "border-border hover:border-border-strong",

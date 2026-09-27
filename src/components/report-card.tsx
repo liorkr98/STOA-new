@@ -25,7 +25,7 @@ export function ReportCard({
   const locked = report.access !== "free";
 
   return (
-    <article className="rounded-[var(--radius-card)] border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
+    <article className="rounded-panel border border-border bg-surface p-5 transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong">
       {promoted && (
         <p className="t-meta mb-2 text-[10px] font-medium uppercase tracking-wide text-accent">Promoted</p>
       )}

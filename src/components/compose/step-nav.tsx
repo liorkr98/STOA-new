@@ -48,7 +48,7 @@ export function StepNav({
                 aria-current={active ? "step" : undefined}
                 title={open ? undefined : "Reach this step to open it"}
                 className={cn(
-                  "focus-ring flex items-center gap-2 rounded-[var(--radius-btn)] py-0.5 pr-1 transition-colors",
+                  "focus-ring flex items-center gap-2 rounded-button py-0.5 pr-1 transition-colors",
                   !open && "cursor-not-allowed",
                 )}
               >
@@ -138,7 +138,7 @@ export function StepFrame({
             <button
               type="button"
               onClick={back.onPress}
-              className="num focus-ring rounded-[var(--radius-btn)] border border-border px-3.5 py-2.5 text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:border-border-strong hover:text-text"
+              className="num focus-ring rounded-button border border-border px-3.5 py-2.5 text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:border-border-strong hover:text-text"
             >
               {back.label}
             </button>
@@ -154,7 +154,7 @@ export function StepFrame({
               <button
                 type="button"
                 onClick={next.onPress}
-                className="focus-ring shrink-0 rounded-[var(--radius-btn)] bg-[var(--ink)] px-5 py-2.5 text-[0.9375rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
+                className="focus-ring shrink-0 rounded-button bg-[var(--ink)] px-5 py-2.5 text-[0.9375rem] font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
               >
                 {next.label}
               </button>

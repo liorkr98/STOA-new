@@ -130,9 +130,9 @@ export function VideoCard({
     <article
       ref={rootRef}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface",
+        "group relative flex h-full flex-col overflow-hidden rounded-panel border border-border bg-surface",
         "transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)] hover:border-border-strong",
-        isLead && "sm:rounded-[calc(var(--radius-card)+2px)]",
+        isLead && "sm:rounded-[calc(var(--radius-panel)+2px)]",
       )}
       onMouseEnter={() => !playing && setHovering(true)}
       onMouseLeave={() => !playing && setHovering(false)}
@@ -227,11 +227,11 @@ export function VideoCard({
               </span>
             </span>
             {/* Duration badge */}
-            <span className="num absolute bottom-2 right-2 z-10 rounded-[var(--r-tag)] bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--paper)]">
+            <span className="num absolute bottom-2 right-2 z-10 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--paper)]">
               {formatDuration(data.durationSeconds)}
             </span>
             {accessLabel && (
-              <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-[var(--r-tag)] bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-medium text-[var(--paper)]">
+              <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-chip bg-[var(--ink)]/80 px-1.5 py-0.5 text-[11px] font-medium text-[var(--paper)]">
                 <Lock size={10} aria-hidden />
                 {accessLabel}
               </span>
@@ -244,14 +244,14 @@ export function VideoCard({
       <div className={cn("flex flex-1 flex-col gap-2 p-4", isLead && "sm:p-5")}>
         <div className="flex flex-wrap items-center gap-2 text-[11px]">
           {data.ticker && (
-            <span className="num rounded-[var(--r-tag)] border border-border px-1.5 py-px font-semibold">
+            <span className="num rounded-chip border border-border px-1.5 py-px font-semibold">
               {data.ticker}
             </span>
           )}
           {data.direction && <DirectionTag direction={data.direction} />}
         </div>
 
-        <Link href={reportHref} className="focus-ring rounded-[var(--radius-btn)]">
+        <Link href={reportHref} className="focus-ring rounded-button">
           <h3
             className={cn(
               "font-display font-semibold text-text transition-colors duration-[var(--dur-2)] group-hover:text-text-mute",
@@ -265,7 +265,7 @@ export function VideoCard({
         <div className="mt-auto flex items-center gap-2.5 pt-1">
           <Link
             href={`/analyst/${data.analyst.handle}`}
-            className="flex min-w-0 items-center gap-2 focus-ring rounded-[var(--r-tag)]"
+            className="flex min-w-0 items-center gap-2 focus-ring rounded-chip"
           >
             <Avatar src={data.analyst.avatarUrl} name={data.analyst.displayName} size="sm" />
             <span className="truncate text-xs font-medium text-text">{data.analyst.displayName}</span>
@@ -276,7 +276,7 @@ export function VideoCard({
         <button
           type="button"
           onClick={goToReport}
-          className="focus-ring mt-1 inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-btn)] border border-border px-2.5 py-1.5 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2"
+          className="focus-ring mt-1 inline-flex items-center justify-center gap-1.5 rounded-button border border-border px-2.5 py-1.5 text-xs font-medium text-text transition-colors hover:border-border-strong hover:bg-surface-2"
         >
           {accessLabel ? `Read the full report · ${accessLabel}` : "Read the full report"}
           <ArrowRight size={13} aria-hidden />

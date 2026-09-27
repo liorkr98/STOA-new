@@ -20,7 +20,7 @@ export default function RouteError({
   return (
     <div className="flex min-h-[100dvh] flex-col bg-bg text-text">
       <header className="border-b border-border px-5 py-4">
-        <Link href="/" aria-label="Stoa home" className="focus-ring inline-flex rounded-[var(--radius-btn)]">
+        <Link href="/" aria-label="Stoa home" className="focus-ring inline-flex rounded-button">
           <StoaLogo />
         </Link>
       </header>

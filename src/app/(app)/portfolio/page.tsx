@@ -164,7 +164,7 @@ function AddHoldingForm({ onAdd }: { onAdd: (h: Holding) => void }) {
     setCost("");
   }
 
-  const field = "h-10 rounded-[var(--radius-btn)] border border-border bg-surface px-3 text-sm focus-ring";
+  const field = "h-10 rounded-field border border-border bg-surface px-3 text-sm focus-ring";
 
   return (
     <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
@@ -194,7 +194,7 @@ function AddHoldingForm({ onAdd }: { onAdd: (h: Holding) => void }) {
       />
       <button
         type="submit"
-        className="inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-btn)] bg-accent px-3 text-sm font-semibold text-accent-ink focus-ring"
+        className="inline-flex h-10 items-center gap-1.5 rounded-button bg-accent px-3 text-sm font-semibold text-accent-ink focus-ring"
       >
         <Plus size={15} /> Add
       </button>

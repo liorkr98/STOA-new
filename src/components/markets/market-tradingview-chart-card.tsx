@@ -18,7 +18,7 @@ export function MarketTradingViewChartCard({
   compact?: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-[var(--paper)]">
+    <div className="overflow-hidden rounded-panel border border-border bg-[var(--paper)]">
       <TradingViewChart
         ticker={ticker}
         range={toTradingViewRange(range)}

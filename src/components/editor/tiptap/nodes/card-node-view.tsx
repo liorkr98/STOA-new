@@ -20,7 +20,7 @@ export function CardNodeView({ node, deleteNode, selected, editor }: NodeViewPro
   return (
     <NodeViewWrapper
       data-card-node=""
-      className={cn("my-4 rounded-[var(--radius-card)]", selected && "ring-2 ring-[var(--ink)]")}
+      className={cn("my-4 rounded-panel", selected && "ring-2 ring-[var(--ink)]")}
     >
       {card ? (
         <figure className="relative">
@@ -37,7 +37,7 @@ export function CardNodeView({ node, deleteNode, selected, editor }: NodeViewPro
           ) : null}
         </figure>
       ) : (
-        <div className="rounded-[var(--radius-card)] border border-dashed border-border p-4">
+        <div className="rounded-panel border border-dashed border-border p-4">
           <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
             Card no longer in the deck
           </p>

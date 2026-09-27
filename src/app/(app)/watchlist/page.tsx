@@ -19,7 +19,7 @@ import type { ScreenerRow } from "@/app/api/market/screener/route";
  */
 
 const inputClass =
-  "h-11 w-full rounded-[var(--radius-btn)] border border-border bg-surface pl-10 pr-3 text-sm focus-ring";
+  "h-11 w-full rounded-field border border-border bg-surface pl-10 pr-3 text-sm focus-ring";
 
 interface Row {
   ticker: string;
@@ -141,7 +141,7 @@ export default function WatchlistPage() {
           type="button"
           onClick={() => toggle(r.ticker)}
           aria-label={`Remove ${r.ticker} from watchlist`}
-          className="tap-target focus-ring rounded-[var(--radius-btn)] p-1 text-text-faint transition-colors hover:text-text"
+          className="tap-target focus-ring rounded-button p-1 text-text-faint transition-colors hover:text-text"
         >
           <X size={15} />
         </button>
@@ -183,7 +183,7 @@ export default function WatchlistPage() {
                     toggle(r.ticker);
                     setQuery("");
                   }}
-                  className="flex w-full items-center justify-between gap-3 rounded-[var(--r-tag)] px-3 py-2 text-left text-sm hover:bg-surface-2"
+                  className="flex w-full items-center justify-between gap-3 rounded-inner px-3 py-2 text-left text-sm hover:bg-surface-2"
                 >
                   <span>
                     <span className="num font-medium">{r.ticker}</span>{" "}

@@ -32,7 +32,7 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   return (
     <span
       className={cn(
-        "num inline-flex items-center rounded-[var(--radius-tag)] border border-white/35 bg-black/35 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-[2px]",
+        "num inline-flex items-center rounded-chip border border-white/35 bg-black/35 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-[2px]",
         className,
       )}
     >

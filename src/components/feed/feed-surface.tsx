@@ -219,7 +219,7 @@ export function FeedSurface({
           type="button"
           onClick={onBack}
           aria-label="Back to Explore"
-          className="focus-ring absolute left-[max(0.75rem,var(--safe-left))] top-[max(0.75rem,var(--safe-top))] z-20 flex h-9 w-9 items-center justify-center rounded-[var(--radius-btn)] border border-border bg-paper text-text"
+          className="focus-ring absolute left-[max(0.75rem,var(--safe-left))] top-[max(0.75rem,var(--safe-top))] z-20 flex h-9 w-9 items-center justify-center rounded-button border border-border bg-paper text-text"
         >
           <ChevronLeft size={18} strokeWidth={1.6} />
         </button>
@@ -766,7 +766,7 @@ const FeedItem = function FeedItem({
           <div
             className={cn(
               "relative h-full w-full overflow-hidden bg-[var(--ink)] text-[var(--paper)]",
-              "md:mx-auto md:max-h-full md:rounded-[var(--radius-card)] md:border md:border-border md:[aspect-ratio:9/16]",
+              "md:mx-auto md:max-h-full md:rounded-panel md:border md:border-border md:[aspect-ratio:9/16]",
             )}
           >
             <div
@@ -859,7 +859,7 @@ const FeedItem = function FeedItem({
                       {pub.stageMarker ? (
                         <span
                           className={cn(
-                            "num inline-flex items-center rounded-[var(--radius-tag)] border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                            "num inline-flex items-center rounded-chip border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
                             pub.stageMarker === "TRENDING"
                               ? "border-[var(--brass)]/70 bg-black/35 text-[var(--brass)]"
                               : "border-white/35 bg-black/35 text-white",
@@ -968,7 +968,7 @@ const FeedItem = function FeedItem({
                       }
                       aria-pressed={following}
                       className={cn(
-                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-[var(--radius-tag)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors",
+                        "num focus-ring inline-flex flex-none items-center gap-1.5 rounded-chip px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors",
                         following
                           ? "border border-white/80 bg-white/20 text-white"
                           : "bg-[var(--paper)] text-[var(--ink)] hover:bg-[var(--surface)]",
@@ -1040,7 +1040,7 @@ const FeedItem = function FeedItem({
 function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
     <section className={cn("flex snap-start items-center justify-center px-4 pb-[var(--tab-h)]", snapClass)} aria-label="End of feed">
-      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[var(--radius-card)] border border-border p-9 text-center">
+      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-panel border border-border p-9 text-center">
         <span className="num text-[10px] uppercase tracking-[0.22em] text-text-mute">End of feed</span>
         <p className="font-display text-[1.75rem] font-semibold leading-tight">You are caught up.</p>
         <p className="text-[0.875rem] leading-relaxed text-text-mute">
@@ -1104,7 +1104,7 @@ function DiscussionPanel({
   return (
     <div className="fixed inset-0 z-[60] flex items-end bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] md:items-stretch md:justify-end">
       <button type="button" aria-label="Close discussion" onClick={onClose} className="absolute inset-0 md:static md:flex-1" />
-      <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-[var(--radius-card)] bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
+      <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-panel bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="num text-[10px] uppercase tracking-[0.2em] text-text-mute">

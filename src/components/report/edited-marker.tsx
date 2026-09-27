@@ -67,7 +67,7 @@ export function EditedMarker({
     <Popover.Root>
       <Popover.Trigger
         className={cn(
-          "focus-ring inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-[var(--brass)]/50 bg-[var(--brass)]/10 px-1.5 py-0.5 text-[var(--brass-ink,var(--text))] transition-colors hover:border-[var(--brass)]",
+          "focus-ring inline-flex items-center gap-1 rounded-button border border-[var(--brass)]/50 bg-[var(--brass)]/10 px-1.5 py-0.5 text-[var(--brass-ink,var(--text))] transition-colors hover:border-[var(--brass)]",
           className,
         )}
         aria-label={`Edited ${when(latest.editedAt)}. See what changed.`}
@@ -81,7 +81,7 @@ export function EditedMarker({
           align="start"
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 w-[min(92vw,22rem)] rounded-[var(--radius-card)] border border-border bg-surface p-3.5 shadow-lg"
+          className="z-50 w-[min(92vw,22rem)] rounded-panel border border-border bg-surface p-3.5 shadow-lg"
         >
           <p className="num text-[10px] uppercase tracking-[0.16em] text-text-faint">
             Revised after publication

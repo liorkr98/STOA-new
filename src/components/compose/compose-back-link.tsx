@@ -27,7 +27,7 @@ export function ComposeBackLink({
       href={fallback}
       data-stoa-back=""
       className={cn(
-        "num focus-ring flex shrink-0 items-center gap-1.5 rounded-[var(--radius-btn)] text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:text-text",
+        "num focus-ring flex shrink-0 items-center gap-1.5 rounded-button text-[10px] uppercase tracking-[0.16em] text-text-mute transition-colors hover:text-text",
         className,
       )}
       onClick={(e) => {

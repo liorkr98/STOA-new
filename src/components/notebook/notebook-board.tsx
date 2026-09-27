@@ -108,7 +108,7 @@ export function NotebookBoard({
                 type="button"
                 onClick={() => selectNotebook(n.id)}
                 className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-[var(--radius-btn)] px-2.5 py-2 text-left text-sm transition-colors",
+                  "flex w-full items-center justify-between gap-2 rounded-inner px-2.5 py-2 text-left text-sm transition-colors",
                   n.id === selectedId
                     ? "bg-surface text-text"
                     : "text-text-mute hover:bg-surface/60",
@@ -128,13 +128,13 @@ export function NotebookBoard({
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createNotebook()}
             placeholder="New notebook"
-            className="h-8 flex-1 rounded-[var(--radius-btn)] border border-border bg-surface px-2 text-sm focus-ring"
+            className="h-8 flex-1 rounded-field border border-border bg-surface px-2 text-sm focus-ring"
           />
           <button
             type="button"
             aria-label="Create notebook"
             onClick={createNotebook}
-            className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-btn)] border border-border bg-surface text-text-mute hover:text-text focus-ring"
+            className="flex h-8 w-8 items-center justify-center rounded-button border border-border bg-surface text-text-mute hover:text-text focus-ring"
           >
             <Plus size={15} />
           </button>
@@ -153,7 +153,7 @@ export function NotebookBoard({
                   `${mode === "analyst" ? "/studio/compose" : "/studio/compose"}?notebook=${selected.id}`,
                 )
               }
-              className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-btn)] bg-accent px-3 text-[13px] font-semibold text-accent-ink focus-ring"
+              className="inline-flex h-8 items-center gap-1.5 rounded-button bg-accent px-3 text-[13px] font-semibold text-accent-ink focus-ring"
             >
               <Pencil size={14} /> Compose from notebook
             </button>
@@ -170,7 +170,7 @@ export function NotebookBoard({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search entries"
-              className="h-9 w-full rounded-[var(--radius-btn)] border border-border bg-surface pl-8 pr-3 text-sm focus-ring"
+              className="h-9 w-full rounded-field border border-border bg-surface pl-8 pr-3 text-sm focus-ring"
             />
           </span>
           {allTags.map((tag) => (
@@ -179,7 +179,7 @@ export function NotebookBoard({
               type="button"
               onClick={() => setActiveTag((t) => (t === tag ? null : tag))}
               className={cn(
-                "rounded-[var(--radius-tag)] border px-2 py-1 text-[11px] transition-colors",
+                "rounded-chip border px-2 py-1 text-[11px] transition-colors",
                 activeTag === tag
                   ? "border-transparent bg-[var(--ink)] text-[var(--paper)]"
                   : "border-border bg-surface text-text-mute hover:text-text",
