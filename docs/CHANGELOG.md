@@ -10,6 +10,73 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-27: Today's faces open as stories
+
+Tapping a face in Today's row used to take you to that analyst's profile.
+It now opens their recent work over Today and plays it straight through, the
+way stories work.
+
+**What a visitor notices**
+
+- Tap a face and their recent work opens on top of Today, one piece at a
+  time, in the same player as the Feed (the chips, the scrub bar, like,
+  discuss, save, share, follow, the evidence cards). Today stays exactly
+  where it was underneath.
+- Swipe up or down (or scroll, or the arrow keys) to move through that
+  analyst's pieces. Swipe sideways (or left and right arrows, or the named
+  buttons beside the video on a desktop) to go to the next or previous
+  analyst. When a video ends the next piece starts; after an analyst's last
+  piece the next analyst starts; after the last analyst it closes.
+- A row of thin segments at the top shows how many pieces the analyst has
+  and which one is playing, with "2 of 5" beside their name.
+- Close with the X, by pulling down from the first piece, with Escape, or
+  with the browser's Back button. All four land you back on Today at the
+  same spot.
+- Sound always starts off, even if you turned it on in the Feed.
+- An analyst who wrote rather than filmed still opens: their pieces show as
+  readable cards (type, date, headline, summary, Read the piece).
+- Signed out, videos show their picture and a "Sign in to watch" button,
+  because watching needs an account everywhere the Feed player runs. Written
+  pieces read normally.
+- The coral ring now clears once you have watched an analyst through (reached
+  their last piece), and comes back when they post again. Still remembered by
+  your browser only.
+
+**Choices made**
+
+- Written work is shown as readable cards rather than leaving those analysts
+  out of the row: the row is "who posted", and hiding people for writing
+  instead of filming would make it quietly wrong.
+- Evidence cards move by their arrows and the page counter inside the
+  overlay, not by a sideways swipe, since sideways now means the next
+  analyst.
+- Written pieces do not move on by themselves; a reader decides when they
+  have finished reading.
+
+**Found and fixed on the way**
+
+- A finished clip whose stored length disagreed with the real file never
+  counted as finished (the progress bar only reached halfway before the
+  video looped). The check now also treats the video jumping back to its
+  start on its own as finished.
+- The Feed player logged every view as "feed", including views inside
+  Explore's overlay, so Explore's watching was counted as the Feed's. Hosts
+  now name themselves: Explore's overlay logs as "explore", Today's faces as
+  "today". Nothing reads this label yet, so no number changes today.
+
+**What needs Krisi**
+
+No migration, no dashboard change. Views from the overlay arrive in the
+existing engagement and video-view tables with the surface "today".
+
+Seen, not fixed: most live clips store a subtitle address at Bunny
+(`captions/en.vtt`) that Bunny answers with "not found", so no subtitles show
+on those clips in the Feed or here. Worth checking whether Bunny's automatic
+captions are switched on for the library, or whether the stored address is
+wrong.
+
+---
+
 ## 2026-09-27 — Today rebuilt in Direction B
 
 Today is the first page rebuilt on the new design system. The broadsheet

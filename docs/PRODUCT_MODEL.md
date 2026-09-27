@@ -72,7 +72,7 @@ Stoa is organized around five surfaces.
 - **Feed** — video-first discovery, and the only one. A full-screen vertical stream: one
   publication fills the viewport, scrolling snaps to the next, the clip autoplays muted as it
   arrives and stops as it leaves. Sideways moves through that publication's evidence cards.
-- **Today** — the daily editorial read: the lead, the analysts posting today, and what is worth a minute of your time.
+- **Today** — the daily editorial read: the lead, the analysts posting today, and what is worth a minute of your time. A face in that row opens the analyst's recent work over the page in the Feed's own player (stories), the same way Explore's tiles open it; Today is never left.
 - **Markets** — instrument exploration: stocks, ETFs, and sectors, and the Stoa coverage on each.
 - **Compose** — the authoring workspace where analysts build a publication: the video, the
   research, the cards, and the stance.

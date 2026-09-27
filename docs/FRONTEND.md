@@ -486,6 +486,24 @@ scroll-snap, nothing below the fold.
   is opaque black while an HLS stream starts.
 - Bunny's own player chrome is switched off. It draws a control bar exactly where the identity
   band goes, and the surface supplies its own progress, mute and pause.
+- **Hosts.** The same surface runs inside other surfaces rather than being copied: the Explore
+  overlay (`embedded`) and Today's faces (`<FaceStories>`, section 3.1b, "The faces"). A host
+  can size the room itself (`snapClass`), keep its own close control (`backButton={false}`;
+  Escape still calls `onBack`, and waits while Discuss is open), take the sideways axis
+  (`sideways="host"`: the evidence track no longer pans under a finger and ignores left/right,
+  its chevrons and pager still move it), start muted every time without touching the Feed's
+  remembered sound (`rememberSound={false}`), log under its own name (`surface`), and send
+  sign-in back to itself (`signInNext`). `onActiveChange` reports which piece is showing.
+  `onEnd` replaces the end-of-feed card with the host's `endSlot` and is called when the
+  reader scrolls into it or the last clip plays through; with it, every clip that plays
+  through moves on to the next by itself. "Through" means the bar reached its end or the clip
+  went back to its start on its own, only after it has played in this visit and never under a
+  finger on the bar.
+- **Nothing to play.** A publication with no clip (a written piece, `clipId` null) draws a
+  readable card on the stage (type and date, headline, deck, Read the piece) inside the usual
+  chips, actions and identity band, with no scrub bar, mute or pause. A clip the reader may not
+  stream (`watchGated`: signed out) keeps its poster behind a card with Sign in to watch. The
+  Feed page itself never receives either; Today's faces do.
 
 ### 2.12 `<ReportClip>` — the analyst's video on a report
 
@@ -691,7 +709,8 @@ byline, clip frame, story tile, story row, play disc) in `today-bits.tsx`; the r
 Styles: a handful of `.today-*` rules at the end of `globals.css` (band spacing, the play disc, the
 duration on a picture, the fresh-post ring, the desktop frame); everything else is utilities and
 the primitives. Fixture: `/dev/today` (`?state=empty` signed out, `?lead=written`,
-`?lead=processing`, `?faces=quiet`).
+`?lead=processing`, `?faces=quiet`). Its faces open stories over the Feed fixtures, grouped
+by analyst; Dana's work is written only, and signed out every clip is gated.
 
 **Top to bottom:**
 
@@ -707,11 +726,41 @@ the primitives. Fixture: `/dev/today` (`?state=empty` signed out, `?lead=written
    keeps its frame with the processing state and no play disc.
 3. **The faces**: analysts who posted in the last 24 hours, newest first (up to 16), a 72px
    circle with first name and beat beneath (`profile_config.specialty`, else the sector or theme
-   of their newest piece). A coral ring (`.today-ring`) marks anyone who has posted since this
-   browser last looked at Today (`localStorage` `stoa:today:last-looked`, read once per page load
-   and then replaced; a first visit rings nobody). On a quiet day with no posts in 24 hours the row
+   of their newest piece). A coral ring (`.today-ring`) marks anyone with something the reader
+   has not seen: they posted since this browser last looked at Today (`localStorage`
+   `stoa:today:last-looked`, read once per page load and then replaced; a first visit rings
+   nobody) **and** the reader has not watched them through since (`stoa:today:watched`, per
+   analyst, the time of their newest piece the reader reached; marks older than 30 days are
+   dropped). Both are this device's memory only. On a quiet day with no posts in 24 hours the row
    shows the most recent posters under **Recently posted** instead of claiming today. The phone's
    one sideways scroller; on a desktop the faces wrap.
+
+   **A face opens stories, not a profile.** Each face is a button; tapping it opens
+   `<FaceStories>` (`face-stories.tsx`) in a portal over Today. Today is never left: nothing
+   navigates, the page underneath keeps its scroll, and focus goes back to the face on close.
+   The analysts' recent work loads once, on the first hover, focus or tap of any face, through
+   the `loadFaceStories` action (`src/app/actions/today.ts`): per analyst, published pieces
+   within 7 days of their newest, at most 6, newest first, video and written alike, in the
+   Feed's publication shape (`reportsToPublications`). Inside:
+   - The Feed's own player (`<FeedSurface>` as a host, section 2.11), one piece at a time.
+     Up and down (swipe, wheel, arrow keys) moves through this analyst's work. Sideways (a
+     finger's swipe, a trackpad's two-finger swipe, left/right arrows, and on a desktop the
+     named buttons either side of the stage) moves to the next or previous analyst in the row.
+     A clip that plays through carries on to the next piece; past an analyst's last piece
+     ("Up next: Kai Tanaka") comes the next analyst; past the last analyst the overlay closes.
+     Analysts whose work came back empty are passed over.
+   - A fixed header: one segment per piece (filled up to the one showing), the analyst's
+     face and name with `2 of 5`, and the close control. The player takes exactly the rest of
+     the height (`.feed-snap-stories`, `--stories-head`).
+   - Closing: the X, a downward pull from the first piece while at the top, Escape, or the
+     browser's Back. Opening pushes one history entry (`stoaStories`), so Back closes the
+     overlay instead of leaving Today, and the X goes back through that entry.
+   - Sound always starts off, whatever the reader chose on the Feed; turning it on lasts
+     until the overlay closes.
+   - Written pieces are readable cards on the stage (section 2.11, "Nothing to play"), so a
+     face who posted only prose still opens. Signed out, clips arrive gated (poster and Sign in
+     to watch), because streaming is account-gated wherever the Feed player runs.
+   - Reaching an analyst's last piece is watching them through: their ring clears.
 4. **Worth your next minute**: four publications with a ready clip, each a square frame with its
    duration, the title (`t-title`), the stance or tag and the face and name. Four across on a
    desktop, two on a phone.
