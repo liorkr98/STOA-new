@@ -1,12 +1,15 @@
 import { AnalystProfileView } from "@/components/profile/analyst-profile-view";
-import { buildPublications, tierPublications } from "@/lib/profile/build-profile-view";
+import { buildPublications, orderPublications } from "@/lib/profile/build-profile-view";
 import type { VideoClip } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 
 /**
- * Dev-only seeded storefront so the three-tier content area can be reviewed
- * without database credentials. `?state=new` shows the deliberately sparse
- * new-analyst state. Fixture-only: fake durations, no thumbnails, no faces.
+ * Dev-only seeded storefront so the page can be reviewed without database
+ * credentials. `?state=new` is the deliberately sparse new analyst (two
+ * publications), `?state=one` a single publication, `?state=empty` none.
+ * `?pinned=<id>` pins one, `?clip=processing` holds the lead's clip in
+ * processing, `?viewer=self|subscribed` changes who is looking.
+ * Fixture-only: fake durations, no thumbnails, no faces.
  */
 
 const DAY = 86_400_000;
@@ -98,20 +101,22 @@ const staged: Report[] = reports.map((r) => ({ ...r, stance: stances[r.id] ?? nu
 export default async function DevProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ state?: string; pinned?: string; clip?: string }>;
+  searchParams: Promise<{ state?: string; pinned?: string; clip?: string; viewer?: string }>;
 }) {
-  const { state, pinned, clip: clipMode } = await searchParams;
-  const isNew = state === "new";
+  const { state, pinned, clip: clipMode, viewer } = await searchParams;
+  const count = state === "empty" ? 0 : state === "one" ? 1 : state === "new" ? 2 : staged.length;
+  const isNew = count < staged.length;
   // `?clip=processing` takes the lead's clip away and marks it as on the way,
   // the state every publication is in for the minute after publish.
   const processingId = clipMode === "processing" ? clips[0]?.report_id : undefined;
 
   const pubs = buildPublications({
-    reports: isNew ? staged.slice(0, 2) : staged,
-    clips: (isNew ? clips.slice(0, 1) : clips).filter((c) => c.report_id !== processingId),
+    // The sparse states mix a video with a written piece, the usual first two.
+    reports: count < staged.length ? staged.filter((r) => ["r3", "r1"].includes(r.id)).slice(0, count) : staged,
+    clips: clips.filter((c) => c.report_id !== processingId),
     pendingClipIds: processingId ? new Set([processingId]) : undefined,
   });
-  const tiers = tierPublications(pubs, pinned ?? null);
+  const ordered = orderPublications(pubs, pinned ?? null);
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-4 py-10">
@@ -128,14 +133,14 @@ export default async function DevProfilePage({
             ? "Former equipment analyst. Two publications in."
             : "Twelve years covering the semiconductor supply chain, most recently at a long-only fund."
         }
-        handleLine={isNew ? "@NEWANALYST · JOINED 2026" : "@LENAKW · JOINED 2024"}
-        isSelf={false}
-        audienceLine={isNew ? "12 FOLLOWERS" : "4.3K FOLLOWERS · 214 MEMBERS"}
-        {...tiers}
+        isSelf={viewer === "self"}
+        subscribed={viewer === "subscribed"}
+        audienceLine={isNew ? "@newanalyst · 12 followers" : "@lenakw · 4.3K followers · 214 members"}
+        {...ordered}
         analystId="fx-analyst"
         initialFollowing={false}
         isAuthed={false}
-        subscribeLabel="Subscribe"
+        subscribeLabel={isNew ? "Subscribe" : "Subscribe · from $12/mo"}
         plans={[]}
         balance={0}
       />

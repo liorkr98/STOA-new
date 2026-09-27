@@ -5,7 +5,7 @@ import { listByAuthor } from "@/lib/db/reports";
 import { listReadyClipsByCreator } from "@/lib/db/video-clips";
 import { listPendingClipsByCreator } from "@/lib/db/video-clips";
 import { getSessionUserId } from "@/lib/db/auth";
-import { isFollowing, subscriberCount } from "@/lib/db/social";
+import { isFollowing, isSubscribed, subscriberCount } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
 import { listActivePlans } from "@/lib/db/plans";
 import { compact, usd } from "@/lib/format";
@@ -106,31 +106,26 @@ export function buildPublications(input: {
       duration: clip ? formatDuration(clip.duration_seconds) : null,
       thumbnailUrl: clip?.thumbnail_url ?? null,
       dateISO: when,
-      dateLabel: format(new Date(when), "MMM d, yyyy").toUpperCase(),
-      views: r.views ?? 0,
+      dateLabel: format(new Date(when), "MMM d, yyyy"),
       subject,
     };
   });
 }
 
 /**
- * Splits publications into the three tiers. Tier 1 is the pinned publication
- * or the newest one with a video (falling back to the newest of anything).
- * Tier 2 is the most-watched videos beyond the lead, only when there are
- * enough to make a row. Tier 3 is the complete archive, shown once there is
- * more than the lead. Subjects are the tickers and themes actually covered.
+ * Orders the storefront. The lead is the pinned publication, or else the
+ * newest thing published, whatever its form: the page argues for a
+ * subscription with the work itself, so it opens on the latest of it. The
+ * archive is everything, lead included; the view leaves the lead out until a
+ * filter is chosen. Subjects are the tickers and themes actually covered, and
+ * types the publication types actually used, each offered only when there is
+ * more than one to choose between.
  */
-export function tierPublications(publications: ProfilePublication[], pinnedId: string | null) {
+export function orderPublications(all: ProfilePublication[], pinnedId: string | null) {
+  // By publication date, not by when the draft was started.
+  const publications = [...all].sort((a, b) => b.dateISO.localeCompare(a.dateISO));
   const pinned = pinnedId ? publications.find((p) => p.id === pinnedId) ?? null : null;
-  const lead = pinned ?? publications.find((p) => p.kind === "video") ?? publications[0] ?? null;
-
-  const mostWatchedPool = publications
-    .filter((p) => p.kind === "video" && p.id !== lead?.id && p.views > 0)
-    .sort((a, b) => b.views - a.views)
-    .slice(0, 4);
-  const mostWatched = mostWatchedPool.length >= 3 ? mostWatchedPool : [];
-
-  const everything = publications.length >= 2 ? publications : [];
+  const lead = pinned ?? publications[0] ?? null;
 
   const counts = new Map<string, number>();
   for (const p of publications) if (p.subject) counts.set(p.subject, (counts.get(p.subject) ?? 0) + 1);
@@ -138,14 +133,18 @@ export function tierPublications(publications: ProfilePublication[], pinnedId: s
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([key, count]) => ({ key, count }));
 
+  const types = TYPE_ORDER.filter((t) => publications.some((p) => p.typeLabel === t));
+
   return {
     lead,
     leadLabel: (pinned ? "Pinned" : "Latest") as "Pinned" | "Latest",
-    mostWatched,
-    everything,
+    publications,
     subjects: subjects.length >= 2 ? subjects : [],
+    types: types.length >= 2 ? types : [],
   };
 }
+
+const TYPE_ORDER: ProfilePublication["typeLabel"][] = ["VIDEO", "BRIEF", "THESIS"];
 
 /**
  * Builds the storefront view-model for a handle. Shared by the public page
@@ -159,7 +158,8 @@ export async function buildProfileView(
   const profile = await getProfileByHandle(handle);
   if (!profile) return null;
 
-  const [reports, clips, pendingClips, userId, plans] = await Promise.all([    listByAuthor(profile.id, { status: "published" }),
+  const [reports, clips, pendingClips, userId, plans] = await Promise.all([
+    listByAuthor(profile.id, { status: "published", limit: 500 }),
     listReadyClipsByCreator(profile.id),
     listPendingClipsByCreator(profile.id),
     getSessionUserId(),
@@ -170,8 +170,9 @@ export async function buildProfileView(
   const config = profile.profile_config ?? {};
   const showMembers = config.show_member_count === true;
 
-  const [following, wallet, members] = await Promise.all([
+  const [following, subscribed, wallet, members] = await Promise.all([
     userId ? isFollowing(userId, profile.id) : Promise.resolve(false),
+    userId && !isSelf ? isSubscribed(userId, profile.id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
     showMembers ? subscriberCount(profile.id) : Promise.resolve(0),
   ]);
@@ -186,14 +187,14 @@ export async function buildProfileView(
   } as CSSProperties;
   const name = profile.display_name;
   const firstName = name.split(/\s+/)[0] || name;
-  const joinedYear = new Date(profile.created_at).getFullYear();
 
   // The only two audience numbers shown anywhere on the platform. Followers is
   // always present; members (paying subscribers) only when the analyst opted in
   // from the Storefront.
   const audienceLine = [
-    `${compact(profile.followers_count)} followers`,
-    ...(showMembers ? [`${compact(members)} MEMBER${members === 1 ? "" : "S"}`] : []),
+    `@${profile.handle}`,
+    `${compact(profile.followers_count)} ${profile.followers_count === 1 ? "follower" : "followers"}`,
+    ...(showMembers ? [`${compact(members)} ${members === 1 ? "member" : "members"}`] : []),
   ].join(" · ");
 
   const cardIds = await reportIdsWithCards(reports.map((r) => r.id));
@@ -203,7 +204,7 @@ export async function buildProfileView(
     cardIds,
     pendingClipIds: new Set(pendingClips.keys()),
   });
-  const tiers = tierPublications(publications, config.pinned_report_id ?? null);
+  const ordered = orderPublications(publications, config.pinned_report_id ?? null);
 
   // Subscribe button label: "from $X/mo" using the cheapest paid plan (or legacy price).
   const paidPrices = plans.filter((p) => p.price_cents > 0).map((p) => p.price_cents / 100);
@@ -219,12 +220,12 @@ export async function buildProfileView(
     verified: profile.verified,
     specialty: profile.headline?.trim() || "Independent analyst on Stoa",
     bio: profile.bio,
-    handleLine: `@${profile.handle} · joined ${joinedYear}`,
     isSelf,
     audienceLine,
-    ...tiers,
+    ...ordered,
     analystId: profile.id,
     initialFollowing: following,
+    subscribed,
     isAuthed: Boolean(userId),
     subscribeLabel,
     plans,
