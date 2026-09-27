@@ -11,7 +11,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { PAPER_DARK, PAPER_LIGHT } from "@/lib/profile/accent";
 
 const css = readFileSync("src/app/globals.css", "utf8");
 
@@ -123,11 +122,6 @@ test("light: the bright fills really do fail as words, so they must stay fills",
   // If this ever passes 4.5 the split is unnecessary; if it fails the rule
   // below is what keeps coral words legible.
   assert.ok(ratio(resolve(light, "--coral"), resolve(light, "--surface")) < 4.5);
-});
-
-test("the storefront accent checker measures against the real paper", () => {
-  assert.equal(PAPER_LIGHT, resolve(light, "--paper"));
-  assert.equal(PAPER_DARK, resolve(dark, "--paper"));
 });
 
 const source = execSync("git ls-files 'src/*.tsx' 'src/*.ts' 'src/*.css'", { encoding: "utf8" })

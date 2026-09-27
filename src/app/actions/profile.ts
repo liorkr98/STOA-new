@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { alertAnalystApplication } from "@/lib/slack/alerts";
 
 import type { ProfileConfig } from "@/lib/editor/types";
-import { checkAccent } from "@/lib/profile/accent";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -131,12 +130,10 @@ export async function saveOnboardingBrand({
   handle,
   display_name,
   bio,
-  banner_style,
 }: {
   handle: string;
   display_name: string;
   bio: string;
-  banner_style: string;
 }) {
   const { supabase, userId } = await requireUser();
   const cleanHandle = handle.trim().toLowerCase();
@@ -147,23 +144,12 @@ export async function saveOnboardingBrand({
   if (!available) return { ok: false as const, error: "That handle is taken." };
   if (!display_name.trim()) return { ok: false as const, error: "Display name is required." };
 
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("profile_config")
-    .eq("id", userId)
-    .single();
-  const config: ProfileConfig = {
-    ...(existing?.profile_config ?? {}),
-    banner_style: banner_style as ProfileConfig["banner_style"],
-  };
-
   const { error } = await supabase
     .from("profiles")
     .update({
       handle: cleanHandle,
       display_name: display_name.trim(),
       bio: bio.slice(0, 140) || null,
-      profile_config: config,
     })
     .eq("id", userId);
   if (error) return { ok: false as const, error: error.message };
@@ -172,32 +158,15 @@ export async function saveOnboardingBrand({
   return { ok: true as const };
 }
 
-/**
- * Save (or clear) the custom storefront accent + font pairing (B1/B2). The
- * accent is validated for WCAG AA vs --paper; an invalid hue is rejected.
- * Merges into profile_config without disturbing other keys.
- */
+/** Save the storefront's headline face and texture. Merges into profile_config without disturbing other keys. */
 export async function saveStorefrontBranding({
-  accent,
   fontPairing,
-  layout,
   texture,
 }: {
-  accent?: string | null;
   fontPairing?: ProfileConfig["font_pairing"];
-  layout?: ProfileConfig["layout"];
   texture?: boolean;
 }) {
   const { supabase, userId } = await requireUser();
-
-  let accentHex: string | null | undefined;
-  if (accent === null || accent === "") {
-    accentHex = null;
-  } else if (typeof accent === "string") {
-    const check = checkAccent(accent);
-    if (!check.valid) return { ok: false as const, error: check.reason ?? "Invalid accent" };
-    accentHex = check.hex;
-  }
 
   const { data: existing } = await supabase
     .from("profiles")
@@ -206,38 +175,8 @@ export async function saveStorefrontBranding({
     .single();
 
   const config: ProfileConfig = { ...(existing?.profile_config ?? {}) };
-  if (accentHex !== undefined) config.accent = accentHex ?? undefined;
   if (fontPairing !== undefined) config.font_pairing = fontPairing;
-  if (layout !== undefined) config.layout = layout;
   if (texture !== undefined) config.texture = texture;
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ profile_config: config })
-    .eq("id", userId);
-  if (error) return { ok: false as const, error: error.message };
-
-  revalidatePath("/studio/branding");
-  if (existing?.handle) revalidatePath(`/analyst/${existing.handle}`);
-  return { ok: true as const };
-}
-
-/**
- * Save the addable storefront sections (B3). Merge-safe: touches only the
- * storefront_sections key, never the rest of profile_config.
- */
-export async function saveStorefrontSections(sections: ProfileConfig["storefront_sections"]) {
-  const { supabase, userId } = await requireUser();
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("profile_config, handle")
-    .eq("id", userId)
-    .single();
-
-  const config: ProfileConfig = {
-    ...(existing?.profile_config ?? {}),
-    storefront_sections: sections ?? [],
-  };
 
   const { error } = await supabase
     .from("profiles")
@@ -312,7 +251,7 @@ export async function updateCoverUrl(url: string) {
 export async function updateProfileConfig(config: ProfileConfig) {
   const { supabase, userId } = await requireUser();
   // Merge-safe like every other config writer here: a partial config from one
-  // editor must never erase keys owned by another (accent, pinned report, ...).
+  // editor must never erase keys owned by another (font pairing, pinned report, ...).
   const { data } = await supabase
     .from("profiles")
     .select("profile_config, handle")
@@ -336,9 +275,8 @@ export async function saveBrandingStudio({
   profile_config: ProfileConfig;
 }) {
   const { supabase, userId } = await requireUser();
-  // Merge into the existing config so settings owned by other editors (accent,
-  // font pairing, layout, texture, storefront sections, pinned report) are never
-  // wiped when the storefront fields are saved.
+  // Merge into the existing config so settings owned by other editors (font
+  // pairing, texture, pinned report) are never wiped when this one saves.
   const { data: existing } = await supabase
     .from("profiles")
     .select("profile_config, handle")

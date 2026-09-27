@@ -1,7 +1,6 @@
 "use client";
 
 import type { Profile } from "@/lib/types";
-import type { ProfileConfig } from "@/lib/editor/types";
 import { StorefrontHero } from "@/components/profile/analyst-profile-view";
 import { buttonClass } from "@/components/ui/button";
 import { compact } from "@/lib/format";
@@ -48,7 +47,6 @@ export function ProfilePreview({
     bio: string;
     avatar_url: string | null;
     cover_url: string | null;
-    config: ProfileConfig;
   };
 }) {
   const previewProfile = {

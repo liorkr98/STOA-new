@@ -5,31 +5,26 @@ import { Image as ImageIcon } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { updateCoverUrl } from "@/app/actions/profile";
 import { buttonClass } from "@/components/ui/button";
-import { cn } from "@/lib/design/cn";
 import { ImageCropDialog, readFileAsDataUrl } from "@/components/profile/image-crop-dialog";
-import { themeFromConfig } from "@/lib/profile/themes";
-import type { ProfileConfig } from "@/lib/editor/types";
 
+/**
+ * The picture a link to the storefront carries when it is shared (the page's
+ * Open Graph image; the face stands in when there is none). The storefront
+ * itself draws no banner.
+ */
 export function CoverUpload({
   userId,
   currentUrl,
-  bannerStyle,
   onUploaded,
-  onUseCoverTheme,
 }: {
   userId: string;
   currentUrl: string | null;
-  bannerStyle?: string;
   onUploaded?: (url: string) => void;
-  onUseCoverTheme?: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState(currentUrl);
   const [pending, start] = useTransition();
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-
-  const config: ProfileConfig = { banner_style: bannerStyle as ProfileConfig["banner_style"] };
-  const theme = themeFromConfig(config);
 
   async function uploadBlob(blob: Blob) {
     start(async () => {
@@ -44,7 +39,6 @@ export function CoverUpload({
       const next = `${data.publicUrl}?t=${Date.now()}`;
       setUrl(next);
       onUploaded?.(next);
-      onUseCoverTheme?.();
       await updateCoverUrl(next);
       setCropSrc(null);
     });
@@ -52,16 +46,11 @@ export function CoverUpload({
 
   return (
     <>
-      <div className="relative h-40 overflow-hidden rounded-panel border border-border">
-        {url && theme.banner_style === "cover" ? (
+      <div className="relative aspect-[1.91/1] max-w-[420px] overflow-hidden rounded-panel bg-surface-2">
+        {url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="" className="h-full w-full object-cover" />
-        ) : url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt="" className="h-full w-full object-cover opacity-80" />
-        ) : (
-          <div className={cn("h-full w-full", theme.className || "bg-gradient-to-r from-accent/30 via-accent/10 to-transparent")} />
-        )}
+        ) : null}
         <button
           type="button"
           disabled={pending}
@@ -69,7 +58,7 @@ export function CoverUpload({
           className={`${buttonClass("ghost", "sm")} absolute bottom-3 right-3 shadow-[var(--shadow-card)]`}
         >
           <ImageIcon size={16} />
-          {pending ? "Uploading..." : "Cover image"}
+          {pending ? "Uploading..." : url ? "Change image" : "Add an image"}
         </button>
         <input
           ref={inputRef}
@@ -87,8 +76,8 @@ export function CoverUpload({
       <ImageCropDialog
         open={Boolean(cropSrc)}
         imageSrc={cropSrc}
-        aspect={3}
-        title="Crop cover banner"
+        aspect={1.91}
+        title="Crop your share image"
         onCancel={() => setCropSrc(null)}
         onComplete={(blob) => void uploadBlob(blob)}
       />

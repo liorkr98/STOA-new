@@ -12,7 +12,6 @@ import { compact, usd } from "@/lib/format";
 import { publicTypeLabel } from "@/lib/compose/modes";
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { reportIdsWithCards } from "@/lib/db/publication-cards";
-import { accentVars, checkAccent } from "@/lib/profile/accent";
 import { fontPairingVars } from "@/lib/profile/fonts";
 import type { Report } from "@/lib/types";
 import type { VideoClip } from "@/lib/db/video-clips";
@@ -177,14 +176,9 @@ export async function buildProfileView(
     showMembers ? subscriberCount(profile.id) : Promise.resolve(0),
   ]);
 
-  // Per-analyst storefront theming (branding studio Style tab): scoped custom
-  // accent (re-validated so a bad stored value never ships), font pairing, and
-  // the optional paper texture. Applied to the profile subtree only.
-  const accentCheck = config.accent ? checkAccent(config.accent) : null;
-  const storefrontStyle = {
-    ...(accentCheck?.valid && accentCheck.hex ? accentVars(accentCheck.hex) : {}),
-    ...fontPairingVars(config.font_pairing),
-  } as CSSProperties;
+  // The storefront's own style (the Storefront editor's Style tab): the
+  // headline face and the optional paper texture, on the profile subtree only.
+  const storefrontStyle = fontPairingVars(config.font_pairing) as CSSProperties;
   const name = profile.display_name;
   const firstName = name.split(/\s+/)[0] || name;
 

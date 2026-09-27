@@ -3,23 +3,13 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Spinner } from "@phosphor-icons/react";
-import { cn } from "@/lib/design/cn";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
+import { Button, buttonClass } from "@/components/ui/button";
+import { StorefrontHero } from "@/components/profile/analyst-profile-view";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { checkHandleAvailable, saveOnboardingBrand } from "@/app/actions/profile";
 import type { Profile } from "@/lib/types";
-import type { ProfileConfig } from "@/lib/editor/types";
-import { Card } from "@/components/ui/card";
 
 type Availability = "idle" | "checking" | "available" | "taken" | "invalid";
-type BannerStyle = NonNullable<ProfileConfig["banner_style"]>;
-
-const BANNER_OPTIONS: { value: BannerStyle; label: string; className: string }[] = [
-  { value: "gradient-accent", label: "Signal", className: "bg-gradient-to-r from-accent/25 via-accent/10 to-transparent" },
-  { value: "gradient-cool", label: "Cool", className: "bg-gradient-to-r from-[var(--ink)] via-accent/20 to-transparent" },
-  { value: "minimal", label: "Minimal", className: "bg-gradient-to-r from-surface-2 to-bg" },
-];
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -27,7 +17,6 @@ export function BrandStep({ profile }: { profile: Profile }) {
   const [handle, setHandle] = useState(profile.handle);
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [bio, setBio] = useState(profile.bio ?? "");
-  const [bannerStyle, setBannerStyle] = useState(profile.profile_config?.banner_style ?? "gradient-accent");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   // Only the server's answer is stored; idle, invalid and checking all follow
   // from the handle itself, so they are worked out during render.
@@ -57,7 +46,6 @@ export function BrandStep({ profile }: { profile: Profile }) {
     return () => clearTimeout(timer);
   }, [clean, isOwnHandle, isWellFormed]);
 
-  const bannerClass = BANNER_OPTIONS.find((b) => b.value === bannerStyle)?.className ?? BANNER_OPTIONS[0].className;
   const handleValid = availability === "idle" || availability === "available";
   const canContinue = handleValid && displayName.trim().length > 0 && !pending;
 
@@ -68,7 +56,6 @@ export function BrandStep({ profile }: { profile: Profile }) {
         handle,
         display_name: displayName,
         bio,
-        banner_style: bannerStyle,
       });
       if (!res.ok) {
         setError(res.error);
@@ -102,7 +89,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
               {availability === "checking" && <Spinner size={16} className="animate-spin text-text-mute" />}
               {availability === "available" && <Check size={16} className="text-[var(--ok)]" />}
               {(availability === "taken" || availability === "invalid") && (
-                <X size={16} className="text-[var(--down)]" />
+                <X size={16} className="text-[var(--error)]" />
               )}
             </span>
           </div>
@@ -135,26 +122,6 @@ export function BrandStep({ profile }: { profile: Profile }) {
           />
         </label>
 
-        <div className="flex flex-col gap-1.5 text-body">
-          <span className="font-medium">Banner style</span>
-          <div className="flex gap-2">
-            {BANNER_OPTIONS.map((b) => (
-              <button
-                key={b.value}
-                type="button"
-                onClick={() => setBannerStyle(b.value)}
-                className={cn(
-                  "flex-1 rounded-button border px-3 py-2 text-ticker font-medium transition-colors",
-                  bannerStyle === b.value
-                    ? "border-accent text-accent"
-                    : "border-border text-text-mute hover:border-border-strong",
-                )}
-              >
-                {b.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {error && (
           <p className="rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
@@ -169,17 +136,24 @@ export function BrandStep({ profile }: { profile: Profile }) {
 
       <div>
         <p className="t-meta mb-2">Live preview</p>
-        <Card className="overflow-hidden">
-          <div className={cn("h-16 w-full", bannerClass)} />
-          <div className="-mt-6 flex flex-col gap-3 px-5 pb-5">
-            <Avatar src={avatarUrl} name={displayName || "?"} size="lg" className="ring-4 ring-[var(--surface)]" />
-            <div>
-              <p className="t-title">{displayName || "Your name"}</p>
-              <p className="t-meta mt-0.5">@{handle || "handle"}</p>
-              {bio && <p className="t-body mt-2 text-body text-text-mute">{bio}</p>}
-            </div>
-          </div>
-        </Card>
+        <div className="rounded-panel bg-surface-2 p-5">
+          <StorefrontHero
+            compact
+            name={displayName || "Your name"}
+            avatarUrl={avatarUrl}
+            verified={false}
+            specialty={profile.headline?.trim() || "Independent analyst on Stoa"}
+            bio={bio || null}
+            audienceLine={`@${handle || "handle"}`}
+            actions={
+              <div aria-hidden className="pointer-events-none flex w-full flex-wrap gap-2.5">
+                <span className={buttonClass("coral", "lg", "w-full")}>Subscribe</span>
+                <span className={buttonClass("ghost", "lg", "flex-1")}>Follow</span>
+                <span className={buttonClass("ghost", "lg", "flex-1")}>Share</span>
+              </div>
+            }
+          />
+        </div>
       </div>
     </div>
   );
