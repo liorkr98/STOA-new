@@ -727,11 +727,13 @@ by analyst; Dana's work is written only, and signed out every clip is gated.
 3. **The faces**: analysts who posted in the last 24 hours, newest first (up to 16), a 72px
    circle with first name and beat beneath (`profile_config.specialty`, else the sector or theme
    of their newest piece). A coral ring (`.today-ring`) marks anyone with something the reader
-   has not seen: they posted since this browser last looked at Today (`localStorage`
-   `stoa:today:last-looked`, read once per page load and then replaced; a first visit rings
-   nobody) **and** the reader has not watched them through since (`stoa:today:watched`, per
-   analyst, the time of their newest piece the reader reached; marks older than 30 days are
-   dropped). Both are this device's memory only. On a quiet day with no posts in 24 hours the row
+   has not seen, the way stories are: their newest piece is later than the last one the reader
+   watched them through to (`localStorage` `stoa:today:watched`, per analyst; marks older than
+   30 days are dropped). It stays through reloads and visits until the reader watches that
+   analyst through, then clears and returns only when they post again. Only work posted after
+   this browser first saw Today can ring (`stoa:today:since`, stored once and never moved), so a
+   first visit does not ring everyone; a browser from the earlier rule seeds it from its old
+   `stoa:today:last-looked` stamp, which is then removed. This device's memory only. On a quiet day with no posts in 24 hours the row
    shows the most recent posters under **Recently posted** instead of claiming today. The phone's
    one sideways scroller; on a desktop the faces wrap.
 

@@ -38,9 +38,12 @@ way stories work.
 - Signed out, videos show their picture and a "Sign in to watch" button,
   because watching needs an account everywhere the Feed player runs. Written
   pieces read normally.
-- The coral ring now clears once you have watched an analyst through (reached
-  their last piece), and comes back when they post again. Still remembered by
-  your browser only.
+- The coral ring works the way stories do: it stays on an analyst, through
+  reloads and later visits, until you have watched them through (reached
+  their last piece), then clears and comes back only when they post again.
+  Previously it reset on every visit. Still remembered by your browser only;
+  a browser's first visit rings nobody, so you are not greeted by a ring on
+  everyone for everything they ever posted.
 
 **Choices made**
 
