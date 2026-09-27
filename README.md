@@ -3,23 +3,28 @@
 A marketplace for independent stock research. This is a clean-slate rebuild with no Base44:
 Next.js (App Router) + Supabase + real market data.
 
-> **Grading is retired (2026-09-24).** Nothing is graded or scored any more: the engine, the grade
-> job, the track record, the seals and the Verdict type are deleted, and the `predictions` table is
-> a read-only archive (migration 0067). Sections of this README that describe grading are history.
-> Current rules: `AGENTS.md`; the removal: `docs/CHANGELOG.md`.
+**What Stoa is now.** A publication is a video, a brief or a thesis. It may declare a **stance**:
+one ticker and a direction, long, short or hold, frozen once published. Nothing is graded,
+scored, locked or resolved (grading was retired on 2026-09-24): there is no track record, no
+score, no seal, no Verdict type, no entry price, no target and no horizon, and the `predictions`
+table is a read-only archive (migration 0067) until it is dropped. Analysts are followed and paid
+for their judgement, not scored on it. Edits to a published piece are allowed and disclosed by a
+public EDITED marker. Rules: `AGENTS.md`; product: `docs/PRODUCT_MODEL.md`.
 
 Tagline: Think clearly. Invest better.
 
 ## What is in here
 
-- **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Motion, Phosphor icons.
+- **Frontend:** Next.js App Router, React 19, TypeScript, Tailwind v4, Motion, Lucide icons
+  (older components still use Phosphor).
 - **Backend:** Supabase (Postgres, Auth, Storage, Row Level Security, secure wallet RPCs).
 - **Money:** a simulated wallet/credits system with a 90/10 split, built so real PayPal payouts can
   drop in later (PayPal, not Stripe Connect, since Stripe Connect payouts aren't available for
   Israel-based platforms/sellers).
 
-See `design-system/MASTER.md` for the visual system and `AGENTS.md` for the rules every AI agent
-(Cursor and Claude Code) follows.
+See `docs/FRONTEND.md` for the pages, components and today's tokens (the visual system is being
+replaced by `docs/design/direction-b.html`; `design-system/MASTER.md` is deprecated) and
+`AGENTS.md` for the rules every AI agent (Cursor and Claude Code) follows.
 
 ## Prerequisites
 
@@ -57,9 +62,11 @@ npm install
    - `0012_trust_compliance.sql` (disclosure fields, immutability triggers, audit log)
    - `0013_claims_debate.sql` (structured fact-checker claims + claim-scoped debate)
    - `0014_paypal_accounts.sql` (PayPal Partner Referrals onboarding — safe to run without PayPal keys)
-   - `0015_score_breakdown.sql` (persists hit rate / profit factor / alpha on the profile)
+   - `0015_score_breakdown.sql` (score columns; retired, cleared by 0067)
    - `0016_platform_transfers.sql` (real-money earnings ledger, additive to the wallet system)
    - `0017_analyst_applications.sql` (analyst application funnel + admin approval)
+   - then every later file in `supabase/migrations/` in order, through `0067_retire_grading.sql`
+     (0065 adds the stance, 0066 the delete rule, 0067 retires grading's data)
 4. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings -> API**:
 
 ```bash
@@ -81,9 +88,9 @@ CRON_SECRET=<a long random string>
 npm run seed
 ```
 
-This creates demo analysts with real track records, a demo investor
-(`investor@stoa.demo` / `stoademo123`), and a body of published research and calls. Analyst logins
-look like `maren_vos@stoa.demo` / `stoademo123`.
+This creates demo analysts, a demo investor (`investor@stoa.demo` / `stoademo123`), and a body of
+published research, some of it declaring a stance. Nothing is graded. Analyst logins look like
+`marcus_webb@stoa.demo` / `stoademo123`.
 
 ## 4. Run
 
@@ -96,31 +103,32 @@ sign-in, the feed, profiles, and Studio need the backend set up.
 
 ## Trust & compliance layer
 
-Anything that becomes part of a creator's public track record is append-only — enforced with
-Postgres triggers, not just app-level checks:
+What a reader relies on is enforced with Postgres triggers, not just app-level checks:
 
-- **Locking:** the instant a report's status becomes `published`, `locked_at` is set and a trigger
-  blocks further edits to its title, summary, ticker, access, price, and body. Only `status`
-  (archiving), engagement counters, and `fact_check_results` stay mutable.
-- **Calls are permanently frozen** the moment they're created — ticker, direction, lock/target
-  price, horizon, and the SPY benchmark lock can never change, calls can never be deleted, and a
-  resolved outcome can never be re-resolved.
+- **Publishing:** the instant a report's status becomes `published`, `locked_at` is set (the name
+  is a leftover from grading; it only records publication). From then its ticker, stance, type,
+  access and price cannot change. Its headline, dek, thesis, cards and tags can, and every such
+  edit is written to `report_edits` and shown publicly as an EDITED marker (migration 0063).
+- **Deletion:** a published piece that declares a stance can be archived but not deleted, and a
+  piece anyone has bought is never deleted (migration 0066).
 - **Fact-check claims** (`claims` table — one row per atomic assertion, with character offsets for
-  inline highlighting) freeze the same instant the parent report locks.
+  inline highlighting) freeze when the parent report is published.
 - **`audit_log`** is an append-only trail (admin-read only, no update/delete policy) auto-populated
-  by triggers on report lock/archive, call resolution, and payouts — the answerable record for any
-  future regulatory question.
+  by triggers on publish/archive and payouts — the answerable record for any future regulatory
+  question.
 - **Mandatory disclosure block:** `reports.position_disclosed/held`, `compensation_disclosed/tied/detail`,
   and `views_certified` (a Reg-AC-style "these are my own views" cert). `publishReport` blocks the
   publish server-side once the caller starts sending a certification value — see
   `src/app/actions/reports.ts`.
+- **Grading is gone:** the old call terms, outcomes and scores sit in the read-only `predictions`
+  archive (0067) until it is dropped. Nothing writes to it.
 
 ## Fact-checker pipeline
 
 `src/lib/fact-check/` splits the pipeline into pure, independently testable steps:
 
-1. **`claim-extraction.ts`** — sends the report body to OpenAI (mock fallback without a key) to
-   decompose it into atomic claims.
+1. **`claim-extraction.ts`** — sends the report body to the LLM (DeepSeek via `src/lib/ai/llm.ts`,
+   mock fallback without a key) to decompose it into atomic claims.
 2. **`claim-classification.ts`** — cross-checks numeric claims against live Yahoo Finance quotes,
    maps the result onto the `claim_verdict` enum (`fact` / `unproven` / `opinion` / `contradicted`),
    and locates each claim's character offsets in the source text.
@@ -201,12 +209,12 @@ git push -u origin main
 src/app/            Routes. (marketing) public, (app) investor, studio/ analyst, api/ route handlers.
 src/components/     UI primitives (ui/), charts, layout, and feature components.
 src/lib/db/         The only place that talks to Supabase (typed queries).
-src/lib/engine/     Scoring (score.ts), market data (engine/market/), and the grading job (grade.ts).
+src/lib/engine/     Market data (engine/market/) and the daily ticker-metrics refresh.
 src/lib/fact-check/ Claim extraction + classification — pure, testable pipeline steps.
 src/lib/paypal/     Partner Referrals (payouts + onboarding KYC) and webhook dispatch. Optional, additive.
 src/lib/wallet/...  Wallet flows live in actions/wallet.ts + Postgres RPCs.
 supabase/migrations Schema, RLS, functions, storage, immutability triggers, audit log.
-scripts/            seed.ts (demo data), grade.ts (run the engine once).
+scripts/            seed.ts / seed-demo.ts (demo data), refresh-ticker-metrics.ts, demo-video-*.
 ```
 
 Not financial advice. Stoa is a research marketplace, not a broker or investment adviser.
@@ -220,11 +228,11 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 ### Project
 
 - **Repo:** https://github.com/liorkr98/STOA-new
-- **Branch:** `main` (all feature work merged as of July 2026)
+- **Branch:** `main` (see `docs/CHANGELOG.md` for what each batch merged)
 - **Owner:** liorkr98@gmail.com (Israel-based — **PayPal for payouts, not Stripe Connect**)
 - **Supabase project:** `https://cqhenicrfdkbsshyszex.supabase.co` (credentials in local `.env.local`, not in git)
 - **Tagline:** Think clearly. Invest better.
-- **Product:** Substack-style marketplace for independent stock research. Analysts publish calls/research; investors subscribe or pay per report. Moat = verified, permanent track record (server-side price lock + automatic grading).
+- **Product:** marketplace for independent stock research. Analysts publish videos, briefs and theses, each optionally declaring a stance (ticker + long, short or hold); investors follow, subscribe or pay per report. Nothing is graded or scored: analysts are followed and paid for their judgement.
 
 ### Stack
 
@@ -233,9 +241,9 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 | Frontend | Next.js 15 App Router, React 19, TypeScript, Tailwind v4, Motion, Phosphor icons |
 | Backend | Supabase (Postgres, Auth, Storage, RLS, RPCs) |
 | Market data | **Yahoo Finance** primary (`yahoo-finance2`), Twelve Data + Alpha Vantage fallbacks — abstracted behind `MarketProvider` in `src/lib/engine/market/` |
-| AI | OpenAI (`gpt-4o-mini`) for fact-check + compose assist; mock fallback without key |
+| AI | DeepSeek (`src/lib/ai/llm.ts`) for fact-check + compose assist, OpenAI for text-to-speech only; mock fallback without keys |
 | Payments (live) | **PayPal Partner Referrals** (scaffolded) — simulated wallet is the live economy today |
-| Cron | Vercel hourly → `/api/cron/grade` (or `npm run grade` locally) |
+| Cron | Vercel daily: ticker metrics, subscription expiry, video reconcile, Slack digest; monthly maintenance (`vercel.json`). No grading job. |
 | Lint | ESLint (Next.js), no Biome in this repo |
 
 ### Roles & access model
@@ -243,7 +251,7 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 | Role | Can do |
 |---|---|
 | `user` (investor) | Read, subscribe, unlock, like, comment, save |
-| `analyst` | Everything above + Studio compose, publish research/calls, set pricing |
+| `analyst` | Everything above + Studio compose, publish (with an optional stance), set pricing |
 | `admin` | Everything above + `/admin/applications` (approve/reject analyst applications) |
 
 **Analyst access is gated:** investors apply at `/become-analyst` → admin approves at `/admin/applications` → role flips to `analyst`. Migration `0017` auto-approves `liorkr98@gmail.com`.
@@ -252,10 +260,8 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 
 #### Core product loop
 - Auth (Supabase magic link / OAuth), profiles, wallets (simulated $100 on signup)
-- Publish research, calls, short posts via block compose editor (`/studio/compose`)
-- Server-side price lock at publish (Yahoo Finance) + SPY benchmark for alpha
-- Hourly grading cron grades open calls, recomputes score/rating/tier
-- Feed, Explore, analyst profiles, leaderboard, markets browser, search
+- Publish videos, briefs and theses via Compose (`/studio/compose`), each with an optional stance
+- Feed, Today, Explore, analyst profiles, markets browser, search; placement by the lifecycle model
 - Wallet: top-up (demo), subscribe (90/10 split), pay-per-report unlock
 - Comments, likes, follows, saves, inbox notifications
 - Account dropdown menu, settings, profile branding (avatar/cover/sections)
@@ -263,10 +269,6 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 #### Social / Substack-style layer
 - Newsletter fan-out on publish (notifies followers + active subscribers)
 - Social notifications (follow, like, comment, publication, sale, subscribe)
-
-#### Track record UI
-- Score breakdown, hit/near/miss counts, tier progress on analyst profiles
-- Full call ledger with alpha vs SPY on `/analyst/[handle]`
 
 #### AI features
 - AI credits economy (wallet → credits, spend on chat/outline/fact-check)
@@ -282,10 +284,11 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 #### Backend deep dive (migrations 0012–0016)
 
 **Trust & compliance (`0012_trust_compliance.sql`)**
-- `locked_at` set automatically when report status → `published`
-- DB triggers freeze report content, call terms, and fact-check claims after lock
-- Calls cannot be deleted; resolved outcomes cannot be re-resolved
-- Append-only `audit_log` (admin-read only) auto-populated on lock/archive/resolve/payout
+- `locked_at` set automatically when report status → `published` (it only records publication)
+- DB triggers freeze a published piece's ticker, stance, type, access and price, and its fact-check
+  claims; edits to the words are allowed and disclosed (0063). The call-freezing triggers are gone
+  with grading (0067).
+- Append-only `audit_log` (admin-read only) auto-populated on publish/archive/payout
 - Mandatory disclosure columns on `reports` (position, compensation, views_certified)
 - `publishReport` enforces disclosure server-side once caller sends certification values
 
@@ -303,10 +306,8 @@ Not financial advice. Stoa is a research marketplace, not a broker or investment
 - `platform_transfers` earnings ledger for real-money audit trail
 - **Stripe was removed** — not available for Israel-based platforms
 
-**MOAT score transparency (`0015_score_breakdown.sql`)**
-- `profiles` persists `wilson_win_rate`, `profit_factor`, `avg_return`, `avg_alpha`, `sample_size`
-- Alpha percentile-ranked against platform distribution (not fixed ±20% band)
-- Grading job (`src/lib/engine/grade.ts`) writes breakdown on each pass
+**Score breakdown (`0015_score_breakdown.sql`)**: retired. Grading was removed on 2026-09-24 and
+0067 clears these columns.
 
 ### Migrations — RUN THESE IN SUPABASE SQL EDITOR
 
@@ -316,12 +317,13 @@ Apply **in order** through **`0017`**. If you've already run `0001`–`0011`, on
 0012_trust_compliance.sql      ← immutability triggers, audit_log, disclosure fields
 0013_claims_debate.sql         ← structured claims + debate comments
 0014_paypal_accounts.sql       ← PayPal onboarding table (safe without PayPal keys)
-0015_score_breakdown.sql       ← score breakdown columns on profiles
+0015_score_breakdown.sql       ← score columns (retired; cleared by 0067)
 0016_platform_transfers.sql    ← real-money earnings ledger
 0017_analyst_applications.sql  ← application funnel + auto-approve liorkr98@gmail.com
 ```
 
-After `0017`, sign in as `liorkr98@gmail.com` → role should be `analyst` → **Write** button opens compose.
+Then apply every later migration in order, through `0067_retire_grading.sql`. After `0017`, sign
+in as `liorkr98@gmail.com` → role should be `analyst` → **Write** button opens compose.
 
 ### Environment (`.env.local`)
 
@@ -365,13 +367,13 @@ src/app/
   (app)/become-analyst/       Application funnel (investors apply)
   (app)/admin/applications/   Admin approve/reject UI
   (app)/feed/                 The Feed: full-screen vertical video reader
-  (app)/analyst/[handle]/     Public analyst profile + track record
+  (app)/analyst/[handle]/     Public analyst profile
   (app)/report/[id]/          Report reader + fact-check results
   (app)/settings/             Profile settings
-  studio/compose/             Block editor (analysts only)
+  (private)/studio/compose/   Compose: three types, optional stance (analysts only)
   actions/
     profile.ts                submitAnalystApplication, approve/reject, ensureProfile
-    reports.ts                saveDraft, publishReport (disclosure + price lock)
+    reports.ts                saveDraft, publishReport (disclosure + stance)
     claims.ts                 persistClaims, postDebateComment
     social.ts                 follow, like, comment, save
   api/
@@ -379,11 +381,9 @@ src/app/
     creator/paypal/onboard/   POST — start PayPal onboarding
     creator/paypal/status/    GET — poll onboarding status
     webhooks/paypal/          POST — PayPal webhook handler
-    cron/grade/               GET — hourly grading job (CRON_SECRET)
+    cron/*/                   GET — daily jobs (CRON_SECRET); see vercel.json
 
 src/lib/
-  engine/score.ts             MOAT formula (Wilson + PF + alpha percentile)
-  engine/grade.ts             Grading job (resolve calls, recompute scores)
   engine/market/              Yahoo Finance + fallbacks (MarketProvider interface)
   fact-check/                 Pure claim extraction + classification
   paypal/                     PayPal REST client, partner, orders, webhooks
@@ -391,7 +391,7 @@ src/lib/
   db/                         Typed Supabase queries (only place that talks to DB)
   types.ts                    Domain types mirroring Postgres schema
 
-supabase/migrations/          0001–0017 (see list above)
+supabase/migrations/          0001–0067, applied in order
 docs/ROADMAP.md               Product roadmap (done vs next)
 docs/platform.md              External services tracker
 ```
@@ -431,8 +431,8 @@ Priority order for the next agent pass:
 6. **Debate UI on opinion claims** — `postDebateComment` action + RLS exist; no UI on report page yet
 7. **Email newsletter delivery** — in-app fan-out works; add Resend/Postmark for actual emails
 8. **Legal pages** — `/terms`, `/privacy` are placeholders; need real investment disclaimers
-9. **Direct messages UI** — `messages` table + RLS exist; no frontend
-10. **Automated tests** — engine (`score.ts`, `grade.ts`) and paywall RPCs have no test coverage
+9. **Automated tests** — paywall RPCs have no test coverage (there is no 1:1 messaging by design;
+   see `AGENTS.md` rule 12)
 
 ### Architecture decisions (do not reverse without discussion)
 
@@ -440,34 +440,20 @@ Priority order for the next agent pass:
 - **Yahoo Finance, not Finnhub** — live API; Finnhub only appears as Kaggle dataset names for static imports
 - **Simulated wallet stays live** — PayPal is additive; demo/top-up/subscribe/unlock RPCs unchanged until PayPal checkout UI ships
 - **Analyst approval required** — no instant role upgrade; admin must approve (except liorkr98@gmail.com via migration 0017)
-- **Append-only track record** — enforced by Postgres triggers, not app code; do not add "edit published report" features
+- **A published stance is frozen** — ticker, stance, type, access and price are enforced by Postgres triggers, not app code; edits to the words are allowed only through the public EDITED marker
 - **RLS on `report_bodies`** — paywall at DB layer; never expose full body to client without entitlement check
-- **Score engine is server-side only** — `src/lib/engine/score.ts` is the single source of truth; UI reads persisted breakdown from `profiles`
+- **No scoring** — grading was retired on 2026-09-24; do not rebuild a score, track record or grade job
 
-### Scoring engine summary
-
-Composite 0–100 → display rating 600–1400:
-
-1. **Win rate** — Wilson lower bound on time-weighted outcomes (Hit=1, Near=0.5, Miss/Partial=0)
-2. **Profit factor** — decay-weighted avg win / avg loss
-3. **Alpha** — excess return vs SPY; percentile-ranked against all creators when 5+ benchmarked calls exist
-4. **Consistency** — penalties for miss streaks and drawdown
-5. **Sample ramp** — logarithmic confidence discount for small samples
-
-Tiers: Building (<5 calls) → Rising → Strong → Expert → Elite → Legend
-
-Grading outcomes: Hit (reached target), Near (right direction, short of target), Partial (flat ±1.5%), Miss (wrong direction).
-
-### Demo accounts (after `pnpm seed`)
+### Demo accounts (after `npm run seed`)
 
 | Account | Password | Role | Notes |
 |---|---|---|---|
 | `investor@stoa.demo` | `stoademo123` | investor | $500 demo wallet |
-| `marcus_webb@stoa.demo` | `stoademo123` | analyst | Legend-tier track record (~75+ calls) |
-| `maren_vos@stoa.demo` | `stoademo123` | analyst | Elite semis |
-| `fatima_alhariri@stoa.demo` | `stoademo123` | analyst | Elite healthcare |
-| `elena_petrova@stoa.demo` | `stoademo123` | analyst | Volatile / low win-rate |
-| `carlos_mendez@stoa.demo` | `stoademo123` | analyst | Building (few calls) |
+| `marcus_webb@stoa.demo` | `stoademo123` | analyst | Generalist, the most publications; use for signed-in checks |
+| `maren_vos@stoa.demo` | `stoademo123` | analyst | Semis (behind a terms wall) |
+| `fatima_alhariri@stoa.demo` | `stoademo123` | analyst | Healthcare |
+| `elena_petrova@stoa.demo` | `stoademo123` | analyst | Contrarian |
+| `carlos_mendez@stoa.demo` | `stoademo123` | analyst | New analyst, one or two publications |
 | `*@stoa.demo` | `stoademo123` | analyst | 14 personas total — see `scripts/seed.ts` |
 | `liorkr98@gmail.com` | (your password) | analyst | Real account (untouched by seed) |
 
