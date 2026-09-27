@@ -1,9 +1,20 @@
-# Stoa — Backend brief
+# Stoa: backend brief
 
-> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
-> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
-> described below are deleted, and nothing may rebuild them. Where this document specifies them,
-> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
+> 2026-09-27: brought in line with the stance model after grading was retired (2026-09-24, see
+> `AGENTS.md` and `docs/CHANGELOG.md`).
+
+**The model this brief assumes.** A publication is a video, a brief or a thesis (`content_type`
+`video`, `short_post`, `research`; the enum's `call` value is the retired Verdict type, which
+migration 0067 refuses). It may declare a stance: a ticker (`reports.ticker`) and a direction,
+long, short or hold (`reports.stance`, migration 0065). One stance per publication, frozen with
+the ticker once published, never graded. Nothing is graded, scored or resolved: there is no track
+record, no score, no seal, no target, no horizon, no entry price and no grade job. `predictions`
+is a read-only archive (0067) until it is dropped; its only remaining read is the direction
+fallback for publications from before 0065. `reports.locked_at` still exists, but it only marks
+the moment of publication, after which the ticker, stance, type, access and price are frozen
+(headline, dek and thesis stay editable, behind the public EDITED marker and edit log, migration
+0063); it has nothing to do with grading. Analysts are followed and paid for their judgement, not scored on it, and placement comes
+from the lifecycle model (`src/lib/lifecycle/stages.ts`).
 
 For Krisi. Written at the end of the frontend build run of August 2026 (see `docs/BUILD_SPEC.md`
 for what was built). Every item below is something the frontend now renders as a placeholder,
@@ -56,8 +67,8 @@ the item. Items with no meaningful regional dimension say so rather than leaving
 
 - **Query shape.** The frontend's list builders (`src/lib/today/build-today-page.ts`,
   `src/lib/markets/build-explore.ts`, `src/lib/landing/build-landing.ts`, `src/lib/explore`)
-  each pull one bounded pool per request (80 to 120 newest publications, 40 analysts, 24 resolved
-  calls, 120 clips) and derive lists in memory. This is fine at 1x and holds to roughly 10x rows,
+  each pull one bounded pool per request (80 to 120 newest publications, 40 analysts, 120 clips)
+  and derive lists in memory. This is fine at 1x and holds to roughly 10x rows,
   but every request re-derives trending/popular from the pool. Past that, the lifecycle stages
   and the trending/popular lists should be materialised (item 7) and read, not computed.
 - **N+1 risks that exist today.** `listCommentsForReports` batches; the Studio publications
@@ -71,9 +82,11 @@ the item. Items with no meaningful regional dimension say so rather than leaving
   Everything grid loads the whole author list (fine until an analyst passes a few hundred
   publications).
 - **Indexes to confirm.** `reports (status, published_at desc)`, `reports (author_id,
-  published_at desc)`, `reports (ticker) where status in (published, resolution_pending_review)`,
-  `predictions (outcome, resolves_at desc)`, `video_clips (creator_id, status, published_at)`,
-  `comments (report_id, created_at desc)`. `video_clips_feed_idx` already exists.
+  published_at desc)`, `reports (ticker) where status = 'published'`,
+  `video_clips (creator_id, status, published_at)`, `comments (report_id, created_at desc)`.
+  `video_clips_feed_idx` and `reports_ticker_stance_idx` (`(ticker, stance) where stance is not
+  null and status = 'published'`, migration 0067) already exist. The review status is gone
+  (0067 refuses it), and `predictions` needs no index: it is an archive with one fallback read.
 - **What breaks at 10x volume.** The in-memory lifecycle computation over a 120-row pool stops
   being representative (the population median drifts); the coverage counts (`tickerCoverage`,
   `coverageCounts` with `limit(2000)`) silently truncate; the Explore wall's ranking degrades to
@@ -90,16 +103,16 @@ the item. Items with no meaningful regional dimension say so rather than leaving
   `src/lib/market/yahoo-news.ts`). Everything database-backed is fetched per request; the app
   layout is `force-dynamic`. The news API route sets `s-maxage=300, stale-while-revalidate=600`.
 - **What may be cached, and what must not.** Trending/popular lists, theme momentum, sector and
-  theme pages, the tape and Explore rows can be cached for 30 to 120s per key. **Anything
-  touching a locked call, a resolved outcome, or a score must never serve stale:** the Verdicts
-  band (Today, landing), seals on any tile, entry to exit and return, the call block on a report,
-  the analyst's private track record. If Today is cached as a whole, split it so the Verdicts
-  fragment is fetched fresh or invalidated by the grading job.
+  theme pages, the tape and Explore rows can be cached for 30 to 120s per key. The old rule that
+  graded data (locked calls, resolved outcomes, scores) must never serve stale is moot: nothing
+  is graded, and a stance is frozen at publish, so it caches with its publication. What must never
+  be shared across readers is gated content (concern 3 and item 3).
 - **Invalidation triggers.** Publish (reports.status to published) invalidates: the author's
-  profile tiers, Today's pool, Explore, the Feed, theme/sector counts. Grading (predictions
-  resolved) invalidates: Verdicts everywhere, the report page, the analyst's private record, the
-  landing. Follow/subscribe invalidates only the reader's own Today sidebar and desk. Clip ready
-  (Bunny webhook) invalidates: the report page, the author's profile lead, Explore.
+  profile tiers, Today's pool, Explore, the Feed, theme/sector counts. An edit to a published
+  piece (the public EDITED marker and edit log, migration 0063) invalidates the report page and
+  any list showing its headline. Follow/subscribe invalidates only the reader's own Today sidebar
+  and desk. Clip ready (Bunny webhook) invalidates: the report page, the author's profile lead,
+  Explore.
 - **Reader-side.** The Your Tickers list is browser-local (item 5) and re-resolves prices on
   every mount; once follows are server-side it joins the reader-scoped fetch.
 
@@ -110,8 +123,9 @@ the item. Items with no meaningful regional dimension say so rather than leaving
   the video rung, the tag picker) are client components receiving plain data. Nothing
   provider-side (Bunny env, Yahoo) reaches the browser: embed URLs are built server-side in
   `src/lib/feed/build-publications.ts` and `src/lib/video/card.ts`.
-- **SEO.** `/home` no longer redirects signed-out readers; the Verdicts rail is server-rendered
-  in the HTML and is the shareable, indexable surface. `/markets`, sector, theme and ETF pages and
+- **SEO.** `/home` no longer redirects signed-out readers; Today is server-rendered in the HTML
+  and is the shareable, indexable surface (the Verdicts rail it used to lead with went with
+  grading). `/markets`, sector, theme and ETF pages and
   the landing are fully server-rendered. The Feed player and Explore overlay are client-only
   above server-rendered data.
 - **Streaming boundaries.** The root `loading.tsx` wraps every route; Today and the landing await
@@ -119,7 +133,7 @@ the item. Items with no meaningful regional dimension say so rather than leaving
   options: move the tape/news into their own Suspense boundaries with a reserved-height fallback,
   or serve them from the cache layer above with a stale value. Prefer the first for the tape.
 - **Gated content is never sent to the browser.** The Feed player receives per-card `locked`
-  flags and renders sealed cards from *card metadata only*; once cards are stored (item 2), the
+  flags and renders locked cards from *card metadata only*; once cards are stored (item 2), the
   API must omit locked card bodies for non-entitled readers, not just flag them. Same rule the
   report page already follows for `report_bodies` (RLS-gated). Confirm the per-card entitlement
   is enforced server-side, since the creator sets the reveal line per card, not per report.
@@ -133,7 +147,7 @@ the item. Items with no meaningful regional dimension say so rather than leaving
   pulling every source across regions.
 - **Database and edge.** Supabase project region is single; Vercel functions default to
   `iad1`. For Israeli readers every dynamic page pays a US round trip; consider Vercel edge or a
-  regional function for the read-heavy public pages (Today, Verdicts, Markets) once caching
+  regional function for the read-heavy public pages (Today, Explore, Markets) once caching
   exists, and keep writes central.
 - **Market data.** Yahoo is called from the server region; TA-35 (`TA35.TA`) resolves. Data
   residency: no personal data leaves Supabase; the only third parties receiving user-derived data
@@ -157,18 +171,19 @@ polish and drops well down the list.
 
 *The cheapest unlock on the list. Everything about discovery placement depends on it.*
 
-**Today.** Content badges are built from what is stored (clip present, prediction present,
-`type = research` or a long body); "Cards" is never claimed. Callless items anchor on the ticker's
-sector from `tickers.sector` (`THEME_TAG_PLACEHOLDER` in code), which is a stand-in, not the
-analyst's own tag. Tags exist only in the Compose picker and are discarded on save.
+**Today.** Content badges are built from what is stored (clip present, `type = research` or a
+long body); "Cards" is never claimed. A stance is not a badge part: it shows as the ticker and
+direction chips. Items with no ticker anchor on a theme or sector tag; where that comes from
+`tickers.sector` (`THEME_TAG_PLACEHOLDER` in code) it is a stand-in, not the analyst's own tag.
+Tags exist only in the Compose picker and are discarded on save.
 
 **Needed.**
 - `reports.primary_tag text`, `reports.secondary_tags text[]` (max 2), validated against the
-  taxonomy (or a `tags` table the taxonomy moves into). Auto-fill from the call's sector stays a
-  frontend concern.
-- `reports.theme_tag text` for callless items (or derive from `primary_tag`).
-- `reports.content_flags` (or derive `has_video`, `has_call`, `has_thesis`, `has_cards` at read
-  time) so the badge is authoritative and cheap.
+  taxonomy (or a `tags` table the taxonomy moves into). Auto-fill from the stance ticker's sector
+  stays a frontend concern.
+- `reports.theme_tag text` for items with no ticker (or derive from `primary_tag`).
+- `reports.content_flags` (or derive `has_video`, `has_stance`, `has_thesis`, `has_cards` at read
+  time, `has_stance` being `reports.stance is not null`) so the badge is authoritative and cheap.
 - `reports.scheduled_for timestamptz` for scheduling (the Studio list already has a
   `scheduled` state with nothing behind it).
 - Scalability: index `primary_tag`; secondaries are searchable-only, so a GIN index on the array
@@ -290,7 +305,9 @@ momentum (this week vs last) is two such scans. The tape is live Yahoo (indices,
 plus the eight most-covered tickers.
 
 **Needed.** A materialised `ticker_coverage` (`symbol`, `all_time`, `last_7d`, `prior_7d`,
-`analysts`, `open_calls`) refreshed by the same pg_cron job as item 7.
+`analysts`, `with_stance`) refreshed by the same pg_cron job as item 7. `with_stance` counts live
+publications that declare a stance on the name (what Explore's "N calls" now means); there are no
+open calls to count.
 
 Scalability: removes the biggest repeated scan in the product. Caching: refresh cadence is the
 cache. Rendering: the tape is server-rendered; keep it out of the page's critical path (concern
@@ -301,9 +318,10 @@ cache. Rendering: the tape is server-rendered; keep it out of the page's critica
 **Today.** `notify_report_event` emits like / comment; the app also creates follow / publication
 / subscribe / sale. All "good to know". No preferences, so anything added is unmutable.
 
-**Needed.** The "needs you" kinds: `call_resolved` (for followers of the analyst and for the
-analyst), `call_resolving_soon` (horizon within N days), `subscription_renewing`,
-`payment_failed`, `payout_ready`. A `notification_preferences` table (or jsonb on profiles) with
+**Needed.** The "needs you" kinds: `subscription_renewing`, `payment_failed`, `payout_ready`.
+(`call_resolved` and `call_resolving_soon` were on this list; with nothing resolving they are
+moot, and the call notifications and their toggles are gone from the Inbox.) A
+`notification_preferences` table (or jsonb on profiles) with
 per-kind email and in-app toggles. Ship preferences in the same change as the new kinds, not
 after.
 
@@ -410,59 +428,61 @@ should not until the decision is made.
 
 ### 14. The scoring formula and `formula_version`
 
-Dormant: scores are no longer displayed publicly, only in the analyst's private track record, so
-nothing here blocks a reader-facing surface. The docs describe a modified Elo (600 to 1400); the
-shipped engine computes a Wilson win-rate / profit-factor / alpha composite
-(`src/lib/engine/scoring/formula.ts`, versioned, with a recompute path). Before a score is ever
-shown publicly again: settle the formula, add `formula_version` to `profiles` and
-`moat_score_snapshots`, and recompute all analysts together in one pass.
+Retired 2026-09-24, nothing to build. The scoring engine, the Track Score and the recompute path
+are deleted, and migration 0067 reset every profile's score columns to their defaults and deleted
+every `moat_score_snapshots` row. What is left in the database (the score columns on `profiles`,
+the `moat_score_snapshots` table, the `get_moat_snapshots` RPC) goes in the release that drops
+`predictions`. The number is kept so references to later items stay valid.
 
 ---
 
-### 15. `purge_demo_author` cannot delete a locked report
+### 15. `purge_demo_author` cannot delete a published demo report
 
 **What happens today.** `purge_demo_author` (migration 0034) is the only sanctioned way to clear
-demo content, and it has never worked. It sets `app.allow_prediction_delete` so
-`prevent_prediction_delete` lets the calls go, then runs `delete from reports` straight into
-`prevent_locked_report_delete`, which has no equivalent escape hatch and refuses anything locked
-or `published | archived | resolution_pending_review`. Every report is locked at insert by
-`set_locked_at_on_insert`, so the delete always raises `Locked reports cannot be deleted, only
-archived.` and, because the function is one transaction, the prediction delete rolls back with it.
-The function clears nothing and reports no error to anything that does not read the RPC response.
+demo content, and it has never worked. It sets `app.allow_prediction_delete`, which the calls
+archive still honours for this one caller (`predictions_read_only`, migration 0067), deletes the
+author's archived calls, then runs `delete from reports` into `prevent_locked_report_delete`.
+That guard has no escape hatch. Since migrations 0066 and 0067 it refuses any non-draft report
+that declares a stance or has a `report_unlocks` row, and most demo publications declare a
+stance (every former call's direction, 1,128 of them, was copied onto its publication by 0065). So the delete
+raises `This publication declares a stance, so it can be archived but not deleted.` and, because
+the function is one transaction, the calls delete rolls back with it. The function clears nothing
+and reports no error to anything that does not read the RPC response. (`locked_at`, set at insert
+by `set_report_locked_at_on_insert`, marks the moment of publication; the guard lets a report go
+only when it is an unpublished draft or has neither a stance nor a buyer.)
 
 The same guard makes the demo accounts undeletable: `auth.admin.deleteUser` cascades
 `profiles -> reports`, the BEFORE DELETE trigger fires on the cascade, and the delete fails.
 
-**What it costs.** `scripts/seed-demo.ts` and `scripts/demo-teardown.ts` currently archive instead.
-Archiving is genuinely sufficient for *reading* surfaces, because `reports_read` (migration 0036)
-is `status in ('published','resolution_pending_review') or author_id = auth.uid()`, so an archived
-report is invisible to every reader at the database level, and `predictions_read` and
-`can_read_report_body` both gate on the parent report's status, so calls and evidence cards go with
-it. But it conceals rather than removes: the rows stay, every reseed adds another archived layer,
-and `demo:teardown` cannot deliver the single-command removal it is supposed to. The demo dataset
-is currently ~330 archived publications that nobody can clear.
+**What it costs.** `scripts/seed-demo.ts` and `scripts/demo-teardown.ts` archive instead.
+Archiving is genuinely sufficient for *reading* surfaces, because `reports_read` (as rewritten by
+migration 0067) is `status = 'published' or author_id = auth.uid()`, so an archived report is
+invisible to every reader at the database level, and `predictions_read`, `publication_cards_read`
+and `can_read_report_body` all gate on the parent report being published, so archived calls and
+evidence cards go with it. But it conceals rather than removes: the rows stay, every reseed adds
+another archived layer, and `demo:teardown` cannot deliver the single-command removal it is
+supposed to. The demo dataset carried ~330 archived publications that nobody can clear when this
+was written.
 
-**What it needs.** Give `prevent_locked_report_delete` and the DELETE branch of
-`prevent_locked_body_edit` the same transaction-local escape hatch `prevent_prediction_delete`
-already has (say `app.allow_demo_purge`), and set it inside `purge_demo_author` alongside the
-existing `app.allow_prediction_delete`. The public record stays protected for every other caller:
-the setting defaults to off, is scoped to one transaction via `set_config(..., true)`, and is only
-ever set inside `purge_demo_author`, which is `security definer`, granted to `service_role` alone,
-and still refuses any account whose email is not `@stoa.demo`.
+**What it needs.** Give `prevent_locked_report_delete` a transaction-local escape hatch (say
+`app.allow_demo_purge`) that, when set, also sets the existing cascade flag
+`app.deleting_callless_report` for the row, so `prevent_locked_body_edit` (migration 0063) and the
+other child guards let the cascade through as they already do for a deletable publication. Set it
+inside `purge_demo_author` alongside the existing `app.allow_prediction_delete`. The rule stays in
+force for every other caller: the setting defaults to off, is scoped to one transaction via
+`set_config(..., true)`, and is only ever set inside `purge_demo_author`, which is
+`security definer`, granted to `service_role` alone, and still refuses any account whose email is
+not `@stoa.demo`.
 
-**Concerns.** *Trust*: this loosens two immutability triggers, so the review should be on the
-scoping rather than the mechanism, which already exists for predictions. *Data*: nothing to
-backfill; the archived rows can be deleted once the hatch exists.
+**Concerns.** *Trust*: this loosens the delete rule (a publication with a stance or a buyer is
+archived, never deleted; migration 0066, `src/lib/studio/delete-rule.ts`), so the review should be
+on the scoping rather than the mechanism, which already exists for the calls archive. *Data*:
+nothing to backfill; the archived rows can be deleted once the hatch exists.
 
-**Related, and a decision for you.** `recomputeAllScores` (`src/lib/engine/recompute.ts`) selected
-every prediction by `author_id` with no join to `reports`, while the displayed track record
-(`listResolvedCallsWithReports`) filters to `report.status === 'published'`. A recomputed score
-therefore counted calls the public record does not show, and archived demo calls would have been
-folded straight back in. The recompute now filters to published parents so the two agree. That
-raises a product question this brief cannot settle: **if archiving removes a call from the score,
-an analyst can improve their record by archiving their misses.** Either archiving should be barred
-once a call is locked, or the score should count archived calls while the record hides them, and
-the two paths should then differ deliberately rather than by accident.
+**Formerly related, now moot.** This item used to carry a decision about whether archiving a
+missed call could improve an analyst's score. With no score and no grading there is nothing to
+improve, so the question is closed. The rule that a publication with a stance cannot be deleted
+still stands, for a different reason: a wrong view cannot be buried.
 
 ### 16. The Bunny Stream webhook is not registered, and will not backfill what is already there
 
@@ -601,7 +621,7 @@ means a real creator cannot publish and nothing tells anyone.
 | 9 | 11. Sector index | Unblocks one chart; the ETF-proxy route is a day | 1 to 3 days |
 | 10 | 12. Smaller items | Independent, pick off in any order; see the table above | ~2 weeks total |
 | 11 | 13. Pricing | Blocked on a product decision, not on engineering | decision, then days |
-| 12 | 14. Scoring formula | Dormant until a score is shown publicly again | decision, then 1 day |
+| 12 | 14. Scoring formula | Retired 2026-09-24; nothing to build | none |
 | later | 10(a). Burn-in worker | Only when outward sharing matters | 2 weeks plus running cost |
 
 Roughly: the first five lines are about four weeks and cover most of the visible product depth.
@@ -612,10 +632,12 @@ Everything after is either scale work that is not yet needed, or work blocked on
 ## What the frontend already reads that you should keep stable
 
 - `video_clips` columns and statuses (`processing|ready|failed`), and the ready webhook.
-- `reports` (`status in published|resolution_pending_review`, `published_at`, `views`, `likes`,
-  `comment_count`, `type`, `access`, `price`, `body`), joined `author` and `prediction`.
-- `predictions` (`outcome`, `lock_price`, `resolved_price`, `return_pct`, `resolves_at`,
-  `resolution_trading_date`, `direction`, `ticker`), joined `author` and `report`.
+- `reports` (`status = published`, `published_at`, `views`, `likes`, `comment_count`, `type`,
+  `access`, `price`, `body`, `ticker`, `stance`), joined `author`. `locked_at` marks the moment of
+  publication (ticker, stance, type, access and price freeze from then); it is not a grading field.
+- `report_edits` (the public EDITED marker and edit log, migration 0063).
+- `predictions`: read only for `direction`, as the fallback for publications from before 0065.
+  Nothing else is read from it, and the read goes when the table is dropped.
 - `profiles.followers_count`, `created_at`, `headline`, `avatar_url`, `profile_config`
   (`pinned_report_id`, `show_member_count`, `accent`, `font_pairing`, `texture`).
 - `tickers` (`symbol`, `name`, `sector`, `last_price`, `market_cap`), `follows`, `comments`,
