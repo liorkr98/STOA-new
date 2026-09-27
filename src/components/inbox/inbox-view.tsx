@@ -28,11 +28,11 @@ export interface InboxItem {
 }
 
 const CHIPS: { key: "all" | InboxCategory; label: string }[] = [
-  { key: "all", label: "ALL" },
-  { key: "publications", label: "PUBLICATIONS" },
-  { key: "money", label: "MONEY" },
-  { key: "audience", label: "AUDIENCE" },
-  { key: "social", label: "SOCIAL" },
+  { key: "all", label: "All" },
+  { key: "publications", label: "Publications" },
+  { key: "money", label: "Money" },
+  { key: "audience", label: "Audience" },
+  { key: "social", label: "Social" },
 ];
 
 const READING_PREFS = [

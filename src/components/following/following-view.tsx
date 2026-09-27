@@ -82,10 +82,10 @@ function Placeholder({ label }: { label: string }) {
 export function FollowingView({ creators }: { creators: FollowCreator[] }) {
   const [tab, setTab] = useState<Tab>("creators");
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "creators", label: "CREATORS", count: creators.length },
-    { key: "tickers", label: "TICKERS", count: 0 },
-    { key: "etfs", label: "ETFS", count: 0 },
-    { key: "sectors", label: "SECTORS", count: 0 },
+    { key: "creators", label: "Creators", count: creators.length },
+    { key: "tickers", label: "Tickers", count: 0 },
+    { key: "etfs", label: "ETFs", count: 0 },
+    { key: "sectors", label: "Sectors", count: 0 },
   ];
 
   return (

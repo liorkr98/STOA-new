@@ -15,6 +15,7 @@ import { restorePublication } from "@/app/actions/reports";
 import { toast } from "sonner";
 import { ThemeChip, TickerChip } from "@/components/ui/chip";
 import { buttonClass } from "@/components/ui/button";
+import { labelCase } from "@/lib/design/label";
 
 export type PubState = "draft" | "scheduled" | "published" | "archived";
 
@@ -47,11 +48,11 @@ export interface Publication {
 }
 
 const CHIPS: { key: "all" | PubState; label: string }[] = [
-  { key: "all", label: "ALL" },
-  { key: "draft", label: "DRAFTS" },
-  { key: "archived", label: "ARCHIVED" },
-  { key: "scheduled", label: "SCHEDULED" },
-  { key: "published", label: "PUBLISHED" },
+  { key: "all", label: "All" },
+  { key: "draft", label: "Drafts" },
+  { key: "archived", label: "Archived" },
+  { key: "scheduled", label: "Scheduled" },
+  { key: "published", label: "Published" },
 ];
 
 /**
@@ -182,10 +183,10 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                 <Thumb duration={p.duration} videoStatus={p.videoStatus} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
+                    <span className="num text-ticker text-text-mute">{labelCase(p.typeLabel)}</span>
                     {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeChip label={p.tag} />)}
                     {p.badge ? (
-                      <span className="num text-ticker text-text-mute">{p.badge}</span>
+                      <span className="num text-ticker text-text-mute">{labelCase(p.badge)}</span>
                     ) : null}
                     {p.editedAt ? <EditedFlag editedAt={p.editedAt} /> : null}
                     {p.state === "archived" && (

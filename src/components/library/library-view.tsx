@@ -9,6 +9,7 @@ import { toggleSave } from "@/app/actions/social";
 import { ThemeChip, TickerChip } from "@/components/ui/chip";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { labelCase } from "@/lib/design/label";
 
 export interface LibraryItem {
   id: string;
@@ -34,10 +35,10 @@ export interface LibraryItem {
 
 type Filter = "all" | "owned" | "saved" | "free";
 const CHIPS: { key: Filter; label: string }[] = [
-  { key: "all", label: "ALL" },
-  { key: "owned", label: "OWNED" },
-  { key: "saved", label: "SAVED" },
-  { key: "free", label: "FREE" },
+  { key: "all", label: "All" },
+  { key: "owned", label: "Owned" },
+  { key: "saved", label: "Saved" },
+  { key: "free", label: "Free" },
 ];
 
 function Bmk({ id, saved }: { id: string; saved: boolean }) {
@@ -136,10 +137,10 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
             >
               <Link href={it.href} className="block">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="num text-ticker text-text-mute">{it.typeLabel}</span>
+                  <span className="num text-ticker text-text-mute">{labelCase(it.typeLabel)}</span>
                   {it.tag &&
                     (it.tagIsTicker ? <TickerChip ticker={it.tag} /> : <ThemeChip label={it.tag} />)}
-                  <span className="num text-ticker text-text-mute">{it.badge}</span>
+                  <span className="num text-ticker text-text-mute">{labelCase(it.badge)}</span>
                 </div>
                 <h3 className="mt-3 max-w-[700px] font-display text-title font-semibold leading-snug tracking-tight md:text-headline">
                   {it.title}

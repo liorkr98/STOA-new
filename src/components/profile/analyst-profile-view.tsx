@@ -14,6 +14,7 @@ import { TierPickerModal } from "@/components/profile/tier-picker-modal";
 import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { labelCase } from "@/lib/design/label";
 
 /** One publication as the storefront renders it: a video tile or a written tile. */
 export interface ProfilePublication {
@@ -157,12 +158,12 @@ function VideoThumb({
 function MetaRow({ p, className }: { p: ProfilePublication; className?: string }) {
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
+      <span className="num text-ticker text-text-mute">{labelCase(p.typeLabel)}</span>
       {p.ticker && <TickerChip ticker={p.ticker} />}
       {p.direction && <StanceChip direction={p.direction} />}
       {!p.ticker && p.themeTag && <ThemeChip label={p.themeTag} />}
       {p.badge !== p.typeLabel && (
-        <span className="num text-ticker text-text-mute">{p.badge}</span>
+        <span className="num text-ticker text-text-mute">{labelCase(p.badge)}</span>
       )}
     </div>
   );

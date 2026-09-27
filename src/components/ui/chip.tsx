@@ -15,7 +15,7 @@ import type { Direction } from "@/lib/types";
  */
 
 const chipBase =
-  "inline-flex items-center gap-1 whitespace-nowrap rounded-chip border px-2.5 py-0.5 text-ticker font-semibold leading-snug";
+  "inline-flex items-center gap-1 whitespace-nowrap rounded-chip border bg-surface px-2.5 py-0.5 text-ticker font-semibold leading-snug";
 const linkable = "transition-colors hover:border-border-strong focus-ring";
 
 /** Quiet neutral chip. */

@@ -9,6 +9,7 @@ import { PUBLICATION_TYPES, type PublicationType, type PublicationTypeDef } from
 import type { DraftSummary } from "@/lib/compose/drafts";
 import { DeleteDraftDialog } from "@/components/studio/delete-dialog";
 import { Card } from "@/components/ui/card";
+import { labelCase } from "@/lib/design/label";
 
 /**
  * The first screen of Compose: what are you publishing?
@@ -100,7 +101,7 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
   return (
     <Card as="li" className="flex items-center gap-4 px-4 py-3.5">
       <span className="num w-[5.5rem] shrink-0 text-ticker text-text-mute">
-        {d.typeLabel}
+        {labelCase(d.typeLabel)}
       </span>
       <div className="min-w-0 flex-1">
         <p className={cn("user-copy truncate font-display text-title font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
@@ -130,7 +131,7 @@ function DraftRowCompact({ d }: { d: PickerDraft }) {
       <Link href={d.href} className="focus-ring flex min-w-0 flex-1 items-center gap-3 rounded-panel px-3.5 py-3">
         <span className="min-w-0 flex-1">
           <span className="num block truncate text-ticker text-text-mute">
-            {d.typeLabel} · {d.where}
+            {labelCase(d.typeLabel)} · {d.where}
           </span>
           <span className={cn("user-copy mt-0.5 block truncate font-display text-body font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
             {d.title}
