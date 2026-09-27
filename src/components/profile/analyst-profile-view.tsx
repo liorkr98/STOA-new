@@ -403,7 +403,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
                 {props.name}
               </h1>
               {props.verified && (
-                <BadgeCheck size={22} className="flex-none text-[var(--verdigris)]" aria-label="Verified" />
+                <BadgeCheck size={22} className="flex-none text-text" aria-label="Verified" />
               )}
             </div>
             <div className="num mt-2 text-ticker text-text-mute">

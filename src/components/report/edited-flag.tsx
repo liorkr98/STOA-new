@@ -27,7 +27,7 @@ export function EditedFlag({
         minute: "2-digit",
       })}. Open the publication to see what changed.`}
       className={cn(
-        "inline-flex items-center gap-1 rounded-chip border border-[var(--brass)]/50 bg-[var(--brass)]/10 px-1.5 py-0.5",
+        "inline-flex items-center gap-1 rounded-chip border border-border px-1.5 py-0.5 text-[var(--mark-edited)]",
         className,
       )}
     >

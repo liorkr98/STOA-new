@@ -58,7 +58,7 @@ export function LeaveDialog({
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={onLeave} disabled={saving} className="text-[var(--rust)]">
+                <Button variant="ghost" size="sm" onClick={onLeave} disabled={saving} className="text-[var(--error)]">
                   Leave without saving
                 </Button>
                 <Button variant="secondary" size="sm" onClick={onStay} disabled={saving}>

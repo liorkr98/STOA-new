@@ -90,7 +90,7 @@ function Tile({
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2.5 md:p-3">
         <div className="min-w-0">
           {p.stageMarker === "TRENDING" || (spotlight && tile.trending) ? (
-            <div className="num mb-1 text-ticker text-[var(--brass)]">Trending</div>
+            <div className="num mb-1 text-ticker text-white/90">Trending</div>
           ) : p.stageMarker === "NEW" ? (
             <div className="num mb-1 text-ticker text-white/90">New</div>
           ) : null}

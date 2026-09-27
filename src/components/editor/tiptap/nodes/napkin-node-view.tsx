@@ -275,7 +275,7 @@ export function NapkinNodeView({
           aria-label="Delete diagram block"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -504,7 +504,7 @@ export function NapkinNodeView({
             </div>
           </>
         )}
-        {error ? <p className="text-center text-ticker text-[var(--down)]">{error}</p> : null}
+        {error ? <p className="text-center text-ticker text-[var(--error)]">{error}</p> : null}
         <p className="t-meta text-center text-ticker">
           Built-in diagrams use DEEPSEEK_API_KEY · cloud engine uses NAPKIN_API_KEY if set
         </p>

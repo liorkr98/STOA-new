@@ -189,7 +189,7 @@ export default function WatchlistPage() {
                     <span className="num font-medium">{r.ticker}</span>{" "}
                     <span className="t-meta">{r.name}</span>
                   </span>
-                  <Star size={14} weight={tickers.includes(r.ticker) ? "fill" : "regular"} className="text-[var(--brass)]" />
+                  <Star size={14} weight={tickers.includes(r.ticker) ? "fill" : "regular"} className="text-text" />
                 </button>
               </li>
             ))}

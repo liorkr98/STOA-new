@@ -173,7 +173,7 @@ export function ValuationNodeView({
                       className="w-full rounded-[2px]"
                       style={{
                         height: `${Math.max(2, (Math.abs(v) / max) * 40)}px`,
-                        background: "var(--verdigris)",
+                        background: "var(--chart-2)",
                         opacity: 0.85,
                       }}
                     />
@@ -186,7 +186,7 @@ export function ValuationNodeView({
                   className="w-6 rounded-[2px]"
                   style={{
                     height: `${Math.max(2, (Math.abs(shown.pvTerminal) / Math.max(...shown.pvByYear.map(Math.abs), Math.abs(shown.pvTerminal), 1)) * 40)}px`,
-                    background: "var(--brass)",
+                    background: "var(--chart-1)",
                   }}
                 />
                 <span className="num text-ticker text-text-faint">TV</span>
@@ -254,7 +254,7 @@ export function ValuationNodeView({
           aria-label="Delete valuation"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

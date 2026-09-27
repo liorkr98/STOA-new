@@ -123,7 +123,7 @@ export function VersionHistory({ reportId }: { reportId: string }) {
                 </div>
               ))
             )}
-            {error && <p className="px-2 py-1 text-ticker text-[var(--down)]">{error}</p>}
+            {error && <p className="px-2 py-1 text-ticker text-[var(--error)]">{error}</p>}
           </div>
 
           <p className="t-meta border-t border-border px-3 py-2 text-ticker">

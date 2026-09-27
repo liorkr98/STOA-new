@@ -124,7 +124,7 @@ export function DispatchIssueColumns({
         title="On the wire"
         stories={wire}
         empty="Wire is quiet this cycle."
-        accentClass="text-[var(--plum)]"
+        accentClass="text-text-mute"
       />
     </div>
   );

@@ -196,7 +196,7 @@ export function DiscussionThread({
                   <button
                     type="button"
                     onClick={() => onDelete(c)}
-                    className="focus-ring rounded font-semibold text-[var(--rust)] underline"
+                    className="focus-ring rounded font-semibold text-[var(--error)] underline"
                   >
                     Delete
                   </button>
@@ -215,7 +215,7 @@ export function DiscussionThread({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(c.id)}
-                  className="num focus-ring inline-flex items-center gap-1 rounded text-ticker text-text-mute hover:text-[var(--rust)]"
+                  className="num focus-ring inline-flex items-center gap-1 rounded text-ticker text-text-mute hover:text-[var(--error)]"
                 >
                   <Trash2 size={11} strokeWidth={1.6} aria-hidden /> Delete
                 </button>

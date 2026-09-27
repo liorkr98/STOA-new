@@ -30,7 +30,7 @@ export function CardNodeView({ node, deleteNode, selected, editor }: NodeViewPro
               type="button"
               onClick={deleteNode}
               aria-label="Remove this card from the research"
-              className="focus-ring absolute right-2 top-2 rounded-[4px] border border-border bg-surface p-1 text-text-mute hover:text-[var(--rust)]"
+              className="focus-ring absolute right-2 top-2 rounded-[4px] border border-border bg-surface p-1 text-text-mute hover:text-[var(--error)]"
             >
               <Trash2 size={13} />
             </button>

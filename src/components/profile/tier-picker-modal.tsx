@@ -115,13 +115,13 @@ export function TierPickerModal({
                   <ul className="mt-4 flex flex-1 flex-col gap-2.5">
                     {plan.perks.map((perk) => (
                       <li key={perk} className="flex items-center gap-2.5 text-body">
-                        <Check size={12} strokeWidth={1.6} className="shrink-0 text-[var(--verdigris)]" aria-hidden />
+                        <Check size={12} strokeWidth={1.6} className="shrink-0 text-[var(--ok)]" aria-hidden />
                         {perk}
                       </li>
                     ))}
                   </ul>
                   {!free && (plan.trial_days ?? 0) > 0 && (
-                    <p className="num mt-4 text-ticker text-[var(--verdigris)]">
+                    <p className="num mt-4 text-ticker text-text-mute">
                       {plan.trial_days}-day free trial
                     </p>
                   )}
@@ -145,7 +145,7 @@ export function TierPickerModal({
         )}
 
         {mutation.data?.error && (
-          <p className="mt-3 text-center text-ticker text-[var(--down)]">{mutation.data.error}</p>
+          <p className="mt-3 text-center text-ticker text-[var(--error)]">{mutation.data.error}</p>
         )}
         <p className="num mt-6 text-center text-ticker text-text-faint">
           Existing subscribers keep their locked-in price.

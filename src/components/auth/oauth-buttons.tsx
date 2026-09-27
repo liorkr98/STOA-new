@@ -121,7 +121,7 @@ export function OAuthButtons({
           </button>
         ))}
       </div>
-      {error && <p className="text-body text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--error)]">{error}</p>}
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
         <span className="t-meta text-ticker">or with email</span>

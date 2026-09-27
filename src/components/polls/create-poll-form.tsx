@@ -149,7 +149,7 @@ export function CreatePollForm() {
                 type="button"
                 aria-label="Remove option"
                 onClick={() => setOptions((prev) => prev.filter((_, x) => x !== i))}
-                className="text-text-faint hover:text-[var(--down)] focus-ring"
+                className="text-text-faint hover:text-[var(--error)] focus-ring"
               >
                 <X size={15} />
               </button>
@@ -167,7 +167,7 @@ export function CreatePollForm() {
         )}
       </div>
 
-      {error && <p className="text-body text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--error)]">{error}</p>}
 
       <Button type="button" onClick={submit} disabled={pending} className="self-start">
         {pending ? "Creating..." : "Create poll"}

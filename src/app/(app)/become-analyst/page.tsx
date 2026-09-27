@@ -47,7 +47,7 @@ export default async function BecomeAnalystPage({
     return (
       <div className="mx-auto max-w-[var(--w-reading)] py-8">
         <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
-          <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
+          <Clock size={48} weight="duotone" className="text-[var(--pending)]" />
           <h1 className="t-title">Application submitted!</h1>
           <p className="t-body text-text-mute max-w-sm">
             We&apos;ll review your application and notify you by email and in-app notification.
@@ -75,7 +75,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="why_analyst" className="text-body font-medium">
               Why do you want to publish on Stoa?
-              <span className="ml-1 text-[var(--rust)]">*</span>
+              <span className="ml-1 text-text-mute">*</span>
             </label>
             <textarea
               id="why_analyst"
@@ -91,7 +91,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="background" className="text-body font-medium">
               What is your financial or professional background?
-              <span className="ml-1 text-[var(--rust)]">*</span>
+              <span className="ml-1 text-text-mute">*</span>
             </label>
             <textarea
               id="background"
@@ -107,7 +107,7 @@ export default async function BecomeAnalystPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="coverage_areas" className="text-body font-medium">
               What markets or sectors will you cover?
-              <span className="ml-1 text-[var(--rust)]">*</span>
+              <span className="ml-1 text-text-mute">*</span>
             </label>
             <input
               id="coverage_areas"
@@ -174,7 +174,7 @@ function ApplicationStatus({
   if (application.status === "pending") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
-        <Clock size={48} weight="duotone" className="text-[var(--brass)]" />
+        <Clock size={48} weight="duotone" className="text-[var(--pending)]" />
         <h2 className="t-title">Application under review</h2>
         <p className="t-body text-text-mute max-w-sm">
           Your application was submitted on{" "}
@@ -188,7 +188,7 @@ function ApplicationStatus({
   if (application.status === "approved") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
-        <CheckCircle size={48} weight="duotone" className="text-[var(--up)]" />
+        <CheckCircle size={48} weight="duotone" className="text-[var(--ok)]" />
         <h2 className="t-title">You&apos;re approved!</h2>
         <p className="t-body text-text-mute">
           Your account has been upgraded. Set up your profile and publish your first report.
@@ -206,7 +206,7 @@ function ApplicationStatus({
   // rejected
   return (
     <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
-      <XCircle size={48} weight="duotone" className="text-[var(--down)]" />
+      <XCircle size={48} weight="duotone" className="text-[var(--error)]" />
       <h2 className="t-title">Application not approved</h2>
       {application.review_note && (
         <p className="t-body text-text-mute max-w-sm">{application.review_note}</p>

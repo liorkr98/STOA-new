@@ -183,7 +183,7 @@ export function AccentPicker({
           <AlertTriangle size={14} /> {check.reason}
         </p>
       )}
-      {error && <p className="text-body text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--error)]">{error}</p>}
 
       <div className="flex items-center gap-3">
         <Button type="button" onClick={save} disabled={pending || !check.valid}>

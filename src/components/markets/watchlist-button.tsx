@@ -20,7 +20,7 @@ export function WatchlistButton({ ticker, className }: { ticker: string; classNa
       aria-label={watching ? `Remove ${ticker} from watchlist` : `Add ${ticker} to watchlist`}
       className={cn(
         "tap-target focus-ring inline-flex h-8 w-8 items-center justify-center rounded-button transition-colors",
-        watching ? "text-[var(--brass)]" : "text-text-faint hover:text-text",
+        watching ? "text-text" : "text-text-faint hover:text-text",
         className,
       )}
     >

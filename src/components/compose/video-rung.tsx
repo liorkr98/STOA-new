@@ -217,7 +217,7 @@ function ResizeHandle({
       aria-label="Resize"
       title="Drag to resize"
       className={cn(
-        "absolute z-10 h-4 w-4 touch-none rounded-[3px] border-2 border-[var(--paper)] bg-[var(--brass)] shadow-[0_1px_3px_rgba(0,0,0,0.5)] focus-ring",
+        "absolute z-10 h-4 w-4 touch-none rounded-[3px] border-2 border-[var(--paper)] bg-[var(--ink)] shadow-[0_1px_3px_rgba(0,0,0,0.5)] focus-ring",
         right ? "-right-2" : "-left-2",
         bottom ? "-bottom-2" : "-top-2",
         right === bottom ? "cursor-nwse-resize" : "cursor-nesw-resize",
@@ -354,7 +354,7 @@ function Stage({
   });
 
   const ring = (id: string) =>
-    !faithful && selectedId === id && "outline outline-2 outline-offset-2 outline-[var(--brass)]";
+    !faithful && selectedId === id && "outline outline-2 outline-offset-2 outline-[var(--ink)]";
 
   return (
     <div
@@ -505,7 +505,7 @@ function TrimHandle({
       type="button"
       aria-label={edge === "start" ? "Trim the start" : "Trim the end"}
       title={edge === "start" ? "Drag to trim the start" : "Drag to trim the end"}
-      className="absolute inset-y-0 z-20 flex cursor-ew-resize items-center justify-center bg-[var(--brass)] text-[var(--ink)] focus-ring"
+      className="absolute inset-y-0 z-20 flex cursor-ew-resize items-center justify-center bg-[var(--ink)] text-[var(--paper)] focus-ring"
       style={{ width: HANDLE, left, borderRadius: edge === "start" ? "6px 0 0 6px" : "0 6px 6px 0" }}
       onPointerDown={(e) => onPress(e, { kind: "trim", edge })}
     >
@@ -653,7 +653,7 @@ function Timeline({
       ref={ref}
       className={cn(
         "relative touch-none select-none rounded-inner border border-border bg-surface pt-3 transition-colors",
-        dropActive && "bg-[color-mix(in_srgb,var(--brass)_12%,transparent)] ring-2 ring-[var(--brass)]",
+        dropActive && "bg-[var(--accent-weak)] ring-2 ring-[var(--ink)]",
       )}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -702,7 +702,7 @@ function Timeline({
         {/* The kept region's border, so the strip reads as one clip with ends. */}
         {!faithful ? (
           <div
-            className="pointer-events-none absolute inset-y-0 border-y-[3px] border-[var(--brass)]"
+            className="pointer-events-none absolute inset-y-0 border-y-[3px] border-[var(--ink)]"
             style={{ left: edit.trimStart * pxPerSec, width: (edit.trimEnd - edit.trimStart) * pxPerSec }}
           />
         ) : null}
@@ -736,8 +736,8 @@ function Timeline({
                 className={cn(
                   "absolute cursor-grab overflow-hidden rounded-[4px] border text-ticker leading-[20px]",
                   text
-                    ? "border-[var(--plum)] bg-[color-mix(in_srgb,var(--plum)_16%,transparent)]"
-                    : "border-[var(--brass)] bg-[color-mix(in_srgb,var(--brass)_18%,transparent)]",
+                    ? "border-[var(--ink)] bg-surface"
+                    : "border-border-strong bg-surface-2",
                   selected && "ring-2 ring-[var(--ink)]",
                 )}
                 style={{ left: o.start * pxPerSec, width: w, top: 3 + (lane.get(o.id) ?? 0) * LANE, height: LANE - 4 }}
@@ -758,7 +758,7 @@ function Timeline({
         className="pointer-events-none absolute bottom-0 left-0 top-0 z-40"
         style={{ transform: `translateX(${time * pxPerSec}px)` }}
       >
-        <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-[var(--rust)]" />
+        <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-[var(--ink)]" />
         <button
           type="button"
           aria-label="Playhead"
@@ -767,7 +767,7 @@ function Timeline({
         >
           <span
             aria-hidden
-            className="absolute left-1/2 top-0 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-[var(--rust)]"
+            className="absolute left-1/2 top-0 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-[var(--ink)]"
           />
         </button>
       </div>
@@ -842,7 +842,7 @@ function Selected({
         <div className="ml-auto flex items-center gap-3">
           <TimeField label="From" value={overlay.start} onChange={setStart} />
           <TimeField label="To" value={overlay.end} onChange={setEnd} />
-          <button type="button" onClick={onRemove} className="num text-ticker text-[var(--rust)] focus-ring rounded">
+          <button type="button" onClick={onRemove} className="num text-ticker text-[var(--error)] focus-ring rounded">
             Remove
           </button>
           <button type="button" onClick={onDone} className="num text-ticker text-text-mute hover:text-text focus-ring rounded">
@@ -1682,7 +1682,7 @@ export function VideoRung({
               <p className="text-ticker text-text-mute">Storing the image...</p>
             ) : null}
             {overlayError ? (
-              <p className="text-ticker text-[var(--down)]">{overlayError}</p>
+              <p className="text-ticker text-[var(--error)]">{overlayError}</p>
             ) : null}
 
             {!faithful ? (

@@ -110,7 +110,7 @@ export function ClipPendingPlayer({
             <span
               className={cn(
                 "flex h-12 w-12 items-center justify-center rounded-full border",
-                failed ? "border-[var(--rust)] text-[var(--rust)]" : "border-[color-mix(in_srgb,var(--paper)_40%,transparent)]",
+                failed ? "border-white text-white" : "border-[color-mix(in_srgb,var(--paper)_40%,transparent)]",
               )}
             >
               {failed ? <AlertTriangle size={18} strokeWidth={1.6} /> : <Loader2 size={18} strokeWidth={1.6} className="animate-spin" />}

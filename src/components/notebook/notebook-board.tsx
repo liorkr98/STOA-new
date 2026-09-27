@@ -227,7 +227,7 @@ export function NotebookBoard({
                     type="button"
                     aria-label="Delete entry"
                     onClick={() => removeEntry(entry.id)}
-                    className="inline-flex items-center gap-1 text-ticker text-text-faint hover:text-[var(--down)] focus-ring"
+                    className="inline-flex items-center gap-1 text-ticker text-text-faint hover:text-[var(--error)] focus-ring"
                   >
                     <Trash2 size={12} /> Remove
                   </button>

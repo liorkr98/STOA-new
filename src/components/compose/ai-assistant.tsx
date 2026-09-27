@@ -124,13 +124,13 @@ export function AiAssistant({
             className={cn(
               "focus-ring flex w-full items-center gap-2 rounded-inner border px-2.5 py-1.5 text-left text-ticker transition-colors",
               canAfford
-                ? "border-[var(--plum)] bg-[color-mix(in_srgb,var(--plum)_10%,transparent)] text-text hover:border-[var(--plum)]"
+                ? "border-[var(--ink)] bg-[var(--accent-weak)] text-text hover:border-[var(--ink)]"
                 : "border-border bg-surface text-text-mute",
             )}
           >
-            <Swords size={13} className="shrink-0 text-[var(--plum)]" aria-hidden />
+            <Swords size={13} className="shrink-0 text-text" aria-hidden />
             <span className="min-w-0 flex-1 truncate">{DEVILS_ADVOCATE.label}</span>
-            <span className="num shrink-0 rounded-chip border border-[var(--plum)] px-1 py-px text-ticker text-[var(--plum)]">
+            <span className="num shrink-0 rounded-chip border border-[var(--ink)] px-1 py-px text-ticker text-text">
               {DEVILS_ADVOCATE.cost} cr
             </span>
           </button>

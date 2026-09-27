@@ -21,7 +21,7 @@ const doc: JSONContent = {
         { type: "text", text: ", " },
         {
           type: "text",
-          marks: [{ type: "highlight", attrs: { color: "color-mix(in srgb, var(--brass) 15%, transparent)" } }],
+          marks: [{ type: "highlight", attrs: { color: "var(--highlight)" } }],
           text: "highlighted",
         },
         { type: "text", text: ", and " },

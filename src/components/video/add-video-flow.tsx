@@ -304,7 +304,7 @@ export function AddVideoFlow({
 
         <div className="px-5 py-5">
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2 text-body text-[var(--rust)]">
+            <div className="mb-4 flex items-start gap-2 rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
               <span>{error}</span>
             </div>
@@ -350,8 +350,8 @@ export function AddVideoFlow({
               <div className="relative overflow-hidden rounded-panel bg-[var(--ink)]">
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                 <video ref={videoPreviewRef} muted playsInline className="aspect-video w-full object-cover" />
-                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-chip bg-[var(--rust)] px-2 py-0.5 text-ticker font-semibold text-[var(--paper)]">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--paper)]" />
+                <span className="num absolute right-2 top-2 flex items-center gap-1.5 rounded-chip bg-coral px-2 py-0.5 text-ticker font-semibold">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--on-coral)]" />
                   {countdown}s
                 </span>
               </div>
@@ -413,14 +413,14 @@ export function AddVideoFlow({
               </div>
 
               {blockingClaims.length > 0 && (
-                <div className="rounded-inner border border-[var(--rust)]/40 bg-[var(--rust)]/8 px-3 py-2">
-                  <p className="text-ticker font-semibold text-[var(--rust)]">
+                <div className="rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2">
+                  <p className="text-ticker font-semibold text-[var(--error)]">
                     These spoken claims block publishing:
                   </p>
                   <ul className="mt-1.5 flex flex-col gap-1.5">
                     {blockingClaims.map((c, i) => (
                       <li key={i} className="text-ticker text-text">
-                        <span className="text-[var(--rust)]">{c.verdict}</span> · {c.text}
+                        <span className="text-[var(--error)]">{c.verdict}</span> · {c.text}
                       </li>
                     ))}
                   </ul>
@@ -446,7 +446,7 @@ export function AddVideoFlow({
 
           {step === "done" && (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--verdigris)]/12 text-[var(--verdigris)]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2 text-[var(--ok)]">
                 <Check size={22} aria-hidden />
               </span>
               <p className="text-body font-semibold text-text">Video published</p>

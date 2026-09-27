@@ -165,7 +165,7 @@ export function ShareMenu({
           )}
           <button type="button" role="menuitem" onClick={() => void copyLink()} className={itemClass}>
             {copied ? (
-              <Check size={14} className="text-[var(--up)]" />
+              <Check size={14} className="text-[var(--ok)]" />
             ) : (
               <Link2 size={14} className="text-text-faint" />
             )}

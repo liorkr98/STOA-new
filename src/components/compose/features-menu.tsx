@@ -78,9 +78,9 @@ export function FeaturesMenu({
                       className={cn(
                         "num text-ticker",
                         state.tone === "on"
-                          ? "text-[var(--verdigris)]"
+                          ? "text-[var(--ok)]"
                           : state.tone === "bad"
-                            ? "text-[var(--rust)]"
+                            ? "text-[var(--error)]"
                             : "text-text-faint",
                       )}
                     >
@@ -88,7 +88,7 @@ export function FeaturesMenu({
                     </span>
                   </span>
                   {row.halfDone ? (
-                    <span className="mt-0.5 block text-ticker leading-snug text-[var(--rust)]">
+                    <span className="mt-0.5 block text-ticker leading-snug text-[var(--error)]">
                       {row.halfDone}
                     </span>
                   ) : null}

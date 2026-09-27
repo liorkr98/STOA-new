@@ -425,7 +425,7 @@ export function AskPanel({
               </div>
             )}
             {m.actionErrors && m.actionErrors.length > 0 && (
-              <p className="mr-1 text-ticker text-[var(--rust)]">{m.actionErrors.join(" · ")}</p>
+              <p className="mr-1 text-ticker text-[var(--error)]">{m.actionErrors.join(" · ")}</p>
             )}
             {m.cards && m.cards.length > 0 && (
               <div className="mr-1 flex flex-col gap-1.5">

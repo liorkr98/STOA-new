@@ -44,7 +44,7 @@ export function buildExtensions({
         HTMLAttributes: { rel: "noopener noreferrer nofollow" },
       },
       // The drop indicator when dragging a block by its handle (Phase 1.1).
-      dropcursor: { color: "var(--verdigris)", width: 2 },
+      dropcursor: { color: "var(--ink)", width: 2 },
     }),
     Callout,
     CardNode,

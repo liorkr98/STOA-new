@@ -12,11 +12,11 @@ export const metadata: Metadata = { title: "Contact inbox · Admin" };
 const statusBadge: Record<string, { label: string; className: string }> = {
   new: {
     label: "New",
-    className: "bg-[color-mix(in_srgb,var(--verdigris)_14%,transparent)] text-[var(--verdigris)]",
+    className: "bg-[var(--ink)] text-[var(--paper)]",
   },
   read: {
     label: "Read",
-    className: "bg-[color-mix(in_srgb,var(--brass)_14%,transparent)] text-[var(--brass)]",
+    className: "bg-surface-2 text-text-mute",
   },
   archived: {
     label: "Archived",
@@ -112,7 +112,7 @@ function ContactCard({
       id={msg.id}
       className={[
         "rounded-panel border bg-surface p-5 flex flex-col gap-4",
-        highlighted ? "border-[var(--verdigris)]" : "border-border",
+        highlighted ? "border-[var(--ink)]" : "border-border",
         muted ? "opacity-80" : "",
       ].join(" ")}
     >

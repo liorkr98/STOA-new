@@ -132,7 +132,7 @@ export function TradingViewChartPanel({
             aria-label="Delete chart"
             onMouseDown={stopEditorCapture}
             onClick={() => deleteNode()}
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
           >
             <Trash2 size={15} />
           </button>

@@ -73,7 +73,7 @@ export function ConfirmSpendDialog({
 
           {done ? (
             <div className="mt-6 flex flex-col items-center gap-2 py-4 text-center">
-              <CheckCircle2 size={40} className="text-[var(--up)]" aria-hidden />
+              <CheckCircle2 size={40} className="text-[var(--ok)]" aria-hidden />
               <p className="font-semibold">You are all set</p>
               <p className="t-meta">New balance {usd(result!.new_balance ?? newBalance, { cents: true })}</p>
               <Dialog.Close asChild>
@@ -99,7 +99,7 @@ export function ConfirmSpendDialog({
               </dl>
 
               {insufficient && (
-                <div className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
+                <div className="mt-3 rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
                   <p>Not enough balance. Top up your wallet to continue.</p>
                   <Link
                     href="/wallet"
@@ -110,7 +110,7 @@ export function ConfirmSpendDialog({
                 </div>
               )}
               {result?.error && (
-                <p className="mt-3 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
+                <p className="mt-3 rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
                   {result.error}
                 </p>
               )}
@@ -153,7 +153,7 @@ function Row({
       <dt className="text-text-mute">{label}</dt>
       <dd
         className={`num ${strong ? "font-semibold" : ""} ${
-          tone === "down" ? "text-[var(--down)]" : "text-text"
+          tone === "down" ? "text-[var(--error)]" : "text-text"
         }`}
       >
         {value}

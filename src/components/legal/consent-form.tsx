@@ -96,7 +96,7 @@ export function ConsentForm({
         </label>
 
         {state?.error && (
-          <p role="alert" className="text-body text-[var(--down)]" id="consent-error">
+          <p role="alert" className="text-body text-[var(--error)]" id="consent-error">
             {state.error}
           </p>
         )}

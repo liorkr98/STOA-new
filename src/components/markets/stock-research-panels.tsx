@@ -48,7 +48,7 @@ export function StockQuoteHeader({
                 <span
                   className={cn(
                     "num text-body font-semibold",
-                    up ? "text-[var(--verdigris)]" : "text-[var(--rust)]",
+                    up ? "text-[var(--up)]" : "text-[var(--down)]",
                   )}
                 >
                   {change != null && `${change >= 0 ? "+" : ""}${change.toFixed(2)} `}

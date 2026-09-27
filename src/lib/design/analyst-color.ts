@@ -5,13 +5,14 @@
  * changes, so the same analyst is the same colour on every surface and stays
  * that colour if they rename themselves.
  *
- * The palette is muted and editorial so it sits on `--paper` without competing
- * with the type. It deliberately excludes the semantic hues: `--verdigris`
- * (Fact / long) and `--rust` (Contradicted / short) carry meaning in this product
- * and must never be spent on decoration. The sage and clay entries below are
- * held well away from both -- sage is greyer and lighter than verdigris, clay
- * is browner and softer than rust -- so a placeholder can never be misread as
- * a direction.
+ * The palette is muted so it sits on `--paper` without competing with the
+ * type; Direction B draws its placeholder faces in tones like these. It
+ * deliberately excludes the semantic hues: gain green and loss red carry
+ * direction, coral carries action, and none may be spent on decoration. The
+ * sage and clay entries are held well away from them (sage is greyer than
+ * gain, clay browner and softer than loss or coral), so a placeholder can
+ * never be misread as a direction or a button. These are identity colours
+ * for pictures, never for text.
  */
 
 /** Base tones. Everything else is derived from these with `color-mix`. */

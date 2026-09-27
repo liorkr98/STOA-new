@@ -126,7 +126,7 @@ function SymbolStatus({
         <Check
           size={13}
           aria-hidden
-          className="mt-px shrink-0 text-[var(--verdigris)]"
+          className="mt-px shrink-0 text-[var(--ok)]"
         />
         <span>
           <span className="num font-semibold text-text">{r.symbol}</span>
@@ -219,7 +219,7 @@ export function StancePanel({
           className={cn(
             inputClass,
             "num mt-1",
-            lookup.status === "missing" && "border-[var(--down)]",
+            lookup.status === "missing" && "border-[var(--error)]",
           )}
           placeholder="NVDA"
         />
@@ -461,7 +461,7 @@ export function PublishPanel({
             {publishDisabledReason}
           </p>
         )}
-        {error && <p className="text-body text-[var(--down)]">{error}</p>}
+        {error && <p className="text-body text-[var(--error)]">{error}</p>}
       </div>
     </div>
   );

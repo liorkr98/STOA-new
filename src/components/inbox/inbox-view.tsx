@@ -100,16 +100,16 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
         "relative flex items-start gap-3 rounded-panel py-4 pl-5 pr-4",
         needs ? "border border-border bg-surface" : "border-b border-border",
         needs && "border-l-2 border-l-[var(--ink)]",
-        it.danger && "border-l-[var(--rust)]",
+        it.danger && "border-l-[var(--ink)]",
       )}
     >
       {!it.read && <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ink)]" />}
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className={cn("text-body leading-snug", it.danger && "text-[var(--rust)]")}>
+            <p className={cn("text-body leading-snug", it.danger && "font-medium text-[var(--error)]")}>
               {it.confirmed && (
-                <Check size={14} strokeWidth={2} className="mr-1.5 inline text-[var(--verdigris)]" aria-hidden />
+                <Check size={14} strokeWidth={2} className="mr-1.5 inline text-[var(--ok)]" aria-hidden />
               )}
               {it.title}
             </p>
@@ -121,9 +121,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
                     href={it.href ?? "#"}
                     className={cn(
                       "rounded-button px-3 py-1.5 text-ticker font-medium",
-                      it.danger
-                        ? "bg-[var(--rust)] text-[var(--paper)]"
-                        : "bg-[var(--ink)] text-[var(--paper)]",
+                      "bg-[var(--ink)] text-[var(--paper)]",
                     )}
                   >
                     {it.action}

@@ -17,12 +17,12 @@ const TYPE_STYLE: Record<
   ClaimType,
   { icon: typeof CheckCircle; color: string; label: string }
 > = {
-  Fact: { icon: CheckCircle, color: "var(--up)", label: "Verified" },
-  "Yahoo-Verified": { icon: CheckCircle, color: "var(--up)", label: "Yahoo verified" },
+  Fact: { icon: CheckCircle, color: "var(--ok)", label: "Verified" },
+  "Yahoo-Verified": { icon: CheckCircle, color: "var(--ok)", label: "Yahoo verified" },
   Opinion: { icon: ChatCircle, color: "var(--accent)", label: "Opinion" },
   Misleading: { icon: Warning, color: "var(--text-mute)", label: "Misleading" },
   Unverified: { icon: Info, color: "var(--text-faint)", label: "Unverified" },
-  "Yahoo-Disputed": { icon: Warning, color: "var(--down)", label: "Disputed" },
+  "Yahoo-Disputed": { icon: Warning, color: "var(--error)", label: "Disputed" },
 };
 
 function ClaimRow({ claim }: { claim: FactClaim }) {
@@ -47,7 +47,7 @@ function ClaimRow({ claim }: { claim: FactClaim }) {
       {claim.yahooCheck && (
         <p
           className="mt-1.5 text-ticker"
-          style={{ color: claim.yahooCheck.match ? "var(--up)" : "var(--down)" }}
+          style={{ color: claim.yahooCheck.match ? "var(--ok)" : "var(--down)" }}
         >
           Yahoo: {claim.yahooCheck.detail}
         </p>
@@ -131,7 +131,7 @@ export function FactCheckerPanel({
         {pending ? "Checking..." : `Run fact-check (${AI_COST.factCheck} credits)`}
       </Button>
 
-      {error && <p className="text-body text-[var(--down)]">{error}</p>}
+      {error && <p className="text-body text-[var(--error)]">{error}</p>}
 
       {!result && !pending && (
         <p className="t-meta text-ticker">

@@ -29,7 +29,7 @@ export function InkTag({ ink }: { ink: ProvenanceInk }) {
     <span
       className={cn(
         "num ml-1.5 inline-block rounded-chip border px-1 py-px align-middle text-ticker",
-        ink === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
+        ink === "auto" ? "border-border text-text-faint" : "border-[var(--ink)] text-text",
       )}
     >
       {ink === "auto" ? "Auto" : "Creator est."}
@@ -128,7 +128,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
               <ul className="mt-2.5 flex flex-col gap-2 text-body leading-snug text-text-mute">
                 {card.conditions.map((c, i) => (
                   <li key={i} className="flex gap-2">
-                    <span aria-hidden className="text-[var(--rust)]">—</span>
+                    <span aria-hidden className="text-text-mute">—</span>
                     <Ink v={c} />
                   </li>
                 ))}
@@ -171,8 +171,8 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                   aria-label={r.status}
                   className={cn(
                     "inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border",
-                    r.status === "done" && "border-[var(--verdigris)] text-[var(--verdigris)]",
-                    r.status === "failed" && "border-[var(--rust)] text-[var(--rust)]",
+                    r.status === "done" && "border-[var(--ok)] text-[var(--ok)]",
+                    r.status === "failed" && "border-[var(--error)] text-[var(--error)]",
                     r.status === "pending" && "border-border text-text-faint",
                   )}
                 >
@@ -208,7 +208,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
             <span
               className={cn(
                 "num inline-block rounded-chip border px-1 py-px text-ticker",
-                card.source === "auto" ? "border-border text-text-faint" : "border-[var(--brass)] text-[var(--brass)]",
+                card.source === "auto" ? "border-border text-text-faint" : "border-[var(--ink)] text-text",
               )}
             >
               {card.source === "auto" ? "Auto" : "Creator chart"}

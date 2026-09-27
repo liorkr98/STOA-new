@@ -69,7 +69,7 @@ function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publi
         ) : videoStatus === "processing" ? (
           <Loader2 size={14} className="animate-spin text-text-mute" aria-label="Video processing" />
         ) : videoStatus === "failed" ? (
-          <span className="num text-ticker text-[var(--rust)]">Failed</span>
+          <span className="num text-ticker text-[var(--error)]">Failed</span>
         ) : (
           <FileText size={14} className="text-text-faint" aria-label="Written publication" />
         )}

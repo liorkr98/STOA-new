@@ -1448,7 +1448,7 @@ export function StudioEditor({
             <RailOpenButton onClick={() => setRailDrawerOpen(true)} cardCount={cards.length} />
           ) : null}
           {error && !dirty ? (
-            <span className="t-meta max-w-[14rem] truncate text-ticker text-[var(--down)]" role="alert">
+            <span className="t-meta max-w-[14rem] truncate text-ticker text-[var(--error)]" role="alert">
               {error}
             </span>
           ) : null}
@@ -1519,7 +1519,7 @@ export function StudioEditor({
                 before they type. Brass, not rust: correcting yourself in the
                 open is the right thing to do. */}
             {editingPublished ? (
-              <div className="mb-6 rounded-panel border border-[var(--brass)]/50 bg-[var(--brass)]/10 p-3.5">
+              <div className="mb-6 rounded-panel border border-[var(--notice-edge)] bg-[var(--notice-soft)] p-3.5">
                 <p className="num text-ticker text-text-faint">
                   This publication is live
                 </p>
@@ -1597,7 +1597,7 @@ export function StudioEditor({
                       className={cn(
                         "rounded-panel transition-colors",
                         researchDropActive &&
-                          "bg-[color-mix(in_srgb,var(--brass)_10%,transparent)] ring-2 ring-[var(--brass)]",
+                          "bg-[var(--accent-weak)] ring-2 ring-[var(--ink)]",
                       )}
                     >
                       <TiptapEditor
@@ -1657,7 +1657,7 @@ export function StudioEditor({
                   onDirection={dirtying(setDirection)}
                 />
                 {stanceDraftNote ? (
-                  <p className="mt-3 text-ticker leading-snug text-[var(--brass)]" role="status">
+                  <p className="mt-3 text-ticker leading-snug text-text-mute" role="status">
                     {stanceDraftNote}
                   </p>
                 ) : null}

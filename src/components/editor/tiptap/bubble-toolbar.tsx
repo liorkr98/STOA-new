@@ -23,11 +23,11 @@ import {
 import { cn } from "@/lib/design/cn";
 import { VisualizeSelectionMenu } from "@/components/editor/tiptap/visualize-selection-menu";
 
-// Three highlight tints, six-token only, all at 15% (Phase 1.2).
+// One neutral highlight. Colour carries direction and action only, so the
+// three old tints collapsed into this; marks saved with an old tint are
+// redrawn in it by `.stoa-prose mark` in globals.css.
 const TINTS: { key: string; label: string; color: string }[] = [
-  { key: "verdigris", label: "Verdigris", color: "color-mix(in srgb, var(--verdigris) 15%, transparent)" },
-  { key: "brass", label: "Brass", color: "color-mix(in srgb, var(--brass) 15%, transparent)" },
-  { key: "plum", label: "Plum", color: "color-mix(in srgb, var(--plum) 15%, transparent)" },
+  { key: "highlight", label: "Highlight", color: "var(--highlight)" },
 ];
 
 /**

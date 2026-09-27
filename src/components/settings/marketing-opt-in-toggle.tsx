@@ -50,7 +50,7 @@ export function MarketingOptInToggle({ defaultOn }: { defaultOn: boolean }) {
         Off unless you opt in. Required account mail (sign-in, receipts) is separate.
       </p>
       {error ? (
-        <p className="mt-1 text-ticker text-[var(--down)]" role="alert">
+        <p className="mt-1 text-ticker text-[var(--error)]" role="alert">
           {error}
         </p>
       ) : null}

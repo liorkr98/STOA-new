@@ -39,7 +39,7 @@ export const PROFILE_THEMES: ProfileTheme[] = [
     id: "warm",
     label: "Warm",
     banner_style: "gradient-accent",
-    className: "bg-gradient-to-r from-[color-mix(in_srgb,var(--rust)_22%,transparent)] via-accent/8 to-transparent",
+    className: "bg-gradient-to-r from-[color-mix(in_srgb,var(--ink)_14%,transparent)] via-accent/8 to-transparent",
   },
   {
     id: "slate",

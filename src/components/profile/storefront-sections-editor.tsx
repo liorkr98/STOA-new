@@ -147,7 +147,7 @@ export function StorefrontSectionsEditor({
                     setSaved(false);
                     setSections((prev) => prev.filter((s) => s.id !== section.id));
                   }}
-                  className="text-text-faint hover:text-[var(--down)] focus-ring"
+                  className="text-text-faint hover:text-[var(--error)] focus-ring"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -246,7 +246,7 @@ function FaqEditor({ items, onChange }: { items: FaqItem[]; onChange: (items: Fa
               type="button"
               aria-label="Remove question"
               onClick={() => onChange(items.filter((_, xi) => xi !== i))}
-              className="text-text-faint hover:text-[var(--down)] focus-ring"
+              className="text-text-faint hover:text-[var(--error)] focus-ring"
             >
               <Trash2 size={14} />
             </button>

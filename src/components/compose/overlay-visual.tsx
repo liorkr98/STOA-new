@@ -131,7 +131,7 @@ export function OverlayVisualizeFields({
       >
         {pending ? "Generating..." : imageUrl ? "Regenerate with Napkin" : "Generate with Napkin"}
       </button>
-      {error ? <p className="text-ticker text-[var(--down)]">{error}</p> : null}
+      {error ? <p className="text-ticker text-[var(--error)]">{error}</p> : null}
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={imageUrl} alt="" className="max-h-36 w-full rounded-inner border border-border object-contain" />

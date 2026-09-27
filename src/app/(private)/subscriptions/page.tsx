@@ -112,7 +112,7 @@ export default async function SubscriptionsPage() {
           </span>
           <div className="flex-1">
             <p className="text-body">PayPal</p>
-            <p className="num mt-1 text-ticker text-[var(--rust)]">
+            <p className="num mt-1 text-ticker text-[var(--error)]">
               Not connected — renewals will fail
             </p>
           </div>

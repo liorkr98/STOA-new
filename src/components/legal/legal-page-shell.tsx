@@ -5,7 +5,7 @@ export function LegalPlaceholderBanner() {
   return (
     <div
       role="note"
-      className="mb-8 rounded-inner border border-[var(--brass)]/40 bg-[var(--brass)]/10 px-4 py-3 text-body text-text"
+      className="mb-8 rounded-inner border border-[var(--notice-edge)] bg-[var(--notice-soft)] px-4 py-3 text-body text-text"
     >
       <span aria-hidden="true">⚠ </span>
       <strong>ATTORNEY REVIEW REQUIRED</strong> — placeholder content, do not treat as final.

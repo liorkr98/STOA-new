@@ -206,7 +206,7 @@ function PlanRow({
           type="button"
           aria-label="Archive tier"
           onClick={() => onArchive(plan.id)}
-          className="ml-auto text-text-faint hover:text-[var(--down)] focus-ring"
+          className="ml-auto text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -278,7 +278,7 @@ function PlanRow({
                 type="button"
                 aria-label={`Remove ${perk}`}
                 onClick={() => setPerks((prev) => prev.filter((_, x) => x !== pi))}
-                className="text-text-faint hover:text-[var(--down)]"
+                className="text-text-faint hover:text-[var(--error)]"
               >
                 <X size={11} />
               </button>
@@ -317,7 +317,7 @@ function PlanRow({
         <Button type="button" size="sm" onClick={save} disabled={pending}>
           {pending ? "Saving..." : "Save tier"}
         </Button>
-        {saved && !pending && <span className="text-body text-[var(--up)]">Saved</span>}
+        {saved && !pending && <span className="text-body text-[var(--ok)]">Saved</span>}
       </div>
     </div>
   );

@@ -27,9 +27,9 @@ async function listApplications() {
 }
 
 const statusBadge: Record<string, { label: string; className: string }> = {
-  pending:  { label: "Pending",  className: "bg-[color-mix(in_srgb,var(--brass)_14%,transparent)] text-[var(--brass)]" },
-  approved: { label: "Approved", className: "bg-[color-mix(in_srgb,var(--up)_14%,transparent)] text-[var(--up)]" },
-  rejected: { label: "Rejected", className: "bg-[color-mix(in_srgb,var(--down)_14%,transparent)] text-[var(--down)]" },
+  pending:  { label: "Pending",  className: "bg-surface-2 text-[var(--pending)]" },
+  approved: { label: "Approved", className: "bg-[var(--ink)] text-[var(--paper)]" },
+  rejected: { label: "Rejected", className: "border border-border-strong text-text-mute" },
 };
 
 export default async function AdminApplicationsPage() {

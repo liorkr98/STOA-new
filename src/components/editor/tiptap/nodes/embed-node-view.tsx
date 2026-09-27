@@ -159,7 +159,7 @@ export function EmbedNodeView({
           aria-label="Delete embed"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

@@ -45,7 +45,7 @@ function InkSwitch({ value, onChange }: { value: ProvenanceInk; onChange: (i: Pr
             "num px-1.5 py-0.5 text-ticker focus-ring first:rounded-l-[3px] last:rounded-r-[3px]",
             value === i
               ? i === "creator_est"
-                ? "bg-[var(--brass)] text-[var(--paper)]"
+                ? "bg-[var(--ink)] text-[var(--paper)]"
                 : "bg-[var(--ink)] text-[var(--paper)]"
               : "text-text-mute hover:text-text",
           )}
@@ -88,7 +88,7 @@ function InkField({
           type="button"
           onClick={onRemove}
           aria-label="Remove this line"
-          className="focus-ring rounded p-1 text-text-faint hover:text-[var(--rust)]"
+          className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
         >
           <Trash2 size={13} />
         </button>
@@ -315,7 +315,7 @@ export function CardEditor({
                   type="button"
                   onClick={() => set({ events: events.filter((_, j) => j !== i) })}
                   aria-label="Remove this date"
-                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--rust)]"
+                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -360,7 +360,7 @@ export function CardEditor({
                   type="button"
                   onClick={() => set({ rows: rows.filter((_, j) => j !== i) })}
                   aria-label="Remove this check"
-                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--rust)]"
+                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -514,7 +514,7 @@ export function CardEditor({
             <button
               type="button"
               onClick={onDelete}
-              className="focus-ring flex items-center gap-1.5 rounded-button px-2 py-1.5 text-ticker text-text-mute transition-colors hover:text-[var(--rust)]"
+              className="focus-ring flex items-center gap-1.5 rounded-button px-2 py-1.5 text-ticker text-text-mute transition-colors hover:text-[var(--error)]"
             >
               <Trash2 size={13} /> Delete card
             </button>

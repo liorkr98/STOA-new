@@ -74,7 +74,7 @@ export default async function WalletPage() {
           </span>
           <div className="flex-1">
             <p className="text-body">PayPal</p>
-            <p className="num mt-1 text-ticker text-[var(--rust)]">Not connected</p>
+            <p className="num mt-1 text-ticker text-[var(--error)]">Not connected</p>
           </div>
           <button type="button" className={buttonClass("secondary", "sm")} disabled>
             Connect
@@ -114,7 +114,7 @@ export default async function WalletPage() {
                   </div>
                   <div
                     className="shrink-0 text-right font-semibold"
-                    style={{ color: credit ? "var(--up)" : "var(--down)" }}
+                    style={{ color: "var(--text)" }}
                   >
                     {isCreditsTxn && t.credits != null
                       ? `${t.credits >= 0 ? "+" : ""}${t.credits} cr`

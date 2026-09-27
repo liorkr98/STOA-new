@@ -79,7 +79,7 @@ export function PricingPanel({
         <Button type="button" disabled={pending} onClick={save}>
           {pending ? "Saving..." : "Save pricing"}
         </Button>
-        {saved && <span className="text-body text-[var(--up)]">Saved</span>}
+        {saved && <span className="text-body text-[var(--ok)]">Saved</span>}
       </div>
     </div>
   );

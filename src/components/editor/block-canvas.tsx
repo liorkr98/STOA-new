@@ -64,7 +64,7 @@ function SortableBlock({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-[var(--down)] group-hover:opacity-100"
+          className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
           aria-label="Remove block"
         >
           <Trash size={16} />

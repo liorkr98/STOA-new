@@ -23,7 +23,7 @@ function pct(v: number): string {
 
 const CASE_COLOR: Record<string, string> = {
   Bull: "var(--up)",
-  Base: "var(--brass)",
+  Base: "var(--text-mute)",
   Bear: "var(--down)",
 };
 
@@ -193,7 +193,7 @@ export function ScenarioNodeView({
           aria-label="Delete scenario"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

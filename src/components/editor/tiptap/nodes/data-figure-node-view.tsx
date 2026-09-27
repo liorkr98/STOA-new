@@ -195,7 +195,7 @@ export function DataFigureNodeView({
           aria-label="Delete figure"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={14} />
         </button>
@@ -249,7 +249,7 @@ export function DataFigureNodeView({
             aria-label="Clear filing source"
             onMouseDown={stop}
             onClick={clearRef}
-            className="text-text-faint transition-colors hover:text-[var(--down)]"
+            className="text-text-faint transition-colors hover:text-[var(--error)]"
           >
             <X size={12} />
           </button>

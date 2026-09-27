@@ -58,7 +58,7 @@ export function SaveStatus({
       aria-live="polite"
       className={cn(
         "num min-w-0 truncate text-ticker",
-        tone === "bad" ? "text-[var(--rust)]" : tone === "live" ? "text-text" : "text-text-faint",
+        tone === "bad" ? "text-[var(--error)]" : tone === "live" ? "text-text" : "text-text-faint",
         className,
       )}
       title={error ?? undefined}

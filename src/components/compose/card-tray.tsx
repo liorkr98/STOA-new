@@ -95,7 +95,7 @@ function TrayCard({
       className={cn(
         "group relative rounded-inner border transition-colors",
         selected ? "border-[var(--ink)] bg-surface-2" : "border-border bg-surface hover:border-border-strong",
-        over && "border-[var(--brass)]",
+        over && "border-[var(--ink)]",
       )}
     >
       <div className="flex items-start gap-1.5 p-2">

@@ -49,7 +49,7 @@ export function ModuleHeader({
         <span className="num text-ticker text-text">{label}</span>
         {state ? (
           <span className="num flex items-center gap-1 text-ticker text-text-mute">
-            <Check size={11} className="text-[var(--verdigris)]" aria-hidden />
+            <Check size={11} className="text-[var(--ok)]" aria-hidden />
             {state}
           </span>
         ) : (
@@ -60,7 +60,7 @@ export function ModuleHeader({
         <button
           type="button"
           onClick={onRemove}
-          className="num focus-ring rounded text-ticker text-text-faint hover:text-[var(--rust)]"
+          className="num focus-ring rounded text-ticker text-text-faint hover:text-[var(--error)]"
         >
           Remove
         </button>

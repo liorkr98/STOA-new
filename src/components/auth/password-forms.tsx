@@ -41,7 +41,7 @@ export function ForgotPasswordForm({ sent }: { sent: boolean }) {
             <input id="email" name="email" type="email" required className={inputClass} placeholder="you@example.com" />
           </div>
           {state?.error && (
-            <p role="alert" className="text-body text-[var(--down)]">
+            <p role="alert" className="text-body text-[var(--error)]">
               {state.error}
             </p>
           )}
@@ -95,7 +95,7 @@ export function ResetPasswordForm() {
           />
         </div>
         {state?.error && (
-          <p role="alert" className="text-body text-[var(--down)]">
+          <p role="alert" className="text-body text-[var(--error)]">
             {state.error}
           </p>
         )}

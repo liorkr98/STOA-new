@@ -222,7 +222,7 @@ export function VideoNodeView({
           aria-label="Delete video"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -260,7 +260,7 @@ export function VideoNodeView({
           >
             <Upload size={22} className="text-text-faint" />
             <span className="text-body">{uploading ? "Uploading..." : "Upload a video"}</span>
-            {uploadError && <span className="text-ticker text-[var(--down)]">{uploadError}</span>}
+            {uploadError && <span className="text-ticker text-[var(--error)]">{uploadError}</span>}
           </button>
         )}
       </div>

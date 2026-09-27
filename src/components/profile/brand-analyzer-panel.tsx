@@ -70,7 +70,7 @@ export function BrandAnalyzerPanel({
       </div>
 
       {error && (
-        <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
+        <p className="rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
           {error}
         </p>
       )}

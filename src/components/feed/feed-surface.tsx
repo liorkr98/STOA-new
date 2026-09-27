@@ -861,7 +861,7 @@ const FeedItem = function FeedItem({
                           className={cn(
                             "num inline-flex items-center rounded-chip border px-1.5 py-0.5 text-ticker font-semibold",
                             pub.stageMarker === "TRENDING"
-                              ? "border-[var(--brass)]/70 bg-black/35 text-[var(--brass)]"
+                              ? "border-white/70 bg-black/35 text-white"
                               : "border-white/35 bg-black/35 text-white",
                           )}
                         >

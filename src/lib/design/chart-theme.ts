@@ -18,23 +18,23 @@ export const semantic = {
 
 /**
  * Categorical scale for multi-series charts (peer comparison, up to 6 series).
- * Muted, ledger-like -- no neon. Beyond 6, aggregate rather than add a hue.
+ * Ink and greys only: hue is reserved for direction and action. Beyond 6, aggregate rather than add a hue.
  */
 export const categorical: readonly string[] = [
-  "var(--verdigris)",
-  "var(--brass)",
-  "var(--plum)",
-  "var(--rust)",
-  "color-mix(in oklch, var(--verdigris) 55%, var(--ink))",
-  "color-mix(in oklch, var(--brass) 60%, var(--ink))",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "color-mix(in oklch, var(--ink) 70%, var(--surface))",
+  "color-mix(in oklch, var(--ink) 45%, var(--surface))",
+  "color-mix(in oklch, var(--ink) 25%, var(--surface))",
 ];
 
 /**
  * Sequential scale for single-metric intensity (e.g. a heat column):
- * paper -> verdigris in 5 steps.
+ * surface -> ink in 5 steps.
  */
 export const sequential: readonly string[] = [12, 30, 50, 72, 100].map(
-  (pct) => `color-mix(in oklch, var(--verdigris) ${pct}%, var(--surface))`,
+  (pct) => `color-mix(in oklch, var(--ink) ${pct}%, var(--surface))`,
 );
 
 /**
@@ -42,17 +42,17 @@ export const sequential: readonly string[] = [12, 30, 50, 72, 100].map(
  * rust -> neutral -> verdigris, mapping onto up/down semantics so a "good"
  * cell is green and a "bad" cell is rust.
  *
- * @param t position in [0,1]; 0 = most bearish (rust), 0.5 = neutral, 1 = most
- *          bullish (verdigris).
+ * @param t position in [0,1]; 0 = most bearish (loss), 0.5 = neutral, 1 = most
+ *          bullish (gain).
  */
 export function diverging(t: number): string {
   const clamped = Math.min(1, Math.max(0, t));
   if (clamped < 0.5) {
     const mix = Math.round((1 - clamped * 2) * 100);
-    return `color-mix(in oklch, var(--rust) ${mix}%, var(--surface-2))`;
+    return `color-mix(in oklch, var(--loss) ${mix}%, var(--surface-2))`;
   }
   const mix = Math.round((clamped - 0.5) * 2 * 100);
-  return `color-mix(in oklch, var(--verdigris) ${mix}%, var(--surface-2))`;
+  return `color-mix(in oklch, var(--gain) ${mix}%, var(--surface-2))`;
 }
 
 /** Axes, gridlines, labels, and baseline. Hairline, quiet. */

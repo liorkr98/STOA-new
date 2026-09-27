@@ -9,10 +9,10 @@ import { ClaimVoteBar } from "@/components/report/claim-vote-bar";
 export type { Verdict };
 
 const VERDICT_STYLE: Record<Verdict, { color: string; label: string }> = {
-  fact: { color: "var(--verdigris)", label: "Fact" },
-  unproven: { color: "var(--brass)", label: "Unproven" },
-  opinion: { color: "var(--plum)", label: "Opinion" },
-  contradicted: { color: "var(--rust)", label: "Contradicted" },
+  fact: { color: "var(--ok)", label: "Fact" },
+  unproven: { color: "var(--pending)", label: "Unproven" },
+  opinion: { color: "var(--text-mute)", label: "Opinion" },
+  contradicted: { color: "var(--error)", label: "Contradicted" },
 };
 
 /**
@@ -196,7 +196,7 @@ export function ClaimMark({
           </div>
           {claim.note && <p className="t-body">{claim.note}</p>}
           {claim.yahooCheck && (
-            <p className="t-meta mt-1" style={{ color: claim.yahooCheck.match ? "var(--verdigris)" : "var(--rust)" }}>
+            <p className="t-meta mt-1" style={{ color: claim.yahooCheck.match ? "var(--ok)" : "var(--error)" }}>
               Yahoo: {claim.yahooCheck.detail}
             </p>
           )}

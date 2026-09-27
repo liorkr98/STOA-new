@@ -38,7 +38,7 @@ export default async function ContactPage({
     return (
       <div className="gutter-x mx-auto max-w-[var(--w-reading)] py-16">
         <div className="flex flex-col items-center gap-4 rounded-panel border border-border bg-surface p-8 text-center">
-          <CheckCircle2 className="h-12 w-12 text-[var(--verdigris)]" aria-hidden />
+          <CheckCircle2 className="h-12 w-12 text-[var(--ok)]" aria-hidden />
           <h1 className="t-title">Message sent</h1>
           <p className="t-body max-w-sm text-text-mute">
             Thanks for reaching out. We read every message and usually reply within one to two
@@ -70,7 +70,7 @@ export default async function ContactPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-body font-medium">
               Name
-              <span className="ml-1 text-[var(--rust)]">*</span>
+              <span className="ml-1 text-text-mute">*</span>
             </label>
             <input
               id="name"
@@ -85,7 +85,7 @@ export default async function ContactPage({
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-body font-medium">
               Email
-              <span className="ml-1 text-[var(--rust)]">*</span>
+              <span className="ml-1 text-text-mute">*</span>
             </label>
             <input
               id="email"
@@ -114,7 +114,7 @@ export default async function ContactPage({
         <div className="flex flex-col gap-2">
           <label htmlFor="subject" className="text-body font-medium">
             Subject
-            <span className="ml-1 text-[var(--rust)]">*</span>
+            <span className="ml-1 text-text-mute">*</span>
           </label>
           <input
             id="subject"
@@ -128,7 +128,7 @@ export default async function ContactPage({
         <div className="flex flex-col gap-2">
           <label htmlFor="message" className="text-body font-medium">
             Message
-            <span className="ml-1 text-[var(--rust)]">*</span>
+            <span className="ml-1 text-text-mute">*</span>
           </label>
           <textarea
             id="message"

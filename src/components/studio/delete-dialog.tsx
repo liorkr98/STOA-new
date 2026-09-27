@@ -50,7 +50,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
         if (!o) setTyped("");
       }}
     >
-      <Dialog.Trigger className="focus-ring flex items-center gap-1 hover:text-[var(--rust)]">
+      <Dialog.Trigger className="focus-ring flex items-center gap-1 hover:text-[var(--error)]">
         <Trash2 size={13} aria-hidden /> Delete
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -72,7 +72,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
 
           <Dialog.Description asChild>
             <div className="mt-4 space-y-3 text-ticker leading-relaxed text-text">
-              <p className="rounded-panel border border-[var(--rust)]/40 bg-[var(--rust)]/10 p-3">
+              <p className="rounded-panel border border-[var(--error-edge)] bg-[var(--error-soft)] p-3">
                 <span className="font-semibold">This cannot be undone.</span> The text, the
                 video, the cards and the tags are destroyed. Existing links stop working, and
                 Stoa cannot bring any of it back.
@@ -142,7 +142,7 @@ export function DeleteDraftDialog({ id, title }: { id: string; title: string }) 
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="focus-ring flex items-center gap-1 hover:text-[var(--rust)]">
+      <Dialog.Trigger className="focus-ring flex items-center gap-1 hover:text-[var(--error)]">
         <Trash2 size={13} aria-hidden /> Delete
       </Dialog.Trigger>
       <Dialog.Portal>

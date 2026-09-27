@@ -675,7 +675,7 @@ body {
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--verdigris);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -1024,13 +1024,17 @@ body {
   font-style: italic;
 }
 /* Marks: highlight tints + "mark as opinion" (Phase 1.2). */
+/* One neutral highlight. Marks saved with an old tint (verdigris, brass,
+ * plum) carry that colour inline; it no longer resolves, so it is redrawn
+ * here in the single highlight. */
 .stoa-prose mark {
+  background-color: var(--highlight) !important;
   border-radius: var(--r-inner);
   padding: 0 0.1em;
   color: inherit;
 }
 .stoa-opinion {
-  text-decoration: underline dotted var(--plum);
+  text-decoration: underline dotted var(--text-mute);
   text-underline-offset: 2px;
 }
 /* $TICKER mark (H1): a quiet accent chip, never sentiment-colored -- a
@@ -1500,8 +1504,8 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   font-weight: 600;
-  color: var(--verdigris);
-  border: 1px solid color-mix(in srgb, var(--verdigris) 35%, transparent);
+  color: var(--text-mute);
+  border: 1px solid var(--border);
   border-radius: var(--r-chip);
   padding: 0.125rem 0.5rem;
 }
@@ -2629,18 +2633,12 @@ body {
  * ------------------------------------------------------------------ */
 
 .today-sheet {
-  /* A darkened brass: 5.3:1 on the paper, enough for 10.5px eyebrows and
-     14px names. The site's brass token is for chips; this one is for small
-     text. Green and red stay strictly semantic on the page: the direction
-     word inside an eyebrow. */
-  --today-accent: #8a5e2b;
-  /* Over the lead's dark scrim: a light brass, 8:1 on the scrim. */
-  --today-accent-scrim: #e6c48a;
+  /* Brass retired with Direction B (2026-09-27). Until Today is rebuilt its
+     labels are muted grey; green and red stay on the direction word alone,
+     and the Follow link is the page's one coral. */
+  --today-accent: var(--text-mute);
+  --today-accent-scrim: rgba(255, 255, 255, 0.85);
   --today-rule: color-mix(in srgb, var(--ink) 13%, transparent);
-}
-.dark .today-sheet {
-  --today-accent: #d1a35f;
-  --today-accent-scrim: #e6c48a;
 }
 
 /* The nameplate: letterspaced serif, one ink rule, one mono dateline. */
@@ -2678,13 +2676,13 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-body);
   line-height: 1.3;
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 .ts-byline a,
 .ts-byline .ts-name {
-  color: var(--today-accent);
+  color: var(--text);
 }
-/* The direction word alone carries its sentiment; the label around it is brass. */
+/* The direction word alone carries its sentiment; the label around it is grey. */
 .ts-dir--long {
   color: var(--up);
 }
@@ -2694,13 +2692,14 @@ body {
 .ts-dir--hold {
   color: var(--text-mute);
 }
-/* On the lead's scrim: the light brass, and the dark theme's sentiment
-   values, which are the ones made for a dark ground. */
+/* On the lead's scrim: light labels, and the dark theme's gain and loss
+   text tones, which are the ones made for a dark ground. */
 .ts-on-scrim {
   --today-accent: var(--today-accent-scrim);
-  --up: #4f9c86;
-  --down: #d17868;
-  --text-mute: rgba(255, 255, 255, 0.72);
+  --up: #34d399;
+  --down: #f87171;
+  --text: #ffffff;
+  --text-mute: rgba(255, 255, 255, 0.78);
 }
 .ts-headline {
   font-family: var(--font-display);
@@ -2817,7 +2816,7 @@ body {
   font-size: var(--type-ticker);
   font-weight: 500;
   white-space: nowrap;
-  color: var(--today-accent);
+  color: var(--coral-text);
   background: none;
   border: 0;
   padding: 4px 0 4px 8px;

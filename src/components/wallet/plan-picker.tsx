@@ -89,7 +89,7 @@ export function PlanPicker({
         );
       })}
       {mutation.data?.error && (
-        <p className="text-center text-ticker text-[var(--down)]">{mutation.data.error}</p>
+        <p className="text-center text-ticker text-[var(--error)]">{mutation.data.error}</p>
       )}
 
       {confirming && (

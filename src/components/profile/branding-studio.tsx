@@ -260,7 +260,7 @@ export function BrandingStudio({
                   <div key={i} className="flex gap-2">
                     <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
                     <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
-                    <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-faint hover:text-[var(--down)]">
+                    <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-faint hover:text-[var(--error)]">
                       <Trash size={16} />
                     </button>
                   </div>
@@ -396,7 +396,7 @@ export function BrandingStudio({
             <Button type="button" disabled={pending} onClick={save}>
               {pending ? "Saving..." : "Save branding"}
             </Button>
-            {saved && <span className="text-body text-[var(--up)]">Saved</span>}
+            {saved && <span className="text-body text-[var(--ok)]">Saved</span>}
           </div>
         )}
       </div>

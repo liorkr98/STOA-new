@@ -28,7 +28,7 @@ function Change({ label, before, after }: { label: string; before: string; after
   return (
     <div className="mt-2">
       <p className="num text-ticker text-text-faint">{label}</p>
-      <p className="user-copy mt-0.5 text-ticker leading-snug text-text-mute line-through decoration-[var(--rust)]/50">
+      <p className="user-copy mt-0.5 text-ticker leading-snug text-text-mute line-through decoration-[var(--text-mute)]">
         {before}
       </p>
       <p className="user-copy mt-0.5 text-ticker leading-snug text-text">{after}</p>
@@ -67,7 +67,7 @@ export function EditedMarker({
     <Popover.Root>
       <Popover.Trigger
         className={cn(
-          "focus-ring inline-flex items-center gap-1 rounded-button border border-[var(--brass)]/50 bg-[var(--brass)]/10 px-1.5 py-0.5 text-[var(--brass-ink,var(--text))] transition-colors hover:border-[var(--brass)]",
+          "focus-ring inline-flex items-center gap-1 rounded-chip border border-border px-1.5 py-0.5 text-[var(--mark-edited)] transition-colors hover:border-border-strong hover:text-text",
           className,
         )}
         aria-label={`Edited ${when(latest.editedAt)}. See what changed.`}

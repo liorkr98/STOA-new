@@ -432,7 +432,7 @@ export function RecordClip({
           <div className="num absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1 text-ticker text-white">
             <span
               aria-hidden
-              className={cn("h-2 w-2 rounded-full", phase === "paused" ? "bg-white/70" : "bg-[var(--rust)]")}
+              className={cn("h-2 w-2 rounded-full", phase === "paused" ? "bg-white/70" : "bg-[var(--coral)]")}
             />
             <span>
               {phase === "paused" ? "PAUSED" : "REC"} {mmss(elapsed)}
@@ -461,7 +461,7 @@ export function RecordClip({
               aria-label="Start recording"
               className="focus-ring flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white bg-transparent active:scale-[0.97]"
             >
-              <span aria-hidden className="h-12 w-12 rounded-full bg-[var(--rust)]" />
+              <span aria-hidden className="h-12 w-12 rounded-full bg-[var(--coral)]" />
             </button>
             <span className="invisible" aria-hidden>
               <Button variant="ghost" size="sm" tabIndex={-1}>
@@ -492,7 +492,7 @@ export function RecordClip({
                 aria-label="Stop recording"
                 className="focus-ring flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white bg-transparent active:scale-[0.97]"
               >
-                <Square size={22} fill="var(--rust)" strokeWidth={0} />
+                <Square size={22} fill="var(--coral)" strokeWidth={0} />
               </button>
               <span aria-hidden className="h-11 w-11" />
             </div>

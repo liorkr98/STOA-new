@@ -20,7 +20,7 @@ export function DeletePollButton({ pollId }: { pollId: string }) {
           router.refresh();
         })
       }
-      className="tap-target absolute right-3 top-3 text-text-faint transition-colors hover:text-[var(--down)] focus-ring disabled:opacity-50"
+      className="tap-target absolute right-3 top-3 text-text-faint transition-colors hover:text-[var(--error)] focus-ring disabled:opacity-50"
     >
       <Trash2 size={14} />
     </button>

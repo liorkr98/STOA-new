@@ -125,7 +125,7 @@ export function ReportAccessEditor({
               <PerkAccessSelect plans={plans} value={requiredPerks} onChange={setRequiredPerks} />
             </>
           )}
-          {error ? <p className="mt-2 text-ticker text-[var(--down)]">{error}</p> : null}
+          {error ? <p className="mt-2 text-ticker text-[var(--error)]">{error}</p> : null}
           <Button type="button" size="sm" className="mt-3 w-full" disabled={pending} onClick={save}>
             {pending ? "Saving…" : "Save access"}
           </Button>

@@ -284,7 +284,7 @@ function Item({
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-2 rounded-inner px-2.5 py-1.5 text-left text-body transition-colors hover:bg-surface-2",
-        tone === "down" ? "text-[var(--down)]" : "text-text-mute hover:text-text",
+        tone === "down" ? "text-[var(--error)]" : "text-text-mute hover:text-text",
       )}
     >
       <Icon size={14} />

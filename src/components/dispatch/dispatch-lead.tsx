@@ -38,7 +38,7 @@ export function DispatchLead({
       <article className="dispatch-section">
         <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:gap-10">
           <div className="min-w-0">
-            <p className="num text-ticker font-semibold text-[var(--verdigris)]">
+            <p className="num text-ticker font-semibold text-text-mute">
               Today&apos;s Lead
               <span className="mx-1.5 text-text-faint" aria-hidden>
                 ·
@@ -84,7 +84,7 @@ export function DispatchLead({
               <span className="flex items-center gap-1.5">
                 <span className="text-body font-semibold text-text">{author.display_name}</span>
                 {author.verified && (
-                  <BadgeCheck size={15} className="text-[var(--verdigris)]" aria-label="Verified" />
+                  <BadgeCheck size={15} className="text-text" aria-label="Verified" />
                 )}
               </span>
               <span className="num text-ticker text-text-faint">@{author.handle}</span>

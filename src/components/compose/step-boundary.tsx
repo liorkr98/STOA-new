@@ -47,9 +47,9 @@ export class StepErrorBoundary extends Component<
     return (
       <div
         role="alert"
-        className="rounded-panel border border-[var(--rust)]/50 bg-surface p-4"
+        className="rounded-panel border border-[var(--error-edge)] bg-surface p-4"
       >
-        <p className="num text-ticker text-[var(--rust)]">
+        <p className="num text-ticker text-[var(--error)]">
           {this.props.label} hit a problem
         </p>
         <p className="mt-1.5 text-body leading-relaxed text-text">

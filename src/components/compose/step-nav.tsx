@@ -58,7 +58,7 @@ export function StepNav({
                     active
                       ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
                       : done
-                        ? "border-[var(--verdigris)] text-[var(--verdigris)]"
+                        ? "border-[var(--ok)] text-[var(--ok)]"
                         : open
                           ? "border-border-strong text-text-mute"
                           : "border-border text-text-faint",
@@ -146,7 +146,7 @@ export function StepFrame({
           {status ? <div className="min-w-0 flex-1 basis-[10rem]">{status}</div> : null}
           <div className="ml-auto flex min-w-0 items-center gap-3">
             {note ? (
-              <p role="alert" className="max-w-[44ch] text-right text-ticker leading-snug text-[var(--rust)]">
+              <p role="alert" className="max-w-[44ch] text-right text-ticker leading-snug text-[var(--error)]">
                 {note}
               </p>
             ) : null}

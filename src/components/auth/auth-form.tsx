@@ -61,7 +61,7 @@ export function AuthForm({
         {oauthError === "confirm" && (
           <div
             role="alert"
-            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]"
           >
             <p>That link did not work, so you are not signed in. It may have expired or been used already.</p>
             {oauthReason && (
@@ -79,7 +79,7 @@ export function AuthForm({
         {oauthError === "oauth" && (
           <div
             role="alert"
-            className="mb-4 rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
+            className="mb-4 rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]"
           >
             <p>Sign-in did not complete, so you have not been signed in.</p>
             {oauthReason && (
@@ -146,7 +146,7 @@ export function AuthForm({
             role="alert"
             id="auth-error"
             aria-live="polite"
-            className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]"
+            className="rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]"
           >
             {state.error}
           </p>

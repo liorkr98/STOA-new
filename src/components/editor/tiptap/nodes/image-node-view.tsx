@@ -146,7 +146,7 @@ export function ImageNodeView({
               aria-label="Delete image"
               onMouseDown={stop}
               onClick={() => deleteNode()}
-              className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--down)] focus-ring"
+              className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
             >
               <Trash2 size={15} />
             </button>
@@ -188,7 +188,7 @@ export function ImageNodeView({
         >
           <ImagePlus size={22} className="text-text-faint" />
           <span className="text-body">{uploading ? "Uploading..." : "Upload an image"}</span>
-          {error && <span className="text-ticker text-[var(--down)]">{error}</span>}
+          {error && <span className="text-ticker text-[var(--error)]">{error}</span>}
         </button>
       )}
     </NodeViewWrapper>

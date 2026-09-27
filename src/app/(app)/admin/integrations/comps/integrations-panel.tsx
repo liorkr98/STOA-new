@@ -133,7 +133,7 @@ export function IntegrationsPanel({
         </p>
         <p className="t-meta mt-3">
           DSN configured:{" "}
-          <span className={sentryConfigured ? "text-[var(--verdigris)]" : "text-[var(--rust)]"}>
+          <span className={sentryConfigured ? "text-[var(--ok)]" : "text-[var(--error)]"}>
             {sentryConfigured ? "Yes" : "No"}
           </span>
         </p>
@@ -199,8 +199,8 @@ export function IntegrationsPanel({
             <span
               className={
                 slackBot.tokenConfigured && slackBot.authOk
-                  ? "text-[var(--verdigris)]"
-                  : "text-[var(--rust)]"
+                  ? "text-[var(--ok)]"
+                  : "text-[var(--error)]"
               }
             >
               {slackBot.tokenConfigured
@@ -215,8 +215,8 @@ export function IntegrationsPanel({
             <span
               className={
                 slackBot.signingSecretConfigured
-                  ? "text-[var(--verdigris)]"
-                  : "text-[var(--rust)]"
+                  ? "text-[var(--ok)]"
+                  : "text-[var(--error)]"
               }
             >
               {slackBot.signingSecretConfigured ? "configured" : "missing"}
@@ -226,7 +226,7 @@ export function IntegrationsPanel({
             In #bugs:{" "}
             <span
               className={
-                slackBot.inBugsChannel ? "text-[var(--verdigris)]" : "text-[var(--rust)]"
+                slackBot.inBugsChannel ? "text-[var(--ok)]" : "text-[var(--error)]"
               }
             >
               {slackBot.inBugsChannel ? "yes" : "no — run /invite @STOA"}
@@ -236,7 +236,7 @@ export function IntegrationsPanel({
             Bugs channel ID: <code className="text-ticker">{slackBot.bugsChannelId}</code>
           </li>
           {slackBot.error && (
-            <li className="text-[var(--rust)]">Slack API: {slackBot.error}</li>
+            <li className="text-[var(--error)]">Slack API: {slackBot.error}</li>
           )}
         </ul>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -344,7 +344,7 @@ export function IntegrationsPanel({
                 <span>{row.label}</span>
                 <span className="t-meta">
                   #{row.channel} ·{" "}
-                  <span className={row.ok ? "text-[var(--verdigris)]" : "text-[var(--rust)]"}>
+                  <span className={row.ok ? "text-[var(--ok)]" : "text-[var(--error)]"}>
                     {row.ok ? "ok" : "failed"}
                   </span>
                 </span>

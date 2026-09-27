@@ -99,15 +99,15 @@ export function BrandStep({ profile }: { profile: Profile }) {
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2">
               {availability === "checking" && <Spinner size={16} className="animate-spin text-text-faint" />}
-              {availability === "available" && <Check size={16} className="text-[var(--up)]" />}
+              {availability === "available" && <Check size={16} className="text-[var(--ok)]" />}
               {(availability === "taken" || availability === "invalid") && (
                 <X size={16} className="text-[var(--down)]" />
               )}
             </span>
           </div>
-          {availability === "taken" && <span className="text-ticker text-[var(--down)]">That handle is taken.</span>}
+          {availability === "taken" && <span className="text-ticker text-[var(--error)]">That handle is taken.</span>}
           {availability === "invalid" && (
-            <span className="text-ticker text-[var(--down)]">3-20 characters: letters, numbers, underscore.</span>
+            <span className="text-ticker text-[var(--error)]">3-20 characters: letters, numbers, underscore.</span>
           )}
         </label>
 
@@ -156,7 +156,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
         </div>
 
         {error && (
-          <p className="rounded-inner border border-[var(--down)]/30 bg-[var(--down)]/10 px-3 py-2 text-body text-[var(--down)]">
+          <p className="rounded-inner border border-[var(--error-edge)] bg-[var(--error-soft)] px-3 py-2 text-body text-[var(--error)]">
             {error}
           </p>
         )}

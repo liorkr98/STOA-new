@@ -84,9 +84,9 @@ export function ProcessingState({
               <span
                 className={cn(
                   "flex h-5 w-5 flex-none items-center justify-center rounded-full border",
-                  done && "border-[var(--verdigris)] text-[var(--verdigris)]",
+                  done && "border-[var(--ok)] text-[var(--ok)]",
                   active && "border-[var(--ink)] text-[var(--ink)]",
-                  failed && "border-[var(--rust)] text-[var(--rust)]",
+                  failed && "border-[var(--error)] text-[var(--error)]",
                   !done && !active && !failed && "border-border text-text-faint",
                 )}
               >

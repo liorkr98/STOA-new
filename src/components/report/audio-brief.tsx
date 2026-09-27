@@ -99,7 +99,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
           {pending ? "Generating..." : status === "ready" ? "Regenerate" : "Generate (3 credits)"}
         </button>
       )}
-      {error && <span className="w-full text-ticker text-[var(--down)]">{error}</span>}
+      {error && <span className="w-full text-ticker text-[var(--error)]">{error}</span>}
     </div>
   );
 }
