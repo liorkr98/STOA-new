@@ -11,7 +11,7 @@ const ROUTES: { href: string; label: string; note: string }[] = [
   { href: "/dev/explore", label: "Explore", note: "The 30-tile wall; click a tile for the Feed player overlay." },
   { href: "/dev/explore?ticker=NVDA", label: "Explore · ticker filter", note: "The EVERY TAKE ON THIS NAME state." },
   { href: "/dev/explore?sector=Semiconductors", label: "Explore · sector filter", note: "Filtered by sector." },
-  { href: "/dev/feed", label: "Feed", note: "The player as a page: a call beside a callless note, sealed cards, the Steelman, discussion." },
+  { href: "/dev/feed", label: "Feed", note: "The player as a page: a stance beside a note with no ticker, locked cards, the Steelman, discussion." },
   { href: "/dev/profile", label: "Profile", note: "An established analyst: lead, Most Watched, Everything, subject filter." },
   { href: "/dev/profile?state=new", label: "Profile · new analyst", note: "Two publications, deliberately sparse." },
   { href: "/dev/profile?clip=processing", label: "Profile · clip processing", note: "The lead's clip is still being prepared: the media area stays and says so." },

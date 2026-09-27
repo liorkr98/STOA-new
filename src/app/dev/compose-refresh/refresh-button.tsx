@@ -23,7 +23,7 @@ export function RefreshButton() {
           const current = document.querySelector('nav[aria-label="Compose steps"] [aria-current="step"]');
           const label = current?.textContent?.replace(/^\d+/, "").replace(/optional|empty$/i, "").trim().toLowerCase();
           const key =
-            label === "edit video" ? "video_edit" : label === "the call" ? "call" : (label ?? "write");
+            label === "edit video" ? "video_edit" : (label ?? "write");
           window.__stoaCrashStep = key;
           // Nothing re-renders on its own; the fixture presses the step's
           // own button below or types into it to trigger the draw.

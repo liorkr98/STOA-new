@@ -43,8 +43,7 @@ function item(
   extra: Partial<TodayItem> & { hours?: number; secs?: number } = {},
 ): TodayItem {
   const { hours = 3, secs, ...rest } = extra;
-  const hasCall = Boolean(rest.ticker);
-  const badge = [secs ? "Video" : null, hasCall ? "Call" : null, type === "research" ? "Thesis" : null].filter(Boolean) as string[];
+  const badge = [secs ? "Video" : null, type === "research" ? "Thesis" : null].filter(Boolean) as string[];
   return {
     reportId: id,
     type,

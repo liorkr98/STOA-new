@@ -18,7 +18,7 @@ export default async function DevComposeRefreshPage() {
   const stamp = new Date().toISOString();
   const draft = {
     id: "dev-refresh",
-    type: "call",
+    type: "research",
     title: "Blackwell demand is still under-modelled into the January quarter",
     summary: "The supply ceiling moved.",
     body: null,

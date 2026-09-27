@@ -40,7 +40,7 @@ function fullStack(id: string, ticker: string, locked: boolean[]): FeedCard[] {
 
 function noteStack(id: string): FeedCard[] {
   return [
-    { kind: "thesis", id: `${id}-c0`, locked: false, title: "What this note covers", body: "A short read on a headline that will move the tape today. No call, no target, just context." },
+    { kind: "thesis", id: `${id}-c0`, locked: false, title: "What this note covers", body: "A short read on a headline that will move the tape today. No stance, just context." },
     { kind: "read", id: `${id}-read`, locked: false, href: `/report/${id}` },
   ];
 }
@@ -92,7 +92,7 @@ const SPECS: Spec[] = [
           size: 0.5,
           opacity: 1,
         },
-        { id: "ov-t2", kind: "text", start: 14, end: 20, text: "Target $160 by January", position: 8, size: "lg" },
+        { id: "ov-t2", kind: "text", start: 14, end: 20, text: "The supply ceiling moved", position: 8, size: "lg" },
       ],
       cards: [
         {
