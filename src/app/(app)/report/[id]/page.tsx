@@ -1,47 +1,28 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { formatDistanceToNow } from "date-fns";
-import { BadgeCheck, Eye } from "lucide-react";
-import { compact } from "@/lib/format";
-import { PaywallGate } from "@/components/ui/paywall-gate";
 import { ReportSchema } from "@/components/seo/ReportSchema";
 import { getReport } from "@/lib/db/reports";
+import { gatedReadMinutes } from "@/lib/db/report-length";
 import { getLiveClipForReport } from "@/lib/video/clip-for-report";
 import { getPendingClipForReport } from "@/lib/db/video-clips";
-import { ClipPendingPlayer } from "@/components/video/clip-pending";
 import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { readStoredVideoEdit } from "@/lib/compose/overlays";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
+import { readMinutes } from "@/lib/reports/reading";
 import { listComments, listLikedCommentIds } from "@/lib/db/comments";
 import { toFeedComment } from "@/lib/feed/comments";
 import { getSessionUserId } from "@/lib/db/auth";
-import { hasUnlocked, isSubscribed, hasLiked, hasSaved } from "@/lib/db/social";
+import { hasUnlocked, isSubscribed, hasLiked, hasSaved, isFollowing } from "@/lib/db/social";
 import { getWallet } from "@/lib/db/wallet";
-import { Avatar } from "@/components/ui/avatar";
-import { DisclosureBlock } from "@/components/ui/disclosure-block";
-import { DyorBar } from "@/components/ui/dyor-bar";
-import { ReportActions } from "@/components/report/report-actions";
-import { ShareMenu } from "@/components/share/share-menu";
-import { ReportDiscussion } from "@/components/report/report-discussion";
-import { ReportBody } from "@/components/editor/report-body";
-import { ReportClip } from "@/components/report/report-clip";
-import { ReportCards } from "@/components/report/report-cards";
-import { ArchivedBanner } from "@/components/report/archived-banner";
-import { EditedMarker } from "@/components/report/edited-marker";
 import { listReportEdits } from "@/lib/db/report-edits";
-import { FactCheckLayer } from "@/components/report/fact-check-layer";
-import { AudioBrief } from "@/components/report/audio-brief";
-import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { ViewTracker } from "@/components/report/view-tracker";
-import { BuyReportButton } from "@/components/wallet/buy-report-button";
-import { SubscribeButton } from "@/components/wallet/subscribe-button";
+import { ReportView } from "@/components/report/report-view";
+import type { FactCheckResult } from "@/lib/ai/fact-check";
 import { publicTypeLabel } from "@/lib/compose/modes";
-import { ScrollFrame } from "@/components/layout/scroll-frame";
-import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
 import { labelCase } from "@/lib/design/label";
+import { themeLabel } from "@/lib/tags/taxonomy";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -77,7 +58,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const author = report.author;
   const isAuthor = userId === report.author_id;
 
-  const [unlocked, subscribed, liked, saved, wallet, comments, clip, cards] = await Promise.all([
+  const [unlocked, subscribed, liked, saved, following, wallet, comments, clip] = await Promise.all([
     userId && report.access === "paid" ? hasUnlocked(userId, id) : Promise.resolve(false),
     userId &&
       (report.access === "subscribers" || (report.access === "paid" && report.members_included))
@@ -85,20 +66,17 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       : Promise.resolve(false),
     userId ? hasLiked(userId, id) : Promise.resolve(false),
     userId ? hasSaved(userId, id) : Promise.resolve(false),
+    userId && !isAuthor ? isFollowing(userId, report.author_id) : Promise.resolve(false),
     userId ? getWallet(userId) : Promise.resolve(null),
     listComments(id),
     getLiveClipForReport(id),
-    listCardsForReport(id),
   ]);
 
   /*
     Built here rather than in the client component: bunnyEmbedUrl reads
     server-only env, so the library id must never travel to the browser as
-    anything but a finished URL.
-
-    Bunny's own chrome stays on, unlike the Feed. Someone who pressed play on a
-    report wants a scrubber, a volume control and fullscreen; the Feed hides
-    them because it supplies its own and because its clips play unasked.
+    anything but a finished URL. The embed is only the fallback for a stream
+    the browser refuses; the clip normally plays in our own element.
   */
   const clipMedia = clip
     ? resolveClipPlayback({ playbackUrl: clip.playback_url, thumbnailUrl: clip.thumbnail_url, index: 0 })
@@ -114,256 +92,115 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       ? bunnyEmbedUrl(clip.bunny_video_guid, { autoplay: true, muted: false })
       : null;
 
-  const canRead =
-    report.access === "free" || isAuthor || unlocked || subscribed;
-  const reportPrice = report.price ?? author?.report_price ?? 0;
+  const canRead = report.access === "free" || isAuthor || unlocked || subscribed;
+  // After the entitlement check, so a reader who may read gets the locked
+  // cards open and everyone else gets them sealed.
+  const cards = await listCardsForReport(id, { entitled: canRead });
   const factCheck = report.fact_check_results as unknown as FactCheckResult | null;
   const claims = factCheck?.claims ?? [];
+  // A gated reader's body never arrives (RLS), so its length is counted on
+  // the server and only the number comes back.
+  const minutes = canRead ? readMinutes(report.body) : await gatedReadMinutes(id);
 
   // The headline is resolved the same way ReportSchema and the feed blocks
-  // resolve it, so this page can never open with no H1 at all -- it used to
-  // render nothing when title was null, leaving a chip row and a timestamp
-  // above the dek. When the summary has to stand in as the headline it is not
-  // also printed as the dek, so a reader never gets one sentence twice.
+  // resolve it, so this page can never open with no H1 at all. When the
+  // summary has to stand in as the headline it is not also printed as the
+  // dek, so a reader never gets one sentence twice.
   const headline = report.title?.trim() || report.summary?.trim() || "Untitled research";
+  const dek = report.title?.trim() ? (report.summary?.trim() ?? null) : null;
 
   const likedIds = userId ? await listLikedCommentIds(userId, comments.map((c) => c.id)) : new Set<string>();
   const discussion = comments.map((c) =>
     toFeedComment(c, { reportAuthorId: report.author_id, viewerId: userId ?? null, likedIds }),
   );
-  const dek = report.title?.trim() ? report.summary?.trim() : null;
+  const analystName = author?.display_name ?? "The analyst";
 
   return (
     <>
       <ReportSchema report={report} />
       <ViewTracker reportId={id} />
-
-      {/*
-        Two columns: the writing on one side, the analyst's clip on the other,
-        so a reader can watch while reading instead of scrolling past the video
-        to reach the words. The page is a frame that fills the room under the
-        nav, and each column scrolls on its own, so the clip stays in view for
-        the length of the read. It used to be a sticky column pinned 80px down,
-        a nav's height that was not above it, which left a band of empty paper
-        over the clip once the page scrolled. Nothing is pinned now.
-
-        On a phone there is no room for two columns, so the frame itself is
-        the scroller and the columns are `display: contents`, which dissolves
-        them and lets the blocks be ordered against each other: the masthead,
-        then the clip, then the writing, then the trust panels, then the
-        comments. Above `lg` the columns become real boxes again.
-
-        The clip sits above the paywall branch deliberately: it is the teaser
-        and is public by design, because it is how an analyst makes their case
-        to someone who has not paid. The depth stays gated below it.
-      */}
-      <ScrollFrame className="scroll-area mx-auto w-full max-w-[var(--w-standard)] flex-col gap-6 overflow-y-auto pb-[calc(var(--tab-h)+var(--main-pad-y))] lg:flex-row lg:gap-8 lg:overflow-hidden lg:pb-0">
-        <article className="scroll-area contents lg:order-1 lg:flex lg:min-h-0 lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-6 lg:overflow-y-auto">
-          {/* Scroll-scrubbed, like a scrollbar -- reading position, not
-            * animation, so the frequency rule does not apply. Hidden without
-            * scroll-timeline support and under reduced motion it still just
-            * mirrors scroll. Its timeline is the nearest scroller: the article
-            * column, or the frame on a phone. */}
-          <div className="reading-progress" aria-hidden />
-
-          <header className="order-1 lg:order-none">
-      {report.status === "archived" ? (
-        <ArchivedBanner reportId={id} isAuthor={isAuthor} />
-      ) : null}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Chip>{labelCase(publicTypeLabel(report.type))}</Chip>
-        {report.ticker && <TickerChip ticker={report.ticker} />}
-        {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
-        <span className="t-meta">
-          {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
-        </span>
-        <span className="t-meta inline-flex items-center gap-1.5" title="Views">
-          <Eye size={14} aria-hidden className="text-text-mute" />
-          <span className="num">{compact(report.views)}</span>
-          <span className="text-text-mute">views</span>
-        </span>
-        <EditedMarker edits={edits} />
-      </div>
-
-      <h1 className="t-headline mt-3" dir="auto">{headline}</h1>
-      {dek && <p className="t-body mt-3 text-title" dir="auto">{dek}</p>}
-
-      {author && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-border py-4">
-          <div className="flex items-center gap-3">
-            <Link href={`/analyst/${author.handle}`} className="flex items-center gap-3 focus-ring rounded-button">
-              <Avatar src={author.avatar_url} name={author.display_name} size="md" />
-              <div className="leading-tight">
-                <span className="flex items-center gap-1.5 text-body font-semibold">
-                  {author.display_name}
-                  {author.verified && <BadgeCheck size={13} className="text-accent" />}
-                </span>
-                <span className="t-meta">@{author.handle}</span>
-              </div>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <ReportActions
-              reportId={id}
-              initialLikes={report.likes}
-              initialLiked={liked}
-              initialSaved={saved}
-              isAuthed={Boolean(userId)}
-            />
-            <ShareMenu
-              target={{
-                url: `/report/${id}`,
-                title: report.title ?? "Research on Stoa",
-                ticker: report.ticker ?? undefined,
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-          </header>
-
-          <div className="order-3 min-w-0 lg:order-none">
-          {/* Cards carry their own per-card lock, so the deck renders either
-              side of the report paywall; sealed cards blur themselves. */}
-          <ReportCards cards={cards} ticker={report.ticker} className="mb-6" />
-          {canRead ? (
-            <>
-              <AudioBrief reportId={id} isAuthor={isAuthor} />
-              <ReportBody
-                body={report.body}
-                claims={claims}
-                isAuthed={Boolean(userId)}
-                reportId={id}
-              />
-            </>
-          ) : (
-            <Paywall
-              access={report.access}
-              reportId={id}
-              price={reportPrice}
-              authorHandle={author?.handle ?? ""}
-              authorId={report.author_id}
-              subPrice={author?.sub_price ?? null}
-              balance={wallet?.balance ?? 0}
-              isAuthed={Boolean(userId)}
-              subscribed={subscribed}
-            />
-          )}
-
-          </div>
-
-          <div className="order-5 lg:order-none">
-            <ReportDiscussion
-              reportId={id}
-              comments={discussion}
-              canPost={Boolean(userId)}
-            />
-          </div>
-        </article>
-
-        <div className="scroll-area contents lg:order-2 lg:flex lg:w-[380px] lg:min-h-0 lg:shrink-0 lg:flex-col lg:gap-5 lg:overflow-y-auto">
-            {clip ? (
-              <div className="order-2 lg:order-none">
-                <ReportClip
-                  reportId={id}
-                  clipId={clip.id}
-                  embedUrl={clipEmbedUrl}
-                  playbackUrl={clipMedia?.src ?? null}
-                  thumbnailUrl={clipMedia?.poster ?? clip.thumbnail_url}
-                  analystId={report.author_id}
-                  durationSeconds={clip.duration_seconds}
-                  analystName={author?.display_name ?? "The analyst"}
-                  edit={readStoredVideoEdit(report.video_edit)}
-                  ticker={report.ticker}
-                />
-              </div>
-            ) : pendingClip ? (
-              <div className="order-2 lg:order-none">
-                <ClipPendingPlayer
-                  reportId={id}
-                  title={report.title ?? undefined}
-                  status={pendingClip.status}
-                  startedAt={pendingClip.createdAt}
-                  analystName={author?.display_name ?? "The analyst"}
-                  isAuthor={isAuthor}
-                />
-              </div>
-            ) : null}
-            <aside className="order-4 flex flex-col gap-4 lg:order-none">
-          <DisclosureBlock
-            holdsPosition={report.position_held ?? false}
-            compensationTied={report.compensation_tied ?? false}
-            compensationDetail={report.compensation_detail ?? undefined}
-          />
-          <DyorBar />
-          {claims.length > 0 && (
-            <FactCheckLayer
-              claims={claims}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-panel border border-border bg-surface px-3 py-3 t-meta"
-            />
-          )}
-            </aside>
-        </div>
-      </ScrollFrame>
+      <ReportView
+        data={{
+          id,
+          archived: report.status === "archived",
+          isAuthor,
+          isAuthed: Boolean(userId),
+          headline,
+          dek,
+          typeLabel: labelCase(publicTypeLabel(report.type)),
+          publishedAt: report.published_at ?? report.created_at,
+          views: report.views,
+          likes: report.likes,
+          liked,
+          saved,
+          author: author
+            ? {
+                id: report.author_id,
+                handle: author.handle,
+                displayName: author.display_name,
+                avatarUrl: author.avatar_url,
+                verified: Boolean(author.verified),
+              }
+            : null,
+          following,
+          ticker: report.ticker,
+          stance: report.stance ?? null,
+          theme: report.ticker ? null : themeLabel(report),
+          edits,
+          readMinutes: minutes,
+          clip: clip
+            ? {
+                reportId: id,
+                clipId: clip.id,
+                embedUrl: clipEmbedUrl,
+                playbackUrl: clipMedia?.src ?? null,
+                thumbnailUrl: clipMedia?.poster ?? clip.thumbnail_url,
+                analystId: report.author_id,
+                durationSeconds: clip.duration_seconds,
+                analystName,
+                edit: readStoredVideoEdit(report.video_edit),
+                ticker: report.ticker,
+              }
+            : null,
+          pendingClip: pendingClip
+            ? {
+                reportId: id,
+                title: report.title ?? undefined,
+                status: pendingClip.status,
+                startedAt: pendingClip.createdAt,
+                analystName,
+                isAuthor,
+              }
+            : null,
+          canRead,
+          body: canRead ? report.body : null,
+          claims,
+          cards,
+          gate:
+            canRead || report.access === "free"
+              ? null
+              : {
+                  reportId: id,
+                  access: report.access,
+                  membersIncluded: Boolean(report.members_included),
+                  price: report.price ?? author?.report_price ?? 0,
+                  subPrice: author?.sub_price ?? null,
+                  balance: wallet?.balance ?? 0,
+                  isAuthed: Boolean(userId),
+                  subscribed,
+                  authorId: report.author_id,
+                  authorHandle: author?.handle ?? "",
+                  authorName: analystName,
+                  minutesLeft: minutes,
+                },
+          disclosure: {
+            holdsPosition: report.position_held ?? false,
+            compensationTied: report.compensation_tied ?? false,
+            compensationDetail: report.compensation_detail ?? undefined,
+          },
+          discussion,
+        }}
+      />
     </>
-  );
-}
-
-function Paywall({
-  access,
-  reportId,
-  price,
-  authorHandle,
-  authorId,
-  subPrice,
-  balance,
-  isAuthed,
-  subscribed,
-}: {
-  access: "subscribers" | "paid" | "free";
-  reportId: string;
-  price: number;
-  authorHandle: string;
-  authorId: string;
-  subPrice: number | null;
-  balance: number;
-  isAuthed: boolean;
-  subscribed: boolean;
-}) {
-  // access is a single exclusive mode today (see BACKEND_DATA_CONTRACTS.md) --
-  // showing both CTAs would offer a subscribe path that wouldn't actually
-  // unlock a per-report-priced piece, so only the real path renders.
-  const unlockButton =
-    access === "paid" ? (
-      <BuyReportButton
-        reportId={reportId}
-        price={price}
-        balance={balance}
-        isAuthed={isAuthed}
-        authorHandle={authorHandle}
-      />
-    ) : null;
-
-  const subscribeButton =
-    access === "subscribers" ? (
-      <SubscribeButton
-        analystId={authorId}
-        handle={authorHandle}
-        price={subPrice}
-        balance={balance}
-        isAuthed={isAuthed}
-        subscribed={subscribed}
-      />
-    ) : null;
-
-  return (
-    <PaywallGate
-      onUnlock={unlockButton}
-      onSubscribe={subscribeButton}
-      isAuthed={isAuthed}
-      loginHref="/sign-in"
-    />
   );
 }

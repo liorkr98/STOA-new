@@ -163,8 +163,8 @@ export function ReportClip({
                 // sit in a band of its own letterboxing. Only there: below `lg`
                 // the clip fills the width, and `w-fit` against a `w-full`
                 // child collapses the box to nothing.
-                "flex justify-center overflow-hidden rounded-panel border border-border lg:mx-auto lg:w-fit",
-            "bg-[var(--ink)]",
+                "flex justify-center overflow-hidden rounded-panel lg:mx-auto lg:w-fit",
+            "bg-black",
           )}
         >
           <div
@@ -174,12 +174,12 @@ export function ReportClip({
                 ? "w-full"
                 : // On a phone the frame is sized from the height left under
                   // the nav, above the tab pill and below the page's own top
-                  // (about 17rem of headline and byline), so its bottom edge,
+                  // (about 22rem of headline, standfirst and byline), so its bottom edge,
                   // where the scrub bar sits, is reachable without scrolling.
                   // Never shorter than 24rem, though: on a short phone the
                   // video matters more than the control, and the bar is then
                   // a small scroll away.
-                  "mx-auto h-[max(min(calc(100dvh-var(--nav-h)-var(--tab-h)-17rem),32rem),24rem)] w-auto max-w-full sm:h-[min(60vh,520px)] lg:h-[min(50vh,440px)]",
+                  "mx-auto h-[max(min(calc(100dvh-var(--nav-h)-var(--tab-h)-22rem),32rem),24rem)] w-auto max-w-full sm:h-[min(60vh,520px)] lg:h-[min(50vh,440px)]",
             )}
           >
             {playing && native && playbackUrl ? (
@@ -257,14 +257,17 @@ export function ReportClip({
                 <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--paper)_94%,transparent)] text-[var(--ink)] shadow-lg transition-transform duration-[var(--dur-1)] group-hover:scale-105">
                   <Play size={24} fill="currentColor" strokeWidth={0} className="ml-1" />
                 </span>
-                <span className="num absolute bottom-3 left-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-2 py-1 text-ticker text-[var(--paper)]">
+                <span className="num absolute bottom-4 left-3 rounded-chip bg-black/60 px-2.5 py-1 text-ticker font-semibold text-white">
                   Watch the analyst
                 </span>
                 {duration ? (
-                  <span className="num absolute bottom-3 right-3 rounded bg-[color-mix(in_srgb,var(--ink)_65%,transparent)] px-1.5 py-0.5 text-ticker text-[var(--paper)]">
+                  <span className="num absolute bottom-4 right-3 rounded-chip bg-black/60 px-2 py-1 text-ticker text-white">
                     {duration}
                   </span>
                 ) : null}
+                {/* The bar the clip will play along, empty until it does, so
+                  the frame reads as a video before anyone presses play. */}
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-white/30" />
               </button>
             )}
           </div>

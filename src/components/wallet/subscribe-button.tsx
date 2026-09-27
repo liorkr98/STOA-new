@@ -14,6 +14,7 @@ export function SubscribeButton({
   balance,
   isAuthed,
   subscribed,
+  signInNext,
 }: {
   analystId: string;
   handle: string;
@@ -21,10 +22,23 @@ export function SubscribeButton({
   balance: number;
   isAuthed: boolean;
   subscribed: boolean;
+  /**
+   * Where a signed-out reader returns after signing in. When set, they see the
+   * real offer (coral, with the price) rather than a grey "Sign in" button:
+   * the price is what they are deciding on.
+   */
+  signInNext?: string;
 }) {
   const [open, setOpen] = useState(false);
   const mutation = useSubscribe(analystId, handle);
 
+  if (!isAuthed && signInNext && price) {
+    return (
+      <Link href={`/sign-in?next=${encodeURIComponent(signInNext)}`} className={buttonClass("coral", "lg", "w-full")}>
+        Subscribe · {usd(price)}/mo
+      </Link>
+    );
+  }
   if (!isAuthed) {
     return (
       <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full")}>

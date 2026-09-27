@@ -151,7 +151,7 @@ export function DiscussionThread({
               {c.author.displayName}
             </span>
             {c.author.isAuthor ? (
-              <span className="num rounded-chip border border-[var(--ink)] px-1 text-ticker text-text">
+              <span className="num rounded-chip bg-[var(--ink)] px-2 text-ticker font-semibold text-[var(--paper)]">
                 Author
               </span>
             ) : null}
@@ -228,9 +228,16 @@ export function DiscussionThread({
   };
 
   return (
-    <section aria-label="Discussion" className={cn(variant === "page" ? "mt-10" : "mt-8", className)}>
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <h3 className="num text-ticker text-text-mute">Discussion · {merged.length}</h3>
+    <section aria-label="Discussion" className={cn(variant === "page" ? "mt-12" : "mt-8", className)}>
+      <div className={cn("flex items-center justify-between", variant === "page" ? "gap-4" : "border-b border-border pb-2")}>
+        {variant === "page" ? (
+          <h2 className="font-display text-headline font-extrabold tracking-[-0.03em] text-text">
+            Discussion{" "}
+            <span className="num font-sans text-body font-medium tracking-normal text-text-mute">{merged.length}</span>
+          </h2>
+        ) : (
+          <h3 className="num text-ticker text-text-mute">Discussion · {merged.length}</h3>
+        )}
         <div className="flex items-center gap-3" role="radiogroup" aria-label="Sort">
           {(["newest", "liked"] as const).map((k) => (
             <button

@@ -6,6 +6,7 @@ import { Bookmark, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { toggleLike, toggleSave } from "@/app/actions/social";
 import { cn } from "@/lib/design/cn";
+import { buttonClass } from "@/components/ui/button";
 
 export function ReportActions({
   reportId,
@@ -61,18 +62,15 @@ export function ReportActions({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <button
         onClick={onLike}
         type="button"
         aria-label={liked ? "Unlike" : "Like"}
         aria-pressed={liked}
-        className={cn(
-          "focus-ring inline-flex items-center gap-1.5 rounded-button border border-border px-3 py-2 text-body transition-colors hover:border-border-strong",
-          liked && "text-accent",
-        )}
+        className={buttonClass("ghost", "sm", cn("gap-1.5", liked ? "text-text" : "text-text-mute hover:text-text"))}
       >
-        <Heart size={16} className={liked ? "fill-current" : undefined} />
+        <Heart size={15} className={liked ? "fill-current" : undefined} />
         <span className="num">{likes}</span>
       </button>
       <button
@@ -80,12 +78,9 @@ export function ReportActions({
         type="button"
         aria-label={saved ? "Unsave" : "Save"}
         aria-pressed={saved}
-        className={cn(
-          "focus-ring inline-flex items-center rounded-button border border-border px-3 py-2 text-body transition-colors hover:border-border-strong",
-          saved && "text-accent",
-        )}
+        className={buttonClass("ghost", "sm", saved ? "text-text" : "text-text-mute hover:text-text")}
       >
-        <Bookmark size={16} className={saved ? "fill-current" : undefined} />
+        <Bookmark size={15} className={saved ? "fill-current" : undefined} />
       </button>
     </div>
   );
