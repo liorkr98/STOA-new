@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { fraunces, plexSans, plexHebrew, plexMono } from "./fonts";
+import { bricolage, heebo, inter, jetbrainsMono } from "./fonts";
 import { Providers } from "./providers";
 import { SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
@@ -8,7 +8,11 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#FAF8F4",
+  // The browser bar cannot read CSS variables. These are --paper light and dark.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAFAFA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1216" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -38,7 +42,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plexSans.variable} ${plexHebrew.variable} ${fraunces.variable} ${plexMono.variable}`}
+      className={`${inter.variable} ${heebo.variable} ${bricolage.variable} ${jetbrainsMono.variable}`}
     >
       <body>
         <Providers>{children}</Providers>

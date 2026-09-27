@@ -28,7 +28,7 @@ export function clearIndicatorHandles(chart: IChartApi, handles: IndicatorHandle
   }
 }
 
-const SMA_COLORS = ["var(--brass)", "var(--plum)", "var(--verdigris)"];
+const SMA_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 
 function cssVar(name: string): string {
   return canvasColor(name) || "#888888";
@@ -69,7 +69,7 @@ export function applyChartIndicators(
       const pane = chart.addPane();
       pane.setHeight(72);
       const series = pane.addSeries(LineSeries, {
-        color: cssVar("--brass"),
+        color: cssVar("--chart-2"),
         lineWidth: 2,
         lastValueVisible: true,
         priceLineVisible: false,

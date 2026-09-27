@@ -43,3 +43,15 @@ export function canvasColor(token: string): string {
   const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
   return `rgba(${r}, ${g}, ${b}, ${Number((a / 255).toFixed(3))})`;
 }
+
+/**
+ * A font token as a family list a canvas can use. next/font renames every
+ * family ("__Inter_1a2b"), so a literal "Inter" in chart options never
+ * matched and the axes fell back to a system face. The computed token holds
+ * the real names.
+ */
+export function canvasFont(token = "--font-sans"): string {
+  if (typeof document === "undefined") return "sans-serif";
+  const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  return value || "sans-serif";
+}

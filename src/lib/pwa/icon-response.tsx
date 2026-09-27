@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 
-const PAPER = "#FAF8F4";
-const INK = "#14171F";
+// Icons are rendered images and cannot read CSS variables: --paper and --ink.
+const PAPER = "#FAFAFA";
+const INK = "#101418";
 
 /** Ink colonnade on paper. Safe zone is inset so maskable icons stay readable. */
 export function stoaIconResponse(size: number) {

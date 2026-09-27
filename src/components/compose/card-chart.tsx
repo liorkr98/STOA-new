@@ -12,7 +12,7 @@ import {
 } from "lightweight-charts";
 import { cn } from "@/lib/design/cn";
 import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
-import { canvasColor } from "@/lib/design/canvas-color";
+import { canvasColor, canvasFont } from "@/lib/design/canvas-color";
 
 type SparkPoint = { t: number; v: number };
 
@@ -137,13 +137,13 @@ function LightweightCardChart({
         const last = primary[primary.length - 1].v;
         setChangePct(first ? ((last - first) / first) * 100 : 0);
 
-        const ink = cssVar("--ink") || "#14171F";
-        const paper = cssVar("--paper") || "#FAF8F4";
-        const up = cssVar("--up") || cssVar("--verdigris") || "#2F6F5E";
-        const down = cssVar("--down") || cssVar("--rust") || "#8C3A32";
-        const brass = cssVar("--brass") || "#A6843A";
-        const grid = cssVar("--border") || "rgba(20,23,31,0.12)";
-        const muted = cssVar("--text-faint") || "rgba(20,23,31,0.45)";
+        const ink = cssVar("--ink") || "#101418";
+        const paper = cssVar("--paper") || "#fafafa";
+        const up = cssVar("--up") || "#087a55";
+        const down = cssVar("--down") || "#c92a31";
+        const compare = cssVar("--chart-2") || "#5b6470";
+        const grid = cssVar("--border") || "#e6e8eb";
+        const muted = cssVar("--text-mute") || "#5b6470";
         const rising = last >= first;
         const stroke = rising ? up : down;
 
@@ -153,7 +153,7 @@ function LightweightCardChart({
             background: { type: ColorType.Solid, color: paper },
             textColor: muted,
             attributionLogo: true,
-            fontFamily: "IBM Plex Sans, sans-serif",
+            fontFamily: canvasFont(),
           },
           grid: {
             vertLines: { color: grid },
@@ -178,7 +178,7 @@ function LightweightCardChart({
         const compareSeries = toSeries(body?.compare ?? null);
         if (compareSeries.length >= 2) {
           const line = chart.addSeries(LineSeries, {
-            color: brass,
+            color: compare,
             lineWidth: 2,
             priceScaleId: "compare",
           });

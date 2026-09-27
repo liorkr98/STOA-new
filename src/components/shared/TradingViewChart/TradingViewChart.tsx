@@ -68,7 +68,8 @@ export function TradingViewChart({
       save_image: !compact,
       details: !compact,
       hotlist: false,
-      backgroundColor: theme === "light" ? "rgba(255, 255, 255, 1)" : "rgba(15, 15, 18, 1)",
+      // The widget is an iframe and cannot read CSS variables: --surface.
+      backgroundColor: theme === "light" ? "#ffffff" : "#171b20",
       gridColor: theme === "light" ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.06)",
     };
     if (studies.length > 0) {

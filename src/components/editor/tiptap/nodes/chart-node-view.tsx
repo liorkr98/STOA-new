@@ -39,7 +39,7 @@ import {
 } from "@/lib/market/chart-indicator-render";
 import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-registry";
 import { TradingViewChartPanel } from "@/components/editor/tiptap/nodes/trading-view-chart-panel";
-import { canvasColor } from "@/lib/design/canvas-color";
+import { canvasColor, canvasFont } from "@/lib/design/canvas-color";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -253,9 +253,9 @@ function LightweightChartNodeView({
     el.__indicatorHandles = indicatorHandles;
 
     const ink = cssVar("--ink");
-    const accent = cssVar("--verdigris");
-    const up = cssVar("--verdigris");
-    const down = cssVar("--rust");
+    const accent = cssVar("--chart-1");
+    const up = cssVar("--up");
+    const down = cssVar("--down");
     const grid = hexToRgba(ink, 0.08);
     const axis = hexToRgba(ink, 0.5);
 
@@ -265,7 +265,7 @@ function LightweightChartNodeView({
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: axis,
-        fontFamily: "var(--font-mono)",
+        fontFamily: canvasFont(),
         fontSize: 11,
         attributionLogo: false,
       },
@@ -399,7 +399,7 @@ function LightweightChartNodeView({
       annotations,
       el.__priceLines,
       el.__trendSeries,
-      cssVar("--verdigris"),
+      cssVar("--chart-1"),
     );
     setTrendDraft(null);
   }, [annotations, status]);

@@ -1,67 +1,109 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- * Stoa design tokens. See design-system/MASTER.md.
- * The notary's ledger, not a trading terminal: ink on paper. Light is
- * the default; .dark overrides.
+ * Stoa design tokens: Direction B (docs/DESIGN_LANGUAGE.md, docs/FRONTEND.md).
+ * Black, white and grey carry about 90% of the interface. Coral marks the
+ * one live or actionable thing. Green and red carry direction and price
+ * movement, nothing else. Light is the default; .dark overrides.
+ *
+ * THE CONTRAST RULE. Every coloured hue has two tokens: a bright one for
+ * FILLS and a deeper one for TEXT. The bright ones fail as words on white
+ * (coral 3.1:1), so words always use the -text token (4.8:1 or better on
+ * every surface) and fills always carry the --on-* ink (black, 4.7:1 or
+ * better). White text on a coloured fill fails and is never used.
+ * `npm run test:contrast` measures every pair below in both themes and
+ * scans the code for the forbidden combinations.
  * ------------------------------------------------------------------ */
 
 :root {
-  --ink: #14171f;
-  --paper: #faf8f4;
-  --verdigris: #2f6e5d;
-  /* Deep antique brass: #b8863b read at 2.84:1 on paper -- an accessibility
-   * fail everywhere brass carries meaning (Unproven claims, the edit
-   * marker). #855f22 keeps the ochre identity at 5.05:1 on
-   * paper and 4.65:1 on surface-2 (C.2 rule 8). */
-  --brass: #855f22;
-  --plum: #5b4b6b;
-  --rust: #a6483c;
+  --ink: #101418;
+  --paper: #fafafa;
 
-  /* Warm neutrals, on the same axis as --paper. Literal values, not derived,
-   * so they must move whenever --paper does: the previous cool grey-greens
-   * (#f7f8f5 / #e6e8e2) sat within 0.005 luminance of the warmer paper, which
-   * collapsed the raised-card relationship and read green beside it. */
-  --surface: #fffdf9;
-  --surface-2: #f1ece3;
+  /* Raised card and sunk well. Literal values on the same cool axis as the
+   * paper: moving paper alone would leave warm cards on a cool page. */
+  --surface: #ffffff;
+  --surface-2: #f2f3f5;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
-  /* Decorative only (2.65:1): dividers, disabled glyphs, ornamental dashes.
-   * Any text that carries meaning -- including placeholders -- uses
-   * --text-mute or darker (C.2 rule 8). */
-  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
-  --border: color-mix(in srgb, var(--ink) 14%, transparent);
-  --border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
+  --text-mute: #5b6470;
+  /* Decorative only (3.2:1): dividers, disabled glyphs, ornamental dashes.
+   * Any text that carries meaning, placeholders included, uses --text-mute
+   * or darker. */
+  --text-faint: #8a919b;
+  --border: #e6e8eb;
+  --border-strong: #c9ced4;
 
-  /* Chrome accent is ink (ledger), not verdigris. Verdigris stays on --up / sentiment only. */
+  /* Coral: the live or actionable thing. Subscribe, Follow, Publish, the
+   * one primary action on a screen, a live recording. Nothing else. */
+  --coral: #ff5a47;
+  --coral-text: #c8321f;
+  --on-coral: #101418;
+
+  /* Gain and loss: direction (long/short) and price movement only. */
+  --gain: #12b981;
+  --gain-text: #087a55;
+  --on-gain: #101418;
+  --loss: #e5484d;
+  --loss-text: #c92a31;
+  --on-loss: #101418;
+
+  /* Words about direction and price. Kept under their old names because
+   * ~150 call sites read them; they are the TEXT tones, never fills. */
+  --up: var(--gain-text);
+  --down: var(--loss-text);
+
+  /* The ink action colour: the default filled button, selected tabs, the
+   * text-selection highlight. It is NOT the accent, despite the name, and
+   * it must never be repointed at coral: every primary button and ~170
+   * other call sites would turn coral with unreadable white text. */
   --accent: var(--ink);
   --accent-ink: var(--paper);
-  --accent-weak: color-mix(in srgb, var(--ink) 10%, transparent);
+  --accent-weak: color-mix(in srgb, var(--ink) 8%, transparent);
 
-  --up: var(--verdigris);
-  --down: var(--rust);
+  /* Meanings that used to borrow brass, verdigris, rust or plum. Split out
+   * by meaning so each can change in one place; under the accent law they
+   * all resolve to ink and grey. */
+  --error: var(--ink); /* error text, destructive hovers */
+  --error-soft: var(--surface-2); /* error box fill */
+  --error-edge: var(--border-strong); /* error box border */
+  --notice-edge: var(--border-strong); /* caveat / "attorney review" notices */
+  --notice-soft: var(--surface-2);
+  --ok: var(--ink); /* done, connected, verified ticks */
+  --pending: var(--text-mute); /* in review, waiting */
+  --mark-edited: var(--text-mute); /* the edited-after-publish marker */
+  --highlight: color-mix(in srgb, var(--ink) 9%, transparent); /* text highlighter */
+  --chart-1: var(--ink);
+  --chart-2: var(--text-mute);
+  --chart-3: var(--text-faint);
 
-  --shadow-card: 0 1px 2px rgba(20, 23, 31, 0.06), 0 4px 12px rgba(20, 23, 31, 0.04);
+  --shadow-card: 0 1px 2px rgba(16, 20, 24, 0.05), 0 4px 12px rgba(16, 20, 24, 0.04);
 
   /* Frosted paper, for chrome that floats over the page (the phone tab bar).
-   * Paper at a little over half over a heavy blur, so what passes beneath
-   * shows through and tints it warm rather than grey; the edge is a hairline
-   * of ink and a top highlight of the paper itself, which is what reads as a
-   * lit glass edge. The blur, not the fill, is what keeps the labels legible. */
-  --glass: color-mix(in srgb, var(--paper) 55%, transparent);
+   * Paper at a little over half over a heavy blur; the edge is a hairline of
+   * ink and a top highlight of the paper itself, which reads as a lit glass
+   * edge. The blur, not the fill, is what keeps the labels legible. */
+  --glass: color-mix(in srgb, var(--paper) 60%, transparent);
   --glass-edge: color-mix(in srgb, var(--ink) 10%, transparent);
-  --glass-highlight: rgba(255, 255, 255, 0.55);
+  --glass-highlight: rgba(255, 255, 255, 0.6);
   /* The lens that marks the current tab: a shade of ink over the glass. */
-  --glass-lens: color-mix(in srgb, var(--ink) 12%, transparent);
-  --shadow-glass: 0 1px 2px rgba(20, 23, 31, 0.08), 0 10px 30px rgba(20, 23, 31, 0.14);
+  --glass-lens: color-mix(in srgb, var(--ink) 10%, transparent);
+  --shadow-glass: 0 1px 2px rgba(16, 20, 24, 0.08), 0 10px 30px rgba(16, 20, 24, 0.14);
 
-  --r-card: 12px;
-  --r-btn: 6px;
-  --r-tag: 6px;
+  /* Radius by ROLE. Never borrow another role's radius: a pill field or a
+   * rounded-square face is exactly the bug this split exists to prevent. */
+  --r-button: 999px; /* buttons and button-like links: pills */
+  --r-chip: 999px; /* ticker, stance and quiet chips */
+  --r-field: 10px; /* inputs, textareas, selects, search boxes */
+  --r-panel: 14px; /* cards, menus, popovers, dialogs, media frames */
+  --r-inner: 8px; /* small wells and thumbnails inside a panel */
+  --r-avatar: 50%; /* faces are always circles */
 
-  --font-display: var(--font-fraunces), var(--font-plex-hebrew), ui-serif, Georgia, "Noto Serif Hebrew", serif;
-  --font-sans: var(--font-plex-sans), var(--font-plex-hebrew), ui-sans-serif, system-ui, "Noto Sans Hebrew", sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  /* Heebo sits second in the display and sans stacks: the Latin faces have
+   * no Hebrew glyphs, so Hebrew falls through to Heebo (a neutral grotesque
+   * with weights to 800) instead of a system font. */
+  --font-display: var(--font-bricolage), var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
+  /* Tickers only. Prices and other figures are Inter with tabular figures. */
+  --font-mono: var(--font-jetbrains), ui-monospace, Menlo, monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -362,46 +404,36 @@
 }
 
 .dark {
-  --ink: #eff1ed;
-  --paper: #14171f;
-  --verdigris: #4f9c86;
-  --brass: #d1a35f;
-  /* #8672a0 read 4.20:1 on dark paper; lightened to clear 4.5:1 for the
-   * Opinion claim labels while staying the same muted plum. */
-  --plum: #9683b3;
-  --rust: #d17868;
+  --ink: #f3f4f6;
+  --paper: #0f1216;
 
-  --surface: #1a1d26;
-  --surface-2: #23262f;
+  --surface: #171b20;
+  --surface-2: #1d2127;
   --text: var(--ink);
-  --text-mute: color-mix(in srgb, var(--ink) 68%, transparent);
-  --text-faint: color-mix(in srgb, var(--ink) 58%, transparent);
-  --border: color-mix(in srgb, var(--ink) 16%, transparent);
-  --border-strong: color-mix(in srgb, var(--ink) 30%, transparent);
+  --text-mute: #a0a8b3;
+  --text-faint: #6e7681;
+  --border: #2a2f36;
+  --border-strong: #3d434b;
 
-  --accent: var(--ink);
-  --accent-ink: var(--paper);
-  --accent-weak: color-mix(in srgb, var(--ink) 12%, transparent);
+  /* Fills stay bright and keep black text; only the word tones lighten. */
+  --coral-text: #ff7a6a;
+  --gain-text: #34d399;
+  --loss-text: #f87171;
 
-  --up: var(--verdigris);
-  --down: var(--rust);
+  --accent-weak: color-mix(in srgb, var(--ink) 10%, transparent);
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.24);
 
-  --glass: color-mix(in srgb, var(--paper) 55%, transparent);
-  --glass-edge: color-mix(in srgb, var(--ink) 16%, transparent);
-  --glass-highlight: rgba(255, 255, 255, 0.08);
-  --glass-lens: color-mix(in srgb, var(--ink) 20%, transparent);
+  --glass: color-mix(in srgb, var(--paper) 60%, transparent);
+  --glass-edge: color-mix(in srgb, var(--ink) 14%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.07);
+  --glass-lens: color-mix(in srgb, var(--ink) 16%, transparent);
   --shadow-glass: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {
   --color-ink: var(--ink);
   --color-paper: var(--paper);
-  --color-verdigris: var(--verdigris);
-  --color-brass: var(--brass);
-  --color-plum: var(--plum);
-  --color-rust: var(--rust);
 
   --color-bg: var(--paper);
   --color-surface: var(--surface);
@@ -414,12 +446,19 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-weak: var(--accent-weak);
+  /* Text tones only. Coral, gain and loss are deliberately NOT --color-*
+   * entries: that would mint bg-/text-/border- utilities from one value,
+   * and one value cannot be both a legible word and a bright fill. Their
+   * utilities are defined below with the pairing built in. */
   --color-up: var(--up);
   --color-down: var(--down);
 
-  --radius-card: var(--r-card);
-  --radius-btn: var(--r-btn);
-  --radius-tag: var(--r-tag);
+  --radius-button: var(--r-button);
+  --radius-chip: var(--r-chip);
+  --radius-field: var(--r-field);
+  --radius-panel: var(--r-panel);
+  --radius-inner: var(--r-inner);
+  --radius-avatar: var(--r-avatar);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
@@ -427,10 +466,57 @@
 
   --default-font-family: var(--font-sans);
 
+  /* Five sizes. Tailwind's own scale (text-xs ... text-9xl) is deleted so a
+   * sixth size cannot creep back in through a utility. */
+  --text-*: initial;
+  --text-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
+  --text-display--line-height: 0.96;
+  --text-display--letter-spacing: -0.045em;
+  --text-headline: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+  --text-headline--line-height: 1.08;
+  --text-headline--letter-spacing: -0.03em;
+  --text-title: 1.1875rem;
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.015em;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.5;
+  --text-ticker: 0.8125rem;
+  --text-ticker--line-height: 1.4;
+
   /* The --space-N ramp (docs/FRONTEND.md 7.2) is for hand-written CSS only.
      Mapping it onto Tailwind's --spacing-N made h-9 render 96px instead of
      36px and skewed every p/m/gap step above 4; utilities use the standard
      4px-linear scale. */
+}
+
+/* Coloured fills carry their own black text, so a fill can never be written
+ * without its readable ink. Coloured words use the deeper -text tones. */
+@utility bg-coral {
+  background-color: var(--coral);
+  color: var(--on-coral);
+}
+@utility bg-gain {
+  background-color: var(--gain);
+  color: var(--on-gain);
+}
+@utility bg-loss {
+  background-color: var(--loss);
+  color: var(--on-loss);
+}
+@utility text-coral {
+  color: var(--coral-text);
+}
+@utility text-gain {
+  color: var(--gain-text);
+}
+@utility text-loss {
+  color: var(--loss-text);
+}
+@utility border-coral {
+  border-color: var(--coral);
+}
+@utility ring-coral {
+  --tw-ring-color: var(--coral);
 }
 
 /* The default hairline. Inside the base layer on purpose: Tailwind's

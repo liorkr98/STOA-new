@@ -21,7 +21,7 @@ import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
 import { CUSTOM_RANGE, STOCK_RANGES } from "@/lib/markets/chart-ranges";
 import { periodChangePct } from "@/lib/markets/chart-change";
-import { canvasColor } from "@/lib/design/canvas-color";
+import { canvasColor, canvasFont } from "@/lib/design/canvas-color";
 
 function cssVar(name: string): string {
   return canvasColor(name);
@@ -85,12 +85,14 @@ export function PriceChart({
     const host = hostRef.current;
     if (!host || candles.length < 2) return;
 
-    const ink = cssVar("--ink") || "#14171f";
-    const paper = cssVar("--paper") || "#faf8f4";
-    const up = cssVar("--verdigris") || "#2f6e5d";
-    const down = cssVar("--rust") || "#a6483c";
-    const grid = cssVar("--border") || "rgba(20,23,31,0.12)";
-    const muted = cssVar("--text-faint") || "rgba(20,23,31,0.45)";
+    // Fallbacks are the light Direction B tokens. Lines use the text tones of
+    // gain and loss: the bright fills fall under 3:1 as a thin line on white.
+    const ink = cssVar("--ink") || "#101418";
+    const paper = cssVar("--paper") || "#fafafa";
+    const up = cssVar("--up") || "#087a55";
+    const down = cssVar("--down") || "#c92a31";
+    const grid = cssVar("--border") || "#e6e8eb";
+    const muted = cssVar("--text-mute") || "#5b6470";
     const stroke = rising ? up : down;
 
     const chart: IChartApi = createChart(host, {
@@ -99,7 +101,7 @@ export function PriceChart({
         background: { type: ColorType.Solid, color: paper },
         textColor: muted,
         attributionLogo: true,
-        fontFamily: "IBM Plex Mono, ui-monospace, monospace",
+        fontFamily: canvasFont(),
         fontSize: 11,
       },
       grid: {

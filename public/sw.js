@@ -1,6 +1,7 @@
 /* App-shell worker. Keep bypass rules in sync with src/lib/pwa/cache-policy.ts.
    Never cache HLS, mp4, Bunny, or /demo/ clips. */
-const CACHE = "stoa-shell-v2";
+// v3: the Direction B palette changed the icons and the offline page.
+const CACHE = "stoa-shell-v3";
 const OFFLINE = "/offline";
 const PRECACHE = [OFFLINE, "/icon/192", "/icon/512", "/apple-icon"];
 

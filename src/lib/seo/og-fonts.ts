@@ -13,6 +13,9 @@
  * directly -- so we fetch whatever format the default request returns rather
  * than fighting Google's CDN for a format we no longer need.
  */
+/** `family` is the plain name with spaces ("JetBrains Mono"). Passing the
+ *  URL form ("IBM+Plex+Mono") double-encodes the plus signs, Google answers
+ *  400, and the share image fails with a 500: that was live until 2026-09-27. */
 export async function loadGoogleFont(
   family: string,
   weight: number,

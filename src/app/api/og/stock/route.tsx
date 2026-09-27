@@ -4,14 +4,17 @@ import { loadGoogleFont } from "@/lib/seo/og-fonts";
 
 export const runtime = "edge";
 
-const INK = "#14171f";
-const PAPER = "#eff1ed";
-const VERDIGRIS = "#2f6e5d";
+// Share images are rendered by Satori and cannot read CSS variables. These
+// are the Direction B tokens: --paper, --ink, --text-mute, --border.
+const PAPER = "#FAFAFA";
+const INK = "#101418";
+const MUTE = "#5B6470";
+const LINE = "#E6E8EB";
 
 /**
- * Ledger-styled OG card per ticker: 1200x630, ink background, doubled
- * hairline border, Plex Mono for the ticker/price, Fraunces for the company
- * name -- the same trust language as the .ledger-card treatment elsewhere.
+ * Share card per ticker: 1200x630, paper background, the ticker in JetBrains
+ * Mono (tickers are the one thing mono is for), the company name in
+ * Bricolage Grotesque, the price and footer in Inter.
  *
  * Runs on Edge for fast image generation, but the price comes from a same-
  * origin fetch to /api/market/quote rather than importing the market engine
@@ -39,20 +42,22 @@ export async function GET(req: Request) {
 
   // Subset each font request to only the glyphs the card actually renders --
   // smaller font payload, faster Edge response.
-  const monoText = `${ticker}$.0123456789STOAINDEPENDENTANALYSTRESEARCH·`;
-  const serifText = name || ticker;
+  const monoText = ticker || "STOA";
+  const displayText = `stoa${name || ticker}`;
+  const interText = "$.,0123456789Independent analyst research";
 
   // Satori has no built-in fallback font -- it throws ("No fonts are loaded")
   // if this array is empty, so a Google Fonts outage genuinely fails this
-  // route. That matches every other @vercel/og example in the wild; there's
-  // no fontless render path to degrade to.
-  const [plexMono, fraunces] = await Promise.all([
-    loadGoogleFont("IBM+Plex+Mono", 600, monoText),
-    loadGoogleFont("Fraunces", 500, serifText),
+  // route. There is no fontless render path to degrade to.
+  const [mono, display, sans] = await Promise.all([
+    loadGoogleFont("JetBrains Mono", 600, monoText),
+    loadGoogleFont("Bricolage Grotesque", 800, displayText),
+    loadGoogleFont("Inter", 600, interText),
   ]);
   const fonts = [
-    { name: "IBM Plex Mono", data: plexMono, weight: 600 as const, style: "normal" as const },
-    { name: "Fraunces", data: fraunces, weight: 500 as const, style: "normal" as const },
+    { name: "JetBrains Mono", data: mono, weight: 600 as const, style: "normal" as const },
+    { name: "Bricolage Grotesque", data: display, weight: 800 as const, style: "normal" as const },
+    { name: "Inter", data: sans, weight: 600 as const, style: "normal" as const },
   ];
 
   return new ImageResponse(
@@ -63,92 +68,42 @@ export async function GET(req: Request) {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: INK,
-          position: "relative",
-          padding: "56px",
-          fontFamily: "IBM Plex Mono",
+          justifyContent: "space-between",
+          backgroundColor: PAPER,
+          color: INK,
+          padding: "64px 72px",
+          fontFamily: "Inter",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 24,
-            border: `1px solid ${PAPER}2e`,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 30,
-            border: `1px solid ${PAPER}14`,
-          }}
-        />
+        <span style={{ fontFamily: "Bricolage Grotesque", fontSize: 44, letterSpacing: -1.8 }}>
+          stoa
+        </span>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            width: "100%",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex" }}>
-            <span
-              style={{
-                fontSize: 22,
-                letterSpacing: 6,
-                color: `${PAPER}8c`,
-                textTransform: "uppercase",
-              }}
-            >
-              STOA
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 32 }}>
+            <span style={{ fontFamily: "JetBrains Mono", fontSize: 132, letterSpacing: -2 }}>
+              {ticker || "STOA"}
             </span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 28 }}>
-              <span
-                style={{
-                  fontSize: 132,
-                  fontWeight: 600,
-                  color: PAPER,
-                  letterSpacing: -3,
-                }}
-              >
-                {ticker || "STOA"}
-              </span>
-              {price != null && (
-                <span style={{ fontSize: 56, fontWeight: 600, color: VERDIGRIS }}>
-                  ${price.toFixed(2)}
-                </span>
-              )}
-            </div>
-            {name && (
-              <span
-                style={{
-                  fontFamily: "Fraunces",
-                  fontSize: 40,
-                  color: `${PAPER}d9`,
-                }}
-              >
-                {name}
-              </span>
+            {price != null && (
+              <span style={{ fontSize: 56 }}>${price.toFixed(2)}</span>
             )}
           </div>
-
-          <div style={{ display: "flex" }}>
+          {name && (
             <span
               style={{
-                fontSize: 18,
-                letterSpacing: 3,
-                color: `${PAPER}80`,
-                textTransform: "uppercase",
+                fontFamily: "Bricolage Grotesque",
+                fontSize: 52,
+                lineHeight: 1.05,
+                letterSpacing: -2,
               }}
             >
-              {"Independent analyst research"}
+              {name}
             </span>
-          </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", borderTop: `2px solid ${LINE}`, paddingTop: 24 }}>
+          <span style={{ fontSize: 24, color: MUTE }}>Independent analyst research</span>
         </div>
       </div>
     ),

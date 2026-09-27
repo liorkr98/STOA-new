@@ -7,9 +7,11 @@ import { formatHex, parse, wcagContrast } from "culori";
  * rejected. Pure module -- safe on server and client.
  */
 
-// Paper values from globals.css (light / dark). Contrast is checked against both.
-const PAPER_LIGHT = "#eff1ed";
-const PAPER_DARK = "#14171f";
+// --paper from globals.css (light / dark). Contrast is checked against both.
+// This module runs on the server too, so it cannot read the CSS variables;
+// keep these in step with globals.css (test:contrast checks they match).
+export const PAPER_LIGHT = "#fafafa";
+export const PAPER_DARK = "#0f1216";
 const AA = 3; // AA for large text / UI accent surfaces vs the page background.
 
 /** Parse any CSS color (hex, rgb, oklch, ...) to a hex string, or null. */
@@ -25,9 +27,10 @@ export function toHex(input: string): string | null {
 
 /** Text color (ink or paper) that reads on top of the given accent. */
 export function accentInk(hex: string): string {
-  const onDark = wcagContrast(hex, "#f4f6f2");
-  const onLight = wcagContrast(hex, "#0e1712");
-  return onDark >= onLight ? "#f4f6f2" : "#0e1712";
+  // --paper (light) and --ink (light), whichever reads better on the accent.
+  const onDark = wcagContrast(hex, "#fafafa");
+  const onLight = wcagContrast(hex, "#101418");
+  return onDark >= onLight ? "#fafafa" : "#101418";
 }
 
 export interface AccentCheck {
