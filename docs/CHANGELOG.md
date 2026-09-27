@@ -10,6 +10,72 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-27: The publication page in Direction B
+
+The page where a reader decides whether to pay, rebuilt in the new design.
+A publication's stance is a ticker and a direction; there is no call block.
+
+**What a visitor notices**
+
+- A large display headline, the standfirst, then a byline with the
+  analyst's round face, name, date, reading time and views, the Edited
+  marker when the piece was changed, and Follow.
+- The video beside the text on a desktop (unchanged: it stays in view while
+  the text scrolls) and under the byline on a phone (unchanged: once it is
+  playing and scrolled away it shrinks to a corner). Still plays only on a
+  press; nothing downloads before. The poster now shows an empty scrub bar.
+- The stance as two quiet chips (ticker, direction), with like, save and
+  share on the same line.
+- The body at the reading size. Figures written one after another show as a
+  row of large numbers. A quote shows as a pull quote behind a coral bar.
+  Evidence cards sit between paragraphs rather than in a strip above the
+  text; a card the analyst placed in the text shows where they put it.
+- A locked piece now visibly continues: the page fades into a panel that
+  says "The rest is for subscribers." (or the price), how many minutes are
+  left, and the offer. Signed-out readers see the real price on the button
+  and come back to the piece after signing in.
+- The disclosure and "not financial advice" panels are soft grey wells in
+  place of the heavy black double border. Same fixed rows, still always
+  open, still never branded.
+- The discussion has a proper heading; the Author tag is a solid ink pill.
+- A fixture at `/dev/report` shows every block, with flags for the locked,
+  paid, no-stance and no-clip states.
+
+**Found and fixed on the way**
+
+- Cards an analyst placed inside a thesis showed "Card no longer in the
+  deck" to every reader: the page never gave the text the card list.
+- Locked cards were inverted. Everyone who could read the piece (free
+  pieces, subscribers, buyers, the author) saw them sealed; the readers who
+  could not read never saw the seal at all. Now entitled readers get them
+  open and everyone else a sealed shell, sent without its contents.
+- Figure notes were always green, so "-3 weeks" read as a gain. They are
+  plain words now (green and red are for direction and price).
+- Hebrew bodies read indented on the right: the reader removed the editor's
+  gutter on the left side only.
+- The video's side bands turned light grey in dark mode. They are black.
+- A development warning from the fact-check highlighter (it tore down its
+  popovers mid-render).
+
+**Choices made**
+
+- The locked fade is drawn from filler words blurred past reading, never
+  from the body, because a gated reader's page is built without the body.
+  The reading time is counted on the server and only the number leaves.
+- Follow is a coral outline, not a fill, on a locked piece, so Subscribe is
+  the one coral fill in view. A one-off unlock is ink on its own and ghost
+  beside Subscribe.
+- `PaywallGate` is deleted; `ReportGate` replaced it.
+
+**What needs Krisi**
+
+- Nothing in the schema. The seal shells and gated reading time use the
+  service key on the server, as other reads already do.
+- Content, not code: about 170 demo publications say "the target is stated
+  in the call block above", about 330 mention a horizon, and many carry
+  "LONG X · 30-day horizon. [Demo call]" lines. They now read as references
+  to something that is not on the page. Rewrite or retire the seed.
+
 ## 2026-09-27: Today's faces open as stories
 
 Tapping a face in Today's row used to take you to that analyst's profile.

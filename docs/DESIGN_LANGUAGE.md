@@ -80,6 +80,10 @@ gain 7.3, on loss 4.7.
   ring marks an analyst with something the reader has not seen: it stays until the reader has
   watched that analyst through, and returns only when they post again. It is live information about a person, drawn as a ring
   (`.today-ring`), never a fill or a word.
+- **The pull quote bar (asked for by Bar in the publication page brief, 2026-09-27).** A quote in
+  a report body is drawn as the pull quote: display type behind a 4px coral bar
+  (`.stoa-prose blockquote`). Like the ring it is drawn, never a word or a fill, and it marks
+  the one line the analyst chose as the one that matters. Nowhere else.
 - **Green and red carry direction (long / short) and price movement, nothing else.** Not
   success, not error, not "saved", not approve/reject, not a chart series that is not a price.
 - **THE ERROR EXCEPTION (decided by Bar, 2026-09-27).** A failed payment or a rejected form must
@@ -189,8 +193,10 @@ Every chart imports its scales from `src/lib/design/chart-theme.ts`.
 
 Paper for the page, white cards with a hairline, the well for inset panels and fields. One soft
 shadow (`--shadow-card`) for things that float. No paper texture outside the creator storefront,
-never under reading text. `.ledger-card` (the doubled hairline) stays reserved for trust-critical
-blocks (the disclosure block).
+never under reading text. The trust panels (disclosure, not financial advice) are wells, fixed in
+shape and never brandable; the old doubled black border (`.ledger-card`) is no longer used for
+them. No hairline or dashed rule separates content: whitespace does. Card edges and field edges
+are not rules.
 
 ## 7. Motion and density
 

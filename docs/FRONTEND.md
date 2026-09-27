@@ -130,9 +130,10 @@ uppercase, no letterspaced labels. `.num` gives tabular figures in Inter.
 `rounded-panel` (14px: cards, menus, dialogs, media), `rounded-inner` (8px: wells, rows, tiles),
 `rounded-avatar` (circle). Never borrow another role's radius.
 
-**Shadow:** one elevation value, `--shadow-card`, used sparingly. Trust-critical cards (the
-disclosure block) keep the doubled hairline of `.ledger-card`, reserved for information that must
-never be mistaken for ordinary content.
+**Shadow:** one elevation value, `--shadow-card`, used sparingly. The trust panels (the
+disclosure block and the advice panel) are grey wells with the panel radius since the
+publication page was rebuilt (2026-09-27); they are set apart by being fixed in shape and never
+brandable, not by a heavier border.
 
 ### 1.5 Motion principles
 
@@ -304,8 +305,8 @@ Fixed layout, always three rows, always visible (never collapsed, never inside a
 └───────────────────────────────────────────────┘
 ```
 
-Rendered as a ledger-card (double-ruled border, `--paper` background at 100% opacity even when
-the rest of the page has a paywall scrim over it — see §2.4). Each row is a fixed-format chip,
+Rendered as a grey well (`bg-surface-2`, `rounded-panel`) headed "Disclosure", the rows
+separated by space rather than rules, identical for every analyst and on every page. Each row is a fixed-format chip,
 not free text, specifically so a creator cannot write persuasive copy into their own disclosure.
 If `compensation_tied = true`, the second row expands one line to show `compensation_detail`
 verbatim, in `--text-sm`, no styling flourishes.
@@ -314,22 +315,20 @@ This is the one component in the entire product explicitly *not* covered by a cr
 controls (§ Page Branding, Part 3). State that constraint directly in the component's own code
 comments for Claude Code's benefit: **never accept a theme/color prop on this component.**
 
-### 2.4 `<PaywallGate>`
+### 2.4 `<ReportGate>` (replaced `<PaywallGate>` on 2026-09-27)
 
-Wraps the report body content only — never the ticker strip, the stance chips or the disclosure
-block, which render above/outside this component entirely.
+The locked section of a publication a reader may not read (`src/components/report/report-gate.tsx`).
 
-- Renders the wrapped content up to a configurable line-clamp (default: first 3 paragraphs), then
-  applies a soft gradient scrim (`--paper` fading from 0% to 100% opacity over the final 80px of
-  visible text) rather than a hard cutoff — this avoids the jarring "content just stops" feeling.
-- Below the scrim: two buttons side by side, **not** styled as one primary/one secondary — they're
-  genuinely alternative paths, so both render as equal-weight outlined buttons: `Unlock this
-  report — $4` and `Subscribe to [Creator] — $12/mo`. A small line beneath: "Already subscribed?
-  [Log in]"
-- Loading state while checking entitlement server-side: the gate renders in its "locked" visual
-  state by default and swaps to full content only once the server confirms access — **never
-  flash the full paywalled content before the check resolves,** which is both a security smell
-  and a jarring flicker.
+- The page is built on the server without the body (RLS returns none, and the page never asks
+  for it for a gated reader), so the fade is drawn from fixed filler words, blurred past reading,
+  not from the body. The reading time and "N more minutes" are counted on the server with the
+  service key (`gatedReadMinutes`); only the number leaves.
+- Below the fade, a grey well: "The rest is for subscribers." (or "The rest of this piece is
+  $X."), a line saying how much is left, then the offer. **Subscribe is coral**; a one-time
+  unlock is ink on its own and ghost beside Subscribe (a paid piece members may also open).
+- Signed out, the buttons show the real offer with its price and go through sign-in with
+  `?next=` back to the piece. A quiet line names the separate platform fee and offers Sign in.
+- A sealed card anywhere on the page scrolls to the gate (`#report-gate`).
 
 ### 2.5 `<LockConfirmModal>` (retired 2026-09-24)
 
@@ -859,8 +858,8 @@ fold — ticker strip, creator strip (avatar, name, Follow), the stance chips (f
 gated), the `<DisclosureBlock>` (fully visible, never gated), and the fact-check summary strip
 (fully visible, never gated).
 
-Only the report body itself is wrapped in `<PaywallGate>` (§2.4), previewing the first 2–3
-paragraphs before the scrim.
+Only the report body is gated: a gated reader's page is built without it and ends in the locked
+section (`<ReportGate>`, §2.4), which fades filler, never the body, into the offer.
 
 **Bottom bar:** Share button (copies/opens a native share sheet with this exact URL — this page
 *is* the shareable object, so there's no separate "public preview link" to generate), and a small
@@ -1076,69 +1075,56 @@ filter row showing.
 This is the highest-scrutiny page in the product — every element here exists to answer "can I
 trust this specific claim, right now."
 
-**Evidence cards (`<ReportCards>`).** The publication's card stack renders here as a horizontal
-strip above the thesis, reusing the Feed's `FeedCardView` so a card looks identical in both
-places. Per-card locks still apply, so the strip sits either side of the report paywall and
-sealed cards blur themselves. Profile and Today deliberately show only the `CARDS` content
-badge, not the deck. A `figure` card's image must be a stored `http(s)` URL: the schema rejects
-anything else, and a stored value that is not fetchable falls back to the card's own
-"Figure not available" placeholder rather than being handed to the image loader.
+Rebuilt in Direction B on 2026-09-27 (`src/components/report/report-view.tsx`, data built in
+`src/app/(app)/report/[id]/page.tsx`, fixture at `/dev/report`). There is no call block: a
+publication's stance is a ticker and a direction and nothing more.
 
-**Archived publications (`<ArchivedBanner>`).** An archived publication opens with a solid-ink
-ARCHIVED chip above the headline, saying it is hidden from the public, with Restore inline for
-the author. An archived publication must never be indistinguishable from a live one.
+**Reading column, top to bottom:**
 
-**Full layout, desktop (two columns inside a frame; each column scrolls on its own):**
+1. Archived banner, when archived (solid-ink Archived chip, Restore for the author).
+2. The headline at the display size (headline size above 80 characters), then the standfirst in
+   muted Inter at the title size.
+3. The byline: circular face, name (verified tick), a meta line `Thesis · 17 Sep · 6 min read ·
+   12.8K views`, the EDITED marker on that line when the piece was edited, and Follow on the
+   right (coral fill; coral outline when the piece is gated, so Subscribe is the one fill in
+   view; hidden for the author).
+4. The stance, quiet: `TickerChip` (links to the ticker page) and `StanceChip`, or a
+   `ThemeChip` for a piece with no ticker; like, save and share as small ghost buttons on the
+   same line.
+5. The body at the reading size (`.stoa-prose--read`, Inter 17 to 18px, headings in
+   Bricolage). Key figures (consecutive data figures) read as one row of large numbers, three
+   across, two on a phone; a quote is the pull quote (display type behind a 4px coral bar);
+   section breaks are whitespace. Evidence cards sit inside the body: where the analyst placed
+   them in a Tiptap body, otherwise one after each paragraph from the second, leftovers after
+   the text (`interleaveCards`). There is no card strip any more.
+6. For a gated reader: the open cards, then the locked section (§2.4).
+7. The discussion (`DiscussionThread`, page variant): a Bricolage heading with the count,
+   replies, likes, delete your own, the ink Author tag.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  <TopNav>                                                     │
-├─────────────────────────────────────┬─────────────────────────┤
-│  TICKER · Company Name · $XX.XX ↑0.4% │  [clip]                 │
-│  THESIS · NVDA · LONG  [EDITED]        │                         │
-│  Report Headline                       │  [avatar] Creator Name  │
-│                                        │  [Subscribe/Following]  │
-│  ── report body                        │                         │
-│     with <FactCheckLayer> annotations  │  ┌─ DISCLOSURE BLOCK ─┐ │
-│     inline throughout ──               │  │ Position: ...      │ │
-│                                        │  │ Compensation: ...   │ │
-│  [PaywallGate scrim if not entitled]  │  │ Views: certified    │ │
-│                                        │  └─────────────────────┘ │
-│                                        │  [fact-check summary]   │
-│  Share · Report an issue               │  9 fact · 2 unproven    │
-└─────────────────────────────────────┴─────────────────────────┘
-```
+**Clip column (desktop):** the clip (click to play, never autoplay, nothing fetched before the
+press; black letterbox in both themes; an empty scrub track on the poster), then the disclosure
+well, the advice well, and the fact-check summary when there are claims.
 
-- The stance is the ticker and direction chips beside the type label under the masthead; there
-  is no call block, no target, no horizon and no status. The right column holds the clip, the
-  analyst, disclosure and the fact-check summary. The page is a **`<ScrollFrame>`**
-  (`src/components/layout/scroll-frame.tsx`) that fills the room under the nav; the writing
-  scrolls in its column and the right column stays in view for the length of the read, so the
-  trust surface never scrolls away from the claims it vouches for. It is **not** `position:
-  sticky`: it used to be, pinned `top-20` inside the app's scrolling column, and since the nav is
-  not inside that column the rail sat a band lower than the masthead. See §6.2 for why nothing in
-  the app is pinned to a nav height any more.
-- **Mobile:** below `lg` the frame itself is the scroller and both columns are `display:
-  contents`, so the blocks order themselves: masthead, clip, writing, trust panels, comments. Same
-  content, same order, nothing sticky.
-- The reading-progress bar follows the nearest scroller (`animation-timeline: scroll(nearest)`),
-  which is the writing column. It used to follow the document, which never scrolls inside the app
-  shell, so it never moved.
-- Report body typography: Inter at the body size with a long line height (`.t-body-editorial`, `.stoa-prose--read`). The principle stays: this is the one place
-  where long-form reading is the point, so the body gets a reading face and measure.
-- **`<FactCheckLayer>`** wraps the entire body as described in §2.6 — underlined claims, hover/tap
-  popovers, debate icons on opinion claims.
-- **Bottom bar:** Share button (native share sheet / copy-link), "Report an issue" (opens a
-  lightweight form — flags to moderation, not a public comment)
+**Evidence cards and locks.** Cards are read with the reader's own session. A reader who may
+read the piece (free, author, buyer, subscriber) gets locked cards open (`listCardsForReport(id,
+{ entitled })`); anyone else gets the open cards plus an empty sealed shell per locked card,
+read with the service key and carrying only kind and id. Before 2026-09-27 this was inverted:
+entitled readers saw seals, and the readers the seal was for saw nothing. A `figure` card's
+image must be a stored `http(s)` URL.
+
+**Layout.** The page is a **`<ScrollFrame>`** that fills the room under the nav; each column
+scrolls on its own, so the clip and the trust panels stay beside the text for the length of the
+read. It is not `position: sticky` (see §6.2). Below `lg` the frame is the scroller and both
+columns are `display: contents`, ordered: headline and byline, clip, stance, body or gate, trust
+panels, discussion. On a phone the playing clip docks to a corner once scrolled away. The
+reading-progress bar follows the nearest scroller.
 
 **States:**
 
-- Not yet entitled: `<PaywallGate>` active on the body only, everything else full-strength per
-  §2.4
-- Loading: skeleton for the report body only; ticker strip, stance chips and disclosure block
-  render from cached/fast metadata queries and should appear near-instantly even if the body is
-  still loading
-- Edited: the `<EditedMarker>` beside the byline (§2.14)
+- Gated: the locked section replaces the body; the stance, clip, open cards, disclosure and
+  discussion stay full-strength.
+- Clip on its way: `ClipPendingPlayer` holds the frame (failed only for the author).
+- Edited: the `<EditedMarker>` on the byline's meta line (§2.14).
 
 ### 5.4 Creator profile (logged-in investor view) — `/@handle`
 
@@ -1723,7 +1709,7 @@ instrument does not, because Stoa claims to track it.
   /@[handle]/[slug]       -- report detail / public preview (shared route, entitlement-aware rendering)
 /components
   /ui                    -- Button, Input, Chip, Toast, Modal base primitives
-  /shared                -- TopNav, DisclosureBlock, PaywallGate, FactCheckLayer, DebateThread,
+  /shared                -- TopNav, DisclosureBlock, ReportGate, FactCheckLayer, DebateThread,
                              EditedMarker  (Part 2, one file each)
   /feed                  -- FeedCard, CreatorCard
 /lib
