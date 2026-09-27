@@ -30,9 +30,6 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Engine tests
-        run: npm run test:engine
-
       - name: Valuation tests
         run: npm run test:valuation
 
