@@ -150,8 +150,8 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                 />
                 <div>
                   <div className="num text-ticker">
-                    {new Date(e.dateISO).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toUpperCase()}
-                    {e.past ? " · PAST" : ""}
+                    {new Date(e.dateISO).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {e.past ? " · past" : ""}
                   </div>
                   <div className="mt-0.5 font-display text-body font-semibold leading-snug tracking-tight">{e.label}</div>
                 </div>

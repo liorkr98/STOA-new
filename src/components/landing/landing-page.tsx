@@ -61,7 +61,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
         <div className="mt-8">{ACTIONS}</div>
         <p className="mt-4 text-ticker text-text-mute">Free to join. Watching needs an account.</p>
         {quiet ? null : (
-          <p className="num mt-6 text-ticker text-text-mute">{activity.toUpperCase()}</p>
+          <p className="num mt-6 text-ticker text-text-mute">{activity}</p>
         )}
         <p className="num mt-10 text-ticker text-text-mute">or scroll to see today ↓</p>
       </div>
