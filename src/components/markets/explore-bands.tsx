@@ -180,7 +180,7 @@ export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
               </span>
             </Link>
             <StanceChip direction={r.direction} />
-            <span className="markets-row-meta num">Covered {sinceLabel(r.coveredAt).toLowerCase()}</span>
+            <span className="markets-row-meta num">Covered {sinceLabel(r.coveredAt).replace(/^Just now$/, "just now")}</span>
           </div>
         ))}
       </div>
