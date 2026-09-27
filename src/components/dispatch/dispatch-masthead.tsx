@@ -25,8 +25,7 @@ export function DispatchMasthead({
 }) {
   const [year, month, day] = dateIso.split("-");
   const monthShort = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 17))
-    .toLocaleDateString("en-US", { month: "short", timeZone: "America/New_York" })
-    .toUpperCase();
+    .toLocaleDateString("en-US", { month: "short", timeZone: "America/New_York" });
   const dateline = formatDispatchDateline(dateIso);
   const isHome = mode === "home";
   // Home reads as the dominant "TODAY" front page; the public dispatch keeps

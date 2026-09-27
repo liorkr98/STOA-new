@@ -53,7 +53,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
   return (
     <section aria-label="Stoa" className="landing-doors">
       <div className="gutter-x mx-auto flex max-w-[var(--w-reading)] flex-col items-center pt-16 text-center md:pt-24">
-        <h1 className="dispatch-wordmark landing-wordmark">STOA</h1>
+        <h1 className="dispatch-wordmark landing-wordmark">stoa</h1>
         <p className="mt-5 font-display text-title tracking-tight text-text md:text-headline">Think clearly. Invest better.</p>
         <p className="mt-6 max-w-[46ch] font-display text-body leading-relaxed text-text-mute">
           Independent analysts publish their research on video.

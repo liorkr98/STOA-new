@@ -34,9 +34,7 @@ export function ComposeHeader({
     >
       <ComposeBackLink />
       <span aria-hidden className="h-4 w-px bg-border" />
-      <span className="font-display text-body font-semibold text-text">
-        STOA
-      </span>
+      <span className="font-display text-body font-extrabold tracking-[-0.04em] text-text">stoa</span>
       <span className="num min-w-0 truncate text-ticker text-text-mute">
         Compose{crumb ? ` · ${crumb}` : ""}
       </span>

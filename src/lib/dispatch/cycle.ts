@@ -25,8 +25,7 @@ function nyDateline(ymd: string): string {
       month: "long",
       day: "numeric",
       year: "numeric",
-    })
-    .toUpperCase();
+    });
 }
 
 /** Current dispatch window anchored to the NY calendar day label. */
