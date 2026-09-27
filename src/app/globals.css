@@ -1314,11 +1314,6 @@ body {
   background: var(--border-strong);
 }
 
-.dispatch-briefing-tagline {
-  max-width: 36ch;
-  margin-inline: auto;
-}
-
 .dispatch-lead-headline--start,
 .dispatch-lead-dek--start {
   text-align: left;
@@ -1489,15 +1484,6 @@ body {
   color: var(--text);
 }
 
-/* Deliberately much quieter than the header it sits beside: the note
- * explains the department, it does not compete to name it. */
-.band-note {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  line-height: 1.4;
-  color: var(--text-mute);
-}
-
 .band-see-all {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
@@ -1509,18 +1495,6 @@ body {
 }
 .band-see-all:hover {
   color: var(--text);
-}
-
-.band-badge {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 600;
-  color: var(--text-mute);
-  border: 1px solid var(--border);
-  border-radius: var(--r-chip);
-  padding: 0.125rem 0.5rem;
 }
 
 .band-col-head {
@@ -1896,10 +1870,6 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-.markets-row--reserved {
-  opacity: 0.55;
-}
-
 .markets-row-name {
   display: flex;
   min-width: 0;
@@ -1912,20 +1882,6 @@ body {
 .markets-row-meta {
   font-size: var(--type-ticker);
   color: var(--text-mute);
-}
-
-/* ---- movement: two peer columns ---- */
-
-.markets-movement {
-  display: grid;
-  gap: var(--space-6);
-  margin-top: var(--space-5);
-}
-@media (min-width: 768px) {
-  .markets-movement {
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--space-8);
-  }
 }
 
 /* ---- sectors ---- */
@@ -2130,67 +2086,11 @@ body {
   color: var(--text);
 }
 
-/* ---- consensus ---- */
-
-.stock-consensus {
-  display: grid;
-  gap: var(--space-5);
-  margin-top: var(--space-5);
-  padding: var(--space-5);
-  border: 1px solid var(--ink);
-  border-radius: var(--r-panel);
-  background: var(--surface);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent),
-    var(--shadow-card);
-}
-@media (min-width: 768px) {
-  /* Auto columns rather than a fixed four: the coverage block carries three
-     figures on an instrument and four on a sector, and neither should leave a
-     reserved empty cell. */
-  .stock-consensus {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-  }
-}
-
-.stock-consensus-figure {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: var(--type-title);
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
 .stock-consensus-key {
   margin-top: var(--space-1);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   color: var(--text-mute);
-}
-
-/* ---- tables + strips ---- */
-
-.stock-table {
-  width: 100%;
-  margin-top: var(--space-4);
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-.stock-table th {
-  font-family: var(--font-sans);
-  font-size: var(--type-ticker);
-  font-weight: 500;
-  color: var(--text-mute);
-  text-align: left;
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border-strong);
-}
-.stock-table td {
-  padding-block: var(--space-3);
-  border-bottom: 1px solid var(--border);
-  font-size: var(--type-ticker);
-  color: var(--text);
 }
 
 .stock-peers {
@@ -2318,18 +2218,6 @@ body {
   height: 100%;
   background: var(--accent);
   opacity: 0.55;
-}
-
-/* ---- sector performance placeholder ---- */
-
-.sector-perf {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: var(--space-5);
-  min-height: 12rem;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--r-panel);
 }
 
 /* ------------------------------------------------------------------ *
