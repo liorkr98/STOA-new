@@ -56,6 +56,10 @@ saying to take its visuals, not its product.
   publish at market open"; the template picker and assistant pointed at a
   "call panel" that no longer exists; the Treasury pages explained yields in
   terms of a call.
+- **CI had failed on every run since 2026-09-24.** The grading removal
+  deleted the `test:engine` script but `.github/workflows/ci.yml` still ran
+  it, so CI stopped there and never reached the valuation, ranking, RLS or
+  build checks (deploys were unaffected). The step is removed.
 - The Cursor rule every Cursor session loads described an even older system
   (signal blue, Space Grotesk, 8px buttons, "grade tags").
 - Comments, `.env.example`, the operations docs (SCALE, MARKET_DATA,
@@ -66,11 +70,6 @@ saying to take its visuals, not its product.
 
 **Found and left**
 
-- **CI has failed on every run since 2026-09-24.** The grading removal
-  deleted the `test:engine` script but `.github/workflows/ci.yml` still runs
-  it, so CI stops there and never reaches the ranking, RLS or build checks.
-  Deploys are unaffected. The fix is deleting that one step; it was not made
-  in this batch.
 - **Legal page content** (`src/lib/legal/content.ts`, `constants.ts`) still
   describes locked price targets, horizons, Hit/Miss and MOAT scores. Left
   for counsel, with the compliance brief and the landing page.
@@ -82,8 +81,9 @@ saying to take its visuals, not its product.
 - **Design leftovers for the token batch:** the email templates, the stock
   share image, and the design comments in `globals.css` and the Today
   components all name the retiring system.
-- "Live calls" in the plan perks list probably means live sessions, not
-  grading; worth a look.
+- "Live calls" in the plan perks list was checked: it is a suggested
+  subscription perk beside "Video access" and "Model downloads", meaning live
+  sessions with members, and nothing reads it as grading. Left as is.
 
 **What needs Krisi**
 
