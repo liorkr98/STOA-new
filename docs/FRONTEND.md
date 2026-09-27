@@ -20,8 +20,8 @@
 > sample screens predate the grading removal). `npm run test:contrast` enforces the colour, label
 > and mono rules in CI.
 >
-> The tokens and shared primitives changed first; **surfaces are rebuilt one at a time, starting
-> with Today.** Until a surface is rebuilt it keeps its old layout in the new colours and type.
+> The tokens and shared primitives changed first; **surfaces are rebuilt one at a time. Today was
+> first (2026-09-27, §3.1b).** Until a surface is rebuilt it keeps its old layout in the new colours and type.
 > Where a page section below describes an old treatment (a broadsheet rule, a letterspaced
 > label), it says so; that treatment is not a rule to preserve.
 
@@ -64,7 +64,7 @@ is: **analysts people follow and pay for their judgement, each piece carrying it
 disclosures and its edits in the open.**
 
 Today (`/home`) was built as a broadsheet on 2026-09-22 (dashed hairlines, square images). That
-exception is retired with Direction B; the page is rebuilt next (§3.1b).
+exception is retired: the page was rebuilt in Direction B on 2026-09-27 (§3.1b).
 
 ### 1.2 Where the design comes from
 
@@ -541,13 +541,10 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    landing lead, Explore and the Feed. Explore and the Feed only ever query
    publications that have a clip, so the question does not arise there.
 
-   **Every Today band that can carry a frame does.** The lead and Your Desk use
-   `Poster`; the three stories beside the lead, Trending Now and the tail of a
-   theme cluster use `ClipSlot` (`src/components/today/clip-slot.tsx`), which is
-   the same frame at reading-column sizes and is also the Today row's rail
-   thumbnail. In the narrow columns the frame sits **above** the headline rather
-   than beside it: at 84px beside, Trending Now's headlines came down to two
-   words a line.
+   **Every Today band that can carry a frame does.** The lead draws the 4:5
+   picture, Worth your next minute square frames, and the story rows a small
+   square at the row's end (`ClipFrame` in `src/components/today/today-bits.tsx`).
+   Markets rows keep `ClipSlot` (`src/components/today/clip-slot.tsx`).
 
    One band deliberately carries no frame: **Market news** is wire copy, not
    Stoa video. (The Verdicts band, which carried the seal instead of a frame,
@@ -560,29 +557,19 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    `Referer` and Next's image optimiser fetches server-side, so clip posters
    never go through `next/image`.
 
-**Selection is a separate question from rendering.** Where a Today band ranks
-candidates, a ready clip multiplies the score the band already computed
-(`src/lib/today/video-preference.ts`). Stoa's output is the creator's face and
-voice, so the surface should lean towards what a reader can watch.
+**Selection is a separate question from rendering.** Today ranks by velocity,
+and a ready clip multiplies that score (`src/lib/today/video-preference.ts`).
+Stoa's output is the creator's face and voice, so the surface should lean
+towards what a reader can watch.
 
-- **A lean, not an override.** The weight rides on top of the band's own score,
-  so a written report that is genuinely the strongest still leads. It settles
-  near-ties towards video and leaves a clear winner alone. This replaces an
-  earlier rule that kept the lead blind to video, which was a reaction to
-  preferring video *hard* and promoting the second-best story whenever the best
-  one happened to be written.
-- **Never the gate.** Trending Now means "gaining fastest today". The velocity
-  threshold that decides whether a publication belongs in the band at all is
-  unweighted; the lean only orders what already qualified.
-- **No band goes video-only.** The share is capped and checked at every depth
-  rather than once at the bottom, because bands get truncated: Trending Now
-  shows five of its sixteen on a phone, and a cap checked against the full
-  sixteen handed the phone five videos and called it mixed. Where only clips are
-  available the band still fills, since a short band is worse than a
-  video-heavy one.
-- **Applies to** the lead, the three stories beside it, Trending Now and the
-  theme cluster. **Your Desk** stays newest-first, because it is the reader's
-  own memberships and follows and chronology is the promise there.
+- **A lean, not an override.** The weight rides on top of the velocity a
+  publication earned, so a written report that is genuinely the strongest still
+  leads. It settles near-ties towards video and leaves a clear winner alone.
+- **Written work keeps its own band.** Worth your next minute takes clips only;
+  Worth reading takes written pieces first. (Until 2026-09-27 a mixed Trending
+  band capped video's share instead; that band and its cap are gone.)
+- **Your Desk** stays newest-first, because it is the reader's own memberships
+  and follows and chronology is the promise there.
 
 A profile's lead still prefers the analyst's video, because a profile is a
 storefront. Every band obeys rule 1 when a chosen publication turns out to have
@@ -691,65 +678,75 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 ### 3.1b Today — `/home`
 
-Stoa's daily issue. **Rebuilt next under Direction B.** Until then the page keeps the broadsheet
-structure adopted on 2026-09-22 (below) in the new colours and type; its brass accent is repointed
-at grey, its rail Follow link is coral, and its old treatments (dashed hairlines, square images,
-the letterspaced nameplate, uppercase eyebrow strings built in code) are not rules to keep.
-`<TodayPage>` (`src/components/today/today-page.tsx`), the card in `today-card.tsx`, the package
-in `today-package.tsx`, the sections in `today-sections.tsx`, the rail in `today-sidebar.tsx`, the
-nameplate in `today-nameplate.tsx`; the styles are the `.ts-*` block at the end of `globals.css`,
-and `/dev/today` is the seeded fixture.
+Stoa's daily page, **rebuilt in Direction B on 2026-09-27** from the Today screen in
+`docs/design/direction-b.html` (its look and structure; not its verdicts band or its call cards
+with targets and horizons, which do not exist). The broadsheet of 2026-09-22 (nameplate, dashed
+rules, square images, 12-column grid, eyebrows) is gone.
 
-**Grid.** Desktop: 12 columns, 20px gutters, beside the rail. Phone: 4 columns, 16px gutters,
-16px margins. Every block spans whole columns.
+Files: `<TodayPage>` (`src/components/today/today-page.tsx`); the lead in `today-lead.tsx`; the
+faces row in `today-faces.tsx`; the bands in `today-sections.tsx`; the shared pieces (tags,
+byline, clip frame, story tile, story row, play disc) in `today-bits.tsx`; the rail in
+`today-sidebar.tsx`; the frame in `today-shell.tsx`. Data: `buildTodayPage` in
+`src/lib/today/build-today-page.ts`, payload `TodayPagePayload` in `src/lib/today/types.ts`.
+Styles: a handful of `.today-*` rules at the end of `globals.css` (band spacing, the play disc, the
+duration on a picture, the fresh-post ring, the desktop frame); everything else is utilities and
+the primitives. Fixture: `/dev/today` (`?state=empty` signed out, `?lead=written`,
+`?lead=processing`, `?faces=quiet`).
 
-**The rail** (`<TodaySidebar>`) keeps its lists (trending and popular creators and tickers,
-memberships, following, your tickers) as text rows on dashed hairlines: a name, a NEW or
-TRENDING eyebrow, and a quiet `+ Follow` in the accent where the reader does not follow; a
-ticker row is the mono symbol, its day change and the same control, no price. Nothing in it is
-a solid button and no row scrolls sideways. On a phone it is a drawer behind the `Lists`
-control at the right of the nameplate's dateline (`<TodayListsButton>`).
+**Top to bottom:**
 
-**The nameplate** (`<TodayNameplate>`): `STOA` at 54px (old treatment; the rebuild replaces it), one 2px ink rule,
-one mono dateline (`ISSUE №41 · TUESDAY, AUGUST 18, 2026 · YOUR DAILY BRIEFING`). Under 110px on
-a desktop, under 80px on a phone. The only heavier line on the page is its rule.
+1. **"Today."** at display size (`t-display`) and a plain dateline: `Sunday 27 September · 14 new
+   publications` (publications in the last 24 hours; `Nothing new yet today` when there are none).
+   On a phone the `Lists` control (ghost pill) sits at the right of the dateline.
+2. **The lead**: the day's strongest publication by velocity with the video lean (below),
+   whatever its form. With a clip: two columns, the 4:5 picture with a white play disc on one
+   side (the whole picture links to the publication), on the other the headline at display size
+   (headline size past 80 characters, so a long one does not run to seven lines), a three-line
+   deck, the analyst's face with name, beat and time, and the stance. On a phone it stacks,
+   picture first. **No clip, no frame**: the headline takes the width. A clip still processing
+   keeps its frame with the processing state and no play disc.
+3. **The faces**: analysts who posted in the last 24 hours, newest first (up to 16), a 72px
+   circle with first name and beat beneath (`profile_config.specialty`, else the sector or theme
+   of their newest piece). A coral ring (`.today-ring`) marks anyone who has posted since this
+   browser last looked at Today (`localStorage` `stoa:today:last-looked`, read once per page load
+   and then replaced; a first visit rings nobody). On a quiet day with no posts in 24 hours the row
+   shows the most recent posters under **Recently posted** instead of claiming today. The phone's
+   one sideways scroller; on a desktop the faces wrap.
+4. **Worth your next minute**: four publications with a ready clip, each a square frame with its
+   duration, the title (`t-title`), the stance or tag and the face and name. Four across on a
+   desktop, two on a phone.
+5. **Your desk** (signed in): six newest from the analysts the reader follows or supports.
+6. **More on {theme}**: up to three on the lead's ticker, sector or theme. Real kin only; never
+   padded.
+7. **Worth reading**: four more, written pieces first. The route onto Today for a thesis that is
+   not the lead.
+8. **Market news**: wire headlines, source and time, two columns on a desktop (streamed,
+   `<TodayNewsSlot variant="today">`; Markets keeps its band form, `<TodayNews>`).
 
-**The top package, 3 / 6 / 3** (`<TodayPackage>`). Left: two picture stories. Centre: the lead
-in a 4:3 frame with its eyebrow, headline and byline in white over a scrim on the lower third;
-a lead with no clip takes the same slot with its headline and deck on paper. Under the lead, two
-smaller stories side by side, chosen for coverage on the same ticker, sector or theme as the lead
-(`followUps` in `build-today-page.ts`), so the lead and its follow-ups read as one package.
-Right: four text-only stories on hairlines. On a phone: the lead, then the pictures, then the
-text stories, one column.
+Bands 5 to 7 draw **story rows** (`StoryRow`): the face first, the title, name and time (plus
+Trending or New when the lifecycle says so), the tags, and a small square frame at the end when
+the publication has a clip. Two columns on a desktop.
 
-**One card anatomy, everywhere** (`<TodayCard>`): image (16:9, square corners, a small play
-glyph in the corner, the duration as mono text on the eyebrow line rather than a pill) → 12px →
-eyebrow → 10px → headline → 12px → byline. Stacked cards: 16px, a dashed hairline, 16px
-(`.ts-stack`). The eyebrow carries `NVDA · LONG` or the sector, with `TRENDING` or `NEW` in
-front. The byline is `Name / Date`, no avatar and no content badge.
+**Rules.** Bands part by space (`.today-band`: 56px phone, 72px desktop), never by rules. Every
+image and card is rounded (`rounded-panel`, `rounded-inner` for the row thumbnail). The only mono
+is the ticker chip. Coral appears on the rail's `+ Follow` and the fresh-post ring, nowhere else;
+green and red only on the stance chip and the rail's day change. **Tags:** a publication with a
+ticker shows `TickerChip` plus `StanceChip` when it declares a direction; one without shows its
+theme (or sector) as a `ThemeChip`; one with neither shows nothing, never an empty chip. **A band
+with nothing in it is not drawn**, heading included; the verdicts band is gone and nothing
+replaces it.
 
-**Type** now resolves to the site's sizes (the `.ts-*` classes map onto them); the page's
-own size rules are superseded by `docs/DESIGN_LANGUAGE.md` §2.
+**The rail** (`<TodaySidebar>`): trending and popular creators and tickers, memberships,
+following, your tickers. Rows parted by space: a 24px face and the name (creators) or a ticker
+chip and the day change (tickers), Trending or New in muted text, and a quiet coral
+`+ Follow` where the reader does not follow. No solid buttons, no rules, nothing scrolls sideways.
+On a phone it is a drawer behind `Lists`.
 
-**Sections**, 60px apart, title to content 24px. **Trending now**: a numbered list of five in a
-5-column slot, the numerals 40px in the accent, then one empty column. **Your desk**: a
-6-column 2 × 2 of picture stories beside it; on a phone it is the page's only sideways scroller,
-with the next card peeking at the right edge. **Market news**: the same anatomy in
-two 6-column text lists, source and time as the byline (`<NewsSheet>`; Markets keeps the band
-form, `<TodayNews>`).
-
-**Rules and images (old treatment, not law).** 1px dashed at 13% ink (`--today-rule`), zero
-radius on images. Direction B draws rounded images and no broadsheet rules; the rebuild follows it.
-
-**No sideways scrolling on a desktop.** No rails. On a phone, exactly one (Your desk); nothing
-else is wider than the screen. On a phone the page is one document scroll; on a desktop the rail
-and the page are two columns that scroll on their own inside the room under the nav (`.ts-frame`,
-`.ts-column`, measured by `useFrameHeight`, see `src/lib/layout/frame.ts`).
-
-**Colour.** `--today-accent` is now `--text-mute` (eyebrows, trending numerals); names are ink;
-the rail's Follow is `--coral-text`, the page's one coral. Inside an eyebrow only the direction
-word carries gain or loss (`.ts-dir--long/short`). Over the lead's scrim (`.ts-on-scrim`) labels
-are white and the direction word takes the dark theme's gain and loss tones.
+**Layout.** On a desktop the rail (248px) and the page are two columns that scroll on their own
+inside the room under the nav (`.today-frame`, `.today-column`, measured by `useFrameHeight`, see
+`src/lib/layout/frame.ts`). On a phone the page is one document scroll inside `<main>`, which
+runs full height behind the floating tab bar and pads its end clear of it. Nothing scrolls
+sideways except the faces row on a phone (the article clips its bleed with `overflow-x: clip`).
 
 ---
 

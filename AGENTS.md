@@ -210,7 +210,7 @@ scripts/               tsx scripts: seed-demo.ts / seed.ts (demo data), refresh-
 
 **The visual system is Direction B (adopted 2026-09-27).** The law is `docs/DESIGN_LANGUAGE.md`;
 `npm run test:contrast` enforces its checkable parts in CI. Tokens and shared primitives changed
-first; surfaces are rebuilt one at a time, starting with Today, and until then keep their old
+first; surfaces are rebuilt one at a time (Today was first, 2026-09-27), and until then keep their old
 layout in the new colours and type.
 
 5. **Read `docs/DESIGN_LANGUAGE.md` and `docs/FRONTEND.md` before any visual change.** The first

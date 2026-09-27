@@ -46,7 +46,7 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 2. **Analyst payout status UI** — onboarding + status-poll routes exist server-side (`POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`); needs a Settings page entry point.
 3. **Subscription auto-renew** — or clear manual renewal UX
 4. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
-5. **The new visual system, surface by surface** — tokens and primitives moved to Direction B on 2026-09-27 (`docs/DESIGN_LANGUAGE.md`). Next: rebuild each surface on them, starting with Today, then the report page, the profile, Compose and the Feed.
+5. **The new visual system, surface by surface** — tokens and primitives moved to Direction B on 2026-09-27 (`docs/DESIGN_LANGUAGE.md`). Today was rebuilt on them the same day. Next: the report page, the profile, Compose and the Feed.
 6. **Drop the `predictions` archive** — once nothing reads it (the pre-0065 direction fallback in `CALL_JOIN` and `coverage.ts`), with `moat_score_snapshots` and the score columns.
 
 ## Later (parity + polish)

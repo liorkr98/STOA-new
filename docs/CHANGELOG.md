@@ -10,6 +10,59 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-27 — Today rebuilt in Direction B
+
+Today is the first page rebuilt on the new design system. The broadsheet
+(the letterspaced STOA nameplate, dashed rules, square pictures, the
+12-column grid, small capital labels) is gone.
+
+**What a visitor notices**
+
+- A big "Today." at the top and a plain dateline: "Sunday 27 September ·
+  14 new publications" (or "Nothing new yet today").
+- The lead split in two: a large 4:5 picture with a white play button
+  beside the headline, the analyst's face and name, and the stance (the
+  ticker and long or short, or the theme when there is no ticker). On a
+  phone it stacks, picture first. A lead with no video has no picture
+  frame at all.
+- A row of faces: the analysts who posted today, with their beat under
+  their name. A coral ring marks anyone who has posted since you last
+  looked (remembered by your browser). On a quiet day the row shows the
+  most recent posters as "Recently posted" instead.
+- "Worth your next minute": four videos as square pictures with their
+  length, two across on a phone.
+- Then Your desk (six from the people you follow or support), More on the
+  lead's theme, Worth reading (the written pieces) and Market news. A
+  section with nothing in it is hidden, heading and all.
+- The lists rail keeps all its lists: small faces, ticker chips, a quiet
+  coral "+ Follow", no rules; still a drawer behind Lists on a phone.
+
+**Kept, folded and dropped.** Kept: Your desk, the theme cluster (now "More
+on …", only when something really shares the lead's theme), Market news,
+the rail. Folded: the Trending list and the stories around the lead now
+feed the faces, the four videos and Worth reading. Dropped: the verdicts
+band (gone with grading), the issue number, the "that's today's issue"
+footer.
+
+**Found and fixed on the way**
+
+- "Time ago" labels printed minutes in capitals ("5M AGO", "JUST NOW") next
+  to lower-case hours on Markets rows, and Explore printed months as "jul
+  20". Both now sentence case.
+- The signed-out Today is cached for 20 seconds; right after this change the
+  cache served the new page an old-shaped copy and it crashed until the
+  cache expired. The cache has a new name, so a deploy cannot do that.
+- An unused older Today builder still queried the database from outside the
+  data layer; retired, its one live count moved into the data layer.
+- About 110 lines of stylesheet rules nothing used any more (on Markets, the
+  stock page and the old dispatch) removed.
+
+**What needs Krisi**
+
+Nothing. No migration, no dashboard change.
+
+---
+
 ## 2026-09-27 — Direction B: new colours, type and shapes underneath everything
 
 The whole site changes colour and typeface, while every page keeps its old

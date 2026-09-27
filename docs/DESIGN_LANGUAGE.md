@@ -76,6 +76,9 @@ gain 7.3, on loss 4.7.
   one primary action on a screen, a live recording. At most one coral fill per view; when two
   candidates meet (Subscribe beside Follow on a profile) the lesser one goes ghost. A list of
   small follow pills uses the coral outline, not the fill.
+- **The fresh-post ring** is the one coral that is not a control: on Today's row of faces a coral
+  ring marks an analyst who has posted since the reader last looked. It is live information about
+  a person, drawn as a ring (`.today-ring`), never a fill or a word.
 - **Green and red carry direction (long / short) and price movement, nothing else.** Not
   success, not error, not "saved", not approve/reject, not a chart series that is not a price.
 - **THE ERROR EXCEPTION (decided by Bar, 2026-09-27).** A failed payment or a rejected form must
