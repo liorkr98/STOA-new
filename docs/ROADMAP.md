@@ -1,6 +1,6 @@
 # STOA Product Roadmap
 
-Stoa is a **marketplace for independent stock research** where analysts publish research and investors pay for access; the platform takes 10%. Publications are **video-first** (a short analyst video, optionally enriched with a locked call, evidence cards, and a written thesis); only publications with a locked call are scored. The moat is a **verified, permanent, non-transferable track record** shown as the **Track Score** (0-100): every scored call locks an attested entry price server-side and is graded by the market when the horizon ends. Full model: `docs/PRODUCT_MODEL.md`.
+Stoa is a **marketplace for independent stock research** where analysts publish research and investors pay for access; the platform takes 10%. A publication is a **video, a brief or a thesis**, and may declare a **stance**: one ticker and a direction, long, short or hold, frozen once published. Evidence cards and a written thesis are optional enrichment. **Nothing is graded, scored, locked or resolved** (grading was retired on 2026-09-24): there is no track record, no score, no seal, no Verdict type, no entry price, no target and no horizon. Analysts are followed and paid for their judgement, not scored on it. Edit markers stay and are independent of grading. Full model: `docs/PRODUCT_MODEL.md`.
 
 This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (Base44 + Vite) with the [STOA-new rebuild](https://github.com/liorkr98/STOA-new) (Next.js + Supabase) and tracks what is done vs planned.
 
@@ -10,25 +10,20 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 |------|----------|----------|
 | Backend | Base44 BaaS + partial Supabase bridge | Supabase Postgres, Auth, RLS, RPCs |
 | Paywall | App-layer checks | RLS on `report_bodies` at DB layer |
-| Scoring | Elo cron + Wilson client (divergent) | Unified v3 engine (Wilson + PF + alpha) |
-| Price lock | Base44 function | Server action + Yahoo Finance |
+| Scoring | Elo cron + Wilson client (divergent) | None: grading retired 2026-09-24; placement by the lifecycle model |
 | Wallet | Client `walletService.js` | Atomic Postgres RPCs (90/10 split) |
 | Market data | Yahoo in Deno functions | Yahoo + fallbacks + Kaggle reference data |
 
 ## Done (core loop)
 
 - Auth, profiles, roles (user / analyst / admin)
-- Publish video-first research (CALL / RESEARCH / NOTE)
-- Server-side price lock + SPY benchmark at publish
-- Hourly grading cron + CLI (`npm run grade`)
-- Track Score (0-100) is the only score in the UI; the 600-1400 rating display + tiers are retired. Underlying formula is an open decision (modified Elo vs Wilson/PF/alpha composite) — see `docs/PRODUCT_MODEL.md`
-- The Feed (full-screen vertical video; Discover and its tabs are retired)
-- Analyst profiles, leaderboard, markets browser
+- Publish three types (VIDEO / BRIEF / THESIS), each with an optional stance (ticker + long, short or hold)
+- The Feed (full-screen vertical video; Discover and its tabs are retired), Today, Explore
+- Analyst profiles, markets browser; placement by the lifecycle model (NEW / TRENDING shown)
 - Wallet (simulated credits), subscribe, unlock, confirm-spend dialog
 - Comments, likes, follows, save toggle
 - Studio overview, compose, **draft resume**, **audience**
 - **Saved library**, **inbox**, **subscriptions management**, **search**, **settings**
-- **Scoring methodology** public page
 - **Compose editor** — block-based studio with drag-and-drop, AI sidebar, live charts
 - **Profile branding** — avatar/cover upload, section reorder, specialties
 - **AI credits economy** — wallet balance → credits, spend on chat/outline/fact-check
@@ -38,12 +33,11 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 - **Notes** — inline quick-post composer on the feed (Substack-style social layer)
 - **Newsletter fan-out** — publishing notifies followers + active subscribers
 - **Social notifications** — follow, like, comment, publication, sale, subscribe in the inbox
-- **Track record surfaced** — score breakdown, hit/near/miss, tier progress, full call ledger with alpha
 - **Analyst application funnel** — investors apply with a short questionnaire, admin approves/rejects at `/admin/applications`, only approved analysts get compose access
-- **PM framework backend (0018)** — horizon validation, trading-calendar resolution, `resolution_pending_review`, webhook idempotency, fact-check rate limits — see `docs/Stoa_Backend_Deep_Dive.md`
-- **Trust & compliance layer** — locked reports/calls are DB-enforced append-only (immutability triggers, not just app checks), mandatory disclosure block, append-only `audit_log`
+- **Webhook idempotency, fact-check rate limits** (from the 0018 framework; its horizon and resolution parts are retired)
+- **Trust & compliance layer** — a published piece's ticker, stance, type, access and price are DB-enforced frozen (immutability triggers, not just app checks); edits to the words are allowed and disclosed by the public EDITED marker and edit log (0063); mandatory disclosure block; append-only `audit_log`
 - **Structured fact-checker claims** — `claims` table with character offsets (inline highlighting–ready) + claim-scoped debate comments, opinion-verdict only
-- **Track Score transparency** — hit rate, profit factor, avg return, and alpha (now percentile-ranked platform-wide, not a fixed band) persisted on the profile for the analytics page
+- **Grading retired** (2026-09-24) — engine, grade job, Track Score, seals, track record, Verdict type and methodology page deleted; migration 0067 freezes `predictions` as a read-only archive
 - **PayPal Partner Referrals — schema, lib, routes, webhook scaffolded** (`src/lib/paypal/`), additive to the simulated wallet. PayPal instead of Stripe Connect, since Stripe Connect payouts aren't available for Israel-based platforms/sellers. Needs live API keys to actually move money — see next section.
 
 ## In progress / next (high priority)
@@ -52,26 +46,25 @@ This document compares the [legacy STOA app](https://github.com/liorkr98/STOA) (
 2. **Analyst payout status UI** — onboarding + status-poll routes exist server-side (`POST /api/creator/paypal/onboard`, `GET /api/creator/paypal/status`); needs a Settings page entry point.
 3. **Subscription auto-renew** — or clear manual renewal UX
 4. **Legal pages** — reviewed ToS, privacy, investment disclaimers (not placeholders)
-5. **Disclosure block UI** — backend contract exists (`reports.position_disclosed/held`, `compensation_*`, `views_certified`, enforced server-side in `publishReport`); compose editor needs the actual step before publish.
+5. **The new visual system** — replace today's tokens (Fraunces, cream paper, brass, broadsheet hairlines, zero radius, letterspaced mono labels) with Direction B (`docs/design/direction-b.html`). The docs already mark the old rules as pending replacement.
+6. **Drop the `predictions` archive** — once nothing reads it (the pre-0065 direction fallback in `CALL_JOIN` and `coverage.ts`), with `moat_score_snapshots` and the score columns.
 
 ## Later (parity + polish)
 
 - Email delivery of newsletters (Resend/Postmark) on top of in-app fan-out
 - PDF export, translate
 - Scheduled publish, boost posts
-- Direct messages UI (messages table + RLS already exist)
 - Investor home dashboard
 - Creator analytics (conversion, churn, earnings breakdown)
 - Admin moderation console
-- Automated tests for engine + paywall RPCs
+- Automated tests for paywall RPCs
 - Broader ticker universe (beyond curated 12)
 
 ## What we intentionally do better than the old site
 
-- **One scoring system** — no Elo vs Wilson split
+- **No scoring at all** — analysts are followed and paid, not ranked on outcomes
 - **DB-enforced paywall** — harder to leak paid bodies
-- **Transparent methodology page** — aligned with actual `score.ts` code
-- **Normalized schema** — predictions as first-class rows, not JSON on reports
+- **Normalized schema** — the stance lives on the publication (`reports.ticker`, `reports.stance`), not JSON on reports
 - **No vendor lock-in** — standard Supabase, portable Next.js
 
 ## Migrations to run
