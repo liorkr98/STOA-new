@@ -96,7 +96,7 @@ export function DispatchView({
       )}
 
       {cycle.fallbackCycle ? (
-        <p className="dispatch-fallback-note mb-8 mt-6 text-center text-ticker text-text-faint">
+        <p className="dispatch-fallback-note mb-8 mt-6 text-center text-ticker text-text-mute">
           Quiet cycle. Showing recent highlights from your network.
         </p>
       ) : null}

@@ -25,9 +25,8 @@
   --surface-2: #f2f3f5;
   --text: var(--ink);
   --text-mute: #5b6470;
-  /* Decorative only (3.2:1): dividers, disabled glyphs, ornamental dashes.
-   * Any text that carries meaning, placeholders included, uses --text-mute
-   * or darker. */
+  /* Decorative only (3.2:1): dividers, rules, ornamental dashes. Never a text
+   * colour; words use --text-mute or darker (test:contrast enforces it). */
   --text-faint: #8a919b;
   --border: #e6e8eb;
   --border-strong: #c9ced4;
@@ -1077,7 +1076,7 @@ body {
 /* Placeholder (empty node) */
 .stoa-prose .is-empty::before {
   content: attr(data-placeholder);
-  color: var(--text-faint);
+  color: var(--text-mute);
   float: left;
   height: 0;
   pointer-events: none;
@@ -1336,7 +1335,7 @@ body {
 }
 
 .dispatch-dateline-sep {
-  color: var(--text-faint);
+  color: var(--text-mute);
   opacity: 0.7;
 }
 
@@ -1348,7 +1347,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   font-weight: 600;
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 /* Dotted rules are the reference's signature section divider. */
 .dispatch-kicker::before,
@@ -1435,7 +1434,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   font-weight: 600;
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .dispatch-fallback-note {
@@ -1546,7 +1545,7 @@ body {
   margin-bottom: var(--space-2);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .today-meta-badge {
@@ -1715,7 +1714,7 @@ body {
   margin-top: var(--space-2);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .markets-search-results {
@@ -1800,7 +1799,7 @@ body {
 
 .markets-tape-label {
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* ---- themes: the hero band, most visual weight ---- */
@@ -1868,7 +1867,7 @@ body {
   margin-top: var(--space-3);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* ---- generic instrument row ---- */
@@ -1897,7 +1896,7 @@ body {
 
 .markets-row-meta {
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* ---- movement: two peer columns ---- */
@@ -1951,14 +1950,14 @@ body {
 .markets-pending {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .markets-gap-note {
   margin-top: var(--space-3);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 .markets-empty {
@@ -2034,7 +2033,7 @@ body {
 
 .stock-meta-key {
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* The provenance mark from the Card Engine's three inks: this number is a
@@ -2043,7 +2042,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   font-weight: 600;
-  color: var(--text-faint);
+  color: var(--text-mute);
   border: 1px solid var(--border);
   border-radius: var(--r-chip);
   padding: 0 0.25rem;
@@ -2152,7 +2151,7 @@ body {
   margin-top: var(--space-1);
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* ---- tables + strips ---- */
@@ -2167,7 +2166,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--type-ticker);
   font-weight: 500;
-  color: var(--text-faint);
+  color: var(--text-mute);
   text-align: left;
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--border-strong);
@@ -2740,7 +2739,7 @@ body {
   font-size: var(--type-ticker);
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
-  color: var(--text-faint);
+  color: var(--text-mute);
 }
 
 /* One rule style. The nameplate's is the only heavier line. */

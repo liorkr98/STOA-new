@@ -58,7 +58,7 @@ export function diverging(t: number): string {
 /** Axes, gridlines, labels, and baseline. Hairline, quiet. */
 export const axis = {
   grid: "var(--border)",
-  label: "var(--text-faint)",
+  label: "var(--text-mute)",
   baseline: "var(--border-strong)",
 } as const;
 

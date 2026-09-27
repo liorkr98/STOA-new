@@ -132,7 +132,7 @@ function TagSearch({
       className={cn(
         "focus-ring rounded-chip border px-2 py-0.5 text-ticker",
         taken(t)
-          ? "border-border text-text-faint"
+          ? "border-border text-text-mute"
           : highlighted
             ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
             : "border-border text-text hover:border-border-strong",
@@ -159,12 +159,12 @@ function TagSearch({
         aria-label={`Search tags for the ${slot} tag`}
         autoComplete="off"
         spellCheck={false}
-        className="num mb-2 w-full rounded-field border border-border bg-bg px-2.5 py-1.5 text-ticker text-text outline-none placeholder:text-text-faint focus-visible:border-[var(--ink)]"
+        className="num mb-2 w-full rounded-field border border-border bg-bg px-2.5 py-1.5 text-ticker text-text outline-none placeholder:text-text-mute focus-visible:border-[var(--ink)]"
       />
       <div role="listbox" aria-label="Tags" className="scroll-area max-h-[280px] overflow-y-auto">
         {matches ? (
           matches.length === 0 ? (
-            <p className="num px-1 py-2 text-ticker text-text-faint">
+            <p className="num px-1 py-2 text-ticker text-text-mute">
               Nothing matches. Tags are a fixed list; try a sector or a theme.
             </p>
           ) : (
@@ -176,7 +176,7 @@ function TagSearch({
           <>
             {mostUsed.length > 0 ? (
               <div className="mb-2">
-                <div className="num px-1 pb-1 text-ticker text-text-faint">
+                <div className="num px-1 pb-1 text-ticker text-text-mute">
                   Most used
                 </div>
                 <div className="flex flex-wrap gap-1">{mostUsed.map((t) => chip(t))}</div>
@@ -184,7 +184,7 @@ function TagSearch({
             ) : null}
             {TAG_GROUPS.map((g) => (
               <div key={g.key} className="mb-2 last:mb-0">
-                <div className="num px-1 pb-1 text-ticker text-text-faint">
+                <div className="num px-1 pb-1 text-ticker text-text-mute">
                   {g.label}
                 </div>
                 <div className="flex flex-wrap gap-1">{g.tags.map((t) => chip(t))}</div>

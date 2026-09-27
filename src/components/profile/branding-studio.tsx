@@ -65,7 +65,7 @@ function SortableSection({ section, onToggle }: { section: ProfileSection; onTog
       className="flex items-center justify-between gap-3 rounded-inner border border-border bg-surface-2 px-3 py-2.5"
     >
       <div className="flex items-center gap-2">
-        <button type="button" className="cursor-grab text-text-faint hover:text-text" {...attributes} {...listeners}>
+        <button type="button" className="cursor-grab text-text-mute hover:text-text" {...attributes} {...listeners}>
           <DotsSixVertical size={18} />
         </button>
         <span className="text-body capitalize">{section.type}</span>
@@ -215,16 +215,16 @@ export function BrandingStudio({
                 <Avatar src={avatarUrl} name={displayName} size="lg" />
                 <div className="min-w-0">
                   <p className="text-body font-semibold text-text">{displayName}</p>
-                  <p className="num text-ticker text-text-faint">@{profile.handle}</p>
+                  <p className="num text-ticker text-text-mute">@{profile.handle}</p>
                 </div>
               </div>
               <div>
                 <span className="t-meta">Headline</span>
-                <p className="mt-1 text-body text-text">{headline || <span className="text-text-faint">Not set</span>}</p>
+                <p className="mt-1 text-body text-text">{headline || <span className="text-text-mute">Not set</span>}</p>
               </div>
               <div>
                 <span className="t-meta">Bio</span>
-                <p className="mt-1 whitespace-pre-line text-body text-text-mute">{bio || <span className="text-text-faint">Not set</span>}</p>
+                <p className="mt-1 whitespace-pre-line text-body text-text-mute">{bio || <span className="text-text-mute">Not set</span>}</p>
               </div>
               <Link href="/settings" className="num text-ticker text-accent hover:underline">
                 Edit your name, bio, and photo in Settings →
@@ -260,7 +260,7 @@ export function BrandingStudio({
                   <div key={i} className="flex gap-2">
                     <input value={row.label} onChange={(e) => { const n = [...social]; n[i] = { ...row, label: e.target.value }; setSocial(n); }} placeholder="Label" className="w-28 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
                     <input value={row.url} onChange={(e) => { const n = [...social]; n[i] = { ...row, url: e.target.value }; setSocial(n); }} placeholder="https://" className="min-w-0 flex-1 rounded-field border border-border bg-bg px-2 py-1.5 text-body" />
-                    <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-faint hover:text-[var(--error)]">
+                    <button type="button" aria-label="Remove link" onClick={() => setSocial(social.filter((_, j) => j !== i))} className="text-text-mute hover:text-[var(--error)]">
                       <Trash size={16} />
                     </button>
                   </div>
@@ -308,7 +308,7 @@ export function BrandingStudio({
             <div className="text-body">
               <span className="text-text-mute">Handle: </span>
               <span className="num">@{profile.handle}</span>
-              <span className="num ml-2 text-ticker text-text-faint">Locked after onboarding</span>
+              <span className="num ml-2 text-ticker text-text-mute">Locked after onboarding</span>
             </div>
           </div>
         )}

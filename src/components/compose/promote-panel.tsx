@@ -93,7 +93,7 @@ export function PromotePanel({
         </div>
       ) : null}
 
-      <p className="num mt-3 border-t border-border pt-2.5 text-ticker leading-relaxed text-text-faint">
+      <p className="num mt-3 border-t border-border pt-2.5 text-ticker leading-relaxed text-text-mute">
         {PROMOTED_LABEL} content is always labelled as {PROMOTED_LABEL.toLowerCase()}, wherever it appears
       </p>
     </Card>

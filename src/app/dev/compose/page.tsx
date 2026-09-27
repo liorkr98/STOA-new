@@ -349,7 +349,7 @@ function DevComposeInner() {
           ))}
           <Link
             href="/dev/compose"
-            className="num focus-ring self-center rounded text-ticker text-text-faint hover:text-text"
+            className="num focus-ring self-center rounded text-ticker text-text-mute hover:text-text"
           >
             Reload
           </Link>
@@ -360,7 +360,7 @@ function DevComposeInner() {
           <button
             type="button"
             onClick={() => void devRefreshRoute()}
-            className="num focus-ring self-center rounded border border-dashed border-border px-2 py-1 text-ticker text-text-faint hover:text-text"
+            className="num focus-ring self-center rounded border border-dashed border-border px-2 py-1 text-ticker text-text-mute hover:text-text"
           >
             Simulate a save refresh
           </button>

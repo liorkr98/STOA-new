@@ -63,7 +63,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
         {quiet ? null : (
           <p className="num mt-6 text-ticker text-text-mute">{activity.toUpperCase()}</p>
         )}
-        <p className="num mt-10 text-ticker text-text-faint">or scroll to see today ↓</p>
+        <p className="num mt-10 text-ticker text-text-mute">or scroll to see today ↓</p>
       </div>
       <div className="mt-8">
         {tape ?? <MarketTape quotes={data.tape} />}

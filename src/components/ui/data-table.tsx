@@ -169,7 +169,7 @@ export function DataTable<T>({
   function renderCell(col: Column<T>, row: T) {
     if (col.render) return col.render(row);
     const v = rawValue(col, row);
-    if (v == null) return <span className="text-text-faint">-</span>;
+    if (v == null) return <span className="text-text-mute">-</span>;
     if (col.numeric && typeof v === "number") {
       const color = col.sentiment ? sentimentColor(v) : undefined;
       return (
@@ -217,7 +217,7 @@ export function DataTable<T>({
               return (
                 <td key={col.key} className={cn(cellPad, "text-right")}>
                   {result == null ? (
-                    <span className="text-text-faint">-</span>
+                    <span className="text-text-mute">-</span>
                   ) : (
                     <span className="num">{(col.format ?? defaultFormat)(result)}</span>
                   )}
@@ -306,7 +306,7 @@ export function DataTable<T>({
                             <ArrowDown size={12} />
                           )
                         ) : (
-                          <ChevronsUpDown size={12} className="text-text-faint" />
+                          <ChevronsUpDown size={12} className="text-text-mute" />
                         )}
                       </button>
                     ) : (

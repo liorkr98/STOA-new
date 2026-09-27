@@ -98,7 +98,7 @@ export function DeleteDialog({ id, title }: { id: string; title: string }) {
             onChange={(e) => setTyped(e.target.value)}
             autoComplete="off"
             spellCheck={false}
-            className="focus-ring mt-1.5 w-full rounded-field border border-border bg-paper px-3 py-2 text-body text-text placeholder:text-text-faint"
+            className="focus-ring mt-1.5 w-full rounded-field border border-border bg-paper px-3 py-2 text-body text-text placeholder:text-text-mute"
             placeholder={CONFIRM_WORD}
           />
 

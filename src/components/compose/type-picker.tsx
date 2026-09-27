@@ -44,7 +44,7 @@ function TypeCard({ def }: { def: PublicationTypeDef }) {
       </p>
       <p className="mt-3 text-body leading-relaxed text-text-mute">{def.detail}</p>
       <div className="mt-auto border-t border-border pt-3">
-        <p className="num text-ticker text-text-faint">
+        <p className="num text-ticker text-text-mute">
           Seen by · {def.seenBy}
         </p>
       </div>
@@ -72,11 +72,11 @@ function TypeRow({ def }: { def: PublicationTypeDef }) {
           <span className="mt-1 line-clamp-2 block font-display text-title font-semibold leading-tight tracking-tight text-text">
             {def.purpose}
           </span>
-          <span className="num mt-1 block truncate text-ticker text-text-faint">
+          <span className="num mt-1 block truncate text-ticker text-text-mute">
             Seen by · {def.seenBy}
           </span>
         </span>
-        <ChevronRight size={16} aria-hidden className="mt-2 shrink-0 text-text-faint" />
+        <ChevronRight size={16} aria-hidden className="mt-2 shrink-0 text-text-mute" />
       </Link>
     </li>
   );
@@ -89,7 +89,7 @@ function Progress({ percent, label }: { percent: number; label?: boolean }) {
         <div className="h-full bg-[var(--ink)]" style={{ width: `${percent}%` }} />
       </div>
       {label ? (
-        <p className="num mt-1 text-ticker text-text-faint">{percent}% there</p>
+        <p className="num mt-1 text-ticker text-text-mute">{percent}% there</p>
       ) : null}
     </div>
   );
@@ -106,7 +106,7 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
         <p className={cn("user-copy truncate font-display text-title font-semibold tracking-tight", d.untitled ? "text-text-mute" : "text-text")}>
           {d.title}
         </p>
-        <p className="num mt-0.5 truncate text-ticker text-text-faint">{meta}</p>
+        <p className="num mt-0.5 truncate text-ticker text-text-mute">{meta}</p>
       </div>
       <Progress percent={d.percent} label />
       <Link
@@ -117,7 +117,7 @@ function DraftRowWide({ d }: { d: PickerDraft }) {
       </Link>
       {/* Delete sits on the row itself: a draft that should not have been
           kept must be one press away from going, not a trip to Studio. */}
-      <span className="num shrink-0 text-ticker text-text-faint">
+      <span className="num shrink-0 text-ticker text-text-mute">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
     </Card>
@@ -138,7 +138,7 @@ function DraftRowCompact({ d }: { d: PickerDraft }) {
         </span>
         <Progress percent={d.percent} />
       </Link>
-      <span className="num shrink-0 text-ticker text-text-faint">
+      <span className="num shrink-0 text-ticker text-text-mute">
         <DeleteDraftDialog id={d.id} title={d.title} />
       </span>
     </Card>
@@ -149,13 +149,13 @@ export function ComposePicker({ drafts }: { drafts: PickerDraft[] }) {
   return (
     <div className="flex min-h-full flex-col">
       <ComposeHeader>
-        <span className="num hidden text-ticker text-text-faint md:inline">
+        <span className="num hidden text-ticker text-text-mute md:inline">
           Nothing to save yet
         </span>
       </ComposeHeader>
 
       <div className="mx-auto w-full max-w-[var(--w-standard)] px-4 py-5 md:px-8 md:py-10">
-        <p className="num text-ticker text-text-faint md:hidden">New publication</p>
+        <p className="num text-ticker text-text-mute md:hidden">New publication</p>
         <h1 className="mt-1 font-display text-headline font-semibold leading-tight tracking-tight text-text md:mt-0 md:text-display">
           What are you publishing?
         </h1>

@@ -101,7 +101,7 @@ export function BrandAnalyzerPanel({
             <div className="flex flex-col gap-3">
               {result.suggestions.map((s, i) => (
                 <div key={i} className="rounded-inner border border-border bg-surface-2 p-4">
-                  <p className="text-ticker font-medium text-text-faint">{s.field}</p>
+                  <p className="text-ticker font-medium text-text-mute">{s.field}</p>
                   <p className="mt-2 text-body">
                     {Array.isArray(s.proposed) ? s.proposed.join(", ") : s.proposed}
                   </p>

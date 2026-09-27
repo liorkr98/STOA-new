@@ -99,7 +99,7 @@ export function NotebookBoard({
       {/* Collections rail */}
       <aside className="flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
-          <BookOpen size={16} className="text-text-faint" />
+          <BookOpen size={16} className="text-text-mute" />
           <h2 className="t-meta">Notebooks</h2>
         </div>
         <ul className="flex flex-col gap-0.5">
@@ -117,7 +117,7 @@ export function NotebookBoard({
               >
                 <span className="truncate">{n.title}</span>
                 {typeof n.entry_count === "number" && (
-                  <span className="num text-ticker text-text-faint">{n.entry_count}</span>
+                  <span className="num text-ticker text-text-mute">{n.entry_count}</span>
                 )}
               </button>
             </li>
@@ -165,7 +165,7 @@ export function NotebookBoard({
           <span className="relative flex-1 min-w-[180px]">
             <Search
               size={14}
-              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-text-faint"
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-text-mute"
             />
             <input
               value={query}
@@ -228,7 +228,7 @@ export function NotebookBoard({
                     type="button"
                     aria-label="Delete entry"
                     onClick={() => removeEntry(entry.id)}
-                    className="inline-flex items-center gap-1 text-ticker text-text-faint hover:text-[var(--error)] focus-ring"
+                    className="inline-flex items-center gap-1 text-ticker text-text-mute hover:text-[var(--error)] focus-ring"
                   >
                     <Trash2 size={12} /> Remove
                   </button>

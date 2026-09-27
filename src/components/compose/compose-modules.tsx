@@ -40,7 +40,7 @@ export function ModuleHeader({
       >
         <ChevronDown
           size={14}
-          className={cn("shrink-0 text-text-faint transition-transform", !open && "-rotate-90")}
+          className={cn("shrink-0 text-text-mute transition-transform", !open && "-rotate-90")}
           aria-hidden
         />
         <span className="shrink-0 text-text-mute" aria-hidden>
@@ -53,14 +53,14 @@ export function ModuleHeader({
             {state}
           </span>
         ) : (
-          <span className="num text-ticker text-text-faint">Empty</span>
+          <span className="num text-ticker text-text-mute">Empty</span>
         )}
       </button>
       {onRemove ? (
         <button
           type="button"
           onClick={onRemove}
-          className="num focus-ring rounded text-ticker text-text-faint hover:text-[var(--error)]"
+          className="num focus-ring rounded text-ticker text-text-mute hover:text-[var(--error)]"
         >
           Remove
         </button>

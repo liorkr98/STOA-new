@@ -72,7 +72,7 @@ export function AudioBrief({ reportId, isAuthor }: { reportId: string; isAuthor:
   return (
     <Card className="mt-4 flex flex-wrap items-center gap-3 px-4 py-3">
       <span className="flex items-center gap-2 text-text-mute">
-        <Headphones size={15} className="text-text-faint" />
+        <Headphones size={15} className="text-text-mute" />
         <span className="t-meta">Audio brief</span>
       </span>
 

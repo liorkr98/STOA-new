@@ -136,7 +136,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
         <form action={signOut}>
           <button
             type="submit"
-            className="focus-ring rounded-button px-2 py-1 text-body text-text-faint transition-colors hover:text-text"
+            className="focus-ring rounded-button px-2 py-1 text-body text-text-mute transition-colors hover:text-text"
           >
             Sign out
           </button>
@@ -217,7 +217,7 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                     <form action={signOut} className="mt-1 border-t border-border pt-1">
                       <button
                         type="submit"
-                        className="block w-full rounded-inner px-2.5 py-2 text-left text-body text-text-faint transition-colors hover:bg-surface-2 hover:text-text"
+                        className="block w-full rounded-inner px-2.5 py-2 text-left text-body text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
                       >
                         Sign out
                       </button>

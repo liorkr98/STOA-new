@@ -82,7 +82,7 @@ export default async function StudioAudiencePage() {
           </code>
           <CopyButton value={referralLink} label="Copy" />
         </Card>
-        <p className="num text-ticker text-text-faint">
+        <p className="num text-ticker text-text-mute">
           Signups attributed to you are counted above.
         </p>
       </section>

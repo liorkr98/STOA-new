@@ -155,7 +155,7 @@ export function DiscussionThread({
                 Author
               </span>
             ) : null}
-            <span className="num text-ticker text-text-faint">{sinceLabel(c.createdAt)}</span>
+            <span className="num text-ticker text-text-mute">{sinceLabel(c.createdAt)}</span>
           </div>
           <p dir="auto" className="user-copy mt-1 text-body leading-relaxed text-text">
             {c.replyingTo ? <span className="text-text-mute">@{c.replyingTo} </span> : null}
@@ -176,7 +176,7 @@ export function DiscussionThread({
                 <Heart size={11} strokeWidth={1.6} aria-hidden fill={liked ? "currentColor" : "none"} /> {c.likes}
               </button>
             ) : (
-              <span className="num inline-flex items-center gap-1 text-ticker text-text-faint">
+              <span className="num inline-flex items-center gap-1 text-ticker text-text-mute">
                 <Heart size={11} strokeWidth={1.6} aria-hidden /> {c.likes}
               </span>
             )}
@@ -206,7 +206,7 @@ export function DiscussionThread({
                 </span>
               ) : hasOthersReplies ? (
                 <span
-                  className="num inline-flex items-center gap-1 text-ticker text-text-faint"
+                  className="num inline-flex items-center gap-1 text-ticker text-text-mute"
                   title="Others have replied, so this comment stays."
                 >
                   <Trash2 size={11} strokeWidth={1.6} aria-hidden /> Has replies
@@ -241,7 +241,7 @@ export function DiscussionThread({
               onClick={() => setSort(k)}
               className={cn(
                 "num focus-ring rounded text-ticker",
-                sort === k ? "text-text" : "text-text-faint hover:text-text",
+                sort === k ? "text-text" : "text-text-mute hover:text-text",
               )}
             >
               {k === "newest" ? "Newest" : "Most liked"}

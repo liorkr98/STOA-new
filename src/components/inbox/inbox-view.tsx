@@ -75,7 +75,7 @@ function PrefGroup({ title, rows }: { title: string; rows: string[] }) {
     <div>
       <div className="num text-ticker text-text-mute">{title}</div>
       <div className="mt-2 flex flex-col">
-        <div className="num flex items-center justify-end gap-6 pb-1 text-ticker text-text-faint">
+        <div className="num flex items-center justify-end gap-6 pb-1 text-ticker text-text-mute">
           <span className="w-9 text-center">In-app</span>
           <span className="w-9 text-center">Email</span>
         </div>
@@ -115,7 +115,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
               {it.title}
             </p>
             <div className="mt-1.5 flex items-center gap-3">
-              <span className="num text-ticker text-text-faint">{it.timeLabel}</span>
+              <span className="num text-ticker text-text-mute">{it.timeLabel}</span>
               {it.action &&
                 (needs ? (
                   <Link
@@ -143,7 +143,7 @@ function Row({ it, onDismiss }: { it: InboxItem; onDismiss: (id: string) => void
         type="button"
         aria-label="Dismiss"
         onClick={() => onDismiss(it.id)}
-        className="shrink-0 text-text-faint transition-colors hover:text-text"
+        className="shrink-0 text-text-mute transition-colors hover:text-text"
       >
         <X size={14} />
       </button>
@@ -197,7 +197,7 @@ export function InboxView({ items, isAnalyst }: { items: InboxItem[]; isAnalyst:
         <Card className="flex flex-col gap-6 p-6">
           <PrefGroup title="Reading" rows={READING_PREFS} />
           {isAnalyst && <PrefGroup title="Your research" rows={RESEARCH_PREFS} />}
-          <p className="num text-ticker text-text-faint">
+          <p className="num text-ticker text-text-mute">
             These choices are not saved yet, so they reset when you leave.
           </p>
         </Card>

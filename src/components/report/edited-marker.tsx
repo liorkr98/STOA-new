@@ -27,7 +27,7 @@ function when(iso: string): string {
 function Change({ label, before, after }: { label: string; before: string; after: string }) {
   return (
     <div className="mt-2">
-      <p className="num text-ticker text-text-faint">{label}</p>
+      <p className="num text-ticker text-text-mute">{label}</p>
       <p className="user-copy mt-0.5 text-ticker leading-snug text-text-mute line-through decoration-[var(--text-mute)]">
         {before}
       </p>
@@ -83,7 +83,7 @@ export function EditedMarker({
           collisionPadding={12}
           className="z-50 w-[min(92vw,22rem)] rounded-panel border border-border bg-surface p-3.5 shadow-lg"
         >
-          <p className="num text-ticker text-text-faint">
+          <p className="num text-ticker text-text-mute">
             Revised after publication
           </p>
           <p className="mt-1.5 text-ticker leading-relaxed text-text-mute">
@@ -99,7 +99,7 @@ export function EditedMarker({
                     ? e.sections.map((s) => SECTION_LABEL[s]).join(" · ")
                     : "Edited"}
                 </p>
-                <p className="num mt-0.5 text-ticker text-text-faint">
+                <p className="num mt-0.5 text-ticker text-text-mute">
                   {when(e.editedAt)}
                 </p>
 
@@ -120,7 +120,7 @@ export function EditedMarker({
           </ul>
 
           {edits.length > (compact ? 3 : 12) ? (
-            <p className="num mt-3 border-t border-border pt-2 text-ticker text-text-faint">
+            <p className="num mt-3 border-t border-border pt-2 text-ticker text-text-mute">
               {edits.length - (compact ? 3 : 12)} earlier {edits.length - (compact ? 3 : 12) === 1 ? "edit" : "edits"}
             </p>
           ) : null}

@@ -115,7 +115,7 @@ export function StorefrontSectionsEditor({
                     aria-label="Move up"
                     disabled={i === 0}
                     onClick={() => move(i, -1)}
-                    className="text-text-faint hover:text-text disabled:opacity-30 focus-ring"
+                    className="text-text-mute hover:text-text disabled:opacity-30 focus-ring"
                   >
                     <ChevronUp size={14} />
                   </button>
@@ -124,7 +124,7 @@ export function StorefrontSectionsEditor({
                     aria-label="Move down"
                     disabled={i === sections.length - 1}
                     onClick={() => move(i, 1)}
-                    className="text-text-faint hover:text-text disabled:opacity-30 focus-ring"
+                    className="text-text-mute hover:text-text disabled:opacity-30 focus-ring"
                   >
                     <ChevronDown size={14} />
                   </button>
@@ -136,7 +136,7 @@ export function StorefrontSectionsEditor({
                   type="button"
                   aria-label={section.visible ? "Hide section" : "Show section"}
                   onClick={() => patch(section.id, (s) => ({ ...s, visible: !s.visible }))}
-                  className="ml-auto text-text-faint hover:text-text focus-ring"
+                  className="ml-auto text-text-mute hover:text-text focus-ring"
                 >
                   {section.visible ? <Eye size={15} /> : <EyeOff size={15} />}
                 </button>
@@ -147,7 +147,7 @@ export function StorefrontSectionsEditor({
                     setSaved(false);
                     setSections((prev) => prev.filter((s) => s.id !== section.id));
                   }}
-                  className="text-text-faint hover:text-[var(--error)] focus-ring"
+                  className="text-text-mute hover:text-[var(--error)] focus-ring"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -246,7 +246,7 @@ function FaqEditor({ items, onChange }: { items: FaqItem[]; onChange: (items: Fa
               type="button"
               aria-label="Remove question"
               onClick={() => onChange(items.filter((_, xi) => xi !== i))}
-              className="text-text-faint hover:text-[var(--error)] focus-ring"
+              className="text-text-mute hover:text-[var(--error)] focus-ring"
             >
               <Trash2 size={14} />
             </button>

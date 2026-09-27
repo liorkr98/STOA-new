@@ -123,7 +123,7 @@ export function ScenarioNodeView({
         className={cn("fade-up my-4 p-4", drivesTarget ? "ledger-card" : "surface")}
       >
         <div className="mb-2 flex items-center gap-2">
-          <BarChart2 size={14} className="text-text-faint" />
+          <BarChart2 size={14} className="text-text-mute" />
           {ticker && <TickerChip ticker={ticker} />}
           <span className="t-meta">Scenario analysis</span>
           {drivesTarget && <span className="t-meta text-ticker">drives target</span>}
@@ -163,7 +163,7 @@ export function ScenarioNodeView({
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <BarChart2 size={14} className="text-text-faint" />
+        <BarChart2 size={14} className="text-text-mute" />
         <input
           value={ticker}
           onChange={(e) => updateAttributes({ ticker: e.target.value.toUpperCase() })}
@@ -193,7 +193,7 @@ export function ScenarioNodeView({
           aria-label="Delete scenario"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -201,7 +201,7 @@ export function ScenarioNodeView({
 
       <div className="grid gap-4 p-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-ticker text-text-faint">
+          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-ticker text-text-mute">
             <span className="t-meta">Case</span>
             <span className="t-meta w-20 text-right">Price</span>
             <span className="t-meta w-16 text-right">Prob %</span>

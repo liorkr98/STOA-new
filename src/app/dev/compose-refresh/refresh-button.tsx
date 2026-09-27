@@ -3,7 +3,7 @@
 import { devRefreshRoute } from "../actions";
 
 const devButton =
-  "num focus-ring rounded border border-dashed border-border px-2 py-1 text-ticker text-text-faint hover:text-text";
+  "num focus-ring rounded border border-dashed border-border px-2 py-1 text-ticker text-text-mute hover:text-text";
 
 /**
  * Two ways to hurt the workspace on purpose. A save refresh is what every

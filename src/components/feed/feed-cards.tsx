@@ -29,7 +29,7 @@ export function InkTag({ ink }: { ink: ProvenanceInk }) {
     <span
       className={cn(
         "num ml-1.5 inline-block rounded-chip border px-1 py-px align-middle text-ticker",
-        ink === "auto" ? "border-border text-text-faint" : "border-[var(--ink)] text-text",
+        ink === "auto" ? "border-border text-text-mute" : "border-[var(--ink)] text-text",
       )}
     >
       {ink === "auto" ? "Auto" : "Creator est."}
@@ -74,7 +74,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="The edge" />
           <div className="mt-3 grid flex-1 grid-cols-2 divide-x divide-[var(--border)]">
             <div className="pr-4">
-              <div className="num border-b border-border pb-1.5 text-ticker text-text-faint">The Street says</div>
+              <div className="num border-b border-border pb-1.5 text-ticker text-text-mute">The Street says</div>
               <ul className="mt-2 flex flex-col gap-2 text-body leading-snug text-text-mute">
                 {card.street.map((v, i) => (
                   <li key={i}>
@@ -143,7 +143,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="Catalyst timeline" />
           <ol className="mt-4 flex flex-1 flex-col justify-center gap-4">
             {card.events.map((e, i) => (
-              <li key={i} className={cn("flex items-start gap-3", e.past ? "text-text-faint" : "text-text")}>
+              <li key={i} className={cn("flex items-start gap-3", e.past ? "text-text-mute" : "text-text")}>
                 <span
                   aria-hidden
                   className={cn("mt-1.5 h-2 w-2 flex-none rounded-full border", e.past ? "border-border bg-transparent" : "border-[var(--ink)] bg-[var(--ink)]")}
@@ -173,7 +173,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                     "inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border",
                     r.status === "done" && "border-[var(--ok)] text-[var(--ok)]",
                     r.status === "failed" && "border-[var(--error)] text-[var(--error)]",
-                    r.status === "pending" && "border-border text-text-faint",
+                    r.status === "pending" && "border-border text-text-mute",
                   )}
                 >
                   {r.status === "done" ? <Check size={10} strokeWidth={2.2} /> : r.status === "failed" ? <X size={10} strokeWidth={2.2} /> : <Minus size={10} strokeWidth={2.2} />}
@@ -200,7 +200,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
               </div>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="num text-ticker text-text-faint">Figure not available</span>
+                <span className="num text-ticker text-text-mute">Figure not available</span>
               </div>
             )}
           </div>
@@ -208,7 +208,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
             <span
               className={cn(
                 "num inline-block rounded-chip border px-1 py-px text-ticker",
-                card.source === "auto" ? "border-border text-text-faint" : "border-[var(--ink)] text-text",
+                card.source === "auto" ? "border-border text-text-mute" : "border-[var(--ink)] text-text",
               )}
             >
               {card.source === "auto" ? "Auto" : "Creator chart"}
@@ -231,7 +231,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="The steelman" />
           <div className="mt-3 flex flex-1 flex-col justify-center gap-4">
             <div className="rounded-inner bg-surface-2 p-4">
-              <div className="num text-ticker text-text-faint">The counterpoint</div>
+              <div className="num text-ticker text-text-mute">The counterpoint</div>
               <p className="mt-1.5 font-display text-body italic leading-snug text-text-mute">&ldquo;{card.objection}&rdquo;</p>
             </div>
             <div>
@@ -239,7 +239,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
               <p className="mt-1.5 text-body leading-relaxed text-text">{card.answer}</p>
             </div>
           </div>
-          <p className="num mt-4 border-t border-border pt-3 text-ticker text-text-faint">
+          <p className="num mt-4 border-t border-border pt-3 text-ticker text-text-mute">
             The analyst chose to be challenged and answered on the record.
           </p>
         </CardFrame>

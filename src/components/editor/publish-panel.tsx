@@ -351,7 +351,7 @@ export function PublishPanel({
             <label className="mt-2.5 block text-ticker font-medium text-text-mute">
               Price (you keep 90%)
               <div className="relative mt-1">
-                <span className="num pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-text-faint">
+                <span className="num pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-text-mute">
                   $
                 </span>
                 <input

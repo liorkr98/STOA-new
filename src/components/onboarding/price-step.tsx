@@ -65,8 +65,8 @@ export function PriceStep({
               onChange={(e) => setSub(Number(e.target.value))}
               className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-10 text-body focus-ring"
             />
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-faint">/mo</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">$</span>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-mute">/mo</span>
           </div>
         </label>
       )}
@@ -84,7 +84,7 @@ export function PriceStep({
               onChange={(e) => setReport(Number(e.target.value))}
               className="num h-11 w-full rounded-field border border-border bg-bg pl-7 pr-3 text-body focus-ring"
             />
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">$</span>
           </div>
         </label>
       )}

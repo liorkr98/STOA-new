@@ -160,7 +160,7 @@ export function NavSearch() {
       >
         <Search
           size={13}
-          className="pointer-events-none absolute left-2.5 top-1/2 z-[1] -translate-y-1/2 text-text-faint"
+          className="pointer-events-none absolute left-2.5 top-1/2 z-[1] -translate-y-1/2 text-text-mute"
           aria-hidden
         />
         <input
@@ -200,7 +200,7 @@ export function NavSearch() {
               inputRef.current?.focus();
             }}
             tabIndex={-1}
-            className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-button p-0.5 text-text-faint hover:text-text focus-ring"
+            className="absolute right-1.5 top-1/2 z-[1] -translate-y-1/2 rounded-button p-0.5 text-text-mute hover:text-text focus-ring"
           >
             <X size={12} aria-hidden />
           </button>
@@ -214,7 +214,7 @@ export function NavSearch() {
           className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[16rem] overflow-hidden rounded-panel border border-border bg-paper shadow-[var(--shadow-card)] sm:w-[18rem]"
         >
           {loading && !hasHits ? (
-            <p className="px-3 py-2.5 text-ticker text-text-faint" role="status">
+            <p className="px-3 py-2.5 text-ticker text-text-mute" role="status">
               Searching…
             </p>
           ) : !loading && !hasHits ? (
@@ -235,7 +235,7 @@ export function NavSearch() {
             <>
               {tickers.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-ticker font-semibold text-text-faint">
+                  <p className="px-2 pb-1 text-ticker font-semibold text-text-mute">
                     Markets
                   </p>
                   {tickers.map((t) => (
@@ -254,7 +254,7 @@ export function NavSearch() {
               )}
               {creators.length > 0 && (
                 <div className="border-b border-border px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-ticker font-semibold text-text-faint">
+                  <p className="px-2 pb-1 text-ticker font-semibold text-text-mute">
                     Analysts
                   </p>
                   {creators.map((c) => (
@@ -268,14 +268,14 @@ export function NavSearch() {
                       )}
                     >
                       <span className="truncate font-medium">{c.display_name}</span>
-                      <span className="num shrink-0 pl-2 text-ticker text-text-faint">@{c.handle}</span>
+                      <span className="num shrink-0 pl-2 text-ticker text-text-mute">@{c.handle}</span>
                     </Link>
                   ))}
                 </div>
               )}
               {reports.length > 0 && (
                 <div className="px-1.5 py-1.5">
-                  <p className="px-2 pb-1 text-ticker font-semibold text-text-faint">
+                  <p className="px-2 pb-1 text-ticker font-semibold text-text-mute">
                     Reports
                   </p>
                   {reports.map((r) => (
@@ -287,7 +287,7 @@ export function NavSearch() {
                       className="block rounded-button px-2 py-1 text-ticker hover:bg-surface-2 focus-ring"
                     >
                       <span className="line-clamp-1 font-medium">{r.title}</span>
-                      <span className="num text-ticker text-text-faint">
+                      <span className="num text-ticker text-text-mute">
                         {r.ticker ?? "—"}
                         {r.author_handle ? ` · @${r.author_handle}` : ""}
                       </span>

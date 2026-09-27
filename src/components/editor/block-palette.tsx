@@ -30,7 +30,7 @@ export function BlockPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
       <p className="t-meta px-1">Blocks</p>
       {GROUPS.map((group) => (
         <div key={group} className="flex flex-col gap-1.5">
-          <span className="px-1 text-ticker font-semibold text-text-faint">
+          <span className="px-1 text-ticker font-semibold text-text-mute">
             {group}
           </span>
           {(Object.keys(BLOCK_META) as BlockType[])

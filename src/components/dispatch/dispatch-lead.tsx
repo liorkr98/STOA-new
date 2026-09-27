@@ -40,7 +40,7 @@ export function DispatchLead({
           <div className="min-w-0">
             <p className="num text-ticker font-semibold text-text-mute">
               Today&apos;s Lead
-              <span className="mx-1.5 text-text-faint" aria-hidden>
+              <span className="mx-1.5 text-text-mute" aria-hidden>
                 ·
               </span>
               <span className="text-text-mute">{source}</span>
@@ -87,12 +87,12 @@ export function DispatchLead({
                   <BadgeCheck size={15} className="text-text" aria-label="Verified" />
                 )}
               </span>
-              <span className="num text-ticker text-text-faint">@{author.handle}</span>
+              <span className="num text-ticker text-text-mute">@{author.handle}</span>
             </span>
           </Link>
 
           <span
-            className="num hidden text-ticker text-text-faint sm:inline"
+            className="num hidden text-ticker text-text-mute sm:inline"
             aria-label="Content in this report"
           >
             {badges.join("  ·  ")}

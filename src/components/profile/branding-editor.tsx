@@ -51,7 +51,7 @@ function SortableSection({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="cursor-grab text-text-faint hover:text-text"
+          className="cursor-grab text-text-mute hover:text-text"
           {...attributes}
           {...listeners}
         >

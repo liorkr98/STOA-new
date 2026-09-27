@@ -26,7 +26,7 @@ export function FirstReportBanner() {
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="shrink-0 text-text-faint hover:text-text"
+          className="shrink-0 text-text-mute hover:text-text"
           aria-label="Dismiss"
         >
           <X size={18} />

@@ -38,7 +38,7 @@ export function CardNodeView({ node, deleteNode, selected, editor }: NodeViewPro
         </figure>
       ) : (
         <div className="rounded-panel border border-dashed border-border p-4">
-          <p className="num text-ticker text-text-faint">
+          <p className="num text-ticker text-text-mute">
             Card no longer in the deck
           </p>
         </div>

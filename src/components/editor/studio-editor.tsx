@@ -1420,7 +1420,7 @@ export function StudioEditor({
             }}
             placeholder="One line under the headline. Optional."
             dir="auto"
-            className="user-copy mb-5 w-full bg-transparent text-title text-text-mute placeholder:text-text-faint focus:outline-none"
+            className="user-copy mb-5 w-full bg-transparent text-title text-text-mute placeholder:text-text-mute focus:outline-none"
           />
         </>
       )}
@@ -1471,7 +1471,7 @@ export function StudioEditor({
             // The draft's state, where the design puts it. On a phone it
             // sits beside the forward button instead, where there is room.
             <span className="hidden md:inline">
-              <span className="num mr-2 text-ticker text-text-faint">
+              <span className="num mr-2 text-ticker text-text-mute">
                 Draft ·
               </span>
               <span className="inline-block align-middle">
@@ -1520,7 +1520,7 @@ export function StudioEditor({
                 open is the right thing to do. */}
             {editingPublished ? (
               <div className="mb-6 rounded-panel border border-[var(--notice-edge)] bg-[var(--notice-soft)] p-3.5">
-                <p className="num text-ticker text-text-faint">
+                <p className="num text-ticker text-text-mute">
                   This publication is live
                 </p>
                 <p className="mt-1.5 text-ticker leading-relaxed text-text">
@@ -1634,9 +1634,9 @@ export function StudioEditor({
                       placeholder="Say the one thing."
                       rows={6}
                       dir="auto"
-                      className="user-copy w-full resize-none rounded-panel border border-border bg-surface p-4 text-title leading-relaxed text-text placeholder:text-text-faint focus:outline-none focus-visible:border-[var(--ink)]"
+                      className="user-copy w-full resize-none rounded-panel border border-border bg-surface p-4 text-title leading-relaxed text-text placeholder:text-text-mute focus:outline-none focus-visible:border-[var(--ink)]"
                     />
-                    <p className="num mt-2 text-ticker text-text-faint">
+                    <p className="num mt-2 text-ticker text-text-mute">
                       {summary.trim().length} / {BRIEF_MAX_CHARS}
                     </p>
                   </div>
@@ -1756,7 +1756,7 @@ export function StudioEditor({
                       cards, and it is asked for by Continue only once the
                       clip is in. */}
                   <div className="mt-8 max-w-[60rem] border-t border-border pt-5">
-                    <p className="num mb-2 text-ticker text-text-faint">
+                    <p className="num mb-2 text-ticker text-text-mute">
                       Headline
                     </p>
                     {headlineFields}

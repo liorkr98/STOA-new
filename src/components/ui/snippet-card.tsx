@@ -49,7 +49,7 @@ export function SnippetCard({
     >
       {source && (
         <div className="flex items-center gap-1.5 text-text-mute">
-          <FileText size={13} className="shrink-0 text-text-faint" />
+          <FileText size={13} className="shrink-0 text-text-mute" />
           {source.href ? (
             <a
               href={source.href}
@@ -58,13 +58,13 @@ export function SnippetCard({
               className="focus-ring inline-flex items-center gap-1 text-ticker hover:text-text hover:underline"
             >
               <span className="font-medium">{source.label}</span>
-              {source.detail && <span className="num text-text-faint">{source.detail}</span>}
-              <Link2 size={11} className="text-text-faint" />
+              {source.detail && <span className="num text-text-mute">{source.detail}</span>}
+              <Link2 size={11} className="text-text-mute" />
             </a>
           ) : (
             <span className="text-ticker">
               <span className="font-medium">{source.label}</span>
-              {source.detail && <span className="num ml-1 text-text-faint">{source.detail}</span>}
+              {source.detail && <span className="num ml-1 text-text-mute">{source.detail}</span>}
             </span>
           )}
         </div>

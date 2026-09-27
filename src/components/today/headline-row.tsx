@@ -57,7 +57,7 @@ export function HeadlineRow({
             </span>
           </Link>
           {time ? (
-            <span className="num text-ticker text-text-faint">
+            <span className="num text-ticker text-text-mute">
               <span aria-hidden>· </span>
               {time}
             </span>

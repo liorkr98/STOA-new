@@ -67,7 +67,7 @@ export async function CompanyFinancials({
                 key={`${filing.symbol}-${filing.period_end}-${filing.frequency}`}
                 className="rounded-inner border border-border bg-[var(--paper)] px-3 py-2.5"
               >
-                <p className="num text-ticker text-text-faint">{filing.period_end}</p>
+                <p className="num text-ticker text-text-mute">{filing.period_end}</p>
                 <p className="mt-0.5 text-body font-medium text-text">{freqLabel(filing.frequency)}</p>
                 <div className="mt-2 space-y-1 text-ticker text-text-mute">
                   <p className="flex items-center justify-between gap-2">
@@ -115,7 +115,7 @@ export async function CompanyFinancials({
                     {line.values.map((v, i) => (
                       <td key={i} className="px-4 py-2 text-right">
                         {v == null ? (
-                          <span className="text-text-faint">-</span>
+                          <span className="text-text-mute">-</span>
                         ) : (
                           <span className="num">{fmtNum(v)}</span>
                         )}
@@ -167,7 +167,7 @@ export async function CompanyFinancials({
                       </td>
                       <td className="px-4 py-2 text-right">
                         {s == null ? (
-                          <span className="text-text-faint">-</span>
+                          <span className="text-text-mute">-</span>
                         ) : (
                           <span
                             className="num"

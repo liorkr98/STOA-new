@@ -54,10 +54,10 @@ function CreatorRow({ c }: { c: FollowCreator }) {
           </Link>
         </div>
         <div className="num mt-1 text-ticker text-text-mute">{c.specialty}</div>
-        <div className="num mt-1 text-ticker text-text-faint">{c.pubs}</div>
+        <div className="num mt-1 text-ticker text-text-mute">{c.pubs}</div>
       </div>
       {unfollowed ? (
-        <span className="num shrink-0 text-ticker text-text-faint">Unfollowed</span>
+        <span className="num shrink-0 text-ticker text-text-mute">Unfollowed</span>
       ) : (
         <FollowControl id={c.id} onUnfollow={() => setUnfollowed(true)} />
       )}

@@ -55,7 +55,7 @@ export function DashboardWidget({
           <button
             type="button"
             aria-label="Drag to reorder"
-            className="tap-target focus-ring -ml-1 cursor-grab text-text-faint hover:text-text-mute active:cursor-grabbing"
+            className="tap-target focus-ring -ml-1 cursor-grab text-text-mute hover:text-text-mute active:cursor-grabbing"
             {...dragHandleProps}
           >
             <GripVertical size={15} />
@@ -69,7 +69,7 @@ export function DashboardWidget({
               aria-label="Widget options"
               onClick={() => setMenuOpen((o) => !o)}
               onBlur={() => setMenuOpen(false)}
-              className="tap-target focus-ring text-text-faint hover:text-text-mute"
+              className="tap-target focus-ring text-text-mute hover:text-text-mute"
             >
               <MoreHorizontal size={16} />
             </button>

@@ -46,7 +46,7 @@ export function PublishPreviewDialog({
               ))}
             </div>
           ) : (
-            <p className="mt-5 text-ticker text-text-faint">No cards yet.</p>
+            <p className="mt-5 text-ticker text-text-mute">No cards yet.</p>
           )}
         </Dialog.Content>
       </Dialog.Portal>

@@ -69,7 +69,7 @@ export function ProcessingState({
                 : "Nothing was published to readers. Try the upload again from the publication."}
           </p>
         </div>
-        <span className="num text-ticker text-text-faint">
+        <span className="num text-ticker text-text-mute">
           {status === "processing" ? (minutes < 1 ? "Started under a minute ago" : `Started ${minutes} min ago`) : null}
         </span>
       </div>
@@ -87,12 +87,12 @@ export function ProcessingState({
                   done && "border-[var(--ok)] text-[var(--ok)]",
                   active && "border-[var(--ink)] text-[var(--ink)]",
                   failed && "border-[var(--error)] text-[var(--error)]",
-                  !done && !active && !failed && "border-border text-text-faint",
+                  !done && !active && !failed && "border-border text-text-mute",
                 )}
               >
                 {done ? <Check size={11} strokeWidth={2.2} /> : failed ? <AlertTriangle size={11} /> : active ? <Loader2 size={11} className="animate-spin" /> : null}
               </span>
-              <span className={cn("text-ticker", done || active ? "text-text" : "text-text-faint")}>{s.label}</span>
+              <span className={cn("text-ticker", done || active ? "text-text" : "text-text-mute")}>{s.label}</span>
             </li>
           );
         })}

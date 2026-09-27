@@ -62,7 +62,7 @@ export function StepNav({
                         ? "border-[var(--ok)] text-[var(--ok)]"
                         : open
                           ? "border-border-strong text-text-mute"
-                          : "border-border text-text-faint",
+                          : "border-border text-text-mute",
                   )}
                 >
                   {done && !active ? <Check size={11} aria-hidden strokeWidth={2.4} /> : i + 1}
@@ -70,7 +70,7 @@ export function StepNav({
                 <span
                   className={cn(
                     "num text-ticker",
-                    active ? "text-text" : open ? "text-text-mute" : "text-text-faint",
+                    active ? "text-text" : open ? "text-text-mute" : "text-text-mute",
                   )}
                 >
                   {s.label}
@@ -118,7 +118,7 @@ export function StepFrame({
   return (
     <section aria-label={title}>
       <div className="mb-5">
-        <p className="num text-ticker text-text-faint">{eyebrow}</p>
+        <p className="num text-ticker text-text-mute">{eyebrow}</p>
         <h2 className="mt-1 font-display text-headline font-semibold leading-tight tracking-tight md:text-headline">
           {title}
         </h2>

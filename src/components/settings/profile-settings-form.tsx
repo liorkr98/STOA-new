@@ -68,13 +68,13 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
       <div className="text-body">
         <span className="text-text-mute">Handle: </span>
         <span className="num">@{profile.handle}</span>
-        <span className="num ml-2 text-ticker text-text-faint">
+        <span className="num ml-2 text-ticker text-text-mute">
           Locked after onboarding
         </span>
       </div>
 
       {isAnalyst && (
-        <p className="num text-ticker text-text-faint">
+        <p className="num text-ticker text-text-mute">
           Pricing and storefront design live in Storefront.
         </p>
       )}

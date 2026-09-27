@@ -46,7 +46,7 @@ export function ThemeHeader({ payload }: { payload: ThemePayload }) {
           <span className="stock-meta-key">Publications this week</span>
           <span className="num">
             {payload.publicationsThisWeek}
-            <span className={up ? "text-text" : "text-text-faint"} title="This week against last">
+            <span className={up ? "text-text" : "text-text-mute"} title="This week against last">
               {" "}
               {up ? "▲" : down ? "▼" : "="} {payload.publicationsLastWeek} last week
             </span>

@@ -178,9 +178,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           {formatDistanceToNow(new Date(report.published_at ?? report.created_at), { addSuffix: true })}
         </span>
         <span className="t-meta inline-flex items-center gap-1.5" title="Views">
-          <Eye size={14} aria-hidden className="text-text-faint" />
+          <Eye size={14} aria-hidden className="text-text-mute" />
           <span className="num">{compact(report.views)}</span>
-          <span className="text-text-faint">views</span>
+          <span className="text-text-mute">views</span>
         </span>
         <EditedMarker edits={edits} />
       </div>

@@ -52,7 +52,7 @@ function SortableBlock({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="cursor-grab rounded p-1 text-text-faint hover:bg-surface-2 hover:text-text active:cursor-grabbing"
+            className="cursor-grab rounded p-1 text-text-mute hover:bg-surface-2 hover:text-text active:cursor-grabbing"
             {...attributes}
             {...listeners}
             aria-label="Drag to reorder"
@@ -64,7 +64,7 @@ function SortableBlock({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
+          className="rounded p-1 text-text-mute opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
           aria-label="Remove block"
         >
           <Trash size={16} />

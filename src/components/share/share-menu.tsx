@@ -157,18 +157,18 @@ export function ShareMenu({
             onClick={() => setOpen(false)}
             className={itemClass}
           >
-            <Mail size={14} className="text-text-faint" /> Email
+            <Mail size={14} className="text-text-mute" /> Email
           </a>
           {canNative && (
             <button type="button" role="menuitem" onClick={() => void nativeShare()} className={itemClass}>
-              <Smartphone size={14} className="text-text-faint" /> More (Instagram, WhatsApp...)
+              <Smartphone size={14} className="text-text-mute" /> More (Instagram, WhatsApp...)
             </button>
           )}
           <button type="button" role="menuitem" onClick={() => void copyLink()} className={itemClass}>
             {copied ? (
               <Check size={14} className="text-[var(--ok)]" />
             ) : (
-              <Link2 size={14} className="text-text-faint" />
+              <Link2 size={14} className="text-text-mute" />
             )}
             {copied ? "Copied" : "Copy link"}
           </button>

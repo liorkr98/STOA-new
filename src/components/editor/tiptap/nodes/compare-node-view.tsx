@@ -74,7 +74,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
           type="button"
           aria-label="Delete comparison"
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint opacity-0 transition-opacity hover:text-[var(--error)] focus-ring group-hover:opacity-100"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute opacity-0 transition-opacity hover:text-[var(--error)] focus-ring group-hover:opacity-100"
         >
           <Trash2 size={14} />
         </button>
@@ -97,7 +97,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                     type="button"
                     aria-label={`Remove ${t || "ticker"}`}
                     onClick={() => removeTicker(i)}
-                    className="ml-1 text-text-faint opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
+                    className="ml-1 text-text-mute opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
                   >
                     &times;
                   </button>
@@ -110,7 +110,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                   type="button"
                   aria-label="Add ticker"
                   onClick={addTicker}
-                  className="flex h-6 w-6 items-center justify-center rounded-button text-text-faint hover:text-accent focus-ring"
+                  className="flex h-6 w-6 items-center justify-center rounded-button text-text-mute hover:text-accent focus-ring"
                 >
                   <Plus size={13} />
                 </button>
@@ -145,7 +145,7 @@ export function CompareNodeView({ node, updateAttributes, deleteNode, selected }
                   type="button"
                   aria-label="Remove row"
                   onClick={() => removeRow(ri)}
-                  className="text-text-faint opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
+                  className="text-text-mute opacity-0 transition-opacity hover:text-[var(--error)] group-hover:opacity-100"
                 >
                   <Trash2 size={12} />
                 </button>

@@ -228,7 +228,7 @@ export function StatementNodeView({
                           aria-label={hidden ? "Show row" : "Hide row"}
                           onMouseDown={stop}
                           onClick={() => toggleRow(line.concept)}
-                          className="focus-ring text-text-faint hover:text-text"
+                          className="focus-ring text-text-mute hover:text-text"
                         >
                           {hidden ? <EyeOff size={13} /> : <Eye size={13} />}
                         </button>
@@ -245,7 +245,7 @@ export function StatementNodeView({
                             aria-label="Move up"
                             onMouseDown={stop}
                             onClick={() => moveRow(line.concept, -1)}
-                            className="focus-ring text-text-faint hover:text-text"
+                            className="focus-ring text-text-mute hover:text-text"
                           >
                             <ChevronUp size={12} />
                           </button>
@@ -254,7 +254,7 @@ export function StatementNodeView({
                             aria-label="Move down"
                             onMouseDown={stop}
                             onClick={() => moveRow(line.concept, 1)}
-                            className="focus-ring text-text-faint hover:text-text"
+                            className="focus-ring text-text-mute hover:text-text"
                           >
                             <ChevronDown size={12} />
                           </button>
@@ -265,7 +265,7 @@ export function StatementNodeView({
                   {line.values.map((v, i) => (
                     <td key={i} className="px-4 py-2 text-right align-middle">
                       {v == null ? (
-                        <span className="text-text-faint">-</span>
+                        <span className="text-text-mute">-</span>
                       ) : (
                         <span className="num">{fmtNum(v)}</span>
                       )}
@@ -274,7 +274,7 @@ export function StatementNodeView({
                   {showYoY && (
                     <td className="px-4 py-2 text-right align-middle">
                       {y == null ? (
-                        <span className="text-text-faint">-</span>
+                        <span className="text-text-mute">-</span>
                       ) : (
                         <span className="num" style={{ color: sentiment(y) }}>
                           {pct(y)}
@@ -285,7 +285,7 @@ export function StatementNodeView({
                   {showCagr && (
                     <td className="px-4 py-2 text-right align-middle">
                       {c == null ? (
-                        <span className="text-text-faint">-</span>
+                        <span className="text-text-mute">-</span>
                       ) : (
                         <span className="num" style={{ color: sentiment(c) }}>
                           {pct(c)}
@@ -324,7 +324,7 @@ export function StatementNodeView({
       >
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
           <span className="flex items-center gap-2">
-            <Landmark size={14} className="text-text-faint" />
+            <Landmark size={14} className="text-text-mute" />
             <span className="num text-body font-semibold">{statement.symbol}</span>
             <span className="t-meta">{kindLabel}</span>
           </span>
@@ -379,7 +379,7 @@ export function StatementNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
-          <Landmark size={13} className="text-text-faint" />
+          <Landmark size={13} className="text-text-mute" />
           <input
             value={draftTicker}
             onChange={(e) => setDraftTicker(e.target.value.toUpperCase())}
@@ -445,7 +445,7 @@ export function StatementNodeView({
             aria-label="Export CSV"
             onMouseDown={stop}
             onClick={exportCsv}
-            className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-text focus-ring"
+            className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-text focus-ring"
           >
             <Download size={14} />
           </button>
@@ -456,7 +456,7 @@ export function StatementNodeView({
           aria-label="Delete statement"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

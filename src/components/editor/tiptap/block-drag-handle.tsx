@@ -174,7 +174,7 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
             aria-label="Insert block below"
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => hoverTarget && openInsert(e, hoverTarget)}
-            className="flex h-6 w-5 items-center justify-center rounded-button text-text-faint transition-colors hover:bg-surface-2 hover:text-text focus-ring"
+            className="flex h-6 w-5 items-center justify-center rounded-button text-text-mute transition-colors hover:bg-surface-2 hover:text-text focus-ring"
           >
             <Plus size={15} />
           </button>
@@ -183,7 +183,7 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
             aria-label="Block actions"
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => hoverTarget && openActions(e, hoverTarget)}
-            className="flex h-6 w-5 cursor-grab items-center justify-center rounded-button text-text-faint transition-colors hover:bg-surface-2 hover:text-text active:cursor-grabbing"
+            className="flex h-6 w-5 cursor-grab items-center justify-center rounded-button text-text-mute transition-colors hover:bg-surface-2 hover:text-text active:cursor-grabbing"
           >
             <GripVertical size={15} />
           </button>

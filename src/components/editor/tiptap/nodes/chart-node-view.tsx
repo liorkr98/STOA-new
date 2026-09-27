@@ -531,7 +531,7 @@ function LightweightChartNodeView({
       {isEditable && (
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
-          <ChartCandlestick size={13} className="text-text-faint" />
+          <ChartCandlestick size={13} className="text-text-mute" />
           <input
             value={draftTicker}
             onChange={(e) => setDraft({ forTicker: ticker, value: e.target.value.toUpperCase() })}
@@ -565,7 +565,7 @@ function LightweightChartNodeView({
               "rounded-button px-2 py-0.5 text-ticker font-medium transition-colors focus-ring",
               hasIndicator(preset.indicator)
                 ? "bg-accent-weak text-accent"
-                : "text-text-faint hover:bg-surface-2 hover:text-text",
+                : "text-text-mute hover:bg-surface-2 hover:text-text",
             )}
           >
             {preset.label}
@@ -592,7 +592,7 @@ function LightweightChartNodeView({
                   "flex h-7 w-7 items-center justify-center rounded-button transition-colors focus-ring",
                   drawMode === tool.key
                     ? "bg-[var(--ink)] text-[var(--paper)]"
-                    : "text-text-faint hover:bg-surface-2 hover:text-text",
+                    : "text-text-mute hover:bg-surface-2 hover:text-text",
                 )}
               >
                 <Icon size={14} />
@@ -606,7 +606,7 @@ function LightweightChartNodeView({
               aria-label="Clear lines"
               onMouseDown={stopEditorCapture}
               onClick={clearAnnotations}
-              className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint transition-colors hover:text-[var(--error)] focus-ring"
+              className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute transition-colors hover:text-[var(--error)] focus-ring"
             >
               <Eraser size={14} />
             </button>
@@ -618,7 +618,7 @@ function LightweightChartNodeView({
           aria-label="Delete chart"
           onMouseDown={stopEditorCapture}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint transition-colors hover:text-[var(--error)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-mute transition-colors hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -667,7 +667,7 @@ function LightweightChartNodeView({
         {status !== "ready" &&
           (!isEditable && (status === "empty" || status === "auth") ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-              <BarChart2 size={22} className="text-text-faint" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }} />
+              <BarChart2 size={22} className="text-text-mute" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }} />
               <p className="text-body" style={{ color: "color-mix(in srgb, var(--ink) 50%, transparent)" }}>
                 Chart unavailable
               </p>
@@ -680,7 +680,7 @@ function LightweightChartNodeView({
       </div>
 
       {sourceText && (
-        <p className="border-t border-border px-3 py-2 text-ticker leading-relaxed text-text-faint">
+        <p className="border-t border-border px-3 py-2 text-ticker leading-relaxed text-text-mute">
           <span className="t-meta text-ticker text-text-mute">From selection · </span>
           {sourceText.length > 220 ? `${sourceText.slice(0, 220)}…` : sourceText}
         </p>

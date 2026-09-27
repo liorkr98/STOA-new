@@ -163,6 +163,11 @@ test("mono only on tickers", () => {
   );
 });
 
+test("the faint grey is decoration, never a text colour", () => {
+  const hits = offenders(/(?<![\w-])(?:[a-z]+:)*text-text-faint\b|(?<![-\w])color:\s*["']?var\(--text-faint\)/);
+  assert.deepEqual(hits, [], `faint text fails 4.5:1; use text-text-mute:\n${hits.join("\n")}`);
+});
+
 test("retired tokens stay retired", () => {
   const hits = offenders(
     /var\(--(brass|verdigris|rust|plum|r-btn|r-card|r-tag|radius-btn|radius-card|radius-tag|font-fraunces|font-plex-[\w-]+)\)/,

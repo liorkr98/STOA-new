@@ -82,7 +82,7 @@ export function FeaturesMenu({
                           ? "text-[var(--ok)]"
                           : state.tone === "bad"
                             ? "text-[var(--error)]"
-                            : "text-text-faint",
+                            : "text-text-mute",
                       )}
                     >
                       {state.label}
@@ -95,7 +95,7 @@ export function FeaturesMenu({
                   ) : null}
                 </span>
                 {row.locked ? null : (
-                  <ChevronRight size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-text-faint" />
+                  <ChevronRight size={16} strokeWidth={1.6} aria-hidden className="shrink-0 text-text-mute" />
                 )}
               </button>
             </li>

@@ -187,7 +187,7 @@ export function DataFigureNodeView({
           aria-label="Find in filings"
           onMouseDown={stop}
           onClick={() => setPickerOpen((o) => !o)}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-accent focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-accent focus-ring"
         >
           <FileSearch size={14} />
         </button>
@@ -196,7 +196,7 @@ export function DataFigureNodeView({
           aria-label="Delete figure"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={14} />
         </button>
@@ -240,7 +240,7 @@ export function DataFigureNodeView({
               rel="noopener noreferrer"
               aria-label="Open filing"
               onMouseDown={stop}
-              className="text-text-faint transition-colors hover:text-accent"
+              className="text-text-mute transition-colors hover:text-accent"
             >
               <ArrowUpRight size={13} />
             </a>
@@ -250,7 +250,7 @@ export function DataFigureNodeView({
             aria-label="Clear filing source"
             onMouseDown={stop}
             onClick={clearRef}
-            className="text-text-faint transition-colors hover:text-[var(--error)]"
+            className="text-text-mute transition-colors hover:text-[var(--error)]"
           >
             <X size={12} />
           </button>
@@ -271,7 +271,7 @@ export function DataFigureNodeView({
               rel="noopener noreferrer"
               aria-label="Open source"
               onMouseDown={stop}
-              className="text-text-faint transition-colors hover:text-accent"
+              className="text-text-mute transition-colors hover:text-accent"
             >
               <ArrowUpRight size={13} />
             </a>

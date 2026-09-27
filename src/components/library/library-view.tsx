@@ -90,7 +90,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
       <div>
         <h1 className="font-display text-headline font-semibold tracking-tight">Library</h1>
         <p className="t-body mt-2">Everything you saved and everything you own.</p>
-        <p className="num mt-2.5 text-ticker text-text-faint">
+        <p className="num mt-2.5 text-ticker text-text-mute">
           Saved reports stay locked until you unlock them — access is checked when you open.
         </p>
       </div>
@@ -115,12 +115,12 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
           ))}
         </div>
         <div className="sm:ml-auto flex items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2 sm:w-64">
-          <Search size={14} className="text-text-faint" />
+          <Search size={14} className="text-text-mute" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search your library"
-            className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
+            className="w-full bg-transparent text-body outline-none placeholder:text-text-mute"
           />
         </div>
       </div>
@@ -139,7 +139,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                   <span className="num text-ticker text-text-mute">{it.typeLabel}</span>
                   {it.tag &&
                     (it.tagIsTicker ? <TickerChip ticker={it.tag} /> : <ThemeChip label={it.tag} />)}
-                  <span className="num text-ticker text-text-faint">{it.badge}</span>
+                  <span className="num text-ticker text-text-mute">{it.badge}</span>
                 </div>
                 <h3 className="mt-3 max-w-[700px] font-display text-title font-semibold leading-snug tracking-tight md:text-headline">
                   {it.title}
@@ -175,7 +175,7 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
                       {it.sub}
                     </Link>
                   ) : (
-                    <span className="num text-ticker text-text-faint md:order-1 md:text-right">
+                    <span className="num text-ticker text-text-mute md:order-1 md:text-right">
                       {it.sub}
                     </span>
                   ))}

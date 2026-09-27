@@ -194,7 +194,7 @@ export function VideoNodeView({
         }}
       />
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <Film size={14} className="text-text-faint" />
+        <Film size={14} className="text-text-mute" />
         <span className="t-meta flex-1">Video</span>
         <label className="flex items-center gap-1.5 text-ticker text-text-mute">
           Min tier rank
@@ -222,7 +222,7 @@ export function VideoNodeView({
           aria-label="Delete video"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -244,7 +244,7 @@ export function VideoNodeView({
                 type="button"
                 onMouseDown={stop}
                 onClick={() => void fetchToken()}
-                className="mx-auto mt-1 block text-ticker text-text-faint hover:text-text focus-ring"
+                className="mx-auto mt-1 block text-ticker text-text-mute hover:text-text focus-ring"
               >
                 Check again
               </button>
@@ -258,7 +258,7 @@ export function VideoNodeView({
             disabled={uploading}
             className="flex w-full flex-col items-center justify-center gap-2 rounded-inner border border-dashed border-border px-4 py-12 text-text-mute hover:bg-surface-2 focus-ring disabled:opacity-60"
           >
-            <Upload size={22} className="text-text-faint" />
+            <Upload size={22} className="text-text-mute" />
             <span className="text-body">{uploading ? "Uploading..." : "Upload a video"}</span>
             {uploadError && <span className="text-ticker text-[var(--error)]">{uploadError}</span>}
           </button>

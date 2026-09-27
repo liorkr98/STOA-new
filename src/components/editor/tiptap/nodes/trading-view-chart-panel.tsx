@@ -132,7 +132,7 @@ export function TradingViewChartPanel({
             aria-label="Delete chart"
             onMouseDown={stopEditorCapture}
             onClick={() => deleteNode()}
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
           >
             <Trash2 size={15} />
           </button>
@@ -148,7 +148,7 @@ export function TradingViewChartPanel({
           </div>
         )}
         {isEditable ? (
-          <p className="t-meta px-2 py-1.5 text-center text-ticker text-text-faint">
+          <p className="t-meta px-2 py-1.5 text-center text-ticker text-text-mute">
             Toggle RSI / Volume / MACD above — saved with your draft. Freehand drawings inside TradingView reset on reload.
           </p>
         ) : null}

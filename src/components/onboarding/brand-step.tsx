@@ -91,7 +91,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
         <label className="flex flex-col gap-1.5 text-body">
           <span className="font-medium">Handle</span>
           <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">@</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">@</span>
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value.toLowerCase())}
@@ -99,7 +99,7 @@ export function BrandStep({ profile }: { profile: Profile }) {
               maxLength={20}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2">
-              {availability === "checking" && <Spinner size={16} className="animate-spin text-text-faint" />}
+              {availability === "checking" && <Spinner size={16} className="animate-spin text-text-mute" />}
               {availability === "available" && <Check size={16} className="text-[var(--ok)]" />}
               {(availability === "taken" || availability === "invalid") && (
                 <X size={16} className="text-[var(--down)]" />

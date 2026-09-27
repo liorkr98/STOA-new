@@ -25,7 +25,7 @@ export function ComposeRail({ children }: { children: React.ReactNode }) {
       className="scroll-area hidden min-h-0 w-[248px] shrink-0 overflow-y-auto border-r border-border lg:block"
     >
       <div className="flex flex-col gap-5 p-3">
-        <span className="num text-ticker text-text-faint">Toolbox</span>
+        <span className="num text-ticker text-text-mute">Toolbox</span>
         {children}
       </div>
     </aside>
@@ -57,7 +57,7 @@ export function ComposeRailDrawer({
         className="scroll-area absolute inset-y-0 left-0 flex w-[min(88vw,320px)] flex-col gap-5 overflow-y-auto border-r border-border bg-paper p-4"
       >
         <div className="flex items-center justify-between">
-          <span className="num text-ticker text-text-faint">Toolbox</span>
+          <span className="num text-ticker text-text-mute">Toolbox</span>
           <button
             type="button"
             onClick={onClose}

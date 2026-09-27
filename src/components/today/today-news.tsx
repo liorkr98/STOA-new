@@ -41,7 +41,7 @@ export function TodayNews({
               <p className="text-body leading-snug text-text">
                 {n.headline}
               </p>
-              <p className="num mt-1 text-ticker text-text-faint">
+              <p className="num mt-1 text-ticker text-text-mute">
                 {n.source ?? "Yahoo Finance"}
                 <span aria-hidden> · </span>
                 {newsTime(n.datetime)}

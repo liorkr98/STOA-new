@@ -23,7 +23,7 @@ import { InkTag } from "@/components/feed/feed-cards";
 function UsageMarks({ usage }: { usage: CardUsage }) {
   if (!usage.inVideo && !usage.inResearch) {
     return (
-      <span className="num text-ticker text-text-faint">Not placed</span>
+      <span className="num text-ticker text-text-mute">Not placed</span>
     );
   }
   return (
@@ -101,7 +101,7 @@ function TrayCard({
       <div className="flex items-start gap-1.5 p-2">
         <span
           aria-hidden
-          className={cn("mt-0.5 shrink-0", pinned ? "text-text-faint" : "cursor-grab text-text-faint group-hover:text-text-mute")}
+          className={cn("mt-0.5 shrink-0", pinned ? "text-text-mute" : "cursor-grab text-text-mute group-hover:text-text-mute")}
         >
           {pinned ? <Lock size={13} /> : <GripVertical size={13} />}
         </span>
@@ -120,7 +120,7 @@ function TrayCard({
           <span className="mt-1 flex items-center gap-2">
             <UsageMarks usage={usage} />
             {card.locked ? (
-              <span className="num flex items-center gap-1 text-ticker text-text-faint">
+              <span className="num flex items-center gap-1 text-ticker text-text-mute">
                 <Lock size={10} aria-hidden /> Locked
               </span>
             ) : null}
@@ -133,7 +133,7 @@ function TrayCard({
               aria-label={`Place ${cardName(card)}`}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
-              className="focus-ring rounded p-1 text-text-faint hover:text-text"
+              className="focus-ring rounded p-1 text-text-mute hover:text-text"
             >
               <MoreHorizontal size={14} />
             </button>
@@ -148,7 +148,7 @@ function TrayCard({
                       onPlaceInVideo();
                       setMenuOpen(false);
                     }}
-                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
+                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-mute disabled:hover:bg-transparent"
                   >
                     <Film size={13} aria-hidden /> Place in video
                   </button>
@@ -159,7 +159,7 @@ function TrayCard({
                       onPlaceInResearch();
                       setMenuOpen(false);
                     }}
-                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-faint disabled:hover:bg-transparent"
+                    className="focus-ring flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-ticker text-text hover:bg-surface-2 disabled:text-text-mute disabled:hover:bg-transparent"
                   >
                     <FileText size={13} aria-hidden /> Insert in research
                   </button>
@@ -202,7 +202,7 @@ export function CardTray({
     <section aria-label="Cards" className="min-w-0">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="t-meta">Cards</h2>
-        <span className="num text-ticker text-text-faint">
+        <span className="num text-ticker text-text-mute">
           {count === 0 ? "None yet" : `${count} in the deck`}
         </span>
       </div>

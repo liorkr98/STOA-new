@@ -84,7 +84,7 @@ export function AiAssistant({
     <section aria-label="AI assistant" className="min-w-0">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="t-meta">Assistant</h2>
-        <span className="num text-ticker text-text-faint">
+        <span className="num text-ticker text-text-mute">
           {credits} credits
         </span>
       </div>
@@ -112,7 +112,7 @@ export function AiAssistant({
               onClick={() => onRun(a)}
               className="focus-ring flex w-full items-center gap-2 rounded-inner border border-border bg-surface px-2.5 py-1.5 text-left text-ticker text-text transition-colors hover:border-border-strong"
             >
-              <Sparkles size={13} className="shrink-0 text-text-faint" aria-hidden />
+              <Sparkles size={13} className="shrink-0 text-text-mute" aria-hidden />
               <span className="min-w-0 flex-1 truncate">{a.label}</span>
             </button>
           </li>
@@ -138,7 +138,7 @@ export function AiAssistant({
       </ul>
 
       {canAfford ? null : (
-        <p className="num mt-1.5 text-ticker leading-relaxed text-text-faint">
+        <p className="num mt-1.5 text-ticker leading-relaxed text-text-mute">
           Not enough credits · top up in Wallet
         </p>
       )}

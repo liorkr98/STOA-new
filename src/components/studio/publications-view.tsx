@@ -72,7 +72,7 @@ function Thumb({ duration, videoStatus }: { duration: string; videoStatus: Publi
         ) : videoStatus === "failed" ? (
           <span className="num text-ticker text-[var(--error)]">Failed</span>
         ) : (
-          <FileText size={14} className="text-text-faint" aria-label="Written publication" />
+          <FileText size={14} className="text-text-mute" aria-label="Written publication" />
         )}
       </div>
       {videoStatus === "ready" && duration ? (
@@ -185,7 +185,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                     <span className="num text-ticker text-text-mute">{p.typeLabel}</span>
                     {p.tag && (p.tagIsTicker ? <TickerChip ticker={p.tag} /> : <ThemeChip label={p.tag} />)}
                     {p.badge ? (
-                      <span className="num text-ticker text-text-faint">{p.badge}</span>
+                      <span className="num text-ticker text-text-mute">{p.badge}</span>
                     ) : null}
                     {p.editedAt ? <EditedFlag editedAt={p.editedAt} /> : null}
                     {p.state === "archived" && (
@@ -207,7 +207,7 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   </h3>
 
                   {p.stateLine && (
-                    <p className="num mt-2 text-ticker text-text-faint">
+                    <p className="num mt-2 text-ticker text-text-mute">
                       {p.stateLine}
                     </p>
                   )}
@@ -251,11 +251,11 @@ export function PublicationsView({ pubs }: { pubs: Publication[] }) {
                   <div className="num mt-1 flex flex-col items-end gap-0.5 text-ticker">
                     {p.plays != null ? (
                       <span className="text-text-mute">
-                        {p.plays} <span className="text-text-faint">plays</span>
+                        {p.plays} <span className="text-text-mute">plays</span>
                       </span>
                     ) : null}
                     <span className="text-text-mute">
-                      {p.views} <span className="text-text-faint">page views</span>
+                      {p.views} <span className="text-text-mute">page views</span>
                     </span>
                   </div>
                 </div>

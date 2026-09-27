@@ -26,7 +26,7 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
     <div className="rounded-panel bg-surface-2 px-5 py-4">
       <div className="num text-ticker text-text-mute">{label}</div>
       <div className="num mt-2.5 text-headline font-semibold tracking-tight">{value}</div>
-      <p className="mt-2 text-ticker leading-snug text-text-faint">{note}</p>
+      <p className="mt-2 text-ticker leading-snug text-text-mute">{note}</p>
     </div>
   );
 }
@@ -83,19 +83,19 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
             <table className="w-full min-w-[36rem] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="num py-2 pr-4 text-ticker font-medium text-text-faint">
+                  <th className="num py-2 pr-4 text-ticker font-medium text-text-mute">
                     Publication
                   </th>
-                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-mute">
                     Plays
                   </th>
-                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-mute">
                     Finished
                   </th>
-                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-faint">
+                  <th className="num py-2 pr-4 text-right text-ticker font-medium text-text-mute">
                     Finish rate
                   </th>
-                  <th className="num py-2 text-right text-ticker font-medium text-text-faint">
+                  <th className="num py-2 text-right text-ticker font-medium text-text-mute">
                     Page views
                   </th>
                 </tr>
@@ -108,11 +108,11 @@ export function InsightsView({ rows, totals }: { rows: InsightClip[]; totals: In
                         {r.title}
                       </Link>
                       {r.status !== "ready" ? (
-                        <p className="num mt-0.5 text-ticker text-text-faint">
+                        <p className="num mt-0.5 text-ticker text-text-mute">
                           {r.status === "processing" ? "Processing" : "Failed"}
                         </p>
                       ) : !r.published ? (
-                        <p className="num mt-0.5 text-ticker text-text-faint">Draft</p>
+                        <p className="num mt-0.5 text-ticker text-text-mute">Draft</p>
                       ) : null}
                     </td>
                     <td className="num py-3 pr-4 text-right text-body">{compact(r.plays)}</td>

@@ -62,7 +62,7 @@ export function ConfirmSpendDialog({
           <div className="flex items-start justify-between">
             <Dialog.Title className="t-title">{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="tap-target text-text-faint transition-colors hover:text-text focus-ring rounded-chip" aria-label="Close">
+              <button className="tap-target text-text-mute transition-colors hover:text-text focus-ring rounded-chip" aria-label="Close">
                 <X size={18} />
               </button>
             </Dialog.Close>

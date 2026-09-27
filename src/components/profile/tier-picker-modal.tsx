@@ -144,7 +144,7 @@ export function TierPickerModal({
         {mutation.data?.error && (
           <p className="mt-3 text-center text-ticker text-[var(--error)]">{mutation.data.error}</p>
         )}
-        <p className="num mt-6 text-center text-ticker text-text-faint">
+        <p className="num mt-6 text-center text-ticker text-text-mute">
           Existing subscribers keep their locked-in price.
         </p>
 

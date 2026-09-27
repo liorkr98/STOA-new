@@ -32,11 +32,11 @@ export function DispatchWire({ stories }: { stories: DispatchStory[] }) {
                   {story.headline}
                 </span>
                 <span className="hidden shrink-0 items-center gap-2 sm:flex">
-                  <span className="text-ticker text-text-faint">{story.author.display_name}</span>
+                  <span className="text-ticker text-text-mute">{story.author.display_name}</span>
                 </span>
                 <ArrowRight
                   size={13}
-                  className="shrink-0 self-center text-text-faint opacity-0 transition-opacity group-hover:opacity-100"
+                  className="shrink-0 self-center text-text-mute opacity-0 transition-opacity group-hover:opacity-100"
                   aria-hidden
                 />
               </Link>

@@ -177,7 +177,7 @@ export function ValuationNodeView({
                         opacity: 0.85,
                       }}
                     />
-                    <span className="num text-ticker text-text-faint">{i + 1}</span>
+                    <span className="num text-ticker text-text-mute">{i + 1}</span>
                   </div>
                 );
               })}
@@ -189,7 +189,7 @@ export function ValuationNodeView({
                     background: "var(--chart-1)",
                   }}
                 />
-                <span className="num text-ticker text-text-faint">TV</span>
+                <span className="num text-ticker text-text-mute">TV</span>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@ export function ValuationNodeView({
         className={cn("fade-up my-4 p-4", drivesTarget ? "ledger-card" : "surface")}
       >
         <div className="mb-2 flex items-center gap-2">
-          <Calculator size={14} className="text-text-faint" />
+          <Calculator size={14} className="text-text-mute" />
           {ticker && <TickerChip ticker={ticker} />}
           <span className="t-meta">DCF valuation</span>
           {drivesTarget && <span className="t-meta text-ticker">drives target</span>}
@@ -239,7 +239,7 @@ export function ValuationNodeView({
       onClick={stop}
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <Calculator size={14} className="text-text-faint" />
+        <Calculator size={14} className="text-text-mute" />
         <span className="t-meta flex-1">DCF valuation</span>
         <label className="flex items-center gap-1.5 text-ticker text-text-mute">
           <input
@@ -254,7 +254,7 @@ export function ValuationNodeView({
           aria-label="Delete valuation"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

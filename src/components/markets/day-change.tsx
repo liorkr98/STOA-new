@@ -31,7 +31,7 @@ export function DayChange({
   if (percent == null) {
     return (
       <span
-        className={cn(base, "text-text-faint")}
+        className={cn(base, "text-text-mute")}
         title="Day change is not available yet"
         aria-label="Day change not available"
       >

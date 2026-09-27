@@ -127,7 +127,7 @@ export function EstimatesNodeView({
                     <td className="num px-4 py-2 text-right">{fmtEps(e.epsActual)}</td>
                     <td className="px-4 py-2 text-right">
                       {s == null ? (
-                        <span className="text-text-faint">-</span>
+                        <span className="text-text-mute">-</span>
                       ) : (
                         <span className="num" style={{ color: sentiment(s) }}>
                           {s >= 0 ? "+" : ""}
@@ -165,7 +165,7 @@ export function EstimatesNodeView({
         className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface"
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <Target size={14} className="text-text-faint" />
+          <Target size={14} className="text-text-mute" />
           <TickerChip ticker={ticker} />
           <span className="t-meta">Estimates</span>
         </div>
@@ -195,7 +195,7 @@ export function EstimatesNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <span className="flex h-7 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
-          <Target size={13} className="text-text-faint" />
+          <Target size={13} className="text-text-mute" />
           <input
             value={draftTicker}
             onChange={(e) => setDraftTicker(e.target.value.toUpperCase())}
@@ -218,7 +218,7 @@ export function EstimatesNodeView({
           aria-label="Delete estimates"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

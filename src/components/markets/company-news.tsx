@@ -100,9 +100,9 @@ export function CompanyNews({ ticker }: { ticker: string }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-body font-medium text-text group-hover:text-accent">{item.headline}</p>
-                  <ExternalLink size={14} className="mt-0.5 shrink-0 text-text-faint group-hover:text-text-mute" />
+                  <ExternalLink size={14} className="mt-0.5 shrink-0 text-text-mute group-hover:text-text-mute" />
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-ticker text-text-faint">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-ticker text-text-mute">
                   <span>{item.source ?? "Unknown source"}</span>
                   <span aria-hidden>·</span>
                   <span className="num">{formatRelativeDate(item.datetime)}</span>

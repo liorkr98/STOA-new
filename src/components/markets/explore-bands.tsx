@@ -96,7 +96,7 @@ export function ExploreThemes({ themes }: { themes: ThemeCard[] }) {
                 className={
                   theme.publicationsThisWeek > theme.publicationsLastWeek
                     ? "text-text"
-                    : "text-text-faint"
+                    : "text-text-mute"
                 }
               >
                 {theme.publicationsThisWeek > theme.publicationsLastWeek

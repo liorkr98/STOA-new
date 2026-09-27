@@ -230,7 +230,7 @@ export function NapkinNodeView({
               caption={caption}
             />
           {caption ? <p className="t-meta mt-1.5 text-center">{caption}</p> : null}
-          <p className="t-meta mt-1 text-center text-ticker text-text-faint">AI diagram</p>
+          <p className="t-meta mt-1 text-center text-ticker text-text-mute">AI diagram</p>
         </div>
       </NodeViewWrapper>
     );
@@ -276,7 +276,7 @@ export function NapkinNodeView({
           aria-label="Delete diagram block"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

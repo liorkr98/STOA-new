@@ -162,7 +162,7 @@ function MetaRow({ p, className }: { p: ProfilePublication; className?: string }
       {p.direction && <StanceChip direction={p.direction} />}
       {!p.ticker && p.themeTag && <ThemeChip label={p.themeTag} />}
       {p.badge !== p.typeLabel && (
-        <span className="num text-ticker text-text-faint">{p.badge}</span>
+        <span className="num text-ticker text-text-mute">{p.badge}</span>
       )}
     </div>
   );
@@ -179,7 +179,7 @@ function SectionHead({ label, children }: { label: string; children?: React.Reac
 
 function ViewsMeta({ p }: { p: ProfilePublication }) {
   return (
-    <div className="num mt-2 text-ticker text-text-faint">
+    <div className="num mt-2 text-ticker text-text-mute">
       {p.dateLabel}
       {p.views > 0 ? ` · ${p.views.toLocaleString()} VIEWS` : ""}
     </div>
@@ -348,7 +348,7 @@ function SubjectFilter({
                 )}
               >
                 <span>{s.key}</span>
-                <span className="text-text-faint">{s.count}</span>
+                <span className="text-text-mute">{s.count}</span>
               </button>
             </li>
           ))}
@@ -404,7 +404,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
             <div className="num mt-2 text-ticker text-text-mute">
               {props.handleLine}
             </div>
-            <div className="num mt-1.5 text-ticker text-text-faint">
+            <div className="num mt-1.5 text-ticker text-text-mute">
               {props.audienceLine}
             </div>
           </div>
@@ -415,7 +415,7 @@ export function AnalystProfileView(props: AnalystProfileViewProps) {
           <p className="mt-2.5 max-w-[520px] text-body leading-relaxed text-text-mute">{props.bio}</p>
         )}
         {props.isSelf && (
-          <div className="num mt-3.5 text-ticker text-text-faint">
+          <div className="num mt-3.5 text-ticker text-text-mute">
             This is how visitors see your profile ·{" "}
             <Link href="/studio/branding" className="text-text-mute underline">
               Edit in storefront →

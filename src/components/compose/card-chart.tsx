@@ -62,7 +62,7 @@ export function CardChart({
   if (!symbol) {
     return (
       <div className={cn("flex h-full min-h-24 items-center justify-center border border-dashed border-border bg-surface-2", className)}>
-        <span className="num text-ticker text-text-faint">Set a ticker</span>
+        <span className="num text-ticker text-text-mute">Set a ticker</span>
       </div>
     );
   }
@@ -72,7 +72,7 @@ export function CardChart({
       <div className={cn("flex h-full min-h-0 flex-col", className)}>
         <div className="flex items-baseline justify-between gap-2">
           <span className="num text-ticker tracking-tight">{symbol}</span>
-          <span className="num text-ticker text-text-faint">TradingView</span>
+          <span className="num text-ticker text-text-mute">TradingView</span>
         </div>
         <div
           className="mt-2 min-h-0 flex-1 overflow-hidden rounded-inner border border-border bg-paper"
@@ -207,7 +207,7 @@ function LightweightCardChart({
       <div className="flex items-baseline justify-between gap-2">
         <span className="num text-ticker tracking-tight">
           {symbol}
-          {compare && compare !== symbol ? <span className="text-text-faint"> · {compare}</span> : null}
+          {compare && compare !== symbol ? <span className="text-text-mute"> · {compare}</span> : null}
         </span>
         {changePct != null ? (
           <span className={cn("num text-ticker", up ? "text-[var(--up)]" : "text-[var(--down)]")}>
@@ -215,7 +215,7 @@ function LightweightCardChart({
             {changePct.toFixed(1)}%
           </span>
         ) : (
-          <span className="num text-ticker text-text-faint">TradingView</span>
+          <span className="num text-ticker text-text-mute">TradingView</span>
         )}
       </div>
       <div
@@ -225,7 +225,7 @@ function LightweightCardChart({
         aria-busy={status === "loading"}
       />
       {status === "empty" ? (
-        <p className="mt-2 text-ticker text-text-faint">No tape for {symbol} yet.</p>
+        <p className="mt-2 text-ticker text-text-mute">No tape for {symbol} yet.</p>
       ) : null}
       {caption ? <p className="mt-2 text-ticker leading-snug text-text-mute">{caption}</p> : null}
     </div>

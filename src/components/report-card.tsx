@@ -74,7 +74,7 @@ export function ReportCard({
       </Link>
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <div className="flex items-center gap-4 text-text-faint">
+        <div className="flex items-center gap-4 text-text-mute">
           <span className="inline-flex items-center gap-1 text-body">
             <Heart size={15} aria-hidden /> <span className="num">{compact(report.likes)}</span>
           </span>

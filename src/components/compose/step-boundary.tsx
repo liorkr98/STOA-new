@@ -58,7 +58,7 @@ export class StepErrorBoundary extends Component<
           your cards, the clip and what is placed on it are still here, and the draft stands as
           of its last save.
         </p>
-        <p className="num mt-2 break-words text-ticker leading-snug text-text-faint">
+        <p className="num mt-2 break-words text-ticker leading-snug text-text-mute">
           {error.message || String(error)}
         </p>
         <button

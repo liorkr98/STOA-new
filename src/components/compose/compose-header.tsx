@@ -37,7 +37,7 @@ export function ComposeHeader({
       <span className="font-display text-body font-semibold text-text">
         STOA
       </span>
-      <span className="num min-w-0 truncate text-ticker text-text-faint">
+      <span className="num min-w-0 truncate text-ticker text-text-mute">
         Compose{crumb ? ` · ${crumb}` : ""}
       </span>
       <div className="ml-auto flex min-w-0 shrink-0 items-center gap-3">{children}</div>

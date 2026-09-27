@@ -24,12 +24,12 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2 sm:w-64">
-          <Search size={14} className="text-text-faint" />
+          <Search size={14} className="text-text-mute" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subscribers"
-            className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
+            className="w-full bg-transparent text-body outline-none placeholder:text-text-mute"
           />
         </div>
       </div>
@@ -38,7 +38,7 @@ export function SubscriberTable({ rows }: { rows: SubscriberRowVM[] }) {
         <p className="t-meta">No subscribers match.</p>
       ) : (
         <div>
-          <div className="num hidden grid-cols-[1fr_120px_180px] gap-4 border-b border-border py-3 text-ticker text-text-faint md:grid">
+          <div className="num hidden grid-cols-[1fr_120px_180px] gap-4 border-b border-border py-3 text-ticker text-text-mute md:grid">
             <div>Subscriber</div>
             <div>Joined</div>
             <div>Status</div>

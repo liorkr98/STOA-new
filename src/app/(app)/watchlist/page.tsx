@@ -111,7 +111,7 @@ export default function WatchlistPage() {
         r.points.length > 1 ? (
           <Sparkline data={r.points} width={80} height={22} />
         ) : (
-          <span className="text-text-faint">-</span>
+          <span className="text-text-mute">-</span>
         ),
     },
     { key: "price", header: "Price", numeric: true, format: money, accessor: (r) => r.price },
@@ -141,7 +141,7 @@ export default function WatchlistPage() {
           type="button"
           onClick={() => toggle(r.ticker)}
           aria-label={`Remove ${r.ticker} from watchlist`}
-          className="tap-target focus-ring rounded-button p-1 text-text-faint transition-colors hover:text-text"
+          className="tap-target focus-ring rounded-button p-1 text-text-mute transition-colors hover:text-text"
         >
           <X size={15} />
         </button>
@@ -166,7 +166,7 @@ export default function WatchlistPage() {
       </div>
 
       <div className="relative max-w-2xl">
-        <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-faint" />
+        <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-mute" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

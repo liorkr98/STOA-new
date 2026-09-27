@@ -17,7 +17,7 @@ import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
 function Row({ v }: { v: InkValue }) {
   return (
     <li className="text-ticker leading-snug text-text">
-      {v.text || <span className="text-text-faint">Empty</span>}
+      {v.text || <span className="text-text-mute">Empty</span>}
       <InkTag ink={v.ink} />
     </li>
   );
@@ -33,18 +33,18 @@ function Body({ card }: { card: DraftCard }) {
     case "thesis":
       return (
         <p className="text-ticker leading-snug text-text">
-          {String(p.body ?? "") || <span className="text-text-faint">No claim written yet</span>}
+          {String(p.body ?? "") || <span className="text-text-mute">No claim written yet</span>}
         </p>
       );
     case "edge":
       return (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <div className="num text-ticker text-text-faint">Street</div>
+            <div className="num text-ticker text-text-mute">Street</div>
             <ul className="mt-1 space-y-1">{inks(p.street).map((v, i) => <Row key={i} v={v} />)}</ul>
           </div>
           <div>
-            <div className="num text-ticker text-text-faint">Mine</div>
+            <div className="num text-ticker text-text-mute">Mine</div>
             <ul className="mt-1 space-y-1">{inks(p.mine).map((v, i) => <Row key={i} v={v} />)}</ul>
           </div>
         </div>
@@ -82,7 +82,7 @@ function Body({ card }: { card: DraftCard }) {
         <ul className="space-y-1">
           {events.map((e, i) => (
             <li key={i} className="flex gap-2 text-ticker leading-snug">
-              <span className={cn("num shrink-0", e.past ? "text-text-faint" : "text-text")}>{e.dateISO}</span>
+              <span className={cn("num shrink-0", e.past ? "text-text-mute" : "text-text")}>{e.dateISO}</span>
               <span className="text-text-mute">{e.label}</span>
             </li>
           ))}
@@ -95,7 +95,7 @@ function Body({ card }: { card: DraftCard }) {
         <ul className="space-y-1">
           {rows.map((r, i) => (
             <li key={i} className="flex items-baseline gap-2 text-ticker leading-snug">
-              <span className="num text-text-faint">{r.status === "done" ? "OK" : r.status === "failed" ? "NO" : "..."}</span>
+              <span className="num text-text-mute">{r.status === "done" ? "OK" : r.status === "failed" ? "NO" : "..."}</span>
               <span className="text-text">
                 {r.label}
                 <InkTag ink={r.ink} />
@@ -110,7 +110,7 @@ function Body({ card }: { card: DraftCard }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={String(p.imageUrl)} alt={String(p.caption ?? "")} className="max-h-40 w-full rounded-[4px] object-contain" />
       ) : (
-        <p className="text-ticker text-text-faint">No image yet</p>
+        <p className="text-ticker text-text-mute">No image yet</p>
       );
     case "chart":
       return (
@@ -154,7 +154,7 @@ export function CardPreview({
       <div className="flex items-baseline justify-between gap-2">
         <span className="num text-ticker text-text-mute">{cardName(card)}</span>
         {card.locked ? (
-          <span className="num flex items-center gap-1 text-ticker text-text-faint">
+          <span className="num flex items-center gap-1 text-ticker text-text-mute">
             <Lock size={10} aria-hidden /> Locked
           </span>
         ) : null}

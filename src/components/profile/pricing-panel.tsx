@@ -41,7 +41,7 @@ export function PricingPanel({
         <label className="text-body">
           Monthly subscription
           <div className="relative mt-1">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">$</span>
             <input
               type="number"
               min={0}
@@ -57,7 +57,7 @@ export function PricingPanel({
         <label className="text-body">
           Per-report unlock
           <div className="relative mt-1">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">$</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">$</span>
             <input
               type="number"
               min={0}

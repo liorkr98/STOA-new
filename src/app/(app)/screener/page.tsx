@@ -100,7 +100,7 @@ export default function ScreenerPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <SlidersHorizontal size={15} className="text-text-faint" />
+        <SlidersHorizontal size={15} className="text-text-mute" />
         <select
           value={filters.sector}
           onChange={(e) => setFilters((f) => ({ ...f, sector: e.target.value }))}

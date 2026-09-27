@@ -103,13 +103,13 @@ export function EmbedNodeView({
       )}
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-1">
         <span className="flex items-center gap-1.5 text-text-mute">
-          <Icon size={13} className="shrink-0 text-text-faint" />
+          <Icon size={13} className="shrink-0 text-text-mute" />
           <span className="t-meta">{meta.label}</span>
         </span>
         <span className="truncate text-body text-text group-hover/card:underline">
           {caption || url}
         </span>
-        <span className="num flex items-center gap-1 text-ticker text-text-faint">
+        <span className="num flex items-center gap-1 text-ticker text-text-mute">
           {hostLabel(url)}
           <ExternalLink size={10} />
         </span>
@@ -143,7 +143,7 @@ export function EmbedNodeView({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         <span className="flex h-7 flex-1 items-center gap-1.5 rounded-field border border-border bg-bg px-2">
-          <Link2 size={13} className="text-text-faint" />
+          <Link2 size={13} className="text-text-mute" />
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -159,7 +159,7 @@ export function EmbedNodeView({
           aria-label="Delete embed"
           onMouseDown={stop}
           onClick={() => deleteNode()}
-          className="flex h-7 w-7 items-center justify-center rounded-button text-text-faint hover:text-[var(--error)] focus-ring"
+          className="flex h-7 w-7 items-center justify-center rounded-button text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>

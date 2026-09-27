@@ -293,7 +293,7 @@ export function ReportClip({
           ) : null}
         </div>
       </div>
-      <figcaption className="num mt-2 text-ticker text-text-faint">
+      <figcaption className="num mt-2 text-ticker text-text-mute">
         {analystName} makes the case{duration ? ` · ${duration}` : ""}
       </figcaption>
     </figure>

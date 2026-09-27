@@ -13,7 +13,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-panel border border-dashed border-border bg-surface px-6 py-16 text-center">
-      {icon && <div className="text-text-faint">{icon}</div>}
+      {icon && <div className="text-text-mute">{icon}</div>}
       <h3 className="t-title">{title}</h3>
       {body && <p className="t-body mx-auto text-center">{body}</p>}
       {action && <div className="mt-2">{action}</div>}

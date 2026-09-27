@@ -783,7 +783,7 @@ function TimeField({ label, value, onChange }: { label: string; value: number; o
   const setDraft = (text: string) => setTyped({ forValue: value, text });
   return (
     <label className="flex items-center gap-1.5">
-      <span className="num text-ticker text-text-faint">{label}</span>
+      <span className="num text-ticker text-text-mute">{label}</span>
       <input
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -832,7 +832,7 @@ function Selected({
         <span className="num text-ticker text-text">
           {overlay.kind === "text" ? "Text" : sourceLabel(overlay.source, new Map(cards.map((c) => [c.id, cardName(c)])))}
         </span>
-        <span className="num text-ticker text-text-faint">
+        <span className="num text-ticker text-text-mute">
           {overlay.kind === "visual" && overlay.mode === "inset"
             ? "Drag it on the picture to place it · drag its gold corner to resize it · drag the ends of its bar to time it"
             : overlay.kind === "visual"
@@ -910,7 +910,7 @@ function Selected({
             <span className="num w-8 text-right text-ticker text-text">{Math.round(overlayOpacity(overlay) * 100)}%</span>
           </label>
           {overlay.mode === "cutaway" ? (
-            <span className="num w-full text-ticker text-text-faint">
+            <span className="num w-full text-ticker text-text-mute">
               While a full-frame visual shows, text and insets on the same seconds wait for it to finish
             </span>
           ) : null}
@@ -1015,7 +1015,7 @@ function AddOverlay({
             >
               {open === "root" ? (
                 <>
-                  <p className="num px-2 pb-1 pt-1.5 text-ticker text-text-faint">At the playhead</p>
+                  <p className="num px-2 pb-1 pt-1.5 text-ticker text-text-mute">At the playhead</p>
                   <button type="button" role="menuitem" onClick={pick(onText)} className={item}>
                     <Type size={14} className="text-text-mute" aria-hidden /> Text
                   </button>
@@ -1030,9 +1030,9 @@ function AddOverlay({
                     <Layers size={14} className="text-text-mute" aria-hidden />
                     <span className="flex-1">Card</span>
                     {cards.length > 0 ? (
-                      <ChevronRight size={13} className="text-text-faint" aria-hidden />
+                      <ChevronRight size={13} className="text-text-mute" aria-hidden />
                     ) : (
-                      <span className="num text-ticker text-text-faint">Make one</span>
+                      <span className="num text-ticker text-text-mute">Make one</span>
                     )}
                   </button>
                   <button type="button" role="menuitem" onClick={pick(onChart)} className={item}>
@@ -1056,7 +1056,7 @@ function AddOverlay({
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => setOpen("root")} className="num focus-ring flex w-full items-center gap-1 rounded-[4px] px-2 py-1.5 text-ticker text-text-faint hover:text-text">
+                  <button type="button" onClick={() => setOpen("root")} className="num focus-ring flex w-full items-center gap-1 rounded-[4px] px-2 py-1.5 text-ticker text-text-mute hover:text-text">
                     <ChevronRight size={11} className="rotate-180" aria-hidden /> Which card
                   </button>
                   {cards.map((c) => (
@@ -1162,7 +1162,7 @@ function Cover({ frames, edit, onChange }: { frames: Frame[]; edit: VideoEdit; o
             <Button variant="ghost" size="sm" onClick={() => uploadRef.current?.click()}>
               <ImagePlus size={14} /> Use an image instead
             </Button>
-            <span className="num text-ticker text-text-faint">Shown at 4:5, as on Explore and the profile</span>
+            <span className="num text-ticker text-text-mute">Shown at 4:5, as on Explore and the profile</span>
           </div>
         </div>
       ) : null}
@@ -1506,7 +1506,7 @@ export function VideoRung({
               >
                 <Video size={22} strokeWidth={1.6} className="text-text-mute" />
                 <span className="text-body text-text">Record with your camera</span>
-                <span className="num text-ticker text-text-faint">
+                <span className="num text-ticker text-text-mute">
                   Portrait, up to 1:30
                 </span>
               </button>
@@ -1524,7 +1524,7 @@ export function VideoRung({
             >
               <Upload size={22} strokeWidth={1.6} className="text-text-mute" />
               <span className="text-body text-text">Drop a clip here, or choose a file</span>
-              <span className="num text-ticker text-text-faint">MP4, MOV, or WebM</span>
+              <span className="num text-ticker text-text-mute">MP4, MOV, or WebM</span>
               <input
                 ref={fileRef}
                 type="file"
@@ -1566,7 +1566,7 @@ export function VideoRung({
             This clip and what is placed on it are the record of the publication. They cannot change.
           </p>
         ) : !src ? (
-          <p className="num mt-2 text-ticker text-text-faint">
+          <p className="num mt-2 text-ticker text-text-mute">
             {hasClip ? "The saved clip plays here once it has been processed" : "No video loaded"} · the stage runs a{" "}
             {fmtTimecode(edit.durationSeconds).replace(/\.0$/, "")} clock so things can still be placed on it
           </p>
@@ -1604,7 +1604,7 @@ export function VideoRung({
                 {playing ? <Pause size={13} /> : <Play size={13} />}
               </button>
               <span className="num text-ticker text-text">
-                {fmtTimecode(time)} <span className="text-text-faint">/ {fmtTimecode(edit.durationSeconds)}</span>
+                {fmtTimecode(time)} <span className="text-text-mute">/ {fmtTimecode(edit.durationSeconds)}</span>
               </span>
               {edit.trimStart > 0 || edit.trimEnd < edit.durationSeconds ? (
                 <span className="num text-ticker text-text-mute">
@@ -1642,7 +1642,7 @@ export function VideoRung({
             />
 
             {faithful ? (
-              <p className="num text-ticker text-text-faint">
+              <p className="num text-ticker text-text-mute">
                 This is how it plays on Stoa.
               </p>
             ) : selected ? (
@@ -1686,7 +1686,7 @@ export function VideoRung({
             ) : null}
 
             {!faithful ? (
-              <p className="num text-ticker text-text-faint">
+              <p className="num text-ticker text-text-mute">
                 Drag the gold ends to trim. Overlays play on Stoa, not in a downloaded copy.
               </p>
             ) : null}

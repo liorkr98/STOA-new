@@ -47,7 +47,7 @@ export default function DevIndexPage() {
             <Link href={r.href} className="focus-ring rounded font-display text-title font-semibold tracking-tight hover:underline">
               {r.label}
             </Link>
-            <span className="num ml-3 text-ticker text-text-faint">{r.href}</span>
+            <span className="num ml-3 text-ticker text-text-mute">{r.href}</span>
             <p className="mt-0.5 text-body text-text-mute">{r.note}</p>
           </li>
         ))}

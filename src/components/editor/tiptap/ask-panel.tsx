@@ -138,9 +138,9 @@ function DraggableCard({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-ticker font-medium leading-tight text-text">{card.label}</span>
-        <span className="block truncate text-ticker text-text-faint">{card.subtitle}</span>
+        <span className="block truncate text-ticker text-text-mute">{card.subtitle}</span>
       </span>
-      <span className="hidden items-center gap-0.5 text-ticker text-text-faint group-hover:flex">
+      <span className="hidden items-center gap-0.5 text-ticker text-text-mute group-hover:flex">
         <GripVertical size={11} />
         Drag
       </span>
@@ -365,7 +365,7 @@ export function AskPanel({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="tap-target ml-auto rounded-chip p-1 text-text-faint transition-colors hover:text-text focus-ring"
+          className="tap-target ml-auto rounded-chip p-1 text-text-mute transition-colors hover:text-text focus-ring"
         >
           <X size={16} />
         </button>
@@ -389,11 +389,11 @@ export function AskPanel({
               >
                 <span>
                   <span className="block text-ticker font-medium text-text">Browse templates</span>
-                  <span className="block text-ticker text-text-faint">
+                  <span className="block text-ticker text-text-mute">
                     11 layouts: coverage, factsheet, comps, earnings, and more
                   </span>
                 </span>
-                <ArrowRight size={14} className="shrink-0 text-text-faint" />
+                <ArrowRight size={14} className="shrink-0 text-text-mute" />
               </button>
             </div>
           </div>

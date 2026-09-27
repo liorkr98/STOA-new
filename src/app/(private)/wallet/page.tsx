@@ -90,7 +90,7 @@ export default async function WalletPage() {
           <p className="t-meta mt-3">No activity yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-ticker text-text-faint md:grid">
+            <div className="num hidden grid-cols-[120px_1fr_110px] gap-5 border-b border-border py-3 text-ticker text-text-mute md:grid">
               <div>Date</div>
               <div>Description</div>
               <div className="text-right">Amount</div>
@@ -108,8 +108,8 @@ export default async function WalletPage() {
                   </div>
                   <div className="min-w-0">
                     <span className="font-sans text-body">{txnLabel[t.type]}</span>
-                    {t.memo && <span className="ml-2 text-text-faint">{t.memo}</span>}
-                    <span className="ml-2 text-text-faint md:hidden">
+                    {t.memo && <span className="ml-2 text-text-mute">{t.memo}</span>}
+                    <span className="ml-2 text-text-mute md:hidden">
                       {format(new Date(t.created_at), "MMM d").toUpperCase()}
                     </span>
                   </div>

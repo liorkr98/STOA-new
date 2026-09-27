@@ -21,7 +21,7 @@ const TYPE_STYLE: Record<
   "Yahoo-Verified": { icon: CheckCircle, color: "var(--ok)", label: "Yahoo verified" },
   Opinion: { icon: ChatCircle, color: "var(--accent)", label: "Opinion" },
   Misleading: { icon: Warning, color: "var(--text-mute)", label: "Misleading" },
-  Unverified: { icon: Info, color: "var(--text-faint)", label: "Unverified" },
+  Unverified: { icon: Info, color: "var(--text-mute)", label: "Unverified" },
   "Yahoo-Disputed": { icon: Warning, color: "var(--error)", label: "Disputed" },
 };
 

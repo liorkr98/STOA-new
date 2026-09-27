@@ -104,7 +104,7 @@ export default function PortfolioPage() {
           type="button"
           aria-label={`Remove ${r.ticker}`}
           onClick={() => remove(r.ticker)}
-          className="text-text-faint hover:text-[var(--error)] focus-ring"
+          className="text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={14} />
         </button>

@@ -22,7 +22,7 @@ export function SearchForm({ initialQuery = "" }: { initialQuery?: string }) {
     >
       <Search
         size={18}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint"
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute"
         aria-hidden
       />
       <input

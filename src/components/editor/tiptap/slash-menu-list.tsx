@@ -101,7 +101,7 @@ export const SlashMenuList = forwardRef<
               </span>
               <span className="min-w-0">
                 <span className="block text-body font-medium text-text">{item.title}</span>
-                <span className="block truncate text-ticker text-text-faint">{item.subtitle}</span>
+                <span className="block truncate text-ticker text-text-mute">{item.subtitle}</span>
               </span>
             </button>
           </div>

@@ -76,7 +76,7 @@ export default async function SubscriptionsPage() {
                     <span className="num text-ticker text-text-mute">/mo</span>
                   </div>
                   <div
-                    className={`num mt-3.5 text-ticker ${cancelling ? "text-text-faint" : "text-text-mute"}`}
+                    className={`num mt-3.5 text-ticker ${cancelling ? "text-text-mute" : "text-text-mute"}`}
                   >
                     {cancelling
                       ? `CANCELS ${format(new Date(s.renews_at), "MMM d, yyyy")} · ACCESS UNTIL THEN`
@@ -126,7 +126,7 @@ export default async function SubscriptionsPage() {
           <p className="t-meta mt-3">No report unlocks yet.</p>
         ) : (
           <>
-            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-ticker text-text-faint md:grid">
+            <div className="num hidden grid-cols-[110px_1fr_200px_90px] gap-5 border-b border-border py-3 text-ticker text-text-mute md:grid">
               <div>Date</div>
               <div>Report</div>
               <div>Analyst</div>
@@ -146,7 +146,7 @@ export default async function SubscriptionsPage() {
               </div>
             ))}
             <div className="num grid grid-cols-[1fr_90px] gap-5 py-4 text-ticker md:grid-cols-[110px_1fr_200px_90px]">
-              <div className="text-ticker text-text-faint md:col-start-2">
+              <div className="text-ticker text-text-mute md:col-start-2">
                 Total spend · unlocks
               </div>
               <div className="text-right font-medium">{usd(totalSpend)}</div>

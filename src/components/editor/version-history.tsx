@@ -68,13 +68,13 @@ export function VersionHistory({ reportId }: { reportId: string }) {
           className="menu-pop fixed bottom-[4.5rem] left-5 z-40 flex max-h-[60vh] w-72 flex-col overflow-hidden rounded-panel border border-border bg-surface shadow-[var(--shadow-card)]"
         >
           <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-            <History size={14} className="text-text-faint" />
+            <History size={14} className="text-text-mute" />
             <span className="t-meta flex-1">History</span>
             <button
               type="button"
               aria-label="Close"
               onClick={() => setOpen(false)}
-              className="text-text-faint hover:text-text focus-ring"
+              className="text-text-mute hover:text-text focus-ring"
             >
               <X size={15} />
             </button>

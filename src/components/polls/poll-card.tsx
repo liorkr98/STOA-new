@@ -58,7 +58,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
   return (
     <div className="surface flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
-        <BarChart3 size={14} className="text-text-faint" />
+        <BarChart3 size={14} className="text-text-mute" />
         <span className="t-meta">{KIND_LABEL[poll.kind]}</span>
         {poll.ticker && <TickerChip ticker={poll.ticker} />}
         {poll.closes_at && (

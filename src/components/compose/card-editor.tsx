@@ -27,7 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 function InkSwitch({ value, onChange }: { value: ProvenanceInk; onChange: (i: ProvenanceInk) => void }) {
   if (value === "auto") {
     return (
-      <span className="num shrink-0 rounded-chip border border-border px-1.5 py-0.5 text-ticker text-text-faint">
+      <span className="num shrink-0 rounded-chip border border-border px-1.5 py-0.5 text-ticker text-text-mute">
         Auto
       </span>
     );
@@ -88,7 +88,7 @@ function InkField({
           type="button"
           onClick={onRemove}
           aria-label="Remove this line"
-          className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
+          className="focus-ring rounded p-1 text-text-mute hover:text-[var(--error)]"
         >
           <Trash2 size={13} />
         </button>
@@ -112,7 +112,7 @@ function AddLine({ label, onClick }: { label: string; onClick: () => void }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="num mb-1 text-ticker text-text-faint">{label}</div>
+      <div className="num mb-1 text-ticker text-text-mute">{label}</div>
       {children}
     </div>
   );
@@ -315,7 +315,7 @@ export function CardEditor({
                   type="button"
                   onClick={() => set({ events: events.filter((_, j) => j !== i) })}
                   aria-label="Remove this date"
-                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
+                  className="focus-ring rounded p-1 text-text-mute hover:text-[var(--error)]"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -360,7 +360,7 @@ export function CardEditor({
                   type="button"
                   onClick={() => set({ rows: rows.filter((_, j) => j !== i) })}
                   aria-label="Remove this check"
-                  className="focus-ring rounded p-1 text-text-faint hover:text-[var(--error)]"
+                  className="focus-ring rounded p-1 text-text-mute hover:text-[var(--error)]"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -466,7 +466,7 @@ export function CardEditor({
             />
           </Field>
           <div className="rounded-panel border border-border bg-paper p-3">
-            <p className="num mb-2 text-ticker text-text-faint">Preview</p>
+            <p className="num mb-2 text-ticker text-text-mute">Preview</p>
             <CardPreview card={card} compact />
           </div>
         </>
@@ -503,7 +503,7 @@ export function CardEditor({
       ) : null}
 
       <div className="border-t border-border pt-3">
-        <p className="num text-ticker leading-relaxed text-text-faint">
+        <p className="num text-ticker leading-relaxed text-text-mute">
           Est. is your number · Auto is imported and cannot be edited
         </p>
         {/* One way out that reads as finishing, not as abandoning. Done is

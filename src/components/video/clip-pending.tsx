@@ -148,7 +148,7 @@ export function ClipPendingPlayer({
           </div>
         </div>
       </div>
-      <figcaption className="num mt-2 text-ticker text-text-faint">
+      <figcaption className="num mt-2 text-ticker text-text-mute">
         {failed ? "No video yet" : "Video on the way"}
       </figcaption>
     </figure>

@@ -62,7 +62,7 @@ export default async function SettingsPage() {
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between gap-4 text-body">
             <span>Connected accounts</span>
-            <span className="num text-ticker text-text-faint">
+            <span className="num text-ticker text-text-mute">
               Managed by your sign-in provider
             </span>
           </div>
@@ -89,7 +89,7 @@ export default async function SettingsPage() {
           <PrivacyToggle label="Show who I follow on my public page" defaultOn={false} />
           <div className="h-px bg-border" />
           <MarketingOptInToggle defaultOn={Boolean(profile.marketing_opt_in)} />
-          <p className="num text-ticker text-text-faint">
+          <p className="num text-ticker text-text-mute">
             Your purchases and library are always private.
           </p>
         </Card>

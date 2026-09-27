@@ -149,7 +149,7 @@ export function CreatePollForm() {
                 type="button"
                 aria-label="Remove option"
                 onClick={() => setOptions((prev) => prev.filter((_, x) => x !== i))}
-                className="text-text-faint hover:text-[var(--error)] focus-ring"
+                className="text-text-mute hover:text-[var(--error)] focus-ring"
               >
                 <X size={15} />
               </button>

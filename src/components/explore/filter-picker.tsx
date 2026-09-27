@@ -196,7 +196,7 @@ export function FilterPicker({
           aria-label={searchLabel}
           autoComplete="off"
           spellCheck={false}
-          className="num w-full bg-transparent px-1.5 py-1 text-ticker text-text outline-none placeholder:text-text-faint"
+          className="num w-full bg-transparent px-1.5 py-1 text-ticker text-text outline-none placeholder:text-text-mute"
         />
       </div>
       <ul
@@ -228,7 +228,7 @@ export function FilterPicker({
           </li>
         ))}
         {matches.length === 0 ? (
-          <li className="num px-3 py-3 text-ticker text-text-faint">
+          <li className="num px-3 py-3 text-ticker text-text-mute">
             Nothing matches
           </li>
         ) : null}

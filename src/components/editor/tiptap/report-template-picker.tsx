@@ -161,7 +161,7 @@ export function ReportTemplatePicker({
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="rounded-button p-1.5 text-text-faint hover:text-text focus-ring"
+                className="rounded-button p-1.5 text-text-mute hover:text-text focus-ring"
               >
                 <X size={16} />
               </button>
@@ -244,7 +244,7 @@ export function ReportTemplateStrip({
           onClick={onDismiss}
           aria-label="Dismiss the templates"
           title="Dismiss"
-          className="focus-ring shrink-0 rounded p-1 text-text-faint hover:text-text"
+          className="focus-ring shrink-0 rounded p-1 text-text-mute hover:text-text"
         >
           <X size={15} />
         </button>

@@ -147,7 +147,7 @@ export function AccentPicker({
         >
           tag
         </span>
-        <span className="num ml-auto text-ticker text-text-faint">
+        <span className="num ml-auto text-ticker text-text-mute">
           contrast {check.contrast.toFixed(1)}:1
         </span>
       </div>

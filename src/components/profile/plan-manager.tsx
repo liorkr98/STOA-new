@@ -186,7 +186,7 @@ function PlanRow({
             aria-label="Move up"
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
-            className="text-text-faint hover:text-text disabled:opacity-30 focus-ring"
+            className="text-text-mute hover:text-text disabled:opacity-30 focus-ring"
           >
             <ChevronUp size={14} />
           </button>
@@ -195,7 +195,7 @@ function PlanRow({
             aria-label="Move down"
             disabled={index === count - 1}
             onClick={() => onMove(index, 1)}
-            className="text-text-faint hover:text-text disabled:opacity-30 focus-ring"
+            className="text-text-mute hover:text-text disabled:opacity-30 focus-ring"
           >
             <ChevronDown size={14} />
           </button>
@@ -206,7 +206,7 @@ function PlanRow({
           type="button"
           aria-label="Archive tier"
           onClick={() => onArchive(plan.id)}
-          className="ml-auto text-text-faint hover:text-[var(--error)] focus-ring"
+          className="ml-auto text-text-mute hover:text-[var(--error)] focus-ring"
         >
           <Trash2 size={15} />
         </button>
@@ -221,7 +221,7 @@ function PlanRow({
           Price
           <div className="mt-1 flex gap-2">
             <div className="relative flex-1">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-faint">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-mute">
                 $
               </span>
               <input
@@ -278,7 +278,7 @@ function PlanRow({
                 type="button"
                 aria-label={`Remove ${perk}`}
                 onClick={() => setPerks((prev) => prev.filter((_, x) => x !== pi))}
-                className="text-text-faint hover:text-[var(--error)]"
+                className="text-text-mute hover:text-[var(--error)]"
               >
                 <X size={11} />
               </button>

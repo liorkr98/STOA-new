@@ -82,7 +82,7 @@ export function InstrumentSearch() {
   return (
     <div ref={boxRef} className="markets-search">
       <label className="markets-search-field focus-within:border-ink">
-        <Search size={18} className="shrink-0 text-text-faint" aria-hidden />
+        <Search size={18} className="shrink-0 text-text-mute" aria-hidden />
         <input
           value={query}
           onChange={(e) => {
@@ -93,7 +93,7 @@ export function InstrumentSearch() {
           onKeyDown={onKeyDown}
           placeholder="Search tickers, ETFs, or sectors"
           aria-label="Search tickers, ETFs, or sectors"
-          className="w-full bg-transparent text-body outline-none placeholder:text-text-faint"
+          className="w-full bg-transparent text-body outline-none placeholder:text-text-mute"
         />
       </label>
       <p className="markets-search-hint">Instruments · ETFs · Sectors · Themes</p>
@@ -116,7 +116,7 @@ export function InstrumentSearch() {
                 <span className="num w-16 shrink-0 font-semibold">{hit.symbol}</span>
                 <span className="min-w-0 flex-1 truncate text-left">{hit.company_name}</span>
                 {hit.sector ? (
-                  <span className="num shrink-0 text-ticker text-text-faint">
+                  <span className="num shrink-0 text-ticker text-text-mute">
                     {hit.sector}
                   </span>
                 ) : null}

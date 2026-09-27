@@ -28,7 +28,7 @@ function IssueCard({
             ) : null}
           </div>
           {meta ? (
-            <span className="num text-ticker text-text-faint">{meta}</span>
+            <span className="num text-ticker text-text-mute">{meta}</span>
           ) : null}
         </div>
 
@@ -82,10 +82,10 @@ function Column({
           <Icon size={14} aria-hidden />
         </span>
         <h2 className="text-body font-semibold text-text">{title}</h2>
-        <span className="num ml-auto text-ticker text-text-faint">{stories.length}</span>
+        <span className="num ml-auto text-ticker text-text-mute">{stories.length}</span>
       </div>
       {stories.length === 0 ? (
-        <p className="text-body text-text-faint">{empty}</p>
+        <p className="text-body text-text-mute">{empty}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {stories.map((s, i) => (
