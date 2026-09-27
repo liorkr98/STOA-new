@@ -96,14 +96,16 @@ Coral, gain and loss each have a fill tone and a word tone: `--coral` `#FF5A47` 
 - Coral: Subscribe, Follow, Publish, the one primary action, a live recording. Green and red:
   direction and price movement. Everything else is black, white and grey.
 - `--accent` is **ink** (the ink button, selected tabs). It is not coral and must not become coral.
-- Meanings that used to borrow a hue have their own tokens, all ink or grey today: `--error`,
-  `--error-soft`, `--error-edge`, `--ok`, `--pending`, `--notice-edge`, `--notice-soft`,
+- **Errors are red, by a deliberate exception:** `--error` is a crimson held well away from the
+  price red, with `--error-soft` and `--error-edge` for error boxes. Only errors, failures and
+  destructive hovers use it.
+- Other meanings that used to borrow a hue have their own tokens, all ink or grey: `--ok`, `--pending`, `--notice-edge`, `--notice-soft`,
   `--mark-edited`, `--highlight`, `--chart-1..3`.
 - `--text-faint` is decoration only (rules, ornaments); it is never a text colour.
 
 **Typography.** Bricolage Grotesque 700/800 for display, headline and title; Inter for reading and
 UI with tabular figures on; JetBrains Mono for tickers only; Heebo supplies Hebrew in both stacks.
-Five sizes, as Tailwind utilities and classes:
+Six sizes, as Tailwind utilities and classes:
 
 ```
 display   40-72px  Bricolage 800   text-display   .t-display
@@ -111,6 +113,7 @@ headline  24-32px  Bricolage 800   text-headline  .t-headline
 title     19px     Bricolage 700   text-title     .t-title
 body      15px     Inter           text-body      .t-body, .t-body-editorial
 ticker    13px     Mono on a ticker, Inter for captions   text-ticker   .t-meta, .t-ticker
+reading   17-18px  Inter, line 1.75  text-reading  .stoa-prose (report body and Compose editor only)
 ```
 
 Tailwind's default size scale is deleted, so `text-sm` and `text-[11px]` do nothing. No
@@ -339,7 +342,7 @@ Wraps rendered report body text. Each `claims` row (from the backend schema, usi
 `char_start`/`char_end`) gets rendered as an inline `<mark>`-equivalent span with:
 
 - A 2px underline in the claim's tone (`--ok` fact / `--pending` unproven / `--text-mute`
-  opinion / `--error` contradicted, all ink or grey; the label names the verdict) — underline, not background highlight, so long-form
+  opinion / `--error` contradicted; the label names the verdict) — underline, not background highlight, so long-form
   reading stays comfortable
 - On hover (desktop) or tap (mobile): a popover anchored to the span showing the verdict label,
   one-line reasoning, and a source link if present
@@ -379,7 +382,7 @@ Use `<Button>` / `buttonClass()` from `src/components/ui/button.tsx`; do not han
 - **Ghost** (`variant="ghost"`): outlined pill, for the second action beside ink or coral.
 - **Plain** and **subtle**: text-only, and a grey well, for toolbars, filters and dismissals.
 - **Destructive action** (cancel subscription, delete draft): a ghost or plain button whose hover
-  uses `--error`; red is price only, so the confirm dialog carries the weight, not the colour.
+  uses the error crimson (`--error`); the confirm dialog carries the weight, never a filled red button.
 - **Inputs:** `rounded-field` (10px), never a pill.
 - **Toast notifications:** bottom-center on desktop, bottom-full-width on mobile, `--ink`
   background, auto-dismiss 4s, always paired with an icon (checkmark / info).
@@ -725,7 +728,7 @@ eyebrow → 10px → headline → 12px → byline. Stacked cards: 16px, a dashed
 (`.ts-stack`). The eyebrow carries `NVDA · LONG` or the sector, with `TRENDING` or `NEW` in
 front. The byline is `Name / Date`, no avatar and no content badge.
 
-**Type** now resolves to the site's five sizes (the `.ts-*` classes map onto them); the page's
+**Type** now resolves to the site's sizes (the `.ts-*` classes map onto them); the page's
 own size rules are superseded by `docs/DESIGN_LANGUAGE.md` §2.
 
 **Sections**, 60px apart, title to content 24px. **Trending now**: a numbered list of five in a

@@ -42,11 +42,11 @@ Quick reminders:
   targets or consensus). Placement is driven by the **lifecycle model** (NEW / AVERAGE / RISING /
   TRENDING / POPULAR; only NEW and TRENDING are ever shown).
 - **Design: Direction B.** Coral marks the live or actionable thing only (Subscribe, Follow,
-  Publish, the one primary action); green and red mean direction and price only; about 90% is
+  Publish, the one primary action); green and red mean direction and price only, except errors, which use the crimson `--error` (never the price red); about 90% is
   black, white and grey. Coloured words use `text-coral` / `text-gain` / `text-loss` (the deep
   tones); fills use `bg-coral` / `bg-gain` / `bg-loss` (black text built in); never white on a
   fill. `--accent` is ink, not coral. Bricolage / Inter / JetBrains Mono (tickers only) / Heebo
-  (Hebrew); five sizes (`text-display|headline|title|body|ticker`); no uppercase labels; radius by
+  (Hebrew); six sizes (`text-display|headline|title|body|ticker`, plus `text-reading` for the report body and Compose editor only); no uppercase labels; radius by
   role; use the primitives in `src/components/ui/`. Surfaces not yet rebuilt keep their old
   layout: rebuild them to Direction B, do not extend the old treatments.
 - Money is PayPal, not Stripe — Partner Referrals for onboarding, Orders v2 `platform_fees[]` for

@@ -219,14 +219,16 @@ layout in the new colours and type.
 6. **Colour, and the accent law.** Paper `#FAFAFA`, card `#FFFFFF`, ink `#101418`, muted
    `#5B6470`, line `#E6E8EB`. **Coral marks the live or actionable thing and nothing else**
    (Subscribe, Follow, Publish, the one primary action, a live recording). **Green and red carry
-   direction and price movement and nothing else** (not success, not error). About 90% of the
-   interface is black, white and grey. `--accent` is ink, not coral; never repoint it.
+   direction and price movement and nothing else** (not success). **Errors are the one red
+   exception:** `--error`, a crimson held away from the price red, only for error messages,
+   failed states and destructive hovers. About 90% of the interface is black, white and grey. `--accent` is ink, not coral; never repoint it.
    **Contrast rule:** coloured words use the `-text` tones (`text-coral`, `text-gain`,
    `text-loss`); fills use `bg-coral` / `bg-gain` / `bg-loss`, which carry black text; white on
    a coloured fill is never used; every word clears 4.5:1; faint grey is never a word.
 7. **Type.** Bricolage Grotesque for display, Inter for reading and UI (tabular figures on),
-   JetBrains Mono for tickers only, Heebo for Hebrew. Five sizes: `text-display`,
-   `text-headline`, `text-title`, `text-body`, `text-ticker` (Tailwind's own scale is deleted).
+   JetBrains Mono for tickers only, Heebo for Hebrew. Six sizes: `text-display`,
+   `text-headline`, `text-title`, `text-body`, `text-ticker`, and `text-reading`, which is only
+   for the report body and the Compose editor (`.stoa-prose`). Tailwind's own scale is deleted.
    No uppercase, no letterspaced labels.
 8. **No drop shadows for elevation.** Depth comes from surface tints and borders. One soft shadow
    token exists only for floating overlays (menus, modals).

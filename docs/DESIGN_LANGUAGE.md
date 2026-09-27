@@ -63,6 +63,8 @@ theme entries, so there is no `bg-coral/50`, `text-[var(--coral)]` or `ring-cora
 by accident. `test:contrast` measures every pair in both themes and scans for white text on a
 fill, bright tones used as words, and faint grey used as a word.
 
+Error crimson: 6.6 on paper, 6.2 on its error box; dark 7.9 on paper.
+
 Measured (light, then dark): ink on paper 17.7 / 17.1; muted on paper 5.75, on the dark card 7.2;
 deep coral on paper 5.1 and on the well 4.8, light coral on the dark well 6.4; gain text on paper
 5.1, on the dark well 8.4; loss text on paper 5.2, on the dark well 5.8; black on coral 6.0, on
@@ -76,11 +78,16 @@ gain 7.3, on loss 4.7.
   small follow pills uses the coral outline, not the fill.
 - **Green and red carry direction (long / short) and price movement, nothing else.** Not
   success, not error, not "saved", not approve/reject, not a chart series that is not a price.
-- **Everything else is black, white and grey.** Errors, confirmations, pending states, notices,
-  the edited marker, highlights, chart series and selection all resolve to ink and grey through
-  their own meaning tokens (`--error`, `--ok`, `--pending`, `--notice-*`, `--mark-edited`,
-  `--highlight`, `--chart-1..3`). They are split by meaning so any one of them can change in one
-  place if the law ever grants an exception.
+- **THE ERROR EXCEPTION (decided by Bar, 2026-09-27).** A failed payment or a rejected form must
+  not read as neutral, so errors are red: `--error`, a crimson (`#B0164F` light, `#FF7FA8`
+  dark) deliberately held away from the price red (`--loss-text` `#C92A31`), so an error can
+  never pass for a price move. It is used only for error messages, failed states and destructive
+  hovers, with `--error-soft` / `--error-edge` for error boxes. Never for success, never for
+  price. `test:contrast` fails if it drifts within 15 degrees of hue of the loss red.
+- **Everything else is black, white and grey.** Confirmations, pending states, notices, the
+  edited marker, highlights, chart series and selection resolve to ink and grey through their
+  own meaning tokens (`--ok`, `--pending`, `--notice-*`, `--mark-edited`, `--highlight`,
+  `--chart-1..3`), split by meaning so any one of them can change in one place.
 - `--accent` is **ink**, despite the name: the filled ink button, selected tabs, the selection
   highlight. It must never be repointed at coral. The creator storefront may tint `--accent`;
   it cannot change coral.
@@ -102,17 +109,24 @@ headline keeps its weight beside a Bricolage one. The Latin faces load with
 which contains Hebrew and would catch every Hebrew character before Heebo. (Before 2026-09-27 this
 is exactly what happened: Hebrew headlines drew in Times New Roman and Hebrew body text in Arial.)
 
-### 2.2 Five sizes
+### 2.2 Six sizes
 
 | Size | Value | Face | Tailwind | Class |
 |---|---|---|---|---|
 | display | 40 to 72px | Bricolage 800, -0.045em | `text-display` | `.t-display` |
 | headline | 24 to 32px | Bricolage 800, -0.03em | `text-headline` | `.t-headline` |
 | title | 19px | Bricolage 700, -0.015em | `text-title` | `.t-title` |
-| body | 15px | Inter | `text-body` | `.t-body`, `.t-body-editorial` (reading) |
+| body | 15px | Inter | `text-body` | `.t-body`, `.t-body-editorial` |
 | ticker | 13px | JetBrains Mono on a ticker; Inter for captions, chips, meta | `text-ticker` | `.t-meta`, `.t-ticker` |
+| reading | 17 to 18px, line 1.75 | Inter | `text-reading` | `.stoa-prose` |
 
-There is no sixth size. Tailwind's own scale (`text-xs` to `text-9xl`) is deleted in
+**Reading is the sixth size and it earns its place in one spot only:** the report body and the
+Compose editor, where someone reads or writes for ten minutes. Both render through `.stoa-prose`
+(the published reader adds `.stoa-prose--read`, which only drops the drag gutter), so a report
+reads at the size it was written. `test:contrast` fails if `text-reading` appears anywhere else.
+Report headings inside the body use Bricolage (headline and title sizes).
+
+There is no seventh size. Tailwind's own scale (`text-xs` to `text-9xl`) is deleted in
 `globals.css`, so `text-sm` or `text-[11px]` simply do nothing. The ticker step doubles as the
 caption size: small words are 13px Inter, and only a ticker symbol is mono.
 
@@ -199,8 +213,9 @@ These hold literal copies of the tokens and must be updated by hand when a token
 1. No base colour is invented per surface. New meanings get a meaning token that resolves to an
    existing value.
 2. Coral only on the live or actionable thing; green and red only on direction and price.
-3. Coloured words use `-text` tones; fills carry black ink; every word clears 4.5:1.
-4. Five sizes, three faces, Heebo for Hebrew, mono for tickers only, no uppercase labels.
+3. Coloured words use `-text` tones; fills carry black ink; every word clears 4.5:1. Errors use
+   the crimson `--error`, never the price red.
+4. Six sizes (reading only in `.stoa-prose`), three faces, Heebo for Hebrew, mono for tickers only, no uppercase labels.
 5. Radius by role; avatars are circles.
 6. Every chart imports `chart-theme.ts`.
 7. `npm run test:contrast` passes.

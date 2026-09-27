@@ -24,9 +24,9 @@ starting with Today. The law is now `docs/DESIGN_LANGUAGE.md`.
 - Coral appears only on the thing you can act on: Subscribe, Follow, Publish,
   a live recording. Green and red appear only on long/short and price moves.
   Errors, "saved" ticks, pending states and the edited marker are black and
-  grey now (see "Decisions for Bar").
+  grey now, except errors, which are a crimson distinct from price red.
 - Bricolage Grotesque for headlines, Inter for everything you read, JetBrains
-  Mono only on ticker symbols. Five sizes in total, down from about fifty.
+  Mono only on ticker symbols. Six sizes in total, down from about fifty.
 - No more uppercase letterspaced labels anywhere, including ones that were
   typed in capitals ("THESIS", "SEP 25", "@MARCUS_WEBB · JOINED 2024").
 - Pill buttons, 14px cards and menus, 10px input boxes, circular faces.
@@ -72,14 +72,19 @@ the batch report (about 290 raw buttons that are icons, tabs, menu rows and
 tiles; about 80 cards with links, animation or editor wiring; the landing
 page's face mosaic).
 
-**Decisions for Bar**
+**Decided by Bar**
 
-- Error messages are now black, not red, because the law reserves red for
-  price. Say if errors should keep a red exception.
-- The storefront accent now tints only ink-coloured elements; Subscribe on a
-  storefront is always coral.
-- Five sizes means the smallest step (13px) is shared by tickers and all
-  captions. Long-form reports now read at the body size (15px).
+- **Errors are red, by a written exception.** A failed payment or a rejected
+  form must not read as neutral. Errors use a crimson (`#B0164F`, `#FF7FA8`
+  in dark mode) held well away from the price red, so an error cannot pass
+  for a price move; the contrast check fails if the two drift together.
+- **Reports get a sixth size, "reading" (17 to 18px, generous line
+  spacing),** used only in the report body and the Compose editor. The check
+  fails if it appears anywhere else. Found while doing this: the published
+  report body was still set in the headline face (it used to switch to
+  Fraunces for reading); it now reads in Inter like the editor, with
+  headings in Bricolage.
+- The storefront accent never colours Subscribe; Subscribe is always coral.
 
 **What needs Krisi**
 
