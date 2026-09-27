@@ -394,8 +394,10 @@ export function PublishPanel({
 
       {promote}
 
-      <section className="ledger-card p-4" aria-label="Disclosures">
-        <p className="t-meta mb-3">Disclosures</p>
+      {/* The same grey well as the published disclosure, so the analyst fills
+          in the panel their readers will see. */}
+      <section className="rounded-panel bg-surface-2 p-4" aria-label="Disclosures">
+        <h2 className="mb-3 text-body font-semibold text-text">Disclosure</h2>
         <div className="flex flex-col gap-3.5">
           <div className="flex items-center justify-between gap-3">
             <span id="disc-position" className="text-ticker leading-snug text-text">

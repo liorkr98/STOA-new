@@ -38,6 +38,8 @@ A publication's stance is a ticker and a direction; there is no call block.
   place of the heavy black double border. Same fixed rows, still always
   open, still never branded.
 - The discussion has a proper heading; the Author tag is a solid ink pill.
+- Compose's disclosure panel on the publish screen is the same grey well
+  as the published one, so the analyst fills in what readers will see.
 - A fixture at `/dev/report` shows every block, with flags for the locked,
   paid, no-stance and no-clip states.
 
