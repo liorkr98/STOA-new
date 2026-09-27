@@ -1,17 +1,31 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { canPopHistory, HISTORY_BACK, resolveLeaveHref } from "./back";
+import { canPopHistory, DEPTH_KEY, HISTORY_BACK, resolveLeaveHref, withDepth } from "./back";
 
 describe("canPopHistory", () => {
-  it("is false when Next has no stack yet", () => {
+  it("is false on the first page of the app", () => {
     assert.equal(canPopHistory(null), false);
     assert.equal(canPopHistory({}), false);
-    assert.equal(canPopHistory({ idx: 0 }), false);
+    assert.equal(canPopHistory({ [DEPTH_KEY]: 0 }), false);
   });
 
-  it("is true once the App Router has pushed a page", () => {
-    assert.equal(canPopHistory({ idx: 1 }), true);
-    assert.equal(canPopHistory({ idx: 4 }), true);
+  it("is true once a page has been opened from inside the app", () => {
+    assert.equal(canPopHistory({ [DEPTH_KEY]: 1 }), true);
+    assert.equal(canPopHistory({ [DEPTH_KEY]: 4 }), true);
+  });
+
+  it("ignores the Pages Router's idx, which the App Router never writes", () => {
+    assert.equal(canPopHistory({ idx: 3 }), false);
+  });
+});
+
+describe("withDepth", () => {
+  it("adds the depth to the router's own state", () => {
+    assert.deepEqual(withDepth({ __NA: true }, 2), { __NA: true, [DEPTH_KEY]: 2 });
+  });
+
+  it("stamps an entry pushed with no state", () => {
+    assert.deepEqual(withDepth(null, 1), { [DEPTH_KEY]: 1 });
   });
 });
 
