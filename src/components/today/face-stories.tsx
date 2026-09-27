@@ -140,6 +140,11 @@ export function FaceStories({
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     if (!t || e.touches.length > 1) return;
+    // A drag from the left edge is the system's back, which closes the overlay; never a previous analyst.
+    if (t.clientX <= 24) {
+      start.current = null;
+      return;
+    }
     start.current = { x: t.clientX, y: t.clientY, atTop: (scroller()?.scrollTop ?? 0) <= 2 };
   };
   const onTouchMove = (e: React.TouchEvent) => {
