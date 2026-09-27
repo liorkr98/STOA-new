@@ -92,16 +92,19 @@ refuses with. Nothing here is a step in a sequence.
 including the macro instruments (gold is XAUUSD, WTI crude USOIL, Brent
 UKOIL, the ten-year US10Y, bitcoin BTCUSD), and long, short or hold. The
 ticker is looked up as it is typed and a name that does not resolve is
-refused. There is no target, no horizon and no entry price: nothing is
-graded (`StancePanel` in `src/components/editor/publish-panel.tsx`). Publish
-is one press; there is no lock confirmation.
+refused. One stance per publication, on any type. There is no target, no
+horizon and no entry price: nothing is graded (`StancePanel` in
+`src/components/editor/publish-panel.tsx`). Publish is one press; there is
+no lock confirmation.
 
 **The stance between sessions.** Migration 0065 adds `reports.stance` (long,
 short or hold) beside `reports.ticker`. Compose writes it in its own
-statement after the draft row, so before the migration is applied a draft
-still saves and the stance screen says the direction stays in the tab until
-then. Publish writes the stance before the row locks; once locked it is
-frozen with the ticker.
+statement after the draft row, so a draft saves even where the column is
+missing, and the stance screen then says the direction stays in the tab.
+Publish writes the stance before the row is published; from then it is
+frozen with the ticker. (The database marks publication with a column still
+called `locked_at`. That name is a leftover: it records when a piece was
+published and has nothing to do with grading.)
 
 ## Tags: type to narrow
 
@@ -188,7 +191,7 @@ canvas that keeps its middle 9:16.
 The take becomes an ordinary File and goes down the upload path from there:
 the same trim, cover, overlays and the same upload at publish. There is no
 second path. A chosen clip is held in the tab until publish, because a clip
-row can only hang off a locked report; a reopened video draft therefore
+row can only hang off a published report; a reopened video draft therefore
 starts at the video step again, and the picker says so.
 
 Support is `getUserMedia` plus `MediaRecorder` on a secure origin. Where the
@@ -206,8 +209,9 @@ they are back, and the fixture `/dev/compose?shape=video` opens on them.
 
 ## The video editor
 
-One picture above one timeline, trim by dragging the brass ends of the
-filmstrip, text and insets dragged on the picture, timed by dragging the
+One picture above one timeline, trim by dragging the ends of the
+filmstrip (brass today; the colour is pending replacement with the rest of
+the visual system, see `docs/FRONTEND.md`), text and insets dragged on the picture, timed by dragging the
 ends of their bar. At rest, under the timeline, there is one control: **Add
 overlay**. It opens a short menu (text, a card, a chart, a diagram, an
 image); choosing one adds it at the playhead and selects it, and only then
@@ -263,7 +267,7 @@ On every type, three modes on the publish screen:
 ## What does not change
 
 The public surfaces stay video-first. There is still no Discover. Nothing
-is graded. A brief does not run the
+is graded, scored or resolved. A brief does not run the
 fact-checker. The card tray and library, drag into the timeline and into
 the writer, card identity across saves, the assistant, three-ink
 provenance, per-card locking, the recorder, the upload path, edit markers on

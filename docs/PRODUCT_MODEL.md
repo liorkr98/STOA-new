@@ -11,8 +11,18 @@ commentary, and retail investors pay for it. The platform takes 10%.
 
 **Grading is retired (2026-09-24).** Stoa used to lock each call's entry price, grade it against
 the market at its horizon, and keep a track record and a private Track Score. All of that is gone:
-nothing is graded, scored or resolved, there is no seal, no track record and no Verdict type. A
-publication keeps its **stance** (below). See `docs/CHANGELOG.md` for the removal.
+nothing is graded, scored, locked or resolved, and there is no seal, no track record, no score,
+no Verdict type, no locked entry price, no target and no horizon. A publication keeps its
+**stance** (below). See `docs/CHANGELOG.md` for the removal.
+
+**Analysts are followed and paid for their judgement, not scored on it.** A reader decides whom
+to trust by reading, watching and following, and pays through a subscription or a one-time
+unlock. The product never ranks an analyst on whether they were right.
+
+**Edit markers stay, and are independent of grading.** A published piece's headline, dek, thesis,
+cards and tags can be edited; every edit files a public EDITED marker with an edit log (migration
+0063). The marker says the words changed, never whether anyone was right. What cannot change after
+publishing is the stance, the type, the access and the price.
 
 **There is no scoring.** No score, rating, rank, percentile, hit rate or leaderboard appears
 anywhere, and no surface ever aggregates analysts into a verdict (no long/short splits, average
@@ -25,8 +35,8 @@ product is driven by the lifecycle model below.
 The atomic unit of a publication is a short analyst **video**. Everything else is optional
 enrichment layered on top of the video:
 
-- **Stance** — a ticker and a direction (long, short or hold). Frozen with the ticker once the
-  publication is out. Never graded.
+- **Stance** — a ticker and a direction (long, short or hold). One per publication. Frozen with
+  the ticker once the publication is out. Never graded: no entry price, no target, no horizon.
 - **Cards** — a swipeable stack of evidence (see The Card Engine).
 - **Thesis** — the full written argument.
 
@@ -39,8 +49,9 @@ A publication carries a **stance**: one ticker and, when it declares one, a dire
 short or hold), stored on the publication itself (`reports.ticker`, `reports.stance`, migration
 0065). An item with a ticker shows a ticker chip, and a direction chip beside it when it has a
 stance. An item with no ticker shows no ticker and no direction chip; it anchors on a theme or
-sector tag instead (`MACRO · OIL & ENERGY`, `SEMIS`). Until migration 0065 is applied the
-direction is read from the archived call as a fallback; nothing else is read from it. Every item
+sector tag instead (`MACRO · OIL & ENERGY`, `SEMIS`). For publications from before migration
+0065 the direction can still be read from the archived call as a fallback; nothing else is read
+from it, and the fallback goes when `predictions` is dropped. Every item
 on every surface carries a **content badge** stating exactly what it contains (`VIDEO`,
 `VIDEO · CARDS`, `VIDEO · CARDS · THESIS`), built only from what is stored.
 
@@ -158,7 +169,8 @@ opinion for a number.
 
 ## Devil's Advocate and The Steelman
 
-Two linked features that pressure-test conviction. Neither ever touches the record.
+Two linked features that pressure-test conviction. Neither affects placement, and neither is
+ever published without the analyst choosing to.
 
 ### Devil's Advocate (a paid conviction tool in Compose)
 
@@ -186,7 +198,6 @@ It has two independent placements, each with its own free or locked setting:
 Because the two placements gate independently, an analyst can tease The Steelman free in the feed
 while gating the full exchange inside the report.
 
-Neither Devil's Advocate nor The Steelman feeds the record.
 
 **Parked, September 2026.** The system that is meant to supply the objection, reading the thesis
 and generating a real counter-case, is not finished, and a Steelman surface without it is an
@@ -195,7 +206,7 @@ does not appear among the formats a creator can make. Nothing was deleted: the c
 schema, its editor and its Feed rendering all remain, so any publication that already carries a
 Steelman card renders exactly as before, and the surface returns the day the analysis works.
 
-## Retired: the Track Record Engine
+## Retired: the Track Record Engine (history)
 
 Until 2026-09-24 every call locked an entry price at publish, was graded against the market at
 its horizon, and fed a private 0 to 100 Track Score. The engine, the nightly grade job, the score,
