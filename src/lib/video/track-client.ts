@@ -11,7 +11,7 @@ export interface VideoTrackPayload {
   videoLengthSeconds?: number;
   replayed?: boolean;
   skippedAtSeconds?: number;
-  surface?: "feed" | "explore" | "report";
+  surface?: "feed" | "explore" | "report" | "today";
   positionInFeed?: number;
 }
 

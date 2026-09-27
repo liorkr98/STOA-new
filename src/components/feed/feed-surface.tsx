@@ -118,6 +118,15 @@ export function FeedSurface({
   sessionId,
   embedded = false,
   onBack,
+  backButton = true,
+  snapClass,
+  sideways = "cards",
+  rememberSound = true,
+  surface = "feed",
+  signInNext = "/feed",
+  onActiveChange,
+  onEnd,
+  endSlot,
 }: {
   publications: FeedPublication[];
   startIndex?: number;
@@ -129,21 +138,59 @@ export function FeedSurface({
   sessionId?: string;
   /** Full-viewport overlay (Explore). Height does not subtract the top nav. */
   embedded?: boolean;
+  /** Escape calls this; the surface also draws its own back button unless `backButton` is false. */
   onBack?: () => void;
+  backButton?: boolean;
+  /** The height class every snap section shares, when the host sizes the room itself. */
+  snapClass?: string;
+  /**
+   * What a sideways swipe and the left and right arrows move through. "cards"
+   * is the evidence track; "host" leaves both to whatever holds the surface
+   * (Today's faces move between analysts), and the cards stay reachable by
+   * their chevrons.
+   */
+  sideways?: "cards" | "host";
+  /**
+   * The Feed remembers a reader who turned sound on. A host that must never
+   * start with sound passes false: every opening starts muted and the choice
+   * lasts only while it is open.
+   */
+  rememberSound?: boolean;
+  /** Logged with every engagement and view event. */
+  surface?: "feed" | "explore" | "today";
+  /** Where sign-in returns the reader to after a like, save, follow or gated clip. */
+  signInNext?: string;
+  onActiveChange?: (index: number) => void;
+  /**
+   * Called when the reader comes to the end: scrolls past the last
+   * publication, or watches its clip through. With it, each finished clip
+   * also moves on to the next, and `endSlot` replaces the end-of-feed card.
+   */
+  onEnd?: () => void;
+  endSlot?: React.ReactNode;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const roomRef = useFrameHeight<HTMLDivElement>(embedded ? keepClassRoom : applyFeedRoom);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const [active, setActive] = useState(Math.min(startIndex, Math.max(0, publications.length - 1)));
-  const muted = useStoredValue(SOUND_KEY, parseMuted, true, SOUND_EVENT);
-  const setMuted = useCallback((next: boolean) => {
-    try {
-      localStorage.setItem(SOUND_KEY, next ? "off" : "on");
-      window.dispatchEvent(new Event(SOUND_EVENT));
-    } catch {
-      // Private mode: the toggle still works for this view.
-    }
-  }, []);
+  const storedMuted = useStoredValue(SOUND_KEY, parseMuted, true, SOUND_EVENT);
+  const [localMuted, setLocalMuted] = useState(true);
+  const muted = rememberSound ? storedMuted : localMuted;
+  const setMuted = useCallback(
+    (next: boolean) => {
+      if (!rememberSound) {
+        setLocalMuted(next);
+        return;
+      }
+      try {
+        localStorage.setItem(SOUND_KEY, next ? "off" : "on");
+        window.dispatchEvent(new Event(SOUND_EVENT));
+      } catch {
+        // Private mode: the toggle still works for this view.
+      }
+    },
+    [rememberSound],
+  );
   const [discussing, setDiscussing] = useState<string | null>(null);
 
   // Which publication is on screen. `rootMargin` collapses the observation box
@@ -166,7 +213,16 @@ export function FeedSurface({
     return () => io.disconnect();
   }, [publications.length]);
 
-  const snapH = embedded ? "feed-snap-overlay" : ITEM_H;
+  const snapH = snapClass ?? (embedded ? "feed-snap-overlay" : ITEM_H);
+
+  useEffect(() => {
+    onActiveChange?.(active);
+  }, [active, onActiveChange]);
+
+  // The end section coming into view is the reader asking for what follows.
+  useEffect(() => {
+    if (onEnd && active === publications.length) onEnd();
+  }, [active, publications.length, onEnd]);
 
   useEffect(() => {
     const pub = publications[active];
@@ -194,12 +250,13 @@ export function FeedSurface({
   const goTo = useCallback((i: number) => {
     const root = scrollerRef.current;
     const target = itemRefs.current[i];
-    if (!root || !target || i < 0 || i >= publications.length) return;
+    const last = onEnd ? publications.length : publications.length - 1;
+    if (!root || !target || i < 0 || i > last) return;
     root.scrollTo({
       top: target.offsetTop,
       behavior: prefersReducedMotion() ? "auto" : "smooth",
     });
-  }, [publications.length]);
+  }, [publications.length, onEnd]);
 
   useEffect(() => {
     if (!onBack) return;
@@ -214,7 +271,7 @@ export function FeedSurface({
 
   return (
     <div ref={roomRef} className={cn("relative", snapH)}>
-      {onBack ? (
+      {onBack && backButton ? (
         <button
           type="button"
           onClick={onBack}
@@ -247,12 +304,28 @@ export function FeedSurface({
             canAct={canAct}
             onPrev={() => goTo(i - 1)}
             onNext={() => goTo(i + 1)}
+            onFinished={onEnd ? () => goTo(i + 1) : undefined}
             onDiscuss={() => setDiscussing(pub.id)}
             sessionId={sessionId}
+            sideways={sideways}
+            surface={surface}
+            signInNext={signInNext}
           />
         ))}
 
-        <EndOfFeed snapClass={snapH} />
+        {onEnd ? (
+          <section
+            ref={(el) => {
+              itemRefs.current[publications.length] = el;
+            }}
+            aria-label="Up next"
+            className={cn("flex snap-start items-center justify-center px-4", snapH)}
+          >
+            {endSlot}
+          </section>
+        ) : (
+          <EndOfFeed snapClass={snapH} />
+        )}
       </div>
 
       {discussing ? (
@@ -286,8 +359,12 @@ const FeedItem = function FeedItem({
   canAct,
   onPrev,
   onNext,
+  onFinished,
   onDiscuss,
   sessionId,
+  sideways,
+  surface,
+  signInNext,
 }: {
   ref: (el: HTMLElement | null) => void;
   pub: FeedPublication;
@@ -300,8 +377,13 @@ const FeedItem = function FeedItem({
   canAct: boolean;
   onPrev: () => void;
   onNext: () => void;
+  /** The clip played through once; the host moves on. */
+  onFinished?: () => void;
   onDiscuss: () => void;
   sessionId?: string;
+  sideways: "cards" | "host";
+  surface: "feed" | "explore" | "today";
+  signInNext: string;
 }) {
   const router = useRouter();
   const [, startAction] = useTransition();
@@ -353,11 +435,11 @@ const FeedItem = function FeedItem({
           reportId: pub.id,
           kind: "watch_progress",
           value: Math.round(mark * 100),
-          surface: "feed",
+          surface,
         });
       }
     },
-    [pub.id],
+    [pub.id, surface],
   );
 
   /**
@@ -402,10 +484,10 @@ const FeedItem = function FeedItem({
 
   useEffect(() => {
     if (!isActive) return;
-    trackEngagement({ reportId: pub.id, kind: "impression", surface: "feed" });
-    trackEngagement({ reportId: pub.id, kind: "play", surface: "feed" });
-    trackEngagement({ reportId: pub.id, kind: "swipe_depth", value: index, surface: "feed" });
-  }, [isActive, pub.id, index]);
+    trackEngagement({ reportId: pub.id, kind: "impression", surface });
+    if (pub.clipId) trackEngagement({ reportId: pub.id, kind: "play", surface });
+    trackEngagement({ reportId: pub.id, kind: "swipe_depth", value: index, surface });
+  }, [isActive, pub.id, pub.clipId, index, surface]);
 
   useEffect(() => {
     if (!pub.clipId) return;
@@ -419,7 +501,7 @@ const FeedItem = function FeedItem({
           watchedSeconds: 0,
           sessionId,
           videoLengthSeconds: pub.durationSeconds,
-          surface: "feed",
+          surface,
           positionInFeed: index,
         });
       }
@@ -435,29 +517,29 @@ const FeedItem = function FeedItem({
         replayed: loopedRef.current,
         sessionId,
         videoLengthSeconds: pub.durationSeconds,
-        surface: "feed",
+        surface,
         positionInFeed: index,
       });
     }
     trackedPlayRef.current = false;
     clickTrackedRef.current = false;
-  }, [isActive, pub.clipId, pub.durationSeconds, index, sessionId]);
+  }, [isActive, pub.clipId, pub.durationSeconds, index, sessionId, surface]);
 
   useEffect(() => {
     if (isActive && unlockIndex >= 0 && card === unlockIndex + 1) {
-      trackEngagement({ reportId: pub.id, kind: "cta_reach", value: card, surface: "feed" });
+      trackEngagement({ reportId: pub.id, kind: "cta_reach", value: card, surface });
       if (pub.clipId && !clickTrackedRef.current) {
         clickTrackedRef.current = true;
         trackVideoEvent(pub.clipId, {
           clickedThroughToReport: true,
           sessionId,
           videoLengthSeconds: pub.durationSeconds,
-          surface: "feed",
+          surface,
           positionInFeed: index,
         });
       }
     }
-  }, [isActive, card, unlockIndex, pub.id, pub.clipId, pub.durationSeconds, index, sessionId]);
+  }, [isActive, card, unlockIndex, pub.id, pub.clipId, pub.durationSeconds, index, sessionId, surface]);
 
   useEffect(() => {
     if (isActive) playerCommand(iframeRef.current, muted ? "mute" : "unmute");
@@ -563,6 +645,34 @@ const FeedItem = function FeedItem({
     return () => clearInterval(id);
   }, [isActive, started, paused, scrubbing, pub.durationSeconds]);
 
+  /**
+   * Through once: the bar reached its end, or the clip went back to its start
+   * on its own (a loop, which can come before the bar's end when a stored
+   * length disagrees with the file). Only after the clip has played in this
+   * visit, so coming back to one that finished earlier does not skip straight
+   * past it; a finger on the bar is never a finish.
+   */
+  const through = useRef({ armed: false, last: 0, done: false });
+  useEffect(() => {
+    if (!isActive) through.current = { armed: false, last: 0, done: false };
+  }, [isActive]);
+  useEffect(() => {
+    const t = through.current;
+    if (!onFinished || !isActive || t.done) return;
+    const last = t.last;
+    t.last = progress;
+    if (scrubbing) {
+      t.armed = false;
+      return;
+    }
+    if (progress < 0.9) t.armed = true;
+    if (!t.armed) return;
+    if (progress >= 0.995 || (last > 0.3 && progress < 0.1 && last - progress > 0.25)) {
+      t.done = true;
+      onFinished();
+    }
+  }, [progress, isActive, scrubbing, onFinished]);
+
   useEffect(() => {
     const el = trackRef.current;
     const child = el?.children[card] as HTMLElement | undefined;
@@ -641,10 +751,12 @@ const FeedItem = function FeedItem({
           onPrev();
           break;
         case "ArrowLeft":
+          if (sideways === "host") break;
           e.preventDefault();
           goCard(-1);
           break;
         case "ArrowRight": {
+          if (sideways === "host") break;
           e.preventDefault();
           const now = Date.now();
           // A second right within the window skips the evidence and lands on
@@ -666,11 +778,11 @@ const FeedItem = function FeedItem({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isActive, goCard, onNext, onPrev, muted, onMutedChange, unlockIndex]);
+  }, [isActive, goCard, onNext, onPrev, muted, onMutedChange, unlockIndex, sideways]);
 
   const requireAuth = () => {
     if (canAct) return true;
-    router.push(`/sign-in?next=${encodeURIComponent("/feed")}`);
+    router.push(`/sign-in?next=${encodeURIComponent(signInNext)}`);
     return false;
   };
   const act = (
@@ -713,6 +825,9 @@ const FeedItem = function FeedItem({
     .join(" · ");
 
   const onClip = card === 0;
+  /** No clip to play: a written piece, or a clip this reader must sign in to stream. */
+  const written = !pub.clipId && !pub.watchGated;
+  const stageOnly = written || Boolean(pub.watchGated);
 
   const actions = [
     {
@@ -769,7 +884,11 @@ const FeedItem = function FeedItem({
           >
             <div
               ref={trackRef}
-              className="scroll-area-x scroll-bare flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+              className={cn(
+                "scroll-area-x scroll-bare flex h-full snap-x snap-mandatory overflow-y-hidden",
+                // Left to the host: the track still moves by its chevrons, a finger's sideways swipe does not.
+                sideways === "host" ? "touch-pan-y overflow-x-hidden" : "overflow-x-auto",
+              )}
             >
               {/* Panel 0: the clip. */}
               <div className="relative h-full w-full flex-none snap-center">
@@ -826,10 +945,18 @@ const FeedItem = function FeedItem({
                   <ClipThumb src={pub.thumbnailUrl} seed={pub.analyst.id} loading="eager" />
                 </div>
 
+                {stageOnly ? (
+                  <StillStage
+                    pub={pub}
+                    written={written}
+                    signInHref={`/sign-in?next=${encodeURIComponent(signInNext)}`}
+                  />
+                ) : null}
+
                 {/* Progress, along the top edge, and the handle to drag it
                     anywhere. Above the scrim's strip, so the first pixels of
                     the frame belong to the bar and not to the chips under it. */}
-                <ScrubBar
+                {stageOnly ? null : <ScrubBar
                   edge="top"
                   hit={18}
                   progress={progress}
@@ -845,7 +972,7 @@ const FeedItem = function FeedItem({
                     setProgress(ratio);
                   }}
                   className="z-[13]"
-                />
+                />}
 
                 {/* The scrim carries Stoa's own strip over an unpredictable
                     picture. Clips routinely contain their own tickers and
@@ -871,7 +998,7 @@ const FeedItem = function FeedItem({
                       {!pub.ticker && pub.themeTag ? <ThemeChip label={pub.themeTag} /> : null}
                     </div>
                   </div>
-                  <div className="pointer-events-auto flex flex-none items-start gap-2">
+                  <div className={cn("pointer-events-auto flex flex-none items-start gap-2", stageOnly && "hidden")}>
                     <button
                       type="button"
                       onClick={() => onMutedChange(!muted)}
@@ -883,7 +1010,7 @@ const FeedItem = function FeedItem({
                   </div>
                 </div>
 
-                <button
+                {stageOnly ? null : <button
                   type="button"
                   onClick={() => setPaused((p) => !p)}
                   aria-label={paused ? "Play (Space)" : "Pause (Space)"}
@@ -894,14 +1021,18 @@ const FeedItem = function FeedItem({
                       <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" />
                     </span>
                   ) : null}
-                </button>
+                </button>}
 
                 {/* Pads itself clear of the floating tab pill (`--tab-h`, 0 on desktop and
                     in the Explore overlay), since the clip runs the full height beneath it. */}
                 <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-12">
                   <h2
                     dir="auto"
-                    className="user-copy mb-2 line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden"
+                    className={cn(
+                      "user-copy mb-2 line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden",
+                      // The still stage already carries the headline at reading size.
+                      stageOnly && "hidden",
+                    )}
                   >
                     {pub.headline}
                   </h2>
@@ -994,7 +1125,7 @@ const FeedItem = function FeedItem({
                 type="button"
                 onClick={() => goCard(-1)}
                 aria-label="Previous card"
-                className="focus-ring absolute left-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-text"
+                className="focus-ring absolute left-1.5 top-1/2 z-[14] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-text"
               >
                 <ChevronLeft size={16} strokeWidth={1.6} />
               </button>
@@ -1005,7 +1136,7 @@ const FeedItem = function FeedItem({
                 onClick={() => goCard(1)}
                 aria-label="Next card"
                 className={cn(
-                  "focus-ring absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border",
+                  "focus-ring absolute right-1.5 top-1/2 z-[14] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border",
                   onClip
                     ? "border-white/25 bg-black/40 text-white hover:bg-black/60"
                     : "border-border bg-surface text-text",
@@ -1032,6 +1163,51 @@ const FeedItem = function FeedItem({
     </section>
   );
 };
+
+/**
+ * The stage when there is nothing to play. A written piece is a page to read
+ * rather than a black frame: its type and date, the headline, the deck, and
+ * the way into the full piece. A clip the reader may not stream keeps its
+ * poster behind and says what an account is for. The Feed's own chrome (the
+ * chips, the actions, the analyst) stays around it unchanged.
+ */
+function StillStage({ pub, written, signInHref }: { pub: FeedPublication; written: boolean; signInHref: string }) {
+  const date = new Date(pub.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return (
+    <div className="absolute inset-x-0 top-16 bottom-[calc(12rem+var(--tab-h))] z-[2] flex items-center justify-center px-11 md:top-20 md:bottom-44">
+      <div
+        className={cn(
+          "flex max-h-full w-full max-w-[22rem] flex-col gap-3 overflow-hidden rounded-panel border border-border bg-bg p-5 text-text",
+          !written && "items-center text-center",
+        )}
+      >
+        <span className="num text-ticker text-text-mute">
+          {labelCase(pub.typeLabel)} · {date}
+        </span>
+        <p dir="auto" className="user-copy line-clamp-4 font-display text-title font-semibold leading-tight tracking-tight">
+          {pub.headline}
+        </p>
+        {written && pub.deck ? (
+          <p dir="auto" className="user-copy line-clamp-6 text-body leading-relaxed text-text-mute">
+            {pub.deck}
+          </p>
+        ) : null}
+        {written ? (
+          <Link href={`/report/${pub.id}`} className={buttonClass("ink", "md", "mt-1 self-start")}>
+            Read the piece
+          </Link>
+        ) : (
+          <>
+            <p className="text-body text-text-mute">Watching takes an account. Sign in and this plays here.</p>
+            <Link href={signInHref} className={buttonClass("ink", "md", "mt-1")}>
+              Sign in to watch
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
