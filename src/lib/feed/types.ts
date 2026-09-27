@@ -87,4 +87,9 @@ export interface FeedPublication {
   savedByMe?: boolean;
   /** The signed-in reader follows this analyst. */
   followingAnalyst?: boolean;
+  /**
+   * A clip exists but this reader may not stream it (signed out: watching is
+   * what an account is for). The player shows the poster and a way in.
+   */
+  watchGated?: boolean;
 }

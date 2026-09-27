@@ -159,6 +159,29 @@ export async function listReportIdsWithClips(reportIds: string[]): Promise<Set<s
 }
 
 /**
+ * The published, ready clip of each of these reports, newest winning, keyed by
+ * report. Public client: the teaser is public by design, the depth stays
+ * behind the report's own RLS.
+ */
+export async function listReadyClipsForReports(reportIds: string[]): Promise<Map<string, VideoClip>> {
+  if (reportIds.length === 0) return new Map();
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("video_clips")
+    .select(CARD_COLUMNS)
+    .in("report_id", reportIds)
+    .eq("status", "ready")
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false });
+  if (error || !data) return new Map();
+  const byReport = new Map<string, VideoClip>();
+  for (const clip of data as unknown as VideoClip[]) {
+    if (!byReport.has(clip.report_id)) byReport.set(clip.report_id, clip);
+  }
+  return byReport;
+}
+
+/**
  * The published, ready clip for one publication, for the report page.
  *
  * Public client, so it answers for a signed-out reader: the teaser is public by

@@ -7,7 +7,7 @@ import { medianRate, publicationAttention, stageFor, visibleStageMarker, type At
 import { themeLabel } from "@/lib/tags/taxonomy";
 import { listCardsForReports } from "@/lib/db/publication-cards";
 import { followedAnalystIds, likedReportIds, savedReportIds } from "@/lib/db/social";
-import type { VideoClipCard } from "@/lib/db/video-clips";
+import type { VideoClip, VideoClipCard } from "@/lib/db/video-clips";
 import type { Report } from "@/lib/types";
 import type { FeedCard, FeedPublication } from "@/lib/feed/types";
 import { publicTypeLabel } from "@/lib/compose/modes";
@@ -101,20 +101,44 @@ function cardsFor(report: Report, stored: FeedCard[] | undefined, ticker: string
 }
 
 export async function clipsToPublications(clips: VideoClipCard[], now = Date.now()): Promise<FeedPublication[]> {
-  const usable = clips.filter((c) => c.report && c.report.author);
+  return buildPublications(
+    clips.filter((c) => c.report && c.report.author).map((c) => ({ report: c.report!, clip: c })),
+    now,
+  );
+}
+
+/**
+ * Publications whatever their form: a report with a ready clip plays in the
+ * player, a written one carries no clip and the player shows it as a page to
+ * read. Today's faces use this, since a face may have posted only prose.
+ */
+export async function reportsToPublications(
+  reports: Report[],
+  clipsByReport: Map<string, VideoClip>,
+  now = Date.now(),
+): Promise<FeedPublication[]> {
+  return buildPublications(
+    reports.filter((r) => r.author).map((r) => ({ report: r, clip: clipsByReport.get(r.id) ?? null })),
+    now,
+  );
+}
+
+async function buildPublications(
+  usable: { report: Report; clip: VideoClip | null }[],
+  now: number,
+): Promise<FeedPublication[]> {
   const symbols = [
-    ...new Set(usable.map((c) => c.report!.ticker?.toUpperCase()).filter((s): s is string => Boolean(s))),
+    ...new Set(usable.map((c) => c.report.ticker?.toUpperCase()).filter((s): s is string => Boolean(s))),
   ];
   const sectorByTicker = new Map<string, string | null>();
   for (const row of symbols.length ? await listTickerRows(symbols) : []) sectorByTicker.set(row.symbol.toUpperCase(), row.sector);
 
   // One query for every publication's stack. RLS drops locked cards the reader
   // is not entitled to, and the mapper strips any locked payload that remains.
-  const cardsByReport = await listCardsForReports(usable.map((c) => c.report!.id));
+  const cardsByReport = await listCardsForReports(usable.map((c) => c.report.id));
 
   const samples = new Map<string, AttentionSample>();
-  for (const c of usable) {
-    const r = c.report!;
+  for (const { report: r } of usable) {
     samples.set(r.id, {
       since: r.published_at ?? r.created_at,
       total: publicationAttention({ views: r.views ?? 0, likes: r.likes ?? 0, comments: r.comment_count ?? 0 }),
@@ -122,8 +146,8 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
   }
   const median = medianRate([...samples.values()], now);
 
-  return usable.map((c, index) => {
-    const r = c.report!;
+  return usable.map(({ report: r, clip: c }, index) => {
+    if (!c) return writtenPublication(r, cardsByReport.get(r.id), sectorByTicker, samples, median, now);
     const media = resolveClipPlayback({
       playbackUrl: c.playback_url,
       thumbnailUrl: c.thumbnail_url,
@@ -187,6 +211,45 @@ export async function clipsToPublications(clips: VideoClipCard[], now = Date.now
       publishedAt: r.published_at ?? r.created_at,
     };
   });
+}
+
+/** A publication with no clip: the player draws it as a page to read, not a stage. */
+function writtenPublication(
+  r: Report,
+  stored: FeedCard[] | undefined,
+  sectorByTicker: Map<string, string | null>,
+  samples: Map<string, AttentionSample>,
+  median: number,
+  now: number,
+): FeedPublication {
+  const chips = stanceChips(r);
+  const sector = chips.ticker ? sectorByTicker.get(chips.ticker) ?? null : null;
+  return {
+    id: r.id,
+    clipId: null,
+    embedUrl: null,
+    playbackUrl: null,
+    thumbnailUrl: null,
+    captionUrl: null,
+    durationSeconds: 0,
+    videoEdit: null,
+    feedPreviewSeconds: null,
+    headline: storyHeadline(r),
+    deck: storyDek(r),
+    typeLabel: typeLabel(r.type),
+    ticker: chips.ticker,
+    direction: chips.direction,
+    themeTag: chips.ticker ? null : themeLabel(r, sector),
+    sector,
+    contentBadge: contentBadgeFor(r, false),
+    stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
+    analyst: { id: r.author!.id, handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
+    access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
+    price: r.price,
+    cards: cardsFor(r, stored, chips.direction ? chips.ticker : null),
+    comments: [],
+    publishedAt: r.published_at ?? r.created_at,
+  };
 }
 
 /** Stamp the signed-in reader's like, save and follow onto Feed items. */
