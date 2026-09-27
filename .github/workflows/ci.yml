@@ -30,6 +30,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Colour and type law
+        run: npm run test:contrast
+
       - name: Valuation tests
         run: npm run test:valuation
 
