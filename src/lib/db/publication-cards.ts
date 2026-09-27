@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { validateCards, type CardKind, type ValidatedCard } from "@/lib/feed/card-schema";
 import type { FeedCard } from "@/lib/feed/types";
 
@@ -58,16 +59,23 @@ function emptyCard(id: string, kind: Exclude<CardKind, "unlock">): FeedCard {
   }
 }
 
-/** Map a stored row to the player's card shape, stripping locked payloads. */
-export function toFeedCard(row: PublicationCardRow): FeedCard | null {
+/**
+ * Map a stored row to the player's card shape, stripping locked payloads.
+ * `entitled` keeps a locked card's payload, and is only ever passed by a
+ * caller that has already decided on the server that this reader may read the
+ * publication (the report page's own entitlement check). RLS agrees: it only
+ * returns a locked row to such a reader in the first place.
+ */
+export function toFeedCard(row: PublicationCardRow, { entitled = false }: { entitled?: boolean } = {}): FeedCard | null {
   // Compose stores its pinned CTA as an unlock row. The closing card a reader
   // sees is decided from the report's live terms (build-publications), never
   // from this row, so it is dropped here rather than rendered with a stale
   // or empty payload.
   if (row.kind === "unlock") return null;
-  if (row.locked) return emptyCard(row.id, row.kind);
+  if (row.locked && !entitled) return emptyCard(row.id, row.kind);
   // Payload shape is validated on write; trust it here rather than re-parsing.
-  const card = { ...(row.payload as object), kind: row.kind, id: row.id, locked: row.locked } as FeedCard;
+  // An entitled reader's locked card is open to them, so it is not drawn sealed.
+  const card = { ...(row.payload as object), kind: row.kind, id: row.id, locked: row.locked && !entitled } as FeedCard;
   // Rows written before figure images were uploaded hold a blob: object URL
   // that resolves nowhere. Drop it so the card falls back to its placeholder
   // instead of handing an unfetchable src to the image loader.
@@ -103,8 +111,58 @@ export async function listCardsForReports(
   return out;
 }
 
-export async function listCardsForReport(reportId: string): Promise<FeedCard[]> {
-  return (await listCardsForReports([reportId])).get(reportId) ?? [];
+/**
+ * One publication's deck for its own page. A reader who may not read gets the
+ * open cards plus an empty sealed shell for each locked one, in deck order.
+ * RLS hides locked rows from that reader entirely, so without the shells the
+ * seal was never shown to the one reader it is for; the shells are read with
+ * the service key and carry the kind and id only, never a payload field.
+ */
+async function deckWithSeals(reportId: string): Promise<FeedCard[]> {
+  const open = (await listCardsForReports([reportId])).get(reportId) ?? [];
+  try {
+    const { data } = await createAdminClient()
+      .from("publication_cards")
+      .select("id, kind, position, report:reports!inner(status)")
+      .eq("report_id", reportId)
+      .eq("locked", true)
+      .eq("report.status", "published")
+      .neq("kind", "unlock");
+    const rows = (data as { id: string; kind: CardKind; position: number }[] | null) ?? [];
+    if (rows.length === 0) return open;
+    const { data: order } = await createAdminClient()
+      .from("publication_cards")
+      .select("id, position")
+      .eq("report_id", reportId);
+    const pos = new Map(((order as { id: string; position: number }[] | null) ?? []).map((r) => [r.id, r.position]));
+    const shells = rows.map((r) => emptyCard(r.id, r.kind as Exclude<CardKind, "unlock">));
+    return [...open, ...shells].sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0));
+  } catch {
+    return open;
+  }
+}
+
+/**
+ * One publication's deck for its own page. An entitled reader (see
+ * toFeedCard) gets the locked cards open: they used to arrive sealed for
+ * everyone, so a subscriber, a buyer, the author and every reader of a free
+ * piece met "Sealed · tap to unlock" with nothing to unlock.
+ */
+export async function listCardsForReport(
+  reportId: string,
+  { entitled = false }: { entitled?: boolean } = {},
+): Promise<FeedCard[]> {
+  if (!entitled) return deckWithSeals(reportId);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("publication_cards")
+    .select(CARD_COLUMNS)
+    .eq("report_id", reportId)
+    .order("position", { ascending: true });
+  if (error || !data) return [];
+  return (data as PublicationCardRow[])
+    .map((row) => toFeedCard(row, { entitled: true }))
+    .filter((c): c is FeedCard => c !== null);
 }
 
 /**
