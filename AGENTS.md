@@ -12,9 +12,9 @@ editing this file and letting `CLAUDE.md` re-export it.
 - `docs/BUILD_SPEC.md` — **history.** The August 2026 build spec, written for a product that
   has since changed (it assumes graded calls, targets, horizons and the old design). Read it
   for why things were built, never as a rule.
-- `docs/design/direction-b.html` — **the incoming visual system.** The current one (Fraunces,
-  cream paper, brass, broadsheet hairlines, zero-radius corners, letterspaced mono labels) is
-  being retired; see Design below.
+- `docs/DESIGN_LANGUAGE.md` — **the visual law** (Direction B, adopted 2026-09-27): colour,
+  the contrast rule, the accent law, type, radius, primitives. `docs/design/direction-b.html` is
+  the reference it was taken from (its look, not its product).
 - `docs/BACKEND.md` — schema, RLS, the fact-checker pipeline, payments.
   **Does not exist yet.** No one has supplied the source content for it, so it is not being
   fabricated here. Until it exists, `supabase/migrations/*` and `docs/BACKEND_DATA_CONTRACTS.md`
@@ -208,33 +208,32 @@ scripts/               tsx scripts: seed-demo.ts / seed.ts (demo data), refresh-
 
 ### Design
 
-**The visual system is being retired.** Fraunces as the display face, the cream-paper ground,
-the brass accent, hairline broadsheet rules, zero-radius corners, uppercase letterspaced mono
-labels, solid-ink ("black") primary buttons and 6px/12px corners are **pending replacement** by
-the system in `docs/design/direction-b.html`. The tokens are not rewritten yet (that is the next
-batch), so today's code still runs on them and a change made now uses them rather than mixing in
-Direction B values piecemeal. But they are no longer law: do not extend them into new surfaces,
-do not refuse a change because it breaks one of them, and do not build new components against
-them. Rules 6, 7, 8 and 9 below describe the retiring system. Direction B's sample screens
-predate the grading removal (a Verdict type, HIT/MISS receipts); take its visuals, not its
-product.
+**The visual system is Direction B (adopted 2026-09-27).** The law is `docs/DESIGN_LANGUAGE.md`;
+`npm run test:contrast` enforces its checkable parts in CI. Tokens and shared primitives changed
+first; surfaces are rebuilt one at a time, starting with Today, and until then keep their old
+layout in the new colours and type.
 
-5. **Read `docs/FRONTEND.md` before any visual change.** It documents every page and component
-   and today's tokens, and marks what is pending replacement. `design-system/MASTER.md` is
+5. **Read `docs/DESIGN_LANGUAGE.md` and `docs/FRONTEND.md` before any visual change.** The first
+   is the law, the second the map of pages and components. `design-system/MASTER.md` is
    deprecated.
-6. **Color [pending replacement]: six tokens today**, `--ink`, `--paper`, `--verdigris`,
-   `--brass`, `--plum`, `--rust`. What survives the replacement: green and red are the **only
-   sentiment colors** (up/down, long/short, fact/contradicted) and never generic chrome, and the
-   edit marker is never an alarm colour. Brass (the edit marker, unproven) and plum (opinion) are
-   today's non-sentiment accents; ink primaries and navy for the wordmark are today's choices,
-   not settled rules.
-7. **Fonts by role [pending replacement]:** today Fraunces for display/editorial, IBM Plex Sans
-   for body/UI, IBM Plex Mono for numerals, tickers, prices and dates. The three roles stay;
-   Direction B replaces the faces.
+6. **Colour, and the accent law.** Paper `#FAFAFA`, card `#FFFFFF`, ink `#101418`, muted
+   `#5B6470`, line `#E6E8EB`. **Coral marks the live or actionable thing and nothing else**
+   (Subscribe, Follow, Publish, the one primary action, a live recording). **Green and red carry
+   direction and price movement and nothing else** (not success, not error). About 90% of the
+   interface is black, white and grey. `--accent` is ink, not coral; never repoint it.
+   **Contrast rule:** coloured words use the `-text` tones (`text-coral`, `text-gain`,
+   `text-loss`); fills use `bg-coral` / `bg-gain` / `bg-loss`, which carry black text; white on
+   a coloured fill is never used; every word clears 4.5:1; faint grey is never a word.
+7. **Type.** Bricolage Grotesque for display, Inter for reading and UI (tabular figures on),
+   JetBrains Mono for tickers only, Heebo for Hebrew. Five sizes: `text-display`,
+   `text-headline`, `text-title`, `text-body`, `text-ticker` (Tailwind's own scale is deleted).
+   No uppercase, no letterspaced labels.
 8. **No drop shadows for elevation.** Depth comes from surface tints and borders. One soft shadow
    token exists only for floating overlays (menus, modals).
-9. **Radii [pending replacement]:** today cards 12px, buttons/inputs/chips 6px, Today's images
-   0. The old reason for square avatars (the seal was the only circle) went with the seal.
+9. **Radius by role, never borrowed:** `rounded-button` and `rounded-chip` are pills,
+   `rounded-field` 10px, `rounded-panel` 14px (cards, menus, dialogs), `rounded-inner` 8px,
+   `rounded-avatar` a circle. Use the primitives (`Button`, `Chip`, `Card`, `Avatar`,
+   `SectionHeading` in `src/components/ui/`) rather than hand-styling.
 10. **Zero em-dashes** anywhere user-visible — unchanged, still correct.
 11. **The disclosure block cannot accept a theme/branding prop, ever.** Every other surface an
     analyst customizes; this one doesn't. See `docs/FRONTEND.md` §2.3. **Already done.**
@@ -264,10 +263,9 @@ refreshes cached prices and market caps (`src/lib/engine/refresh-ticker-metrics.
 ## Anti-patterns (do not ship)
 
 - AI-purple gradients, neon glows, pure black/white, three identical feature cards.
-- Green/red (verdigris/rust) on anything that is not sentiment: fact-check verdicts, market
-  direction. Never generic UI.
-- A color invented ad hoc per page. (Today that means outside the six tokens; after the next
-  batch, outside Direction B's.)
+- Green/red on anything that is not direction or price movement. Coral on anything that is not
+  the live or actionable thing. White text on a coloured fill.
+- A colour invented ad hoc per page, outside the tokens in `globals.css`.
 - Drop shadows used for card elevation.
 - Em-dashes in any user-visible string.
 - Components calling Supabase directly. Data flows through `src/lib/db/*` only.

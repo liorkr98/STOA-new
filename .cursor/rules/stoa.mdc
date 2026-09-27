@@ -14,10 +14,9 @@ Read `AGENTS.md` for full context and `docs/PRODUCT_MODEL.md` for the product. K
   resolved: no track record, no score, no seal, no Verdict type, no entry price, no target, no
   horizon. Do not rebuild any of it. Analysts are followed and paid for their judgement, not
   scored on it. Edit markers stay and are independent of grading.
-- Design: the current visual system (Fraunces, cream paper, brass, hairline broadsheet rules,
-  zero-radius corners, uppercase letterspaced mono labels) is being retired for
-  `docs/design/direction-b.html`. Use today's tokens for changes until the next batch replaces
-  them, but do not treat them as law. Green and red are sentiment only (direction, gain/loss),
-  never generic UI. No drop shadows for elevation.
+- Design is Direction B (`docs/DESIGN_LANGUAGE.md`): coral only on the live or actionable thing,
+  green and red only on direction and price, coloured words in the `-text` tones, fills with
+  black text, five type sizes, no uppercase labels, mono for tickers only, radius by role. No
+  drop shadows for elevation.
 - Zero em-dashes in user-visible text.
 - `npm run lint` and `npm run typecheck` must pass before committing. No narration comments.

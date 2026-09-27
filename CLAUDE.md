@@ -8,10 +8,9 @@ Read **[docs/PRODUCT_MODEL.md](./docs/PRODUCT_MODEL.md)** for the current produc
 video-first content model, the five surfaces, the Card Engine and the lifecycle model. It is the
 reference for what Stoa is today.
 
-Before any visual change, read **[docs/FRONTEND.md](./docs/FRONTEND.md)** — every page, every
-component, and today's tokens. **The current visual system is being retired** in favour of
-**[docs/design/direction-b.html](./docs/design/direction-b.html)**; see the note at the top of
-FRONTEND.md.
+Before any visual change, read **[docs/DESIGN_LANGUAGE.md](./docs/DESIGN_LANGUAGE.md)** (the
+visual law: Direction B, adopted 2026-09-27) and **[docs/FRONTEND.md](./docs/FRONTEND.md)** (every
+page and component). `npm run test:contrast` enforces the colour and label rules.
 
 `docs/BUILD_SPEC.md` is history: it describes a product that has since changed (graded calls,
 targets, horizons, the old design). Never treat it as a rule.
@@ -42,12 +41,14 @@ Quick reminders:
   opts in, members). Never aggregate analysts into a verdict (no long/short splits, average
   targets or consensus). Placement is driven by the **lifecycle model** (NEW / AVERAGE / RISING /
   TRENDING / POPULAR; only NEW and TRENDING are ever shown).
-- **Design: pending replacement.** Today's tokens (six colours on cream paper, brass accent,
-  Fraunces display, Plex Sans/Mono, hairline broadsheet rules, zero radius on Today, uppercase
-  letterspaced mono labels, ink primaries, 6px/12px corners) are what the code runs on until the
-  next batch rewrites them, so use them for changes now; but they are no longer law. Do not
-  extend them into new surfaces or refuse a change because it breaks one. What survives: green
-  and red are sentiment only (up/down, long/short), never chrome.
+- **Design: Direction B.** Coral marks the live or actionable thing only (Subscribe, Follow,
+  Publish, the one primary action); green and red mean direction and price only; about 90% is
+  black, white and grey. Coloured words use `text-coral` / `text-gain` / `text-loss` (the deep
+  tones); fills use `bg-coral` / `bg-gain` / `bg-loss` (black text built in); never white on a
+  fill. `--accent` is ink, not coral. Bricolage / Inter / JetBrains Mono (tickers only) / Heebo
+  (Hebrew); five sizes (`text-display|headline|title|body|ticker`); no uppercase labels; radius by
+  role; use the primitives in `src/components/ui/`. Surfaces not yet rebuilt keep their old
+  layout: rebuild them to Direction B, do not extend the old treatments.
 - Money is PayPal, not Stripe — Partner Referrals for onboarding, Orders v2 `platform_fees[]` for
   one-time purchases, multiparty Subscriptions for recurring billing.
 - Icons: Lucide going forward for new components; existing Phosphor usage isn't an urgent

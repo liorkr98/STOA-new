@@ -11,18 +11,19 @@
 > match; where a section describes a surface that was never built (the original spec's
 > onboarding wizard, `/dashboard/*`), it is marked as spec rather than as the site.
 >
-> **2. The visual system is being retired.** The system this document specifies (Fraunces as the
-> display face, the cream-paper ground, the brass accent, hairline broadsheet rules, zero-radius
-> corners on Today, uppercase letterspaced mono labels, black/ink primary buttons, 6px/12px
-> corners) is **pending replacement** by the incoming system in
-> [`docs/design/direction-b.html`](./design/direction-b.html). The tokens themselves are not
-> rewritten yet (that is the next batch), so the code still runs on the old values and a change
-> today still uses them. But nothing below is law any more: do not extend the old system into new
-> surfaces, do not treat its rules as reasons to refuse a change, and do not build new components
-> against it that would have to be redone. Rules marked **[pending replacement]** are the ones
-> most likely to change. Direction B's sample screens predate the grading removal (they show a
-> Verdict type, HIT/MISS receipts and "The market decided"); take the visual system from it, not
-> the product.
+> **2. The visual system is Direction B (adopted 2026-09-27).** Paper `#FAFAFA`, white cards, ink
+> `#101418`; coral for the one live or actionable thing; green and red for direction and price
+> only; Bricolage Grotesque, Inter and JetBrains Mono (tickers only) with Heebo for Hebrew; five
+> type sizes; pills, 14px panels and circular avatars. **The law is
+> [`docs/DESIGN_LANGUAGE.md`](./DESIGN_LANGUAGE.md)**; the reference is
+> [`docs/design/direction-b.html`](./design/direction-b.html) (take its look, not its product: its
+> sample screens predate the grading removal). `npm run test:contrast` enforces the colour, label
+> and mono rules in CI.
+>
+> The tokens and shared primitives changed first; **surfaces are rebuilt one at a time, starting
+> with Today.** Until a surface is rebuilt it keeps its old layout in the new colours and type.
+> Where a page section below describes an old treatment (a broadsheet rule, a letterspaced
+> label), it says so; that treatment is not a rule to preserve.
 
 The full frontend specification. `AGENTS.md` is the short version for day-to-day work; when the
 two disagree, this file wins and `AGENTS.md` should be corrected to match.
@@ -62,19 +63,15 @@ at home on a recipe blog or a crypto dashboard. The design needs to come from wh
 is: **analysts people follow and pay for their judgement, each piece carrying its stance, its
 disclosures and its edits in the open.**
 
-One exception was adopted on 2026-09-22 and is now **[pending replacement]**: **Today (`/home`)
-is a broadsheet.** Dashed hairlines, square images, one card anatomy, five type sizes (§3.1b).
-Its case rested partly on the seal and the Verdicts ledger, both gone with grading; what remains
-is the mono data voice and the single brass accent. Direction B replaces it.
+Today (`/home`) was built as a broadsheet on 2026-09-22 (dashed hairlines, square images). That
+exception is retired with Direction B; the page is rebuilt next (§3.1b).
 
-### 1.2 Where the design came from [pending replacement]
+### 1.2 Where the design comes from
 
-The original brief took its material from **the notary's seal, the ledger book, the certified
-document**: objects that make a claim permanent and attributable, which is what a locked price
-target was. With grading retired there is no locked target, and the incoming system
-(`docs/design/direction-b.html`) starts from a different place. Keep what still holds: the
-product should not look like a trading terminal or a social feed, and what a reader relies on
-(the stance, the disclosure block, the edit marker) should be plain and never decorated.
+Direction B, "editorial confidence": black and white carry everything, one coral lands the eye on
+what you can do, green and red say which way a stance points. Keep what always held: the product
+should not look like a trading terminal or a social feed, and what a reader relies on (the
+stance, the disclosure block, the edit marker) is plain and never decorated.
 
 ### 1.3 The Seal (retired 2026-09-24)
 
@@ -82,81 +79,57 @@ The seal, the lock ceremony and the HIT / MISS stamps were the signature device 
 design. They are deleted with grading and must not come back in any form, including as
 decoration. There is no signature ceremony in the product now.
 
-### 1.4 Design token system [pending replacement]
+### 1.4 Design token system
 
-Everything in this section is what the code runs on today, and all of it is being replaced by
-Direction B. Use these tokens for changes now (do not introduce Direction B values piecemeal),
-but do not treat them as rules to defend.
+The full law, with every value and the measured contrast, is `docs/DESIGN_LANGUAGE.md`. The
+tokens live in `src/app/globals.css`; this is the working summary.
 
-**Color — six named values, used consistently everywhere, never introduced ad hoc per-page:**
+**Colour.** `--paper` `#FAFAFA`, `--surface` (card) `#FFFFFF`, `--surface-2` (well) `#F2F3F5`,
+`--ink` `#101418`, `--text-mute` `#5B6470`, `--border` `#E6E8EB`, with dark values for each.
+Coral, gain and loss each have a fill tone and a word tone: `--coral` `#FF5A47` /
+`--coral-text` `#C8321F`, `--gain` `#12B981` / `--gain-text` `#087A55`, `--loss` `#E5484D` /
+`--loss-text` `#C92A31`. `--up` and `--down` are the gain and loss word tones.
 
-| Token | Hex | Role |
-|---|---|---|
-| `--ink` | `#14171F` | Primary text, dark UI surfaces. A near-black navy, not pure black — pure black against the paper tone below reads harsh under long reading sessions. |
-| `--paper` | `#FAF8F4` | Primary background. A warm, light ledger-paper neutral. Warmed from the original cool sage-gray `#EFF1ED`, which read grey-green rather than like paper. The warmth is held low and the value high, so this stays aged-ledger, not the saturated cream of an AI-design default. |
-| `--verdigris` | `#2F6E5D` | Primary brand accent. Deep patinated-bronze green — the color of old bank stamps and aged copper. Doubles as the semantic color for **Fact** claims and for up / long. |
-| `--brass` | `#855F22` | Non-sentiment accent — deep antique brass, used for the edit marker and for **Unproven** claims (things pending verification). Darkened from `#B8863B` (2.84:1, failed C.2 rule 8) to clear 4.5:1 on paper and surface-2 as meaning-bearing text. |
-| `--plum` | `#5B4B6B` | Semantic color for **Opinion** claims — a claim that's debatable belongs in a different hue family entirely from fact/unproven, not a lighter or darker version of them. |
-| `--rust` | `#A6483C` | Semantic color for **Contradicted** claims and for down / short. Muted brick, not alarm-red — this should read as "this didn't hold up," not "danger." |
+- Words in a hue use `text-coral`, `text-gain`, `text-loss` (the word tones). Fills use
+  `bg-coral`, `bg-gain`, `bg-loss`, which set black text themselves. White on a fill fails
+  contrast and is never used.
+- Coral: Subscribe, Follow, Publish, the one primary action, a live recording. Green and red:
+  direction and price movement. Everything else is black, white and grey.
+- `--accent` is **ink** (the ink button, selected tabs). It is not coral and must not become coral.
+- Meanings that used to borrow a hue have their own tokens, all ink or grey today: `--error`,
+  `--error-soft`, `--error-edge`, `--ok`, `--pending`, `--notice-edge`, `--notice-soft`,
+  `--mark-edited`, `--highlight`, `--chart-1..3`.
+- `--text-faint` is decoration only (rules, ornaments); it is never a text colour.
 
-Every one of these is used at **low-saturation, high-legibility values** — this is not a bright,
-gamified palette. Fact-check underlines and stamps use these at full value; backgrounds, chips,
-and badges use 8–12% tints of the same hues rather than introducing new pastels.
-
-**Neutral surfaces sit on the `--paper` axis.** Text, borders, and muted tones are `color-mix`
-derivations of `--ink` over `--paper`, so they re-tune themselves whenever paper moves. Two
-neutrals are *not* derived and must be moved by hand alongside `--paper`: `--surface` (`#FFFDF9`,
-the raised card, one step lighter than paper) and `--surface-2` (`#F1ECE3`, the recessed chip
-tint, one step darker). If paper changes and these two do not, cards lose their separation from
-the page and drift off-hue.
-
-**Typography — three roles, never blended.** The roles hold; the faces are **[pending
-replacement]**. Fraunces is no longer the settled display face: Direction B replaces the display,
-UI and mono faces together. Until that batch lands, the code keeps the faces below.
-
-| Role | Typeface | Used for |
-|---|---|---|
-| Display / editorial | **Fraunces** (variable, wght 600–680, high optical size for headlines) | Report titles, creator display names in profile heroes, homepage headline, section headers on marketing pages. This is the "editorial voice" — it should only appear where the product is being *read*, never in UI chrome. |
-| UI / body | **IBM Plex Sans** | All interface chrome — nav labels, buttons, form labels, body copy in settings/dashboards, card metadata. |
-| Numeric / data | **IBM Plex Mono**, tabular figures enabled | Ticker symbols, prices, percentages, dates, timestamps — anything that needs to be *scanned and compared* rather than read as prose. Plex Sans and Plex Mono are drawn as a coherent system, which is why they're paired rather than mixing a generic sans with a generic mono. |
-
-Type scale (rem, 16px base):
+**Typography.** Bricolage Grotesque 700/800 for display, headline and title; Inter for reading and
+UI with tabular figures on; JetBrains Mono for tickers only; Heebo supplies Hebrew in both stacks.
+Five sizes, as Tailwind utilities and classes:
 
 ```
---text-micro: 10px              — mono eyebrows / uppercase-tracked labels only (never prose)
---text-mini:  11px              — mono metadata inside dense data cards only (never prose)
---text-xs:    0.75rem   (12px)  — timestamps, fine print, disclosure microcopy
---text-sm:    0.875rem  (14px)  — secondary UI text, card metadata
---text-base:  1rem      (16px)  — body copy, form inputs
---text-lg:    1.125rem  (18px)  — emphasized body, card titles
---text-xl:    1.5rem    (24px)  — section headers
---text-2xl:   2rem      (32px)  — page titles
---text-3xl:   2.75rem   (44px)  — report headlines (Fraunces)
---text-4xl:   4rem      (64px)  — homepage hero (Fraunces)
+display   40-72px  Bricolage 800   text-display   .t-display
+headline  24-32px  Bricolage 800   text-headline  .t-headline
+title     19px     Bricolage 700   text-title     .t-title
+body      15px     Inter           text-body      .t-body, .t-body-editorial
+ticker    13px     Mono on a ticker, Inter for captions   text-ticker   .t-meta, .t-ticker
 ```
 
-Sub-12px is reserved for **monospace labels and metadata inside dense data widgets** (valuation
-cards, table eyebrows) — never for prose. Only two micro values are permitted,
-`10px` and `11px`; any other arbitrary sub-12px size is drift and should snap to one of these.
+Tailwind's default size scale is deleted, so `text-sm` and `text-[11px]` do nothing. No
+uppercase, no letterspaced labels. `.num` gives tabular figures in Inter.
 
-**Spacing scale** (4px base unit, used for all padding/margin/gap — no arbitrary values):
+**Spacing scale** (4px base unit, used for all padding/margin/gap; no arbitrary values):
 
 ```
 --space-1: 4px   --space-2: 8px   --space-3: 12px  --space-4: 16px
 --space-5: 24px  --space-6: 32px  --space-7: 48px  --space-8: 64px  --space-9: 96px
 ```
 
-**Radius [pending replacement]:** today two values, `--radius-sm: 6px` for inputs, buttons,
-chips and `--radius-md: 12px` for cards, with Today's images at zero. The old rule that "the seal
-is the only circle" (and so avatars are rounded squares) went with the seal; it is not a reason
-to refuse a circle. Direction B sets new radii.
+**Radius, by role:** `rounded-button` (pill), `rounded-chip` (pill), `rounded-field` (10px),
+`rounded-panel` (14px: cards, menus, dialogs, media), `rounded-inner` (8px: wells, rows, tiles),
+`rounded-avatar` (circle). Never borrow another role's radius.
 
-**Shadow:** one elevation value, used sparingly — `--shadow-card: 0 1px 2px rgba(20,23,31,0.06),
-0 4px 12px rgba(20,23,31,0.04)`. Trust-critical cards (the disclosure block)
-additionally get a **double-ruled border** (`border: 1px solid var(--ink); box-shadow: 0 0 0 3px
-transparent, inset 0 0 0 1px rgba(20,23,31,0.08)` effectively rendered as two close parallel
-rules) — a ledger-entry-box treatment reserved specifically for information that must never be
-visually mistaken for ordinary content.
+**Shadow:** one elevation value, `--shadow-card`, used sparingly. Trust-critical cards (the
+disclosure block) keep the doubled hairline of `.ledger-card`, reserved for information that must
+never be mistaken for ordinary content.
 
 ### 1.5 Motion principles
 
@@ -171,10 +144,9 @@ visually mistaken for ordinary content.
 
 - Color is never the only signal — every fact-check verdict, every direction chip, every status
   chip pairs its color with a text label or icon.
-- Visible keyboard focus ring on every interactive element (today `2px solid var(--verdigris)`,
-  offset 2px; the colour is **[pending replacement]**, the ring is not).
-- Minimum contrast: body text 4.5:1, large text/headlines 3:1, verified against the `--paper`
-  background specifically (not assumed from a generic white background).
+- Visible keyboard focus ring on every interactive element (`2px solid var(--ink)`, offset 2px).
+- Minimum contrast: every word 4.5:1 on paper, card and well in both themes (large headlines
+  3:1), measured by `npm run test:contrast`, not assumed.
 - All interactive elements reachable and operable via keyboard, including the fact-check claim
   popovers (focusable, `Escape` dismisses) and the debate thread (standard form semantics, not
   custom click-only widgets).
@@ -366,8 +338,8 @@ nothing to count toward a score.
 Wraps rendered report body text. Each `claims` row (from the backend schema, using
 `char_start`/`char_end`) gets rendered as an inline `<mark>`-equivalent span with:
 
-- A 2px underline in the claim's semantic color (`--verdigris` fact / `--brass` unproven /
-  `--plum` opinion / `--rust` contradicted) — underline, not background highlight, so long-form
+- A 2px underline in the claim's tone (`--ok` fact / `--pending` unproven / `--text-mute`
+  opinion / `--error` contradicted, all ink or grey; the label names the verdict) — underline, not background highlight, so long-form
   reading stays comfortable
 - On hover (desktop) or tap (mobile): a popover anchored to the span showing the verdict label,
   one-line reasoning, and a source link if present
@@ -397,17 +369,18 @@ are creator-facing only. An archived publication carries a solid-ink ARCHIVED ch
 still appears (§5.3, §6.3). The per-call `<StatusChip>` (Open / Hit / Miss) is retired with
 grading.
 
-### 2.9 Buttons, inputs, toasts — base component notes
+### 2.9 Buttons, inputs, toasts: base component notes
 
-- **Primary button:** today `--ink` fill, `--paper` text, `--radius-sm` (**[pending
-  replacement]**: "black primaries" and 6px corners are not settled rules; Direction B restyles
-  the primary). Reserved for the single most important action per screen (per §0's "one primary CTA per page" rule from the product spec) —
-  never two primary buttons visible at once.
-- **Secondary button:** `--ink` 1px outline, `--ink` text, transparent fill.
-- **Text button:** no border/fill, `--ink` text, underline on hover only.
-- **Destructive action** (cancel subscription, delete draft): uses `--rust` text on an otherwise
-  secondary-style button — never a filled red button, which would clash with the muted palette
-  and overstate the severity of, say, canceling a $5 subscription.
+Use `<Button>` / `buttonClass()` from `src/components/ui/button.tsx`; do not hand-style a button.
+
+- **Ink** (`variant="ink"`, the default): ink pill, paper text. The ordinary action.
+- **Coral** (`variant="coral"`): Subscribe, Follow, Publish, or the one primary action on a
+  screen. At most one per view; black text by construction.
+- **Ghost** (`variant="ghost"`): outlined pill, for the second action beside ink or coral.
+- **Plain** and **subtle**: text-only, and a grey well, for toolbars, filters and dismissals.
+- **Destructive action** (cancel subscription, delete draft): a ghost or plain button whose hover
+  uses `--error`; red is price only, so the confirm dialog carries the weight, not the colour.
+- **Inputs:** `rounded-field` (10px), never a pill.
 - **Toast notifications:** bottom-center on desktop, bottom-full-width on mobile, `--ink`
   background, auto-dismiss 4s, always paired with an icon (checkmark / info).
 - **Copy voice for every button, toast, and empty state:** active voice, names the action from
@@ -425,10 +398,9 @@ to change the other**, then regenerate and re-upload the clips.
 
 - **Colour** comes from `analystColor()` in `src/lib/design/analyst-color.ts`, seeded on the
   analyst's **id**, never their handle or name, so a rename does not change their colour. Eight
-  muted tones, deliberately excluding `--verdigris` and `--rust`: those two carry sentiment
-  (Fact / long, Contradicted / short) and must never be spent on decoration. Sage is greyer and
-  lighter than verdigris, clay browner and softer than rust, so a placeholder can never be misread
-  as a direction.
+  muted tones, deliberately excluding gain green, loss red and coral: those carry direction and
+  action and must never be spent on decoration. Sage is greyer than gain, clay browner and softer
+  than loss or coral, so a placeholder can never be misread as a direction or a button.
 - **Wash:** `linear-gradient(158deg, color-mix(in srgb, <colour> 55%, var(--paper)), <colour>)`.
   Mixing toward `--paper` rather than white is what keeps it warm and on-palette.
 - **Figure:** a circle (head) and a rounded shoulder shape rising from the bottom edge, filled
@@ -498,8 +470,7 @@ scroll-snap, nothing below the fold.
   the scrubber (`<ScrubBar>`: a hairline at rest, thicker while held, drag to any point), and the
   analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
 - **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
-  SHARE as small outlined icons with mono uppercase letterspaced labels, a label style
-  **[pending replacement]**), then the pager (`1 / 7`)
+  SHARE as small outlined icons with sentence-case labels), then the pager (`1 / 7`)
   at the right end. The pager is a button: it jumps to the unlock card.
 - **The chips are the publication's stance.** Its ticker (`reports.ticker`) and, beside it, its
   direction (`reports.stance`) when it declares one. A publication with a
@@ -627,7 +598,7 @@ Explore's ticker and sector filters. One control for both, so they behave alike.
   reader is picking a ticker rather than auditing coverage. Ordering carries
   that information instead, and `filterOptions` returns names only so the counts
   cannot creep back into a call site.
-- **Quiet and typographic**, matching the page: mono, uppercase, letterspaced,
+- **Quiet and typographic**, matching the page: sentence case,
   hairline border, no heavy chrome. The trigger is unchanged from the menu it
   replaced.
 - **Popover on a wide screen, sheet on a phone.** The sheet is the case that
@@ -645,8 +616,7 @@ Explore's ticker and sector filters. One control for both, so they behave alike.
 ### 2.14 `<EditedMarker>` / `<EditedFlag>` — a publication that was revised
 
 A published report can be edited (headline, dek, thesis, cards, tags) and every edit is disclosed
-wherever the publication appears. The marker is **brass (the colour is [pending replacement]),
-never an alarm colour**: an analyst correcting themselves in the open is doing the right thing, and the interface reads that way rather than
+wherever the publication appears. The marker is **quiet grey (`--mark-edited`), never an alarm colour**: an analyst correcting themselves in the open is doing the right thing, and the interface reads that way rather than
 implying something was covered up. A pencil, not an alert.
 
 - `<EditedMarker edits={...}>` on the publication itself: a small `EDITED` chip beside the byline
@@ -684,9 +654,8 @@ These sit one row apart in the Publications list and **must never read alike**.
   publication with neither is content, and a creator may remove their own content.
 
 The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed
-inside a **rust-bordered** block, states that archive is the reversible option, and requires the
-creator to type `DELETE` before the confirm button turns on. Rust is doing sentiment work here,
-which is exactly what rust is for.
+inside an **error-bordered** block (`--error-edge`), states that archive is the reversible option,
+and requires the creator to type `DELETE` before the confirm button turns on.
 
 ---
 
@@ -701,11 +670,11 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 **Masthead**
 
-- Wordmark: spaced serif **S T O A** + uppercase **Dispatch** label
+- Wordmark: lowercase Bricolage **stoa** + a **Dispatch** label
 - Hairline rule
-- Dateline row (Plex Mono, uppercase): `Issue №{N} · {WEEKDAY, MONTH DAY, YEAR} · {N} min read`
+- Dateline row (Inter, sentence case): `Issue №{N} · {WEEKDAY, MONTH DAY, YEAR} · {N} min read`
 
-**Lead story** — centered Fraunces headline, optional dek, author row, ticker, target, Read link
+**Lead story** — centered Bricolage headline, optional dek, author row, ticker, target, Read link
 
 **Secondary list** — "Also in this issue" — dense wire (not cards)
 
@@ -719,13 +688,14 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 ### 3.1b Today — `/home`
 
-Stoa's daily issue as a broadsheet, adopted 2026-09-22 from an approved mock. The broadsheet
-treatment below (dashed hairlines, zero radius, letterspaced Fraunces nameplate, brass accent)
-is **[pending replacement]** by Direction B; the structure (the package, the sections, the rail)
-is what the page does today. `<TodayPage>` (`src/components/today/today-page.tsx`), the card in
-`today-card.tsx`, the package in `today-package.tsx`, the sections in `today-sections.tsx`, the
-rail in `today-sidebar.tsx`, the nameplate in `today-nameplate.tsx`; the styles are the `.ts-*`
-block at the end of `globals.css`, and `/dev/today` is the seeded fixture.
+Stoa's daily issue. **Rebuilt next under Direction B.** Until then the page keeps the broadsheet
+structure adopted on 2026-09-22 (below) in the new colours and type; its brass accent is repointed
+at grey, its rail Follow link is coral, and its old treatments (dashed hairlines, square images,
+the letterspaced nameplate, uppercase eyebrow strings built in code) are not rules to keep.
+`<TodayPage>` (`src/components/today/today-page.tsx`), the card in `today-card.tsx`, the package
+in `today-package.tsx`, the sections in `today-sections.tsx`, the rail in `today-sidebar.tsx`, the
+nameplate in `today-nameplate.tsx`; the styles are the `.ts-*` block at the end of `globals.css`,
+and `/dev/today` is the seeded fixture.
 
 **Grid.** Desktop: 12 columns, 20px gutters, beside the rail. Phone: 4 columns, 16px gutters,
 16px margins. Every block spans whole columns.
@@ -737,8 +707,7 @@ ticker row is the mono symbol, its day change and the same control, no price. No
 a solid button and no row scrolls sideways. On a phone it is a drawer behind the `Lists`
 control at the right of the nameplate's dateline (`<TodayListsButton>`).
 
-**The nameplate** (`<TodayNameplate>`): `STOA` at 54px letterspaced Fraunces (**[pending
-replacement]**), one 2px ink rule,
+**The nameplate** (`<TodayNameplate>`): `STOA` at 54px (old treatment; the rebuild replaces it), one 2px ink rule,
 one mono dateline (`ISSUE №41 · TUESDAY, AUGUST 18, 2026 · YOUR DAILY BRIEFING`). Under 110px on
 a desktop, under 80px on a phone. The only heavier line on the page is its rule.
 
@@ -756,10 +725,8 @@ eyebrow → 10px → headline → 12px → byline. Stacked cards: 16px, a dashed
 (`.ts-stack`). The eyebrow carries `NVDA · LONG` or the sector, with `TRENDING` or `NEW` in
 front. The byline is `Name / Date`, no avatar and no content badge.
 
-**Five type sizes, nothing else** (faces **[pending replacement]**; `.ts-eyebrow` 10.5px mono uppercase in the accent;
-`.ts-byline` 14px sans, the name in the accent and the date faint; `.ts-headline` 22px Fraunces
-regular, `--dense` 18px; `--lead` 34px on a desktop and 26px on a phone; `.ts-title` 40px
-Fraunces semibold, 32px on a phone). Headlines are regular weight; bold is for section titles.
+**Type** now resolves to the site's five sizes (the `.ts-*` classes map onto them); the page's
+own size rules are superseded by `docs/DESIGN_LANGUAGE.md` §2.
 
 **Sections**, 60px apart, title to content 24px. **Trending now**: a numbered list of five in a
 5-column slot, the numerals 40px in the accent, then one empty column. **Your desk**: a
@@ -768,22 +735,18 @@ with the next card peeking at the right edge. **Market news**: the same anatomy 
 two 6-column text lists, source and time as the byline (`<NewsSheet>`; Markets keeps the band
 form, `<TodayNews>`).
 
-**Rules and images [pending replacement].** One rule style, 1px dashed at 13% ink
-(`--today-rule`). Zero radius on every image.
+**Rules and images (old treatment, not law).** 1px dashed at 13% ink (`--today-rule`), zero
+radius on images. Direction B draws rounded images and no broadsheet rules; the rebuild follows it.
 
 **No sideways scrolling on a desktop.** No rails. On a phone, exactly one (Your desk); nothing
 else is wider than the screen. On a phone the page is one document scroll; on a desktop the rail
 and the page are two columns that scroll on their own inside the room under the nav (`.ts-frame`,
 `.ts-column`, measured by `useFrameHeight`, see `src/lib/layout/frame.ts`).
 
-**The accent is brass [pending replacement], and green and red stay strictly semantic.**
-`--today-accent` on `.today-sheet` is a darkened brass (`#8a5e2b`, 5.3:1 on the paper; the
-site's chip brass is too light for 10.5px text), `#d1a35f` in dark mode (7.8:1), and a light
-brass (`#e6c48a`) over the lead's scrim (`.ts-on-scrim`). It goes on eyebrows, author names,
-trending numerals and the rail's `+ Follow`, and on nothing that is a chip. Inside an eyebrow
-only the direction word carries its sentiment (`NVDA · LONG` is a brass label with `LONG` in
-`--up`; `SHORT` in `--down`), so nothing brass can be read as a LONG or SHORT chip. Whatever
-replaces brass keeps that last rule.
+**Colour.** `--today-accent` is now `--text-mute` (eyebrows, trending numerals); names are ink;
+the rail's Follow is `--coral-text`, the page's one coral. Inside an eyebrow only the direction
+word carries gain or loss (`.ts-dir--long/short`). Over the lead's scrim (`.ts-on-scrim`) labels
+are white and the direction word takes the dark theme's gain and loss tones.
 
 ---
 
@@ -808,7 +771,7 @@ Empty filters say so and offer to clear them.
 - Avatar (`--radius-md`, 96px) overlaps the bottom edge of the banner by half its height (a
   deliberate anchor point — same treatment on every profile so it reads as a system, not a
   per-creator layout choice)
-- Beside the avatar: display name (Plex Sans, `--text-2xl`, semibold — **not** Fraunces here,
+- Beside the avatar: display name (Bricolage, headline size,
   since this is UI chrome identifying a person, not editorial content), handle in `--text-sm`
   muted, a small verified-identity check icon with tooltip "Identity verified — not a credential
   claim"
@@ -816,12 +779,12 @@ Empty filters say so and offer to clear them.
 **Audience line** — `4.3K FOLLOWERS · 214 MEMBERS` (members only if the analyst opts in). This
 is the only number shown about an analyst. There is no score, rank or track record.
 
-**Bio** — one line, Plex Sans `--text-base`, creator-written, max ~140 characters enforced at
+**Bio** — one line, Inter body size, creator-written, max ~140 characters enforced at
 input time (Part 4, Page Branding)
 
 **Pricing card** (ledger-card styling):
 
-- Subscription price if enabled: "$[X]/mo" large, Plex Mono, **"Subscribe"** primary button
+- Subscription price if enabled: "$[X]/mo" large, Inter tabular figures, **"Subscribe"** coral button
 - Per-report price if enabled, shown as a secondary line: "or $[X] per report"
 - If a viewer is already subscribed: card swaps to "You're subscribed" state with a small
   "Manage" link instead of a Subscribe button
@@ -981,7 +944,7 @@ records, not client-side-only state.
 
 - Toggle group: "Subscription," "Per-report," "Both" (at least one required)
 - If Subscription selected: monthly price input, pre-filled with a category-based suggestion
-  (editable), Plex Mono numeral field with a `$`/mo suffix
+  (editable), tabular-figure numeral field with a `$`/mo suffix
 - If Per-report selected: same pattern, per-report price
 - **Fixed, unmissable line directly beneath the pricing fields**, same treatment as the disclosure
   block's permanence: "Stoa takes 10% of what you earn. You keep 90%." with a tiny worked-example
@@ -1110,8 +1073,7 @@ the author. An archived publication must never be indistinguishable from a live 
 - The reading-progress bar follows the nearest scroller (`animation-timeline: scroll(nearest)`),
   which is the writing column. It used to follow the document, which never scrolls inside the app
   shell, so it never moved.
-- Report body typography: today Fraunces at a body-friendly weight/size (**[pending
-  replacement]**; Direction B sets the reading face). The principle stays: this is the one place
+- Report body typography: Inter at the body size with a long line height (`.t-body-editorial`, `.stoa-prose--read`). The principle stays: this is the one place
   where long-form reading is the point, so the body gets a reading face and measure.
 - **`<FactCheckLayer>`** wraps the entire body as described in §2.6 — underlined claims, hover/tap
   popovers, debate icons on opinion claims.
@@ -1162,14 +1124,14 @@ state, not just a link elsewhere.
 Simple reverse-chronological list, grouped by day ("Today," "Yesterday," "This week," "Earlier").
 Each notification: icon by type (new report = pen, debate reply = speech bubble), one-line
 description, timestamp, unread
-items get a subtle `--verdigris` left-border accent (never a full-row color fill, which gets
+items get a subtle ink left-border accent (never a full-row color fill, which gets
 visually loud in a long list). Mark-all-read as a small text link top-right. Clicking any
 notification navigates to its source (the report, the profile, the thread) and marks it read.
 
 ### 5.8 Subscriptions & Billing — `/settings/billing`
 
 List of active subscriptions: creator avatar/name, price, "Renews [date]," and a **"Cancel"**
-text-style destructive button (`--rust` text) per subscription — canceling one never touches
+text-style destructive button (`--error` on hover) per subscription — canceling one never touches
 another, so there's no bundled "cancel all" action anywhere on this page. Cancel opens a
 lightweight confirm ("Cancel your subscription to [Creator]? You'll keep access until [period end
 date]." / "Keep subscription" / "Cancel subscription") rather than an immediate destructive
@@ -1205,7 +1167,7 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
   along with the onboarding Verify step (see §4.2) — the checklist is Customize page, Set
   pricing, Publish first report.
 - **Quick stats row**: Subscribers (count, + or − this week in small text beneath), Earnings
-  this month (Plex Mono, `$X,XXX`), Followers. No score and nothing awaiting resolution: nothing
+  this month (Inter tabular figures, `$X,XXX`), Followers. No score and nothing awaiting resolution: nothing
   resolves.
 - **Recent activity feed:** new subscriber, new debate reply, fact-check flagged
   an unproven claim on a draft — same visual list-item pattern as the investor Notifications page
@@ -1239,7 +1201,7 @@ Resume; compact rows on a phone with an `ALL` pill to Studio. `<ComposePicker>`
 | Thesis | The headline and the dek, then the report (the Tiptap writer, with the toolbox rail) | Tags |
 
 Then the **publish screen**. The tracker (`<StepNav>`) is two numbered marks joined by a
-hairline: the current one filled ink, a done one a verdigris tick, an unreached one dimmed and
+hairline: the current one filled ink, a done one an ink tick (`--ok`), an unreached one dimmed and
 not clickable. Off the spine (the publish screen, a feature editor) no mark is current and the
 heading says where you are. Each screen has an eyebrow (`STEP 1 OF 2`, `ADD TO THIS THESIS ·
 OPTIONAL`, `READY WHEN YOU ARE`) and a display heading (`<StepFrame>`); no line under it, except
@@ -1251,7 +1213,7 @@ where it has focus on arrival and Enter moves into the text; under the clip, wit
 eyebrow, so the clip stays the focus. Continue asks for it once the content is in.
 
 **One button per screen, and its label is what pressing it will do.** On the spine it reads
-**Continue**; when it cannot advance the reason sits beside it in rust, in the creator's terms
+**Continue**; when it cannot advance the reason sits beside it in `--error`, in the creator's terms
 (`advanceFor` in `src/lib/compose/steps.ts`), and clears the moment it stops being true. In a
 feature editor it reads **Skip** when nothing has been added, **Done** when the feature is
 complete, and Done that refuses and names what is missing when it is half done. Partial
@@ -1260,7 +1222,7 @@ information never passes. Back on a feature editor reads **Back to publish**.
 **The features menu** (`<FeaturesMenu>`, `src/components/compose/features-menu.tsx`) sits on
 the publish screen above Access: one row per feature the type may add (video: Stance, Cards,
 Thesis; brief and thesis: Stance, Cards), each its icon, its name and its state at the right:
-`NVDA · LONG`, `3 CARDS`, `NOT ADDED` faint, or `HALF DONE` in rust with the reason under it.
+`NVDA · LONG`, `3 CARDS`, `NOT ADDED` faint, or `HALF DONE` in `--error` with the reason under it.
 Nothing describes what a feature is. Opening a row goes into that feature's editor; Done or Skip
 returns to the menu. On a live publication the stance and the clip cannot change: their rows
 open to be read, and a live piece with no stance cannot gain one.
@@ -1361,7 +1323,7 @@ would break the radio groups and the `label`/`for` targets inside them.
 
 **A failure in one step stays in that step.** Each step's content sits inside a
 `<StepErrorBoundary>` (`src/components/compose/step-boundary.tsx`), and the card editor has one
-inside its dialog. A rendering error shows a rust-bordered panel in place of that step only,
+inside its dialog. A rendering error shows an error-bordered panel in place of that step only,
 naming the step, saying in plain words that nothing else was touched, printing the error line in
 mono, and offering **Redraw this step**. The workspace's state lives above the steps, so the
 header, the tracker, the toolbox and every other step keep their contents. Redrawing the write
@@ -1419,7 +1381,7 @@ This is the point of the workspace. A card dragged out of the tray can be droppe
   dropped;
 - into the **research body**, becoming an inline figure at that position.
 
-Drop targets highlight while a card is over them (a brass ring and tint). The drag uses a private
+Drop targets highlight while a card is over them (an ink ring and tint). The drag uses a private
 MIME type, `application/x-stoa-card`, not `text/plain`, so a target can tell a card from a text
 selection *during* dragover, when `dataTransfer` values are unreadable and only the type list is.
 
@@ -1454,19 +1416,19 @@ they agree on a shape. This is that shape, in `src/components/compose/video-rung
 - **One picture above one timeline.** The stage (16:9, capped at under half the viewport so the
   timeline never drops below the fold) and under it a strip of frames grabbed off the clip. No
   second track, no zoom, no frame-step buttons.
-- **Trim by dragging the ends of the clip.** Thick brass brackets at each end of the kept region,
+- **Trim by dragging the ends of the clip.** Thick ink brackets at each end of the kept region,
   dragged inward; what is cut is dimmed; the kept range is printed on the strip while trimmed.
 - **Things are placed by dragging them on the picture.** Insets and text snap to the nine
   `GridPosition`s the burn-in understands; the 3×3 grid shows only while something is being moved.
   Text is typed on the picture itself (a `contentEditable` that owns its text while focused).
-- **Things are timed by dragging the ends of their bar** under the strip. Text bars are plum,
-  visual bars brass. A lane appears only once there is something in it, and a second lane only when
+- **Things are timed by dragging the ends of their bar** under the strip. Text bars are outlined in ink,
+  visual bars sit on the grey well. A lane appears only once there is something in it, and a second lane only when
   two things overlap in time. A short bar keeps a grabbable middle; its end zones shrink with it.
 - **Settings appear only while something is selected.** Selecting a bar or a thing on the picture
   swaps the add row for that thing's controls (text and size; or over-the-picture / full-frame,
   a Size slider for an inset, an Opacity slider, the card, chart or Napkin fields; from/to;
   Remove; Done). Nothing selected: the add row.
-- **An inset is resized on the picture.** The selected inset carries one brass corner handle, on
+- **An inset is resized on the picture.** The selected inset carries one ink corner handle, on
   the corner farthest from the grid anchor the box is pinned to, so dragging it outward grows the
   box away from its spot (a centre-column box grows both ways). Width is stored as a fraction of
   the picture (`size`, 0.20 to 0.84, default 0.46) and the height follows so the box keeps the
@@ -1600,7 +1562,7 @@ and audience, `/studio/insights`), which never scores them.
 
 ### 6.6 Earnings & Payouts — `/dashboard/earnings`
 
-- **This month's earnings**, large Plex Mono number, with the **platform fee always shown as its
+- **This month's earnings**, large number in Inter tabular figures, with the **platform fee always shown as its
   own explicit line** directly beneath it every single time this number appears anywhere in the
   product: "Gross: $X,XXX · Platform fee (10%): −$XXX · Net: $X,XXX" — repeating this breakdown
   on every earnings view (not just once at signup) is a deliberate trust-building habit, not
@@ -1722,28 +1684,26 @@ instrument does not, because Stoa claims to track it.
 note at the top of this document. Read the structure above as "what the ideal IA looks like,"
 and map it onto the existing `/analyst/[handle]`, `/feed`, `/studio` routes in practice.
 
-### 7.2 Token file, concretely [pending replacement]
+### 7.2 Token file, concretely
 
-The values below are the retiring system (§1.4); the incoming values are in
-`docs/design/direction-b.html` and land in the next batch. What stays is the principle: every
-value exists as a real CSS variable, never a scattered literal.
+Every value exists as a real CSS variable in `src/app/globals.css`, never a scattered literal
+(the few places CSS cannot reach are listed in `docs/DESIGN_LANGUAGE.md` §8). The light values:
 
 ```css
 :root {
-  --ink: #14171F;
-  --paper: #FAF8F4;
-  --verdigris: #2F6E5D;
-  --brass: #855F22;
-  --plum: #5B4B6B;
-  --rust: #A6483C;
-  --font-display: 'Fraunces', serif;
-  --font-ui: 'IBM Plex Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
-  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --shadow-card: 0 1px 2px rgba(20,23,31,0.06), 0 4px 12px rgba(20,23,31,0.04);
+  --paper: #fafafa;  --surface: #ffffff;  --surface-2: #f2f3f5;
+  --ink: #101418;    --text-mute: #5b6470; --text-faint: #8a919b;
+  --border: #e6e8eb; --border-strong: #c9ced4;
+  --coral: #ff5a47;  --coral-text: #c8321f; --on-coral: #101418;
+  --gain: #12b981;   --gain-text: #087a55;  --loss: #e5484d; --loss-text: #c92a31;
+  --font-display: var(--font-bricolage), var(--font-heebo), ...;
+  --font-sans: var(--font-inter), var(--font-heebo), ...;
+  --font-mono: var(--font-jetbrains), ...;   /* tickers only */
+  --type-display: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
+  --type-headline: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+  --type-title: 1.1875rem; --type-body: 0.9375rem; --type-ticker: 0.8125rem;
+  --r-button: 999px; --r-chip: 999px; --r-field: 10px;
+  --r-panel: 14px;   --r-inner: 8px;  --r-avatar: 50%;
 }
 ```
 

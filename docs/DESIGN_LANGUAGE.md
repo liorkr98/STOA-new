@@ -1,184 +1,206 @@
-# DESIGN_LANGUAGE.md — Stoa visual language for data surfaces
+# DESIGN_LANGUAGE.md: Stoa's visual law
 
-> **The visual system in this document is being retired (noted 2026-09-27).** Fraunces as the
-> display face, the cream-paper ground, the brass accent, hairline broadsheet rules, zero-radius
-> corners, uppercase letterspaced mono labels, ink ("black") primaries and 6px corners are
-> **pending replacement** by the incoming system in
-> [`docs/design/direction-b.html`](./design/direction-b.html). The tokens are not rewritten yet
-> (that is the next batch), so the values below are what the code runs on and what a change made
-> today uses. But they are no longer law: do not extend them into new surfaces, and do not refuse
-> a change because it breaks one. What carries over is structural: charts import one theme file,
-> figures use tabular numerals, sentiment colours mean sentiment only, the reader stays editorial,
-> density is a layout attribute. Direction B's sample screens predate the grading removal (a
-> Verdict type, HIT/MISS receipts); take its visuals, not its product.
+> **Current system: Direction B (adopted 2026-09-27).** The reference is
+> [`docs/design/direction-b.html`](./design/direction-b.html). Take the look from it, not the
+> product: its sample screens predate the grading removal and still show a Verdict type, HIT/MISS
+> chips and a Receipts tab. None of that exists (see `AGENTS.md`).
 >
-> **Grading is retired (2026-09-24).** Nothing is graded, scored, locked or resolved. There is no
-> seal, no call block, no HIT/MISS, no target and no horizon; a publication may declare a stance
-> (a ticker and long, short or hold). References to them below have been removed.
-
-> Durable reference for the research-platform build (spec v3, Section 2). Authoritative for **how
-> every new data surface looks**: backgrounds, the data-visualization palette, density, and the new
-> component patterns. It **extends** `docs/FRONTEND.md` (the source of truth for base tokens, type,
-> radii, and the seven screens) and the six-token system in `PRODUCT.md`. Where this doc and
-> `FRONTEND.md` disagree on a base token, `FRONTEND.md` wins. This doc adds the data-viz vocabulary
-> `FRONTEND.md` doesn't yet cover.
+> This file is the law: colour, type, shape, and the rules that keep them honest.
+> `docs/FRONTEND.md` is the map: which component and token to reach for, and what each surface
+> still carries from the old system. Where the two disagree, this file wins.
 >
-> `design-system/MASTER.md` carries a short hand-written addendum synced from §2/§3/§6 of this
-> file. That addendum points here; this file is the long form.
+> The tokens live in `src/app/globals.css`. `npm run test:contrast` (run in CI) enforces the
+> contrast rule, the accent-safe utilities, the label law, mono-for-tickers and the retired
+> tokens. A change that breaks it breaks the build.
 
-## The register [pending replacement]
+## The register
 
-The retiring register was "the notary's ledger, not a trading terminal: ink on paper, a seal
-that makes a claim permanent." The seal is gone and Direction B sets a new register. What holds:
-quiet, dense, credible. Analysts read Bloomberg/Koyfin/spreadsheets daily, so **density is a
-feature** — but the surface stays a ledger board, never a dark neon terminal. Everything inherits
-the tokens in `globals.css`. **No new base palette.** Creator freedom is bounded (Part B).
+Editorial confidence. Black, white and grey carry about 90% of the interface. One coral marks the
+thing you can act on. Green and red say which way something is pointing. Type is large, heavy and
+tight at the top of the page, calm and readable underneath. Shapes are round.
 
-## 1. The palette [pending replacement] (from `globals.css` — do not invent base colors)
+## 1. Colour
 
-Light theme (`.dark` inverts these; values already in `globals.css`):
+### 1.1 The palette
 
-| Token | Light hex | Role |
-|-------|-----------|------|
-| `--ink` | `#14171f` | text, dark surfaces (near-black navy, never pure black) |
-| `--paper` | `#faf8f4` | app base background (warm ledger paper) |
-| `--surface` | `#fffdf9` | cards |
-| `--surface-2` | `#f1ece3` | nested/inset panels, dense field backgrounds |
-| `--verdigris` | `#2f6e5d` | `--up` · long · "Fact" (sentiment only, never chrome) |
-| `--brass` | `#855f22` | the edit marker · "Unproven" |
-| `--plum` | `#5b4b6b` | "Opinion" |
-| `--rust` | `#a6483c` | `--down` · short · "Contradicted" |
+| Token | Light | Dark | Role |
+|---|---|---|---|
+| `--paper` | `#FAFAFA` | `#0F1216` | the page |
+| `--surface` | `#FFFFFF` | `#171B20` | cards |
+| `--surface-2` | `#F2F3F5` | `#1D2127` | sunk wells, chip and field backgrounds |
+| `--ink` / `--text` | `#101418` | `#F3F4F6` | words, ink buttons |
+| `--text-mute` | `#5B6470` | `#A0A8B3` | secondary words, meta lines |
+| `--text-faint` | `#8A919B` | `#6E7681` | **decoration only**: rules, ornaments. Never words |
+| `--border` | `#E6E8EB` | `#2A2F36` | hairlines |
+| `--border-strong` | `#C9CED4` | `#3D434B` | emphasised edges, hover edges |
+| `--coral` | `#FF5A47` | `#FF5A47` | coral **fills** |
+| `--coral-text` | `#C8321F` | `#FF7A6A` | coral **words** |
+| `--gain` | `#12B981` | `#12B981` | gain **fills** |
+| `--gain-text` (= `--up`) | `#087A55` | `#34D399` | gain **words** |
+| `--loss` | `#E5484D` | `#E5484D` | loss **fills** |
+| `--loss-text` (= `--down`) | `#C92A31` | `#F87171` | loss **words** |
+| `--on-coral`, `--on-gain`, `--on-loss` | `#101418` | `#101418` | the ink that sits on a fill |
 
-Derived (never separately named): `--text-mute` (ink 62%), `--text-faint` (ink 42%), `--border`
-(ink 14%), `--border-strong` (ink 28%). `--accent = --ink` (chrome and primary buttons are ink;
-navy is reserved for the wordmark); `--up = --verdigris`; `--down = --rust`. **Never pure `#000` /
-`#fff`.** A verdigris primary button is a bug, not the design (sentiment colours stay sentiment
-only, in any system).
+Paper, card and well are literal values on the same cool axis. Move one and you must move the
+others: a warm card on a cool page reads as a mistake.
 
-## 2. Backgrounds — how each surface reads
+### 1.2 THE CONTRAST RULE
 
-Layer by **elevation**, not by inventing colors. App base is `--paper`; cards are `--surface` with
-a `1px --border` + `--shadow-card`; nested/inset panels are `--surface-2`.
+Every coloured hue has two tones, one for fills and one for words, and they are not
+interchangeable.
 
-| Surface | Background | Notes |
-|---------|-----------|-------|
-| App base | `--paper` | — |
-| Cards | `--surface` + 1px `--border` + `--shadow-card` | the only shadow allowed (soft ambient) |
-| Nested / inset panels | `--surface-2` | inputs, sub-panels, table zebra if any |
-| **Reader (report body)** | plain `--paper` | editorial reading face (today Fraunces, pending replacement; `.stoa-prose--read`), 68ch, **no texture, no chrome** — the words are the artifact |
-| **Storefront (creator page)** | `--paper`, banner may use the theme gradient + creator `--accent` wash | the **one** expressive surface (Part B); content cards still `--surface` |
-| Compose canvas | `--paper`, centered measure, drag gutter | side panels `--surface`; data blocks are `--surface` cards with hairline headers |
-| **Dashboards / Notebook (dense)** | `--surface-2` field with `--surface` widgets/cards | a quiet "ledger board," not a dark terminal; `.dark` handles dark mode automatically |
+1. **Coloured words use the `-text` tone.** Bright coral is 3.1:1 on white and fails as small
+   text; deep coral is 5.3:1. Same for gain and loss. In Tailwind: `text-coral`, `text-gain`,
+   `text-loss` (they resolve to the `-text` tones).
+2. **Fills carry black text.** White on coral is 3.1:1 and fails; black on coral is 6.0:1. In
+   Tailwind, `bg-coral`, `bg-gain` and `bg-loss` set the black ink themselves, so a fill cannot be
+   written without it.
+3. **Every word clears 4.5:1** on paper, card and well, in both themes. Faint grey (3.2:1) is
+   never a word.
 
-**Paper texture** (≤3% opacity SVG fiber/noise over `--paper`): **storefront only**. Gated
-behind `prefers-reduced-motion`/perf, never under reading text. **Default off** in app/reader.
+This is encoded, not just written down. Coral, gain and loss are deliberately not `--color-*`
+theme entries, so there is no `bg-coral/50`, `text-[var(--coral)]` or `ring-coral/20` to reach for
+by accident. `test:contrast` measures every pair in both themes and scans for white text on a
+fill, bright tones used as words, and faint grey used as a word.
 
-**`.ledger-card`** (the doubled hairline — border + inset rule) is **reserved for trust-critical
-blocks only**: today, the disclosure block. **Never ordinary cards** — the double rule must keep
-meaning something. (Class defined in `globals.css`; the treatment itself is pending replacement,
-the reservation is not.) The call card, the target-driving valuation node and HIT/MISS resolution
-it used to frame are retired with grading.
+Measured (light, then dark): ink on paper 17.7 / 17.1; muted on paper 5.75, on the dark card 7.2;
+deep coral on paper 5.1 and on the well 4.8, light coral on the dark well 6.4; gain text on paper
+5.1, on the dark well 8.4; loss text on paper 5.2, on the dark well 5.8; black on coral 6.0, on
+gain 7.3, on loss 4.7.
 
-## 3. Data-visualization palette (the gap this doc closes)
+### 1.3 THE ACCENT LAW
 
-All chart color is derived **only** from the existing six hues so charts read as Stoa. These scales
-live in code at `src/lib/design/chart-theme.ts` — **every chart imports from there**, never
-redefines a scale inline.
+- **Coral marks the live or actionable thing, and nothing else**: Subscribe, Follow, Publish, the
+  one primary action on a screen, a live recording. At most one coral fill per view; when two
+  candidates meet (Subscribe beside Follow on a profile) the lesser one goes ghost. A list of
+  small follow pills uses the coral outline, not the fill.
+- **Green and red carry direction (long / short) and price movement, nothing else.** Not
+  success, not error, not "saved", not approve/reject, not a chart series that is not a price.
+- **Everything else is black, white and grey.** Errors, confirmations, pending states, notices,
+  the edited marker, highlights, chart series and selection all resolve to ink and grey through
+  their own meaning tokens (`--error`, `--ok`, `--pending`, `--notice-*`, `--mark-edited`,
+  `--highlight`, `--chart-1..3`). They are split by meaning so any one of them can change in one
+  place if the law ever grants an exception.
+- `--accent` is **ink**, despite the name: the filled ink button, selected tabs, the selection
+  highlight. It must never be repointed at coral. The creator storefront may tint `--accent`;
+  it cannot change coral.
 
-### 3.1 Semantic (always, never swap)
+## 2. Type
 
-- Gains / positive → `--up` (verdigris).
-- Losses / negative → `--down` (rust).
+### 2.1 Faces
 
-Direction is meaning, not decoration; it never flips for aesthetics.
+| Face | Token | Use |
+|---|---|---|
+| Bricolage Grotesque 700 / 800 | `--font-display` | display, headline, title |
+| Inter 400 / 500 / 600 / 700 | `--font-sans` | reading and UI; tabular figures on everywhere |
+| JetBrains Mono 500 / 600 | `--font-mono` | **tickers only** |
+| Heebo 400 to 800 | second in both stacks | Hebrew, which none of the three above contains |
 
-### 3.2 Categorical (peer comparison, multi-series, ≤6)
+Hebrew: the beta is Israel-first. Heebo is a neutral grotesque that goes to 800, so a Hebrew
+headline keeps its weight beside a Bricolage one. The Latin faces load with
+`adjustFontFallback: false` on purpose: next/font's metric-matched fallback is a copy of Arial,
+which contains Hebrew and would catch every Hebrew character before Heebo. (Before 2026-09-27 this
+is exactly what happened: Hebrew headlines drew in Times New Roman and Hebrew body text in Arial.)
 
-In order: `--verdigris`, `--brass`, `--plum`, `--rust`, then `color-mix(--verdigris 55% + --ink)`
-(deep teal), then `color-mix(--brass 60% + --ink)` (bronze). Muted, ledger-like — **no neon**. If a
-series set exceeds 6, group/aggregate rather than inventing a 7th hue.
+### 2.2 Five sizes
 
-### 3.3 Sequential (single-metric intensity — a heat column)
+| Size | Value | Face | Tailwind | Class |
+|---|---|---|---|---|
+| display | 40 to 72px | Bricolage 800, -0.045em | `text-display` | `.t-display` |
+| headline | 24 to 32px | Bricolage 800, -0.03em | `text-headline` | `.t-headline` |
+| title | 19px | Bricolage 700, -0.015em | `text-title` | `.t-title` |
+| body | 15px | Inter | `text-body` | `.t-body`, `.t-body-editorial` (reading) |
+| ticker | 13px | JetBrains Mono on a ticker; Inter for captions, chips, meta | `text-ticker` | `.t-meta`, `.t-ticker` |
 
-Paper → verdigris in 5 steps: `color-mix(in oklch, --verdigris X%, --surface)` for
-X ∈ {12, 30, 50, 72, 100}.
+There is no sixth size. Tailwind's own scale (`text-xs` to `text-9xl`) is deleted in
+`globals.css`, so `text-sm` or `text-[11px]` simply do nothing. The ticker step doubles as the
+caption size: small words are 13px Inter, and only a ticker symbol is mono.
 
-### 3.4 Diverging (valuation sensitivity grid, bull ↔ bear)
+### 2.3 Labels
 
-`--rust` → neutral `--surface-2` → `--verdigris`. This maps onto up/down semantics: a "good" cell
-is green, a "bad" cell is rust, neutral is the inset field color. Used by the A1 sensitivity heatmap
-and the A2 scenario grid.
+**No uppercase, no letterspacing, anywhere.** Section labels are sentence-case words in muted
+Inter or a Section heading. Positive tracking is gone; negative tracking belongs to the display
+sizes. Figures are Inter with tabular numerals (`.num`, and on by default on `body`), not mono.
 
-### 3.5 Axes / grid / numbers
+## 3. Shape
 
-- Gridlines: `--border`, hairline; dashed optional via the `.rule-fade` treatment.
-- Axis labels: `--text-faint`. Baseline: `--border-strong`.
-- **Every figure renders in `.num`** (IBM Plex Mono, `tabular-nums lining-nums`) so columns align.
-- Currency/percent adornments follow the `pricing-panel.tsx` convention.
+Rounded, never square. Radius is split **by role**; never borrow another role's radius.
 
-## 4. Typography in data
+| Token | Value | Tailwind | For |
+|---|---|---|---|
+| `--r-button` | pill | `rounded-button` | buttons and button-like links, segmented controls |
+| `--r-chip` | pill | `rounded-chip` | ticker, stance and quiet chips |
+| `--r-field` | 10px | `rounded-field` | inputs, textareas, selects, search boxes |
+| `--r-panel` | 14px | `rounded-panel` | cards, menus, popovers, dialogs, media frames |
+| `--r-inner` | 8px | `rounded-inner` | wells, list rows, option tiles and thumbnails inside a panel |
+| `--r-avatar` | 50% | `rounded-avatar` | faces. Always circles |
 
-The roles hold; the faces are **pending replacement** (Fraunces is no longer the settled display
-face).
+A tall, multi-line "button" (an option tile, a type card) takes `inner` or `panel`, not a pill.
 
-- **Display** (`--font-display`, today Fraunces): report titles + editorial body **only**.
-- **UI** (`--font-sans`, today IBM Plex Sans): all UI, labels, axis titles, table headers.
-- **Mono** (`.num`, today IBM Plex Mono): every figure, ticker, price, date, and table cell.
-- Eyebrows today use `.t-eyebrow` (uppercase, tracked; the uppercase letterspaced label style is
-  pending replacement). Keep the `--read` swap so a published report reads as it was written.
+## 4. Primitives
 
-Never mix families within one headline. Emphasis = weight or italic of the same face.
+Surfaces inherit these rather than rolling their own. All in `src/components/ui/`.
 
-## 5. Motion
+- **Button** (`button.tsx`): `ink` (default), `ghost` (outlined), `coral` (the action),
+  `plain` (text), `subtle` (grey well). Sizes `sm` 32, `md` 40, `lg` 48. `buttonClass()` gives
+  the same recipe to a `Link` or a raw element that cannot be a `<Button>`.
+- **Chip** (`chip.tsx`): `TickerChip` (mono), `StanceChip` (long / short in the gain or loss text
+  tone with a ▲ / ▼, hold quiet), `ThemeChip`, and the quiet `Chip`.
+- **Card** (`card.tsx`): white on paper, hairline, panel radius. `as` renders a section, li or
+  fieldset; `cardClass` for elements that cannot be a Card.
+- **Avatar** (`avatar.tsx`): a circle, named sizes 22 / 28 / 40 / 56 / 88 or an exact pixel size.
+- **SectionHeading** (`section-heading.tsx`): headline, optional note, optional "See all". `Band`
+  renders one.
 
-Reuse `docs/MOTION.md` tokens **only** (`--ease-out`, `--dur-1..3`). New data blocks fade in with
-`.fade-up` (y 8px→0, once on mount — never on scroll, never per data refresh). There is no
-ceremony: the seal is retired with grading. Everything honors
-`prefers-reduced-motion` (already handled globally in `globals.css`). Chart lines animate once on
-first mount only; live prices just swap (frequency rule).
+## 5. Data visualisation
 
-## 6. Density (`data-density`)
+Every chart imports its scales from `src/lib/design/chart-theme.ts`.
 
-Analysts expect terminal density on dense surfaces. Add a `data-density="comfortable" | "compact"`
-attribute (default `comfortable`), persisted per user in settings.
+- Price up / down: `--up` / `--down` (the text tones: a thin line in the bright fill falls under
+  3:1). Area fills may use the same hue at low alpha.
+- Categorical series: `--chart-1` (ink), `--chart-2` (muted), `--chart-3` (faint), then ink mixed
+  towards the surface. No hues: colour is for direction and action.
+- Sequential: surface to ink in five steps. Diverging: `--loss` to the well to `--gain`, because
+  a sensitivity grid is about gain and loss.
+- Axis labels: `--text-mute`, 13px Inter (`canvasFont()` resolves the real family for canvas).
+  Gridlines: `--border`.
+- Canvas charts cannot read CSS; they call `canvasColor()` and `canvasFont()` from
+  `src/lib/design/canvas-color.ts` at draw time.
 
-- **compact** tightens the `--space-*` scale usage and table row height — for dashboards,
-  watchlists, screeners, and the `statementNode`.
-- The **reader stays editorial** regardless of density; density never touches `.stoa-prose--read`.
+## 6. Backgrounds and elevation
 
-Implementation: read the attribute at a layout boundary (e.g. `<div data-density=...>` around dense
-surfaces) and let CSS key row-height / padding off `[data-density="compact"]`. No component reads a
-JS density flag directly.
+Paper for the page, white cards with a hairline, the well for inset panels and fields. One soft
+shadow (`--shadow-card`) for things that float. No paper texture outside the creator storefront,
+never under reading text. `.ledger-card` (the doubled hairline) stays reserved for trust-critical
+blocks (the disclosure block).
 
-## 7. New component patterns
+## 7. Motion and density
 
-These three are built once and reused everywhere. All sit on the surfaces in §2 and use the scales
-in §3.
+Motion uses `docs/MOTION.md` tokens only and honours reduced motion. `data-density="compact"`
+tightens dense surfaces; the reader stays editorial regardless.
 
-### 7.1 Data table — `src/components/ui/data-table.tsx`
+## 8. Places tokens cannot reach
 
-Ruled rows (hairline today), sticky header, **right-aligned `.num` cells**, up/down coloring on deltas, a summary
-row (avg / median / percentile), grouping, a column chooser, and CSV export. Reused by:
-`statementNode`, peer comparison, watchlist, and the screener.
+These hold literal copies of the tokens and must be updated by hand when a token changes:
 
-### 7.2 Dashboard widget
+| Where | File |
+|---|---|
+| Browser bar colour (light and dark) | `src/app/layout.tsx` (`themeColor`) |
+| App manifest | `src/app/manifest.ts` |
+| PWA and Apple icons | `src/lib/pwa/icon-response.tsx` (bump `CACHE` in `public/sw.js` when they change) |
+| Ticker share image | `src/app/api/og/stock/route.tsx` (fonts fetched by name in `src/lib/seo/og-fonts.ts`) |
+| Storefront accent checker | `src/lib/profile/accent.ts` (`PAPER_LIGHT` / `PAPER_DARK`; the test checks they match) |
+| TradingView embed | `src/components/shared/TradingViewChart/TradingViewChart.tsx` |
+| Chart fallbacks | `price-chart.tsx`, `card-chart.tsx` (used only if a token fails to resolve) |
+| Email templates | `docs/email-templates/*.html` (pasted into Supabase by hand) |
 
-A `--surface` card with a ruled title bar, an overflow menu, and drag/resize via `@dnd-kit`.
-Reused by creator analytics (`/studio/audience`) and investor dashboards (Part G).
+## 9. Invariants
 
-### 7.3 Snippet card (Notebook)
-
-A `--surface` card with a source chip (e.g. `10-K · p.42`), a highlighted quote, tags, and an
-"insert into report" action. The atomic unit of the Notebook (Part F).
-
-## 8. Invariants this doc enforces
-
-1. No new base color tokens invented per surface — everything derives from the system's tokens
-   (today the six in `globals.css`; after the next batch, Direction B's).
-2. Sentiment hues (verdigris/rust today) appear only on direction, gain/loss, fact/contradicted,
-   and sparkline strokes — never on generic UI, stat cards, buttons, or backgrounds.
-3. All figures render in `.num`.
-4. Every chart imports its scales from `src/lib/design/chart-theme.ts`.
-5. `.ledger-card` stays reserved for trust-critical blocks.
-6. Density toggle is respected; the reader stays editorial.
-7. Motion uses only `docs/MOTION.md` tokens and honors reduced-motion.
+1. No base colour is invented per surface. New meanings get a meaning token that resolves to an
+   existing value.
+2. Coral only on the live or actionable thing; green and red only on direction and price.
+3. Coloured words use `-text` tones; fills carry black ink; every word clears 4.5:1.
+4. Five sizes, three faces, Heebo for Hebrew, mono for tickers only, no uppercase labels.
+5. Radius by role; avatars are circles.
+6. Every chart imports `chart-theme.ts`.
+7. `npm run test:contrast` passes.
