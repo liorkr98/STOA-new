@@ -1,9 +1,28 @@
 # Stoa — Frontend & Design Deep Dive
 
-> **Grading is retired (2026-09-24).** The seal (`SealStamp`), the lock ceremony, the Score Ring,
-> the call block, HIT / MISS / NEAR, the track record, the Verdicts ledgers and the Verdict type
-> described below are deleted, and nothing may rebuild them. Where this document specifies them,
-> it is history. See `AGENTS.md` and `docs/CHANGELOG.md` (2026-09-24).
+> **Read this first (updated 2026-09-27).**
+>
+> **1. The product.** A publication is a video, a brief or a thesis. It may declare a **stance**:
+> one ticker and a direction, long, short or hold, frozen with the ticker once published. Nothing
+> is graded, scored, locked as a call or resolved. There is no track record, no score, no seal, no
+> Verdict type, no entry price, no target and no horizon; grading was retired on 2026-09-24 and
+> nothing may rebuild it. Analysts are followed and paid for their judgement, not scored on it.
+> The EDITED marker stays, and has nothing to do with grading. This document has been rewritten to
+> match; where a section describes a surface that was never built (the original spec's
+> onboarding wizard, `/dashboard/*`), it is marked as spec rather than as the site.
+>
+> **2. The visual system is being retired.** The system this document specifies (Fraunces as the
+> display face, the cream-paper ground, the brass accent, hairline broadsheet rules, zero-radius
+> corners on Today, uppercase letterspaced mono labels, black/ink primary buttons, 6px/12px
+> corners) is **pending replacement** by the incoming system in
+> [`docs/design/direction-b.html`](./design/direction-b.html). The tokens themselves are not
+> rewritten yet (that is the next batch), so the code still runs on the old values and a change
+> today still uses them. But nothing below is law any more: do not extend the old system into new
+> surfaces, do not treat its rules as reasons to refuse a change, and do not build new components
+> against it that would have to be redone. Rules marked **[pending replacement]** are the ones
+> most likely to change. Direction B's sample screens predate the grading removal (they show a
+> Verdict type, HIT/MISS receipts and "The market decided"); take the visual system from it, not
+> the product.
 
 The full frontend specification. `AGENTS.md` is the short version for day-to-day work; when the
 two disagree, this file wins and `AGENTS.md` should be corrected to match.
@@ -21,8 +40,7 @@ two disagree, this file wins and `AGENTS.md` should be corrected to match.
   This avoided conflicting with in-flight backend branches. The design system, components, and
   page content below apply within the existing URLs.
 
-Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the Track Score formula, the
-fact-checker pipeline). Nothing here invents new data — every field referenced below should
+Assumes the backend contract in `docs/BACKEND.md` (schema, RLS, the fact-checker pipeline). Nothing here invents new data — every field referenced below should
 already exist in that schema, or is flagged explicitly where it doesn't yet.
 
 ---
@@ -41,49 +59,34 @@ land on none of them by default:
 
 All three are legitimate ingredients, but none of them are *specific to Stoa* — they'd be equally
 at home on a recipe blog or a crypto dashboard. The design needs to come from what Stoa actually
-is: **a public ledger of claims made and outcomes proven, where nothing can be quietly erased.**
+is: **analysts people follow and pay for their judgement, each piece carrying its stance, its
+disclosures and its edits in the open.**
 
-One deliberate exception, adopted 2026-09-22: **Today (`/home`) is a broadsheet.** Dashed
-hairlines, square images, one card anatomy, five type sizes (§3.1b). It is allowed there
-because the page is literally a daily issue, and because what sits inside the grid is nowhere
-else's: the seal on every resolved call, the Verdicts ledger (entry → exit → return, graded by
-the market), the mono data voice on every number and ticker, and a single accent that carries
-the author, the eyebrow and the trending numeral. Take those four away and the page is a
-template; they are the reason it is Stoa's. Nowhere else adopts the broadsheet by default.
+One exception was adopted on 2026-09-22 and is now **[pending replacement]**: **Today (`/home`)
+is a broadsheet.** Dashed hairlines, square images, one card anatomy, five type sizes (§3.1b).
+Its case rested partly on the seal and the Verdicts ledger, both gone with grading; what remains
+is the mono data voice and the single brass accent. Direction B replaces it.
 
-### 1.2 Where the design comes from
+### 1.2 Where the design came from [pending replacement]
 
-The real-world material for this brief isn't "fintech app" — it's **the notary's seal, the
-rubber date-stamp, the ledger book, the certified document.** Every one of those objects exists
-to do one thing: make a claim permanent and attributable. That's exactly what a locked price
-target is. The design should feel like it borrows from that world, not from a trading terminal or
-a social feed.
+The original brief took its material from **the notary's seal, the ledger book, the certified
+document**: objects that make a claim permanent and attributable, which is what a locked price
+target was. With grading retired there is no locked target, and the incoming system
+(`docs/design/direction-b.html`) starts from a different place. Keep what still holds: the
+product should not look like a trading terminal or a social feed, and what a reader relies on
+(the stance, the disclosure block, the edit marker) should be plain and never decorated.
 
-### 1.3 The signature element: The Seal
+### 1.3 The Seal (retired 2026-09-24)
 
-This is the one deliberately bold, memorable device in the product, and everything else stays
-quiet around it.
+The seal, the lock ceremony and the HIT / MISS stamps were the signature device of the original
+design. They are deleted with grading and must not come back in any form, including as
+decoration. There is no signature ceremony in the product now.
 
-- **At the moment of locking:** when a creator clicks "Lock it in" on a price target, a circular
-  stamp graphic presses down onto the call block — a brief press + slight rotate + ink-bleed
-  animation (~400ms, see §2.5 for motion spec, fully respects `prefers-reduced-motion`). This is
-  the one moment in the entire product allowed to feel ceremonial, because it's the one action
-  that's genuinely irreversible.
-- **After locking:** a small embossed seal icon sits permanently beside the locked target price,
-  with the lock date set in a ring around its edge (like a coin or a postmark). This becomes the
-  recurring visual proof, everywhere a locked call appears — feed cards, profile archives, the
-  report page itself — that *this specific number, on this specific date, cannot be changed.*
-- **At resolution:** a second stamp overlays the first — "HIT" stamped in the verdigris ink
-  color, or "MISS" stamped in the rust ink color, set at a slight rotation like a librarian's
-  due-date stamp. This is the moment that makes the whole trust mechanic visible and satisfying:
-  the reader watches an open, unresolved claim become a permanent, provable record.
+### 1.4 Design token system [pending replacement]
 
-Nowhere else in the product should reach for this level of visual flourish. Buttons are plain.
-Cards are quiet. The seal is the one thing people will remember and describe to someone else —
-"you lock a call and it gets stamped" — which is exactly the kind of concrete, ownable detail
-that makes a product describable in one sentence.
-
-### 1.4 Design token system
+Everything in this section is what the code runs on today, and all of it is being replaced by
+Direction B. Use these tokens for changes now (do not introduce Direction B values piecemeal),
+but do not treat them as rules to defend.
 
 **Color — six named values, used consistently everywhere, never introduced ad hoc per-page:**
 
@@ -91,10 +94,10 @@ that makes a product describable in one sentence.
 |---|---|---|
 | `--ink` | `#14171F` | Primary text, dark UI surfaces. A near-black navy, not pure black — pure black against the paper tone below reads harsh under long reading sessions. |
 | `--paper` | `#FAF8F4` | Primary background. A warm, light ledger-paper neutral. Warmed from the original cool sage-gray `#EFF1ED`, which read grey-green rather than like paper. The warmth is held low and the value high, so this stays aged-ledger, not the saturated cream of an AI-design default. |
-| `--verdigris` | `#2F6E5D` | Primary brand accent. Deep patinated-bronze green — the color of old bank stamps and aged copper. Doubles as the semantic color for **Fact** claims and **Hit** outcomes. |
-| `--brass` | `#855F22` | Certification accent — deep antique brass, used for the seal graphic itself and for **Unproven** claims (things pending verification, same visual family as "not yet certified"). Darkened from `#B8863B` (2.84:1, failed C.2 rule 8) to clear 4.5:1 on paper and surface-2 as meaning-bearing text. |
+| `--verdigris` | `#2F6E5D` | Primary brand accent. Deep patinated-bronze green — the color of old bank stamps and aged copper. Doubles as the semantic color for **Fact** claims and for up / long. |
+| `--brass` | `#855F22` | Non-sentiment accent — deep antique brass, used for the edit marker and for **Unproven** claims (things pending verification). Darkened from `#B8863B` (2.84:1, failed C.2 rule 8) to clear 4.5:1 on paper and surface-2 as meaning-bearing text. |
 | `--plum` | `#5B4B6B` | Semantic color for **Opinion** claims — a claim that's debatable belongs in a different hue family entirely from fact/unproven, not a lighter or darker version of them. |
-| `--rust` | `#A6483C` | Semantic color for **Contradicted** claims and **Miss** outcomes. Muted brick, not alarm-red — this should read as "this didn't hold up," not "danger." |
+| `--rust` | `#A6483C` | Semantic color for **Contradicted** claims and for down / short. Muted brick, not alarm-red — this should read as "this didn't hold up," not "danger." |
 
 Every one of these is used at **low-saturation, high-legibility values** — this is not a bright,
 gamified palette. Fact-check underlines and stamps use these at full value; backgrounds, chips,
@@ -107,13 +110,15 @@ the raised card, one step lighter than paper) and `--surface-2` (`#F1ECE3`, the 
 tint, one step darker). If paper changes and these two do not, cards lose their separation from
 the page and drift off-hue.
 
-**Typography — three roles, never blended:**
+**Typography — three roles, never blended.** The roles hold; the faces are **[pending
+replacement]**. Fraunces is no longer the settled display face: Direction B replaces the display,
+UI and mono faces together. Until that batch lands, the code keeps the faces below.
 
 | Role | Typeface | Used for |
 |---|---|---|
 | Display / editorial | **Fraunces** (variable, wght 600–680, high optical size for headlines) | Report titles, creator display names in profile heroes, homepage headline, section headers on marketing pages. This is the "editorial voice" — it should only appear where the product is being *read*, never in UI chrome. |
 | UI / body | **IBM Plex Sans** | All interface chrome — nav labels, buttons, form labels, body copy in settings/dashboards, card metadata. |
-| Numeric / data | **IBM Plex Mono**, tabular figures enabled | Ticker symbols, prices, percentages, dates, Track Scores, timestamps — anything that needs to be *scanned and compared* rather than read as prose. Plex Sans and Plex Mono are drawn as a coherent system, which is why they're paired rather than mixing a generic sans with a generic mono. |
+| Numeric / data | **IBM Plex Mono**, tabular figures enabled | Ticker symbols, prices, percentages, dates, timestamps — anything that needs to be *scanned and compared* rather than read as prose. Plex Sans and Plex Mono are drawn as a coherent system, which is why they're paired rather than mixing a generic sans with a generic mono. |
 
 Type scale (rem, 16px base):
 
@@ -130,8 +135,8 @@ Type scale (rem, 16px base):
 --text-4xl:   4rem      (64px)  — homepage hero (Fraunces)
 ```
 
-Sub-12px is reserved for **monospace labels and metadata inside dense data widgets** (score
-rings, valuation cards, table eyebrows) — never for prose. Only two micro values are permitted,
+Sub-12px is reserved for **monospace labels and metadata inside dense data widgets** (valuation
+cards, table eyebrows) — never for prose. Only two micro values are permitted,
 `10px` and `11px`; any other arbitrary sub-12px size is drift and should snap to one of these.
 
 **Spacing scale** (4px base unit, used for all padding/margin/gap — no arbitrary values):
@@ -141,14 +146,13 @@ rings, valuation cards, table eyebrows) — never for prose. Only two micro valu
 --space-5: 24px  --space-6: 32px  --space-7: 48px  --space-8: 64px  --space-9: 96px
 ```
 
-**Radius:** two values only. `--radius-sm: 6px` for inputs, buttons, chips. `--radius-md: 12px`
-for cards. The seal graphic itself is the only fully circular element in the interface —
-reserving circles for that one motif keeps it special rather than diluted by rounded avatars and
-rounded everything-else. (Avatars use `--radius-md`, not full circles — a subtle but deliberate
-choice that keeps "circular" meaning something in this product.)
+**Radius [pending replacement]:** today two values, `--radius-sm: 6px` for inputs, buttons,
+chips and `--radius-md: 12px` for cards, with Today's images at zero. The old rule that "the seal
+is the only circle" (and so avatars are rounded squares) went with the seal; it is not a reason
+to refuse a circle. Direction B sets new radii.
 
 **Shadow:** one elevation value, used sparingly — `--shadow-card: 0 1px 2px rgba(20,23,31,0.06),
-0 4px 12px rgba(20,23,31,0.04)`. Trust-critical cards (call block, disclosure block)
+0 4px 12px rgba(20,23,31,0.04)`. Trust-critical cards (the disclosure block)
 additionally get a **double-ruled border** (`border: 1px solid var(--ink); box-shadow: 0 0 0 3px
 transparent, inset 0 0 0 1px rgba(20,23,31,0.08)` effectively rendered as two close parallel
 rules) — a ledger-entry-box treatment reserved specifically for information that must never be
@@ -156,30 +160,26 @@ visually mistaken for ordinary content.
 
 ### 1.5 Motion principles
 
-- **The seal animation is the one orchestrated moment in the product.** Press-scale (0.96 → 1.0)
-  + 8° rotation settle + a radial ink-bleed opacity fade, ~400ms, ease-out. Everything else in the
-  product uses fast, quiet transitions (150–200ms ease) for hover/focus states and simple fades
-  for content loading — no triggered scroll reveals, no staggered card entrances, no parallax.
-  (The one exception is the scrub-based, reduced-motion-safe landing reveal defined in
-  `docs/MOTION.md` law 11.)
-  Restraint everywhere else is what makes the seal moment land.
-- All motion respects `prefers-reduced-motion: reduce` — the seal becomes an instant state-swap
-  (unlocked card → locked card with seal already present) rather than an animated press.
+- The product uses fast, quiet transitions (150–200ms ease) for hover/focus states and simple
+  fades for content loading: no triggered scroll reveals, no staggered card entrances, no
+  parallax. (The one exception is the scrub-based, reduced-motion-safe landing reveal defined in
+  `docs/MOTION.md` law 11.) The seal ceremony that used to be the one orchestrated moment is
+  retired with grading.
+- All motion respects `prefers-reduced-motion: reduce`.
 
 ### 1.6 Accessibility floor (non-negotiable, applies to every page in Part 2 without being restated)
 
-- Color is never the only signal — every fact-check verdict, every hit/miss state, every status
+- Color is never the only signal — every fact-check verdict, every direction chip, every status
   chip pairs its color with a text label or icon.
-- Visible keyboard focus ring on every interactive element (`2px solid var(--verdigris)`, offset
-  2px).
+- Visible keyboard focus ring on every interactive element (today `2px solid var(--verdigris)`,
+  offset 2px; the colour is **[pending replacement]**, the ring is not).
 - Minimum contrast: body text 4.5:1, large text/headlines 3:1, verified against the `--paper`
   background specifically (not assumed from a generic white background).
 - All interactive elements reachable and operable via keyboard, including the fact-check claim
   popovers (focusable, `Escape` dismisses) and the debate thread (standard form semantics, not
   custom click-only widgets).
-- Every image, icon-only button, and the seal graphic itself carries a real `alt`/`aria-label` —
-  e.g., the locked seal reads "Locked May 3, 2026 — price target cannot be edited," not "seal
-  icon."
+- Every image and icon-only button carries a real `alt`/`aria-label` that says what it is for,
+  e.g. the edit marker reads "Edited Sep 3, 2026, see what changed," not "pencil icon."
 
 ### 1.7 Responsive strategy
 
@@ -191,10 +191,10 @@ Three breakpoints, mobile-first:
 --bp-lg: 1200px   (desktop)
 ```
 
-General rule used throughout Part 2 instead of repeating it per page: **the ledger-card treatment
-(call block, disclosure block, Track Score badge) never gets simplified or truncated on mobile** — it
-may stack above the reading column instead of sitting beside it, but every disclosure field,
-every score component, is present at every breakpoint. Only the *editorial* column (report body,
+General rule used throughout Part 2 instead of repeating it per page: **the trust surface (the
+stance chips, the disclosure block, the edit marker) never gets simplified or truncated on
+mobile** — it may stack above the reading column instead of sitting beside it, but every
+disclosure field is present at every breakpoint. Only the *editorial* column (report body,
 marketing copy) reflows for width; the *trust* surface is breakpoint-invariant by design.
 
 ---
@@ -310,29 +310,11 @@ assets; it never intercepts HLS, mp4, Bunny, or `/demo/` clips. Google and Apple
 and PayPal returns, stay on the production HTTPS origin so the session lands back in the
 standalone window.
 
-### 2.2 `<TrackScoreBadge>` - appears everywhere a creator's name does
+### 2.2 `<TrackScoreBadge>` (retired 2026-09-24)
 
-Three size variants, same component, same visual language at every size. (`MoatBadge` is a
-deprecated alias that re-exports this component; do not use it in new code.)
-
-- **`size="sm"`** - used inline next to a creator's name in feed cards, comments, debate
-  threads. Renders as: small ink-ring seal icon + score number in Plex Mono, e.g. `78`.
-  Tapping/clicking always opens that creator's Track Score analytics page - never just decorative.
-- **`size="md"`** - used on the report detail page's trust rail and on creator cards in
-  Explore/leaderboard. Adds hit rate when available.
-- **`size="lg"`** - used on the creator's own profile / score page. Full treatment: score, hit
-  rate, sample size, and a "View full breakdown" link, laid out as a small ledger-card itself
-  (double-ruled border per §1.4).
-
-**Score color mapping** (the number itself, not a background fill - keep it legible, not a
-traffic light): Track Score is a trust signal, not market sentiment. Use `--ink` for scored
-values and `--brass` when the sample is provisional (under 10 resolved calls). Verdigris/rust
-stay reserved for hit/miss and fact-check verdicts. Always pair the numeral with the word
-"Track" / "Track Score" at `md`/`lg` so the score is never ambiguous about what it measures.
-
-**Empty state (brand-new creator, zero resolved calls):** renders as `-` in neutral gray with a
-small "Not yet scored" tooltip on hover - never shows a fabricated "0," which would read as a
-failing score rather than an absence of data.
+Deleted with grading, along with its `MoatBadge` alias. An analyst appears as an avatar and a
+name; the one number shown about an analyst is the public profile's audience line (followers,
+and members if the analyst opts in). Nothing takes the badge's place.
 
 ### 2.3 `<DisclosureBlock>` — identical everywhere, creators cannot restyle this
 
@@ -359,8 +341,8 @@ comments for Claude Code's benefit: **never accept a theme/color prop on this co
 
 ### 2.4 `<PaywallGate>`
 
-Wraps the report body content only — never the ticker strip, call block, disclosure block, or
-Track Score badge, which render above/outside this component entirely.
+Wraps the report body content only — never the ticker strip, the stance chips or the disclosure
+block, which render above/outside this component entirely.
 
 - Renders the wrapped content up to a configurable line-clamp (default: first 3 paragraphs), then
   applies a soft gradient scrim (`--paper` fading from 0% to 100% opacity over the final 80px of
@@ -374,20 +356,10 @@ Track Score badge, which render above/outside this component entirely.
   flash the full paywalled content before the check resolves,** which is both a security smell
   and a jarring flicker.
 
-### 2.5 `<LockConfirmModal>` — the seal ritual
+### 2.5 `<LockConfirmModal>` (retired 2026-09-24)
 
-Triggered from the Report Editor's "Publish & Lock" button (Part 3, §3.10).
-
-- Modal copy: *"Once locked, this price target can't be edited or deleted. It'll count toward
-  your Track Score whether it hits or misses."* Below it, a compact read-only summary: ticker,
-  target price, horizon date.
-- Two buttons: **"Go back and edit"** (text-style, left, gets default focus) and **"Lock it in"**
-  (filled, `--ink` background, right — deliberately not the default-focused element, so a stray
-  Enter keypress from habit doesn't lock something by accident).
-- On confirming: modal content is replaced in-place by the seal animation (§1.3/§1.5) playing over
-  the summary card, then the modal auto-dismisses into the now-locked Report Editor state, target
-  price field visually replaced by the locked/sealed treatment (read-only, seal icon, no longer
-  an editable input).
+Deleted with grading. Publish is one press: there is no lock confirmation, no ceremony, and
+nothing to count toward a score.
 
 ### 2.6 `<FactCheckLayer>` — inline annotation system
 
@@ -413,26 +385,23 @@ Not a general comment section. Opens as a side panel (desktop) or bottom sheet (
 to one claim.
 
 - Header: the claim text itself, quoted, with its "Opinion" tag
-- Threaded replies below, standard comment list (author avatar `sm`, `TrackScoreBadge size="sm"` if the
-  replier is also a creator, timestamp, body text)
+- Threaded replies below, standard comment list (author avatar `sm`, name, timestamp, body text)
 - Input at the bottom: plain textarea + "Reply" button — no rich formatting, this is meant to be
   quick back-and-forth, not another editor
 - Empty state copy: *"No replies yet. Be the first to weigh in on this claim."*
 
-### 2.8 `<StatusChip>` — used for report/call status everywhere
+### 2.8 Status on a publication
 
-Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
-
-- `Open` — neutral gray outline, small clock icon, "Resolves [date]"
-- `Resolved · Hit` — verdigris fill, seal-stamp icon, "Hit"
-- `Resolved · Miss` — rust fill, seal-stamp icon (rotated, per §1.3), "Miss"
-- `Draft` — dashed neutral outline, pencil icon, "Draft" (creator-facing only, never shown to
-  investors)
+A publication is a draft, published or archived; nothing is open, resolved, hit or missed. Drafts
+are creator-facing only. An archived publication carries a solid-ink ARCHIVED chip wherever it
+still appears (§5.3, §6.3). The per-call `<StatusChip>` (Open / Hit / Miss) is retired with
+grading.
 
 ### 2.9 Buttons, inputs, toasts — base component notes
 
-- **Primary button:** `--ink` fill, `--paper` text, `--radius-sm`. Reserved for the single most
-  important action per screen (per §0's "one primary CTA per page" rule from the product spec) —
+- **Primary button:** today `--ink` fill, `--paper` text, `--radius-sm` (**[pending
+  replacement]**: "black primaries" and 6px corners are not settled rules; Direction B restyles
+  the primary). Reserved for the single most important action per screen (per §0's "one primary CTA per page" rule from the product spec) —
   never two primary buttons visible at once.
 - **Secondary button:** `--ink` 1px outline, `--ink` text, transparent fill.
 - **Text button:** no border/fill, `--ink` text, underline on hover only.
@@ -440,12 +409,10 @@ Small pill, `--text-xs`, always icon + label (never color-only per §1.6):
   secondary-style button — never a filled red button, which would clash with the muted palette
   and overstate the severity of, say, canceling a $5 subscription.
 - **Toast notifications:** bottom-center on desktop, bottom-full-width on mobile, `--ink`
-  background, auto-dismiss 4s, always paired with an icon (checkmark / info / the seal glyph for
-  "Locked" confirmations specifically — reusing the signature motif here reinforces it without
-  adding a new visual language).
+  background, auto-dismiss 4s, always paired with an icon (checkmark / info).
 - **Copy voice for every button, toast, and empty state:** active voice, names the action from
   the user's side of the screen, keeps vocabulary identical across trigger → confirmation (a
-  button labeled "Lock it in" produces a toast that says "Locked," never "Submitted
+  button labeled "Publish" produces a toast that says "Published," never "Submitted
   successfully"). Errors state what happened and how to fix it, without apologizing or hedging.
 
 ### 2.10 `<PlaceholderThumb>` — the generated stand-in for a video thumbnail
@@ -458,10 +425,10 @@ to change the other**, then regenerate and re-upload the clips.
 
 - **Colour** comes from `analystColor()` in `src/lib/design/analyst-color.ts`, seeded on the
   analyst's **id**, never their handle or name, so a rename does not change their colour. Eight
-  muted tones, deliberately excluding `--verdigris` and `--rust`: those two carry verdict meaning
-  (Fact/Hit, Contradicted/Miss) and must never be spent on decoration. Sage is greyer and lighter
-  than verdigris, clay browner and softer than rust, so a placeholder can never be misread as a
-  seal.
+  muted tones, deliberately excluding `--verdigris` and `--rust`: those two carry sentiment
+  (Fact / long, Contradicted / short) and must never be spent on decoration. Sage is greyer and
+  lighter than verdigris, clay browner and softer than rust, so a placeholder can never be misread
+  as a direction.
 - **Wash:** `linear-gradient(158deg, color-mix(in srgb, <colour> 55%, var(--paper)), <colour>)`.
   Mixing toward `--paper` rather than white is what keeps it warm and on-palette.
 - **Figure:** a circle (head) and a rounded shoulder shape rising from the bottom edge, filled
@@ -525,17 +492,17 @@ scroll-snap, nothing below the fold.
   `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
 - **On a phone:** dateline, headline, and actions sit on the picture (lower third), so the face
   is not squeezed by a second column of chrome. Desktop still uses the paper strip beneath the frame.
-- **Above the frame (desktop):** the mono dateline, `CALL · NVDA · AUG 22, 2026 · 0:58`, with the position
+- **Above the frame (desktop):** the mono dateline, `VIDEO · NVDA · AUG 22, 2026 · 0:58`, with the position
   in the feed at the right end. A publication with no ticker has its theme tag in that slot.
-- **On the picture:** ticker and direction chips top-left, the resolution seal top-right when the
-  call is resolved, the mute control beside it, a progress bar along the top edge that is also
+- **On the picture:** ticker and direction chips top-left, the mute control top-right, a progress bar along the top edge that is also
   the scrubber (`<ScrubBar>`: a hairline at rest, thicker while held, drag to any point), and the
   analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
 - **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
-  SHARE as small outlined icons with mono uppercase letterspaced labels), then the pager (`1 / 7`)
+  SHARE as small outlined icons with mono uppercase letterspaced labels, a label style
+  **[pending replacement]**), then the pager (`1 / 7`)
   at the right end. The pager is a button: it jumps to the unlock card.
 - **The chips are the publication's stance.** Its ticker (`reports.ticker`) and, beside it, its
-  direction (`reports.stance`) when it declares one; never read from the call. A publication with a
+  direction (`reports.stance`) when it declares one. A publication with a
   ticker and no stance shows the ticker alone. One with no ticker anchors on a theme or sector tag
   instead. An empty chip is never drawn. `stanceChips()` in `src/lib/db/publication-row.ts`.
 - **Keyboard:** up/down between publications, left/right through cards, a double right to the
@@ -608,9 +575,9 @@ The clip at the top of a report, and deliberately not the Feed's stage.
    than beside it: at 84px beside, Trending Now's headlines came down to two
    words a line.
 
-   Two bands deliberately carry no frame. **Verdicts** is a graded call and the
-   seal is its image; a poster beside it would compete with the stamp for the
-   same edge. **Market news** is wire copy, not Stoa video.
+   One band deliberately carries no frame: **Market news** is wire copy, not
+   Stoa video. (The Verdicts band, which carried the seal instead of a frame,
+   is gone with grading.)
 
 2. **`ClipThumb` draws every clip poster**, falling back to `PlaceholderThumb`
    only for a clip whose poster frame has not been produced yet. That is a video
@@ -641,8 +608,7 @@ voice, so the surface should lean towards what a reader can watch.
   video-heavy one.
 - **Applies to** the lead, the three stories beside it, Trending Now and the
   theme cluster. **Your Desk** stays newest-first, because it is the reader's
-  own memberships and follows and chronology is the promise there. **Verdicts**
-  is untouched: a clip has no bearing on whether a call was right.
+  own memberships and follows and chronology is the promise there.
 
 A profile's lead still prefers the analyst's video, because a profile is a
 storefront. Every band obeys rule 1 when a chosen publication turns out to have
@@ -679,8 +645,8 @@ Explore's ticker and sector filters. One control for both, so they behave alike.
 ### 2.14 `<EditedMarker>` / `<EditedFlag>` — a publication that was revised
 
 A published report can be edited (headline, dek, thesis, cards, tags) and every edit is disclosed
-wherever the publication appears. The marker is **brass, never rust**: an analyst correcting
-themselves in the open is doing the right thing, and the interface reads that way rather than
+wherever the publication appears. The marker is **brass (the colour is [pending replacement]),
+never an alarm colour**: an analyst correcting themselves in the open is doing the right thing, and the interface reads that way rather than
 implying something was covered up. A pencil, not an alert.
 
 - `<EditedMarker edits={...}>` on the publication itself: a small `EDITED` chip beside the byline
@@ -699,20 +665,23 @@ a uniform diff:
 | Thesis | That it changed, and when. Not the wording: the body sits behind the paywall, so quoting it publicly would leak paid content. The previous text is kept in `report_versions`, author-only. |
 | Cards, tags | That they changed, and when. Compared before writing, so a no-op save is never disclosed as a change. |
 
-The call, its entry price and its resolution can never be edited, and the panel opens by saying
-so. That sentence is the reason the rest of the marker is trustworthy.
+The stance (the ticker and its direction) can never be edited once published, and the panel
+opens by saying so. The marker is independent of grading: it predates the removal and survives it
+unchanged, because it is about the words, not about whether anyone was right.
 
 ### 2.15 `<ArchiveDialog>` and `<DeleteDialog>` — one is reversible, one is not
 
 These sit one row apart in the Publications list and **must never read alike**.
 
 - **Archive** is offered on every published publication. Recoverable, and its copy says so.
-- **Delete** is offered only on a publication carrying **no call**, and is absent (not present and
-  refused) otherwise.
+- **Delete** is offered only on a publication that declares **no stance** (and never carried a
+  call from before the removal) and that **nobody has bought**. Otherwise it is absent, not
+  present and refused (`deleteBlocker` in `src/lib/studio/delete-rule.ts`).
 - **A draft** is different: it was never published, so there is nothing on the record to protect.
   A draft offers Delete with a one-line confirmation and no typed word, never Archive, and never
-  Promote (there is nothing out to promote). The permanence guarantee exists to stop an analyst burying a bad call; a
-  publication with no call is content, and a creator may remove their own content.
+  Promote (there is nothing out to promote). The permanence rule exists so an analyst cannot
+  quietly bury a stance they took in public, and so a buyer never loses what they paid for; a
+  publication with neither is content, and a creator may remove their own content.
 
 The delete dialog does not reuse the archive copy with a harder verb. It names what is destroyed
 inside a **rust-bordered** block, states that archive is the reversible option, and requires the
@@ -750,8 +719,10 @@ Logged-out visitors land on the **public** daily Dispatch — same editorial des
 
 ### 3.1b Today — `/home`
 
-Stoa's daily issue as a broadsheet, adopted 2026-09-22 from an approved mock (the rule in §1.1
-says why it is allowed here). `<TodayPage>` (`src/components/today/today-page.tsx`), the card in
+Stoa's daily issue as a broadsheet, adopted 2026-09-22 from an approved mock. The broadsheet
+treatment below (dashed hairlines, zero radius, letterspaced Fraunces nameplate, brass accent)
+is **[pending replacement]** by Direction B; the structure (the package, the sections, the rail)
+is what the page does today. `<TodayPage>` (`src/components/today/today-page.tsx`), the card in
 `today-card.tsx`, the package in `today-package.tsx`, the sections in `today-sections.tsx`, the
 rail in `today-sidebar.tsx`, the nameplate in `today-nameplate.tsx`; the styles are the `.ts-*`
 block at the end of `globals.css`, and `/dev/today` is the seeded fixture.
@@ -766,7 +737,8 @@ ticker row is the mono symbol, its day change and the same control, no price. No
 a solid button and no row scrolls sideways. On a phone it is a drawer behind the `Lists`
 control at the right of the nameplate's dateline (`<TodayListsButton>`).
 
-**The nameplate** (`<TodayNameplate>`): `STOA` at 54px letterspaced Fraunces, one 2px ink rule,
+**The nameplate** (`<TodayNameplate>`): `STOA` at 54px letterspaced Fraunces (**[pending
+replacement]**), one 2px ink rule,
 one mono dateline (`ISSUE №41 · TUESDAY, AUGUST 18, 2026 · YOUR DAILY BRIEFING`). Under 110px on
 a desktop, under 80px on a phone. The only heavier line on the page is its rule.
 
@@ -784,7 +756,7 @@ eyebrow → 10px → headline → 12px → byline. Stacked cards: 16px, a dashed
 (`.ts-stack`). The eyebrow carries `NVDA · LONG` or the sector, with `TRENDING` or `NEW` in
 front. The byline is `Name / Date`, no avatar and no content badge.
 
-**Five type sizes, nothing else** (`.ts-eyebrow` 10.5px mono uppercase in the accent;
+**Five type sizes, nothing else** (faces **[pending replacement]**; `.ts-eyebrow` 10.5px mono uppercase in the accent;
 `.ts-byline` 14px sans, the name in the accent and the date faint; `.ts-headline` 22px Fraunces
 regular, `--dense` 18px; `--lead` 34px on a desktop and 26px on a phone; `.ts-title` 40px
 Fraunces semibold, 32px on a phone). Headlines are regular weight; bold is for section titles.
@@ -792,49 +764,36 @@ Fraunces semibold, 32px on a phone). Headlines are regular weight; bold is for s
 **Sections**, 60px apart, title to content 24px. **Trending now**: a numbered list of five in a
 5-column slot, the numerals 40px in the accent, then one empty column. **Your desk**: a
 6-column 2 × 2 of picture stories beside it; on a phone it is the page's only sideways scroller,
-with the next card peeking at the right edge. **Verdicts**: a ledger, one row per resolved call:
-seal, ticker and direction, headline, entry → exit, return. **Market news**: the same anatomy in
+with the next card peeking at the right edge. **Market news**: the same anatomy in
 two 6-column text lists, source and time as the byline (`<NewsSheet>`; Markets keeps the band
 form, `<TodayNews>`).
 
-**Rules and images.** One rule style, 1px dashed at 13% ink (`--today-rule`). Zero radius on
-every image.
+**Rules and images [pending replacement].** One rule style, 1px dashed at 13% ink
+(`--today-rule`). Zero radius on every image.
 
 **No sideways scrolling on a desktop.** No rails. On a phone, exactly one (Your desk); nothing
 else is wider than the screen. On a phone the page is one document scroll; on a desktop the rail
 and the page are two columns that scroll on their own inside the room under the nav (`.ts-frame`,
 `.ts-column`, measured by `useFrameHeight`, see `src/lib/layout/frame.ts`).
 
-**The accent is brass, and green and red stay strictly semantic.** `--today-accent` on
-`.today-sheet` is a darkened brass (`#8a5e2b`, 5.3:1 on the paper; the site's chip-and-seal
-brass is too light for 10.5px text), `#d1a35f` in dark mode (7.8:1), and a light brass
-(`#e6c48a`) over the lead's scrim (`.ts-on-scrim`). It goes on eyebrows, author names, trending
-numerals and the rail's `+ Follow`, and on nothing that is a chip or a seal. Inside an eyebrow
+**The accent is brass [pending replacement], and green and red stay strictly semantic.**
+`--today-accent` on `.today-sheet` is a darkened brass (`#8a5e2b`, 5.3:1 on the paper; the
+site's chip brass is too light for 10.5px text), `#d1a35f` in dark mode (7.8:1), and a light
+brass (`#e6c48a`) over the lead's scrim (`.ts-on-scrim`). It goes on eyebrows, author names,
+trending numerals and the rail's `+ Follow`, and on nothing that is a chip. Inside an eyebrow
 only the direction word carries its sentiment (`NVDA · LONG` is a brass label with `LONG` in
-`--up`; `SHORT` in `--down`), returns are green or red, and the seals are the site's
-(`<SealStamp>`: HIT green, MISS red, NEAR grey), so nothing brass can be read as a LONG chip, a
-SHORT chip or a seal.
+`--up`; `SHORT` in `--down`), so nothing brass can be read as a LONG or SHORT chip. Whatever
+replaces brass keeps that last rule.
 
 ---
 
-### 3.2 Explore — `/explore` (public, teaser mode)
+### 3.2 Explore — `/explore`
 
-**Layout:**
-
-- `<TopNav>` (logged-out)
-- Page header: "Explore research" + subtext "Browse locked calls from every creator on Stoa."
-- **Filter row** (sticky beneath header on scroll): sector chips (multi-select: Tech, Biotech,
-  Small-Cap, Macro, Crypto, Dividends, Energy, Consumer — scrollable chip row on mobile), a
-  `Track Score ≥` slider (0–100, default 0), a Free/Paid toggle (All / Free only / Paid only)
-- **Results grid:** same feed-card component used in the logged-in Feed (§4.1), but every card's
-  primary CTA reads **"Read preview"** instead of "Read" — leads to the Report Public Preview
-  page (§3.4), never the full report
-- Sort control, top-right of the results grid: dropdown "Most recent" / "Highest Track Score" /
-  "Highest upside"
-- **Empty state (no results match filters):** "No research matches these filters yet." + a
-  **"Clear filters"** text button — never a dead end with no recovery action
-- Persistent bottom banner, dismissible per session (stored in a cookie, not account state): "Sign
-  up free to follow creators and unlock reports" + **"Sign up"** button
+As built, Explore is a wall of faces: video publications as poster tiles, sized by the lifecycle
+model, each opening the Feed at that publication (`docs/PRODUCT_MODEL.md`). It filters by ticker
+and sector through `<FilterPicker>` (§2.13) and by free or paid. There is no score filter and no
+"highest score" or "highest upside" sort: nothing is scored and no publication carries a target.
+Empty filters say so and offer to clear them.
 
 ---
 
@@ -854,14 +813,13 @@ SHORT chip or a seal.
   muted, a small verified-identity check icon with tooltip "Identity verified — not a credential
   claim"
 
-**`<TrackScoreBadge size="lg">`** — full ledger-card treatment, placed directly below the header band,
-full width on mobile / left-aligned ~40% width on desktop with the pricing card (below) filling
-the remaining space alongside it
+**Audience line** — `4.3K FOLLOWERS · 214 MEMBERS` (members only if the analyst opts in). This
+is the only number shown about an analyst. There is no score, rank or track record.
 
 **Bio** — one line, Plex Sans `--text-base`, creator-written, max ~140 characters enforced at
 input time (Part 4, Page Branding)
 
-**Pricing card** (ledger-card styling, sits beside the Track Score badge on desktop):
+**Pricing card** (ledger-card styling):
 
 - Subscription price if enabled: "$[X]/mo" large, Plex Mono, **"Subscribe"** primary button
 - Per-report price if enabled, shown as a secondary line: "or $[X] per report"
@@ -870,14 +828,10 @@ input time (Part 4, Page Branding)
 
 **Report archive** — reverse chronological list, full width:
 
-- Each row: ticker (Plex Mono, bold), headline, `<StatusChip>`, locked target price + horizon
-  date, small fact-check summary (`9 fact · 2 unproven`)
-- Fixed note directly above the list, `--text-xs`, permanent, not dismissible: **"All calls,
-  including missed targets, stay visible permanently."** — this single sentence is doing real
-  trust-building work and should never be hidden behind a tooltip or footnote styling
-- Pagination: simple "Load more" button at the bottom (not infinite scroll — a creator's track
-  record is something a visitor should be able to deliberately page through, not accidentally
-  blow past)
+- Each row: the type label, ticker and direction chips when the publication declares a stance
+  (a theme tag when it has no ticker), headline, content badge, small fact-check summary
+  (`9 fact · 2 unproven`)
+- Pagination: simple "Load more" button at the bottom (not infinite scroll)
 - **Empty state (brand-new creator, zero published reports):** replaces the list with: "No
   reports published yet." — and if the viewer is logged in and not this creator, a **"Follow"**
   button so they can come back when there's something to read
@@ -887,7 +841,7 @@ input time (Part 4, Page Branding)
 ### 3.4 Report public preview — `/@handle/[report-slug]`
 
 **Layout:** identical page shell to the full Report Detail Page (§4.3) for everything above the
-fold — ticker strip, creator strip with `<TrackScoreBadge>`, the call block (fully visible, never
+fold — ticker strip, creator strip (avatar, name, Follow), the stance chips (fully visible, never
 gated), the `<DisclosureBlock>` (fully visible, never gated), and the fact-check summary strip
 (fully visible, never gated).
 
@@ -906,7 +860,7 @@ Single long-scroll marketing page, contained width (~760px), `--paper` backgroun
 
 - Restates the three-step "how it works" from the homepage in more depth, one section each, each
   with a supporting screenshot-style illustration of the actual component in question (the
-  fact-check layer, the lock/seal moment, the Track Score badge)
+  fact-check layer, the stance chips, the disclosure block)
 - **For investors** subsection: explains subscription vs. per-report pricing from the reader's
   side, links to §3.2 Explore
 - **For creators** subsection: explicit platform fee statement, large and unambiguous: "Stoa
@@ -917,25 +871,14 @@ Single long-scroll marketing page, contained width (~760px), `--paper` backgroun
 
 ---
 
-### 3.6 Trust & Methodology — `/trust`
+### 3.6 Trust & Methodology — `/trust` (not built; scoring half retired)
 
-This is a real page, not a footer afterthought — it's the single most important credibility asset
-the platform has, and it needs to be genuinely legible to a skeptical reader, not legal
-boilerplate.
-
-- **Track Score section:** plain-language explanation of the three-factor formula (hit rate,
-  average return, statistical significance/sample-size weighting), including an honest note that
-  scores with small sample sizes are shown with a "provisional" indicator (see Track Score Analytics,
-  Part 5) rather than presented with false confidence
-- **Fact-check section:** explains the fact/unproven/opinion/contradicted taxonomy in plain
-  terms, with one real (or realistic sample) example of each verdict shown inline
-- **Lock mechanism section:** explains, in the same tone as the rest of the page (not legalese),
-  that locked calls cannot be edited or deleted, and that the audit trail behind the scenes
-  exists specifically so this claim is independently checkable, not just asserted
-- **Identity verification section:** explains what "verified" does and doesn't mean — a real,
-  accountable person, not a credential or license claim
-- No CTA buttons on this page at all — its only job is to be trustworthy and readable, not to
-  convert
+The original spec's page explained the Track Score formula and the lock mechanism. Both are
+retired, and there is no `/trust` route. If a trust page is built, its subject is what a reader
+can actually rely on: the fact-check taxonomy (fact / unproven / opinion / contradicted), the
+stance frozen once published, the disclosure block, the public EDITED marker and its log, and
+what "verified" does and does not mean (a real, accountable person, not a credential). No CTA
+buttons; its only job is to be readable.
 
 ---
 
@@ -955,10 +898,10 @@ legal type, since this is a page real users will actually be directed to.
 
 - Header: "Join Stoa"
 - Two large tappable cards side by side (stacked on mobile), each ~200px tall:
-  - **"I invest"** — icon (magnifying glass / chart), one line: "Follow verified analysts. Every
-    claim fact-checked. Every call tracked."
-  - **"I create research"** — icon (pen / seal), one line: "Publish research, lock your price
-    targets, get paid — your page, your price."
+  - **"I invest"** — icon (magnifying glass / chart), one line: "Follow analysts whose judgement
+    you trust. Every claim fact-checked."
+  - **"I create research"** — icon (pen), one line: "Publish research, take a stance, get paid:
+    your page, your price."
 - Beneath both: text link, `--text-sm`: "Not sure? You can add the other role anytime from
   Settings."
 - Below the fork: email input + **"Continue with email"** button, plus **"Continue with Google"**
@@ -1008,9 +951,8 @@ records, not client-side-only state.
 **Step 1 — `/onboarding/creator/verify`:**
 
 - Headline: "Verify your identity"
-- Body copy, set apart in a quiet callout box (not alarming, just distinct): "Your Track Score
-  only means something if you're a real, accountable person. We verify identity, not
-  credentials — anyone can build a track record here."
+- Body copy, set apart in a quiet callout box (not alarming, just distinct): "Readers pay for
+  the judgement of a real, accountable person. We verify identity, not credentials."
 - Embedded PayPal identity/business-verification flow (their hosted onboarding redirect via the
   Partner Referrals API) — while `status = 'pending'`, this step shows a waiting state:
   "Verifying... this usually takes under a minute" with a subtle indeterminate progress
@@ -1050,9 +992,9 @@ records, not client-side-only state.
 
 - Drops the creator directly into the real Report Editor (§6.2) with a sample ticker pre-loaded
   (e.g., a fictional or clearly-marked "SAMPLE" ticker) and inline coach-mark tooltips
-  (dismissible individually, "Got it" buttons) pointing at: the price-target lock field ("This
-  becomes permanent once you publish"), the AI fact-check panel ("Every claim gets checked before
-  you can lock"), the disclosure checklist ("Required before publishing — investors always see
+  (dismissible individually, "Got it" buttons) pointing at: the stance ("The ticker and direction
+  are fixed once you publish"), the AI fact-check panel ("Check your claims before you
+  publish"), the disclosure checklist ("Required before publishing — investors always see
   this")
 - A **"Skip tutorial, go to dashboard"** text link is always available in the top-right, for
   anyone who wants to explore on their own rather than follow the guided flow
@@ -1074,20 +1016,20 @@ reads. Requires sign-in.
 One publication fills the viewport and scrolling snaps to the next; the clip autoplays muted on
 arrival and stops on leaving. The clip and the publication's evidence cards share one 9:16 stage,
 so moving sideways moves through the evidence. Above the frame, the mono dateline; on the picture,
-ticker and direction chips, the seal when resolved, and the analyst's lower-third identity band;
+ticker and direction chips and the analyst's lower-third identity band;
 beneath it, the editorial action bar and the pager. See §2.11.
 
 There is no browse-as-text surface. The tabs, the layout toggle and the report-card grid that
 used to live here went with Discover; scanning the catalogue is Explore's job.
 
-**Feed card component**:
+**Feed card component** (original spec; the Feed as built is the full-screen stage above):
 
 ```
 ┌──────────────────────────────────────────────┐
-│ [avatar] Creator Name  [TrackScoreBadge sm]         │
-│ TICKER · Company Name                          │
+│ [avatar] Creator Name                           │
+│ TICKER · LONG  (or a theme tag)                 │
 │ Headline text, one line, truncated              │
-│ Target: $XX.XX  ·  by [date]  ·  ↑12% upside   │
+│ VIDEO · CARDS                                   │
 │ [fact-check summary chip]                       │
 │                                    [Read] [···] │
 └──────────────────────────────────────────────┘
@@ -1138,44 +1080,39 @@ the author. An archived publication must never be indistinguishable from a live 
 ┌─────────────────────────────────────────────────────────────┐
 │  <TopNav>                                                     │
 ├─────────────────────────────────────┬─────────────────────────┤
-│  TICKER · Company Name · $XX.XX ↑0.4% │  [avatar] Creator Name  │
-│                                        │  [TrackScoreBadge md]         │
-│  Report Headline (Fraunces, 3xl)       │  [Subscribe/Following]  │
-│                                        │                         │
-│  ┌─ CALL BLOCK (ledger-card) ────┐    │  ┌─ DISCLOSURE BLOCK ─┐ │
-│  │ Target: $XX.XX  [seal icon]   │    │  │ Position: ...      │ │
-│  │ Horizon: [date]                │    │  │ Compensation: ...   │ │
-│  │ Upside: +XX%  [StatusChip]     │    │  │ Views: certified    │ │
-│  │ Locked [date]                  │    │  └─────────────────────┘ │
-│  └────────────────────────────────┘    │                         │
+│  TICKER · Company Name · $XX.XX ↑0.4% │  [clip]                 │
+│  THESIS · NVDA · LONG  [EDITED]        │                         │
+│  Report Headline                       │  [avatar] Creator Name  │
+│                                        │  [Subscribe/Following]  │
+│  ── report body                        │                         │
+│     with <FactCheckLayer> annotations  │  ┌─ DISCLOSURE BLOCK ─┐ │
+│     inline throughout ──               │  │ Position: ...      │ │
+│                                        │  │ Compensation: ...   │ │
+│  [PaywallGate scrim if not entitled]  │  │ Views: certified    │ │
+│                                        │  └─────────────────────┘ │
 │                                        │  [fact-check summary]   │
-│  ── report body, Fraunces body-serif   │  9 fact · 2 unproven ·  │
-│     with <FactCheckLayer> annotations  │  1 opinion               │
-│     inline throughout ──               │                         │
-│                                        │                         │
-│  [PaywallGate scrim if not entitled]  │                         │
-│                                        │                         │
-│  Share · Report an issue               │                         │
+│  Share · Report an issue               │  9 fact · 2 unproven    │
 └─────────────────────────────────────┴─────────────────────────┘
 ```
 
-- The call block sits directly under the headline in the main reading column, since it is the
-  anchor of the report itself; the right column holds the clip, the call, disclosure and the
-  fact-check summary. The page is a **`<ScrollFrame>`** (`src/components/layout/scroll-frame.tsx`)
-  that fills the room under the nav; the writing scrolls in its column and the right column stays
-  in view for the length of the read, so the trust surface never scrolls away from the claims it
-  vouches for. It is **not** `position: sticky`: it used to be, pinned `top-20` inside the app's
-  scrolling column, and since the nav is not inside that column the rail sat a band lower than the
-  masthead. See §6.2 for why nothing in the app is pinned to a nav height any more.
+- The stance is the ticker and direction chips beside the type label under the masthead; there
+  is no call block, no target, no horizon and no status. The right column holds the clip, the
+  analyst, disclosure and the fact-check summary. The page is a **`<ScrollFrame>`**
+  (`src/components/layout/scroll-frame.tsx`) that fills the room under the nav; the writing
+  scrolls in its column and the right column stays in view for the length of the read, so the
+  trust surface never scrolls away from the claims it vouches for. It is **not** `position:
+  sticky`: it used to be, pinned `top-20` inside the app's scrolling column, and since the nav is
+  not inside that column the rail sat a band lower than the masthead. See §6.2 for why nothing in
+  the app is pinned to a nav height any more.
 - **Mobile:** below `lg` the frame itself is the scroller and both columns are `display:
   contents`, so the blocks order themselves: masthead, clip, writing, trust panels, comments. Same
   content, same order, nothing sticky.
 - The reading-progress bar follows the nearest scroller (`animation-timeline: scroll(nearest)`),
   which is the writing column. It used to follow the document, which never scrolls inside the app
   shell, so it never moved.
-- Report body typography: Fraunces at a body-friendly weight/size (not the display cut used for
-  the headline) — this is the one place in the product where long-form serif reading is the
-  actual point, distinct from Plex Sans everywhere else.
+- Report body typography: today Fraunces at a body-friendly weight/size (**[pending
+  replacement]**; Direction B sets the reading face). The principle stays: this is the one place
+  where long-form reading is the point, so the body gets a reading face and measure.
 - **`<FactCheckLayer>`** wraps the entire body as described in §2.6 — underlined claims, hover/tap
   popovers, debate icons on opinion claims.
 - **Bottom bar:** Share button (native share sheet / copy-link), "Report an issue" (opens a
@@ -1185,11 +1122,10 @@ the author. An archived publication must never be indistinguishable from a live 
 
 - Not yet entitled: `<PaywallGate>` active on the body only, everything else full-strength per
   §2.4
-- Loading: skeleton for the report body only; ticker strip, call block, and disclosure block
+- Loading: skeleton for the report body only; ticker strip, stance chips and disclosure block
   render from cached/fast metadata queries and should appear near-instantly even if the body is
   still loading
-- Open (unresolved) call: `<StatusChip>` reads "Open · Resolves [date]"
-- Resolved: `<StatusChip>` reads Hit/Miss with the second stamp overlay per §1.3
+- Edited: the `<EditedMarker>` beside the byline (§2.14)
 
 ### 5.4 Creator profile (logged-in investor view) — `/@handle`
 
@@ -1224,8 +1160,8 @@ state, not just a link elsewhere.
 ### 5.7 Notifications — `/notifications`
 
 Simple reverse-chronological list, grouped by day ("Today," "Yesterday," "This week," "Earlier").
-Each notification: icon by type (new report = pen, target resolved = seal-stamp icon matching
-§1.3's hit/miss treatment, debate reply = speech bubble), one-line description, timestamp, unread
+Each notification: icon by type (new report = pen, debate reply = speech bubble), one-line
+description, timestamp, unread
 items get a subtle `--verdigris` left-border accent (never a full-row color fill, which gets
 visually loud in a long list). Mark-all-read as a small text link top-right. Clicking any
 notification navigates to its source (the report, the profile, the thread) and marks it read.
@@ -1247,7 +1183,7 @@ back to the report).
 
 Standard settings page: email/password (or magic-link management), notification preferences
 (toggles per notification type from §5.7's categories — new reports from followed creators,
-target resolutions on watchlist tickers, debate replies — each independently toggleable, plus a
+new coverage of watchlist tickers, debate replies — each independently toggleable, plus a
 global email-digest-frequency setting: Instant / Daily digest / Off).
 
 ---
@@ -1268,21 +1204,17 @@ global email-digest-frequency setting: Instant / Daily digest / Off).
   onboarding step or settings page if incomplete. **On this build, "Verify identity" is dropped**
   along with the onboarding Verify step (see §4.2) — the checklist is Customize page, Set
   pricing, Publish first report.
-- **Quick stats row**, four cards: Subscribers (count, + or − this week in small text beneath),
-  Earnings this month (Plex Mono, `$X,XXX`), Current Track Score (`<TrackScoreBadge size="lg">` reused
-  here), Reports awaiting resolution (count, links to the "Open calls" widget below)
-- **Open calls widget:** compact table — ticker, target, days remaining until horizon date (Plex
-  Mono countdown), each row linking to that report. This exists so the creator feels the same
-  accountability pressure their audience sees on the profile archive — it should not read as a
-  scary countdown, just a plain, calm table.
-- **Recent activity feed:** new subscriber, new debate reply, target resolved, fact-check flagged
+- **Quick stats row**: Subscribers (count, + or − this week in small text beneath), Earnings
+  this month (Plex Mono, `$X,XXX`), Followers. No score and nothing awaiting resolution: nothing
+  resolves.
+- **Recent activity feed:** new subscriber, new debate reply, fact-check flagged
   an unproven claim on a draft — same visual list-item pattern as the investor Notifications page
   (§5.7) for consistency across the whole product.
 
 ### 6.2 Compose ★ — `/studio/compose` (and `?id=` to reopen a draft, `?type=` to start one)
 
-The other highest-scrutiny screen in the product, and the one where the seal ritual (§1.3, §2.5)
-gets triggered. The full model is `docs/COMPOSE.md`; this section is the screens.
+The other highest-scrutiny screen in the product. The full model is `docs/COMPOSE.md`; this
+section is the screens.
 
 **Compose is a short mandatory spine and a menu of options, not a wizard.** Instagram's
 structure: everyone walks two steps, and what a publication may add on top is a menu nobody
@@ -1290,15 +1222,13 @@ has to walk past. No screen carries explanatory copy: a heading, the work, one b
 sentences are refusals naming what is missing and the few rules a creator would otherwise get
 wrong.
 
-**The type picker is the first screen.** Four types described by purpose (Video: reach people
+**The type picker is the first screen.** Three types described by purpose (Video: reach people
 who don't know you; Brief: stay present between big pieces; Thesis: prove you are worth paying
-for; Verdict: make a call only the market can settle), each saying who sees it. Four cards on a
-desktop (`≥ md`); on a phone four compact rows that all fit above the fold, each a link that
-starts its type in one tap. The verdict card is tinted `--surface-2` with a
-`1 PER 30 DAYS` chip, or a brass `UNLOCKS IN 12 DAYS` chip and a line saying so when the window
-is closed. Under the cards, **my drafts**: type, headline, `PLAB · SPINE 2 OF 3 · EDITED 2 DAYS
-AGO`, a hairline progress bar (`66% THERE`) and Resume; compact rows on a phone with an `ALL`
-pill to Studio. `<ComposePicker>` (`src/components/compose/type-picker.tsx`).
+for), each saying who sees it. Three cards on a desktop (`≥ md`); on a phone three compact rows
+that all fit above the fold, each a link that starts its type in one tap. Under the cards, **my
+drafts**: type, headline, `PLAB · SPINE 1 OF 2 · EDITED 2 DAYS AGO`, a hairline progress bar and
+Resume; compact rows on a phone with an `ALL` pill to Studio. `<ComposePicker>`
+(`src/components/compose/type-picker.tsx`). The Verdict type is retired with grading.
 
 **The spine is two steps on every type:**
 
@@ -1307,20 +1237,18 @@ pill to Studio. `<ComposePicker>` (`src/components/compose/type-picker.tsx`).
 | Video | Video (record or upload; the rung with its timeline) and, under the clip, the headline | Tags |
 | Brief | The headline, then the take (a textarea, 300 characters) | Tags |
 | Thesis | The headline and the dek, then the report (the Tiptap writer, with the toolbox rail) | Tags |
-| Verdict | The call (`<VerdictCallPanel>`) and, under it, the headline | Tags |
 
 Then the **publish screen**. The tracker (`<StepNav>`) is two numbered marks joined by a
 hairline: the current one filled ink, a done one a verdigris tick, an unreached one dimmed and
 not clickable. Off the spine (the publish screen, a feature editor) no mark is current and the
-heading says where you are. Each screen has an eyebrow (`STEP 1 OF 2`, `ADD TO THIS VERDICT ·
+heading says where you are. Each screen has an eyebrow (`STEP 1 OF 2`, `ADD TO THIS THESIS ·
 OPTIONAL`, `READY WHEN YOU ARE`) and a display heading (`<StepFrame>`); no line under it, except
 on a live publication's read-only clip, where the rule has to be stated.
 
 **The headline** is a growing textarea in the display face, with the dek under it (not on a
 brief, whose text is the take). It sits on the content screen: above the take and the report,
-where it has focus on arrival and Enter moves into the text; under the clip and the call, with a
-one-line eyebrow, so the clip and the call stay the focus. Continue asks for it once the content
-is in.
+where it has focus on arrival and Enter moves into the text; under the clip, with a one-line
+eyebrow, so the clip stays the focus. Continue asks for it once the content is in.
 
 **One button per screen, and its label is what pressing it will do.** On the spine it reads
 **Continue**; when it cannot advance the reason sits beside it in rust, in the creator's terms
@@ -1330,41 +1258,27 @@ complete, and Done that refuses and names what is missing when it is half done. 
 information never passes. Back on a feature editor reads **Back to publish**.
 
 **The features menu** (`<FeaturesMenu>`, `src/components/compose/features-menu.tsx`) sits on
-the publish screen above Access: one row per feature the type may add (video: Call, Cards,
-Thesis; brief and thesis: Call, Cards; verdict: Cards, Video, Text), each its icon, its name and
-its state at the right: `NVDA · LONG · TARGET 142` in verdigris, `3 CARDS`, `NOT ADDED` faint,
-or `HALF DONE` in rust with the reason under it. Nothing describes what a feature is. Opening a
-row goes into that feature's editor; Done or Skip returns to the menu. On a live publication
-the call and the clip are the record: their rows open to be read and cannot be added.
+the publish screen above Access: one row per feature the type may add (video: Stance, Cards,
+Thesis; brief and thesis: Stance, Cards), each its icon, its name and its state at the right:
+`NVDA · LONG`, `3 CARDS`, `NOT ADDED` faint, or `HALF DONE` in rust with the reason under it.
+Nothing describes what a feature is. Opening a row goes into that feature's editor; Done or Skip
+returns to the menu. On a live publication the stance and the clip cannot change: their rows
+open to be read, and a live piece with no stance cannot gain one.
 
-**The verdict's call screen** (`src/components/compose/verdict-call-panel.tsx`) is one dashed
-card: the ticker (mono, wide, upper-cased) with the listing's name and `MKT CAP $380M` beside
-it, then the eligibility line (verdigris tick `ELIGIBLE. UNDER THE $2B CAP`, or a rust cross
-with the reason: too large with its size named, a macro instrument with no market cap, no
-market cap on file); a rule; then direction (LONG filled verdigris, SHORT filled rust, the one
-place in Compose the sentiment colours are chrome, because long and short *are* the
-sentiments), the read-only ENTRY (the live level the call locks at), the TARGET field, and the
-move from entry (`+37.1% FROM ENTRY · LONG`, rust when it goes against the call) over an
-italic display line; a rule; then the HORIZON slider, 7 to 180 days, with `45 DAYS` and
-`RESOLVES OCT 30, 2026`. Above the card, when the rolling window is closed, a brass box: "Your
-next verdict unlocks in 12 days. One verdict per rolling thirty days. You can write this one
-now and it saves as a draft." On a live verdict the card is a ledger statement of the locked
-call.
-
-**The verdict's visibility** (`<VerdictVisibility>`) replaces the Access section on its
-publish screen: a ledger card stating subscribers-only while open, public at resolution, and
-one brass line saying what the site does today (the call itself is readable by anyone, and
-nothing flips the piece public yet). The publish button reads **Publish the verdict**.
+**The stance screen** (`<StancePanel>` in `src/components/editor/publish-panel.tsx`) is a
+ticker field, looked up as it is typed (a name that does not resolve is refused; the macro
+instruments in §6.10 count), and a direction: long, short or hold. One stance per publication.
+There is no entry price, no target, no horizon and no eligibility cap, because nothing is graded.
 
 **Tags are one tap, then typed.** The primary list (`<TagSearch>`) is open on arrival when
 nothing is chosen: `MOST USED` (from published work) then every group as chips, over a mono
 field ("TYPE TO NARROW") that takes focus only when the creator opened the list by pressing
 Choose primary or Change; typing narrows to one flat row of chips, prefix matches first; arrows
 move, Enter picks, Escape closes; "Nothing matches. Tags are a fixed list" when it does not. A
-call fills the primary from its sector, marked `AUTO`.
+stance fills the primary from its ticker's sector, marked `AUTO`.
 
 **The header** (`<ComposeHeader>`) is the same on the picker and the workspace: `← STUDIO`,
-the STOA wordmark, `COMPOSE · VERDICT`, and on the right the draft's save state (`DRAFT ·
+the STOA wordmark, `COMPOSE · THESIS`, and on the right the draft's save state (`DRAFT ·
 SAVED JUST NOW`) at `≥ md`; on a phone the status sits beside the forward button instead. On a
 live publication the right holds Preview and Save changes. There is no Publish button in the
 header: the spine leads to the publish screen.
@@ -1379,15 +1293,15 @@ match the screen (`railFor` in `src/lib/compose/rail.ts`): the writer gets the c
 assistant; the cards screen gets the tray alone (the deck's order is set there, and the one AI
 action that serves cards is a button on the canvas); the video screen gets the tray alone, and
 only once a clip is loaded, because that is when the timeline can take a drop. Before a clip,
-on a live piece's read-only clip, and on the take, the call, the headline, tags and publish
+on a live piece's read-only clip, and on the take, the stance, the headline, tags and publish
 there is no rail and the canvas takes the full width. The rail never folds to icons: the
 fold-to-icons state was a stub for a rail that was always there, and that rail is gone.
 
 **Two components render half of themselves** rather than being split in two, so the sequence
 costs no duplicated state: `<VideoRung stage="all">` on the video screen (the picker and the
 editor in one, mounted once for every type that may carry a clip and hidden off-screen so the
-loaded clip survives), and `<LockPublishPanel sections="call" | "publish">` for a non-verdict
-call and the publish settings. The writer (Tiptap) stays mounted and hidden on every other
+loaded clip survives), and `<PublishPanel>` for the publish settings, beside `<StancePanel>`
+for the stance. The writer (Tiptap) stays mounted and hidden on every other
 screen so the charts the publish path screenshots are never lost. With `stage="all"` the rung
 shows its chooser (Record with your camera, the upload drop zone) while no clip is loaded and
 the editor once one is; the chooser is gated on "not the edit-only stage", never on a
@@ -1595,8 +1509,7 @@ its trim, its overlays, and every word.
 
 1. **Preview**, then the fact-check offer when there is a writer with words in it.
 2. **The features menu** (above), then the connected piece.
-3. **Access** — free / subscribers / paid unlock with its price. On a verdict, the visibility
-   statement instead.
+3. **Access** — free / subscribers / paid unlock with its price.
 4. **Promote** — a "Boost on publish" switch. **The cost model is pluggable and deliberately
    unset.** Pricing arrives as a `PromoteModel` (`src/lib/compose/promote.ts`) and the panel
    renders whatever it is handed, including nothing; while there is none it says so plainly and
@@ -1606,8 +1519,7 @@ its trim, its overlays, and every word.
    belongs to the publication rather than to composing it, so the same panel is reachable after
    publish from the item in Studio.
 5. **Disclosures**, as a gate.
-6. **Publish** — `Publish & Lock` when a call is being locked, `Publish the verdict` on a
-   verdict. Clicking it opens `<LockConfirmModal>` (§2.5) → seal animation.
+6. **Publish** — one press, labelled **Publish**. No confirmation modal and no ceremony.
 
 **Pre-publish fact-check panel:** a "Run fact-check" button; while running, a calm inline loading
 state; once complete, the claim-by-claim breakdown with an inline "Add source" input on each
@@ -1615,7 +1527,7 @@ state; once complete, the claim-by-claim breakdown with an inline "Add source" i
 
 **Disclosure checklist**, required, each a real toggle (never a single "I agree" checkbox that
 hides real information): position held, compensation tied, views certified. Publish is disabled
-until the fact-check has run at least once and every disclosure is *answered* (a Yes with
+until every disclosure is *answered* (the fact-check is a bonus, never a gate) (a Yes with
 disclosure is completely valid; an unanswered field is not).
 
 #### The three inks (do not weaken this)
@@ -1643,7 +1555,7 @@ plain.
   that stopped being gated.
 - Tags stay: one primary that drives discovery placement, up to two secondary, from the closed
   curated list.
-- Existing drafts open in the workspace without losing anything: body, tags, access, the call,
+- Existing drafts open in the workspace without losing anything: body, tags, access, the stance,
   and the saved deck with locked payloads intact.
 
 **AI assist (left rail, under the tray):** generate cards from the thesis, insert a metric, build
@@ -1653,48 +1565,31 @@ shows its price and then lets the analyst decide, and suggestions are inserted a
 creator accepts, never silently auto-written, preserving the certification promise that the
 published words are genuinely their own.
 
-### 6.3 My Reports — `/dashboard/reports`
+### 6.3 My Reports — Studio's Publications list (`/studio`)
 
-Three tabs: **Drafts** / **Locked (open)** / **Resolved**.
+As built, one list of the analyst's publications with drafts, published and archived pieces
+(spec'd as `/dashboard/reports`). There are no Open / Resolved tabs: nothing is open and nothing
+resolves.
 
 **Archived rows** carry a solid-ink ARCHIVED chip beside the content badge, dim the headline so
 they read differently while scanning, and spell the state out on the status line: hidden from
 the public, and restorable. The content badge lists what the publication contains and is
 dropped entirely when it would only repeat the type label.
 
-- Drafts: title, last-edited timestamp, `<StatusChip>` "Draft," row actions: Edit, Delete (confirm
-  modal, since drafts genuinely can be deleted — only locked reports can't)
-- Locked (open): title, ticker, target, countdown to horizon date, click-through to the read-only
-  report view
-- Resolved: title, ticker, `<StatusChip>` Hit/Miss, actual return %, with a small "Why this
-  scored the way it did" link into that specific entry of Track Score Analytics (§6.4)
-- Each tab has its own empty state copy specific to that tab ("No drafts yet." / "No open calls
-  right now." / "Nothing resolved yet — your first locked call will show up here once its
-  horizon date passes.") rather than one generic empty state reused across all three.
+- Drafts: title, last-edited timestamp, row actions: Edit, Delete (a one-line confirmation).
+- Published: title, type, ticker and direction when it has a stance. Archive always; Delete only
+  where §2.15 allows it.
+- Empty state names what is missing and offers Compose.
 
-### 6.4 Track Score Analytics — `/dashboard/analytics`
+### 6.4 Track Score Analytics — `/dashboard/analytics` (retired 2026-09-24)
 
-- **Score header:** large `<TrackScoreBadge size="lg">` plus the raw components broken out explicitly:
-  hit rate, average return, sample size — never just the final number. If `sample_size` is below
-  the platform's shrinkage constant `k` (per the backend spec's formula), show a **"Provisional —
-  based on a small number of resolved calls"** note directly beneath the score, in the same
-  honest register as the Trust & Methodology page.
-- **Score history chart:** simple line chart, Plex Mono axis labels, plotting
-  `moat_score_snapshots` over time
-- **Per-report performance table:** ticker, call date, target, resolution, actual return —
-  sortable columns
-- **Percentile rank:** shown two ways — "Top X% of all creators" and "Top X% of [creator's
-  primary sector] creators" (never just the platform-wide number alone, since a small-cap
-  specialist shouldn't read as underperforming a mega-cap dividend writer on a metric that isn't
-  apples-to-apples)
-- Permanent link: **"How your score is calculated"** → `/trust#moat-score` (same content as the
-  public Trust & Methodology page — literally the same page, anchored, not a duplicated
-  explanation that could drift out of sync)
+Deleted with grading: no score, no hit rate, no per-call performance table, no percentile rank
+and no methodology link. What an analyst sees about their own work is Studio's Insights (reach
+and audience, `/studio/insights`), which never scores them.
 
 ### 6.5 Audience — `/dashboard/audience`
 
-- Subscriber count + growth chart (simple line chart, same visual language as the Track Score
-  history chart for consistency)
+- Subscriber count + growth chart (simple line chart)
 - Churn rate, shown plainly as a percentage with a short explanatory tooltip, not dressed up
 - Subscriber list (paginated table: name/handle, subscribed-since date, tier if multiple exist)
 - **Top referral sources** — where subscribers are coming from (a simple bar list: Direct,
@@ -1748,15 +1643,15 @@ Identity verification status (Verified / re-verification needed if a document ex
 handles the actual re-verification during their own onboarding flow, this page just surfaces
 status and a "Re-verify" button when needed), security settings (password/2FA if applicable), and
 the same notification-preference pattern as the investor Account Settings (§5.9), with
-creator-specific notification types added: new subscriber, new debate reply, report resolved.
+creator-specific notification types added: new subscriber, new debate reply.
 
 ---
 
 ### 6.10 Macro instruments — `/markets/[symbol]`
 
 Gold, crude, Treasury yields and bitcoin are tracked instruments with their own pages, their own
-search hits, and validity as a ticker in the call block. They render through `<MacroView>`, which
-carries the same Lightweight Charts tape (HIT / MISS as small dots) and the same Stoa activity blocks as a stock, and drops the
+search hits, and validity as a stance ticker. They render through `<MacroView>`, which
+carries the same Lightweight Charts tape and the same Stoa activity blocks as a stock, and drops the
 company facts entirely: gold has no market cap and a Treasury yield has no earnings, so the meta
 row is replaced by what the level actually means rather than rendered with blanks.
 
@@ -1772,16 +1667,16 @@ row is replaced by what the level actually means rather than rendered with blank
 
 **Symbols follow the TradingView convention, not the plain words.** `GOLD` and `WTI` are both real
 listed equities already in the instrument table (Gold.com and W&T Offshore), so using them here
-would shadow a company page and leave a call ambiguous about what was actually called. Search
+would shadow a company page and leave a stance ambiguous about what it was taken on. Search
 carries keyword aliases, so "gold", "oil", "treasuries" and "bitcoin" all reach the right
 instrument while an exact equity symbol match still outranks them.
 
 **Bitcoin is a deliberate single exception**, included because it now trades as a macro asset.
 Stoa does not cover crypto generally and this table is not the place to start.
 
-**A yield is not a price.** The three Treasury pages carry a brass note saying that a call for the
-level to rise is a call for bond prices to fall. Any instrument where "up" does not mean "worth
-more" needs that line, or the call block invites the opposite of what the analyst means.
+**A yield is not a price.** The three Treasury pages carry a note saying that a view that the
+level will rise is a view that bond prices will fall. Any instrument where "up" does not mean
+"worth more" needs that line, or a long stance invites the opposite of what the analyst means.
 
 The same rule applies in **every list**, not just on the instrument page. `macroLevelLabel()`
 formats a macro level by its own unit and returns null for an equity, so a caller keeps its normal
@@ -1815,9 +1710,9 @@ instrument does not, because Stoa claims to track it.
   /@[handle]/[slug]       -- report detail / public preview (shared route, entitlement-aware rendering)
 /components
   /ui                    -- Button, Input, Chip, Toast, Modal base primitives
-  /shared                -- TopNav, TrackScoreBadge, DisclosureBlock, PaywallGate, LockConfirmModal,
-                             FactCheckLayer, DebateThread, StatusChip  (Part 2, one file each)
-  /feed                  -- FeedCard, CreatorCard, Leaderboard
+  /shared                -- TopNav, DisclosureBlock, PaywallGate, FactCheckLayer, DebateThread,
+                             EditedMarker  (Part 2, one file each)
+  /feed                  -- FeedCard, CreatorCard
 /lib
   /design-tokens.css     -- every value from §1.4, as CSS custom properties
   /tailwind.config.ts    -- maps the token file into Tailwind's theme, don't hardcode hex in components
@@ -1827,10 +1722,11 @@ instrument does not, because Stoa claims to track it.
 note at the top of this document. Read the structure above as "what the ideal IA looks like,"
 and map it onto the existing `/analyst/[handle]`, `/feed`, `/studio` routes in practice.
 
-### 7.2 Token file, concretely
+### 7.2 Token file, concretely [pending replacement]
 
-Everything in §1.4 should exist as real CSS variables from the start, not scattered literal
-values:
+The values below are the retiring system (§1.4); the incoming values are in
+`docs/design/direction-b.html` and land in the next batch. What stays is the principle: every
+value exists as a real CSS variable, never a scattered literal.
 
 ```css
 :root {
@@ -1857,13 +1753,11 @@ Use **Lucide** icons for new components going forward (see `AGENTS.md`'s tech st
 line-icon style matches the restrained, non-illustrative direction this spec calls for. Existing
 Phosphor usage across the current codebase is not an urgent rip-out, but don't add more of it;
 the goal is Lucide in steady-state, not both libraries indefinitely. Do not add custom SVG
-illustrations anywhere except the seal graphic itself, which is the one genuinely custom asset in
-the product and should be built once as a proper component (`<SealStamp status="locked" | "hit" |
-"miss" date={...} />`) rather than redrawn per usage.
+illustrations. (The seal, once the one custom asset, is retired with grading.)
 
 ### 7.4 Accessible primitives
 
-For the modal (`<LockConfirmModal>`), popovers (`<FactCheckLayer>` claim popovers), and dropdown
+For modals (the archive and delete dialogs), popovers (`<FactCheckLayer>` claim popovers), and dropdown
 menus (role switcher, notification bell, account menu, overflow `[···]` menus), build on top of
 **Radix UI primitives** rather than hand-rolling focus-trap and ARIA behavior from scratch — this
 is the fastest path to genuinely meeting the §1.6 accessibility floor rather than approximating
@@ -1874,7 +1768,7 @@ it.
 Two things are real product surfaces but out of scope for this design pass, flagged so nothing
 falls through a gap silently:
 
-- **Email templates** (welcome email, digest emails, resolution notifications) — these need their
+- **Email templates** (welcome email, digest emails) — these need their
   own pass, likely simpler/more constrained than the in-app design system, since they render in
   email clients rather than a browser
 - **The exact fact-check claim-extraction prompt output schema's rendering edge cases**
