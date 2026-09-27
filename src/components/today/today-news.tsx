@@ -9,7 +9,7 @@ function newsTime(iso: string): string {
 
 /**
  * Wire headlines as a band, the Markets page's shape. Today draws the same
- * headlines in its own sheet anatomy (`NewsSheet` in today-sections.tsx).
+ * headlines as its own band (`NewsBand` in today-sections.tsx).
  */
 export function TodayNews({
   items,

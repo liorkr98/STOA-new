@@ -1,7 +1,7 @@
 /**
- * Today pulls up tight under the nav (the masthead is the page's own top
- * rule), but keeps the shell's side gutter: its width comes from the wide
- * tier on the page itself, not from breaking out of the layout.
+ * Today pulls up under the nav ("Today." carries its own top space), but
+ * keeps the shell's side gutter: its width comes from the wide tier on the
+ * page itself, not from breaking out of the layout.
  *
  * Only the top padding is cancelled, and by the token rather than a fixed 8,
  * which was over-cancelling on a phone. Cancelling the bottom too ate the
