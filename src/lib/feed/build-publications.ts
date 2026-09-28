@@ -1,5 +1,5 @@
 import "server-only";
-import { readStoredVideoEdit } from "@/lib/compose/overlays";
+import { readStoredVideoEdit, sealStoredEdit } from "@/lib/compose/overlays";
 import { bunnyEmbedUrl } from "@/lib/video/bunny";
 import { listTickerRows } from "@/lib/db/tickers";
 import { storyDek, storyHeadline } from "@/lib/dispatch/ranking";
@@ -168,7 +168,7 @@ async function buildPublications(
     }
     const chips = stanceChips(r);
     const preview = r.feed_preview_seconds ?? null;
-    const videoEdit = readStoredVideoEdit(r.video_edit);
+    const videoEdit = sealStoredEdit(readStoredVideoEdit(r.video_edit));
     // The length a reader gets: the kept region when the clip was trimmed,
     // shortened further by a preview cap.
     const kept =

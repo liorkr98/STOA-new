@@ -224,6 +224,18 @@ export function readStoredVideoEdit(raw: unknown): StoredVideoEdit | null {
 }
 
 /**
+ * The stored edit as it may leave the server for a reader. A locked card
+ * placed as an overlay is drawn sealed wherever a reader plays the clip (the
+ * Feed, the report page), so its payload is never needed there; it is
+ * emptied here so the locked words are not in the page's data either. Only
+ * Compose, for the card's own author, reads the edit unsealed.
+ */
+export function sealStoredEdit(edit: StoredVideoEdit | null): StoredVideoEdit | null {
+  if (!edit) return null;
+  return { ...edit, cards: edit.cards.map((c) => (c.locked ? { ...c, payload: {} } : c)) };
+}
+
+/**
  * The label shown on the timeline block and in the picker. A card source is
  * resolved through `names` so the block follows the card's current name
  * instead of freezing whatever it was called when it was dropped.

@@ -8,7 +8,7 @@ import { getPendingClipForReport } from "@/lib/db/video-clips";
 import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
-import { readStoredVideoEdit } from "@/lib/compose/overlays";
+import { readStoredVideoEdit, sealStoredEdit } from "@/lib/compose/overlays";
 import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { readMinutes } from "@/lib/reports/reading";
 import { listComments, listLikedCommentIds } from "@/lib/db/comments";
@@ -158,7 +158,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 analystId: report.author_id,
                 durationSeconds: clip.duration_seconds,
                 analystName,
-                edit: readStoredVideoEdit(report.video_edit),
+                edit: sealStoredEdit(readStoredVideoEdit(report.video_edit)),
                 ticker: report.ticker,
               }
             : null,
