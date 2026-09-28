@@ -1036,16 +1036,20 @@ const FeedItem = function FeedItem({
                   </button>
                 )}
 
-                {/* Two short scrims, one per edge, eased so neither reads as a
-                    band. They carry the white words and stop well short of the
-                    middle of the frame, where the face is. */}
+                {/* Two scrims, one per edge, sized from the chrome they carry
+                    (the item measures it) rather than from the frame: strong
+                    behind every line of white words, even on a white frame,
+                    and fading over a short stretch above, so a one-line
+                    headline darkens less of the picture than a three-line one
+                    and neither reaches the face in the middle. The stance card
+                    is opaque paper and needs none. */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 z-[11] h-32 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.5),rgba(0,0,0,0.26)_40%,rgba(0,0,0,0.08)_75%,transparent)]"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-[11] h-[calc(6rem+var(--feed-safe-top,0px))] bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.5)_calc(2.75rem+var(--feed-safe-top,0px)),rgba(0,0,0,0.14)_75%,transparent)]"
                 />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 z-[11] h-[min(26rem,62%)] bg-[linear-gradient(to_top,rgba(0,0,0,0.78),rgba(0,0,0,0.62)_28%,rgba(0,0,0,0.34)_58%,rgba(0,0,0,0.1)_82%,transparent)]"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-[11] h-[calc(var(--chrome-b,16rem)+5rem)] bg-[linear-gradient(to_top,rgba(0,0,0,0.72),rgba(0,0,0,0.56)_calc(100%_-_5rem),rgba(0,0,0,0.22)_calc(100%_-_2.5rem),transparent)]"
                 />
 
                 <div
