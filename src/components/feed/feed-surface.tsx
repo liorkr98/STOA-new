@@ -196,16 +196,30 @@ export function FeedSurface({
   // Which publication is on screen. `rootMargin` collapses the observation box
   // to a band across the middle, so exactly one section is ever the active one
   // however tall the viewport is.
+  //
+  // A section entering the band takes over at once, so the next clip starts
+  // as it arrives. One leaving it hands back to whatever is still there: a
+  // gesture too short to carry to the next publication springs back (Chrome
+  // does this with any wheel or trackpad movement under half the screen), and
+  // without the hand-back the Feed stayed on the one that had only peeked in,
+  // playing it off screen while the clip in view sat paused.
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root) return;
+    const inBand = new Set<number>();
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (!e.isIntersecting) continue;
           const i = itemRefs.current.indexOf(e.target as HTMLElement);
-          if (i >= 0) setActive(i);
+          if (i < 0) continue;
+          if (e.isIntersecting) {
+            inBand.add(i);
+            setActive(i);
+          } else {
+            inBand.delete(i);
+          }
         }
+        if (inBand.size === 1) setActive([...inBand][0]);
       },
       { root, rootMargin: "-45% 0px -45% 0px", threshold: 0 },
     );
