@@ -147,7 +147,14 @@ export function NativeClip({
     // preview cap. Both ends are in the untrimmed clip's seconds.
     const end = cap ? Math.min(start + cap, cut ?? Infinity) : cut;
     const windowed = start > 0 || end != null;
-    const total = () => (end != null ? end - start : el.duration - start);
+    // Never past the file itself. A stored edit can describe a longer clip
+    // than the one playing (a demo clip standing in for one that cannot
+    // play), and a seek past the file's end wraps the clip back to its start.
+    const endAt = () => (end != null && Number.isFinite(el.duration) && el.duration > 0 ? Math.min(end, el.duration) : end);
+    const total = () => {
+      const e = endAt();
+      return e != null ? e - start : el.duration - start;
+    };
     if (seekRef) {
       seekRef.current = (ratio) => {
         const span = total();
@@ -171,7 +178,8 @@ export function NativeClip({
         el.currentTime = start;
         return;
       }
-      if (end != null && el.currentTime >= end) {
+      const e = endAt();
+      if (e != null && el.currentTime >= e) {
         el.currentTime = start;
       }
       onTime?.(el.currentTime);
