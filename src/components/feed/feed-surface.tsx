@@ -1276,7 +1276,7 @@ function StillStage({ pub, written, signInHref }: { pub: FeedPublication; writte
 function EndOfFeed({ snapClass }: { snapClass: string }) {
   return (
     <section className={cn("flex snap-start items-center justify-center px-4 pb-[var(--tab-h)]", snapClass)} aria-label="End of feed">
-      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-panel border border-border p-9 text-center">
+      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-panel border border-border bg-surface p-9 text-center">
         <span className="num text-ticker text-text-mute">End of feed</span>
         <p className="font-display text-headline font-extrabold leading-[1.08] tracking-[-0.03em]">You are caught up.</p>
         <p className="text-body leading-relaxed text-text-mute">
@@ -1343,10 +1343,7 @@ function DiscussionPanel({
       <div className="relative flex max-h-[min(88svh,100%)] w-full flex-col overflow-y-auto rounded-t-panel bg-bg p-4 pb-[max(1rem,var(--safe-bottom))] md:h-full md:max-h-none md:max-w-[460px] md:rounded-none">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <span className="num text-ticker text-text-mute">
-              Discussion{pub.ticker ? ` · ${pub.ticker}` : ""}
-            </span>
-            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-body font-bold leading-tight">
+            <p dir="auto" className="user-copy line-clamp-2 font-display text-body font-bold leading-tight">
               {pub.headline}
             </p>
           </div>
