@@ -256,16 +256,24 @@ phone width, and so do we.
   capsules are within a few pixels of each other so the change is invisible. Under
   `prefers-reduced-motion` it jumps. A label must stay narrower than its slot less `16px` at
   390px (Markets is the widest) so the lens keeps air either side of it.
-- **Shrink on scroll.** Scrolling down scales the pill to `0.92` about its bottom edge; scrolling
-  up restores it, over `--dur-2` on `--ease-out`. Under `prefers-reduced-motion` it stays at full
-  size. This is a deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
-  asked for by name; the travelling lens above is the only other thing in the nav that moves.
-  It listens to `main`; a surface that scrolls in its own column (the Feed, Today's frame)
-  does not shrink it.
-- **Never flickers.** The direction decision is `src/lib/nav/scroll-shrink.ts`, a pure function
-  with tests. Movement accumulates in one direction and only flips the bar past an 18px
-  threshold, so a resting thumb cannot flutter it; a reversal restarts the count rather than
-  netting off, and the top 24px always restores full size.
+- **Shrink with the scroll.** The pill does not flip between two sizes: it moves with the
+  scroll. Scrolling down shrinks it towards `scale(0.92)` about its bottom edge over 64px of
+  scroll, scrolling up opens it out by the same amount, and it follows a few frames behind (an
+  80ms time constant), so a Feed card snapping into place still reads as a glide. Once the
+  scroll has been still for 140ms it settles gently to the nearer size, never resting halfway.
+  Within 64px of the top it can be no smaller than the distance left, so the top of a page is
+  always full size, and opening a new page opens it out. Under `prefers-reduced-motion` it stays
+  at full size. A deliberate exception to the "do not animate nav" rule in `docs/MOTION.md` §A.4,
+  asked for by name; the numbers are in the AppTabs row of MOTION.md §A.3. The travelling lens
+  above is the only other thing in the nav that moves.
+  It listens on the document in the capture phase (scroll events do not bubble), so any
+  scroller at least half the screen tall drives it: `main`, the Feed's own reader, Today's
+  columns. Sideways tracks, dropdowns and tables do not. Before 2026-09-28 it listened only to
+  `main`, so the Feed never shrank it.
+- **Never jumps, never flutters.** The arithmetic is `src/lib/nav/scroll-shrink.ts`, a pure
+  function with tests (`npm run test:nav`); `--shrink` is written straight to the pill each
+  frame, not through React state. A resting thumb's two-pixel twitch moves the pill by less than
+  a pixel.
 - **Never covers content.** Because the pill overlays the page, the scroller reserves the
   clearance: `.has-app-tabs main` carries `--main-pad-y + --tab-h` as bottom padding on phones.
   A page that cancels main's padding to break out must cancel the **top** only; cancelling the
@@ -667,30 +675,38 @@ and requires the creator to type `DELETE` before the confirm button turns on.
 
 ---
 
-### 2.16 Going back: `<HistoryDepth>` and `<EdgeSwipeBack>`
+### 2.16 Going back: `<HistoryDepth>` and the phone's own swipe
 
-Both live in `src/components/layout/edge-swipe-back.tsx` and are mounted once
-in `src/app/providers.tsx`.
+`<HistoryDepth>` lives in `src/components/layout/history-depth.tsx` and is mounted once in
+`src/app/providers.tsx`.
 
 - **Knowing what is behind a page.** Every history entry carries its depth in
   the app (`stoaDepth`, `src/lib/nav/back.ts`): `installHistoryDepth` wraps
   `pushState` and `replaceState`, so any push (the router, Explore's
   `?watch=`, the stories overlay) is one deeper and a replace keeps its
-  depth. `canPopHistory()` is true above depth 0. Compose's Back and the edge
-  swipe use it. (Until 2026-09-27 it read the Pages Router's `idx`, which the
-  App Router never writes, so it was always false.)
-- **Swipe from the left edge to go back, in the installed app only.** An app
-  added to the iPhone home screen has no browser and iOS gives it no back
-  gesture. A drag that starts within 24px of the left edge and travels 80px
-  goes back (or to Today when nothing is behind); an ink disc with a chevron
-  follows the finger. It listens in the capture phase and claims the drag
-  once it is clearly sideways, so the Feed's card track and the stories
-  overlay do not act on it too. Off in a browser tab (the browser owns the
-  gesture there, and two backs would fire) and on Compose (leaving it has its
-  own unsaved-work guard).
-- **Overlays are history entries.** The stories overlay and Explore's video
-  overlay each push one entry, so Back closes them and lands where the reader
-  was. The stories overlay ignores drags that start at the left edge.
+  depth. `canPopHistory()` is true above depth 0. Compose's Back uses it.
+  (Until 2026-09-27 it read the Pages Router's `idx`, which the App Router
+  never writes, so it was always false.)
+- **Swiping back is the phone's, not ours.** Stoa draws no back gesture of its own. iOS gives
+  a web app added to the home screen its own back swipe, the one where the previous page
+  slides in under the finger, and so does every browser tab. It runs from the edge the phone's
+  language reads from: the left on an English iPhone, the right on a Hebrew one. A website cannot
+  turn it off, flip it, or match it (it shows a picture of the previous page, which a page cannot
+  draw). From 2026-09-27 to 2026-09-28 Stoa had its own left-edge swipe with an arrow in the
+  installed app (`EdgeSwipeBack`); it was removed because on a Hebrew iPhone it was a second
+  gesture beside iOS's, and on an English one it would have gone back twice.
+- **So the rule is: every place you can go back from is a history entry.** Every surface is
+  reached by a push (a link, `router.push`, or `history.pushState` for an overlay), never a
+  replace, so the phone's swipe lands exactly where the on-screen Back would. The first page the
+  app opens on has nothing behind it, so the swipe does nothing there; the tab bar is the way out.
+- **Overlays are history entries.** The stories overlay and Explore's video overlay each push
+  one entry, so the swipe closes them and lands where the reader was. The stories overlay
+  leaves drags that start within 24px of either edge to the phone, so a back swipe never
+  changes analyst as well.
+- **Compose.** Its own links go through the unsaved-work dialog. The phone's swipe cannot be held
+  for a dialog (the previous page is already on screen when the page hears of it), so a draft
+  saves on the way out, the dialog's own default. An unsaved edit to a live publication is not
+  saved: that would file a public EDITED marker the creator did not ask for.
 
 ---
 

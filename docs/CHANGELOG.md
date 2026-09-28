@@ -10,6 +10,61 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-28: One back swipe, and a bar that moves with the scroll
+
+**What caused the two swipes**
+
+- On an iPhone, a site added to the home screen gets iOS's own back swipe:
+  the smooth one, where the previous page slides in under the finger. It
+  runs from the edge the phone's language starts from, so on a Hebrew
+  iPhone it goes right to left, like every other app on that phone. The
+  last batch's note that "iOS gives an installed app no back gesture" was
+  wrong for a Hebrew iPhone: the gesture was there, on the other side.
+- The small arrow going left to right was Stoa's own, added in the last
+  batch. Stoa's code does nothing at all on a right-to-left swipe (checked
+  on every screen).
+
+**What a visitor notices**
+
+- There is one back swipe: the phone's. Stoa's arrow gesture is gone. On an
+  English iPhone the phone's swipe runs left to right, and Stoa's would have
+  sat on top of it and gone back twice.
+- Swiping back lands where the on-screen Back would, everywhere: Today, the
+  Feed, Explore and its videos, Markets and instrument pages, profiles,
+  publications, Compose, Studio's pages, the account pages and Settings, and
+  the stories overlay.
+- Swiping back out of Compose saves the draft on the way out, the way
+  "Save and leave" does. The phone's swipe cannot be held for the "unsaved
+  changes" question, because the previous page is already showing by the
+  time Stoa hears of it.
+- In the stories overlay, a swipe that starts at either edge is left to the
+  phone, so it closes the overlay and never also changes analyst.
+- The bottom bar now shrinks on the Feed too. It used to watch only the
+  page, and the Feed scrolls inside its own panel.
+- The bar no longer snaps between two sizes. It shrinks and grows with the
+  scroll as it happens, a few frames behind, and settles gently to the
+  nearer size once the scroll stops. The top of a page is always full size.
+
+**What cannot be done**
+
+- A website cannot turn off, flip or replace the phone's back swipe, and
+  cannot copy its feel: the phone shows a picture of the previous page
+  under the finger, which a page cannot draw. So on a Hebrew iPhone back
+  is right to left and stays that way.
+- On the first screen the app opens on there is nothing behind it, so a
+  swipe does nothing there. The tab bar is the way out. (The removed
+  gesture used to send you to Today from there.)
+- Editing a live publication: an unsaved edit is lost if you swipe out,
+  because saving it files a public EDITED marker that only the creator's
+  own Save may file. Compose's own Back still asks first.
+- Studio's Earnings page has no link to it anywhere in the app.
+
+**What needs Krisi**
+
+- Nothing.
+
+---
+
 ## 2026-09-27: The profile as a storefront, and swipe-back
 
 A profile used to be built around a track record. That is gone and nothing
