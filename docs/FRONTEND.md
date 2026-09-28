@@ -1482,19 +1482,24 @@ card **stays in the tray after it is placed**, because the same card can be in b
 creator can answer about their own publication and "kill switch" is not:
 
 - **Make your case** — Thesis
-- **Prove it** — Path to target, Checklist
+- **Prove it** — Checklist
 - **Compare** — Your edge
 - **Show the risk** — Kill switch, Catalysts
 - **Your own** — Figure, Chart
 
-A **Custom** entry lists the same eight formats by shape (Statement, Steps, Checklist, Two
-columns, Conditions, Timeline, Image, Chart) for the creator who already knows they want a
+A **Custom** entry lists the same seven formats by shape (Statement, Checklist, Two columns,
+Conditions, Timeline, Image, Chart) for the creator who already knows they want a
 timeline and does not want to be asked why. Both routes build the same card.
 
 The **Steelman** (Objection and answer) is parked: not offered here until the analysis that
 supplies the objection works. Its kind, schema, editor and Feed rendering remain, so a
 publication that already carries one renders unchanged and a draft holding one can still open it
 (`PARKED_KINDS` in `src/lib/compose/cards.ts`).
+
+**Path to target** (Steps) is retired, not parked (decided by Bar, 2026-09-28): it ended in a
+price target, and targets went with grading. It is never offered new, by intent or by shape. Work
+already published keeps it exactly as the analyst wrote it, in the Feed, on the report page and in
+Compose, where it still opens and edits (`RETIRED_KINDS` in `src/lib/compose/cards.ts`).
 
 **Editing a card ends with Done.** The editor is a dialog; its footer carries a quiet Delete on
 the left and, on the right, one line saying what happens ("Saved with the draft. Reopen it from

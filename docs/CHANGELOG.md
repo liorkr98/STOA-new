@@ -69,11 +69,22 @@ everything else sits small and light on it.
   shrinking on scroll with the video running underneath it, and the stories
   overlay signed in and signed out.
 
+**The "Path to target" card is retired (decided by Bar)**
+
+- It ended in a price target ("= Target $130"), and targets went with
+  grading, so Compose no longer offers it, by intent or by shape. Nothing
+  else in Compose, including the assistant, could make one.
+- Work already published keeps it exactly as the analyst wrote it, in the
+  Feed, on the publication page and in Compose, where it still opens and
+  edits. It is never removed from a published piece.
+- 103 live publications carry one (and 163 archived ones), all on the
+  seeded demo accounts; no real analyst has published one. (An earlier
+  count of nine came from a sample capped at 1,000 cards.)
+
 **Reads oddly, for Bar to decide**
 
-- Nine live publications carry a "Path to target" evidence card, which ends
-  in "= Target $130"-style lines. Targets were retired with grading, but
-  this is the analyst's own card and Compose still offers it.
+- The 103 demo publications above still show a price target on the live
+  site. Taking the card off demo content is a data clean-up, not done here.
 - On a publication with a stance, the ticker now appears once, on the card;
   it is no longer in the dateline.
 
