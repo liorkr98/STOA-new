@@ -26,6 +26,8 @@ import type { TodayFace } from "@/lib/today/types";
 
 /** A sideways drag longer than this, and mostly sideways, changes analyst. */
 const SWIPE_X = 56;
+/** Drags starting this close to either side are left to the system's back swipe. */
+const EDGE = 24;
 /** A downward pull from the top longer than this closes. */
 const PULL_CLOSE = 96;
 
@@ -140,8 +142,9 @@ export function FaceStories({
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     if (!t || e.touches.length > 1) return;
-    // A drag from the left edge is the system's back, which closes the overlay; never a previous analyst.
-    if (t.clientX <= 24) {
+    // A drag from either edge is the system's back, which closes the overlay;
+    // never another analyst. iOS starts it from the right on a right-to-left phone.
+    if (t.clientX <= EDGE || t.clientX >= window.innerWidth - EDGE) {
       start.current = null;
       return;
     }
