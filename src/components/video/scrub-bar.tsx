@@ -9,6 +9,9 @@ import { cn } from "@/lib/design/cn";
  * its own element (the Feed's stage, the report page, the Explore and
  * Dispatch cards, the landing lead), so a reader learns it once.
  *
+ * Always white: it is drawn on a picture in every theme, and the page's paper
+ * tone is near-black in dark mode, which put a dark line on the video.
+ *
  * Quiet at rest: a hairline the height of a border. It grows while it is
  * pressed or hovered so it is easy to hold on a phone, and the hit area is
  * taller than the line is, so a thumb does not have to land on three pixels.
@@ -23,6 +26,7 @@ export function ScrubBar({
   onSeek,
   onScrubbing,
   edge = "bottom",
+  inline = false,
   hit = 24,
   className,
   label = "Position in the clip",
@@ -35,6 +39,12 @@ export function ScrubBar({
   onScrubbing?: (scrubbing: boolean) => void;
   /** Which edge of the frame the line sits on. */
   edge?: "top" | "bottom";
+  /**
+   * Drawn inside a block of chrome rather than along the frame's edge: the
+   * line is centred in its band and has round ends. The parent sets the
+   * band's position (`relative`, the hit height).
+   */
+  inline?: boolean;
   /** The touchable band's height in pixels; the line itself stays thin. */
   hit?: number;
   className?: string;
@@ -112,20 +122,21 @@ export function ScrubBar({
       }}
       className={cn(
         "focus-ring absolute inset-x-0 flex cursor-pointer select-none [touch-action:none]",
-        edge === "top" ? "top-0 items-start" : "bottom-0 items-end",
+        inline ? "inset-y-0 items-center" : edge === "top" ? "top-0 items-start" : "bottom-0 items-end",
         className,
       )}
-      style={{ height: hit }}
+      style={inline ? undefined : { height: hit }}
     >
       <div
         aria-hidden
         className={cn(
-          "w-full overflow-hidden bg-[color-mix(in_srgb,var(--paper)_25%,transparent)] transition-[height] duration-[var(--dur-1)] ease-[var(--ease-out)]",
+          "w-full overflow-hidden bg-white/25 transition-[height] duration-[var(--dur-1)] ease-[var(--ease-out)]",
           active ? "h-[6px]" : "h-[3px]",
+          inline && "rounded-button",
         )}
       >
         <div
-          className="h-full w-full origin-left bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]"
+          className="h-full w-full origin-left bg-white/90"
           style={{ transform: `scaleX(${shown})` }}
         />
       </div>
