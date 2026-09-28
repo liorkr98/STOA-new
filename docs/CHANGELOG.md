@@ -10,6 +10,79 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-09-28: The Feed in Direction B
+
+The last surface in the new design. The picture fills the screen and
+everything else sits small and light on it.
+
+**What a visitor notices**
+
+- Near the top, the stance is a small paper card on the picture: the
+  ticker chip and ▲ Long in green, ▼ Short in red, or Hold in grey. A
+  ticker with no stance shows its sector beside it; a piece with no ticker
+  shows its theme or sector. There is never an empty card. It stays paper in
+  dark mode, so it can never be mistaken for the chips the clips carry in
+  their own picture.
+- Above it, on a phone, the dateline: trending or new, the type, the date
+  and the length, with the sound button at the right. On desktop the
+  dateline is the strip above the frame, as before.
+- At the bottom: the headline in large type, the analyst's round face, name,
+  follower count and the coral Follow (the count moves when you follow),
+  then the progress bar, then like, discuss, save and share with the card
+  counter at the right end.
+- The darkening behind the words is sized to the words, strong enough to
+  read on a white frame and never reaching the middle of the picture, so
+  the analyst's face is not dimmed.
+- On an evidence card, the headline and the card counter now sit on the
+  page beneath the card, and nothing covers the bottom of the card.
+- The analyst's own captions and cards placed near the top or bottom of the
+  video now sit just inside the Feed's words and buttons instead of under
+  them.
+- In the Explore player and the stories, nothing sits under the iPhone's
+  notch or home bar, and Explore's back button no longer covers the date.
+
+**Bugs found and fixed on the way**
+
+- A locked card placed as a video overlay was drawn sealed, but its words
+  were sent to every reader's browser in the page data, on the Feed and on
+  the publication page. They are now removed on the server. Only one live
+  publication had one, an archived test piece.
+- After a short scroll that sprang back (any wheel or trackpad movement
+  under half the screen in Chrome, or a slow half swipe on a phone), the
+  Feed thought it had moved on: the next clip played off screen while the
+  one in view sat paused. It now stays with the clip in view.
+- The progress bar over videos was drawn near-black in dark mode, on every
+  surface that shows it. It is always white now.
+- Where a stand-in demo clip plays for a publication whose own video cannot
+  play, dragging the progress bar past the demo clip's real length sent it
+  back to the start.
+
+**Checked and unchanged**
+
+- Scrolling between publications and sideways through evidence cards, each
+  pinned to its own direction, by real touch on a phone and by wheel, keys
+  and mouse on desktop, in Chrome and Safari's engine; a vertical swipe
+  starting on a card, the stance card or the headline still moves the Feed.
+- Autoplay muted on arrival and pausing on leaving, tap to pause, the sound
+  button, dragging the progress bar, trims, sealed locked cards (in the
+  cards and in the overlay), the closing card's real links, the tab bar
+  shrinking on scroll with the video running underneath it, and the stories
+  overlay signed in and signed out.
+
+**Reads oddly, for Bar to decide**
+
+- Nine live publications carry a "Path to target" evidence card, which ends
+  in "= Target $130"-style lines. Targets were retired with grading, but
+  this is the analyst's own card and Compose still offers it.
+- On a publication with a stance, the ticker now appears once, on the card;
+  it is no longer in the dateline.
+
+**What needs Krisi**
+
+- Nothing.
+
+---
+
 ## 2026-09-28: One back swipe, and a bar that moves with the scroll
 
 **What caused the two swipes**

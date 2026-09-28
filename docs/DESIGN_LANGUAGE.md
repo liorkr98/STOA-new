@@ -217,6 +217,7 @@ These hold literal copies of the tokens and must be updated by hand when a token
 | TradingView embed | `src/components/shared/TradingViewChart/TradingViewChart.tsx` |
 | Chart fallbacks | `price-chart.tsx`, `card-chart.tsx` (used only if a token fails to resolve) |
 | Email templates | `docs/email-templates/*.html` (pasted into Supabase by hand) |
+| Paper kept light in dark mode (the Feed's stance card) | `.keep-paper` in `src/app/globals.css` |
 
 ## 9. Invariants
 

@@ -20,8 +20,8 @@
 > sample screens predate the grading removal). `npm run test:contrast` enforces the colour, label
 > and mono rules in CI.
 >
-> The tokens and shared primitives changed first; **surfaces are rebuilt one at a time. Today was
-> first (2026-09-27, §3.1b).** Until a surface is rebuilt it keeps its old layout in the new colours and type.
+> The tokens and shared primitives changed first; **surfaces were rebuilt one at a time. Today was
+> first (2026-09-27, §3.1b) and the Feed the last (2026-09-28, §2.11).** Until a surface is rebuilt it keeps its old layout in the new colours and type.
 > Where a page section below describes an old treatment (a broadsheet rule, a letterspaced
 > label), it says so; that treatment is not a rule to preserve.
 
@@ -472,20 +472,50 @@ scroll-snap, nothing below the fold.
   state says it is, so a swipe and a chevron press never fight.
 - **No scrollbars.** Both use `.scroll-bare`; Tailwind's `[scrollbar-width:none]` ties with
   `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
-- **On a phone:** dateline, headline, and actions sit on the picture (lower third), so the face
-  is not squeezed by a second column of chrome. Desktop still uses the paper strip beneath the frame.
-- **Above the frame (desktop):** the mono dateline, `VIDEO · NVDA · AUG 22, 2026 · 0:58`, with the position
-  in the feed at the right end. A publication with no ticker has its theme tag in that slot.
-- **On the picture:** ticker and direction chips top-left, the mute control top-right, a progress bar along the top edge that is also
-  the scrubber (`<ScrubBar>`: a hairline at rest, thicker while held, drag to any point), and the
-  analyst's lower-third identity band across the bottom (avatar, name, handle, Follow).
-- **Beneath the frame (desktop):** the headline, then the editorial action bar (LIKE · DISCUSS · SAVE ·
-  SHARE as small outlined icons with sentence-case labels), then the pager (`1 / 7`)
-  at the right end. The pager is a button: it jumps to the unlock card.
-- **The chips are the publication's stance.** Its ticker (`reports.ticker`) and, beside it, its
-  direction (`reports.stance`) when it declares one. A publication with a
-  ticker and no stance shows the ticker alone. One with no ticker anchors on a theme or sector tag
-  instead. An empty chip is never drawn. `stanceChips()` in `src/lib/db/publication-row.ts`.
+- **Direction B (2026-09-28).** The video fills the stage and everything else sits small and
+  light on it. Rounded corners, no hairline rules, no uppercase labels; the ticker chip is the
+  only mono, coral is only on Follow, green and red only on the direction.
+- **The dateline:** trending or new, the type, the date and the length
+  (`Trending · Thesis · Aug 22, 2026 · 0:58`), in sentence-case Inter. On desktop it is the strip
+  above the frame; on a phone it sits on the picture at the top left, with the mute control at
+  the right of the same row. The ticker is not in it: it is on the stance card, in its own face.
+- **The stance card** (`<StanceCard>`, `src/components/feed/stance-card.tsx`): a small paper card
+  under the dateline. A stance is the ticker chip and the direction word (▲ Long in the gain
+  tone, ▼ Short in the loss tone, Hold quiet). A ticker with no stance names its sector beside
+  the chip; a publication with no ticker shows its theme or sector alone; with none of those no
+  card is drawn, never an empty one. It stays paper in dark mode (`.keep-paper` re-declares the
+  light tokens inside it): the picture does not change with the theme, and a dark card reads like
+  the clip's own chips.
+- **Stoa's chrome versus the clip's.** Demo and real clips carry their own trading-interface
+  chips (translucent pills, coloured words straight on the picture). Everything Stoa draws is
+  distinguishable from them: the stance is an opaque paper card with the card shadow, never a
+  pill on the video; the controls are plain white icons or dark round buttons in fixed places.
+- **At the bottom, in order:** the headline in Bricolage (headline size on a phone, title size
+  in the desktop frame, three lines at most); the analyst's circular face ringed in white, the
+  name, the follower count (`19.2K followers`; the handle when there are none; it moves with
+  the reader's own follow) and the coral Follow (Following is a white outline); the scrub bar
+  (`<ScrubBar inline>`); then like, discuss, save and share as white icons, with the pager
+  (`1 / 7`) at the right end. The pager is a button: it jumps to the closing card.
+- **The scrims** are sized from the chrome they carry, not from the frame. The item measures its
+  top and bottom chrome (`--chrome-t`, `--chrome-b`); the bottom scrim is strong behind every
+  line of text (about 5:1 for the headline on a pure white frame) and fades over 5rem above it,
+  so a one-line headline darkens less of the picture and none of it reaches the middle, where the
+  face is. The top scrim is strong behind the dateline row only.
+- **The analyst's overlays keep clear of the chrome.** The same measurements go to
+  `<OverlayLayer clearTop clearBottom>`: the top and bottom rows of the overlay grid move inside
+  the chrome instead of under it. Sizes and the middle row are untouched, and Compose's preview
+  and the report page, which pass nothing, draw exactly as before.
+- **The whole picture pauses.** One button covers the clip; the chrome above it lets taps through
+  except on its own controls.
+- **On an evidence card** the picture is gone, so the headline (one line) and the pager sit on
+  paper beneath the card, and the card is padded clear of them and of the tab pill.
+- **Full-screen hosts.** The Explore overlay and the stories have no nav above and no pill
+  below, so they pass the phone's safe areas in (`--feed-safe-top`, `--feed-safe-bottom`) and the
+  chrome pads for the notch and the home bar. The Explore overlay's back button sits top-left on
+  the picture; on a phone the dateline starts beside it.
+- **Where the stance comes from.** The ticker is `reports.ticker` and the direction
+  `reports.stance`, read through `stanceChips()` in `src/lib/db/publication-row.ts`; the theme
+  or sector anchors a publication with no ticker.
 - **Keyboard:** up/down between publications, left/right through cards, a double right to the
   unlock card, M to mute, Space to pause.
 - **Autoplay:** only the publication in view mounts a player, which is both the autoplay rule and
@@ -507,8 +537,8 @@ scroll-snap, nothing below the fold.
   went back to its start on its own, only after it has played in this visit and never under a
   finger on the bar.
 - **Nothing to play.** A publication with no clip (a written piece, `clipId` null) draws a
-  readable card on the stage (type and date, headline, deck, Read the piece) inside the usual
-  chips, actions and identity band, with no scrub bar, mute or pause. A clip the reader may not
+  readable card on the stage (headline, deck, Read the piece; the type and date are on the
+  dateline) inside the usual stance card, analyst and actions, with no scrub bar, mute or pause. A clip the reader may not
   stream (`watchGated`: signed out) keeps its poster behind a card with Sign in to watch. The
   Feed page itself never receives either; Today's faces do.
 
@@ -528,7 +558,8 @@ The clip at the top of a report, and deliberately not the Feed's stage.
 - **Stoa's own chrome, the same as the Feed's.** A tap on the picture pauses
   and resumes, the mute sits top-right, and the scrub bar runs along the
   bottom edge (`<ScrubBar>`, shared with the Feed, the Explore and Dispatch
-  cards and the landing lead). The browser's control bar used to sit here; it
+  cards and the landing lead; always white, since it is always on a picture,
+  and `inline` in the Feed's bottom block). The browser's control bar used to sit here; it
   drew over the bottom of the frame and could not sit under the overlays.
   Bunny's iframe fallback keeps Bunny's own controls, since nothing outside
   it knows the playhead.
@@ -1090,9 +1121,9 @@ reads. Requires sign-in.
 **Feed (`/feed`):** The full-screen vertical video reader, and the only video discovery surface.
 One publication fills the viewport and scrolling snaps to the next; the clip autoplays muted on
 arrival and stops on leaving. The clip and the publication's evidence cards share one 9:16 stage,
-so moving sideways moves through the evidence. Above the frame, the mono dateline; on the picture,
-ticker and direction chips and the analyst's lower-third identity band;
-beneath it, the editorial action bar and the pager. See §2.11.
+so moving sideways moves through the evidence. Everything else sits on the picture: the dateline
+(above the frame on desktop), the stance as a small paper card, and at the bottom the headline,
+the analyst with Follow, the scrub bar, and the actions with the pager. See §2.11.
 
 There is no browse-as-text surface. The tabs, the layout toggle and the report-card grid that
 used to live here went with Discover; scanning the catalogue is Explore's job.
@@ -1547,7 +1578,9 @@ they agree on a shape. This is that shape, in `src/components/compose/video-rung
   the same frames as the strip plus an image upload. Shown at 4:5 as on Explore and the profile.
 - **The faithful preview** ("Preview as it will publish") hides every handle, ring and label and
   plays exactly what will ship. It draws the overlays through the same `OverlayLayer` the
-  player uses, so it cannot drift from the published video.
+  player uses, so it cannot drift from the published video. (The Feed moves a caption placed in
+  the top or bottom row just inside its own chrome, so it is never drawn under the headline or
+  the stance; the preview has no chrome and draws it at the placed row.)
 - Keyboard, when the timeline has focus: Space plays, ←/→ step a frame (Shift: ten), Delete removes
   the selection, Escape deselects. These are not buttons.
 
@@ -1611,6 +1644,9 @@ plain.
   playback, from the same renderer as the faithful preview (`src/components/video/overlay-layer.tsx`).
   They are not composited into the file: a clip shared or downloaded elsewhere plays without them,
   and the editor says so. The processing state after publish stays.
+- A locked card placed as an overlay is drawn sealed wherever a reader plays the clip, and its
+  payload never leaves the server: `sealStoredEdit` empties it before the Feed or the report page
+  sends the edit. Only Compose, for the card's author, reads the edit unsealed.
 - Per-card free/locked control stays. The **CTA card is pinned last** and is **derived from
   Access**, not authored, so it cannot be deleted, duplicated, or left behind on a publication
   that stopped being gated.
