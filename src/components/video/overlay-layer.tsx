@@ -37,6 +37,8 @@ export function OverlayLayer({
   ticker,
   className,
   sealLocked = false,
+  clearTop,
+  clearBottom,
 }: {
   overlays: Overlay[];
   cards: (DraftCard | StoredOverlayCard)[];
@@ -46,6 +48,14 @@ export function OverlayLayer({
   className?: string;
   /** Locked cards drawn sealed, as a reader sees them; off in Compose's preview. */
   sealLocked?: boolean;
+  /**
+   * CSS lengths the player's own chrome covers at the top and bottom of the
+   * frame. The top and bottom rows of the grid move inside them, so a caption
+   * placed low is never drawn under a headline or a row of buttons. Sizes do
+   * not change, and the middle row is untouched.
+   */
+  clearTop?: string;
+  clearBottom?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -65,6 +75,13 @@ export function OverlayLayer({
   const insets = cutaway ? [] : active.filter((o): o is VisualOverlay => o.kind === "visual" && o.mode === "inset");
   const texts = cutaway ? [] : active.filter((o): o is TextOverlay => o.kind === "text");
   const deck = cards as DraftCard[];
+  const place = (pos: Parameters<typeof gridStyle>[0]) => {
+    const style = gridStyle(pos);
+    const row = Math.floor((pos - 1) / 3);
+    if (row === 0 && clearTop) return { ...style, top: `max(${style.top}, ${clearTop})` };
+    if (row === 2 && clearBottom) return { ...style, top: `min(${style.top}, 100% - ${clearBottom})` };
+    return style;
+  };
 
   return (
     <div ref={ref} aria-hidden className={cn("pointer-events-none absolute inset-0 overflow-hidden text-white", className)}>
@@ -94,7 +111,7 @@ export function OverlayLayer({
       ) : null}
 
       {insets.map((o) => (
-        <div key={o.id} className="absolute" style={{ ...gridStyle(o.position), ...insetBox(o) }}>
+        <div key={o.id} className="absolute" style={{ ...place(o.position), ...insetBox(o) }}>
           <div className="h-full w-full" style={{ opacity: overlayOpacity(o) }}>
             <OverlayVisualBody source={o.source} cards={deck} ticker={ticker} sealLocked={sealLocked} className="h-full w-full" />
           </div>
@@ -109,7 +126,7 @@ export function OverlayLayer({
             "text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]",
             o.size === "sm" ? "text-body" : o.size === "md" ? "text-title" : "text-headline",
           )}
-          style={gridStyle(o.position)}
+          style={place(o.position)}
         >
           {o.text}
         </div>
