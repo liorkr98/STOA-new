@@ -258,6 +258,11 @@
 
 .feed-snap-overlay {
   height: 100dvh;
+  /* The Explore overlay is the whole screen: no nav above it to hold the
+     notch, no tab pill below it, only the home bar. */
+  --tab-h: 0px;
+  --feed-safe-top: var(--safe-top);
+  --feed-safe-bottom: var(--safe-bottom);
 }
 
 /* `contain-intrinsic-size` takes a length; a percentage is invalid and drops the
@@ -278,6 +283,7 @@
 .stories-overlay {
   --stories-head: calc(3.75rem + var(--safe-top));
   --tab-h: 0px;
+  --feed-safe-bottom: var(--safe-bottom);
 }
 
 .stories-head {

@@ -291,7 +291,7 @@ export function FeedSurface({
           type="button"
           onClick={onBack}
           aria-label="Back to Explore"
-          className="focus-ring absolute left-[max(0.75rem,var(--safe-left))] top-[max(0.75rem,var(--safe-top))] z-20 flex h-9 w-9 items-center justify-center rounded-button border border-border bg-paper text-text"
+          className="focus-ring absolute left-[max(0.75rem,var(--safe-left))] top-[calc(0.75rem+var(--safe-top))] z-20 flex h-9 w-9 items-center justify-center rounded-full bg-surface text-text shadow-card"
         >
           <ChevronLeft size={18} strokeWidth={1.6} />
         </button>
@@ -325,6 +325,7 @@ export function FeedSurface({
             sideways={sideways}
             surface={surface}
             signInNext={signInNext}
+            clearBack={Boolean(onBack && backButton)}
           />
         ))}
 
@@ -380,6 +381,7 @@ const FeedItem = function FeedItem({
   sideways,
   surface,
   signInNext,
+  clearBack,
 }: {
   ref: (el: HTMLElement | null) => void;
   pub: FeedPublication;
@@ -399,6 +401,8 @@ const FeedItem = function FeedItem({
   sideways: "cards" | "host";
   surface: "feed" | "explore" | "today";
   signInNext: string;
+  /** The host's back button sits over the stage's top-left corner on a phone. */
+  clearBack: boolean;
 }) {
   const router = useRouter();
   const [, startAction] = useTransition();
@@ -1044,9 +1048,17 @@ const FeedItem = function FeedItem({
                   className="pointer-events-none absolute inset-x-0 bottom-0 z-[11] h-[min(26rem,62%)] bg-[linear-gradient(to_top,rgba(0,0,0,0.78),rgba(0,0,0,0.62)_28%,rgba(0,0,0,0.34)_58%,rgba(0,0,0,0.1)_82%,transparent)]"
                 />
 
-                <div ref={topChromeRef} className="pointer-events-none absolute inset-x-0 top-0 z-[12] flex flex-col items-start gap-2.5 px-3 pt-3">
+                <div
+                  ref={topChromeRef}
+                  className="pointer-events-none absolute inset-x-0 top-0 z-[12] flex flex-col items-start gap-2.5 px-3 pt-[calc(0.75rem+var(--feed-safe-top,0px))]"
+                >
                   <div className="flex w-full items-center justify-between gap-3">
-                    <p className="min-w-0 truncate pl-1 text-ticker font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] md:invisible">
+                    <p
+                      className={cn(
+                        "min-w-0 truncate pl-1 text-ticker font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] md:invisible",
+                        clearBack && "max-md:pl-11",
+                      )}
+                    >
                       {dateline}
                     </p>
                     {stageOnly ? null : (
@@ -1064,9 +1076,10 @@ const FeedItem = function FeedItem({
                   <StanceCard pub={pub} />
                 </div>
 
-                {/* Pads itself clear of the floating tab pill (`--tab-h`, 0 on desktop and
-                    in the overlays), since the clip runs the full height beneath it. */}
-                <div ref={bottomChromeRef} className="pointer-events-none absolute inset-x-0 bottom-0 z-[12] px-4 pb-[calc(0.25rem+var(--tab-h))] text-white">
+                {/* Pads itself clear of the floating tab pill (`--tab-h`), or of the
+                    home bar where a full-screen host has no pill, since the clip
+                    runs the full height beneath both. */}
+                <div ref={bottomChromeRef} className="pointer-events-none absolute inset-x-0 bottom-0 z-[12] px-4 pb-[calc(0.25rem+max(var(--tab-h),var(--feed-safe-bottom,0px)))] text-white">
                   {stageOnly ? null : (
                     <h2
                       dir="auto"
@@ -1162,7 +1175,7 @@ const FeedItem = function FeedItem({
                 ? cards.map((c) => (
                     <div
                       key={c.id}
-                      className="h-full w-full flex-none snap-center bg-bg p-3 pb-[calc(3.25rem+var(--tab-h))] text-text"
+                      className="h-full w-full flex-none snap-center bg-bg p-3 pt-[calc(0.75rem+var(--feed-safe-top,0px))] pb-[calc(3.25rem+max(var(--tab-h),var(--feed-safe-bottom,0px)))] text-text"
                     >
                       <FeedCardView
                         card={c}
@@ -1201,7 +1214,7 @@ const FeedItem = function FeedItem({
             {/* On the evidence the picture is gone, so the headline and the pager
                 sit on the paper beneath the cards, which leave them the room. */}
             {!onClip ? (
-              <div className="absolute inset-x-0 bottom-0 z-[13] flex h-[calc(3.25rem+var(--tab-h))] items-start justify-between gap-3 bg-bg px-4 pt-2.5 text-text">
+              <div className="absolute inset-x-0 bottom-0 z-[13] flex h-[calc(3.25rem+max(var(--tab-h),var(--feed-safe-bottom,0px)))] items-start justify-between gap-3 bg-bg px-4 pt-2.5 text-text">
                 <p dir="auto" className="user-copy line-clamp-1 min-w-0 pt-1 font-display text-body font-bold leading-snug tracking-[-0.01em]">
                   {pub.headline}
                 </p>
@@ -1224,7 +1237,7 @@ const FeedItem = function FeedItem({
  */
 function StillStage({ pub, written, signInHref }: { pub: FeedPublication; written: boolean; signInHref: string }) {
   return (
-    <div className="absolute inset-x-0 top-28 bottom-[calc(7rem+var(--tab-h))] z-[2] flex items-center justify-center px-6">
+    <div className="absolute inset-x-0 top-[calc(7rem+var(--feed-safe-top,0px))] bottom-[calc(7rem+max(var(--tab-h),var(--feed-safe-bottom,0px)))] z-[2] flex items-center justify-center px-12">
       <div
         className={cn(
           "flex max-h-full w-full max-w-[22rem] flex-col gap-3 overflow-hidden rounded-panel bg-surface p-5 text-text shadow-card",
