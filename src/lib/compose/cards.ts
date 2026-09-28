@@ -86,7 +86,6 @@ export const CARD_INTENTS: CardIntent[] = [
     key: "prove",
     label: "Prove it",
     kinds: [
-      { kind: "path_to_target", label: "Path to target", blurb: "The steps that get you to the number.", shape: "Steps" },
       { kind: "checklist", label: "Checklist", blurb: "What you checked, and what it said.", shape: "Checklist" },
     ],
   },
@@ -127,8 +126,24 @@ const PARKED_KINDS: CardKindSpec[] = [
   { kind: "steelman", label: "Steelman", blurb: "The best case against you, answered.", shape: "Objection and answer" },
 ];
 
+/**
+ * Kinds that are gone for good, unlike a parked one. Path to target ends in
+ * a price target, and targets went with grading (2026-09-24): a new one would
+ * promise something the product no longer does. Publications that already
+ * carry one keep it exactly as the analyst wrote it, in the Feed, on the
+ * report page and in Compose, where it still opens and edits; it is never
+ * offered new. Decided by Bar, 2026-09-28.
+ */
+const RETIRED_KINDS: CardKindSpec[] = [
+  { kind: "path_to_target", label: "Path to target", blurb: "Retired. Kept on work already published.", shape: "Steps" },
+];
+
 export function kindSpec(kind: CardKind): CardKindSpec | undefined {
-  return LIBRARY_KINDS.find((k) => k.kind === kind) ?? PARKED_KINDS.find((k) => k.kind === kind);
+  return (
+    LIBRARY_KINDS.find((k) => k.kind === kind) ??
+    PARKED_KINDS.find((k) => k.kind === kind) ??
+    RETIRED_KINDS.find((k) => k.kind === kind)
+  );
 }
 
 /* ------------------------------------------------------------------ blanks */
