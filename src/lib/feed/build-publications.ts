@@ -202,7 +202,7 @@ async function buildPublications(
       sector,
       contentBadge: contentBadgeFor(r, true),
       stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
-      analyst: { id: r.author!.id, handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
+      analyst: analystOf(r),
       access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
       price: r.price,
       // The price tape rides with a declared stance.
@@ -243,12 +243,23 @@ function writtenPublication(
     sector,
     contentBadge: contentBadgeFor(r, false),
     stageMarker: visibleStageMarker(stageFor(samples.get(r.id)!, "publication", median, now)),
-    analyst: { id: r.author!.id, handle: r.author!.handle, displayName: r.author!.display_name, avatarUrl: r.author!.avatar_url },
+    analyst: analystOf(r),
     access: r.access === "paid" ? "paid" : r.access === "subscribers" ? "subscribers" : "free",
     price: r.price,
     cards: cardsFor(r, stored, chips.direction ? chips.ticker : null),
     comments: [],
     publishedAt: r.published_at ?? r.created_at,
+  };
+}
+
+function analystOf(r: Report): FeedPublication["analyst"] {
+  const a = r.author!;
+  return {
+    id: a.id,
+    handle: a.handle,
+    displayName: a.display_name,
+    avatarUrl: a.avatar_url,
+    followers: typeof a.followers_count === "number" ? a.followers_count : undefined,
   };
 }
 

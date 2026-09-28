@@ -73,7 +73,8 @@ export interface FeedPublication {
   sector: string | null;
   contentBadge: string;
   stageMarker: StageMarker;
-  analyst: { id: string; handle: string; displayName: string; avatarUrl: string | null };
+  /** `followers` is the public count the profile shows; absent when the query did not carry it. */
+  analyst: { id: string; handle: string; displayName: string; avatarUrl: string | null; followers?: number };
   access: "free" | "paid" | "subscribers";
   price: number | null;
   cards: FeedCard[];

@@ -54,7 +54,7 @@ const REPORT_CARD_COLUMNS =
 /** The card select. `stance` is named only once the column exists (migration 0065). */
 async function cardSelect(): Promise<string> {
   const columns = (await reportsHaveStance()) ? `${REPORT_CARD_COLUMNS}, stance` : REPORT_CARD_COLUMNS;
-  return `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${columns}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url), ${CALL_JOIN})`;
+  return `${CARD_COLUMNS}, report:reports!video_clips_report_id_fkey(${columns}, author:profiles!reports_author_id_fkey(id, handle, display_name, avatar_url, followers_count), ${CALL_JOIN})`;
 }
 
 function normalizeCard(row: Record<string, unknown>): VideoClipCard {
