@@ -884,6 +884,22 @@ export function StudioEditor({
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
+  /**
+   * The phone's own back swipe, or the browser's Back button. Neither can be
+   * held for the dialog: by the time the page hears of it the previous page
+   * is already on screen. So a draft takes the dialog's default on the way
+   * out and saves. An edit to a live publication does not: saving it files
+   * a public EDITED marker, which only the creator's own Save may do.
+   */
+  useEffect(() => {
+    const onPop = () => {
+      if (!dirtyRef.current || isPublishingRef.current || editingPublished || !hasAnything) return;
+      void persistDraft();
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [persistDraft, editingPublished, hasAnything]);
+
   // A stance is a ticker and a direction. Anything less never reaches the
   // server as a stance: the stance screen and the publish screen both refuse
   // it below.
