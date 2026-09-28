@@ -30,7 +30,7 @@
     "test:webhooks": "node --conditions=react-server --import tsx --test src/lib/webhooks/secret.test.ts",
     "test:pwa": "node --import tsx --test src/lib/pwa/urls.test.ts src/lib/pwa/cache-policy.test.ts",
     "test:compose": "node --import tsx --test src/lib/compose/steps.test.ts src/lib/compose/drafts.test.ts src/lib/compose/rail.test.ts src/lib/compose/overlays.test.ts",
-    "test:nav": "node --import tsx --test src/lib/nav/back.test.ts",
+    "test:nav": "node --import tsx --test src/lib/nav/back.test.ts src/lib/nav/scroll-shrink.test.ts",
     "test:contrast": "node --import tsx --test src/lib/design/contrast.test.ts",
     "test:rls": "node --import tsx --test tests/rls/rls.test.ts",
     "test:users": "npx tsx scripts/simulate-users.ts",

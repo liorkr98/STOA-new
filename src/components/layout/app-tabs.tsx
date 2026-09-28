@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Clapperboard, Compass, LineChart, Newspaper, PenLine } from "lucide-react";
 import { LinkPending } from "@/components/layout/link-pending";
-import { initialShrinkState, nextShrinkState } from "@/lib/nav/scroll-shrink";
+import { initialShrinkState, nextShrinkState, restingProgress } from "@/lib/nav/scroll-shrink";
 
 const TABS = [
   { key: "feed", href: "/feed", label: "Feed", Icon: Clapperboard },
@@ -14,6 +14,13 @@ const TABS = [
   { key: "explore", href: "/explore", label: "Explore", Icon: Compass },
   { key: "markets", href: "/markets", label: "Markets", Icon: LineChart },
 ] as const;
+
+/** How closely the pill follows the scroll: a time constant, in ms. */
+const FOLLOW_TAU_MS = 80;
+/** Once the scroll has been still this long, the pill settles to the nearer size. */
+const SETTLE_AFTER_MS = 140;
+/** How gently it settles. */
+const SETTLE_TAU_MS = 110;
 
 function tabActive(pathname: string, href: string, key: string) {
   // The /dev fixture of a surface shows the surface's real chrome, active tab included.
@@ -41,7 +48,6 @@ export function AppTabs() {
   const navRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const lensRef = useRef<HTMLSpanElement>(null);
-  const [shrunk, setShrunk] = useState(false);
   // The tab just tapped, so the lens sets off before the route has changed.
   // Remembered with the path it was tapped on: once the route moves, the
   // route decides again, with no effect needed to forget the tap.
@@ -99,42 +105,98 @@ export function AppTabs() {
     return () => ro.disconnect();
   }, [activeKey]);
 
+  // Shrink on scroll: the pill follows the scroll as it happens. Any panel
+  // tall enough to be the page counts, not only main: the Feed and Today's
+  // columns scroll on their own, and scroll events do not bubble, so the
+  // listener sits on the document in the capture phase. The value is written
+  // straight to the pill each frame, never through React state.
+  const onCompose = pathname.startsWith("/studio/compose");
+  const openRef = useRef<() => void>(() => {});
   useEffect(() => {
-    const scroller = navRef.current
-      ?.closest("[data-app-shell]")
-      ?.querySelector("main") as HTMLElement | null;
-    if (!scroller) return;
+    const pill = listRef.current;
+    if (!pill) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let state = initialShrinkState(scroller.scrollTop);
+    let source: Element | null = null;
+    let state = initialShrinkState(0);
+    let target = 0;
+    let shown = 0;
     let frame = 0;
+    let last = 0;
+    let lastScroll = 0;
+    let settling = false;
 
-    function read() {
-      frame = 0;
-      const el = scroller as HTMLElement;
-      const next = nextShrinkState(state, el.scrollTop);
-      if (next.shrunk !== state.shrunk) setShrunk(next.shrunk);
-      state = next;
+    const draw = (p: number) => pill.style.setProperty("--shrink", p.toFixed(4));
+    draw(0);
+
+    function tick(now: number) {
+      const dt = Math.min(64, now - (last || now));
+      last = now;
+      if (!settling && now - lastScroll > SETTLE_AFTER_MS) {
+        settling = true;
+        target = restingProgress(target);
+        state = { ...state, progress: target };
+      }
+      // A first-order follow: each frame closes a share of the gap set by
+      // elapsed time, so the pill trails the scroll by a few frames and
+      // never outruns or overshoots it.
+      const tau = settling ? SETTLE_TAU_MS : FOLLOW_TAU_MS;
+      shown += (target - shown) * (1 - Math.exp(-dt / tau));
+      if (Math.abs(target - shown) < 0.001) shown = target;
+      draw(shown);
+      if (shown === target && settling) {
+        frame = 0;
+        last = 0;
+        return;
+      }
+      frame = requestAnimationFrame(tick);
     }
 
-    function onScroll() {
-      if (frame) return;
-      frame = requestAnimationFrame(read);
+    function onScroll(e: Event) {
+      const el = e.target === document ? document.scrollingElement : (e.target as Element);
+      if (!el || !(el instanceof HTMLElement)) return;
+      // A sideways track, a dropdown or a table is not the page.
+      if (el.clientHeight < window.innerHeight * 0.5) return;
+      if (el !== source) {
+        source = el;
+        state = { progress: state.progress, lastY: el.scrollTop };
+        return;
+      }
+      if (el.scrollTop === state.lastY) return;
+      state = nextShrinkState(state, el.scrollTop);
+      target = state.progress;
+      lastScroll = performance.now();
+      settling = false;
+      if (!frame) frame = requestAnimationFrame(tick);
     }
 
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      scroller.removeEventListener("scroll", onScroll);
-      if (frame) cancelAnimationFrame(frame);
+    // A new page opens at its top, so the bar opens out with it.
+    openRef.current = () => {
+      source = null;
+      state = initialShrinkState(0);
+      target = 0;
+      settling = true;
+      if (!frame && shown !== 0) frame = requestAnimationFrame(tick);
     };
+
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    return () => {
+      document.removeEventListener("scroll", onScroll, { capture: true });
+      if (frame) cancelAnimationFrame(frame);
+      openRef.current = () => {};
+    };
+  }, [onCompose]);
+
+  useEffect(() => {
+    openRef.current();
   }, [pathname]);
 
-  if (pathname.startsWith("/studio/compose")) return null;
+  if (onCompose) return null;
 
   return (
     <nav
       ref={navRef}
       aria-label="App"
-      data-shrunk={shrunk ? "" : undefined}
       className="app-tabs z-40 md:hidden"
     >
       <ul ref={listRef} className="app-tabs-pill relative grid grid-cols-5">

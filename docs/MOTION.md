@@ -81,6 +81,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 | **DebateThread (mobile sheet)** | Use **Vaul** — gesture-driven, spring-based, interruptible, drag-to-dismiss. Desktop side panel: x 8px→0 + opacity. | Vaul defaults / `--dur-3` |
 | **Toasts** | Use **Sonner**. Bottom-center desktop, bottom mobile. Default timings — don't restyle motion. | Sonner defaults |
 | **Modals (archive, delete, leave)** | Overlay opacity 0→1; panel scale 0.98→1 + opacity, `--ease-out`. Exit reverse, faster. | enter `--dur-3`, exit `--dur-2` |
+| **AppTabs shrink (phone)** | Scroll-linked, not triggered: the pill's `--shrink` (0 full, 1 at `scale(0.92)`, about its bottom edge) moves with the scroll, 64px of scroll for the whole range, down to shrink and up to open. The drawn value follows that target with a first-order lag (time constant 80ms), so a card snapping into place on the Feed still reads as a glide. Once the scroll has been still 140ms it settles to the nearer size (time constant 110ms), so it never rests halfway. Within 64px of the top it can be no smaller than the distance left, so the top is always full size. Written straight to the element each frame; no CSS transition, no React state. Any scroller at least half the screen tall drives it (main, the Feed, Today's columns). Reduced motion: never shrinks. The numbers live in `app-tabs.tsx` and `src/lib/nav/scroll-shrink.ts` (tested). | scroll-linked, 80ms follow / 140ms rest / 110ms settle |
 | **AppTabs lens (phone)** | Travels to the tapped tab, stretching lengthways on the way; `transform` only; jumps under reduced motion. Documented under `AppTabs` in `docs/FRONTEND.md`. | `--dur-ceremony` `--ease-in-out` |
 | **PaywallGate unlock** | The paid moment earns a small lift: scrim gradient fades out while revealed content rises y 8px→0. One-time per unlock. | `--dur-3` `--ease-out` |
 | **FeedCard hover** | Border-color shift + translateY(-1px). **No scale, no shadow-grow** — scale on large surfaces reads cheap and shadows violate the elevation system. | `--dur-1` `--ease-hover` |
@@ -96,7 +97,7 @@ the UI/UX Pro Max audit workflow, and a safe-usage protocol for 21st.dev Magic M
 Live prices and % changes in the ticker strip (they update constantly — frequency rule; just swap,
 tabular-nums prevents layout shift). Route/page transitions. Nav and sidebar (two named
 exceptions, both asked for by name and documented under `AppTabs` in `docs/FRONTEND.md`: the
-phone tab pill shrinks on scroll, and its lens travels to the tapped tab). Filter chip
+phone tab pill shrinks with the scroll, and its lens travels to the tapped tab). Filter chip
 selection beyond the browser-default background transition. Feed cards mounting on scroll
 (observer-triggered reveals of any kind; the scrub-based landing reveal in law 11 is the one
 exception). Text content. Chart lines on every data refresh (animate once on first mount only).

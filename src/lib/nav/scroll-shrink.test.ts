@@ -1,52 +1,57 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { initialShrinkState, nextShrinkState, type ShrinkState } from "./scroll-shrink";
+import {
+  initialShrinkState,
+  nextShrinkState,
+  restingProgress,
+  SHRINK_RANGE,
+  type ShrinkState,
+} from "./scroll-shrink";
 
 function run(ys: number[], from: ShrinkState = initialShrinkState(0)): ShrinkState {
   return ys.reduce((s, y) => nextShrinkState(s, y), from);
 }
 
 test("starts full size", () => {
-  assert.equal(initialShrinkState(0).shrunk, false);
+  assert.equal(initialShrinkState(0).progress, 0);
 });
 
-test("a deliberate scroll down shrinks the bar", () => {
-  const s = run([40, 80, 120, 160]);
-  assert.equal(s.shrunk, true);
+test("the bar moves with the scroll rather than jumping", () => {
+  const quarter = run([SHRINK_RANGE / 4]);
+  assert.equal(quarter.progress, 0.25);
+  const half = run([SHRINK_RANGE / 2]);
+  assert.equal(half.progress, 0.5);
 });
 
-test("a deliberate scroll up restores it", () => {
-  const down = run([40, 80, 120, 160]);
-  assert.equal(down.shrunk, true);
-  const up = run([120, 80], down);
-  assert.equal(up.shrunk, false);
+test("a full range down shrinks it completely, and it stays there", () => {
+  assert.equal(run([SHRINK_RANGE]).progress, 1);
+  assert.equal(run([SHRINK_RANGE, 600, 1200]).progress, 1);
 });
 
-test("jitter below the threshold never toggles", () => {
-  const down = run([40, 80, 120, 160]);
+test("scrolling up opens it out by the same amount", () => {
+  const down = run([400, 800]);
+  const up = nextShrinkState(down, 800 - SHRINK_RANGE / 4);
+  assert.equal(up.progress, 0.75);
+  assert.equal(nextShrinkState(down, 800 - SHRINK_RANGE).progress, 0);
+});
+
+test("a resting thumb's twitch moves it by a hair, not a size", () => {
+  const down = run([400, 800]);
   const ys: number[] = [];
-  for (let i = 0; i < 40; i += 1) ys.push(160 + (i % 2 ? 3 : -3));
-  const jittered = run(ys, down);
-  assert.equal(jittered.shrunk, true, "a twitch must not restore the bar");
+  for (let i = 0; i < 40; i += 1) ys.push(800 + (i % 2 ? 2 : -2));
+  const twitched = run(ys, down);
+  assert.ok(twitched.progress > 0.9, `a twitch must not open the bar (got ${twitched.progress})`);
 });
 
-test("jitter never shrinks a full-size bar either", () => {
-  const ys: number[] = [];
-  for (let i = 0; i < 40; i += 1) ys.push(200 + (i % 2 ? 4 : -4));
-  const s = run(ys, { shrunk: false, drift: 0, lastY: 200 });
-  assert.equal(s.shrunk, false);
+test("returning to the top always ends at full size", () => {
+  const down = run([400, 800]);
+  assert.equal(run([0], down).progress, 0);
+  // Near the top it can be no smaller than the distance left allows.
+  assert.equal(run([SHRINK_RANGE / 4], { progress: 1, lastY: SHRINK_RANGE / 4 + 1 }).progress, 0.25);
 });
 
-test("returning to the top always restores the bar", () => {
-  const down = run([40, 80, 120, 160]);
-  assert.equal(down.shrunk, true);
-  assert.equal(run([0], down).shrunk, false);
-});
-
-test("a reversal restarts the count rather than netting off", () => {
-  // Down 16 (under threshold), then up 16: net zero, and neither crosses.
-  const s = run([216, 200], { shrunk: false, drift: 0, lastY: 200 });
-  assert.equal(s.shrunk, false);
-  // But a sustained 20px run in one direction does cross.
-  assert.equal(run([220], { shrunk: false, drift: 0, lastY: 200 }).shrunk, true);
+test("it rests at whichever end is nearer", () => {
+  assert.equal(restingProgress(0.2), 0);
+  assert.equal(restingProgress(0.5), 1);
+  assert.equal(restingProgress(0.9), 1);
 });
