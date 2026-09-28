@@ -64,7 +64,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame>
           <CardHead label="The case" />
-          <h3 className="user-copy mt-2 font-display text-title font-semibold leading-[1.2] tracking-tight" dir="auto">{card.title}</h3>
+          <h3 className="user-copy mt-2 font-display text-title font-bold leading-[1.2]" dir="auto">{card.title}</h3>
           <p className="mt-3 text-body leading-relaxed text-text-mute">{card.body}</p>
         </CardFrame>
       );
@@ -109,7 +109,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                 </dd>
               </div>
             ))}
-            <div className="mt-2 flex items-baseline justify-between gap-4 rounded-inner bg-surface-2 px-3 py-2.5 font-display text-title font-semibold">
+            <div className="mt-2 flex items-baseline justify-between gap-4 rounded-inner bg-surface-2 px-3 py-2.5 font-display text-title font-bold">
               <dt>= Target</dt>
               <dd>
                 <Ink v={card.result} />
@@ -124,7 +124,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label="The kill switch" />
           <div className="mt-4 flex flex-1 flex-col justify-center">
             <div className="rounded-inner bg-surface-2 p-4">
-              <div className="font-display text-title font-semibold tracking-tight">I&apos;m wrong if</div>
+              <div className="font-display text-title font-bold">I&apos;m wrong if</div>
               <ul className="mt-2.5 flex flex-col gap-2 text-body leading-snug text-text-mute">
                 {card.conditions.map((c, i) => (
                   <li key={i} className="flex gap-2">
@@ -153,7 +153,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
                     {new Date(e.dateISO).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     {e.past ? " · past" : ""}
                   </div>
-                  <div className="mt-0.5 font-display text-body font-semibold leading-snug tracking-tight">{e.label}</div>
+                  <div className="mt-0.5 font-display text-body font-bold leading-snug tracking-tight">{e.label}</div>
                 </div>
               </li>
             ))}
@@ -248,7 +248,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame className="items-center justify-center text-center">
           <BookOpen size={20} strokeWidth={1.4} className="text-text-mute" aria-hidden />
-          <h3 className="mt-3 font-display text-title font-semibold leading-tight tracking-tight">
+          <h3 className="mt-3 font-display text-title font-bold leading-tight">
             Read the full report
           </h3>
           <p className="mt-2 max-w-[28ch] text-body text-text-mute">
@@ -264,7 +264,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
       return (
         <CardFrame className="items-center justify-center text-center">
           <Lock size={20} strokeWidth={1.4} className="text-text-mute" aria-hidden />
-          <h3 className="mt-3 font-display text-title font-semibold leading-tight tracking-tight">
+          <h3 className="mt-3 font-display text-title font-bold leading-tight">
             Unlock the full stack
           </h3>
           <p className="mt-2 max-w-[28ch] text-body text-text-mute">

@@ -33,7 +33,8 @@ import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/design/cn";
 import { isPlayableVideoUrl } from "@/lib/video/direct";
 import type { FeedComment, FeedPublication } from "@/lib/feed/types";
-import { StanceChip, ThemeChip, TickerChip } from "@/components/ui/chip";
+import { StanceCard } from "@/components/feed/stance-card";
+import { compact } from "@/lib/format";
 import { labelCase } from "@/lib/design/label";
 
 /**
@@ -429,6 +430,28 @@ const FeedItem = function FeedItem({
   // The scrub bar's hand on the player, and whether a finger is holding it.
   const seekRef = useRef<((ratio: number) => void) | null>(null);
   const [scrubbing, setScrubbing] = useState(false);
+  // How much of the frame the chrome covers, top and bottom, so the analyst's
+  // own overlays can be kept clear of it. Written as CSS variables on the
+  // panel rather than state: it changes with the headline's length and the
+  // tab pill, and nothing but the overlay positions reads it.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const topChromeRef = useRef<HTMLDivElement>(null);
+  const bottomChromeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const panel = panelRef.current;
+    const top = topChromeRef.current;
+    const bottom = bottomChromeRef.current;
+    if (!panel || !top || !bottom) return;
+    const measure = () => {
+      panel.style.setProperty("--chrome-t", `${top.offsetHeight}px`);
+      panel.style.setProperty("--chrome-b", `${bottom.offsetHeight}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(top);
+    ro.observe(bottom);
+    return () => ro.disconnect();
+  }, []);
 
   /**
    * Report how far the reader actually got, at fixed checkpoints.
@@ -828,20 +851,30 @@ const FeedItem = function FeedItem({
     }
   };
 
-  /** Video · NVDA · Aug 22, 2026 · 0:58. Theme lives on the overlay chip, not here. */
+  /** No clip to play: a written piece, or a clip this reader must sign in to stream. */
+  const written = !pub.clipId && !pub.watchGated;
+  const stageOnly = written || Boolean(pub.watchGated);
+  const onClip = card === 0;
+
+  /** Trending · Thesis · Aug 22, 2026 · 0:58. The ticker is on the stance card, in its own face. */
   const dateline = [
+    pub.stageMarker === "TRENDING" ? "Trending" : pub.stageMarker === "NEW" ? "New" : null,
     labelCase(pub.typeLabel),
-    pub.ticker,
     new Date(pub.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    fmt(pub.durationSeconds),
+    stageOnly ? null : fmt(pub.durationSeconds),
   ]
     .filter(Boolean)
     .join(" · ");
 
-  const onClip = card === 0;
-  /** No clip to play: a written piece, or a clip this reader must sign in to stream. */
-  const written = !pub.clipId && !pub.watchGated;
-  const stageOnly = written || Boolean(pub.watchGated);
+  // The count moves with the reader's own follow, so pressing Follow is seen to land.
+  const followers =
+    pub.analyst.followers == null
+      ? null
+      : pub.analyst.followers + (following ? 1 : 0) - (pub.followingAnalyst ? 1 : 0);
+  const audience =
+    followers != null && followers > 0
+      ? `${compact(followers)} ${followers === 1 ? "follower" : "followers"}`
+      : `@${pub.analyst.handle}`;
 
   const actions = [
     {
@@ -868,6 +901,17 @@ const FeedItem = function FeedItem({
     },
   ] as const;
 
+  const pager = (
+    <button
+      type="button"
+      onClick={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
+      aria-label={`Card ${card + 1} of ${panelCount}. Go to the last card`}
+      className="focus-ring tap-target flex-none whitespace-nowrap rounded-button px-1 text-ticker font-semibold"
+    >
+      {card + 1} / {panelCount}
+    </button>
+  );
+
   return (
     <section
       ref={ref}
@@ -882,18 +926,14 @@ const FeedItem = function FeedItem({
     >
       <div className="flex h-full w-full max-w-none flex-col justify-center gap-0 md:max-w-[420px] md:gap-2">
         {/* The dateline strip, above the frame on desktop. On a phone it sits on the picture. */}
-        <div className="hidden items-center justify-between gap-3 md:flex">
-          <span className="num truncate text-ticker text-text-mute">
-            {dateline}
-          </span>
-        </div>
+        <p className="hidden truncate text-ticker text-text-mute md:block">{dateline}</p>
 
         {/* Phone: the stage is the viewport. Desktop: 9:16 card, height-bound. */}
         <div className="relative min-h-0 flex-1">
           <div
             className={cn(
               "relative h-full w-full overflow-hidden bg-[var(--ink)] text-[var(--paper)]",
-              "md:mx-auto md:max-h-full md:rounded-panel md:border md:border-border md:[aspect-ratio:9/16]",
+              "md:mx-auto md:max-h-full md:rounded-panel md:[aspect-ratio:9/16]",
             )}
           >
             <div
@@ -905,7 +945,7 @@ const FeedItem = function FeedItem({
               )}
             >
               {/* Panel 0: the clip. */}
-              <div className="relative h-full w-full flex-none snap-center">
+              <div ref={panelRef} className="relative h-full w-full flex-none snap-center">
                 {near && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) && pub.playbackUrl ? (
                   <NativeClip
                     src={pub.playbackUrl}
@@ -947,7 +987,15 @@ const FeedItem = function FeedItem({
                     iframe fallback cannot carry them: nothing outside it knows
                     the playhead. */}
                 {pub.videoEdit && started && !streamFailed && isPlayableVideoUrl(pub.playbackUrl) ? (
-                  <OverlayLayer overlays={pub.videoEdit.overlays} cards={pub.videoEdit.cards} time={clipTime} ticker={pub.ticker ?? undefined} sealLocked />
+                  <OverlayLayer
+                    overlays={pub.videoEdit.overlays}
+                    cards={pub.videoEdit.cards}
+                    time={clipTime}
+                    ticker={pub.ticker ?? undefined}
+                    sealLocked
+                    clearTop="calc(var(--chrome-t, 6.5rem) + 0.5rem)"
+                    clearBottom="calc(var(--chrome-b, 16rem) + 0.5rem)"
+                  />
                 ) : null}
                 <div
                   aria-hidden
@@ -967,91 +1015,121 @@ const FeedItem = function FeedItem({
                   />
                 ) : null}
 
-                {/* Progress, along the top edge, and the handle to drag it
-                    anywhere. Above the scrim's strip, so the first pixels of
-                    the frame belong to the bar and not to the chips under it. */}
-                {stageOnly ? null : <ScrubBar
-                  edge="top"
-                  hit={18}
-                  progress={progress}
-                  onScrubbing={setScrubbing}
-                  onSeek={(ratio) => {
-                    const duration = pub.durationSeconds || 0;
-                    if (seekRef.current) seekRef.current(ratio);
-                    else if (duration > 0) {
-                      // Bunny's embed takes a time, not a ratio.
-                      playerCommand(iframeRef.current, "setCurrentTime", ratio * duration);
-                    }
-                    lastRatioRef.current = ratio;
-                    setProgress(ratio);
-                  }}
-                  className="z-[13]"
-                />}
+                {/* The whole picture pauses and resumes. The chrome above it lets
+                    taps through everywhere except its own controls. */}
+                {stageOnly ? null : (
+                  <button
+                    type="button"
+                    onClick={() => setPaused((p) => !p)}
+                    aria-label={paused ? "Play (Space)" : "Pause (Space)"}
+                    className="absolute inset-0 z-[1] flex w-full cursor-default items-center justify-center"
+                  >
+                    {paused ? (
+                      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
+                        <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+                      </span>
+                    ) : null}
+                  </button>
+                )}
 
-                {/* The scrim carries Stoa's own strip over an unpredictable
-                    picture. Clips routinely contain their own tickers and
-                    chips, so this has to read as chrome rather than as another
-                    thing in the frame. */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.66),rgba(0,0,0,0.34)_58%,transparent)] p-3 pt-4 md:pt-5">
-                  <div className="min-w-0">
-                    <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
-                      {pub.stageMarker ? (
-                        <span
-                          className={cn(
-                            "num inline-flex items-center rounded-chip border px-1.5 py-0.5 text-ticker font-semibold",
-                            pub.stageMarker === "TRENDING"
-                              ? "border-white/70 bg-black/35 text-white"
-                              : "border-white/35 bg-black/35 text-white",
-                          )}
-                        >
-                          {pub.stageMarker === "TRENDING" ? "Trending" : "New"}
-                        </span>
-                      ) : null}
-                      {pub.ticker ? <TickerChip ticker={pub.ticker} /> : null}
-                      {pub.direction ? <StanceChip direction={pub.direction} /> : null}
-                      {!pub.ticker && pub.themeTag ? <ThemeChip label={pub.themeTag} /> : null}
-                    </div>
+                {/* Two short scrims, one per edge, eased so neither reads as a
+                    band. They carry the white words and stop well short of the
+                    middle of the frame, where the face is. */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 z-[11] h-32 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.5),rgba(0,0,0,0.26)_40%,rgba(0,0,0,0.08)_75%,transparent)]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-[11] h-[min(26rem,62%)] bg-[linear-gradient(to_top,rgba(0,0,0,0.78),rgba(0,0,0,0.62)_28%,rgba(0,0,0,0.34)_58%,rgba(0,0,0,0.1)_82%,transparent)]"
+                />
+
+                <div ref={topChromeRef} className="pointer-events-none absolute inset-x-0 top-0 z-[12] flex flex-col items-start gap-2.5 px-3 pt-3">
+                  <div className="flex w-full items-center justify-between gap-3">
+                    <p className="min-w-0 truncate pl-1 text-ticker font-semibold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] md:invisible">
+                      {dateline}
+                    </p>
+                    {stageOnly ? null : (
+                      <button
+                        type="button"
+                        onClick={() => onMutedChange(!muted)}
+                        aria-label={muted ? "Unmute (M)" : "Mute (M)"}
+                        aria-pressed={!muted}
+                        className="focus-ring tap-target pointer-events-auto flex h-9 w-9 flex-none items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+                      >
+                        {muted ? <VolumeX size={16} strokeWidth={1.8} /> : <Volume2 size={16} strokeWidth={1.8} />}
+                      </button>
+                    )}
                   </div>
-                  <div className={cn("pointer-events-auto flex flex-none items-start gap-2", stageOnly && "hidden")}>
-                    <button
-                      type="button"
-                      onClick={() => onMutedChange(!muted)}
-                      aria-label={muted ? "Unmute (M)" : "Mute (M)"}
-                      className="focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white hover:bg-black/60"
-                    >
-                      {muted ? <VolumeX size={14} strokeWidth={1.6} /> : <Volume2 size={14} strokeWidth={1.6} />}
-                    </button>
-                  </div>
+                  <StanceCard pub={pub} />
                 </div>
 
-                {stageOnly ? null : <button
-                  type="button"
-                  onClick={() => setPaused((p) => !p)}
-                  aria-label={paused ? "Play (Space)" : "Pause (Space)"}
-                  className="absolute inset-x-0 top-16 bottom-[calc(13.5rem+var(--tab-h))] z-[1] w-full cursor-default"
-                >
-                  {paused ? (
-                    <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[var(--ink)]">
-                      <Play size={22} fill="currentColor" strokeWidth={0} className="ml-0.5" />
-                    </span>
-                  ) : null}
-                </button>}
-
                 {/* Pads itself clear of the floating tab pill (`--tab-h`, 0 on desktop and
-                    in the Explore overlay), since the clip runs the full height beneath it. */}
-                <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[12] bg-[linear-gradient(to_top,rgba(0,0,0,0.82),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-12">
-                  <h2
-                    dir="auto"
-                    className={cn(
-                      "user-copy mb-2 line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)] md:hidden",
-                      // The still stage already carries the headline at reading size.
-                      stageOnly && "hidden",
-                    )}
-                  >
-                    {pub.headline}
-                  </h2>
-                  <div className="relative z-10 mb-3 flex items-center justify-between gap-3" role="group" aria-label="Actions">
-                    <div className="flex items-center gap-2.5">
+                    in the overlays), since the clip runs the full height beneath it. */}
+                <div ref={bottomChromeRef} className="pointer-events-none absolute inset-x-0 bottom-0 z-[12] px-4 pb-[calc(0.25rem+var(--tab-h))] text-white">
+                  {stageOnly ? null : (
+                    <h2
+                      dir="auto"
+                      className="user-copy mb-3 line-clamp-3 font-display text-headline font-extrabold leading-[1.08] tracking-[-0.03em] [text-shadow:0_1px_3px_rgba(0,0,0,0.45)] md:text-title md:font-bold md:leading-[1.15] md:tracking-[-0.015em]"
+                    >
+                      {pub.headline}
+                    </h2>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/analyst/${pub.analyst.handle}`}
+                      className="focus-ring pointer-events-auto flex min-w-0 flex-1 items-center gap-2.5 rounded-button"
+                    >
+                      <Avatar
+                        src={pub.analyst.avatarUrl}
+                        name={pub.analyst.displayName}
+                        size={38}
+                        className="shadow-[0_0_0_2px_#fff]"
+                      />
+                      <span className="min-w-0 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+                        <span dir="auto" className="user-copy block truncate text-body font-semibold leading-tight">
+                          {pub.analyst.displayName}
+                        </span>
+                        <span className="block truncate text-ticker leading-snug text-white/80">{audience}</span>
+                      </span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        act(setFollowing, following, () => toggleFollow(pub.analyst.id), (r) => r.following)
+                      }
+                      aria-pressed={following}
+                      className={cn(
+                        "focus-ring tap-target pointer-events-auto inline-flex h-8 flex-none items-center rounded-button px-3.5 text-ticker font-bold transition-colors duration-[var(--dur-1)] ease-[var(--ease-hover)]",
+                        following ? "bg-black/30 shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.75)]" : "bg-coral",
+                      )}
+                    >
+                      {following ? "Following" : "Follow"}
+                    </button>
+                  </div>
+                  {stageOnly ? (
+                    <div className="h-3" />
+                  ) : (
+                    <div className="pointer-events-auto relative mt-2 h-6">
+                      <ScrubBar
+                        inline
+                        progress={progress}
+                        onScrubbing={setScrubbing}
+                        onSeek={(ratio) => {
+                          const duration = pub.durationSeconds || 0;
+                          if (seekRef.current) seekRef.current(ratio);
+                          else if (duration > 0) {
+                            // Bunny's embed takes a time, not a ratio.
+                            playerCommand(iframeRef.current, "setCurrentTime", ratio * duration);
+                          }
+                          lastRatioRef.current = ratio;
+                          setProgress(ratio);
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between gap-3" role="group" aria-label="Actions">
+                    <div className="-ml-2.5 flex items-center">
                       {actions.map(({ key, label, Icon, on, active }) => (
                         <button
                           key={key}
@@ -1063,11 +1141,11 @@ const FeedItem = function FeedItem({
                           }}
                           aria-label={label}
                           aria-pressed={key === "like" || key === "save" ? active : undefined}
-                          className="focus-ring relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white"
+                          className="focus-ring pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full text-white [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.5))]"
                         >
                           <Icon
-                            size={14}
-                            strokeWidth={1.6}
+                            size={21}
+                            strokeWidth={1.8}
                             aria-hidden
                             className="pointer-events-none"
                             fill={active && (key === "like" || key === "save") ? "currentColor" : "none"}
@@ -1075,55 +1153,17 @@ const FeedItem = function FeedItem({
                         </button>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => unlockIndex >= 0 && setCard(unlockIndex + 1)}
-                      aria-label={`Panel ${card + 1} of ${panelCount}`}
-                      className="num focus-ring flex-none rounded text-ticker text-white/80"
-                    >
-                      {card + 1} / {panelCount}
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href={`/analyst/${pub.analyst.handle}`}
-                      className="focus-ring flex min-w-0 flex-1 items-center gap-2.5 rounded"
-                    >
-                      <Avatar
-                        src={pub.analyst.avatarUrl}
-                        name={pub.analyst.displayName}
-                        size="md"
-                        className="!border-white/30"
-                      />
-                      <span className="min-w-0">
-                        <span dir="auto" className="user-copy block truncate text-body font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
-                          {pub.analyst.displayName}
-                        </span>
-                        <span className="num block truncate text-ticker text-white/75">
-                          @{pub.analyst.handle}
-                        </span>
-                      </span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        act(setFollowing, following, () => toggleFollow(pub.analyst.id), (r) => r.following)
-                      }
-                      aria-pressed={following}
-                      className={cn(
-                        "focus-ring inline-flex flex-none items-center gap-1.5 rounded-button px-3.5 py-1.5 text-ticker font-semibold transition-colors",
-                        following ? "border border-white/80 bg-white/20 text-white" : "bg-coral",
-                      )}
-                    >
-                      {following ? "Following" : "Follow"}
-                    </button>
+                    <span className="pointer-events-auto text-white/85 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">{pager}</span>
                   </div>
                 </div>
               </div>
 
               {near
                 ? cards.map((c) => (
-                    <div key={c.id} className="h-full w-full flex-none snap-center bg-bg p-3 text-text">
+                    <div
+                      key={c.id}
+                      className="h-full w-full flex-none snap-center bg-bg p-3 pb-[calc(3.25rem+var(--tab-h))] text-text"
+                    >
                       <FeedCardView
                         card={c}
                         ticker={pub.ticker}
@@ -1139,9 +1179,9 @@ const FeedItem = function FeedItem({
                 type="button"
                 onClick={() => goCard(-1)}
                 aria-label="Previous card"
-                className="focus-ring absolute left-1.5 top-1/2 z-[14] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-text"
+                className="focus-ring absolute left-1.5 top-1/2 z-[14] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface text-text shadow-card"
               >
-                <ChevronLeft size={16} strokeWidth={1.6} />
+                <ChevronLeft size={16} strokeWidth={1.8} />
               </button>
             ) : null}
             {card < panelCount - 1 ? (
@@ -1150,29 +1190,26 @@ const FeedItem = function FeedItem({
                 onClick={() => goCard(1)}
                 aria-label="Next card"
                 className={cn(
-                  "focus-ring absolute right-1.5 top-1/2 z-[14] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border",
-                  onClip
-                    ? "border-white/25 bg-black/40 text-white hover:bg-black/60"
-                    : "border-border bg-surface text-text",
+                  "focus-ring absolute right-1.5 top-1/2 z-[14] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full",
+                  onClip ? "bg-black/40 text-white hover:bg-black/60" : "bg-surface text-text shadow-card",
                 )}
               >
-                <ChevronRight size={16} strokeWidth={1.6} />
+                <ChevronRight size={16} strokeWidth={1.8} />
               </button>
             ) : null}
 
+            {/* On the evidence the picture is gone, so the headline and the pager
+                sit on the paper beneath the cards, which leave them the room. */}
             {!onClip ? (
-              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)] px-3 pb-[calc(0.75rem+var(--tab-h))] pt-8 md:hidden">
-                <p dir="auto" className="user-copy line-clamp-2 font-display text-body font-semibold leading-[1.2] text-white">
+              <div className="absolute inset-x-0 bottom-0 z-[13] flex h-[calc(3.25rem+var(--tab-h))] items-start justify-between gap-3 bg-bg px-4 pt-2.5 text-text">
+                <p dir="auto" className="user-copy line-clamp-1 min-w-0 pt-1 font-display text-body font-bold leading-snug tracking-[-0.01em]">
                   {pub.headline}
                 </p>
+                <span className="text-text-mute">{pager}</span>
               </div>
             ) : null}
           </div>
         </div>
-
-        <h2 dir="auto" className="user-copy hidden line-clamp-2 font-display text-body font-semibold leading-[1.2] tracking-tight md:block">
-          {pub.headline}
-        </h2>
       </div>
     </section>
   );
@@ -1180,25 +1217,21 @@ const FeedItem = function FeedItem({
 
 /**
  * The stage when there is nothing to play. A written piece is a page to read
- * rather than a black frame: its type and date, the headline, the deck, and
- * the way into the full piece. A clip the reader may not stream keeps its
+ * rather than a black frame: the headline, the deck, and the way into the
+ * full piece (its type and date are on the dateline above it). A clip the reader may not stream keeps its
  * poster behind and says what an account is for. The Feed's own chrome (the
  * chips, the actions, the analyst) stays around it unchanged.
  */
 function StillStage({ pub, written, signInHref }: { pub: FeedPublication; written: boolean; signInHref: string }) {
-  const date = new Date(pub.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return (
-    <div className="absolute inset-x-0 top-16 bottom-[calc(12rem+var(--tab-h))] z-[2] flex items-center justify-center px-11 md:top-20 md:bottom-44">
+    <div className="absolute inset-x-0 top-28 bottom-[calc(7rem+var(--tab-h))] z-[2] flex items-center justify-center px-6">
       <div
         className={cn(
-          "flex max-h-full w-full max-w-[22rem] flex-col gap-3 overflow-hidden rounded-panel border border-border bg-bg p-5 text-text",
+          "flex max-h-full w-full max-w-[22rem] flex-col gap-3 overflow-hidden rounded-panel bg-surface p-5 text-text shadow-card",
           !written && "items-center text-center",
         )}
       >
-        <span className="num text-ticker text-text-mute">
-          {labelCase(pub.typeLabel)} · {date}
-        </span>
-        <p dir="auto" className="user-copy line-clamp-4 font-display text-title font-semibold leading-tight tracking-tight">
+        <p dir="auto" className="user-copy line-clamp-4 font-display text-title font-bold leading-tight tracking-[-0.015em]">
           {pub.headline}
         </p>
         {written && pub.deck ? (
@@ -1228,7 +1261,7 @@ function EndOfFeed({ snapClass }: { snapClass: string }) {
     <section className={cn("flex snap-start items-center justify-center px-4 pb-[var(--tab-h)]", snapClass)} aria-label="End of feed">
       <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-panel border border-border p-9 text-center">
         <span className="num text-ticker text-text-mute">End of feed</span>
-        <p className="font-display text-headline font-semibold leading-tight">You are caught up.</p>
+        <p className="font-display text-headline font-extrabold leading-[1.08] tracking-[-0.03em]">You are caught up.</p>
         <p className="text-body leading-relaxed text-text-mute">
           New publications appear as analysts post them. Catch the morning edition on Today, or
           browse analysts by sector on Explore.
@@ -1296,7 +1329,7 @@ function DiscussionPanel({
             <span className="num text-ticker text-text-mute">
               Discussion{pub.ticker ? ` · ${pub.ticker}` : ""}
             </span>
-            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-body font-semibold leading-tight">
+            <p dir="auto" className="user-copy mt-1 line-clamp-2 font-display text-body font-bold leading-tight">
               {pub.headline}
             </p>
           </div>
