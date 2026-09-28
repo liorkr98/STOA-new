@@ -7,16 +7,16 @@ import type { FeedComment } from "@/lib/feed/types";
 
 /**
  * Dev-only Feed: the real surface over 30 fictional publications. The
- * first items put a stance (with sealed locked cards and a locked Steelman)
- * beside a NOTE with no ticker (theme chip), so both anchoring styles and
- * both Steelman states are visible.
+ * first items cover every stance card: long with sealed cards (members), a
+ * theme with no ticker, long and free (ends on Read the full report), short
+ * and paid (ends on the priced unlock), a ticker with no stance, and a hold.
  * Posting a comment appends locally. Mounted inside a copy of the app shell,
  * the same way the real page is, so the scroller the Feed lives in is the one
  * it ships in.
  */
 export default function DevFeedPage() {
   const pubs = fixturePublications();
-  const order = ["x1", "x3", "x6", "x2", "x4", "x7", ...pubs.map((p) => p.id)];
+  const order = ["x1", "x3", "x6", "x2", "x4", "x7", "x9", "x11", ...pubs.map((p) => p.id)];
   const seen = new Set<string>();
   const ordered = order.map((id) => pubs.find((p) => p.id === id)!).filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
   const onPost = async (reportId: string, text: string, parentId: string | null): Promise<FeedComment | null> => ({

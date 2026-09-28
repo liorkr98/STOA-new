@@ -1,5 +1,6 @@
 import type { FeedCard, FeedComment, FeedPublication } from "@/lib/feed/types";
-import type { StoredVideoEdit } from "@/lib/compose/overlays";
+import type { Direction } from "@/lib/types";
+import { sealStoredEdit, type StoredVideoEdit } from "@/lib/compose/overlays";
 import type { AttentionSample } from "@/lib/lifecycle/stages";
 import { demoClipPath } from "@/lib/demo/clips";
 
@@ -13,17 +14,17 @@ const NOW = Date.parse("2026-08-18T14:00:00Z");
 const hoursAgo = (h: number) => new Date(NOW - h * 3_600_000).toISOString();
 
 type A = FeedPublication["analyst"];
-const a = (handle: string, displayName: string): A => ({ id: `fx-${handle}`, handle, displayName, avatarUrl: null });
-const LENA = a("lenakw", "Lena Kowalczyk");
-const KAI = a("kaitanaka", "Kai Tanaka");
-const MARCUS = a("marcus_webb", "Marcus Webb");
-const PRIYA = a("priyanadar", "Priya Nadar");
-const NOOR = a("noorhaddad", "Noor Haddad");
-const DANA = a("danafixture", "Dana Fixture");
-const OMAR = a("omarfixture", "Omar Fixture");
-const IRIS = a("irisfixture", "Iris Fixture");
+const a = (handle: string, displayName: string, followers: number): A => ({ id: `fx-${handle}`, handle, displayName, avatarUrl: null, followers });
+const LENA = a("lenakw", "Lena Kowalczyk", 19240);
+const KAI = a("kaitanaka", "Kai Tanaka", 4130);
+const MARCUS = a("marcus_webb", "Marcus Webb", 812);
+const PRIYA = a("priyanadar", "Priya Nadar", 23100);
+const NOOR = a("noorhaddad", "Noor Haddad", 1);
+const DANA = a("danafixture", "Dana Fixture", 0);
+const OMAR = a("omarfixture", "Omar Fixture", 57);
+const IRIS = a("irisfixture", "Iris Fixture", 0);
 
-function fullStack(id: string, ticker: string, locked: boolean[]): FeedCard[] {
+function fullStack(id: string, ticker: string, locked: boolean[], access: FeedPublication["access"]): FeedCard[] {
   const l = (i: number) => Boolean(locked[i]);
   return [
     { kind: "thesis", id: `${id}-c0`, locked: l(0), title: `The case for ${ticker}`, body: "Consensus is modelling a normal cycle. The supply data says this one is not normal, and the customers with the least price sensitivity are the ones buying." },
@@ -34,7 +35,9 @@ function fullStack(id: string, ticker: string, locked: boolean[]): FeedCard[] {
     { kind: "checklist", id: `${id}-c5`, locked: l(5), rows: [{ label: "Backlog growing", status: "done", ink: "auto" }, { label: "Pricing holding", status: "done", ink: "creator_est" }, { label: "Inventory days falling", status: "pending", ink: "auto" }, { label: "Insider buying", status: "failed", ink: "auto" }] },
     { kind: "figure", id: `${id}-c6`, locked: l(6), caption: "Lead times vs price, trailing 8 quarters", imageUrl: null, source: "creator" },
     { kind: "steelman", id: `${id}-c7`, locked: l(7), objection: "Capacity additions announced this year land in exactly the window your target needs supply to stay tight.", answer: "They land, but they land at trailing-edge nodes. The tightness is at the leading edge, where the announced capacity is a rounding error until 2028." },
-    { kind: "unlock", id: `${id}-unlock`, locked: false, access: "subscribers", price: null, href: `/report/${id}` },
+    access === "free"
+      ? { kind: "read", id: `${id}-read`, locked: false, href: `/report/${id}` }
+      : { kind: "unlock", id: `${id}-unlock`, locked: false, access, price: access === "paid" ? "$7" : null, href: `/report/${id}` },
   ];
 }
 
@@ -61,7 +64,7 @@ interface Spec {
   headline: string;
   deck?: string;
   ticker?: string;
-  dir?: "long" | "short";
+  dir?: Direction;
   sector?: string;
   theme?: string;
   secs: number;
@@ -104,29 +107,60 @@ const SPECS: Spec[] = [
       ],
     }, by: LENA, type: "THESIS", headline: "Blackwell demand is still under-modelled into the January quarter", deck: "Hyperscaler capex guides imply a supply-constrained first half.", ticker: "NVDA", dir: "long", sector: "Semiconductors", secs: 222, hours: 2, views: 4820, locked: [false, false, true, true, true, true, true, true], access: "subscribers" },
   { id: "x2", by: KAI, type: "THESIS", headline: "The refiners nobody is modelling correctly", deck: "Crack spreads held through a quarter that should have crushed them.", ticker: "VLO", dir: "long", sector: "Energy", secs: 187, hours: 4, views: 3100 },
-  { id: "x3", by: PRIYA, type: "BRIEF", headline: "What the Strait of Hormuz headlines mean for crude this week", theme: "MACRO · OIL & ENERGY", sector: "Energy", secs: 95, hours: 5, views: 2210 },
-  { id: "x4", by: MARCUS, type: "THESIS", headline: "Shorting the last honest regional bank", ticker: "ZION", dir: "short", sector: "Financials", secs: 240, hours: 7, views: 1900, locked: [false, true, true, true, true, true, true, true], access: "paid" },
+  { id: "x3", by: PRIYA, type: "BRIEF", headline: "What the Strait of Hormuz headlines mean for crude this week", theme: "Oil & energy", sector: "Energy", secs: 95, hours: 5, views: 2210 },
+  {
+    id: "x4",
+    // Trimmed to 4s to 17s of the 20s demo clip, with a locked card placed
+    // as an overlay: the player must start at 4s and draw the card sealed.
+    videoEdit: {
+      version: 1,
+      durationSeconds: 20,
+      trimStart: 4,
+      trimEnd: 17,
+      overlays: [
+        {
+          id: "ov-l1",
+          kind: "visual",
+          start: 4,
+          end: 12,
+          source: { type: "card", cardId: "x4-locked", label: "Deposit math" },
+          mode: "inset",
+          position: 5,
+          size: 0.55,
+          opacity: 1,
+        },
+      ],
+      cards: [
+        {
+          id: "x4-locked",
+          kind: "kill_switch",
+          locked: true,
+          payload: { conditions: [{ text: "LOCKED-OVERLAY-SECRET deposit beta above 60%", ink: "plain" }] },
+        },
+      ],
+    },
+    by: MARCUS, type: "THESIS", headline: "Shorting the last honest regional bank", ticker: "ZION", dir: "short", sector: "Financials", secs: 240, hours: 7, views: 1900, locked: [false, true, true, true, true, true, true, true], access: "paid" },
   { id: "x5", by: NOOR, type: "THESIS", headline: "Copper is the only clean energy trade left", ticker: "FCX", dir: "long", sector: "Materials", secs: 140, hours: 6, views: 2600 },
   { id: "x6", by: DANA, type: "THESIS", headline: "Micron: HBM pricing holds through the cycle", ticker: "MU", dir: "long", sector: "Semiconductors", secs: 187, hours: 9, views: 5610 },
-  { id: "x7", by: KAI, type: "BRIEF", headline: "A note on the yen carry unwind", theme: "MACRO · RATES", secs: 71, hours: 10, views: 800 },
+  { id: "x7", by: KAI, type: "BRIEF", headline: "A note on the yen carry unwind", theme: "Rates", secs: 71, hours: 10, views: 800 },
   { id: "x8", by: MARCUS, type: "THESIS", headline: "Insurance float is quietly repricing", ticker: "CB", dir: "long", sector: "Financials", secs: 260, hours: 12, views: 1200 },
-  { id: "x9", by: PRIYA, type: "THESIS", headline: "Semis are not one trade anymore", ticker: "SMH", dir: "long", sector: "Semiconductors", secs: 200, hours: 14, views: 3300 },
+  { id: "x9", by: PRIYA, type: "THESIS", headline: "Semis are not one trade anymore", ticker: "SMH", sector: "Semiconductors", secs: 200, hours: 14, views: 3300 },
   { id: "x10", by: LENA, type: "THESIS", headline: "AMD's MI350 window is narrower than the bulls think", ticker: "AMD", dir: "short", sector: "Semiconductors", secs: 301, hours: 20, views: 3910 },
-  { id: "x11", by: NOOR, type: "THESIS", headline: "Grid capex is the decade's quietest compounder", ticker: "ETN", dir: "long", sector: "Industrials", secs: 220, hours: 22, views: 1400 },
-  { id: "x12", by: DANA, type: "BRIEF", headline: "Reading the SOX breadth chart", theme: "SEMIS", sector: "Semiconductors", secs: 60, hours: 26, views: 640 },
+  { id: "x11", by: NOOR, type: "THESIS", headline: "Grid capex is the decade's quietest compounder", ticker: "ETN", dir: "hold", sector: "Industrials", secs: 220, hours: 22, views: 1400 },
+  { id: "x12", by: DANA, type: "BRIEF", headline: "Reading the SOX breadth chart", theme: "Semis", sector: "Semiconductors", secs: 60, hours: 26, views: 640 },
   { id: "x13", by: OMAR, type: "THESIS", headline: "Valero into the turnaround season", ticker: "VLO", dir: "long", sector: "Energy", secs: 150, hours: 30, views: 900 },
   { id: "x14", by: IRIS, type: "THESIS", headline: "Zions: the deposit beta problem", ticker: "ZION", dir: "short", sector: "Financials", secs: 130, hours: 33, views: 700 },
   { id: "x15", by: PRIYA, type: "THESIS", headline: "ASML after the bookings trough", ticker: "ASML", dir: "long", sector: "Semiconductors", secs: 280, hours: 40, views: 2980 },
   { id: "x16", by: LENA, type: "THESIS", headline: "TSMC's N2 ramp is the capex the market is not pricing", ticker: "TSM", dir: "long", sector: "Semiconductors", secs: 240, hours: 44, views: 1330 },
   { id: "x17", by: OMAR, type: "THESIS", headline: "Exxon: supply discipline holds through the summer", ticker: "XOM", dir: "long", sector: "Energy", secs: 175, hours: 50, views: 1100 },
-  { id: "x18", by: IRIS, type: "BRIEF", headline: "Why the semis rally is broader than the Magnificent Seven", theme: "SEMIS", sector: "Semiconductors", secs: 88, hours: 52, views: 980 },
+  { id: "x18", by: IRIS, type: "BRIEF", headline: "Why the semis rally is broader than the Magnificent Seven", theme: "Semis", sector: "Semiconductors", secs: 88, hours: 52, views: 980 },
   { id: "x19", by: KAI, type: "THESIS", headline: "Cheniere and the LNG contract cliff", ticker: "LNG", dir: "long", sector: "Energy", secs: 210, hours: 60, views: 640 },
   { id: "x20", by: MARCUS, type: "THESIS", headline: "Regional banks: the next shoe", ticker: "KRE", dir: "short", sector: "Financials", secs: 95, hours: 66, views: 1500 },
   { id: "x21", by: NOOR, type: "THESIS", headline: "Freeport at the top of the copper curve", ticker: "FCX", dir: "long", sector: "Materials", secs: 130, hours: 70, views: 1250 },
   { id: "x22", by: DANA, type: "THESIS", headline: "Lam Research: the etch intensity story", ticker: "LRCX", dir: "long", sector: "Semiconductors", secs: 190, hours: 80, views: 700 },
   { id: "x23", by: OMAR, type: "THESIS", headline: "Linde and the industrial gas moat", ticker: "LIN", dir: "long", sector: "Materials", secs: 250, hours: 90, views: 560 },
   { id: "x24", by: IRIS, type: "THESIS", headline: "Arm's royalty mix is where the models break", ticker: "ARM", dir: "long", sector: "Semiconductors", secs: 180, hours: 100, views: 2200 },
-  { id: "x25", by: PRIYA, type: "BRIEF", headline: "Three charts on the dollar", theme: "MACRO · FX", secs: 75, hours: 110, views: 420 },
+  { id: "x25", by: PRIYA, type: "BRIEF", headline: "Three charts on the dollar", theme: "FX", secs: 75, hours: 110, views: 420 },
   { id: "x26", by: LENA, type: "THESIS", headline: "Broadcom's custom silicon runway", ticker: "AVGO", dir: "long", sector: "Semiconductors", secs: 200, hours: 120, views: 1800 },
   { id: "x27", by: KAI, type: "THESIS", headline: "Chevron's Permian math", ticker: "CVX", dir: "long", sector: "Energy", secs: 160, hours: 130, views: 900 },
   { id: "x28", by: MARCUS, type: "THESIS", headline: "Chubb: pricing power in a hard market", ticker: "CB", dir: "long", sector: "Financials", secs: 140, hours: 140, views: 780 },
@@ -146,7 +180,8 @@ export function fixturePublications(): FeedPublication[] {
       thumbnailUrl: clip.poster,
       captionUrl: null,
       durationSeconds: s.secs,
-      videoEdit: s.videoEdit ?? null,
+      // As the server sends it: locked overlay cards arrive emptied.
+      videoEdit: sealStoredEdit(s.videoEdit ?? null),
       feedPreviewSeconds: null,
       headline: s.headline,
       deck: s.deck ?? null,
@@ -160,7 +195,7 @@ export function fixturePublications(): FeedPublication[] {
       analyst: s.by,
       access: s.access ?? "free",
       price: s.access === "paid" ? 7 : null,
-      cards: s.ticker ? fullStack(s.id, s.ticker, s.locked ?? []) : noteStack(s.id),
+      cards: s.ticker ? fullStack(s.id, s.ticker, s.locked ?? [], s.access ?? "free") : noteStack(s.id),
       comments: comments(s.id, s.by),
       publishedAt: hoursAgo(s.hours),
     };
