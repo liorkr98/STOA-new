@@ -10,6 +10,7 @@ import { headers } from "next/headers";
 import { SITE_URL } from "@/lib/seo/site";
 import { postAuthPath } from "@/lib/auth/post-auth";
 import { appUrl, originFromForwarded } from "@/lib/pwa/urls";
+import { rateLimit } from "@/lib/ratelimit";
 
 async function signupIp(): Promise<string | null> {
   const h = await headers();
@@ -39,6 +40,11 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     .trim()
     .toLowerCase()
     .replace(/^@/, "");
+  const ip = (await signupIp()) ?? "unknown";
+  const rl = await rateLimit("auth-signin", ip, { limit: 20, windowSeconds: 300 });
+  if (!rl.success) {
+    return { error: "Too many sign-in attempts. Wait a few minutes." };
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
@@ -92,6 +98,12 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   }
   if (formData.get("age_attestation") !== "on") {
     return { error: "You must confirm you are 18 years of age or older." };
+  }
+
+  const ip = (await signupIp()) ?? "unknown";
+  const rl = await rateLimit("auth-signup", ip, { limit: 8, windowSeconds: 3600 });
+  if (!rl.success) {
+    return { error: "Too many sign-up attempts. Wait a few minutes." };
   }
 
   const supabase = await createClient();

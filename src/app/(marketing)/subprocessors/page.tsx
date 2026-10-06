@@ -15,6 +15,26 @@ const SUBPROCESSORS = [
     data: "Account data, published content, session tokens",
   },
   {
+    name: "Bunny Stream",
+    purpose: "Video encoding, hosting, and CDN delivery",
+    data: "Uploaded video assets linked to publications",
+  },
+  {
+    name: "Sentry",
+    purpose: "Error reporting. Session Replay only if you accept optional analytics",
+    data: "Error traces; replays of the page if you opted in (text and media masked)",
+  },
+  {
+    name: "Slack",
+    purpose: "Internal ops alerts (uploads, payments, contact, cron)",
+    data: "Event summaries. Not a customer messaging channel",
+  },
+  {
+    name: "Upstash (Redis and QStash)",
+    purpose: "Rate limits, cache, and background job follow-ups",
+    data: "Request keys and job identifiers, not report bodies",
+  },
+  {
     name: "DeepSeek",
     purpose: "AI-assisted fact-checking and compose tools (when enabled)",
     data: "Report excerpts submitted for analysis",
@@ -30,11 +50,6 @@ const SUBPROCESSORS = [
     data: "Ticker symbols queried; no user PII sent",
   },
   {
-    name: "Cloudflare Stream",
-    purpose: "Video hosting (optional feature)",
-    data: "Uploaded video assets linked to reports",
-  },
-  {
     name: "Vercel",
     purpose: "Application hosting and edge delivery",
     data: "Request logs, IP addresses at infrastructure layer",
@@ -45,11 +60,11 @@ export default function SubprocessorsPage() {
   return (
     <LegalPageShell title="Subprocessors">
       <p className="t-body text-text-mute">
-        Third parties that process data on Stoa&apos;s behalf. This list will be updated when
-        vendors change.
+        Third parties that process data on Stoa&apos;s behalf. This list will be updated when vendors
+        change.
       </p>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-body">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-left">
               <th scope="col" className="py-2 pr-4 font-medium">

@@ -10,6 +10,7 @@ import type { ComposeInput, AccessType, ContentType } from "@/lib/types";
 import { soldReportIds } from "@/lib/db/report-unlocks";
 import { deleteBlocker } from "@/lib/studio/delete-rule";
 import { CALL_JOIN, publicationRow } from "@/lib/db/publication-row";
+import { rateLimit } from "@/lib/ratelimit";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -357,6 +358,8 @@ export async function publishReport(
   redirectAfter = true,
 ): Promise<{ id: string } | { error: string }> {
   const { supabase, userId } = await requireUser();
+  const rl = await rateLimit("publish", userId, { limit: 20, windowSeconds: 3600 });
+  if (!rl.success) return { error: "Too many publishes this hour. Wait and try again." };
 
   try {
     const { id } = await validateAndPublishReport(supabase, userId, input);

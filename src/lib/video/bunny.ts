@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { MAX_VIDEO_DURATION_SECONDS } from "@/lib/video/constants";
+import { applyBunnyToken } from "@/lib/video/bunny-token";
 
 export { MAX_VIDEO_DURATION_SECONDS };
 
@@ -16,7 +17,8 @@ export { MAX_VIDEO_DURATION_SECONDS };
  *   BUNNY_STREAM_LIBRARY_ID      numeric video library id
  *   BUNNY_STREAM_API_KEY         library API key (AccessKey)
  *   BUNNY_STREAM_CDN_HOSTNAME    pull-zone hostname, e.g. vz-xxxx.b-cdn.net
- *   BUNNY_STREAM_WEBHOOK_SECRET  optional shared secret echoed on the webhook URL
+ *   BUNNY_STREAM_WEBHOOK_SECRET  required shared secret on the webhook URL
+ *   BUNNY_TOKEN_KEY              optional CDN token key; when set, playback URLs are signed
  */
 
 const TUS_ENDPOINT = "https://video.bunnycdn.com/tusupload";
@@ -81,23 +83,23 @@ async function bunnyFetch(path: string, init?: RequestInit): Promise<unknown> {
 /** CDN URLs derived from the video GUID (Bunny's deterministic path scheme). */
 export function bunnyPlaybackUrl(guid: string): string {
   const { cdnHostname } = bunnyEnv();
-  return `https://${cdnHostname}/${guid}/playlist.m3u8`;
+  return applyBunnyToken(`https://${cdnHostname}/${guid}/playlist.m3u8`);
 }
 
 export function bunnyThumbnailUrl(guid: string): string {
   const { cdnHostname } = bunnyEnv();
-  return `https://${cdnHostname}/${guid}/thumbnail.jpg`;
+  return applyBunnyToken(`https://${cdnHostname}/${guid}/thumbnail.jpg`);
 }
 
 /** Animated muted preview used for hover/in-view autoplay in the video card. */
 export function bunnyPreviewUrl(guid: string): string {
   const { cdnHostname } = bunnyEnv();
-  return `https://${cdnHostname}/${guid}/preview.webp`;
+  return applyBunnyToken(`https://${cdnHostname}/${guid}/preview.webp`);
 }
 
 export function bunnyCaptionVttUrl(guid: string, lang = "en"): string {
   const { cdnHostname } = bunnyEnv();
-  return `https://${cdnHostname}/${guid}/captions/${lang}.vtt`;
+  return applyBunnyToken(`https://${cdnHostname}/${guid}/captions/${lang}.vtt`);
 }
 
 /** Bunny's own embed player (handles HLS + captions + disclosure track). */

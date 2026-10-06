@@ -10,6 +10,26 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-06 — Security and privacy lockdown
+
+**For someone using the site**
+
+- Optional analytics (error-page replay) stay off until you tap Accept on the cookie banner.
+- Settings now has Request deletion instead of a disabled Deactivate button. Locked calls stay on the public record under a deleted handle.
+- You can export a fuller copy of your data (follows, saves, comments, PayPal connection, video stats).
+- Demo "Add funds" is gone in production. PayPal is the payment path.
+- Cookie, privacy, and subprocessors pages name the services we actually use (Bunny, Sentry, Slack, Upstash). Cloudflare Stream is not one of them.
+
+**For Krisi**
+
+- Migration `0068_security_privacy_lockdown` is applied on hosted STOA, plus `0069` (disable `top_up_idem`) and `0070`/`0071` (partition child policies). Dangerous RPCs (`pseudonymize_user`, `purge_all_except_email`, `upsert_paypal_account`, `top_up`) are no longer callable by `anon`.
+- Set `BUNNY_STREAM_WEBHOOK_SECRET` (required; webhook is 503 without it). Optional `BUNNY_TOKEN_KEY` signs CDN URLs once token auth is on in Bunny.
+- Turn on leaked-password protection in the Supabase Auth dashboard, and confirm Vercel Firewall is on for `/api/*`.
+- `drop_old_video_view_partitions` exists but is not on cron until counsel signs retention.
+- Binding ToS/Privacy still need counsel. Do not treat current legal pages as final.
+
+---
+
 ## 2026-09-28: The Feed in Direction B
 
 The last surface in the new design. The picture fills the screen and

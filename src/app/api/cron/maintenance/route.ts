@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       const out: Record<string, unknown> = {};
 
       await db.rpc("ensure_video_view_partitions");
+      await db.rpc("ensure_engagement_partitions");
       out.partitions = "ensured";
 
       const rl = await db.rpc("cleanup_api_rate_limits");

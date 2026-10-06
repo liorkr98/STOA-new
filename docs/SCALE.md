@@ -110,6 +110,7 @@ exhaustion. Run against staging sized like production, before any video-first ro
 - Vercel Firewall / bot protection: enable on `/api/*` in the Vercel dashboard
   (Project -> Firewall). This is a second layer; server-side entitlement (RLS on
   `report_bodies`, signed video URLs) remains the primary paywall enforcement.
+  Status: see `docs/SECURITY.md`. The hosted lockdown is migration 0068.
 - Independent security review: run the `security-review` agent on the hardening
   diff before shipping, then a human tries to break it.
 
@@ -142,7 +143,7 @@ Drill steps:
 5. Time the whole restore end to end.
 6. Delete the scratch project.
 
-- Recorded RTO: _pending first drill_.
+- Recorded RTO: _pending first drill_. Procedure copied to `docs/SECURITY.md`.
 - Cadence: re-drill after any major schema change or quarterly, whichever first.
 
 ## Region

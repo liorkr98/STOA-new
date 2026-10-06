@@ -4,6 +4,11 @@
 > content model, among other changes) is captured in `docs/PRODUCT_MODEL.md`. This brief describes
 > how the product works, so it must be reviewed and updated with counsel before it is relied on.
 > The body below has NOT been revised for the new model.
+>
+> **Corrections vs the body below (engineering, Oct 2026):** there is no public MOAT / Track Score;
+> resolved HIT / MISS / NEAR seals are the public record. Fact-check is optional, never a publish
+> gate. Video is the atomic publication. Erasure is pseudonymize-plus-admin-approval (migration 0068).
+> Subprocessors include Bunny Stream, Sentry, Slack, and Upstash, not Cloudflare Stream.
 ### This is NOT legal advice and NOT drafted legal text. It's a briefing document — everything a lawyer needs to know about how the product actually works, so the engagement starts with informed drafting instead of hours of discovery. Hand this directly to whoever you retain, US and Israeli counsel both.
 
 ---

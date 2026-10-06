@@ -45,6 +45,31 @@ const nextConfig = {
     return [{ source: "/icon", destination: "/icon/512" }];
   },
   async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://browser.sentry-cdn.com https://s3.tradingview.com https://www.tradingview.com",
+      "style-src 'self' 'unsafe-inline' https://s3.tradingview.com https://www.tradingview.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.b-cdn.net https://iframe.mediadelivery.net https://picsum.photos https://i.pravatar.cc https://api.dicebear.com https://*.tradingview.com https://s3.tradingview.com",
+      "font-src 'self' data:",
+      "media-src 'self' blob: https://*.b-cdn.net https://iframe.mediadelivery.net",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.b-cdn.net https://video.bunnycdn.com https://iframe.mediadelivery.net https://*.paypal.com https://*.paypalobjects.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://*.upstash.io https://qstash.upstash.io https://*.tradingview.com https://s3.tradingview.com",
+      "frame-src https://iframe.mediadelivery.net https://*.paypal.com https://*.paypalobjects.com https://www.tradingview.com https://*.tradingview.com",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join("; ");
+
+    const security = [
+      { key: "Content-Security-Policy", value: csp },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=(), payment=(self)" },
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+    ];
+
     return [
       {
         source: "/sw.js",
@@ -53,6 +78,7 @@ const nextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
+      { source: "/:path*", headers: security },
     ];
   },
   images: {

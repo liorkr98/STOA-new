@@ -10,6 +10,7 @@ import { MarketingOptInToggle } from "@/components/settings/marketing-opt-in-tog
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DeletionRequestForm } from "@/components/settings/deletion-request-form";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -100,7 +101,8 @@ export default async function SettingsPage() {
         <SectionLabel>Your data</SectionLabel>
         <Card className="p-6">
           <p className="t-body text-text-mute">
-            Download a JSON copy of your profile, consents, subscriptions, and authored reports.
+            Download a JSON copy of your profile, consents, follows, saves, comments, subscriptions,
+            PayPal connection status, and authored reports.
           </p>
           <a href="/api/account/export" className={buttonClass("ghost", "sm", "mt-4 inline-flex")} download>
             Export my data
@@ -108,17 +110,17 @@ export default async function SettingsPage() {
         </Card>
       </section>
 
-      {/* Danger zone */}
       <section className="flex flex-col gap-4">
         <SectionLabel>Danger zone</SectionLabel>
         <Card className="flex flex-wrap items-center justify-between gap-4 p-6">
           <div>
-            <p className="text-body font-medium">Deactivate account</p>
-            <p className="t-meta mt-1">Hide your profile and stop all activity. This can be undone by signing back in.</p>
+            <p className="text-body font-medium">Request account deletion</p>
+            <p className="t-meta mt-1">
+              Removes your name, email, and private data after review. Locked calls stay on the public
+              record under a deleted handle.
+            </p>
           </div>
-          <button type="button" disabled className={buttonClass("ghost", "sm")}>
-            Deactivate
-          </button>
+          <DeletionRequestForm />
         </Card>
       </section>
     </div>

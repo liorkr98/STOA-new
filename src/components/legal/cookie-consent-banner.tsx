@@ -3,31 +3,21 @@
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
 import { useHydrated, useStoredValue } from "@/lib/hooks/use-stored-value";
+import {
+  COOKIE_CONSENT_EVENT,
+  COOKIE_CONSENT_KEY,
+  type ConsentChoice,
+  parseConsent,
+} from "@/lib/privacy/consent";
 
-const STORAGE_KEY = "stoa_cookie_consent";
-export const COOKIE_CONSENT_KEY = STORAGE_KEY;
-export const COOKIE_CONSENT_EVENT = "stoa-cookie-consent";
-
-type ConsentChoice = "essential" | "all";
-
-function parseConsent(raw: string | null): ConsentChoice | null {
-  return raw === "essential" || raw === "all" ? raw : null;
-}
-
-function readConsent(): ConsentChoice | null {
-  if (typeof window === "undefined") return null;
-  return parseConsent(localStorage.getItem(STORAGE_KEY));
-}
+export { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent } from "@/lib/privacy/consent";
 
 export function CookieConsentBanner() {
-  // Read straight from storage. The banner hides because the stored value
-  // changed, not because an effect pushed it into state.
-  const consent = useStoredValue(STORAGE_KEY, parseConsent, null, COOKIE_CONSENT_EVENT);
-  // Stays out of the server HTML, so someone who already chose never sees it flash.
+  const consent = useStoredValue(COOKIE_CONSENT_KEY, parseConsent, null, COOKIE_CONSENT_EVENT);
   const hydrated = useHydrated();
 
   function save(choice: ConsentChoice) {
-    localStorage.setItem(STORAGE_KEY, choice);
+    localStorage.setItem(COOKIE_CONSENT_KEY, choice);
     window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
   }
 
@@ -41,7 +31,7 @@ export function CookieConsentBanner() {
       style={{ bottom: "var(--tab-h, 0px)" }}
     >
       <div className="mx-auto flex max-w-[var(--w-wide)] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-body text-text-mute">
+        <p className="text-sm text-text-mute">
           We use essential cookies to run Stoa. Optional analytics stay off unless you accept.{" "}
           <Link href="/cookies" className="underline hover:no-underline">
             Cookie policy
@@ -55,20 +45,11 @@ export function CookieConsentBanner() {
           >
             Essential only
           </button>
-          <button
-            type="button"
-            className={buttonClass("ink", "sm")}
-            onClick={() => save("all")}
-          >
+          <button type="button" className={buttonClass("ink", "sm")} onClick={() => save("all")}>
             Accept
           </button>
         </div>
       </div>
     </div>
   );
-}
-
-/** Returns true when non-essential tracking may run (user explicitly accepted). */
-export function hasAnalyticsConsent(): boolean {
-  return readConsent() === "all";
 }

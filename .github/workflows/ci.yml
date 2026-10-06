@@ -42,6 +42,12 @@ jobs:
       - name: Back navigation tests
         run: npm run test:nav
 
+      - name: Webhook tests
+        run: npm run test:webhooks
+
+      - name: Security tests
+        run: npm run test:security
+
       - name: RLS tests
         # Skips cleanly when Supabase secrets are absent (see tests/rls).
         run: npm run test:rls

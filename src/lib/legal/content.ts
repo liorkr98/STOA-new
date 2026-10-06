@@ -1,4 +1,4 @@
-/** Factual product descriptions for legal pages — not final legal copy. */
+/** Factual product descriptions for legal pages. Not final legal copy. */
 
 export interface LegalSectionContent {
   title: string;
@@ -16,7 +16,7 @@ export const TERMS_CONTENT: LegalSectionContent[] = [
   {
     title: "Platform Description & Not-Advice Disclaimer",
     paragraphs: [
-      "Stoa is a two-sided marketplace where independent financial analysts publish research, lock a price target (ticker, direction, target price, horizon date) at publication, and may be paid via subscription or per-report purchase. Locked calls are enforced immutable at the database level — they cannot be edited or deleted after publication, including by Stoa itself.",
+      "Stoa is a two-sided marketplace where independent financial analysts publish research, lock a price target (ticker, direction, target price, horizon date) at publication, and may be paid via subscription or per-report purchase. Locked calls are enforced immutable at the database level. They cannot be edited or deleted after publication, including by Stoa itself.",
       "Stoa is a research marketplace, not a broker or registered investment adviser. Nothing on the platform is investment, tax, or legal advice. See our Not Investment Advice page for how the product is designed.",
     ],
   },
@@ -29,8 +29,8 @@ export const TERMS_CONTENT: LegalSectionContent[] = [
   {
     title: "Analyst Content & Independence",
     paragraphs: [
-      "Research on Stoa reflects the independent views of individual analysts, not Stoa. Content is published once to all subscribers and purchasers simultaneously — there is no mechanism for analysts to tailor research to an individual investor's circumstances.",
-      "There is no direct messaging between an analyst and a subscriber. The only conversational surface is a public debate thread scoped to a single claim on a published report, visible to all readers — not a private advice channel.",
+      "Research on Stoa reflects the independent views of individual analysts, not Stoa. Content is published once to all subscribers and purchasers simultaneously. There is no mechanism for analysts to tailor research to an individual investor's circumstances.",
+      "There is no direct messaging between an analyst and a subscriber. The only conversational surface is a public debate thread scoped to a single claim on a published report, visible to all readers, not a private advice channel.",
       "Every published report includes a mandatory disclosure block (not removable or customizable by the analyst) covering position disclosure, compensation tied to the call, and certification that views are the analyst's own.",
     ],
   },
@@ -42,7 +42,7 @@ export const TERMS_CONTENT: LegalSectionContent[] = [
     bullets: [
       "Subscription access to an analyst's research feed",
       "Per-report purchases where offered",
-      "Simulated wallet/credits may be used in demo or pre-production environments",
+      "PayPal is the payment rail. Simulated wallet top-up is disabled in production",
     ],
   },
   {
@@ -54,13 +54,13 @@ export const TERMS_CONTENT: LegalSectionContent[] = [
   {
     title: "Limitation of Liability",
     paragraphs: [
-      "[Pending legal draft — counsel to define liability caps, disclaimers, and exclusions appropriate to a research marketplace.]",
+      "[Pending legal draft. Counsel to define liability caps, disclaimers, and exclusions appropriate to a research marketplace.]",
     ],
   },
   {
     title: "Dispute Resolution",
     paragraphs: [
-      "[Pending legal draft — counsel to specify governing law, venue, and dispute resolution mechanism.]",
+      "[Pending legal draft. Counsel to specify governing law, venue, and dispute resolution mechanism.]",
     ],
   },
   {
@@ -85,20 +85,20 @@ export const CREATOR_TERMS_CONTENT: LegalSectionContent[] = [
   {
     title: "Content Standards & Fact-Checking",
     paragraphs: [
-      "Before publication is allowed, an AI-assisted fact-checker classifies factual claims in your report (fact, unproven, opinion, or contradicted). The fact-checker does not write or edit your thesis or price target — those remain your own views.",
+      "Before publication you may run an AI-assisted fact-checker that classifies factual claims (fact, unproven, opinion, or contradicted). It is a bonus, not a gate: publishing never waits for it. The fact-checker does not write or edit your thesis or price target.",
       "You must complete the mandatory disclosure block on every report: position in the security, compensation tied to the call, and certification that views are your own.",
     ],
   },
   {
     title: "Pricing & Payouts (PayPal)",
     paragraphs: [
-      "Creator payouts are handled via PayPal Partner Referrals / Commerce Platform. Stoa retains a 10% platform fee on your earnings. Tax reporting obligations (e.g., 1099 or local equivalents) are your responsibility — counsel and your accountant will advise on specifics.",
+      "Creator payouts are handled via PayPal Partner Referrals / Commerce Platform. Stoa retains a 10% platform fee on your earnings. Tax reporting obligations (e.g., 1099 or local equivalents) are your responsibility. Counsel and your accountant will advise on specifics.",
     ],
   },
   {
     title: "Track Record & Immutability",
     paragraphs: [
-      "When you lock a call at publication, the record (ticker, direction, target price, horizon date, and linked report) becomes permanently immutable at the database level. This supports public accountability and MOAT score grading (Hit/Miss against real market prices on the horizon date).",
+      "When you lock a call at publication, the record (ticker, direction, target price, horizon date, and linked report) becomes permanently immutable at the database level. Resolved outcomes (HIT / MISS / NEAR) stay visible. Track Score is computed privately for the analyst and is not shown on public pages.",
       "You may not edit or delete locked calls after publication, including through Stoa support.",
     ],
   },
@@ -148,7 +148,7 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
   {
     title: "Legal Bases (GDPR)",
     paragraphs: [
-      "[Pending legal draft — counsel to map processing activities to GDPR Articles 6 and 9 bases, including contract performance, legitimate interests, and consent where applicable.]",
+      "[Pending legal draft. Counsel to map processing activities to GDPR Articles 6 and 9 bases, including contract performance, legitimate interests, and consent where applicable.]",
       "Marketing emails use consent (GDPR Article 6(1)(a)). They are optional, off by default, and not bundled into the required Terms or Privacy acceptance.",
     ],
   },
@@ -167,7 +167,7 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
   {
     title: "Sharing & Subprocessors",
     paragraphs: [
-      "We share data with service providers who process it on our behalf. See our Subprocessors page for the current list, including PayPal, Supabase, AI providers, market data sources, Cloudflare, and Vercel.",
+      "We share data with service providers who process it on our behalf. See our Subprocessors page for the current list, including PayPal, Supabase, Bunny Stream, Sentry, Slack, Upstash, AI providers, market data sources, and Vercel.",
     ],
   },
   {
@@ -181,7 +181,7 @@ export const PRIVACY_CONTENT: LegalSectionContent[] = [
     paragraphs: [
       "Depending on your jurisdiction, you may have rights to access, correct, export, or delete personal data. You can export your account data from Settings.",
       "You can withdraw marketing-email consent at any time in Settings. That withdrawal does not affect the required Terms of Service or Privacy Policy acceptance.",
-      "Erasure vs. immutable ledger: GDPR Article 17 gives EU individuals a right to erasure. Stoa's core product promise is that locked calls (linked to analyst identity for track-record accountability) cannot be deleted. The proposed engineering approach — pending legal sign-off — is to pseudonymize personally identifying fields in profiles (name, avatar, bio, email) on verified deletion requests while leaving locked reports, claims, and MOAT score snapshots intact under an anonymized handle. The public ledger entry survives; the link to real-world identity does not.",
+      "Erasure vs. immutable ledger: GDPR Article 17 gives EU individuals a right to erasure. Stoa's core product promise is that locked calls cannot be deleted. The engineering approach, pending legal sign-off, is to pseudonymize personally identifying fields (name, avatar, bio, email, PayPal connection) on verified deletion requests while leaving locked reports intact under an anonymized handle. The public ledger entry survives; the link to real-world identity does not. Track Score snapshots are internal and private.",
     ],
     bullets: [
       "Does Article 17(3) provide an exemption for publicly verifiable analyst records?",
@@ -211,7 +211,7 @@ export const COOKIES_CONTENT: LegalSectionContent[] = [
   {
     title: "What Are Cookies",
     paragraphs: [
-      "Cookies and similar technologies help Stoa remember your session, preferences, and consent choices. This policy describes what we use today and what may be added with notice.",
+      "Cookies and similar technologies help Stoa remember your session, preferences, and consent choices. This policy describes what we use today.",
     ],
   },
   {
@@ -221,9 +221,9 @@ export const COOKIES_CONTENT: LegalSectionContent[] = [
     ],
   },
   {
-    title: "Analytics Cookies (if enabled)",
+    title: "Optional analytics",
     paragraphs: [
-      "We may add analytics cookies in the future. When enabled, they will be disclosed here and controlled through the cookie consent banner. Non-essential cookies are off by default.",
+      "Sentry Session Replay may run if you tap Accept on the cookie banner. It records a masked replay of the page to help us debug errors. It stays off on Essential only. Session cookies for sign-in are essential. Watching the Feed and Explore overlays requires an account because streaming is billed per view.",
     ],
   },
   {
@@ -249,7 +249,7 @@ export const NOT_ADVICE_CONTENT: LegalSectionContent[] = [
   {
     title: "Independent Analyst Opinions",
     paragraphs: [
-      "Every price target, thesis, and recommendation on Stoa is the independent view of the publishing analyst. Stoa does not endorse, verify the merit of, or guarantee any analyst's views. MOAT scores reflect historical grading of locked calls against market prices — they are not a forecast of future performance.",
+      "Every price target, thesis, and recommendation on Stoa is the independent view of the publishing analyst. Stoa does not endorse, verify the merit of, or guarantee any analyst's views. HIT / MISS / NEAR seals reflect historical grading of locked calls against market prices. They are not a forecast of future performance.",
     ],
   },
   {
@@ -261,13 +261,13 @@ export const NOT_ADVICE_CONTENT: LegalSectionContent[] = [
   {
     title: "AI Tools",
     paragraphs: [
-      "Stoa's AI fact-checker classifies factual claims in analyst reports before publication. It does not generate investment recommendations, price targets, or opinions. Any AI-assisted features that let users query report content are designed to present general information — counsel is reviewing compliance with applicable regulations including ISA guidance on AI chatbots presenting financial analysis.",
+      "Stoa's AI fact-checker classifies factual claims in analyst reports. It is optional and never a publish gate. It does not generate investment recommendations, price targets, or opinions. Any AI-assisted features that let users query report content are designed to present general information. Counsel is reviewing compliance with applicable regulations including ISA guidance on AI chatbots presenting financial analysis.",
     ],
   },
   {
     title: "Past Performance",
     paragraphs: [
-      "Historical Hit/Miss grades and MOAT scores reflect past locked calls only. Past performance does not guarantee future results.",
+      "Historical HIT / MISS / NEAR grades reflect past locked calls only. Past performance does not guarantee future results. Track Score is private to the analyst.",
     ],
   },
   {
