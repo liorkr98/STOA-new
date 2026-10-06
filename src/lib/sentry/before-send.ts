@@ -63,6 +63,12 @@ export function sentryBeforeSend(event: ErrorEvent, hint: EventHint): ErrorEvent
   if (event.request) {
     event.request = scrubUnknown(event.request) as typeof event.request;
   }
+  if (event.exception) {
+    event.exception = scrubUnknown(event.exception) as typeof event.exception;
+  }
+  if (event.contexts) {
+    event.contexts = scrubUnknown(event.contexts) as typeof event.contexts;
+  }
   if (event.extra) {
     event.extra = scrubUnknown(event.extra) as typeof event.extra;
   }

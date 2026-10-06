@@ -31,4 +31,17 @@ describe("Sentry PII scrub", () => {
     assert.equal(event!.user?.email, "[email]");
     assert.equal(event!.user?.ip_address, "[redacted]");
   });
+
+  it("scrubs emails inside exception payloads", () => {
+    const event = sentryBeforeSend(
+      {
+        exception: {
+          values: [{ type: "Error", value: "failed for investor@stoa.demo" }],
+        },
+      } as ErrorEvent,
+      {},
+    );
+    assert.ok(event);
+    assert.equal(event!.exception?.values?.[0]?.value, "failed for [email]");
+  });
 });

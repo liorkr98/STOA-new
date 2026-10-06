@@ -7,7 +7,7 @@ Engineering notes for Stoa's data lock, website privacy, and ops checks. Binding
 - Privileged `SECURITY DEFINER` functions are no longer executable by `anon` or (except documented RPCs) `authenticated`. `pseudonymize_user`, `upsert_paypal_account`, `purge_all_except_email`, `approve_deletion_request`, and demo `top_up` are `service_role` only.
 - Partition children of `video_view_events` and `engagement_events` have RLS enabled and the parent policies copied onto each child (0070). New months get the same treatment in `create_*_partition`.
 - Users can insert their own `deletion_requests` row. They cannot approve it.
-- `pseudonymize_user` blanks identity, PayPal, notifications, follows, drafts, and contact text. Locked published calls stay under `deleted_xxxxxxxx`.
+- `pseudonymize_user` blanks identity, PayPal, notifications, follows, drafts, contact text, comments, debate, and consent IPs. Locked published calls stay under `deleted_xxxxxxxx`.
 - Demo `top_up` / `top_up_idem` raise. Production money is PayPal.
 
 ## Cookies and tracking
@@ -65,7 +65,7 @@ Triggers `prevent_locked_report_edit` / `prevent_locked_report_delete` / `predic
 ## Advisor leftovers (intentional)
 
 - `can_read_report_body` and `increment_views` stay executable by `anon`: the paywall predicate and public view counter.
-- Signed-in DEFINER RPCs (`purchase_report_idem`, `ensure_user_profile`, `approve_analyst_application`, and similar) stay callable by `authenticated`; each body checks `auth.uid()` or admin role.
+- Signed-in DEFINER RPCs (`purchase_report_idem`, `ensure_user_profile`, `approve_analyst_application`, and similar) stay callable by `authenticated`; each body checks `auth.uid()` or admin role. `check_rate_limit` namespaces keys to `auth.uid()` so one user cannot spend another user's quota.
 - Tables with RLS and no policies (`api_rate_limits`, `money_idempotency`, `processed_webhook_events`) are fail-closed: only `service_role` (which bypasses RLS) reads them.
 - `platform_stats` is a public materialized view on purpose.
 - `pg_trgm` in `public` is pre-existing; do not move it in this batch.
