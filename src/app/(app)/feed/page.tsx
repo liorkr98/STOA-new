@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Clapperboard } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
 import { FeedSurface } from "@/components/feed/feed-surface";
+import { VisitorFeed } from "@/components/feed/visitor-feed";
 import { clipsToPublications, attachViewerSocial } from "@/lib/feed/build-publications";
 import { postFeedComment } from "@/app/actions/feed";
 import { listVideoClipCards } from "@/lib/db/video-clips";
@@ -19,6 +19,8 @@ export const metadata: Metadata = { title: "Feed" };
 const FEED_PAGE_SIZE = 30;
 /** Ranker pool: larger than the session so scoring and file-uniqueness see more than the newest 30. */
 const FEED_CANDIDATE_POOL = 120;
+/** What a signed-out visitor may watch before the wall. Only these are sent. */
+const VISITOR_FREE_VIDEOS = 3;
 
 /**
  * The Feed: the only video discovery surface in the product.
@@ -35,10 +37,11 @@ const FEED_CANDIDATE_POOL = 120;
  * Order comes from the Feed ranker (likes, comments, completion, click-through,
  * watchlist, recency). Not recency alone.
  *
- * **Signed in only.** Streaming video is the most expensive thing the product
- * does per view, and an anonymous scroll spends that money with no account to
- * show for it. Strangers get the catalogue: Explore's posters, Today, and a
- * publication's own page. Watching is what an account is for.
+ * **Visitors get three.** Streaming video is the most expensive thing the
+ * product does per view, so a signed-out visitor is sent the first three
+ * publications and nothing more: the page data holds three, and where the
+ * fourth would be the visitor meets the wall (Join Stoa, Log in), which
+ * returns them here. Signed in, the Feed is unchanged.
  */
 export default async function FeedPage({
   searchParams,
@@ -49,23 +52,20 @@ export default async function FeedPage({
   const [atParams, userId] = await Promise.all([searchParams, getSessionUserId()]);
   const { at } = atParams;
 
-  if (!userId) {
-    const next = at ? `/feed?at=${encodeURIComponent(at)}` : "/feed";
-    redirect(`/sign-in?next=${encodeURIComponent(next)}`);
-  }
-
-  // Deliberately after the gate: no ranking or clip listing runs for a
-  // visitor who is about to be redirected. Comments wait until Discuss opens.
+  // Comments wait until Discuss opens.
   const [clips, viewer] = await Promise.all([
     listVideoClipCards(FEED_CANDIDATE_POOL),
     loadViewerContext(),
   ]);
 
-  const ranked = pinRequestedReport(
-    await rankClips(clips, viewer, "feed"),
-    clips,
-    at,
-  ).slice(0, FEED_PAGE_SIZE);
+  const limit = userId ? FEED_PAGE_SIZE : VISITOR_FREE_VIDEOS;
+  const pinned = pinRequestedReport(await rankClips(clips, viewer, "feed"), clips, at);
+  // A requested publication ranked past the cut would be sliced away and the
+  // link would open somewhere else, so it moves up to lead instead.
+  const atIndex = at ? pinned.findIndex((r) => r.reportId === at) : -1;
+  const ranked = (
+    atIndex >= limit ? [pinned[atIndex], ...pinned.slice(0, atIndex), ...pinned.slice(atIndex + 1)] : pinned
+  ).slice(0, limit);
   const publications = ranked.length > 0 ? await clipsToPublications(ranked.map((r) => r.item)) : [];
   const withSocial = await attachViewerSocial(publications, userId);
   const reasonsByReport = new Map(ranked.map((r) => [r.reportId, r.reasons]));
@@ -103,6 +103,14 @@ export default async function FeedPage({
   }
 
   const startIndex = at ? Math.max(0, withSocial.findIndex((p) => p.id === at)) : 0;
+
+  if (!userId) {
+    return (
+      <div className="breakout-main breakout-under-tabs h-full min-h-0">
+        <VisitorFeed publications={withSocial} startIndex={startIndex} />
+      </div>
+    );
+  }
 
   return (
     // The Feed is the viewport. This cancels the app layout's gutter and vertical
