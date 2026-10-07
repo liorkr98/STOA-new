@@ -59,7 +59,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
           Independent analysts publish their research on video.
         </p>
         <div className="mt-8">{ACTIONS}</div>
-        <p className="mt-4 text-ticker text-text-mute">Free to join. Watching needs an account.</p>
+        <p className="mt-4 text-ticker text-text-mute">Watch a few videos free, then join to keep watching.</p>
         {quiet ? null : (
           <p className="num mt-6 text-ticker text-text-mute">{activity}</p>
         )}
