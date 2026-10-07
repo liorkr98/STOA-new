@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/ratelimit";
 import type { SpendResult } from "@/lib/types";
 
 /**
@@ -13,11 +14,22 @@ import type { SpendResult } from "@/lib/types";
  * which still protects against internal retries of that single call.
  */
 
+async function moneyLimit(userId: string): Promise<string | null> {
+  const rl = await rateLimit("money", userId, { limit: 30, windowSeconds: 3600 });
+  return rl.success ? null : "Too many payment attempts. Wait a few minutes.";
+}
+
 export async function purchaseReport(
   reportId: string,
   clientRequestId?: string,
 ): Promise<SpendResult> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to continue" };
+  const limited = await moneyLimit(user.id);
+  if (limited) return { error: limited };
   const { data, error } = await supabase.rpc("purchase_report_idem", {
     p_report_id: reportId,
     p_client_request_id: clientRequestId ?? randomUUID(),
@@ -29,17 +41,9 @@ export async function purchaseReport(
 }
 
 export async function topUp(amount: number, clientRequestId?: string): Promise<SpendResult> {
-  if (![25, 50, 100].includes(amount)) {
-    return { error: "Choose $25, $50, or $100." };
-  }
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("top_up_idem", {
-    p_amount: amount,
-    p_client_request_id: clientRequestId ?? randomUUID(),
-  });
-  if (error) return { error: error.message };
-  revalidatePath("/wallet");
-  return data as SpendResult;
+  void amount;
+  void clientRequestId;
+  return { error: "Demo top-up is disabled. Purchases go through PayPal." };
 }
 
 /** Plan-aware subscribe (Part C). Free tiers and trials move no money. */
@@ -49,6 +53,12 @@ export async function subscribeToPlan(
   clientRequestId?: string,
 ): Promise<SpendResult> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to continue" };
+  const limited = await moneyLimit(user.id);
+  if (limited) return { error: limited };
   const { data, error } = await supabase.rpc("subscribe_to_plan_idem", {
     p_plan_id: planId,
     p_client_request_id: clientRequestId ?? randomUUID(),
@@ -65,6 +75,12 @@ export async function subscribeToAnalyst(
   clientRequestId?: string,
 ): Promise<SpendResult> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to continue" };
+  const limited = await moneyLimit(user.id);
+  if (limited) return { error: limited };
   const { data, error } = await supabase.rpc("subscribe_to_analyst_idem", {
     p_analyst_id: analystId,
     p_client_request_id: clientRequestId ?? randomUUID(),
@@ -77,6 +93,12 @@ export async function subscribeToAnalyst(
 
 export async function convertToCredits(usd: number) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "Sign in to continue" };
+  const limited = await moneyLimit(user.id);
+  if (limited) return { ok: false as const, error: limited };
   const { data, error } = await supabase.rpc("convert_to_ai_credits", { p_usd: usd });
   if (error) return { ok: false as const, error: error.message };
   const row = data as { error?: string; credits_added?: number };

@@ -48,7 +48,7 @@ export default async function WalletPage() {
           <h1 className="font-display text-headline font-semibold tracking-tight">Wallet</h1>
           <p className="t-body mt-2">Credits and spending.</p>
         </div>
-        <TopUpButton />
+        {process.env.STOA_DEMO_TOP_UP === "1" ? <TopUpButton /> : null}
       </div>
 
       {/* Metric strip */}

@@ -61,6 +61,24 @@ test("anon cannot read a paid report body", { skip }, async () => {
   assert.deepEqual(data ?? [], [], "anon must not read a paid report body");
 });
 
+test("anon cannot probe another user's paid entitlement via can_read_report_body", { skip }, async () => {
+  const admin = adminClient();
+  const { data: paid } = await admin
+    .from("reports")
+    .select("id, author_id")
+    .eq("access", "paid")
+    .eq("status", "published")
+    .limit(1);
+  if (!paid || paid.length === 0) return;
+
+  const anon = anonClient();
+  const { data } = await anon.rpc("can_read_report_body", {
+    p_report_id: paid[0]!.id,
+    p_uid: paid[0]!.author_id,
+  });
+  assert.equal(data, false, "anon must not inherit the author's paywall access");
+});
+
 test("a signed-in non-owner cannot read another user's wallet transactions", { skip }, async () => {
   const investor = await signIn("investor@stoa.demo");
   if (!investor) return;
@@ -96,6 +114,124 @@ test("a client cannot UPDATE a prediction (no update policy)", { skip }, async (
     .select();
   // RLS blocks the row: either an explicit error or zero rows affected.
   assert.ok(error != null || (data ?? []).length === 0, "prediction update must be blocked");
+});
+
+test("anon cannot execute privileged SECURITY DEFINER functions", { skip }, async () => {
+  const anon = anonClient();
+  for (const fn of ["pseudonymize_user", "purge_all_except_email", "top_up", "upsert_paypal_account"]) {
+    const { error } = await anon.rpc(fn as never, {});
+    assert.ok(error, `${fn} must not be executable by anon`);
+  }
+});
+
+test("a signed-in user cannot read another user's paypal_accounts", { skip }, async () => {
+  const investor = await signIn("investor@stoa.demo");
+  if (!investor) return;
+
+  const admin = adminClient();
+  const { data: me } = await investor.auth.getUser();
+  const { data: foreign } = await admin
+    .from("paypal_accounts")
+    .select("user_id")
+    .neq("user_id", me.user?.id ?? "")
+    .limit(1);
+  if (!foreign || foreign.length === 0) return;
+
+  const { data } = await investor.from("paypal_accounts").select("user_id").eq("user_id", foreign[0]!.user_id);
+  assert.deepEqual(data ?? [], [], "must not read another user's PayPal row");
+});
+
+test("a locked report ticker cannot be rewritten by the author", { skip }, async () => {
+  const analyst = await signIn("marcus_webb@stoa.demo");
+  if (!analyst) return;
+
+  const { data: locked } = await analyst
+    .from("reports")
+    .select("id, ticker, locked_at")
+    .not("locked_at", "is", null)
+    .eq("author_id", (await analyst.auth.getUser()).data.user?.id ?? "")
+    .limit(1);
+  if (!locked || locked.length === 0) return;
+
+  const { data, error } = await analyst
+    .from("reports")
+    .update({ ticker: "ZZZZ" })
+    .eq("id", locked[0]!.id)
+    .select("ticker");
+  assert.ok(
+    error != null || (data ?? []).length === 0 || data?.[0]?.ticker === locked[0]!.ticker,
+    "locked ticker must stay frozen",
+  );
+});
+
+test("a user can insert their own deletion request and cannot approve it", { skip }, async () => {
+  const investor = await signIn("investor@stoa.demo");
+  if (!investor) return;
+  const { data: me } = await investor.auth.getUser();
+  if (!me.user) return;
+
+  const { error: insertError } = await investor.from("deletion_requests").insert({
+    user_id: me.user.id,
+    status: "pending",
+  });
+  // Unique pending index may already have a row from a previous run.
+  assert.ok(insertError == null || insertError.code === "23505", insertError?.message ?? "insert failed");
+
+  const { error: rpcError } = await investor.rpc("approve_deletion_request", {
+    p_request_id: "00000000-0000-0000-0000-000000000000",
+    p_admin_id: me.user.id,
+  });
+  assert.ok(rpcError, "approve_deletion_request must not be executable by a non-admin client");
+});
+
+test("a signed-in non-buyer cannot read a paid report body", { skip }, async () => {
+  const investor = await signIn("investor@stoa.demo");
+  if (!investor) return;
+  const { data: me } = await investor.auth.getUser();
+  if (!me.user) return;
+
+  const admin = adminClient();
+  const { data: paid } = await admin
+    .from("reports")
+    .select("id")
+    .eq("access", "paid")
+    .eq("status", "published")
+    .neq("author_id", me.user.id)
+    .limit(20);
+  if (!paid || paid.length === 0) return;
+
+  const { data: unlocks } = await admin
+    .from("report_unlocks")
+    .select("report_id")
+    .eq("user_id", me.user.id);
+  const unlocked = new Set((unlocks ?? []).map((u) => u.report_id));
+  const lockedPaid = paid.find((r) => !unlocked.has(r.id));
+  if (!lockedPaid) return;
+
+  const { data } = await investor.from("report_bodies").select("report_id").eq("report_id", lockedPaid.id);
+  assert.deepEqual(data ?? [], [], "non-buyer must not read a paid report body");
+});
+
+test("a stranger cannot read another creator's video_view_events", { skip }, async () => {
+  const investor = await signIn("investor@stoa.demo");
+  if (!investor) return;
+  const { data: me } = await investor.auth.getUser();
+  if (!me.user) return;
+
+  const admin = adminClient();
+  const { data: foreignClips } = await admin
+    .from("video_clips")
+    .select("id")
+    .neq("creator_id", me.user.id)
+    .limit(5);
+  if (!foreignClips || foreignClips.length === 0) return;
+
+  const { data } = await investor
+    .from("video_view_events")
+    .select("video_id")
+    .eq("video_id", foreignClips[0]!.id)
+    .limit(5);
+  assert.deepEqual(data ?? [], [], "must not read another creator's view events");
 });
 
 test("a signed-in user cannot read another user's notifications", { skip }, async () => {
