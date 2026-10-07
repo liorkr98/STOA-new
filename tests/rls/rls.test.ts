@@ -61,6 +61,24 @@ test("anon cannot read a paid report body", { skip }, async () => {
   assert.deepEqual(data ?? [], [], "anon must not read a paid report body");
 });
 
+test("anon cannot probe another user's paid entitlement via can_read_report_body", { skip }, async () => {
+  const admin = adminClient();
+  const { data: paid } = await admin
+    .from("reports")
+    .select("id, author_id")
+    .eq("access", "paid")
+    .eq("status", "published")
+    .limit(1);
+  if (!paid || paid.length === 0) return;
+
+  const anon = anonClient();
+  const { data } = await anon.rpc("can_read_report_body", {
+    p_report_id: paid[0]!.id,
+    p_uid: paid[0]!.author_id,
+  });
+  assert.equal(data, false, "anon must not inherit the author's paywall access");
+});
+
 test("a signed-in non-owner cannot read another user's wallet transactions", { skip }, async () => {
   const investor = await signIn("investor@stoa.demo");
   if (!investor) return;

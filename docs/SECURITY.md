@@ -64,7 +64,7 @@ Triggers `prevent_locked_report_edit` / `prevent_locked_report_delete` / `predic
 
 ## Advisor leftovers (intentional)
 
-- `can_read_report_body` and `increment_views` stay executable by `anon`: the paywall predicate and public view counter.
+- `can_read_report_body` and `increment_views` stay executable by `anon`: the paywall predicate and public view counter. `can_read_report_body` ignores a caller-supplied uid and uses `auth.uid()` (0073). `increment_views` only counts published reports.
 - Signed-in DEFINER RPCs (`purchase_report_idem`, `ensure_user_profile`, `approve_analyst_application`, and similar) stay callable by `authenticated`; each body checks `auth.uid()` or admin role. `check_rate_limit` namespaces keys to `auth.uid()` so one user cannot spend another user's quota.
 - Tables with RLS and no policies (`api_rate_limits`, `money_idempotency`, `processed_webhook_events`) are fail-closed: only `service_role` (which bypasses RLS) reads them.
 - `platform_stats` is a public materialized view on purpose.

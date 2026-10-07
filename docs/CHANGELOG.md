@@ -22,7 +22,7 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 **For Krisi**
 
-- Migration `0068_security_privacy_lockdown` is applied on hosted STOA, plus `0069` (disable `top_up_idem`) and `0070`/`0071` (partition child policies). Dangerous RPCs (`pseudonymize_user`, `purge_all_except_email`, `upsert_paypal_account`, `top_up`) are no longer callable by `anon`.
+- Migrations `0068`–`0073` are applied on hosted STOA: revoke dangerous RPCs from `anon`, disable `top_up` / `top_up_idem`, copy partition child policies, bind rate-limit and paywall checks to the caller, and stop counting views on drafts.
 - Set `BUNNY_STREAM_WEBHOOK_SECRET` (required; webhook is 503 without it). Optional `BUNNY_TOKEN_KEY` signs CDN URLs once token auth is on in Bunny.
 - Turn on leaked-password protection in the Supabase Auth dashboard, and confirm Vercel Firewall is on for `/api/*`.
 - `drop_old_video_view_partitions` exists but is not on cron until counsel signs retention.
