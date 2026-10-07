@@ -33,6 +33,9 @@ const ACTIONS = (
     <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
       Log in
     </Link>
+    <Link href="/feed" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
+      Watch now
+    </Link>
   </div>
 );
 
