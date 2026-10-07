@@ -8,13 +8,14 @@ import { buildTodayPage } from "@/lib/today/build-today-page";
 export const metadata: Metadata = {
   title: "Today",
   description:
-    "Stoa's daily page: the lead, the analysts posting today and what is worth your next minute.",
+    "Stoa's daily page: the lead, what is worth your next minute and what is worth reading.",
 };
 
 /**
- * Today is Stoa's daily page. Signed-in readers get their desk and lists;
- * signed-out readers get the platform-wide issue, so Today is a real,
- * server-rendered, indexable page for someone who has never heard of Stoa.
+ * Today is Stoa's daily page. Signed-in readers get the faces they follow,
+ * their own clips and desk, and their lists; signed-out readers get the part
+ * everyone shares, so Today is a real, server-rendered, indexable page for
+ * someone who has never heard of Stoa.
  */
 export default async function HomePage() {
   const userId = await getSessionUserId();

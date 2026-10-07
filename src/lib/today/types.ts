@@ -100,9 +100,9 @@ export interface TodaySidebarPayload {
   signedIn: boolean;
 }
 
-/** A Your Desk card: the item plus how the reader knows the analyst. */
+/** A Your Desk card: the item plus how the reader knows the analyst, when they do. */
 export interface TodayDeskItem extends TodayItem {
-  relationship: "member" | "following";
+  relationship?: "member" | "following";
 }
 
 /** A face in the row of people posting: who, their beat, and when they last posted. */
@@ -128,11 +128,14 @@ export interface TodayPagePayload {
   /**
    * Analysts who posted in the last 24 hours, newest first. On a quiet day,
    * when nobody has, the most recent posters instead, and `today` is false so
-   * the heading does not claim today.
+   * the heading does not claim today. Signed in, narrowed to the analysts,
+   * tickers and sectors the reader follows when any of them has posted.
+   * Empty for a signed-out reader: the row is part of the personal page.
    */
   faces: { today: boolean; people: TodayFace[] };
-  /** Up to four publications with a ready clip. */
+  /** Up to four publications with a ready clip; signed in, those that fit the reader first. */
   minute: TodayItem[];
+  /** Written work fitted to a signed-in reader; empty when nothing fits, and signed out. */
   desk: TodayDeskItem[];
   /** More on the lead's ticker, sector or theme; null when nothing shares it. */
   cluster: { label: string; items: TodayItem[] } | null;

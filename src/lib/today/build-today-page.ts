@@ -1,7 +1,16 @@
 import "server-only";
 
 import { getProfilesByIds, listAnalystsByFollowers } from "@/lib/db/profiles";
-import { countPublishedBetween, listPublishedByAuthors, listRecentPublished, tickerCoverage } from "@/lib/db/reports";
+import {
+  countPublishedBetween,
+  getReportsByIds,
+  listPublishedByAuthors,
+  listPublishedByTickers,
+  listRecentPublished,
+  tickerCoverage,
+} from "@/lib/db/reports";
+import { engagedReportIds } from "@/lib/db/history";
+import { emptyViewerContext, loadViewerContext } from "@/lib/ranking/context";
 import { listTickerRows } from "@/lib/db/tickers";
 import { listPendingClipsForReports, listVideoClipCards } from "@/lib/db/video-clips";
 import { followedAnalystIds, subscribedAnalystIds } from "@/lib/db/social";
@@ -122,11 +131,64 @@ function creatorRow(p: Profile, marker: StageMarker, followed: boolean): TodayCr
 }
 
 /**
+ * What Today fits a signed-in reader's shelves to. `follows` is what they
+ * chose: analysts they follow or pay, their tickers, their sectors and
+ * themes. `taste` is what they spent time on: the analysts, tickers, sectors
+ * and themes of pieces they watched, liked, saved or bought. Used only to
+ * pick and order; nothing about it is ever shown.
+ */
+interface Fit {
+  analysts: ReadonlySet<string>;
+  tickers: ReadonlySet<string>;
+  sectors: ReadonlySet<string>;
+  tasteAnalysts: ReadonlySet<string>;
+  tasteTickers: ReadonlySet<string>;
+  tasteSectors: ReadonlySet<string>;
+  seen: ReadonlySet<string>;
+}
+
+const lower = (s: string | null | undefined) => (s ? s.toLowerCase() : null);
+
+function followsMatch(it: TodayItem, fit: Fit): number {
+  let n = 0;
+  if (fit.analysts.has(it.author.id)) n += 3;
+  if (it.ticker && fit.tickers.has(it.ticker.toUpperCase())) n += 2;
+  const sector = lower(it.sector);
+  const theme = lower(it.themeTag);
+  if ((sector && fit.sectors.has(sector)) || (theme && fit.sectors.has(theme))) n += 1;
+  return n;
+}
+
+function tasteMatch(it: TodayItem, fit: Fit): number {
+  let n = 0;
+  if (fit.tasteAnalysts.has(it.author.id)) n += 1;
+  if (it.ticker && fit.tasteTickers.has(it.ticker.toUpperCase())) n += 1;
+  const sector = lower(it.sector);
+  const theme = lower(it.themeTag);
+  if ((sector && fit.tasteSectors.has(sector)) || (theme && fit.tasteSectors.has(theme))) n += 1;
+  return n;
+}
+
+/**
+ * The items that fit, best fit first and newest within a tie. Pieces the
+ * reader already spent time on are left out: the shelf is for what is next.
+ */
+function fitted(candidates: TodayItem[], fit: Fit): TodayItem[] {
+  return candidates
+    .filter((it) => !fit.seen.has(it.reportId))
+    .map((it) => ({ it, n: followsMatch(it, fit) + tasteMatch(it, fit) }))
+    .filter((x) => x.n > 0)
+    .sort((a, b) => b.n - a.n || Date.parse(b.it.publishedAt ?? "") - Date.parse(a.it.publishedAt ?? ""))
+    .map((x) => x.it);
+}
+
+/**
  * Builds the whole Today front page. Signed-out readers get the platform-wide
- * issue (no desk, no memberships).
+ * issue: no faces, no desk, the general clips, and the rail's "Your" lists
+ * asking them to sign in.
  */
 export async function buildTodayPage(userId: string | null): Promise<TodayPagePayload> {
-  if (!userId) return cachedPage("today-public:direction-b", 20, () => assembleTodayPage(null));
+  if (!userId) return cachedPage("today-public:signed-out-viewing", 20, () => assembleTodayPage(null));
   return assembleTodayPage(userId);
 }
 
@@ -135,7 +197,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
   const cycle = getCycleWindow();
   const dateISO = cycle.dateIso;
 
-  const [pool, clips, analysts, coverage, publishedToday, subscribedIds, followedIds] =
+  const [pool, clips, analysts, coverage, publishedToday, subscribedIds, followedIds, viewer, historyIds] =
     await Promise.all([
       listRecentPublished(120),
       listVideoClipCards(120),
@@ -144,6 +206,8 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
       countPublishedBetween(cycle.start, cycle.end),
       userId ? subscribedAnalystIds(userId) : Promise.resolve([] as string[]),
       userId ? followedAnalystIds(userId) : Promise.resolve([] as string[]),
+      userId ? loadViewerContext() : Promise.resolve(emptyViewerContext()),
+      userId ? engagedReportIds(userId) : Promise.resolve([] as string[]),
     ]);
 
   const deskAuthorIds = [...new Set([...subscribedIds, ...followedIds])];
@@ -155,8 +219,10 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     .slice(0, 8)
     .map(([s]) => s.toUpperCase());
 
-  const [deskReports, deskProfiles, poolTickerRows, popularQuotes, cardIds] = await Promise.all([
+  const [deskReports, tickerReports, historyReports, deskProfiles, poolTickerRows, popularQuotes, cardIds] = await Promise.all([
     listPublishedByAuthors(deskAuthorIds, 30),
+    listPublishedByTickers([...viewer.watchlistTickers], 30),
+    getReportsByIds(historyIds.slice(0, 80)),
     getProfilesByIds(deskAuthorIds),
     poolSymbols.length ? listTickerRows(poolSymbols) : Promise.resolve([]),
     getQuotesBatch(popularSyms, { fetchBenchmark: false }).catch(() => new Map()),
@@ -168,7 +234,7 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
 
   const deskSymbols = [
     ...new Set(
-      deskReports
+      [...deskReports, ...tickerReports, ...historyReports]
         .map((r) => r.ticker?.toUpperCase())
         .filter((s): s is string => typeof s === "string" && s.length > 0 && !poolSymbols.includes(s)),
     ),
@@ -205,6 +271,28 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     if (it) items.set(r.id, it);
   }
 
+  // The reader's own candidates: their analysts' and tickers' newest work,
+  // which the platform-wide pool may not reach. Signed out, there are none.
+  const own = new Map<string, TodayItem>();
+  for (const r of [...pool, ...deskReports, ...tickerReports]) {
+    if (own.has(r.id)) continue;
+    const it = items.get(r.id) ?? toItem(r, ctx);
+    if (it) own.set(r.id, it);
+  }
+  const taste = historyReports.flatMap((r) => {
+    const it = toItem(r, ctx);
+    return it ? [it] : [];
+  });
+  const fit: Fit = {
+    analysts: new Set(deskAuthorIds),
+    tickers: viewer.watchlistTickers,
+    sectors: viewer.sectorInterests,
+    tasteAnalysts: new Set(taste.map((it) => it.author.id)),
+    tasteTickers: new Set(taste.flatMap((it) => (it.ticker ? [it.ticker.toUpperCase()] : []))),
+    tasteSectors: new Set(taste.flatMap((it) => [lower(it.sector), lower(it.themeTag)].filter((s): s is string => Boolean(s)))),
+    seen: new Set(historyIds),
+  };
+
   const hasClip = (reportId: string) => clipsByReport.has(reportId);
 
   // Ranking by velocity, then recency, with a lean towards publications that
@@ -235,8 +323,29 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
 
   // Four clips worth a minute: ready clips only, so every tile is a real
   // poster. A clip still processing waits for tomorrow's page rather than
-  // taking a tile with nothing to show.
-  const minute = take(remaining().filter((it) => it.thumb && !it.thumb.processing).slice(0, 4));
+  // taking a tile with nothing to show. Signed in, the clips that fit the
+  // reader come first and the general ones fill whatever is left.
+  const ready = (it: TodayItem) => Boolean(it.thumb && !it.thumb.processing);
+  const minuteOwn = userId
+    ? fitted([...own.values()].filter((it) => ready(it) && !used.has(it.reportId)), fit).slice(0, 4)
+    : [];
+  const minuteOwnIds = new Set(minuteOwn.map((it) => it.reportId));
+  const minute = take([
+    ...minuteOwn,
+    ...remaining().filter((it) => ready(it) && !minuteOwnIds.has(it.reportId)),
+  ].slice(0, 4));
+
+  // Your desk: the reader's shelf of written work, fitted the same way as the
+  // clips above. Nothing fits, nothing drawn: Worth reading is the general shelf.
+  const memberSet = new Set(subscribedIds);
+  const desk: TodayDeskItem[] = userId
+    ? take(
+        fitted([...own.values()].filter((it) => it.type !== "video" && !used.has(it.reportId)), fit).slice(0, 6),
+      ).map((it) => ({
+        ...it,
+        relationship: memberSet.has(it.author.id) ? "member" : deskAuthorIds.includes(it.author.id) ? "following" : undefined,
+      }))
+    : [];
 
   // The lead's theme: coverage on the same name, then the same sector, then
   // the same theme. Only real kin; the band is not padded with anything else.
@@ -261,9 +370,16 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
 
   // The faces: everyone who posted in the last 24 hours, newest first. On a
   // quiet day the most recent posters, so the row is never a promise of
-  // "today" that the data cannot keep.
+  // "today" that the data cannot keep. Signed in, only the analysts the reader
+  // follows or pays and whoever posted on their tickers and sectors, unless
+  // none of them has posted; signed out, no faces at all.
   const windowStart = cycle.start.getTime();
-  const byRecency = [...pool].sort(
+  const ownFaces = [...deskReports, ...tickerReports, ...pool].filter((r) => {
+    const it = own.get(r.id);
+    return it ? followsMatch(it, fit) > 0 : false;
+  });
+  const facePool = !userId ? [] : ownFaces.length > 0 ? [...new Map(ownFaces.map((r) => [r.id, r])).values()] : pool;
+  const byRecency = [...facePool].sort(
     (a, b) => Date.parse(b.published_at ?? b.created_at) - Date.parse(a.published_at ?? a.created_at),
   );
   const postedToday = byRecency.some((r) => Date.parse(r.published_at ?? r.created_at) >= windowStart);
@@ -274,20 +390,11 @@ async function assembleTodayPage(userId: string | null): Promise<TodayPagePayloa
     if (postedToday && Date.parse(at) < windowStart) break;
     if (!r.author || seenFace.has(r.author_id)) continue;
     seenFace.add(r.author_id);
-    const it = items.get(r.id);
+    const it = own.get(r.id) ?? items.get(r.id);
     const beat = r.author.profile_config?.specialty?.trim() || it?.sector || it?.themeTag || null;
     faces.push({ ...toAnalyst(r.author), specialty: beat, lastPublishedAt: at });
     if (faces.length >= 16) break;
   }
-
-  // Your Desk: memberships and follows merged into one list, newest first.
-  const memberSet = new Set(subscribedIds);
-  const desk: TodayDeskItem[] = deskReports
-    .flatMap((r) => {
-      const it = toItem(r, ctx);
-      return it ? [{ ...it, relationship: memberSet.has(r.author_id) ? "member" : "following" } as TodayDeskItem] : [];
-    })
-    .slice(0, 6);
 
   // Sidebar lists. Every creator row says whether the reader already follows
   // or pays the analyst, so the same row shows Follow in Trending or Popular

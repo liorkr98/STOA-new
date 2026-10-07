@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { StoryRow, StoryTile } from "@/components/today/today-bits";
 import { sinceLabel } from "@/lib/today/format";
@@ -19,7 +20,7 @@ function Band({
   children,
 }: {
   title: string;
-  note?: string;
+  note?: ReactNode;
   className?: string;
   children: ReactNode;
 }) {
@@ -31,11 +32,30 @@ function Band({
   );
 }
 
-/** Four picture stories across; two across on a phone. */
-export function MinuteBand({ items, className }: { items: TodayItem[]; className?: string }) {
+/**
+ * Four picture stories across; two across on a phone. Signed out it is the
+ * general version, and its note asks the visitor to join to make it theirs.
+ */
+export function MinuteBand({
+  items,
+  signedIn = true,
+  className,
+}: {
+  items: TodayItem[];
+  signedIn?: boolean;
+  className?: string;
+}) {
   if (items.length === 0) return null;
+  const note = signedIn ? undefined : (
+    <>
+      <Link href="/sign-up?next=%2Fhome" className="focus-ring rounded-chip text-text underline underline-offset-2 hover:no-underline">
+        Join Stoa
+      </Link>{" "}
+      to fit these to what you watch.
+    </>
+  );
   return (
-    <Band title="Worth your next minute" className={className}>
+    <Band title="Worth your next minute" note={note} className={className}>
       <div className="grid grid-cols-2 gap-x-3.5 gap-y-8 lg:grid-cols-4 lg:gap-x-5">
         {items.map((it) => (
           <StoryTile key={it.reportId} item={it} />
@@ -55,11 +75,11 @@ function Rows({ items, className }: { items: TodayItem[]; className?: string }) 
   );
 }
 
-/** The reader's own people: memberships and follows, newest first. */
+/** The reader's shelf of written work, fitted to what they follow and watch. */
 export function DeskBand({ items, className }: { items: TodayDeskItem[]; className?: string }) {
   if (items.length === 0) return null;
   return (
-    <Band title="Your desk" note="From the analysts you follow and support" className={className}>
+    <Band title="Your desk" note="Written pieces picked for what you follow and watch" className={className}>
       <Rows items={items} />
     </Band>
   );

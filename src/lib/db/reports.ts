@@ -360,6 +360,21 @@ export async function listPublishedByAuthors(authorIds: string[], limit = 24): P
   return asReportRows(data).map(normalize);
 }
 
+/** Newest publicly visible publications on any of these tickers (the reader's followed names). */
+export async function listPublishedByTickers(tickers: string[], limit = 24): Promise<Report[]> {
+  const symbols = [...new Set(tickers.map((t) => t.toUpperCase()))];
+  if (symbols.length === 0) return [];
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("reports")
+    .select(SELECT)
+    .eq("status", "published")
+    .in("ticker", symbols)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  return asReportRows(data).map(normalize);
+}
+
 /**
  * Map of ticker -> count of publicly visible reports covering it.
  *

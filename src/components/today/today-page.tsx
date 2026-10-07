@@ -15,6 +15,10 @@ import type { FeedPublication } from "@/lib/feed/types";
  * people posting; four clips worth a minute; then the reader's desk, more
  * on the lead's theme, the written pieces and the wire. Bands part by space.
  *
+ * Signed out, the page is the part everyone shares: no faces and no desk,
+ * the general clips with a line asking the visitor to join, and the rail's
+ * "Your" lists asking them to sign in.
+ *
  * The rail of lists sits beside the page on a desktop, each column
  * scrolling on its own; on a phone the page is one document scroll and the
  * rail is a drawer behind Lists, beside the dateline.
@@ -52,14 +56,16 @@ export function TodayPage({
 
         {data.lead ? <TodayLead lead={data.lead} className="mt-8 md:mt-10" /> : null}
 
-        <TodayFaces
-          people={data.faces.people}
-          today={data.faces.today}
-          signedIn={data.sidebar.signedIn}
-          fixture={faceFixture}
-          className="today-band"
-        />
-        <MinuteBand items={data.minute} className="today-band" />
+        {data.sidebar.signedIn ? (
+          <TodayFaces
+            people={data.faces.people}
+            today={data.faces.today}
+            signedIn
+            fixture={faceFixture}
+            className="today-band"
+          />
+        ) : null}
+        <MinuteBand items={data.minute} signedIn={data.sidebar.signedIn} className="today-band" />
         <DeskBand items={data.desk} className="today-band" />
         <ClusterBand cluster={data.cluster} className="today-band" />
         <ReadingBand items={data.reading} className="today-band" />
