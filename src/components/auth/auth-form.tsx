@@ -28,6 +28,7 @@ export function AuthForm({
   oauthReason,
   notice,
   providers,
+  next,
 }: {
   mode: "sign-in" | "sign-up";
   refHandle?: string;
@@ -36,7 +37,10 @@ export function AuthForm({
   /** A calm line above the form: "check your inbox", "password updated". */
   notice?: string | null;
   providers?: OAuthProvider[];
+  /** Where to return after signing in or up, e.g. `/feed` from the Feed's wall. */
+  next?: string;
 }) {
+  const carry = next ? `?next=${encodeURIComponent(next)}` : "";
   const action = mode === "sign-in" ? signIn : signUp;
   const [state, formAction] = useActionState<AuthState, FormData>(action, null);
 
@@ -87,11 +91,12 @@ export function AuthForm({
             )}
           </div>
         )}
-        <OAuthButtons refHandle={refHandle} enabled={providers} />
+        <OAuthButtons refHandle={refHandle} enabled={providers} next={next} />
       </div>
 
       <form action={formAction} className="mt-4 flex flex-col gap-4">
         {refHandle && <input type="hidden" name="ref" value={refHandle} />}
+        {next && <input type="hidden" name="next" value={next} />}
         {mode === "sign-up" && (
           <div className="flex flex-col gap-2">
             <label htmlFor="display_name" className="text-body font-medium">
@@ -222,14 +227,14 @@ export function AuthForm({
         {mode === "sign-in" ? (
           <>
             New to Stoa?{" "}
-            <Link href="/sign-up" className="text-accent hover:underline">
+            <Link href={`/sign-up${carry}`} className="text-accent hover:underline">
               Create an account
             </Link>
           </>
         ) : (
           <>
             Already have an account?{" "}
-            <Link href="/sign-in" className="text-accent hover:underline">
+            <Link href={`/sign-in${carry}`} className="text-accent hover:underline">
               Sign in
             </Link>
           </>

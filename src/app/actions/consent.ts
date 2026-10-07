@@ -13,6 +13,7 @@ import {
   setMarketingPreference,
 } from "@/lib/db/legal";
 import { SIGNUP_CONSENT_TYPES } from "@/lib/legal/constants";
+import { postAuthPath } from "@/lib/auth/post-auth";
 
 async function clientIp(): Promise<string | null> {
   const h = await headers();
@@ -70,7 +71,9 @@ export async function acceptConsents(
   // before the redirect, rather than replayed with its "go to consent"
   // bounce still inside it.
   revalidatePath("/", "layout");
-  redirect("/home");
+  // Onboarding may still be owed; postAuthPath decides, and carries the
+  // return address the person arrived with.
+  redirect(await postAuthPath(supabase, user.id, String(formData.get("next") ?? "")));
 }
 
 /** Record signup consents + age attestation after email registration. */

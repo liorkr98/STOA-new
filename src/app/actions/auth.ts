@@ -9,7 +9,7 @@ import { alertNewSignup } from "@/lib/slack/alerts";
 import { headers } from "next/headers";
 import { SITE_URL } from "@/lib/seo/site";
 import { postAuthPath } from "@/lib/auth/post-auth";
-import { appUrl, originFromForwarded } from "@/lib/pwa/urls";
+import { appUrl, originFromForwarded, sameOriginPath } from "@/lib/pwa/urls";
 
 async function signupIp(): Promise<string | null> {
   const h = await headers();
@@ -35,6 +35,7 @@ async function requestOrigin(): Promise<string> {
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const next = sameOriginPath(String(formData.get("next") ?? ""), "");
   const refHandle = String(formData.get("ref") ?? "")
     .trim()
     .toLowerCase()
@@ -75,13 +76,14 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
 
   await recordMarketingOptInIfChecked(user.id, formData);
 
-  redirect(await postAuthPath(supabase, user.id));
+  redirect(await postAuthPath(supabase, user.id, next));
 }
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("display_name") ?? "");
+  const next = sameOriginPath(String(formData.get("next") ?? ""), "");
   const refHandle = String(formData.get("ref") ?? "")
     .trim()
     .toLowerCase()
@@ -106,7 +108,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       // proved they own the address had to sign in again. Supabase's default
       // template lands here with a code; Stoa's own template goes straight
       // to /auth/confirm with a token hash and needs no redirect at all.
-      emailRedirectTo: appUrl(await requestOrigin(), "/auth/callback?next=/home"),
+      emailRedirectTo: appUrl(await requestOrigin(), `/auth/callback?next=${encodeURIComponent(next || "/home")}`),
     },
   });
   if (error) return { error: error.message };
@@ -162,10 +164,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       });
     }
 
-    redirect(await postAuthPath(supabase, data.user.id));
+    redirect(await postAuthPath(supabase, data.user.id, next));
   }
 
-  redirect("/sign-in?registered=1");
+  redirect(next ? `/sign-in?registered=1&next=${encodeURIComponent(next)}` : "/sign-in?registered=1");
 }
 
 export async function signOut() {

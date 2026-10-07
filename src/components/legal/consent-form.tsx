@@ -22,9 +22,12 @@ const inputClass =
 export function ConsentForm({
   pendingTypes,
   requireAge,
+  next,
 }: {
   pendingTypes: LegalDocType[];
   requireAge: boolean;
+  /** Where the person was going when the wall stopped them. */
+  next?: string;
 }) {
   const [state, formAction] = useActionState(acceptConsents, null);
 
@@ -37,6 +40,7 @@ export function ConsentForm({
       </p>
 
       <form action={formAction} className="mt-8 flex flex-col gap-5">
+        {next && <input type="hidden" name="next" value={next} />}
         {pendingTypes.includes("terms") && (
           <input type="hidden" name="needs_terms" value="1" />
         )}

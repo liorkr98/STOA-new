@@ -9,7 +9,15 @@ import { setInvestorInterests } from "@/app/actions/profile";
 
 const MIN_REQUIRED = 3;
 
-export function SectorPicker({ sectors, initial }: { sectors: string[]; initial: string[] }) {
+export function SectorPicker({
+  sectors,
+  initial,
+  next = "/feed",
+}: {
+  sectors: string[];
+  initial: string[];
+  next?: string;
+}) {
   const [selected, setSelected] = useState<string[]>(initial);
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -23,7 +31,7 @@ export function SectorPicker({ sectors, initial }: { sectors: string[]; initial:
   function finish(picked: string[]) {
     start(async () => {
       await setInvestorInterests(picked);
-      router.push("/feed");
+      router.push(next);
       router.refresh();
     });
   }

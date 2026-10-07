@@ -49,6 +49,6 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL(next || "/reset-password", url.origin));
   }
 
-  const dest = next || (user ? await postAuthPath(supabase, user.id) : "/home");
+  const dest = user ? await postAuthPath(supabase, user.id, next) : next || "/home";
   return NextResponse.redirect(new URL(dest, url.origin));
 }

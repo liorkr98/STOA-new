@@ -68,6 +68,8 @@ export async function GET(req: Request) {
     }
   }
 
-  const dest = safeNext ?? (user ? await postAuthPath(supabase, user.id) : "/home");
+  // The consent wall and onboarding come first even when a return address was
+  // given; postAuthPath carries it through them.
+  const dest = user ? await postAuthPath(supabase, user.id, safeNext) : (safeNext ?? "/home");
   return NextResponse.redirect(new URL(dest, url.origin));
 }
