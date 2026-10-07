@@ -541,6 +541,12 @@ scroll-snap, nothing below the fold.
   dateline) inside the usual stance card, analyst and actions, with no scrub bar, mute or pause. A clip the reader may not
   stream (`watchGated`: signed out) keeps its poster behind a card with Sign in to watch. The
   Feed page itself never receives either; Today's faces do.
+- **Visitors (2026-10-07).** Signed out, `/feed` is sent the first 3 publications and nothing
+  more (`VISITOR_FREE_VIDEOS` in the route), hosted by `<VisitorFeed>`
+  (`src/components/feed/visitor-feed.tsx`), which passes `onEnd` so the third clip plays on into
+  `<FeedWall>`: one line, the coral Join Stoa and a plain Log in, both carrying `next=/feed`.
+  Sign-in and sign-up honour `next` through the consent wall and investor onboarding
+  (`postAuthPath(supabase, userId, next)`). Signed in, the Feed is unchanged.
 
 ### 2.12 `<ReportClip>` — the analyst's video on a report
 
@@ -798,7 +804,9 @@ by analyst; Dana's work is written only, and signed out every clip is gated.
    deck, the analyst's face with name, beat and time, and the stance. On a phone it stacks,
    picture first. **No clip, no frame**: the headline takes the width. A clip still processing
    keeps its frame with the processing state and no play disc.
-3. **The faces**: analysts who posted in the last 24 hours, newest first (up to 16), a 72px
+3. **The faces** (signed in only): analysts who posted in the last 24 hours, newest first (up to 16), narrowed to
+   the analysts the reader follows or pays and whoever posted on their tickers and sectors,
+   falling back to everyone when none of them has posted. A 72px
    circle with first name and beat beneath (`profile_config.specialty`, else the sector or theme
    of their newest piece). A coral ring (`.today-ring`) marks anyone with something the reader
    has not seen, the way stories are: their newest piece is later than the last one the reader
@@ -839,8 +847,12 @@ by analyst; Dana's work is written only, and signed out every clip is gated.
    - Reaching an analyst's last piece is watching them through: their ring clears.
 4. **Worth your next minute**: four publications with a ready clip, each a square frame with its
    duration, the title (`t-title`), the stance or tag and the face and name. Four across on a
-   desktop, two on a phone.
-5. **Your desk** (signed in): six newest from the analysts the reader follows or supports.
+   desktop, two on a phone. Signed in, the reader's video shelf: clips that fit what they follow
+   (analysts, tickers, sectors, onboarding interests) and what they watched, liked, saved or
+   bought, best fit first, pieces already seen left out, general clips filling any gap. Signed
+   out, the general four with the note "Join Stoa to fit these to what you watch."
+5. **Your desk** (signed in): the reader's reading shelf, up to six written pieces (brief,
+   thesis) fitted the same way. Not drawn when nothing fits; Worth reading is the general shelf.
 6. **More on {theme}**: up to three on the lead's ticker, sector or theme. Real kin only; never
    padded.
 7. **Worth reading**: four more, written pieces first. The route onto Today for a thesis that is

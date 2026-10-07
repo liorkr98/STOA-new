@@ -170,10 +170,18 @@ scripts/               tsx scripts: seed-demo.ts / seed.ts (demo data), refresh-
 - **The Feed lives at `/feed`.** It used to live at `/discover` under the label "Feed"; Discover
   is retired as a surface, a route and a name, and `/discover` is a permanent redirect to `/feed`.
   Today is `/home`; there is no `/today` route. Explore is `/explore`.
-- **Watching requires an account.** `/feed` and Explore's watch overlay redirect signed-out
-  visitors to sign-in, because streaming is the highest per-view cost in the product. Explore's
-  posters, Today, publication pages and profiles stay open; the root's lead clip plays on a
-  press, not on arrival. Rationale and the accepted tradeoff: `docs/GROWTH_RESEARCH.md` §6.2.
+- **Visitors watch three, then join (decided by Bar 2026-10-07).** A signed-out visitor can open
+  `/feed` and watch the first 3 publications; the server sends only those 3, and where the fourth
+  would be is a sign-up wall (Join Stoa, Log in) that returns them to `/feed`. The count is the
+  Feed's only. Explore's watch overlay and Today's face stories still ask a visitor to sign in;
+  Explore's posters, Today, publication pages and profiles stay open, and the root's lead clip
+  plays on a press. Rationale: `docs/GROWTH_RESEARCH.md` §6.2.
+- **Today has a shared part and a personal part.** Everyone sees the lead, Worth reading, and the
+  rail's Popular and Trending creators and tickers. Signed out, Worth your next minute is the
+  general version with a line inviting the visitor to join, and the faces row and Your desk are
+  not drawn. Signed in, the faces row narrows to whom and what the reader follows, Worth your
+  next minute becomes their video shelf and Your desk their reading shelf, both fitted to what
+  they follow and what they watched, liked, saved or bought (`src/lib/db/history.ts`).
 - **Video is adaptive HLS**, played by `NativeClip` (native on Safari, hls.js elsewhere, loaded
   on demand), with the Bunny iframe as an automatic fallback when a manifest is refused. The
   local demo MP4s are a walkthrough tool behind `STOA_DEMO_CLIPS=1`, never a delivery path.

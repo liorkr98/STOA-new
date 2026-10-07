@@ -166,8 +166,9 @@ export function ExploreWall({
   };
 
   /**
-   * The overlay is the Feed player, so it follows the Feed's rule: watching
-   * needs an account. Scanning the wall does not, because posters are cheap
+   * The overlay is the Feed player, but it keeps the earlier rule: watching
+   * here needs an account. The Feed's three free videos are the Feed's alone
+   * (Bar, 2026-10-07). Scanning the wall does not, because posters are cheap
    * and the catalogue is what makes a stranger want an account in the first
    * place.
    */

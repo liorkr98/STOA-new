@@ -209,7 +209,11 @@ Worth measuring next: time-to-first-frame from play intent to first rendered fra
 
 ### 6.2 Watching requires an account
 
-`/feed` redirects signed-out visitors to `/sign-in?next=/feed`, and the gate runs **before** any
+> **Changed 2026-10-07 (Bar):** the Feed now opens to visitors for 3 publications, then a sign-up
+> wall. The server sends only those 3, so a visitor costs three streams at most. The table below
+> is the earlier rule, kept for the reasoning; Explore's overlay and Today's stories still gate.
+
+`/feed` redirected signed-out visitors to `/sign-in?next=/feed`, and the gate runs **before** any
 ranking, clip listing or comment fetch, so a redirected visitor costs one auth check. Explore's
 watch overlay follows the same rule, since it is the same player, and its pointerdown prefetch no
 longer warms video for someone about to be redirected.

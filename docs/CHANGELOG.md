@@ -10,6 +10,53 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-07: What a visitor sees before they have an account
+
+**What a visitor notices**
+
+- The Feed opens without an account. A visitor watches the first three
+  videos; scrolling on (or letting the third play through) brings a card
+  that says "Join Stoa to keep watching." with Join Stoa and Log in. The
+  page only ever holds those three videos.
+- Joining or logging in from that card comes back to the Feed, after the
+  terms page and the interests step if the account still owes them.
+- Today, signed out: the lead, Worth your next minute (the same for
+  everyone, with a line inviting them to join), Worth reading, the wire and
+  the rail. The row of faces is not shown to visitors, and the rail's
+  Memberships, Following and Your tickers keep asking them to sign in.
+- Today, signed in: the row of faces shows the analysts you follow or pay
+  and whoever posted on your tickers and sectors. Worth your next minute is
+  your video shelf and Your desk your reading shelf, both picked from what
+  you follow and what you watched, liked, saved or bought, leaving out what
+  you have already seen. With nothing to go on, Worth your next minute is
+  the general version and Your desk is not drawn.
+- The landing line now reads "Watch a few videos free, then join to keep
+  watching."
+
+**Fixed in passing**
+
+- Sign-in and sign-up ignored where the person had come from, so the
+  Feed's old redirect to sign-in always ended on Today.
+- Google sign-in and the confirmation email skipped the terms page and the
+  interests step whenever they carried a destination, which they always
+  did. They now go through the same steps as a password sign-in.
+- A Feed link to a specific publication that ranked below the cut opened
+  on a different video; it now leads.
+
+**What needs Krisi**
+
+- Nothing to apply: no migration. Reading a person's own watch history uses
+  the service key (`src/lib/db/history.ts`), because the view and engagement
+  tables have no policy letting a person read their own rows.
+- Neither table has an index on the viewer, so that read scans the last 60
+  days of a partition. Fine at today's volume; an index on
+  `engagement_events (actor_id, created_at)` and
+  `video_view_events (viewer_id, created_at)` would be the fix later.
+- Opening a written piece is not recorded anywhere, so "what you read"
+  counts only likes, saves and purchases.
+
+---
+
 ## 2026-09-28: The Feed in Direction B
 
 The last surface in the new design. The picture fills the screen and
