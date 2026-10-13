@@ -1,0 +1,126 @@
+/**
+ * The cart's data rules. Run with `npm run test:cart` (TZ is pinned to
+ * Asia/Jerusalem there so a week crossing the October clock change is real).
+ */
+import { test } from "node:test";
+import assert from "node:assert/strict";
+
+const memory = new Map<string, string>();
+Object.assign(globalThis, {
+  window: {
+    localStorage: {
+      getItem: (k: string) => memory.get(k) ?? null,
+      setItem: (k: string, v: string) => void memory.set(k, v),
+      removeItem: (k: string) => void memory.delete(k),
+    },
+    dispatchEvent: () => true,
+  },
+});
+
+const { createInterestCart, summariseWeek } = await import("@/lib/interest-cart/cart");
+const { TemporaryLocalCartStore } = await import("@/lib/interest-cart/store");
+const { holdTap, readHeldTap, clearHeldTap } = await import("@/lib/interest-cart/held-tap");
+const { weekStartOf, addWeeks, weekKey, weekRangeLabel, weekBounds } = await import("@/lib/interest-cart/week");
+
+function fresh(userId = "u1") {
+  memory.clear();
+  return createInterestCart(new TemporaryLocalCartStore(), userId);
+}
+
+test("a week starts on Monday at local midnight", () => {
+  const tue = new Date(2026, 9, 13, 15, 30);
+  assert.equal(weekKey(weekStartOf(tue)), "2026-10-12");
+  assert.equal(weekKey(weekStartOf(new Date(2026, 9, 12, 0, 0))), "2026-10-12");
+  assert.equal(weekKey(weekStartOf(new Date(2026, 9, 11, 23, 59))), "2026-10-05");
+  assert.equal(weekRangeLabel(weekStartOf(tue)), "12-18 Oct");
+  assert.equal(weekRangeLabel(new Date(2026, 8, 28)), "28 Sep-4 Oct");
+});
+
+test("a week that crosses a clock change still ends at local midnight", () => {
+  const start = new Date(2026, 9, 19);
+  const next = addWeeks(start, 1);
+  assert.equal(next.getHours(), 0);
+  assert.equal(weekKey(next), "2026-10-26");
+  const { fromIso, toIso } = weekBounds(start);
+  assert.equal(new Date(toIso).getTime(), next.getTime());
+  assert.ok(new Date(toIso).getTime() - new Date(fromIso).getTime() >= 7 * 24 * 3600 * 1000);
+});
+
+test("bull and bear are counted apart and rows sort by total", async () => {
+  const cart = fresh();
+  const at = new Date(2026, 9, 13, 10);
+  for (let i = 0; i < 7; i++) await cart.addTap("nvda", "bull", "site", { at });
+  for (let i = 0; i < 6; i++) await cart.addTap("NVDA", "bear", "site", { at });
+  await cart.addTap("TSLA", "bear", "site", { at });
+  const week = await cart.getWeek(at);
+  assert.deepEqual(week.rows[0], { ticker: "NVDA", bull: 7, bear: 6, total: 13 });
+  assert.deepEqual(week.rows[1], { ticker: "TSLA", bull: 0, bear: 1, total: 1 });
+  assert.equal(week.tickers, 2);
+  assert.equal(week.taps, 14);
+  assert.ok(!("net" in week.rows[0]));
+});
+
+test("taps land in the local week they were made in, and older weeks stay", async () => {
+  const cart = fresh();
+  await cart.addTap("AAPL", "bull", "site", { at: new Date(2026, 9, 11, 23, 59) });
+  await cart.addTap("AAPL", "bull", "site", { at: new Date(2026, 9, 12, 0, 1) });
+  assert.equal((await cart.getWeek("2026-10-05")).taps, 1);
+  assert.equal((await cart.getWeek("2026-10-12")).taps, 1);
+  assert.deepEqual(await cart.listWeeks(), ["2026-10-12", "2026-10-05"]);
+});
+
+test("undo removes only the newest tap on that ticker", async () => {
+  const cart = fresh();
+  await cart.addTap("AMD", "bull", "site", { at: new Date(2026, 9, 13, 9) });
+  await cart.addTap("AMD", "bear", "site", { at: new Date(2026, 9, 13, 10) });
+  const removed = await cart.undoLastTap("AMD");
+  assert.equal(removed?.direction, "bear");
+  const row = (await cart.getWeek(new Date(2026, 9, 13))).rows[0];
+  assert.deepEqual(row, { ticker: "AMD", bull: 1, bear: 0, total: 1 });
+  assert.equal(await cart.undoLastTap("MSFT"), null);
+});
+
+test("every tap records its source; video fields only on extension taps", async () => {
+  const cart = fresh();
+  const site = await cart.addTap("NVDA", "bull", "site", { videoId: "x" });
+  assert.equal(site.tap.source, "site");
+  assert.equal(site.tap.videoId, null);
+  const ext = await cart.addTap("NVDA", "bull", "extension", { videoId: "dQw4", videoChannel: "UC1", videoSeconds: 84 });
+  assert.deepEqual(
+    [ext.tap.source, ext.tap.videoId, ext.tap.videoChannel, ext.tap.videoSeconds],
+    ["extension", "dQw4", "UC1", 84],
+  );
+});
+
+test("each person reads only their own taps", async () => {
+  memory.clear();
+  const store = new TemporaryLocalCartStore();
+  await createInterestCart(store, "a").addTap("NVDA", "bull", "site");
+  assert.equal((await createInterestCart(store, "b").getWeek(new Date())).taps, 0);
+});
+
+test("a held tap replays exactly once, even if the page reloads mid-replay", async () => {
+  const cart = fresh("new-user");
+  const held = holdTap("NVDA", "bull");
+  // First attempt writes the tap, then the page reloads before the clear.
+  const first = await cart.addTap(held.ticker, held.direction, "site", { id: held.id });
+  assert.equal(first.inserted, true);
+  // After the reload the held tap is still there and replays again.
+  const again = readHeldTap();
+  assert.ok(again);
+  const second = await cart.addTap(again.ticker, again.direction, "site", { id: again.id });
+  assert.equal(second.inserted, false);
+  clearHeldTap(again.id);
+  assert.equal(readHeldTap(), null);
+  assert.equal((await cart.getWeek(new Date())).rows[0].bull, 1);
+});
+
+test("a stale held tap is dropped, not replayed into a later week", () => {
+  memory.clear();
+  holdTap("NVDA", "bear");
+  assert.equal(readHeldTap(new Date(Date.now() + 25 * 3600 * 1000)), null);
+});
+
+test("summariseWeek of nothing is an empty week", () => {
+  assert.deepEqual(summariseWeek("2026-10-12", []), { weekStart: "2026-10-12", rows: [], tickers: 0, taps: 0 });
+});

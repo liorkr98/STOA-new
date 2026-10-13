@@ -8,6 +8,7 @@ import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { InstallHint } from "@/components/layout/install-hint";
 import { PwaRegister } from "@/components/layout/pwa-register";
 import { HistoryDepth } from "@/components/layout/history-depth";
+import { InterestCartProvider } from "@/components/interest-cart/cart-provider";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -26,7 +27,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <QueryClientProvider client={client}>
-        {children}
+        <InterestCartProvider>{children}</InterestCartProvider>
         <CookieConsentBanner />
         <InstallHint />
         <PwaRegister />
