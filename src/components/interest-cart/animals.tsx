@@ -2,16 +2,27 @@ import { cn } from "@/lib/design/cn";
 
 /**
  * The Interest Cart animals, exactly as extracted from the feature one-pager.
- * Do not redraw, recolour or swap them for emoji, and do not draw them
- * anywhere but through this file.
+ * Do not redraw them, swap them for emoji, or draw them anywhere but through
+ * this file.
  *
  * The colours are a named exception to the palette ("Interest Cart animals",
- * docs/DESIGN_LANGUAGE.md 1.3): fixed, not tokens, identical in light and
- * dark. In the one-pager the muzzle, eyes and nose were holes onto a dark
- * card, which breaks on a white panel, so here they are the solid colours
- * that card showed. `npm run test:contrast` checks this list against the doc.
+ * docs/DESIGN_LANGUAGE.md 1.3). The muzzles and the bear's eyes and nose are
+ * fixed in both themes. The two body colours are the one-pager's own in dark
+ * mode and a slightly deeper variant of the same hue on light surfaces, so
+ * each animal clears 3:1 against paper and card. They switch with the theme
+ * through `--cart-bull` / `--cart-bear` in globals.css (light in :root and
+ * inside `.keep-paper`, the one-pager's in `.dark`). In the one-pager the
+ * muzzle, eyes and nose were holes onto a dark card, which breaks on a white
+ * panel, so here they are the solid colours that card showed.
+ * `npm run test:contrast` checks these values against the doc and globals.css.
  */
-export const CART_ANIMAL_COLOURS = ["#4CC38A", "#3E976E", "#FF6B6B", "#C45557", "#141719"] as const;
+export const CART_ANIMAL_COLOURS = {
+  bull: { light: "#3FA172", dark: "#4CC38A" },
+  bullMuzzle: "#3E976E",
+  bear: { light: "#EC6363", dark: "#FF6B6B" },
+  bearMuzzle: "#C45557",
+  bearFeatures: "#141719",
+} as const;
 
 /** Smallest size an animal may be drawn at. */
 const MIN_SIZE = 14;
@@ -19,11 +30,11 @@ const MIN_SIZE = 14;
 function BullArt() {
   return (
     <>
-      <path d="M 6.99 7.99 C 4.99 17.99 10.99 22.99 17.99 20.99" stroke="#4CC38A" strokeWidth="4" strokeLinecap="round" />
-      <path d="M 41.00 7.99 C 43.00 17.99 37.00 22.99 30.00 20.99" stroke="#4CC38A" strokeWidth="4" strokeLinecap="round" />
-      <ellipse cx="11" cy="24" rx="5" ry="3" fill="#4CC38A" />
-      <ellipse cx="37" cy="24" rx="5" ry="3" fill="#4CC38A" />
-      <path d="M 14 18 L 34 18 C 36.5 28 34 38 30.25 41 L 17.75 41 C 14 38 11.5 28 14 18 Z" fill="#4CC38A" />
+      <path d="M 6.99 7.99 C 4.99 17.99 10.99 22.99 17.99 20.99" style={{ stroke: "var(--cart-bull)" }} strokeWidth="4" strokeLinecap="round" />
+      <path d="M 41.00 7.99 C 43.00 17.99 37.00 22.99 30.00 20.99" style={{ stroke: "var(--cart-bull)" }} strokeWidth="4" strokeLinecap="round" />
+      <ellipse cx="11" cy="24" rx="5" ry="3" style={{ fill: "var(--cart-bull)" }} />
+      <ellipse cx="37" cy="24" rx="5" ry="3" style={{ fill: "var(--cart-bull)" }} />
+      <path d="M 14 18 L 34 18 C 36.5 28 34 38 30.25 41 L 17.75 41 C 14 38 11.5 28 14 18 Z" style={{ fill: "var(--cart-bull)" }} />
       <ellipse cx="24" cy="36.2" rx="5.6" ry="3.8" fill="#3E976E" />
     </>
   );
@@ -32,9 +43,9 @@ function BullArt() {
 function BearArt() {
   return (
     <>
-      <circle cx="13" cy="14.8" r="6" fill="#FF6B6B" />
-      <circle cx="35" cy="14.8" r="6" fill="#FF6B6B" />
-      <circle cx="24" cy="27.8" r="15" fill="#FF6B6B" />
+      <circle cx="13" cy="14.8" r="6" style={{ fill: "var(--cart-bear)" }} />
+      <circle cx="35" cy="14.8" r="6" style={{ fill: "var(--cart-bear)" }} />
+      <circle cx="24" cy="27.8" r="15" style={{ fill: "var(--cart-bear)" }} />
       <ellipse cx="24" cy="34" rx="6.2" ry="4.8" fill="#C45557" />
       <circle cx="18" cy="24.8" r="2" fill="#141719" />
       <circle cx="30" cy="24.8" r="2" fill="#141719" />

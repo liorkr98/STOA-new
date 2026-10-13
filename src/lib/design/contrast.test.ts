@@ -202,44 +202,89 @@ test("retired tokens stay retired", () => {
 
 const ANIMALS_FILE = "src/components/interest-cart/animals.tsx";
 const animalsSource = readFileSync(ANIMALS_FILE, "utf8");
-const animalColours = [
-  ...(animalsSource.match(/CART_ANIMAL_COLOURS = \[([^\]]+)\]/)?.[1].matchAll(/"(#[0-9a-f]{6})"/gi) ?? []),
-].map((m) => m[1].toLowerCase());
+const constBody = animalsSource.slice(animalsSource.indexOf("CART_ANIMAL_COLOURS = {"), animalsSource.indexOf("} as const;"));
+const declared = (key: string) => {
+  const m = constBody.match(new RegExp(`${key}: \\{ light: "(#[0-9a-f]{6})", dark: "(#[0-9a-f]{6})" \\}`, "i"));
+  assert.ok(m, `CART_ANIMAL_COLOURS.${key} must give a light and a dark value`);
+  return { light: m[1].toLowerCase(), dark: m[2].toLowerCase() };
+};
+const bullBody = declared("bull");
+const bearBody = declared("bear");
+const fixedParts = [...constBody.matchAll(/(?:bullMuzzle|bearMuzzle|bearFeatures): "(#[0-9a-f]{6})"/gi)].map((m) => m[1].toLowerCase());
+const animalColours = [bullBody.light, bullBody.dark, bearBody.light, bearBody.dark, ...fixedParts];
+
+function cartToken(selector: string, name: string): string {
+  const re = new RegExp(`(^|\\n)${selector.replace(/\./g, "\\.")} \\{[^}]*?${name}:\\s*(#[0-9a-f]{6});`, "i");
+  const m = css.match(re);
+  assert.ok(m, `${name} is not set in ${selector}`);
+  return m[2].toLowerCase();
+}
 
 test("the Interest Cart animals are the recorded exception, colour for colour", () => {
   const law = readFileSync("docs/DESIGN_LANGUAGE.md", "utf8");
   const start = law.indexOf("**The Interest Cart animals");
   assert.ok(start >= 0, "DESIGN_LANGUAGE.md must record the Interest Cart animals exception");
   const section = law.slice(start, law.indexOf("**THE ERROR EXCEPTION", start));
-  const recorded = [...section.matchAll(/^\s*\| `(#[0-9A-Fa-f]{6})` \|/gm)].map((m) => m[1].toLowerCase());
-  assert.equal(animalColours.length, 5, "animals.tsx must list its five colours in CART_ANIMAL_COLOURS");
-  assert.deepEqual([...recorded].sort(), [...animalColours].sort(), "the doc and animals.tsx disagree");
+  const rows = Object.fromEntries(
+    [...section.matchAll(/^\s*\| ([A-Za-z ]+) \| `(#[0-9A-Fa-f]{6})` \| `(#[0-9A-Fa-f]{6})` \|/gm)].map((m) => [
+      m[1].trim(),
+      [m[2].toLowerCase(), m[3].toLowerCase()],
+    ]),
+  );
+  assert.deepEqual(rows["Bull body"], [bullBody.light, bullBody.dark], "bull body: doc and animals.tsx disagree");
+  assert.deepEqual(rows["Bear body"], [bearBody.light, bearBody.dark], "bear body: doc and animals.tsx disagree");
+  assert.equal(fixedParts.length, 3, "the muzzles and the bear's features are fixed in both themes");
+  for (const part of ["Bull muzzle", "Bear muzzle", "Bear eyes and nose"]) {
+    assert.ok(rows[part] && rows[part][0] === rows[part][1] && fixedParts.includes(rows[part][0]), `${part} disagrees`);
+  }
   const drawn = new Set([...animalsSource.matchAll(/(?:fill|stroke)="(#[0-9a-f]{6})"/gi)].map((m) => m[1].toLowerCase()));
-  assert.deepEqual([...drawn].sort(), [...animalColours].sort(), "animals.tsx draws a colour it does not declare");
+  assert.deepEqual([...drawn].sort(), [...fixedParts].sort(), "animals.tsx draws a fixed colour it does not declare");
 });
 
-test("the animal colours appear nowhere but the animals file", () => {
+test("the body colours switch by theme, and the paper stance card keeps the light pair", () => {
+  assert.equal(cartToken(":root", "--cart-bull"), bullBody.light);
+  assert.equal(cartToken(":root", "--cart-bear"), bearBody.light);
+  assert.equal(cartToken(".dark", "--cart-bull"), bullBody.dark);
+  assert.equal(cartToken(".dark", "--cart-bear"), bearBody.dark);
+  assert.equal(cartToken(".dark .keep-paper", "--cart-bull"), bullBody.light);
+  assert.equal(cartToken(".dark .keep-paper", "--cart-bear"), bearBody.light);
+});
+
+test("the animal colours appear nowhere but the animals file and their two tokens", () => {
   const pattern = new RegExp(animalColours.join("|"), "i");
-  // The one other file is the analyst's own diagram themes (a third-party
-  // "neon" palette that happens to contain #ff6b6b): diagram ink chosen by
-  // the author, not Stoa chrome, so it is not a second drawing of the bear.
-  const hits = offenders(pattern, (f) => f === ANIMALS_FILE || f === "src/lib/diagram/colors.ts");
+  // globals.css holds only --cart-bull / --cart-bear (checked above). The one
+  // other file is the analyst's own diagram themes (a third-party "neon"
+  // palette that happens to contain #ff6b6b): diagram ink chosen by the
+  // author, not Stoa chrome, so it is not a second drawing of the bear.
+  const hits = offenders(pattern, (f) => f === ANIMALS_FILE || f === "src/lib/diagram/colors.ts").filter(
+    (h) => !/^src\/app\/globals\.css:\d+\s+--cart-(bull|bear):/.test(h),
+  );
   assert.deepEqual(hits, [], `cart animal colours outside ${ANIMALS_FILE}:\n${hits.join("\n")}`);
 });
 
-test("the animals' measured contrast matches what the law records", () => {
-  // Dark: both clear the 3:1 asked of a graphic. Light: they do not, and the
-  // doc says so with these figures. If the colours or surfaces move, this
-  // fails and the doc has to be measured again.
-  const [bull, , bear] = animalColours;
-  for (const surface of SURFACES) {
-    const onDark = resolve(dark, surface);
-    assert.ok(ratio(bull, onDark) >= 3 && ratio(bear, onDark) >= 3, `an animal under 3:1 on dark ${surface}`);
-    const onLight = resolve(light, surface);
-    const [b, r] = [ratio(bull, onLight), ratio(bear, onLight)];
-    assert.ok(b >= 1.95 && b <= 2.25, `bull on light ${surface} is ${b.toFixed(2)}:1, the doc says 2.0 to 2.2`);
-    assert.ok(r >= 2.45 && r <= 2.8, `bear on light ${surface} is ${r.toFixed(2)}:1, the doc says 2.5 to 2.8`);
+test("each animal clears 3:1 on the page and the card, in both themes", () => {
+  for (const [name, body] of [["bull", bullBody], ["bear", bearBody]] as const) {
+    for (const surface of ["--paper", "--surface"]) {
+      const l = ratio(body.light, resolve(light, surface));
+      assert.ok(l >= 3, `${name} on light ${surface} is ${l.toFixed(2)}:1`);
+    }
+    for (const surface of SURFACES) {
+      const d = ratio(body.dark, resolve(dark, surface));
+      assert.ok(d >= 3, `${name} on dark ${surface} is ${d.toFixed(2)}:1`);
+    }
   }
+  const [bullMuzzle, bearMuzzle, features] = fixedParts;
+  assert.ok(ratio(bullMuzzle, resolve(light, "--paper")) >= 3, "bull muzzle on paper");
+  assert.ok(ratio(bearMuzzle, resolve(light, "--paper")) >= 3, "bear muzzle on paper");
+  assert.ok(ratio(features, bearBody.light) >= 3 && ratio(features, bearBody.dark) >= 3, "the bear's eyes on its face");
+});
+
+test("the light well is the one recorded gap (DESIGN_LANGUAGE 1.3, open)", () => {
+  // The quiet fill behind a tapped side is the well, where the light bodies
+  // measure 2.89 / 2.90. The doc says so; this fails the day it is fixed, so
+  // the doc gets updated with it.
+  const well = resolve(light, "--surface-2");
+  assert.ok(ratio(bullBody.light, well) < 3 && ratio(bearBody.light, well) < 3);
 });
 
 test("no cart control relies on the animals alone: every button is labelled", () => {

@@ -508,6 +508,8 @@
  * reads like one of the clip's own chips. Inside it the light tokens stand.
  * Literal copies of :root (DESIGN_LANGUAGE.md section 8). */
 .dark .keep-paper {
+  --cart-bull: #3fa172;
+  --cart-bear: #ec6363;
   --ink: #101418;
   --paper: #fafafa;
   --surface: #ffffff;
@@ -2766,4 +2768,16 @@ body {
   from {
     opacity: 0;
   }
+}
+
+/* The Interest Cart animals' body colours (DESIGN_LANGUAGE 1.3): a deeper
+ * variant of each hue on light surfaces, the one-pager's own in dark mode.
+ * `.keep-paper` keeps the light pair (above). */
+:root {
+  --cart-bull: #3fa172;
+  --cart-bear: #ec6363;
+}
+.dark {
+  --cart-bull: #4cc38a;
+  --cart-bear: #ff6b6b;
 }

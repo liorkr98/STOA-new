@@ -294,7 +294,7 @@ function EmptyWeek({ current, lastWeek, leaveTo }: { current: boolean; lastWeek:
     return <p className="mt-8 text-body text-text-mute">No taps that week.</p>;
   }
   return (
-    <div className="mt-8 rounded-panel bg-surface-2 p-5">
+    <div className="mt-8 rounded-panel border border-border bg-surface p-5">
       <div aria-hidden className="flex items-center gap-2">
         <BullIcon size={28} />
         <BearIcon size={28} />
@@ -325,7 +325,7 @@ function SignedOut({ leaveTo }: { leaveTo: LeaveTo }) {
   const href = `/sign-up?next=${encodeURIComponent(next)}`;
   return (
     <div className="px-5 pb-[calc(var(--safe-bottom)+2rem)]">
-      <div className="mt-4 rounded-panel bg-surface-2 p-5">
+      <div className="mt-4 rounded-panel border border-border bg-surface p-5">
         <div aria-hidden className="flex items-center gap-2">
           <BullIcon size={28} />
           <BearIcon size={28} />
