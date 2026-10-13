@@ -9,8 +9,10 @@ import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/app/actions/auth";
 import type { Profile } from "@/lib/types";
+import { useInterestCart } from "@/components/interest-cart/cart-provider";
 
-type NavItem = { label: string; href: string };
+/** A section page, or (Cart) the overlay that opens over the current page. */
+type NavItem = { label: string; href: string; opensCart?: true };
 type NavGroup = { key: string; label: string; analystOnly?: boolean; items: NavItem[] };
 
 /**
@@ -26,6 +28,8 @@ const GROUPS: NavGroup[] = [
       { label: "Library", href: "/saved" },
       { label: "Subscriptions", href: "/subscriptions" },
       { label: "Following", href: "/following" },
+      // Not a page: the cart is one panel, opened over wherever you are.
+      { label: "Cart", href: "", opensCart: true },
     ],
   },
   {
@@ -63,6 +67,7 @@ function activeHref(pathname: string, isAnalyst: boolean) {
   let best = "";
   for (const g of visibleGroups(isAnalyst)) {
     for (const it of g.items) {
+      if (it.opensCart) continue;
       const matches = pathname === it.href || pathname.startsWith(it.href + "/");
       if (matches && it.href.length > best.length) best = it.href;
     }
@@ -72,6 +77,7 @@ function activeHref(pathname: string, isAnalyst: boolean) {
 
 export function PrivateSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname();
+  const { open: openCart } = useInterestCart();
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
   const active = activeHref(pathname, isAnalyst);
   const groups = visibleGroups(isAnalyst);
@@ -102,6 +108,19 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
           <div key={g.key} className="flex flex-col gap-0.5">
             <span className="t-meta px-3 pb-1">{g.label}</span>
             {g.items.map((it) => {
+              if (it.opensCart) {
+                return (
+                  <button
+                    key="cart"
+                    type="button"
+                    onClick={openCart}
+                    aria-haspopup="dialog"
+                    className="focus-ring rounded-button px-3 py-1.5 text-left text-body text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
+                  >
+                    {it.label}
+                  </button>
+                );
+              }
               const isActive = it.href === active;
               return (
                 <Link
@@ -148,6 +167,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
 
 export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const pathname = usePathname();
+  const { open: openCart } = useInterestCart();
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
   const active = activeHref(pathname, isAnalyst);
   const groups = visibleGroups(isAnalyst);
@@ -197,7 +217,21 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                     g.key === "account" ? "right-0" : "left-0",
                   )}
                 >
-                  {g.items.map((it) => (
+                  {g.items.map((it) =>
+                    it.opensCart ? (
+                      <button
+                        key="cart"
+                        type="button"
+                        aria-haspopup="dialog"
+                        onClick={() => {
+                          setOpen(null);
+                          openCart();
+                        }}
+                        className="block w-full rounded-button px-2.5 py-2 text-left text-body text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
+                      >
+                        {it.label}
+                      </button>
+                    ) : (
                     <Link
                       key={it.href}
                       href={it.href}
@@ -212,7 +246,8 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                     >
                       {it.label}
                     </Link>
-                  ))}
+                    ),
+                  )}
                   {g.key === "account" && (
                     <form action={signOut} className="mt-1 border-t border-border pt-1">
                       <button

@@ -2727,3 +2727,43 @@ body {
     padding-bottom: calc(var(--main-pad-y) + 40px);
   }
 }
+
+/* ---- Interest Cart ---- */
+
+/* The ticker on a cart row: mono, like every ticker. */
+.cart-ticker {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* The cart unfolds over the page: up from the bottom on a phone, in from
+ * the right on desktop. Nothing under it moves. */
+@media (prefers-reduced-motion: no-preference) {
+  .cart-panel[data-state="open"] {
+    animation: cart-sheet-in var(--dur-3) var(--ease-out);
+  }
+  .cart-scrim[data-state="open"] {
+    animation: cart-scrim-in var(--dur-3) var(--ease-out);
+  }
+  @media (min-width: 768px) {
+    .cart-panel[data-state="open"] {
+      animation-name: cart-slide-in;
+    }
+  }
+}
+@keyframes cart-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes cart-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes cart-scrim-in {
+  from {
+    opacity: 0;
+  }
+}

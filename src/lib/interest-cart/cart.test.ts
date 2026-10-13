@@ -124,3 +124,13 @@ test("a stale held tap is dropped, not replayed into a later week", () => {
 test("summariseWeek of nothing is an empty week", () => {
   assert.deepEqual(summariseWeek("2026-10-12", []), { weekStart: "2026-10-12", rows: [], tickers: 0, taps: 0 });
 });
+
+test("the week's price move is the last close in the week over the close before it", async () => {
+  const { weekMove } = await import("@/lib/interest-cart/price");
+  const day = (d: number, close: number) => ({ time: Date.UTC(2026, 9, d, 20) / 1000, open: close, high: close, low: close, close });
+  const from = new Date(Date.UTC(2026, 9, 12)).toISOString();
+  const to = new Date(Date.UTC(2026, 9, 19)).toISOString();
+  const pct = weekMove([day(8, 90), day(9, 100), day(12, 101), day(14, 103.1), day(19, 120)], from, to);
+  assert.equal(pct?.toFixed(1), "3.1");
+  assert.equal(weekMove([day(9, 100)], from, to), null);
+});

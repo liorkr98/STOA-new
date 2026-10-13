@@ -10,6 +10,7 @@ import { buttonClass } from "@/components/ui/button";
 import { NavSearch } from "@/components/layout/nav-search";
 import { LinkPending } from "@/components/layout/link-pending";
 import { Avatar } from "@/components/ui/avatar";
+import { CartTrigger } from "@/components/interest-cart/cart-trigger";
 
 // Feed is the default landing page even though Today is listed first.
 const DEFAULT_HREF = "/feed";
@@ -76,6 +77,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
         {/* Desktop right cluster */}
         <div className="hidden items-center gap-3 md:flex">
           <NavSearch />
+          <CartTrigger />
           {profile ? (
             <>
               <Link href={isAnalyst ? "/studio/compose" : "/become-analyst"} className={buttonClass("ink", "sm")}>
@@ -123,6 +125,7 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
           >
             <Search size={19} strokeWidth={1.7} />
           </Link>
+          <CartTrigger />
           {profile ? (
             <>
               <Link

@@ -15,7 +15,7 @@ import type { CartDirection } from "@/lib/interest-cart/types";
  * A side already tapped this week keeps a quiet well behind it and shows its
  * count; the animals never change colour. No coral: this must not compete
  * with Follow or Subscribe. Each button is 32 x 28 and reaches 44 x 44 with
- * `.tap-target`; the 12px gap keeps the two hit areas from overlapping.
+ * `.tap-target`; the 12px gap on a phone keeps the two hit areas from overlapping (a mouse needs no gap).
  *
  * On the Feed it lives in the stance card on the picture, where the chrome
  * passes touches through to the video: `className="pointer-events-auto"`.
@@ -36,7 +36,7 @@ export function CartTap({
   const row = rowFor(ticker);
 
   return (
-    <span role="group" aria-label={`Your cart: ${ticker}`} className={cn("inline-flex shrink-0 items-center gap-3", className)}>
+    <span role="group" aria-label={`Your cart: ${ticker}`} className={cn("inline-flex shrink-0 items-center gap-3 md:gap-1", className)}>
       <Side ticker={ticker} side="bull" count={row?.bull ?? 0} size={size} onTap={tap} />
       <Side ticker={ticker} side="bear" count={row?.bear ?? 0} size={size} onTap={tap} />
     </span>

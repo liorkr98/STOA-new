@@ -21,7 +21,9 @@ export function Band({
   controls,
   children,
   className,
+  id,
 }: {
+  id?: string;
   title: string;
   note?: string;
   seeAllHref?: string;
@@ -32,7 +34,7 @@ export function Band({
   className?: string;
 }) {
   return (
-    <section className={cn("band", className)} aria-label={title}>
+    <section id={id} className={cn("band", className)} aria-label={title}>
       <SectionHeading
         className="band-head"
         title={title}

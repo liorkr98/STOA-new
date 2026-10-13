@@ -101,7 +101,7 @@ export function StockPublications({ items }: { items: TodayItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <Band title="Publications on this name" seeAllHref="/explore">
+    <Band id="coverage" title="Publications on this name" seeAllHref="/explore">
       <div className="mt-2">
         {items.map((item) => (
           <HeadlineRow

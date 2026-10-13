@@ -120,7 +120,7 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
         <TickerChip ticker={row.symbol} className="hover:border-text" />
       </button>
       <DayChange percent={row.changePercent} className="ml-auto min-w-0" />
-      <CartTap ticker={row.symbol} />
+      <CartTap ticker={row.symbol} className="ml-1" />
       {showFollow ? (
         <button type="button" onClick={() => toggle(row.symbol)} aria-label={`Follow ${row.symbol}`} className={FOLLOW}>
           + Follow
