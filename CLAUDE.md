@@ -42,7 +42,7 @@ Quick reminders:
   targets or consensus). Placement is driven by the **lifecycle model** (NEW / AVERAGE / RISING /
   TRENDING / POPULAR; only NEW and TRENDING are ever shown).
 - **Design: Direction B.** Coral marks the live or actionable thing only (Subscribe, Follow,
-  Publish, the one primary action); green and red mean direction and price only, except errors, which use the crimson `--error` (never the price red); about 90% is
+  Publish, the one primary action); green and red mean price movement only (a stance is plain ink; the Interest Cart's bull and bear are the one named exception), except errors, which use the crimson `--error` (never the price red); about 90% is
   black, white and grey. Coloured words use `text-coral` / `text-gain` / `text-loss` (the deep
   tones); fills use `bg-coral` / `bg-gain` / `bg-loss` (black text built in); never white on a
   fill. `--accent` is ink, not coral. Bricolage / Inter / JetBrains Mono (tickers only) / Heebo

@@ -16,6 +16,7 @@ import { DayChange } from "@/components/markets/day-change";
 import { FollowTicker } from "@/components/markets/follow-control";
 import { price as fmtPrice } from "@/lib/format";
 import type { Candle } from "@/lib/market/candle-types";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 interface SheetPayload {
   symbol: string;
@@ -95,6 +96,7 @@ function InstrumentSheet({ symbol, onClose }: { symbol: string; onClose: () => v
                 </>
               ) : null}
             </p>
+            <CartTap ticker={symbol} className="mt-2" />
           </div>
           <button type="button" onClick={onClose} className="sheet-close focus-ring" aria-label="Close">
             <X size={18} />

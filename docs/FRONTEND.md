@@ -12,8 +12,8 @@
 > onboarding wizard, `/dashboard/*`), it is marked as spec rather than as the site.
 >
 > **2. The visual system is Direction B (adopted 2026-09-27).** Paper `#FAFAFA`, white cards, ink
-> `#101418`; coral for the one live or actionable thing; green and red for direction and price
-> only; Bricolage Grotesque, Inter and JetBrains Mono (tickers only) with Heebo for Hebrew; five
+> `#101418`; coral for the one live or actionable thing; green and red for price movement only
+> (stances are ink; the Interest Cart animals are the named exception); Bricolage Grotesque, Inter and JetBrains Mono (tickers only) with Heebo for Hebrew; five
 > type sizes; pills, 14px panels and circular avatars. **The law is
 > [`docs/DESIGN_LANGUAGE.md`](./DESIGN_LANGUAGE.md)**; the reference is
 > [`docs/design/direction-b.html`](./design/direction-b.html) (take its look, not its product: its
@@ -94,7 +94,7 @@ Coral, gain and loss each have a fill tone and a word tone: `--coral` `#FF5A47` 
   `bg-coral`, `bg-gain`, `bg-loss`, which set black text themselves. White on a fill fails
   contrast and is never used.
 - Coral: Subscribe, Follow, Publish, the one primary action, a live recording. Green and red:
-  direction and price movement. Everything else is black, white and grey.
+  price movement. A stance is ink; the Interest Cart's bull and bear are the named exception. Everything else is black, white and grey.
 - `--accent` is **ink** (the ink button, selected tabs). It is not coral and must not become coral.
 - **Errors are red, by a deliberate exception:** `--error` is a crimson held well away from the
   price red, with `--error-soft` and `--error-edge` for error boxes. Only errors, failures and
@@ -203,7 +203,11 @@ not discovered once.
 state: skeleton pill for avatar only, nav renders instantly (never block the whole nav on auth
 resolution).
 
-**Mobile (< 768px):** wordmark on the left, then search, Compose (pencil), Inbox (unread dot)
+**The cart mark (2026-10-13).** Both clusters carry `<CartTrigger>` (section 2.17) after search:
+the bull and bear pair, grey for an empty week, with this week's tap count on an ink badge. It
+is absent on Compose.
+
+**Mobile (< 768px):** wordmark on the left, then search, the cart mark, Compose (pencil), Inbox (unread dot)
 and the avatar on the right. **There is no overflow menu.** Feed, Today, Explore and Markets
 live in the bottom tab bar (`AppTabs`), and Settings and Sign out live in the Account group of
 the profile area, which the avatar leads to, so a drawer had nothing of its own left to hold.
@@ -474,14 +478,17 @@ scroll-snap, nothing below the fold.
   `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
 - **Direction B (2026-09-28).** The video fills the stage and everything else sits small and
   light on it. Rounded corners, no hairline rules, no uppercase labels; the ticker chip is the
-  only mono, coral is only on Follow, green and red only on the direction.
+  only mono, coral is only on Follow, and the only colour on the stance card is the reader's bull and bear
+  (the direction word is ink).
 - **The dateline:** trending or new, the type, the date and the length
   (`Trending · Thesis · Aug 22, 2026 · 0:58`), in sentence-case Inter. On desktop it is the strip
   above the frame; on a phone it sits on the picture at the top left, with the mute control at
   the right of the same row. The ticker is not in it: it is on the stance card, in its own face.
 - **The stance card** (`<StanceCard>`, `src/components/feed/stance-card.tsx`): a small paper card
-  under the dateline. A stance is the ticker chip and the direction word (▲ Long in the gain
-  tone, ▼ Short in the loss tone, Hold quiet). A ticker with no stance names its sector beside
+  under the dateline. A stance is the ticker chip and the direction word in ink (▲ Long,
+  ▼ Short, Hold quiet), then the reader's bull and bear taps (`<CartTap size={16}>`, made
+  `pointer-events-auto` because the chrome passes touches to the video; it adds no scroller
+  and no overscroll, so a vertical swipe that starts on it still moves the Feed). A ticker with no stance names its sector beside
   the chip; a publication with no ticker shows its theme or sector alone; with none of those no
   card is drawn, never an empty one. It stays paper in dark mode (`.keep-paper` re-declares the
   light tokens inside it): the picture does not change with the theme, and a dark card reads like
@@ -745,6 +752,58 @@ and requires the creator to type `DELETE` before the confirm button turns on.
   saves on the way out, the dialog's own default. An unsaved edit to a live publication is not
   saved: that would file a public EDITED marker the creator did not ask for.
 
+### 2.17 The Interest Cart: `<CartTap>`, `<CartTrigger>`, `<CartPanel>` (2026-10-13)
+
+A reader taps a bull or a bear beside a ticker; each tap lands in that reader's cart for the
+week, and the cart shows what held their attention. Data model and backend:
+`docs/backend/interest-cart.md`. Colour law: "Interest Cart animals" in
+`docs/DESIGN_LANGUAGE.md` 1.3.
+
+- **The animals** (`src/components/interest-cart/animals.tsx`): `BullIcon`, `BearIcon` and the
+  nav's `CartMark`, drawn exactly from the feature one-pager. The only place they are drawn.
+  Sizes 18 in rows, 16 over video, never under 14.
+- **`<CartTap ticker size?>`** (`cart-tap.tsx`): two labelled buttons ("Add a bull tap for
+  NVDA"), each 32 x 28 reaching 44 x 44 through `.tap-target`, 12px apart on a phone so the hit
+  areas never overlap. A side tapped this week sits on the well with its count; no coral. A tap
+  counts on screen at once and toasts "Added to your cart" with Undo (one toast per ticker, so
+  Undo always removes the newest tap on that ticker).
+- **Placement rule: beside the whole clickable thing, never inside it.** The ticker chip is not
+  always a link; often the whole row or card is. Where that was so the control sits outside the
+  link (Markets rows, Library) or above a stretched link (`relative z-10`: profile cards, peer
+  tiles, whose link now stretches with `after:absolute after:inset-0`).
+- **Where it appears:** the Feed's stance card; Today's stance lines and its ticker rail; every
+  Markets row (Where analysts are looking, Newly covered, ETFs, Uncovered, sector and theme
+  names, ETF holdings, peers); the stock, ETF and macro instrument headers; the instrument
+  sheet; profile cards; the report page; report cards in search; Library; polls; the landing
+  lead. Not on authoring screens (Compose, Studio's publication list, editor blocks).
+- **A stance beside it is ink.** `StanceChip` and the stance card's direction word are no longer
+  green or red, so the animals are the only coloured animals on screen.
+- **`<CartTrigger>`** (`cart-trigger.tsx`) in the top nav, and **My Stoa > Reading > Cart**,
+  both open the same panel. Neither exists on Compose (`cartAllowedOn`).
+- **`<CartPanel>`** (`cart-panel.tsx`), mounted once in `providers.tsx` inside
+  `<InterestCartProvider>`: an overlay, never a route. A 420px slide-over on the right on
+  desktop, a full-height sheet on a phone (over the tab bar, padded for the home bar).
+  Opening pushes one history entry (`stoaCart`), the stories pattern (section 2.16), so Back
+  and the phone's swipe close it and the page underneath keeps its address and scroll. A link
+  inside the panel steps back off that entry before navigating, so Back from the new page
+  returns to the page the cart was opened over.
+- **Panel contents, in order:** "Cart" and its deck; the week switcher (previous / "This week ·
+  12-18 Oct" / next, next disabled on this week, previous stops at the oldest tapped week); the
+  summary (tickers · taps · resets Monday); rows, most taps first; the extension footer.
+- **A row (layout C):** the ticker in mono; on the right the side with more taps at 18px with
+  its count at title size, the other side at 14px and 60% opacity with a small count; a tie
+  draws both at 18px. Under it the company name and, small and quiet, "Price this week"
+  (`--up` / `--down`, from `cartTickerInfo`). Then links to the ticker in Markets and to its
+  coverage band (`/markets/T#coverage`). Never a net figure or a sign on a count.
+- **Empty and signed out:** a designed card on white (not the well, where the light-mode
+  animals fall under 3:1): what a tap is, where taps come from, that the cart clears every
+  Monday, last week's ticker count when there was one, and one action.
+- **Signed out:** a tap is held (`held-tap.ts`) and the visitor goes to sign-up with `next`; once
+  a session exists, off the sign-up pages, the tap replays under its held id (so a reload
+  mid-replay cannot count it twice), the held copy clears and the toast fires.
+- **Temporary storage:** taps live in the browser behind `InterestCartStore`
+  (`TemporaryLocalCartStore`, keyed by user id) until `interest_taps` exists.
+
 ---
 
 ## PART 3 — PUBLIC PAGES (logged out)
@@ -867,8 +926,8 @@ the publication has a clip. Two columns on a desktop.
 **Rules.** Bands part by space (`.today-band`: 56px phone, 72px desktop), never by rules. Every
 image and card is rounded (`rounded-panel`, `rounded-inner` for the row thumbnail). The only mono
 is the ticker chip. Coral appears on the rail's `+ Follow` and the fresh-post ring, nowhere else;
-green and red only on the stance chip and the rail's day change. **Tags:** a publication with a
-ticker shows `TickerChip` plus `StanceChip` when it declares a direction; one without shows its
+green and red only on the rail's day change and the Interest Cart animals. **Tags:** a publication with a
+ticker shows `TickerChip` plus an ink `StanceChip` when it declares a direction, then `CartTap`; one without shows its
 theme (or sector) as a `ThemeChip`; one with neither shows nothing, never an empty chip. **A band
 with nothing in it is not drawn**, heading included; the verdicts band is gone and nothing
 replaces it.
@@ -1193,7 +1252,7 @@ publication's stance is a ticker and a direction and nothing more.
    12.8K views`, the EDITED marker on that line when the piece was edited, and Follow on the
    right (coral fill; coral outline when the piece is gated, so Subscribe is the one fill in
    view; hidden for the author).
-4. The stance, quiet: `TickerChip` (links to the ticker page) and `StanceChip`, or a
+4. The stance, quiet: `TickerChip` (links to the ticker page), `StanceChip` and `CartTap`, or a
    `ThemeChip` for a piece with no ticker; like, save and share as small ghost buttons on the
    same line.
 5. The body at the reading size (`.stoa-prose--read`, Inter 17 to 18px, headings in

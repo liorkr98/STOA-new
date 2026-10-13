@@ -227,7 +227,8 @@ layout in the new colours and type.
 6. **Colour, and the accent law.** Paper `#FAFAFA`, card `#FFFFFF`, ink `#101418`, muted
    `#5B6470`, line `#E6E8EB`. **Coral marks the live or actionable thing and nothing else**
    (Subscribe, Follow, Publish, the one primary action, a live recording). **Green and red carry
-   direction and price movement and nothing else** (not success). **Errors are the one red
+   price movement and nothing else** (not success); a stance is plain ink, and the Interest
+   Cart's bull and bear are the one named exception (`docs/DESIGN_LANGUAGE.md` 1.3). **Errors are the one red
    exception:** `--error`, a crimson held away from the price red, only for error messages,
    failed states and destructive hovers. About 90% of the interface is black, white and grey. `--accent` is ink, not coral; never repoint it.
    **Contrast rule:** coloured words use the `-text` tones (`text-coral`, `text-gain`,

@@ -10,6 +10,63 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-13: The Interest Cart
+
+**What a reader notices**
+
+- A small bull and bear sit beside tickers across Stoa: on the Feed's stance card, Today,
+  every Markets row, the instrument pages, profiles, the report page, search, Library and
+  polls. Tapping one says the ticker caught your eye, bullish or bearish. It counts at once
+  and shows "Added to your cart" with Undo.
+- A new mark in the top bar, the bull and bear together, carries this week's tap count. It
+  opens the Cart over whatever page you are on: a panel on the right on a computer, a full
+  sheet on a phone. Back, or the phone's swipe, closes it and leaves the page as it was. My
+  Stoa > Cart opens the same panel. Compose has none of this.
+- The Cart lists the week's tickers, most-tapped first. The side with more taps is drawn
+  larger, a tie at equal size. Bull and bear are always counted apart: there is never a "+12"
+  or a "-2". Each row shows the company, how the price moved that week, and links to the
+  ticker and its coverage. Older weeks stay a tap away. The cart starts fresh every Monday,
+  in your own time zone.
+- Signed out, a tap takes you to sign-up and is added for you once you are in, exactly once.
+- A stance (long or short) is now written in ink rather than green or red, so the animals are
+  the only green and red beside a ticker.
+
+**Fixed in passing**
+
+- Company names in the cart came with a stray trailing " -" from the ticker table; they go
+  through the same clean-up the Markets pages use.
+
+**Still temporary**
+
+- Taps live in the reader's browser (`TemporaryLocalCartStore`), keyed by account, until the
+  table exists. They do not follow someone to another device yet.
+
+**What needs Krisi**
+
+- Review and apply `supabase/migrations/0068_interest_taps.sql`. It is headed DRAFT - DO NOT
+  APPLY and nothing was run against the live database. Spec: `docs/backend/interest-cart.md`.
+- Add the cart's RLS cases to `npm run test:rls` once it is applied.
+- Write the Supabase adapter (`SupabaseCartStore` in `src/lib/db/`) and swap it into
+  `cartStore()`. Decide whether to import the temporary browser taps on first sign-in.
+- Decide retention for raw taps, and the fixed time zone for the future anonymised cross-user
+  total, before the extension ships.
+
+**Open for Bar**
+
+- On the light grey well (the quiet fill behind a side already tapped this week), the light
+  bull and bear measure 2.89 and 2.90:1, just under 3:1. They clear it on the page and on
+  cards. Recorded in DESIGN_LANGUAGE 1.3. A slightly deeper body, or a white fill for the
+  tapped state, would close it.
+- Tickers still drawn without the control (plain text, not a chip): Explore wall tiles, the
+  Following and Watchlist pages, search's ticker results, the screener, portfolio, the old
+  dashboard, the nav search and Markets search dropdowns, the public Dispatch, the
+  `$TICKER` hover cards in report bodies, and ticker charts on evidence cards. Each is a
+  one-line addition if wanted.
+- The report page's claim vote bar draws bull / bear votes in the price green and red. It
+  predates the cart, but it is a second green and red bull and bear on that page.
+
+---
+
 ## 2026-10-07: What a visitor sees before they have an account
 
 **What a visitor notices**

@@ -6,6 +6,7 @@ import { StockPublications } from "@/components/markets/stock-sections";
 import { formatMacroLevel, type MacroInstrument } from "@/lib/markets/instruments";
 import type { Candle } from "@/lib/market/candle-types";
 import type { TodayItem } from "@/lib/today/types";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 const KIND_LABEL: Record<MacroInstrument["kind"], string> = {
   commodity: "Commodity",
@@ -58,6 +59,7 @@ export function MacroView({
               <span aria-hidden> · </span>
               {instrument.unit}
             </p>
+            <CartTap ticker={instrument.symbol} className="mt-2" />
           </div>
 
           <div className="flex items-end gap-4">
