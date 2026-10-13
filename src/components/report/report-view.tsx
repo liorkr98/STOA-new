@@ -24,6 +24,7 @@ import type { FactClaim } from "@/lib/ai/fact-check";
 import type { ReportEdit } from "@/lib/db/report-edits";
 import type { FeedCard, FeedComment } from "@/lib/feed/types";
 import type { Direction } from "@/lib/types";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /** Headlines longer than this drop from the display size to the headline size. */
 const DISPLAY_MAX_CHARS = 80;
@@ -183,6 +184,7 @@ export function ReportView({ data }: { data: ReportViewData }) {
             <>
               <TickerChip ticker={data.ticker} href={`/markets/${encodeURIComponent(data.ticker)}`} />
               {data.stance ? <StanceChip direction={data.stance} /> : null}
+              <CartTap ticker={data.ticker} />
             </>
           ) : data.theme ? (
             <ThemeChip label={data.theme} />

@@ -8,6 +8,7 @@ import { durationLabel, sinceLabel } from "@/lib/today/format";
 import { labelCase } from "@/lib/design/label";
 import { cn } from "@/lib/design/cn";
 import type { TodayAnalyst, TodayItem } from "@/lib/today/types";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * The pieces every Today band is built from: the stance or the tag, the
@@ -25,6 +26,7 @@ export function PublicationTags({ item, className }: { item: TodayItem; classNam
       <span className={cn("flex flex-wrap items-center gap-1.5", className)}>
         <TickerChip ticker={item.ticker} href={`/markets/${encodeURIComponent(item.ticker)}`} />
         {item.direction ? <StanceChip direction={item.direction} /> : null}
+        <CartTap ticker={item.ticker} />
       </span>
     );
   }

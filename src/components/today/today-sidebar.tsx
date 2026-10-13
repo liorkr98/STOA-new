@@ -16,6 +16,7 @@ import { buttonClass } from "@/components/ui/button";
 import { labelCase } from "@/lib/design/label";
 import { cn } from "@/lib/design/cn";
 import type { TodayCreatorRow, TodaySidebarPayload, TodayTicker, TodayTickerRow } from "@/lib/today/types";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * Today's rail: grouped lists that belong to the page. Text rows parted by
@@ -119,6 +120,7 @@ function TickerItem({ row }: { row: TodayTickerRow }) {
         <TickerChip ticker={row.symbol} className="hover:border-text" />
       </button>
       <DayChange percent={row.changePercent} className="ml-auto min-w-0" />
+      <CartTap ticker={row.symbol} />
       {showFollow ? (
         <button type="button" onClick={() => toggle(row.symbol)} aria-label={`Follow ${row.symbol}`} className={FOLLOW}>
           + Follow

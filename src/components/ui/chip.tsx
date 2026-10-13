@@ -7,8 +7,10 @@ import type { Direction } from "@/lib/types";
  * Chips: small pills that label a publication. Three kinds, and only these:
  *
  *   TickerChip  the symbol, in JetBrains Mono (the one place mono appears)
- *   StanceChip  long / short / hold, in the gain or loss TEXT tone; hold is
- *               quiet. Green and red mean direction and nothing else.
+ *   StanceChip  long / short / hold, plain ink with a ▲ / ▼; hold is quiet.
+ *               Never green or red: wherever a stance shows, the Interest
+ *               Cart's bull and bear sit beside the ticker, and they are the
+ *               only coloured animals on the screen (DESIGN_LANGUAGE 1.3).
  *   Chip        the quiet neutral one: themes, tags, counts, states
  *
  * No uppercase, no letterspacing. Words are sentence case.
@@ -81,8 +83,8 @@ export function ThemeChip({
 const stanceLabel: Record<Direction, string> = { long: "Long", short: "Short", hold: "Hold" };
 
 const stanceStyle: Record<Direction, string> = {
-  long: "border-current text-gain",
-  short: "border-current text-loss",
+  long: "border-border-strong text-text",
+  short: "border-border-strong text-text",
   hold: "border-border text-text-mute",
 };
 

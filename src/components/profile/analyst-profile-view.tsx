@@ -18,6 +18,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { FilterPicker } from "@/components/explore/filter-picker";
 import { PlayDisc } from "@/components/today/today-bits";
 import { labelCase } from "@/lib/design/label";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /** One publication as the storefront renders it: a picture tile or a written tile. */
 export interface ProfilePublication {
@@ -107,6 +108,8 @@ function Tags({ p, className }: { p: ProfilePublication; className?: string }) {
     <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
       {p.ticker ? <TickerChip ticker={p.ticker} /> : null}
       {p.ticker && p.direction ? <StanceChip direction={p.direction} /> : null}
+      {/* Raised above the card's stretched link so a tap reaches it. */}
+      {p.ticker ? <CartTap ticker={p.ticker} className="relative z-10" /> : null}
       {!p.ticker && p.themeTag ? <ThemeChip label={labelCase(p.themeTag)} /> : null}
     </div>
   );

@@ -10,6 +10,7 @@ import { ThemeChip, TickerChip } from "@/components/ui/chip";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { labelCase } from "@/lib/design/label";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 export interface LibraryItem {
   id: string;
@@ -154,6 +155,8 @@ export function LibraryView({ items }: { items: LibraryItem[] }) {
 
               <div className="mt-4 flex items-center justify-between gap-3 md:mt-0 md:flex-col md:items-end md:gap-2">
                 <div className="flex items-center gap-2.5 md:order-2 md:self-end">
+                  {/* Beside the item's link, never inside it. */}
+                  {it.tag && it.tagIsTicker ? <CartTap ticker={it.tag} /> : null}
                   <Bmk id={it.id} saved={it.saved} />
                   <span
                     className={cn(

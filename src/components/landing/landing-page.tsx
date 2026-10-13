@@ -9,6 +9,7 @@ import { cn } from "@/lib/design/cn";
 import { packTiles } from "@/lib/explore/pack";
 import type { LandingFace, LandingHeadline, LandingPayload } from "@/lib/landing/build-landing";
 import { StanceChip, TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * The signed-out root. Two constraints held together: show without giving
@@ -129,6 +130,7 @@ function TodayLite({ data }: { data: LandingPayload }) {
                 <span className="text-body font-semibold text-text">{lead.analyst}</span>
                 {lead.ticker ? <TickerChip ticker={lead.ticker} /> : null}
                 {lead.direction ? <StanceChip direction={lead.direction} /> : null}
+                {lead.ticker ? <CartTap ticker={lead.ticker} /> : null}
               </div>
             </article>
           </Reveal>

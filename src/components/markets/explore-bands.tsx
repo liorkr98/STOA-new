@@ -16,6 +16,7 @@ import type {
   ThemeCard,
 } from "@/lib/markets/types";
 import { StanceChip, TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 function Px({ value }: { value: number | null }) {
   if (value == null) return <span className="markets-pending">No price</span>;
@@ -134,6 +135,7 @@ export function ExploreCovered({ rows }: { rows: CoveredRow[] }) {
               <TickerChip ticker={r.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
+            <CartTap ticker={r.symbol} />
             <Px value={r.price} />
             <DayChange percent={r.changePercent} />
             <span className="markets-row-meta num">
@@ -170,6 +172,7 @@ export function ExploreNewlyCovered({ rows }: { rows: NewlyCoveredRow[] }) {
               <TickerChip ticker={r.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
+            <CartTap ticker={r.symbol} />
             <Link
               href={`/analyst/${r.analyst.handle}`}
               className="focus-ring inline-flex items-center gap-2.5 rounded-button"
@@ -246,6 +249,7 @@ export function ExploreEtfs({ rows }: { rows: EtfBandRow[] }) {
               <TickerChip ticker={e.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{e.name}</span>
             </Link>
+            <CartTap ticker={e.symbol} />
             <DayChange percent={e.changePercent} />
             {e.publications > 0 && (
               <span className="markets-row-meta num">
@@ -276,6 +280,7 @@ export function ExploreUncovered({ rows }: { rows: MarketRow[] }) {
               <TickerChip ticker={r.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{r.company}</span>
             </Link>
+            <CartTap ticker={r.symbol} />
             <span className="num tabular-nums text-text-mute">
               {r.marketCap == null ? (
                 <span className="markets-pending">No market cap</span>

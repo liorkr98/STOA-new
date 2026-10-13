@@ -84,8 +84,45 @@ gain 7.3, on loss 4.7.
   a report body is drawn as the pull quote: display type behind a 4px coral bar
   (`.stoa-prose blockquote`). Like the ring it is drawn, never a word or a fill, and it marks
   the one line the analyst chose as the one that matters. Nowhere else.
-- **Green and red carry direction (long / short) and price movement, nothing else.** Not
-  success, not error, not "saved", not approve/reject, not a chart series that is not a price.
+- **Green and red carry price movement, nothing else.** Not success, not error, not "saved",
+  not approve/reject, not a chart series that is not a price. A stance (long / short) is drawn
+  in ink with its ▲ / ▼ since 2026-10-13 (see the Interest Cart animals below): every stance
+  sits beside a ticker, every ticker now carries the cart's bull and bear, and one green must
+  mean one thing per screen.
+- **The Interest Cart animals (decided by Bar, 2026-10-13).** The bull and the bear a reader
+  taps beside a ticker, and the pair that marks the cart in the nav, are drawn in five fixed
+  colours from the feature one-pager. They are not tokens, they are identical in light and
+  dark, and they live in one file (`src/components/interest-cart/animals.tsx`) that every
+  surface imports. Never redrawn, never swapped for emoji, never used for a word, a fill
+  behind words, a chart or anything that is not one of the two animals.
+
+  | Colour | Where |
+  |---|---|
+  | `#4CC38A` | the bull |
+  | `#3E976E` | the bull's muzzle |
+  | `#FF6B6B` | the bear |
+  | `#C45557` | the bear's muzzle |
+  | `#141719` | the bear's eyes and nose |
+
+  In the one-pager the muzzle, eyes and nose were holes onto a dark card, which breaks on a
+  white panel, so here they are the solid colours that card showed. Sizes: 18px in a cart row
+  and a Markets row, 16px over video, never under 14px; the nav mark is the bull at 20px with
+  the bear at 18px overlapping it, the bear ringed in paper.
+
+  **The collision, handled.** The animals are green and red for a third meaning (what held the
+  reader's attention, not a direction or a price move). So wherever a stance and a cart tap
+  can both appear, which is every place a ticker carries a stance, the animals are the only
+  coloured animals on screen and the stance stays a plain ink chip. Price moves keep their
+  `--up` / `--down` words; the cart's own "Price this week" line uses them small and quiet.
+
+  **Measured, not waived.** On dark surfaces both animals clear 3:1 (bull 7.3 to 8.5, bear 5.8
+  to 6.8). On light surfaces they do not: the bull is 2.0 to 2.2:1 and the bear 2.5 to 2.8:1
+  against paper, card and well, under the 3:1 WCAG asks of a graphic. They are kept because
+  the artwork is fixed, and because no control relies on them alone: the two silhouettes
+  differ in shape, every button carries a spoken label ("Add a bull tap for NVDA") and a
+  tooltip, and a side already tapped sits on a well with its count. `test:contrast` measures
+  these figures and fails if the colours, the list here, or the labels drift.
+
 - **THE ERROR EXCEPTION (decided by Bar, 2026-09-27).** A failed payment or a rejected form must
   not read as neutral, so errors are red: `--error`, a crimson (`#B0164F` light, `#FF7FA8`
   dark) deliberately held away from the price red (`--loss-text` `#C92A31`), so an error can
@@ -167,8 +204,10 @@ Surfaces inherit these rather than rolling their own. All in `src/components/ui/
 - **Button** (`button.tsx`): `ink` (default), `ghost` (outlined), `coral` (the action),
   `plain` (text), `subtle` (grey well). Sizes `sm` 32, `md` 40, `lg` 48. `buttonClass()` gives
   the same recipe to a `Link` or a raw element that cannot be a `<Button>`.
-- **Chip** (`chip.tsx`): `TickerChip` (mono), `StanceChip` (long / short in the gain or loss text
-  tone with a ▲ / ▼, hold quiet), `ThemeChip`, and the quiet `Chip`.
+- **Chip** (`chip.tsx`): `TickerChip` (mono), `StanceChip` (long / short in ink with a ▲ / ▼, never
+  green or red; hold quiet), `ThemeChip`, and the quiet `Chip`. The Interest Cart's
+  `CartTap` (`src/components/interest-cart/cart-tap.tsx`) sits beside the clickable thing
+  that shows a ticker, never inside it.
 - **Card** (`card.tsx`): white on paper, hairline, panel radius. `as` renders a section, li or
   fieldset; `cardClass` for elements that cannot be a Card.
 - **Avatar** (`avatar.tsx`): a circle, named sizes 22 / 28 / 40 / 56 / 88 or an exact pixel size.
@@ -218,12 +257,14 @@ These hold literal copies of the tokens and must be updated by hand when a token
 | Chart fallbacks | `price-chart.tsx`, `card-chart.tsx` (used only if a token fails to resolve) |
 | Email templates | `docs/email-templates/*.html` (pasted into Supabase by hand) |
 | Paper kept light in dark mode (the Feed's stance card) | `.keep-paper` in `src/app/globals.css` |
+| The Interest Cart animals (fixed colours, by design not tokens) | `src/components/interest-cart/animals.tsx` |
 
 ## 9. Invariants
 
 1. No base colour is invented per surface. New meanings get a meaning token that resolves to an
    existing value.
-2. Coral only on the live or actionable thing; green and red only on direction and price.
+2. Coral only on the live or actionable thing; green and red only on price movement, and the
+   Interest Cart animals as their one named exception. Stances are ink.
 3. Coloured words use `-text` tones; fills carry black ink; every word clears 4.5:1. Errors use
    the crimson `--error`, never the price red.
 4. Six sizes (reading only in `.stoa-prose`), three faces, Heebo for Hebrew, mono for tickers only, no uppercase labels.

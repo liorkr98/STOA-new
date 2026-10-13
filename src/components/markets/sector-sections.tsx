@@ -9,6 +9,7 @@ import { accessLabel } from "@/lib/today/format";
 import { price } from "@/lib/format";
 import type { SectorAnalyst, SectorName, SectorPayload } from "@/lib/markets/build-sector";
 import { TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 export function SectorHeader({ payload }: { payload: SectorPayload }) {
   return (
@@ -64,6 +65,7 @@ export function SectorNames({ names }: { names: SectorName[] }) {
               <TickerChip ticker={n.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{n.company}</span>
             </Link>
+            <CartTap ticker={n.symbol} />
             <span className="num tabular-nums text-text">
               {n.price == null ? <span className="markets-pending">No price</span> : price(n.price)}
             </span>

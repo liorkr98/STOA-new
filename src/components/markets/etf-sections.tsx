@@ -5,6 +5,7 @@ import { FollowTicker } from "@/components/markets/follow-control";
 import { compact, companyName, price } from "@/lib/format";
 import type { EtfHolding, EtfSnapshot, SectorWeight } from "@/lib/markets/build-etf";
 import { TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 function Auto() {
   return <span className="auto-tag">Auto</span>;
@@ -40,17 +41,20 @@ export function EtfHeader({ etf }: { etf: EtfSnapshot }) {
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <h1 className="stock-name">{companyName(etf.name)}</h1>
-          <p className="stock-sub">
-            {etf.symbol}
-            {etf.exchange ? (
-              <>
-                <span aria-hidden> · </span>
-                {etf.exchange}
-              </>
-            ) : null}
-            <span aria-hidden> · </span>
-            ETF
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 [&>.stock-sub]:mt-0">
+            <p className="stock-sub">
+              {etf.symbol}
+              {etf.exchange ? (
+                <>
+                  <span aria-hidden> · </span>
+                  {etf.exchange}
+                </>
+              ) : null}
+              <span aria-hidden> · </span>
+              ETF
+            </p>
+            <CartTap ticker={etf.symbol} />
+          </div>
         </div>
 
         <div className="flex items-end gap-4">
@@ -106,6 +110,7 @@ export function EtfHoldings({
               <TickerChip ticker={h.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{h.company}</span>
             </Link>
+            <CartTap ticker={h.symbol} />
             <span className="num text-ticker font-semibold tabular-nums text-text">
               {h.weightPct.toFixed(2)}%
             </span>

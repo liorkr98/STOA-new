@@ -8,6 +8,7 @@ import { compact, companyName, price } from "@/lib/format";
 import type { TodayItem } from "@/lib/today/types";
 import type { TickerRow } from "@/lib/db/tickers";
 import { TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /** Provenance mark: an automatically sourced market fact, not an estimate. */
 function Auto() {
@@ -54,15 +55,18 @@ export function StockHeader({
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <h1 className="stock-name">{companyName(name)}</h1>
-          <p className="stock-sub">
-            {ticker}
-            {exchange ? (
-              <>
-                <span aria-hidden> · </span>
-                {exchange}
-              </>
-            ) : null}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 [&>.stock-sub]:mt-0">
+            <p className="stock-sub">
+              {ticker}
+              {exchange ? (
+                <>
+                  <span aria-hidden> · </span>
+                  {exchange}
+                </>
+              ) : null}
+            </p>
+            <CartTap ticker={ticker} />
+          </div>
         </div>
 
         <div className="flex items-end gap-4">
@@ -172,8 +176,15 @@ export function StockPeers({
     <Band title="Peers" note="The rest of the sector.">
       <div className="stock-peers">
         {peers.map((p) => (
-          <Link key={p.symbol} href={`/markets/${p.symbol}`} className="stock-peer focus-ring">
-            <TickerChip ticker={p.symbol} />
+          <div key={p.symbol} className="stock-peer relative">
+            {/* The tile's link is stretched over it; the cart taps sit beside
+                it, raised above, never inside a link. */}
+            <div className="flex items-center justify-between gap-2">
+              <Link href={`/markets/${p.symbol}`} className="focus-ring rounded-chip after:absolute after:inset-0">
+                <TickerChip ticker={p.symbol} />
+              </Link>
+              <CartTap ticker={p.symbol} className="relative z-10" />
+            </div>
             <p className="mt-2 truncate text-ticker text-text">{p.name}</p>
             <div className="mt-1 flex items-baseline justify-between gap-2">
               <span className="num text-ticker tabular-nums text-text">
@@ -188,7 +199,7 @@ export function StockPeers({
             <p className="markets-row-meta num mt-2">
               {coverage[p.symbol] ?? 0} publications
             </p>
-          </Link>
+          </div>
         ))}
       </div>
     </Band>

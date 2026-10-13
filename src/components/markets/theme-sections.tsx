@@ -10,6 +10,7 @@ import { price } from "@/lib/format";
 import { macroLevelLabel } from "@/lib/markets/instruments";
 import type { ThemePayload } from "@/lib/markets/build-theme";
 import { TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * The theme page, structured like the sector page: constituent names with
@@ -68,6 +69,7 @@ export function ThemeNames({ payload }: { payload: ThemePayload }) {
               <TickerChip ticker={n.symbol} />
               <span className="min-w-0 flex-1 truncate text-body text-text">{n.company}</span>
             </Link>
+            <CartTap ticker={n.symbol} />
             <span className="num text-body text-text">
               {n.price == null ? (
                 <span className="markets-pending">&ndash;&ndash;</span>

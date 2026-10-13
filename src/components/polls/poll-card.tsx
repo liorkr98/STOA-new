@@ -7,6 +7,7 @@ import { seriesColor } from "@/lib/design/chart-theme";
 import { votePollAction } from "@/app/actions/polls";
 import type { Poll } from "@/lib/db/polls";
 import { TickerChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * PollCard (H3). A surface card -- NEVER .ledger-card -- with horizontal result
@@ -61,6 +62,7 @@ export function PollCard({ poll, isAuthed }: { poll: Poll; isAuthed: boolean }) 
         <BarChart3 size={14} className="text-text-mute" />
         <span className="t-meta">{KIND_LABEL[poll.kind]}</span>
         {poll.ticker && <TickerChip ticker={poll.ticker} />}
+        {poll.ticker && <CartTap ticker={poll.ticker} />}
         {poll.closes_at && (
           <span className="t-meta ml-auto flex items-center gap-1 text-ticker">
             <Clock size={11} />

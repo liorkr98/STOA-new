@@ -197,3 +197,68 @@ test("retired tokens stay retired", () => {
   );
   assert.deepEqual(hits, [], `retired tokens:\n${hits.join("\n")}`);
 });
+
+/* ---------------------------------------------- the Interest Cart animals --- */
+
+const ANIMALS_FILE = "src/components/interest-cart/animals.tsx";
+const animalsSource = readFileSync(ANIMALS_FILE, "utf8");
+const animalColours = [
+  ...(animalsSource.match(/CART_ANIMAL_COLOURS = \[([^\]]+)\]/)?.[1].matchAll(/"(#[0-9a-f]{6})"/gi) ?? []),
+].map((m) => m[1].toLowerCase());
+
+test("the Interest Cart animals are the recorded exception, colour for colour", () => {
+  const law = readFileSync("docs/DESIGN_LANGUAGE.md", "utf8");
+  const start = law.indexOf("**The Interest Cart animals");
+  assert.ok(start >= 0, "DESIGN_LANGUAGE.md must record the Interest Cart animals exception");
+  const section = law.slice(start, law.indexOf("**THE ERROR EXCEPTION", start));
+  const recorded = [...section.matchAll(/^\s*\| `(#[0-9A-Fa-f]{6})` \|/gm)].map((m) => m[1].toLowerCase());
+  assert.equal(animalColours.length, 5, "animals.tsx must list its five colours in CART_ANIMAL_COLOURS");
+  assert.deepEqual([...recorded].sort(), [...animalColours].sort(), "the doc and animals.tsx disagree");
+  const drawn = new Set([...animalsSource.matchAll(/(?:fill|stroke)="(#[0-9a-f]{6})"/gi)].map((m) => m[1].toLowerCase()));
+  assert.deepEqual([...drawn].sort(), [...animalColours].sort(), "animals.tsx draws a colour it does not declare");
+});
+
+test("the animal colours appear nowhere but the animals file", () => {
+  const pattern = new RegExp(animalColours.join("|"), "i");
+  // The one other file is the analyst's own diagram themes (a third-party
+  // "neon" palette that happens to contain #ff6b6b): diagram ink chosen by
+  // the author, not Stoa chrome, so it is not a second drawing of the bear.
+  const hits = offenders(pattern, (f) => f === ANIMALS_FILE || f === "src/lib/diagram/colors.ts");
+  assert.deepEqual(hits, [], `cart animal colours outside ${ANIMALS_FILE}:\n${hits.join("\n")}`);
+});
+
+test("the animals' measured contrast matches what the law records", () => {
+  // Dark: both clear the 3:1 asked of a graphic. Light: they do not, and the
+  // doc says so with these figures. If the colours or surfaces move, this
+  // fails and the doc has to be measured again.
+  const [bull, , bear] = animalColours;
+  for (const surface of SURFACES) {
+    const onDark = resolve(dark, surface);
+    assert.ok(ratio(bull, onDark) >= 3 && ratio(bear, onDark) >= 3, `an animal under 3:1 on dark ${surface}`);
+    const onLight = resolve(light, surface);
+    const [b, r] = [ratio(bull, onLight), ratio(bear, onLight)];
+    assert.ok(b >= 1.95 && b <= 2.25, `bull on light ${surface} is ${b.toFixed(2)}:1, the doc says 2.0 to 2.2`);
+    assert.ok(r >= 2.45 && r <= 2.8, `bear on light ${surface} is ${r.toFixed(2)}:1, the doc says 2.5 to 2.8`);
+  }
+});
+
+test("no cart control relies on the animals alone: every button is labelled", () => {
+  const tap = readFileSync("src/components/interest-cart/cart-tap.tsx", "utf8");
+  assert.match(tap, /aria-label=\{label\}/, "each cart tap button needs its spoken label");
+  assert.match(tap, /Add a \$\{side\} tap for \$\{ticker\}/, "the label names the side and the ticker");
+  assert.match(animalsSource, /aria-hidden/, "the artwork itself is decoration under the label");
+});
+
+test("a stance is plain ink, so the cart's animals are the only green and red beside a ticker", () => {
+  const hits = offenders(/text-(gain|loss)\b|var\(--(up|down|gain|loss|gain-text|loss-text)\)/, (f) =>
+    !["src/components/ui/chip.tsx", "src/components/feed/stance-card.tsx"].includes(f),
+  );
+  assert.deepEqual(hits, [], `a stance drawn in a price colour:\n${hits.join("\n")}`);
+});
+
+for (const [themeName, theme] of [["light", light], ["dark", dark]] as const) {
+  test(`${themeName}: the cart's count badge (paper on ink) clears 4.5:1`, () => {
+    const r = ratio(resolve(theme, "--paper"), resolve(theme, "--ink"));
+    assert.ok(r >= 4.5, `--paper on --ink is ${r.toFixed(2)}:1`);
+  });
+}

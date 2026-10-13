@@ -10,6 +10,7 @@ import { EditedFlag } from "./report/edited-flag";
 import { Chip, StanceChip, TickerChip } from "@/components/ui/chip";
 import { Card } from "@/components/ui/card";
 import { labelCase } from "@/lib/design/label";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 export function ReportCard({
   report,
@@ -62,6 +63,7 @@ export function ReportCard({
           <Chip>{labelCase(publicTypeLabel(report.type))}</Chip>
           {report.ticker ? <TickerChip ticker={report.ticker} /> : null}
           {report.ticker && report.stance ? <StanceChip direction={report.stance} /> : null}
+          {report.ticker ? <CartTap ticker={report.ticker} /> : null}
         </div>
       </div>
 
