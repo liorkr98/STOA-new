@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { buildExtensions } from "@/lib/editor/tiptap/extensions";
 import { TickerHoverLayer } from "@/components/report/ticker-hover-layer";
+import { ReportInlineCartTaps } from "@/components/report/report-inline-cart-taps";
 import { TiptapClaimHighlighter } from "@/components/report/tiptap-claim-highlighter";
 import type { FactClaim } from "@/lib/ai/fact-check";
 import type { FeedCard } from "@/lib/feed/types";
@@ -74,6 +75,7 @@ export function TiptapReportRenderer({
         <EditorContent editor={editor} />
       </ReaderCardsContext.Provider>
       <TickerHoverLayer />
+      <ReportInlineCartTaps editor={editor} />
       {claims.length > 0 && (
         <TiptapClaimHighlighter
           claims={claims}

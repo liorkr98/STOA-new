@@ -11,6 +11,7 @@ import { Sparkline } from "@/components/charts/sparkline";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DensityRoot } from "@/components/layout/density-root";
 import type { ScreenerRow } from "@/app/api/market/screener/route";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * Watchlist (Part G) on the shared DataTable: price, day change, 30d trend,
@@ -97,10 +98,13 @@ export default function WatchlistPage() {
       key: "ticker",
       header: "Ticker",
       render: (r) => (
-        <Link href={`/markets/${r.ticker}`} className="hover:underline">
-          <span className="num font-semibold">{r.ticker}</span>
-          {r.name && <span className="t-meta ml-2 text-ticker">{r.name}</span>}
-        </Link>
+        <>
+          <Link href={`/markets/${r.ticker}`} className="hover:underline">
+            <span className="num font-semibold">{r.ticker}</span>
+            {r.name && <span className="t-meta ml-2 text-ticker">{r.name}</span>}
+          </Link>
+          <CartTap ticker={r.ticker} className="ml-2 align-middle" />
+        </>
       ),
     },
     {

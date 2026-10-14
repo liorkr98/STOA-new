@@ -14,6 +14,8 @@ import { prefetchVideoStart, warmVideoConnections } from "@/lib/video/prefetch";
 import { cn } from "@/lib/design/cn";
 import type { FeedComment } from "@/lib/feed/types";
 import { StanceChip } from "@/components/ui/chip";
+import { CartTap } from "@/components/interest-cart/cart-tap";
+import { useCartEnabled } from "@/components/interest-cart/gate";
 
 const FeedSurface = dynamic(
   () => import("@/components/feed/feed-surface").then((m) => ({ default: m.FeedSurface })),
@@ -53,6 +55,7 @@ function Tile({
   onWarm: () => void;
 }) {
   const p = tile.pub;
+  const cartOn = useCartEnabled();
   const spotlight = (placed.six?.size ?? placed.three?.size) === "spotlight";
   const style = {
     "--c6": placed.six ? `${placed.six.col + 1} / span ${placed.six.w}` : "auto",
@@ -62,16 +65,22 @@ function Tile({
   } as React.CSSProperties;
   const dur = `${Math.floor(p.durationSeconds / 60)}:${String(Math.round(p.durationSeconds % 60)).padStart(2, "0")}`;
 
-  return (
+  // While the Interest Cart is on, a tile with a ticker is wrapped so the
+  // bull and bear can sit beside the tile's button, never inside it; the
+  // wrapper takes the tile's place in the grid. Off, the tile is unchanged.
+  const wrapped = cartOn && Boolean(p.ticker);
+  const placement = cn(!placed.three && "hidden md:block", !placed.six && "md:hidden");
+
+  const tileButton = (
     <button
       type="button"
       onClick={onOpen}
       onPointerDown={onWarm}
-      style={style}
+      style={wrapped ? undefined : style}
       className={cn(
-        "explore-tile group relative overflow-hidden bg-[var(--ink)] text-left text-white focus-ring",
-        !placed.three && "hidden md:block",
-        !placed.six && "md:hidden",
+        !wrapped && "explore-tile",
+        "group relative overflow-hidden bg-[var(--ink)] text-left text-white focus-ring",
+        wrapped ? "block h-full w-full" : placement,
       )}
       aria-label={`${p.headline} by ${p.analyst.displayName}`}
     >
@@ -109,6 +118,17 @@ function Tile({
         <span className="num flex-none text-ticker text-white/85">{dur}</span>
       </div>
     </button>
+  );
+
+  if (!wrapped || !p.ticker) return tileButton;
+  return (
+    <div style={style} className={cn("explore-tile relative", placement)}>
+      {tileButton}
+      {/* On white so the animals sit on an approved background (DESIGN_LANGUAGE 1.3). */}
+      <div className="keep-paper absolute left-2 top-9 z-10 rounded-chip bg-surface shadow-card">
+        <CartTap ticker={p.ticker} size={16} />
+      </div>
+    </div>
   );
 }
 

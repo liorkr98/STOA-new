@@ -4,6 +4,7 @@ import { FadeIn } from "@/components/motion/fade-in";
 import type { DispatchStory } from "@/lib/dispatch/types";
 import { cn } from "@/lib/design/cn";
 import { Card } from "@/components/ui/card";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 function IssueCard({
   story,
@@ -26,6 +27,7 @@ function IssueCard({
                 {ticker}
               </span>
             ) : null}
+            {ticker ? <CartTap ticker={ticker} /> : null}
           </div>
           {meta ? (
             <span className="num text-ticker text-text-mute">{meta}</span>

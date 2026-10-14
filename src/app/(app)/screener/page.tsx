@@ -8,6 +8,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DensityRoot } from "@/components/layout/density-root";
 import type { ScreenerRow } from "@/app/api/market/screener/route";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * Screener (Part G): filter the covered universe by fundamentals on the shared
@@ -60,9 +61,12 @@ export default function ScreenerPage() {
       key: "ticker",
       header: "Ticker",
       render: (r) => (
-        <Link href={`/markets/${r.ticker}`} className="num font-semibold hover:underline">
-          {r.ticker}
-        </Link>
+        <>
+          <Link href={`/markets/${r.ticker}`} className="num font-semibold hover:underline">
+            {r.ticker}
+          </Link>
+          <CartTap ticker={r.ticker} className="ml-2 align-middle" />
+        </>
       ),
     },
     { key: "name", header: "Company" },

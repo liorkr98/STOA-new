@@ -9,6 +9,7 @@ import { usePortfolio, type Holding } from "@/lib/portfolio";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClass } from "@/components/ui/button";
+import { CartTap } from "@/components/interest-cart/cart-tap";
 
 /**
  * Investor portfolio (Part G): holdings with cost basis, live market value,
@@ -70,9 +71,12 @@ export default function PortfolioPage() {
       key: "ticker",
       header: "Ticker",
       render: (r) => (
-        <Link href={`/markets/${r.ticker}`} className="num font-semibold hover:underline">
-          {r.ticker}
-        </Link>
+        <>
+          <Link href={`/markets/${r.ticker}`} className="num font-semibold hover:underline">
+            {r.ticker}
+          </Link>
+          <CartTap ticker={r.ticker} className="ml-2 align-middle" />
+        </>
       ),
     },
     { key: "shares", header: "Shares", numeric: true },

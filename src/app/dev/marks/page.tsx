@@ -3,7 +3,9 @@ import type { JSONContent } from "@tiptap/core";
 
 /**
  * Dev-only: verifies the Phase 1.2/1.3 marks parse + render in the read
- * renderer -- highlight tints, "mark as opinion", and RTL block direction.
+ * renderer -- highlight tints, "mark as opinion", RTL block direction, and
+ * $TICKER mentions (with the Interest Cart on, each carries the reader's
+ * bull and bear inline, report-inline-cart-taps.tsx).
  */
 const doc: JSONContent = {
   type: "doc",
@@ -27,6 +29,17 @@ const doc: JSONContent = {
         { type: "text", text: ", and " },
         { type: "text", marks: [{ type: "opinion" }], text: "this is my opinion" },
         { type: "text", text: "." },
+      ],
+    },
+    {
+      type: "paragraph",
+      attrs: { dir: "auto" },
+      content: [
+        { type: "text", text: "Mentions: " },
+        { type: "text", marks: [{ type: "tickerMark", attrs: { ticker: "NVDA" } }], text: "$NVDA" },
+        { type: "text", text: " is still the cleanest way to own the build-out, while " },
+        { type: "text", marks: [{ type: "tickerMark", attrs: { ticker: "AMD" } }], text: "$AMD" },
+        { type: "text", text: " needs another quarter to prove its data-centre ramp. This sentence runs long on purpose so the second mention wraps onto a new line on a phone." },
       ],
     },
     {
