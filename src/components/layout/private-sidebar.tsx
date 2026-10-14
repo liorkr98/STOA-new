@@ -9,7 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/app/actions/auth";
 import type { Profile } from "@/lib/types";
-import { useInterestCart } from "@/components/interest-cart/cart-provider";
+import { useInterestCart } from "@/components/interest-cart/gate";
 
 /** A section page, or (Cart) the overlay that opens over the current page. */
 type NavItem = { label: string; href: string; opensCart?: true };
@@ -77,7 +77,7 @@ function activeHref(pathname: string, isAnalyst: boolean) {
 
 export function PrivateSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname();
-  const { open: openCart } = useInterestCart();
+  const cart = useInterestCart();
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
   const active = activeHref(pathname, isAnalyst);
   const groups = visibleGroups(isAnalyst);
@@ -109,11 +109,13 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
             <span className="t-meta px-3 pb-1">{g.label}</span>
             {g.items.map((it) => {
               if (it.opensCart) {
+                // Only while the Interest Cart is on for this reader.
+                if (!cart) return null;
                 return (
                   <button
                     key="cart"
                     type="button"
-                    onClick={openCart}
+                    onClick={cart.open}
                     aria-haspopup="dialog"
                     className="focus-ring rounded-button px-3 py-1.5 text-left text-body text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
                   >
@@ -167,7 +169,7 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
 
 export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const pathname = usePathname();
-  const { open: openCart } = useInterestCart();
+  const cart = useInterestCart();
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
   const active = activeHref(pathname, isAnalyst);
   const groups = visibleGroups(isAnalyst);
@@ -219,18 +221,20 @@ export function PrivateMobileNav({ profile }: { profile: Profile }) {
                 >
                   {g.items.map((it) =>
                     it.opensCart ? (
+                      cart ? (
                       <button
                         key="cart"
                         type="button"
                         aria-haspopup="dialog"
                         onClick={() => {
                           setOpen(null);
-                          openCart();
+                          cart.open();
                         }}
                         className="block w-full rounded-button px-2.5 py-2 text-left text-body text-text-mute transition-colors hover:bg-surface-2 hover:text-text"
                       >
                         {it.label}
                       </button>
+                      ) : null
                     ) : (
                     <Link
                       key={it.href}

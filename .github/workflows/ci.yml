@@ -39,8 +39,18 @@ jobs:
       - name: Ranking tests
         run: npm run test:ranking
 
-      - name: Back navigation tests
+      # The Interest Cart ships dark behind FEATURE_INTEREST_CART. Both states
+      # run here until launch, when the flag and the off-state suite go.
+      - name: Back navigation tests (Interest Cart on)
         run: npm run test:nav
+        env:
+          FEATURE_INTEREST_CART: "on"
+
+      - name: Interest Cart tests (flag on)
+        run: npm run test:cart
+
+      - name: Interest Cart off-state tests (flag off)
+        run: npm run test:cart-off
 
       - name: RLS tests
         # Skips cleanly when Supabase secrets are absent (see tests/rls).
@@ -58,3 +68,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
           NEXT_PUBLIC_SITE_URL: https://stoa.app
+
+      - name: Interest Cart stays out of eager page code
+        run: npm run check:cart-bundle

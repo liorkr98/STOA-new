@@ -1,38 +1,20 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import "@/components/interest-cart/interest-cart.css";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { createInterestCart, summariseWeek, type InterestCart } from "@/lib/interest-cart/cart";
 import { CART_CHANGED_EVENT, cartStore } from "@/lib/interest-cart/store";
 import { clearHeldTap, holdTap, readHeldTap } from "@/lib/interest-cart/held-tap";
-import type { CartDirection, CartRow, CartWeek } from "@/lib/interest-cart/types";
+import type { CartDirection, CartWeek } from "@/lib/interest-cart/types";
+import { publishCartRuntime, type CartRuntime } from "@/components/interest-cart/gate";
+import { CartPanel } from "@/components/interest-cart/cart-panel";
 import { weekKey, weekStartOf } from "@/lib/interest-cart/week";
 
 /** Pages a held tap must not replay on: the person is still signing up. */
 const AUTH_FLOW = ["/sign-in", "/sign-up", "/auth", "/onboarding", "/consent-required", "/forgot-password", "/reset-password"];
-
-type CartContextValue = {
-  /** Null while signed out (or before the session is read). */
-  cart: InterestCart | null;
-  signedIn: boolean;
-  /** This week, for the nav badge and the tap controls. */
-  thisWeek: CartWeek | null;
-  rowFor: (ticker: string) => CartRow | null;
-  tap: (ticker: string, direction: CartDirection) => void;
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-};
-
-const CartContext = createContext<CartContextValue | null>(null);
-
-export function useInterestCart(): CartContextValue {
-  const value = useContext(CartContext);
-  if (!value) throw new Error("useInterestCart needs <InterestCartProvider>");
-  return value;
-}
 
 function added(cart: InterestCart, ticker: string) {
   // One toast per ticker, so a second tap replaces the first and Undo always
@@ -51,7 +33,12 @@ function bump(week: CartWeek, ticker: string, direction: CartDirection): CartWee
   return { ...week, rows, tickers: rows.length, taps: week.taps + 1 };
 }
 
-export function InterestCartProvider({ children }: { children: ReactNode }) {
+/**
+ * The running cart: session, this week's counts, the held-tap replay, taps
+ * and the panel. Loaded only when the gate says the cart exists for this
+ * reader (gate.tsx); it publishes its state there for the controls to read.
+ */
+export function CartRuntimeHost() {
   const router = useRouter();
   const pathname = usePathname();
   const [userId, setUserId] = useState<string | null>(null);
@@ -149,10 +136,15 @@ export function InterestCartProvider({ children }: { children: ReactNode }) {
   const open = useCallback(() => setOpen(true), []);
   const close = useCallback(() => setOpen(false), []);
 
-  const value = useMemo<CartContextValue>(
+  const value = useMemo<CartRuntime>(
     () => ({ cart, signedIn: Boolean(userId), thisWeek: cart ? thisWeek : null, rowFor, tap, isOpen, open, close }),
     [cart, userId, thisWeek, rowFor, tap, isOpen, open, close],
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  useEffect(() => {
+    publishCartRuntime(value);
+  }, [value]);
+  useEffect(() => () => publishCartRuntime(null), []);
+
+  return <CartPanel />;
 }

@@ -166,10 +166,10 @@ test("no uppercase or letterspaced labels", () => {
 
 test("mono only on tickers", () => {
   const hits = offenders(/\bfont-mono\b|var\(--font-mono\)/, (f) =>
-    ["src/components/ui/chip.tsx", "src/app/globals.css"].includes(f),
+    ["src/components/ui/chip.tsx", "src/app/globals.css", CART_CSS_FILE].includes(f),
   );
   assert.deepEqual(hits, [], `font-mono outside the ticker chip:\n${hits.join("\n")}`);
-  const cssMono = css
+  const cssMono = (css + "\n" + cartCss)
     .split(/\n(?=[^\s].*\{)/)
     .filter((rule) => /font-family:\s*var\(--font-mono\)/.test(rule))
     .map((rule) => rule.split("{")[0].trim());
@@ -201,6 +201,9 @@ test("retired tokens stay retired", () => {
 /* ---------------------------------------------- the Interest Cart animals --- */
 
 const ANIMALS_FILE = "src/components/interest-cart/animals.tsx";
+// The cart's own stylesheet, loaded only with the cart (FEATURE_INTEREST_CART).
+const CART_CSS_FILE = "src/components/interest-cart/interest-cart.css";
+const cartCss = readFileSync(CART_CSS_FILE, "utf8");
 const animalsSource = readFileSync(ANIMALS_FILE, "utf8");
 const constBody = animalsSource.slice(animalsSource.indexOf("CART_ANIMAL_COLOURS = {"), animalsSource.indexOf("} as const;"));
 const declared = (key: string) => {
@@ -215,7 +218,7 @@ const animalColours = [bullBody.light, bullBody.dark, bearBody.light, bearBody.d
 
 function cartToken(selector: string, name: string): string {
   const re = new RegExp(`(^|\\n)${selector.replace(/\./g, "\\.")} \\{[^}]*?${name}:\\s*(#[0-9a-f]{6});`, "i");
-  const m = css.match(re);
+  const m = cartCss.match(re);
   assert.ok(m, `${name} is not set in ${selector}`);
   return m[2].toLowerCase();
 }
@@ -252,26 +255,34 @@ test("the body colours switch by theme, and the paper stance card keeps the ligh
 
 test("the animal colours appear nowhere but the animals file and their two tokens", () => {
   const pattern = new RegExp(animalColours.join("|"), "i");
-  // globals.css holds only --cart-bull / --cart-bear (checked above). The one
+  // The cart's stylesheet holds only --cart-bull / --cart-bear (checked above). The one
   // other file is the analyst's own diagram themes (a third-party "neon"
   // palette that happens to contain #ff6b6b): diagram ink chosen by the
   // author, not Stoa chrome, so it is not a second drawing of the bear.
   const hits = offenders(pattern, (f) => f === ANIMALS_FILE || f === "src/lib/diagram/colors.ts").filter(
-    (h) => !/^src\/app\/globals\.css:\d+\s+--cart-(bull|bear):/.test(h),
+    (h) => !/^src\/components\/interest-cart\/interest-cart\.css:\d+\s+--cart-(bull|bear):/.test(h),
   );
   assert.deepEqual(hits, [], `cart animal colours outside ${ANIMALS_FILE}:\n${hits.join("\n")}`);
 });
 
-test("each animal clears 3:1 on the page and the card, in both themes", () => {
+test("each animal clears 3:1 on its three approved backgrounds, in both themes", () => {
+  const law = readFileSync("docs/DESIGN_LANGUAGE.md", "utf8");
+  const approved = law.slice(law.indexOf("**Approved backgrounds, and only these.**"), law.indexOf("**Measured**"));
+  const listed = [...approved.matchAll(/`(#[0-9A-Fa-f]{6})`/g)].map((m) => m[1].toLowerCase());
+  const lightBg = SURFACES.map((t) => resolve(light, t));
+  const darkBg = SURFACES.map((t) => resolve(dark, t));
+  for (const bg of [...lightBg, ...darkBg]) {
+    assert.ok(listed.includes(bg), `the doc's approved backgrounds must list ${bg}`);
+  }
   for (const [name, body] of [["bull", bullBody], ["bear", bearBody]] as const) {
-    for (const surface of ["--paper", "--surface"]) {
-      const l = ratio(body.light, resolve(light, surface));
-      assert.ok(l >= 3, `${name} on light ${surface} is ${l.toFixed(2)}:1`);
-    }
-    for (const surface of SURFACES) {
-      const d = ratio(body.dark, resolve(dark, surface));
-      assert.ok(d >= 3, `${name} on dark ${surface} is ${d.toFixed(2)}:1`);
-    }
+    lightBg.forEach((bg, i) => {
+      const r = ratio(body.light, bg);
+      assert.ok(r >= 3, `${name} on light ${SURFACES[i]} (${bg}) is ${r.toFixed(2)}:1`);
+    });
+    darkBg.forEach((bg, i) => {
+      const r = ratio(body.dark, bg);
+      assert.ok(r >= 3, `${name} on dark ${SURFACES[i]} (${bg}) is ${r.toFixed(2)}:1`);
+    });
   }
   const [bullMuzzle, bearMuzzle, features] = fixedParts;
   assert.ok(ratio(bullMuzzle, resolve(light, "--paper")) >= 3, "bull muzzle on paper");
@@ -279,26 +290,32 @@ test("each animal clears 3:1 on the page and the card, in both themes", () => {
   assert.ok(ratio(features, bearBody.light) >= 3 && ratio(features, bearBody.dark) >= 3, "the bear's eyes on its face");
 });
 
-test("the light well is the one recorded gap (DESIGN_LANGUAGE 1.3, open)", () => {
-  // The quiet fill behind a tapped side is the well, where the light bodies
-  // measure 2.89 / 2.90. The doc says so; this fails the day it is fixed, so
-  // the doc gets updated with it.
-  const well = resolve(light, "--surface-2");
-  assert.ok(ratio(bullBody.light, well) < 3 && ratio(bearBody.light, well) < 3);
-});
-
 test("no cart control relies on the animals alone: every button is labelled", () => {
-  const tap = readFileSync("src/components/interest-cart/cart-tap.tsx", "utf8");
+  const tap = readFileSync("src/components/interest-cart/cart-tap-impl.tsx", "utf8");
   assert.match(tap, /aria-label=\{label\}/, "each cart tap button needs its spoken label");
   assert.match(tap, /Add a \$\{side\} tap for \$\{ticker\}/, "the label names the side and the ticker");
   assert.match(animalsSource, /aria-hidden/, "the artwork itself is decoration under the label");
 });
 
-test("a stance is plain ink, so the cart's animals are the only green and red beside a ticker", () => {
-  const hits = offenders(/text-(gain|loss)\b|var\(--(up|down|gain|loss|gain-text|loss-text)\)/, (f) =>
-    !["src/components/ui/chip.tsx", "src/components/feed/stance-card.tsx"].includes(f),
-  );
-  assert.deepEqual(hits, [], `a stance drawn in a price colour:\n${hits.join("\n")}`);
+test("while the cart is on, direction is ink; while it is off, stances keep green and red", () => {
+  const block = (src: string, name: string) => {
+    const at = src.indexOf(`const ${name}`);
+    assert.ok(at >= 0, `missing ${name}`);
+    return src.slice(at, src.indexOf("}", at));
+  };
+  const chip = readFileSync("src/components/ui/stance-chip.tsx", "utf8");
+  assert.match(block(chip, "stanceStyle"), /text-gain[\s\S]*text-loss/, "off: the stance chip keeps gain and loss");
+  assert.doesNotMatch(block(chip, "stanceInk"), /gain|loss|--up|--down/, "on: the stance chip is ink");
+  const card = readFileSync("src/components/feed/stance-card.tsx", "utf8");
+  assert.match(block(card, "directionTone"), /text-gain[\s\S]*text-loss/, "off: the Feed's direction word keeps gain and loss");
+  assert.doesNotMatch(block(card, "directionInk"), /gain|loss/, "on: the Feed's direction word is ink");
+  const vote = readFileSync("src/components/report/claim-vote-bar.tsx", "utf8");
+  const pairs = [...vote.matchAll(/cartOn \? "(var\(--[\w-]+\))" : "(var\(--[\w-]+\))"/g)];
+  assert.ok(pairs.length >= 4, "the vote bar's colours all switch with the cart");
+  for (const [, on, off] of pairs) {
+    assert.doesNotMatch(on, /--(up|down|gain|loss)/, `on: the vote bar uses ${on}`);
+    assert.match(off, /--(up|down)/, `off: the vote bar keeps ${off}`);
+  }
 });
 
 for (const [themeName, theme] of [["light", light], ["dark", dark]] as const) {

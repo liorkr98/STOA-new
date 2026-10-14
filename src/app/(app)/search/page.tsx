@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import { ReportCard } from "@/components/report-card";
@@ -6,6 +5,7 @@ import { AnalystCard } from "@/components/analyst-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchForm } from "@/components/search/search-form";
 import { searchAll } from "@/lib/db/search";
+import { SearchTickerCard } from "@/components/search/search-ticker-card";
 
 export const metadata: Metadata = { title: "Search" };
 
@@ -51,17 +51,7 @@ export default async function SearchPage({
               <h2 className="t-title mb-4">Markets</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {results.tickers.map((t) => (
-                  <Link
-                    key={t.ticker}
-                    href={`/markets/${t.ticker}`}
-                    className="rounded-panel border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
-                  >
-                    <div className="num font-semibold">{t.ticker}</div>
-                    <div className="t-meta">
-                      {t.name}
-                      {t.sector ? ` · ${t.sector}` : ""}
-                    </div>
-                  </Link>
+                  <SearchTickerCard key={t.ticker} ticker={t.ticker} name={t.name} sector={t.sector} />
                 ))}
               </div>
             </section>

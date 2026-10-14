@@ -41,20 +41,18 @@ export function EtfHeader({ etf }: { etf: EtfSnapshot }) {
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <h1 className="stock-name">{companyName(etf.name)}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 [&>.stock-sub]:mt-0">
-            <p className="stock-sub">
-              {etf.symbol}
-              {etf.exchange ? (
-                <>
-                  <span aria-hidden> · </span>
-                  {etf.exchange}
-                </>
-              ) : null}
-              <span aria-hidden> · </span>
-              ETF
-            </p>
-            <CartTap ticker={etf.symbol} />
-          </div>
+          <p className="stock-sub">
+            {etf.symbol}
+            {etf.exchange ? (
+              <>
+                <span aria-hidden> · </span>
+                {etf.exchange}
+              </>
+            ) : null}
+            <span aria-hidden> · </span>
+            ETF
+            <CartTap className="ml-3 align-middle" ticker={etf.symbol} />
+          </p>
         </div>
 
         <div className="flex items-end gap-4">

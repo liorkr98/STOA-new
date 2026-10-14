@@ -5,11 +5,16 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { getClaimVotesAction, voteClaimAction } from "@/app/actions/claim-votes";
 import type { ClaimVoteState } from "@/lib/db/claim-votes";
+import { useCartEnabled } from "@/components/interest-cart/gate";
 
 /**
  * ClaimVoteBar (H2): bull/bear tap + tally inside a claim popover. Loads
  * lazily when the popover opens; optimistic toggle. Community sentiment only,
  * labelled as such -- a tally never affects the creator's score.
+ *
+ * While the Interest Cart is on it is drawn in ink, glyphs kept: coloured
+ * animals mean a control you can press for your cart, and anything else that
+ * shows direction is ink (DESIGN_LANGUAGE 1.3).
  */
 
 const cache = new Map<string, ClaimVoteState | null>();
@@ -24,6 +29,9 @@ export function ClaimVoteBar({
   isAuthed: boolean;
 }) {
   const key = `${reportId}:${claimText}`;
+  const cartOn = useCartEnabled();
+  const bullTone = cartOn ? "var(--ink)" : "var(--up)";
+  const bearTone = cartOn ? "var(--text-mute)" : "var(--down)";
   const [state, setState] = useState<ClaimVoteState | null | undefined>(cache.get(key));
   const [pending, start] = useTransition();
 
@@ -74,7 +82,7 @@ export function ClaimVoteBar({
           active={state.mine === "bull"}
           disabled={!isAuthed || pending}
           onClick={() => tap("bull")}
-          color="var(--up)"
+          color={cartOn ? "var(--text)" : "var(--up)"}
           icon={<TrendingUp size={12} />}
           count={state.bull}
           label="Bull"
@@ -83,15 +91,15 @@ export function ClaimVoteBar({
           active={state.mine === "bear"}
           disabled={!isAuthed || pending}
           onClick={() => tap("bear")}
-          color="var(--down)"
+          color={cartOn ? "var(--text)" : "var(--down)"}
           icon={<TrendingDown size={12} />}
           count={state.bear}
           label="Bear"
         />
         {total > 0 && (
           <div className="ml-1 flex h-1.5 flex-1 overflow-hidden rounded-[2px] bg-surface-2">
-            <span style={{ width: `${(state.bull / total) * 100}%`, background: "var(--up)", opacity: 0.7 }} />
-            <span style={{ width: `${(state.bear / total) * 100}%`, background: "var(--down)", opacity: 0.7 }} />
+            <span style={{ width: `${(state.bull / total) * 100}%`, background: bullTone, opacity: 0.7 }} />
+            <span style={{ width: `${(state.bear / total) * 100}%`, background: bearTone, opacity: 0.7 }} />
           </div>
         )}
       </div>

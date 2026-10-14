@@ -9,17 +9,17 @@ import { cn } from "@/lib/design/cn";
  * docs/DESIGN_LANGUAGE.md 1.3). The muzzles and the bear's eyes and nose are
  * fixed in both themes. The two body colours are the one-pager's own in dark
  * mode and a slightly deeper variant of the same hue on light surfaces, so
- * each animal clears 3:1 against paper and card. They switch with the theme
- * through `--cart-bull` / `--cart-bear` in globals.css (light in :root and
+ * each animal clears 3:1 on its three approved light backgrounds. They switch with the theme
+ * through `--cart-bull` / `--cart-bear` in interest-cart.css (light in :root and
  * inside `.keep-paper`, the one-pager's in `.dark`). In the one-pager the
  * muzzle, eyes and nose were holes onto a dark card, which breaks on a white
  * panel, so here they are the solid colours that card showed.
- * `npm run test:contrast` checks these values against the doc and globals.css.
+ * `npm run test:contrast` checks these values against the doc and that file.
  */
 export const CART_ANIMAL_COLOURS = {
-  bull: { light: "#3FA172", dark: "#4CC38A" },
+  bull: { light: "#3E9D6F", dark: "#4CC38A" },
   bullMuzzle: "#3E976E",
-  bear: { light: "#EC6363", dark: "#FF6B6B" },
+  bear: { light: "#E86060", dark: "#FF6B6B" },
   bearMuzzle: "#C45557",
   bearFeatures: "#141719",
 } as const;

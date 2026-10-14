@@ -68,3 +68,22 @@ export const getSessionUserId = cache(async (): Promise<string | null> => {
   const user = await getUserCached();
   return user?.id ?? null;
 });
+
+/**
+ * The signed-in account's email, verified with Supabase Auth (`getUser`,
+ * not the cookie's own claim). For access decisions such as the Interest
+ * Cart's allowlist; null when signed out or unverifiable.
+ */
+export async function getVerifiedSessionEmail(): Promise<string | null> {
+  try {
+    const store = await cookies();
+    if (!store.getAll().some((c) => c.name.startsWith("sb-"))) return null;
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user?.email ?? null;
+  } catch {
+    return null;
+  }
+}

@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { buttonClass } from "@/components/ui/button";
 import { BearIcon, BullIcon } from "@/components/interest-cart/animals";
-import { useInterestCart } from "@/components/interest-cart/cart-provider";
+import { useInterestCart } from "@/components/interest-cart/gate";
 import { cartTickerInfo, type CartTickerInfo } from "@/app/actions/interest-cart";
 import type { CartRow, CartWeek } from "@/lib/interest-cart/types";
 import { RESET_DAY, addWeeks, parseWeekKey, weekBounds, weekKey, weekRangeLabel, weekStartOf } from "@/lib/interest-cart/week";
@@ -28,10 +28,10 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
  * Back close it and leave the page underneath exactly as it was.
  */
 export function CartPanel() {
-  const { isOpen, close } = useInterestCart();
+  const runtime = useInterestCart();
   const pathname = usePathname();
-  if (!isOpen || !cartAllowedOn(pathname)) return null;
-  return <OpenPanel onClosed={close} />;
+  if (!runtime?.isOpen || !cartAllowedOn(pathname)) return null;
+  return <OpenPanel onClosed={runtime.close} />;
 }
 
 function OpenPanel({ onClosed }: { onClosed: () => void }) {
@@ -99,7 +99,10 @@ function OpenPanel({ onClosed }: { onClosed: () => void }) {
 type LeaveTo = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => void;
 
 function CartBody({ onClose, leaveTo }: { onClose: () => void; leaveTo: LeaveTo }) {
-  const { cart, signedIn, thisWeek } = useInterestCart();
+  const runtime = useInterestCart();
+  const cart = runtime?.cart ?? null;
+  const signedIn = runtime?.signedIn ?? false;
+  const thisWeek = runtime?.thisWeek ?? null;
   const currentKey = weekKey(weekStartOf(new Date()));
   const [shownKey, setShownKey] = useState(currentKey);
   const [week, setWeek] = useState<CartWeek | null>(null);

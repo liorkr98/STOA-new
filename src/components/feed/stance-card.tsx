@@ -1,20 +1,25 @@
+"use client";
+
 import { TickerChip } from "@/components/ui/chip";
 import { CartTap } from "@/components/interest-cart/cart-tap";
+import { useCartEnabled } from "@/components/interest-cart/gate";
 import { cn } from "@/lib/design/cn";
 import type { FeedPublication } from "@/lib/feed/types";
 import type { Direction } from "@/lib/types";
 
 const directionWord: Record<Direction, string> = { long: "Long", short: "Short", hold: "Hold" };
 const directionGlyph: Record<Direction, string> = { long: "▲", short: "▼", hold: "" };
-// Plain ink, never green or red: the cart's animals beside the ticker are the
-// only colour on the card (DESIGN_LANGUAGE 1.3, "Interest Cart animals").
-const directionTone: Record<Direction, string> = { long: "text-text", short: "text-text", hold: "text-text-mute" };
+const directionTone: Record<Direction, string> = { long: "text-gain", short: "text-loss", hold: "text-text-mute" };
+// While the Interest Cart is on, plain ink: the cart's animals beside the
+// ticker are the only colour on the card (DESIGN_LANGUAGE 1.3).
+const directionInk: Record<Direction, string> = { long: "text-text", short: "text-text", hold: "text-text-mute" };
 
 /**
  * What the publication is about, as a small paper card on the picture.
  *
  * A stance is a ticker and a direction: the ticker chip (the only mono on the
- * stage), the reader's bull and bear taps, and the direction word in ink. A ticker with no
+ * stage) and the direction word in the gain or loss tone (in ink, followed by
+ * the reader's bull and bear, while the Interest Cart is on). A ticker with no
  * direction names its sector beside it; a publication with no ticker shows
  * its theme or sector on its own. With none of those there is no card: an
  * empty card is never drawn.
@@ -25,6 +30,7 @@ const directionTone: Record<Direction, string> = { long: "text-text", short: "te
  * for one of them, or one of them for it.
  */
 export function StanceCard({ pub, className }: { pub: FeedPublication; className?: string }) {
+  const cartOn = useCartEnabled();
   const subject = pub.ticker ? null : pub.themeTag ?? pub.sector;
   if (!pub.ticker && !subject) return null;
   const aside = pub.ticker && !pub.direction ? pub.sector : null;
@@ -33,14 +39,17 @@ export function StanceCard({ pub, className }: { pub: FeedPublication; className
     <div
       data-stance-card=""
       className={cn(
-        "keep-paper inline-flex max-w-full items-center gap-2.5 rounded-panel bg-[color-mix(in_srgb,var(--surface)_95%,transparent)] py-1.5 pl-1.5 pr-1.5 text-text shadow-card",
-        !pub.ticker && "px-3",
+        "keep-paper inline-flex max-w-full items-center gap-2.5 rounded-panel bg-[color-mix(in_srgb,var(--surface)_95%,transparent)] py-1.5 pl-1.5 pr-3 text-text shadow-card",
+        !pub.ticker && "pl-3",
+        // The animals are approved on white, not on 95% white over a dark
+        // frame (DESIGN_LANGUAGE 1.3): the card goes opaque while they are on it.
+        cartOn && pub.ticker && "bg-surface pr-1.5",
         className,
       )}
     >
       {pub.ticker ? <TickerChip ticker={pub.ticker} className="border-border" /> : null}
       {pub.direction ? (
-        <span className={cn("inline-flex items-center gap-1 text-body font-semibold leading-none", directionTone[pub.direction])}>
+        <span className={cn("inline-flex items-center gap-1 text-body font-semibold leading-none", (cartOn ? directionInk : directionTone)[pub.direction])}>
           {directionGlyph[pub.direction] ? (
             <span aria-hidden className="text-[0.7em]">
               {directionGlyph[pub.direction]}

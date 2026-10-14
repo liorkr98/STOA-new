@@ -1,16 +1,15 @@
 import Link from "next/link";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/design/cn";
-import type { Direction } from "@/lib/types";
 
 /**
  * Chips: small pills that label a publication. Three kinds, and only these:
  *
  *   TickerChip  the symbol, in JetBrains Mono (the one place mono appears)
- *   StanceChip  long / short / hold, plain ink with a ▲ / ▼; hold is quiet.
- *               Never green or red: wherever a stance shows, the Interest
- *               Cart's bull and bear sit beside the ticker, and they are the
- *               only coloured animals on the screen (DESIGN_LANGUAGE 1.3).
+ *   StanceChip  long / short / hold (stance-chip.tsx). In the gain or loss
+ *               TEXT tone; hold is quiet. While the Interest Cart is on it is
+ *               plain ink, so the cart's animals are the only coloured
+ *               animals on screen (DESIGN_LANGUAGE 1.3).
  *   Chip        the quiet neutral one: themes, tags, counts, states
  *
  * No uppercase, no letterspacing. Words are sentence case.
@@ -80,26 +79,4 @@ export function ThemeChip({
   return <Pill label={label} href={href} className={cn("border-border text-text-mute", className)} />;
 }
 
-const stanceLabel: Record<Direction, string> = { long: "Long", short: "Short", hold: "Hold" };
-
-const stanceStyle: Record<Direction, string> = {
-  long: "border-border-strong text-text",
-  short: "border-border-strong text-text",
-  hold: "border-border text-text-mute",
-};
-
-const stanceGlyph: Record<Direction, string> = { long: "▲", short: "▼", hold: "" };
-
-/** The declared stance on a publication. */
-export function StanceChip({ direction, className }: { direction: Direction; className?: string }) {
-  return (
-    <span className={cn(chipBase, "border-[1.5px]", stanceStyle[direction], className)}>
-      {stanceGlyph[direction] ? (
-        <span aria-hidden className="text-[0.7em] leading-none">
-          {stanceGlyph[direction]}
-        </span>
-      ) : null}
-      {stanceLabel[direction]}
-    </span>
-  );
-}
+export { StanceChip } from "@/components/ui/stance-chip";
