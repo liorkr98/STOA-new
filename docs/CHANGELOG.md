@@ -10,26 +10,40 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
-## 2026-10-13: The Interest Cart
+## 2026-10-13: The Interest Cart (built, shipped dark)
 
-**What a reader notices**
+**Behind a flag, off in production**
 
-- A small bull and bear sit beside tickers across Stoa: on the Feed's stance card, Today,
-  every Markets row, the instrument pages, profiles, the report page, search, Library and
-  polls. Tapping one says the ticker caught your eye, bullish or bearish. It counts at once
-  and shows "Added to your cart" with Undo.
-- A new mark in the top bar, the bull and bear together, carries this week's tap count. It
-  opens the Cart over whatever page you are on: a panel on the right on a computer, a full
-  sheet on a phone. Back, or the phone's swipe, closes it and leaves the page as it was. My
-  Stoa > Cart opens the same panel. Compose has none of this.
-- The Cart lists the week's tickers, most-tapped first. The side with more taps is drawn
-  larger, a tie at equal size. Bull and bear are always counted apart: there is never a "+12"
-  or a "-2". Each row shows the company, how the price moved that week, and links to the
-  ticker and its coverage. Older weeks stay a tap away. The cart starts fresh every Monday,
-  in your own time zone.
-- Signed out, a tap takes you to sign-up and is added for you once you are in, exactly once.
-- A stance (long or short) is now written in ink rather than green or red, so the animals are
-  the only green and red beside a ticker.
+- The whole cart sits behind `FEATURE_INTEREST_CART`, read in one place
+  (`src/lib/flags/interest-cart.ts`). Unset or `off` (the production default): nothing of
+  the cart mounts and every page draws exactly what it drew before. `allowlist:bar@stoamarket.ai`
+  turns it on for that signed-in account only, on the real site. `on` is the launch setting.
+  Set it in Vercel's environment variables; the allowlist lives there, not in the repository.
+- Off means off in the browser too: the cart's code is in separate files the browser only
+  fetches after the server says yes. What every reader does get is a small gate that asks once
+  per page load.
+- **At launch, delete the flag** (the module, the gate's server check, the `useCartEnabled`
+  branches), `npm run test:cart-off` and `npm run check:cart-bundle`, and their CI steps, so
+  none of it stays as dead code.
+
+**What a reader notices once it is on**
+
+- A small bull and bear beside tickers across Stoa: the Feed's stance card, Today, every
+  Markets row, the instrument pages and Today's instrument sheet, Explore tiles, profiles, the
+  report page and every `$TICKER` mention in a report body, search, Library, Watchlist, the
+  screener, portfolio, polls, the landing page and the public Dispatch. Tapping one counts at
+  once and shows "Added to your cart" with Undo.
+- A mark in the top bar, the bull and bear together, with this week's tap count. It opens the
+  Cart over the current page (a panel on a computer, a full sheet on a phone); Back closes it.
+  My Stoa > Cart opens the same panel. Compose has none of this.
+- The Cart lists the week's tickers, most-tapped first, the side with more taps drawn larger
+  and a tie at equal size; never a "+12" or a "-2". Each row shows the company, how the price
+  moved that week, and links to the ticker and its coverage. Older weeks stay a tap away. It
+  starts fresh every Monday, in the reader's own time zone.
+- Signed out, a tap leads to sign-up and is added once the person is in, exactly once.
+- Stances and the report's claim vote bar are drawn in ink while the cart is on, so the
+  animals are the only green and red beside a ticker. With the flag off they keep their green
+  and red.
 
 **Fixed in passing**
 
@@ -41,29 +55,44 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 - Taps live in the reader's browser (`TemporaryLocalCartStore`), keyed by account, until the
   table exists. They do not follow someone to another device yet.
 
+**Verified, and what was not**
+
+- The held-tap replay was verified by giving the browser an existing demo account's session
+  after the signed-out tap, not by completing the real sign-up form with a new account. **Before
+  release, run the sign-up handoff once by hand end to end with a brand-new account:** tap
+  signed out, sign up, confirm the tap lands once.
+
 **What needs Krisi**
 
-- Review and apply `supabase/migrations/0068_interest_taps.sql`. It is headed DRAFT - DO NOT
-  APPLY and nothing was run against the live database. Spec: `docs/backend/interest-cart.md`.
+- `supabase/migrations/0068_interest_taps.sql` (headed DRAFT - DO NOT APPLY; nothing was run
+  against the live database). Spec: `docs/backend/interest-cart.md`. **It can be applied while
+  the UI is dark:** the table, its policies and its functions go live empty and wait; nothing
+  writes to them until the Supabase adapter is swapped in and the flag is on.
 - Add the cart's RLS cases to `npm run test:rls` once it is applied.
 - Write the Supabase adapter (`SupabaseCartStore` in `src/lib/db/`) and swap it into
   `cartStore()`. Decide whether to import the temporary browser taps on first sign-in.
 - Decide retention for raw taps, and the fixed time zone for the future anonymised cross-user
   total, before the extension ships.
+- Set `FEATURE_INTEREST_CART=allowlist:bar@stoamarket.ai` in Vercel production when Bar wants
+  to try it live.
 
 **Open for Bar**
 
-- On the light grey well (the quiet fill behind a side already tapped this week), the light
-  bull and bear measure 2.89 and 2.90:1, just under 3:1. They clear it on the page and on
-  cards. Recorded in DESIGN_LANGUAGE 1.3. A slightly deeper body, or a white fill for the
-  tapped state, would close it.
-- Tickers still drawn without the control (plain text, not a chip): Explore wall tiles, the
-  Following and Watchlist pages, search's ticker results, the screener, portfolio, the old
-  dashboard, the nav search and Markets search dropdowns, the public Dispatch, the
-  `$TICKER` hover cards in report bodies, and ticker charts on evidence cards. Each is a
-  one-line addition if wanted.
-- The report page's claim vote bar draws bull / bear votes in the price green and red. It
-  predates the cart, but it is a second green and red bull and bear on that page.
+- Following's Tickers, ETFs and Sectors tabs are a placeholder that says instrument follows
+  "aren't wired to the backend yet". They have been since migration 0052. There is no ticker
+  list there to carry the control; building it is a separate change.
+- `/dashboard`, `/watchlist`, `/portfolio` and `/screener` are reachable only by typing the
+  address (the dashboard links to the next two, and nothing links to the dashboard or the
+  screener). The control is on Watchlist, the screener and portfolio as asked; not on the
+  dashboard.
+- `DispatchStoryList` and `DispatchWire` are not rendered anywhere (dead code).
+- The light animal colours are one step deeper than asked (`#3E9D6F` / `#E86060` rather than
+  `#3E9E70` / `#E86262`): measured, the requested pair reach 2.99 / 2.98 on the grey well. The
+  well token is `#F2F3F5`, not `#F3F3F3`; both were measured.
+- In a report body the inline bull and bear have a hit area 44px wide but one line tall, so a
+  tap on the line above or below still reaches the words there.
+- On the smallest Explore tiles the white pill carrying the bull and bear takes a fair share
+  of the picture.
 
 ---
 

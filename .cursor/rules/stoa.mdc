@@ -15,8 +15,8 @@ Read `AGENTS.md` for full context and `docs/PRODUCT_MODEL.md` for the product. K
   horizon. Do not rebuild any of it. Analysts are followed and paid for their judgement, not
   scored on it. Edit markers stay and are independent of grading.
 - Design is Direction B (`docs/DESIGN_LANGUAGE.md`): coral only on the live or actionable thing,
-  green and red only on price movement (stances are plain ink; the Interest Cart animals are
-  the one named exception), coloured words in the `-text` tones, fills with
+  green and red only on direction and price (the Interest Cart animals are the one named
+  exception; while the cart is on, stances are ink), coloured words in the `-text` tones, fills with
   black text, five type sizes, no uppercase labels, mono for tickers only, radius by role. No
   drop shadows for elevation.
 - Zero em-dashes in user-visible text.

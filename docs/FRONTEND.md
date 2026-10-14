@@ -12,8 +12,8 @@
 > onboarding wizard, `/dashboard/*`), it is marked as spec rather than as the site.
 >
 > **2. The visual system is Direction B (adopted 2026-09-27).** Paper `#FAFAFA`, white cards, ink
-> `#101418`; coral for the one live or actionable thing; green and red for price movement only
-> (stances are ink; the Interest Cart animals are the named exception); Bricolage Grotesque, Inter and JetBrains Mono (tickers only) with Heebo for Hebrew; five
+> `#101418`; coral for the one live or actionable thing; green and red for direction and price
+> only (the Interest Cart animals are the named exception; while the cart is on, stances are ink); Bricolage Grotesque, Inter and JetBrains Mono (tickers only) with Heebo for Hebrew; five
 > type sizes; pills, 14px panels and circular avatars. **The law is
 > [`docs/DESIGN_LANGUAGE.md`](./DESIGN_LANGUAGE.md)**; the reference is
 > [`docs/design/direction-b.html`](./design/direction-b.html) (take its look, not its product: its
@@ -94,7 +94,8 @@ Coral, gain and loss each have a fill tone and a word tone: `--coral` `#FF5A47` 
   `bg-coral`, `bg-gain`, `bg-loss`, which set black text themselves. White on a fill fails
   contrast and is never used.
 - Coral: Subscribe, Follow, Publish, the one primary action, a live recording. Green and red:
-  price movement. A stance is ink; the Interest Cart's bull and bear are the named exception. Everything else is black, white and grey.
+  direction and price movement. The Interest Cart's bull and bear are the named exception, and
+  while the cart is on a stance is ink. Everything else is black, white and grey.
 - `--accent` is **ink** (the ink button, selected tabs). It is not coral and must not become coral.
 - **Errors are red, by a deliberate exception:** `--error` is a crimson held well away from the
   price red, with `--error-soft` and `--error-edge` for error boxes. Only errors, failures and
@@ -478,15 +479,16 @@ scroll-snap, nothing below the fold.
   `.scroll-area` on specificity and loses, which paints a bar across the analyst's face.
 - **Direction B (2026-09-28).** The video fills the stage and everything else sits small and
   light on it. Rounded corners, no hairline rules, no uppercase labels; the ticker chip is the
-  only mono, coral is only on Follow, and the only colour on the stance card is the reader's bull and bear
-  (the direction word is ink).
+  only mono, coral is only on Follow, green and red only on the direction (while the Interest Cart is
+  on, the direction word is ink and the reader's bull and bear are the only colour on the card).
 - **The dateline:** trending or new, the type, the date and the length
   (`Trending · Thesis · Aug 22, 2026 · 0:58`), in sentence-case Inter. On desktop it is the strip
   above the frame; on a phone it sits on the picture at the top left, with the mute control at
   the right of the same row. The ticker is not in it: it is on the stance card, in its own face.
 - **The stance card** (`<StanceCard>`, `src/components/feed/stance-card.tsx`): a small paper card
-  under the dateline. A stance is the ticker chip and the direction word in ink (▲ Long,
-  ▼ Short, Hold quiet), then the reader's bull and bear taps (`<CartTap size={16}>`, made
+  under the dateline. A stance is the ticker chip and the direction word (▲ Long in the gain
+  tone, ▼ Short in the loss tone, Hold quiet). While the Interest Cart is on, the word is ink,
+  the card is opaque white, and the reader's bull and bear follow (`<CartTap size={16}>`, made
   `pointer-events-auto` because the chrome passes touches to the video; it adds no scroller
   and no overscroll, so a vertical swipe that starts on it still moves the Feed). A ticker with no stance names its sector beside
   the chip; a publication with no ticker shows its theme or sector alone; with none of those no
@@ -759,6 +761,20 @@ week, and the cart shows what held their attention. Data model and backend:
 `docs/backend/interest-cart.md`. Colour law: "Interest Cart animals" in
 `docs/DESIGN_LANGUAGE.md` 1.3.
 
+- **Behind a flag, default off (2026-10-14).** `FEATURE_INTEREST_CART` is read in one module,
+  `src/lib/flags/interest-cart.ts`: `off` (or unset, the production default), `allowlist:a@x,b@y`
+  (on for those signed-in accounts, verified with Supabase), `on` (launch). The browser asks once
+  per page load through `interestCartAccess()`; `<InterestCartGate>` (`gate.tsx`, mounted in
+  `providers.tsx`) publishes the answer, and only on a yes does it load the runtime (session,
+  counts, replay, the panel) with `next/dynamic`. `CartTap` and `CartTrigger` are few-line
+  wrappers that render nothing, and load nothing, until the runtime exists; their real bodies
+  (`cart-tap-impl.tsx`, `cart-trigger-impl.tsx`) are separate chunks, and so are the cart's
+  styles (`interest-cart.css`, imported only by those chunks). Off is a conditional
+  render everywhere, never CSS hiding, and with it off every surface draws exactly what main
+  draws (stances and the claim vote bar keep green and red; the peer tiles, search cards,
+  Explore tiles and Feed stance card keep main's markup). `npm run test:cart-off` checks the
+  off state, `npm run check:cart-bundle` checks after a build that no page's eager code carries
+  the cart. The flag, the gate, the wrappers' checks and both off-state checks go at launch.
 - **The animals** (`src/components/interest-cart/animals.tsx`): `BullIcon`, `BearIcon` and the
   nav's `CartMark`, drawn exactly from the feature one-pager. The only place they are drawn.
   Sizes 18 in rows, 16 over video, never under 14.
@@ -774,10 +790,18 @@ week, and the cart shows what held their attention. Data model and backend:
 - **Where it appears:** the Feed's stance card; Today's stance lines and its ticker rail; every
   Markets row (Where analysts are looking, Newly covered, ETFs, Uncovered, sector and theme
   names, ETF holdings, peers); the stock, ETF and macro instrument headers; the instrument
-  sheet; profile cards; the report page; report cards in search; Library; polls; the landing
-  lead. Not on authoring screens (Compose, Studio's publication list, editor blocks).
-- **A stance beside it is ink.** `StanceChip` and the stance card's direction word are no longer
-  green or red, so the animals are the only coloured animals on screen.
+  sheet; Explore tiles (on a white pill beside the tile's button); profile cards; the report
+  page and, inline, after every `$TICKER` mention in a report body
+  (`report-inline-cart-taps.tsx`, a ProseMirror widget beside the mark, hit area 44px wide and
+  one line tall so it never catches a tap on the line above); report cards and ticker cards in
+  search; Library; Watchlist, the screener and portfolio tables; polls; the landing lead; the
+  public Dispatch's issue cards. Not on authoring screens (Compose, Studio's publication list,
+  editor blocks), the two search dropdowns (a navigation affordance, misclick risk), evidence
+  card ticker charts, the legacy `/dashboard`, or Following (its ticker tabs are still a
+  placeholder).
+- **While the cart is on, direction is ink.** `StanceChip` (`ui/stance-chip.tsx`), the stance
+  card's direction word and the report's claim vote bar drop green and red (glyphs kept), so
+  the animals are the only coloured animals on screen. Off, all three are as on main.
 - **`<CartTrigger>`** (`cart-trigger.tsx`) in the top nav, and **My Stoa > Reading > Cart**,
   both open the same panel. Neither exists on Compose (`cartAllowedOn`).
 - **`<CartPanel>`** (`cart-panel.tsx`), mounted once in `providers.tsx` inside
@@ -795,8 +819,7 @@ week, and the cart shows what held their attention. Data model and backend:
   draws both at 18px. Under it the company name and, small and quiet, "Price this week"
   (`--up` / `--down`, from `cartTickerInfo`). Then links to the ticker in Markets and to its
   coverage band (`/markets/T#coverage`). Never a net figure or a sign on a count.
-- **Empty and signed out:** a designed card on white (not the well, where the light-mode
-  animals fall under 3:1): what a tap is, where taps come from, that the cart clears every
+- **Empty and signed out:** a designed card on white: what a tap is, where taps come from, that the cart clears every
   Monday, last week's ticker count when there was one, and one action.
 - **Signed out:** a tap is held (`held-tap.ts`) and the visitor goes to sign-up with `next`; once
   a session exists, off the sign-up pages, the tap replays under its held id (so a reload
@@ -926,8 +949,9 @@ the publication has a clip. Two columns on a desktop.
 **Rules.** Bands part by space (`.today-band`: 56px phone, 72px desktop), never by rules. Every
 image and card is rounded (`rounded-panel`, `rounded-inner` for the row thumbnail). The only mono
 is the ticker chip. Coral appears on the rail's `+ Follow` and the fresh-post ring, nowhere else;
-green and red only on the rail's day change and the Interest Cart animals. **Tags:** a publication with a
-ticker shows `TickerChip` plus an ink `StanceChip` when it declares a direction, then `CartTap`; one without shows its
+green and red only on the stance chip and the rail's day change (with the Interest Cart on: the
+rail's day change and the animals, the stance chip ink). **Tags:** a publication with a
+ticker shows `TickerChip` plus `StanceChip` when it declares a direction, then `CartTap` while the cart is on; one without shows its
 theme (or sector) as a `ThemeChip`; one with neither shows nothing, never an empty chip. **A band
 with nothing in it is not drawn**, heading included; the verdicts band is gone and nothing
 replaces it.
