@@ -8,6 +8,7 @@ import { NAPKIN_DEFAULT_STYLE_ID } from "@/lib/napkin/styles";
 import { sourceLabel, type VisualSource } from "@/lib/compose/overlays";
 import type { DraftCard } from "@/lib/compose/cards";
 import { buttonClass } from "@/components/ui/button";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 /**
  * What sits over the clip: a real card, a live tape, or a Napkin visual.
@@ -59,11 +60,11 @@ export function OverlayVisualBody({
         </div>
       ) : source.type === "diagram" && source.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={source.imageUrl} alt="" className="h-full w-full object-contain p-2" />
+        <img src={mediaSrc(source.imageUrl)} alt="" className="h-full w-full object-contain p-2" />
       ) : source.type === "figure" || source.type === "upload" ? (
         source.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={source.imageUrl} alt="" className="h-full w-full object-contain" />
+          <img src={mediaSrc(source.imageUrl)} alt="" className="h-full w-full object-contain" />
         ) : (
           <span className="num p-3 text-ticker text-text-mute">{sourceLabel(source)}</span>
         )
@@ -135,7 +136,7 @@ export function OverlayVisualizeFields({
       {error ? <p className="text-ticker text-[var(--error)]">{error}</p> : null}
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="" className="max-h-36 w-full rounded-inner border border-border object-contain" />
+        <img src={mediaSrc(imageUrl)} alt="" className="max-h-36 w-full rounded-inner border border-border object-contain" />
       ) : null}
     </div>
   );

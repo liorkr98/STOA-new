@@ -6,6 +6,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { cn } from "@/lib/design/cn";
 import { createClient } from "@/lib/supabase/client";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 /**
  * imageNode view (A8). Uploads a body image to the report-images Supabase bucket
@@ -79,7 +80,7 @@ export function ImageNodeView({
         <div className="mx-auto" style={{ width: `${widthPct}%` }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={url}
+            src={mediaSrc(url)}
             alt={alt}
             className="block w-full rounded-panel border border-border"
           />
@@ -155,7 +156,7 @@ export function ImageNodeView({
             <div className="mx-auto" style={{ width: `${widthPct}%` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={url}
+                src={mediaSrc(url)}
                 alt={alt}
                 className="block w-full rounded-inner border border-border"
               />

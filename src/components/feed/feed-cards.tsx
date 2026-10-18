@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { cn } from "@/lib/design/cn";
 import { TickerChart } from "@/components/feed/ticker-chart";
 import type { FeedCard, InkValue, ProvenanceInk } from "@/lib/feed/types";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 // The chart engine is far larger than this card stack, and a reader reaches a
 // chart card only by swiping sideways. Load it then, not on every Feed open.
@@ -193,7 +194,7 @@ function CardBody({ card, ticker }: { card: FeedCard; ticker?: string | null }) 
           <CardHead label={card.caption} />
           <div className="relative mt-3 flex-1 overflow-hidden rounded-inner bg-surface-2">
             {card.imageUrl ? (
-              <Image src={card.imageUrl} alt={card.caption} fill sizes="480px" className="object-contain" />
+              <Image src={mediaSrc(card.imageUrl)} alt={card.caption} fill sizes="480px" unoptimized className="object-contain" />
             ) : ticker ? (
               <div className="absolute inset-0 p-3">
                 <TickerChart ticker={ticker} caption={card.caption} />

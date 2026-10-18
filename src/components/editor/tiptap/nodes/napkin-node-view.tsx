@@ -21,6 +21,7 @@ import {
   NAPKIN_VISUAL_TYPES,
 } from "@/lib/napkin/styles";
 import { buttonClass } from "@/components/ui/button";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 const WIDTHS = [50, 75, 100] as const;
 
@@ -67,7 +68,7 @@ function DiagramPreview({
     return (
       /* eslint-disable-next-line @next/next/no-img-element */
       <img
-        src={url}
+        src={mediaSrc(url)}
         alt={caption || "Diagram"}
         className="block w-full rounded-inner border border-border"
       />

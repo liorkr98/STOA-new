@@ -6,6 +6,7 @@ import { InkTag } from "@/components/feed/feed-cards";
 import { CardChart } from "@/components/compose/card-chart";
 import { cardName, cardSummary, type DraftCard } from "@/lib/compose/cards";
 import type { InkValue, ProvenanceInk } from "@/lib/feed/types";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 /**
  * One card, drawn small. The same component renders the figure in the research
@@ -108,7 +109,7 @@ function Body({ card }: { card: DraftCard }) {
     case "figure":
       return p.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={String(p.imageUrl)} alt={String(p.caption ?? "")} className="max-h-40 w-full rounded-[4px] object-contain" />
+        <img src={mediaSrc(String(p.imageUrl))} alt={String(p.caption ?? "")} className="max-h-40 w-full rounded-[4px] object-contain" />
       ) : (
         <p className="text-ticker text-text-mute">No image yet</p>
       );

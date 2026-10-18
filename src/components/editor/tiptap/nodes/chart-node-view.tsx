@@ -40,6 +40,7 @@ import { registerChart, unregisterChart } from "@/lib/editor/tiptap/nodes/chart-
 import { TradingViewChartPanel } from "@/components/editor/tiptap/nodes/trading-view-chart-panel";
 import { canvasColor, canvasFont } from "@/lib/design/canvas-color";
 import { TickerChip } from "@/components/ui/chip";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 type ChartKind = "candles" | "line" | "area";
 type DrawMode = "pan" | "hline" | "trend";
@@ -507,7 +508,7 @@ function LightweightChartNodeView({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={screenshotUrl ?? ""}
+          src={mediaSrc(screenshotUrl) ?? ""}
           alt={`Price chart for ${ticker} over ${range}`}
           onError={() => setImgFailed(true)}
           className="block w-full"

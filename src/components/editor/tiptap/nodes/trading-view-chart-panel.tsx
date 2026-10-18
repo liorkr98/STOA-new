@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import { cn } from "@/lib/design/cn";
 import { CHART_RANGES, type ChartRange } from "@/lib/market/candle-types";
 import { TradingViewChart } from "@/components/shared/TradingViewChart/TradingViewChart";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 function stopEditorCapture(e: React.SyntheticEvent) {
   e.stopPropagation();
@@ -51,7 +52,7 @@ export function TradingViewChartPanel({
     return (
       <NodeViewWrapper contentEditable={false} role="figure" className="fade-up my-4 overflow-hidden rounded-panel border border-border bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={screenshotUrl} alt={`TradingView chart for ${ticker}`} className="block w-full" />
+        <img src={mediaSrc(screenshotUrl)} alt={`TradingView chart for ${ticker}`} className="block w-full" />
       </NodeViewWrapper>
     );
   }

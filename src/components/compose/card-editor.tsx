@@ -11,6 +11,7 @@ import { CardPreview } from "@/components/compose/card-preview";
 import { StepErrorBoundary } from "@/components/compose/step-boundary";
 import { nanoid } from "nanoid";
 import { createClient } from "@/lib/supabase/client";
+import { mediaSrc } from "@/lib/media/storage-url";
 
 /**
  * Editing one card.
@@ -433,7 +434,7 @@ export function CardEditor({
             ) : null}
             {p.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={String(p.imageUrl)} alt="" className="mt-2 max-h-32 rounded-[4px] border border-border object-contain" />
+              <img src={mediaSrc(String(p.imageUrl))} alt="" className="mt-2 max-h-32 rounded-[4px] border border-border object-contain" />
             ) : null}
           </Field>
         </>
