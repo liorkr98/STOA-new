@@ -2,6 +2,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { cachedPage } from "@/lib/cache/page";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { signMediaUrls } from "@/lib/media/sign";
 import { clipDurationSeconds } from "@/lib/video/clip-duration";
 import { CALL_JOIN, publicationRow, reportsHaveStance } from "@/lib/db/publication-row";
 import type { Report } from "@/lib/types";
@@ -11,6 +12,12 @@ import type { Report } from "@/lib/types";
  * place these tables are read/written. RLS: creator manages own rows; published
  * + ready rows are publicly readable (the teaser is public by design). The
  * paywalled depth stays behind the linked report, unchanged.
+ *
+ * The media columns (the Bunny guid and the playback, poster, preview and
+ * caption URLs) are not read through the reader's client: migration 0069 takes
+ * them away from anonymous readers. Rows are read without them under the
+ * reader's RLS, then `withMedia` adds them with the service key and signs them
+ * (src/lib/media/sign.ts), so a link leaves the server only short-lived.
  */
 
 export type VideoClipStatus = "processing" | "ready" | "failed";
@@ -41,12 +48,42 @@ export interface VideoClipCard extends VideoClip {
   report: Report | null;
 }
 
-const COLUMNS =
-  "id, report_id, creator_id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url, transcript, duration_seconds, status, fact_check_results, created_at, published_at, play_count, completion_count, click_through_count";
+/** Every column but the media ones, for reads under the reader's RLS. */
+const READ_COLUMNS =
+  "id, report_id, creator_id, transcript, duration_seconds, status, fact_check_results, created_at, published_at, play_count, completion_count, click_through_count";
 
 /** Feed/Explore cards skip transcript and fact-check blobs; those stay on the clip row for processing. */
 const CARD_COLUMNS =
-  "id, report_id, creator_id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url, duration_seconds, status, created_at, published_at, play_count, completion_count, click_through_count";
+  "id, report_id, creator_id, duration_seconds, status, created_at, published_at, play_count, completion_count, click_through_count";
+
+const MEDIA_COLUMNS = "id, bunny_video_guid, playback_url, thumbnail_url, preview_url, caption_vtt_url";
+
+type ClipMedia = Pick<VideoClip, "id" | "bunny_video_guid" | "playback_url" | "thumbnail_url" | "preview_url" | "caption_vtt_url">;
+
+/**
+ * Adds each row's media, read with the service key and signed. Rows reach
+ * here only after the reader's own RLS has let them through, so this never
+ * widens which clips a reader gets, only how their links are delivered.
+ */
+async function withMedia<T extends { id: string }>(rows: T[]): Promise<(T & ClipMedia)[]> {
+  if (rows.length === 0) return [];
+  const { data } = await createAdminClient().from("video_clips").select(MEDIA_COLUMNS).in("id", rows.map((r) => r.id));
+  const media = new Map(((data ?? []) as ClipMedia[]).map((m) => [m.id, m]));
+  const sign = await signMediaUrls(
+    [...media.values()].flatMap((m) => [m.playback_url, m.thumbnail_url, m.preview_url, m.caption_vtt_url]),
+  );
+  return rows.map((row) => {
+    const m = media.get(row.id);
+    return {
+      ...row,
+      bunny_video_guid: m?.bunny_video_guid ?? "",
+      playback_url: sign(m?.playback_url) ?? "",
+      thumbnail_url: sign(m?.thumbnail_url),
+      preview_url: sign(m?.preview_url),
+      caption_vtt_url: sign(m?.caption_vtt_url),
+    };
+  });
+}
 
 const REPORT_CARD_COLUMNS =
   "id, author_id, type, status, title, summary, access, price, ticker, theme_tag, primary_tag, secondary_tags, feed_preview_seconds, video_edit, views, likes, comment_count, published_at, created_at";
@@ -87,35 +124,38 @@ export async function createVideoClip(input: {
       preview_url: input.previewUrl ?? null,
       status: "processing",
     })
-    .select(COLUMNS)
+    .select(READ_COLUMNS)
     .maybeSingle();
   if (error || !data) return null;
-  return data as VideoClip;
+  const [clip] = await withMedia([data as unknown as VideoClip]);
+  return clip;
 }
 
 export async function getVideoClip(id: string): Promise<VideoClip | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("video_clips").select(COLUMNS).eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("video_clips").select(READ_COLUMNS).eq("id", id).maybeSingle();
   if (error || !data) return null;
-  return data as VideoClip;
+  const [clip] = await withMedia([data as unknown as VideoClip]);
+  return clip;
 }
 
 export async function getVideoClipCard(id: string): Promise<VideoClipCard | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("video_clips").select(await cardSelect()).eq("id", id).maybeSingle();
   if (error || !data) return null;
-  return normalizeCard(data as unknown as Record<string, unknown>);
+  const [card] = await withMedia([normalizeCard(data as unknown as Record<string, unknown>)]);
+  return card;
 }
 
 export async function listVideosByReport(reportId: string): Promise<VideoClip[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("video_clips")
-    .select(COLUMNS)
+    .select(READ_COLUMNS)
     .eq("report_id", reportId)
     .order("created_at", { ascending: false });
   if (error || !data) return [];
-  return data as VideoClip[];
+  return withMedia(data as unknown as VideoClip[]);
 }
 
 /** Every clip by one creator in any status, newest first (the owner's Studio list). */
@@ -123,11 +163,11 @@ export async function listClipsByCreator(creatorId: string): Promise<VideoClip[]
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("video_clips")
-    .select(COLUMNS)
+    .select(READ_COLUMNS)
     .eq("creator_id", creatorId)
     .order("created_at", { ascending: false });
   if (error || !data) return [];
-  return data as VideoClip[];
+  return withMedia(data as unknown as VideoClip[]);
 }
 
 /** Every published, ready clip by one creator, newest first (profile shelves). */
@@ -135,13 +175,13 @@ export async function listReadyClipsByCreator(creatorId: string): Promise<VideoC
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("video_clips")
-    .select(COLUMNS)
+    .select(READ_COLUMNS)
     .eq("creator_id", creatorId)
     .eq("status", "ready")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false });
   if (error || !data) return [];
-  return data as VideoClip[];
+  return withMedia(data as unknown as VideoClip[]);
 }
 
 /** Which of these reports have a ready, published clip. One query, not one per report. */
@@ -174,11 +214,12 @@ export async function listReadyClipsForReports(reportIds: string[]): Promise<Map
     .not("published_at", "is", null)
     .order("published_at", { ascending: false });
   if (error || !data) return new Map();
-  const byReport = new Map<string, VideoClip>();
+  const newest = new Map<string, VideoClip>();
   for (const clip of data as unknown as VideoClip[]) {
-    if (!byReport.has(clip.report_id)) byReport.set(clip.report_id, clip);
+    if (!newest.has(clip.report_id)) newest.set(clip.report_id, clip);
   }
-  return byReport;
+  const signed = await withMedia([...newest.values()]);
+  return new Map(signed.map((clip) => [clip.report_id, clip]));
 }
 
 /**
@@ -192,7 +233,7 @@ export async function getReadyClipForReport(reportId: string): Promise<VideoClip
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("video_clips")
-    .select(COLUMNS)
+    .select(READ_COLUMNS)
     .eq("report_id", reportId)
     .eq("status", "ready")
     .not("published_at", "is", null)
@@ -200,12 +241,18 @@ export async function getReadyClipForReport(reportId: string): Promise<VideoClip
     .limit(1)
     .maybeSingle();
   if (error || !data) return null;
-  return data as VideoClip;
+  const [clip] = await withMedia([data as unknown as VideoClip]);
+  return clip;
 }
 
 /** Published, ready clips for the Feed and the Explore wall. */
 export async function listVideoClipCards(limit = 36): Promise<VideoClipCard[]> {
-  return cachedPage(`video-cards:stance:${limit}`, 20, async () => {
+  // Signed after the cache, so a cached row never carries a link past its life.
+  return withMedia(await listVideoClipCardRows(limit));
+}
+
+function listVideoClipCardRows(limit: number): Promise<VideoClipCard[]> {
+  return cachedPage(`video-cards:media-signed:${limit}`, 20, async () => {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("video_clips")

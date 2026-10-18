@@ -1,5 +1,7 @@
 import "server-only";
+
 import { createHash } from "node:crypto";
+import { signEmbedUrl } from "@/lib/media/sign";
 import { MAX_VIDEO_DURATION_SECONDS } from "@/lib/video/constants";
 
 export { MAX_VIDEO_DURATION_SECONDS };
@@ -118,7 +120,7 @@ export function bunnyEmbedUrl(
   // progress bar, mute and play controls, and Bunny's default bar sits exactly
   // where the analyst, the scrub bar and the actions go.
   if (opts.chrome === false) params.set("controls", "");
-  return `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}?${params.toString()}`;
+  return signEmbedUrl(`https://iframe.mediadelivery.net/embed/${libraryId}/${guid}?${params.toString()}`);
 }
 
 export interface BunnyVideo {
