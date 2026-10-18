@@ -88,7 +88,7 @@ function HeadlineRow({ h }: { h: LandingHeadline }) {
   );
 }
 
-function TodayLite({ data }: { data: LandingPayload }) {
+function TodayLite({ data, cartOn }: { data: LandingPayload; cartOn: boolean }) {
   if (!data.lead) return null;
   const lead = data.lead;
   return (
@@ -135,15 +135,21 @@ function TodayLite({ data }: { data: LandingPayload }) {
             </article>
           </Reveal>
           <Reveal>
-            <div className="border-t border-border md:border-t-0">
+            <div className={cn("border-t border-border md:border-t-0", cartOn && "relative")}>
               {data.headlines.map((h) => (
                 <HeadlineRow key={h.reportId} h={h} />
               ))}
+              {/*
+                With the cart on, only the headline list fades: across the
+                whole section the fade also covered the lead's byline and left
+                its bull and bear taps, the one control here, barely visible.
+              */}
+              {cartOn ? <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent,var(--paper))]" /> : null}
             </div>
           </Reveal>
         </div>
         {/* The withholding is visible: the section fades into the paper. */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent,var(--paper))]" />
+        {cartOn ? null : <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent,var(--paper))]" />}
       </div>
       <p className="num mt-6 text-center text-ticker text-text-mute">
         Members get the full issue, shaped around what they follow.
@@ -230,11 +236,12 @@ function Split({ data }: { data: LandingPayload }) {
   );
 }
 
-export function LandingPage({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
+/** `cartOn`: FEATURE_INTEREST_CART is on for signed-out visitors (src/lib/flags). */
+export function LandingPage({ data, tape, cartOn = false }: { data: LandingPayload; tape?: ReactNode; cartOn?: boolean }) {
   return (
     <div className="pb-24">
       <Doors data={data} tape={tape} />
-      <TodayLite data={data} />
+      <TodayLite data={data} cartOn={cartOn} />
       <Split data={data} />
     </div>
   );

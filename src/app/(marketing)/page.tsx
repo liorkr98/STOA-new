@@ -5,6 +5,7 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { buildLanding } from "@/lib/landing/build-landing";
 import { LandingPage } from "@/components/landing/landing-page";
 import { MarketTapeFallback, MarketTapeSlot } from "@/components/markets/market-tape-slot";
+import { interestCartOpenTo } from "@/lib/flags/interest-cart";
 
 export const metadata: Metadata = {
   title: "Stoa - Think clearly. Invest better.",
@@ -25,6 +26,7 @@ export default async function RootPage() {
   return (
     <LandingPage
       data={data}
+      cartOn={interestCartOpenTo(null)}
       tape={
         <Suspense fallback={<MarketTapeFallback />}>
           <MarketTapeSlot />
