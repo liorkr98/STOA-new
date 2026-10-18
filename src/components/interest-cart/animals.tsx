@@ -81,9 +81,31 @@ const HALO = (2.6 * 2 * 48) / 18;
  * The cart's own mark in the nav: the bull (20px) with the bear (18px)
  * overlapping it at the right, separated by a paper-coloured outline. A
  * shopping cart or basket would read as a pending order; Stoa executes
- * nothing. `muted` draws the pair in grey for an empty week.
+ * nothing. `muted` is the empty week: the pair in grey, standing apart
+ * rather than overlapping, because two grey silhouettes that touch read as
+ * one shape at nav size.
  */
 export function CartMark({ muted = false, className }: { muted?: boolean; className?: string }) {
+  if (muted) {
+    return (
+      <svg
+        viewBox="0 0 36 22"
+        width={36}
+        height={22}
+        aria-hidden
+        focusable="false"
+        data-cart-mark="empty"
+        className={cn("shrink-0 opacity-70 [filter:grayscale(1)]", className)}
+      >
+        <g transform={`translate(0 1) scale(${20 / 48})`} fill="none">
+          <BullArt />
+        </g>
+        <g transform={`translate(18 2) scale(${18 / 48})`}>
+          <BearArt />
+        </g>
+      </svg>
+    );
+  }
   return (
     <svg
       viewBox="0 0 30 22"
@@ -91,7 +113,7 @@ export function CartMark({ muted = false, className }: { muted?: boolean; classN
       height={22}
       aria-hidden
       focusable="false"
-      className={cn("shrink-0", muted && "opacity-60 [filter:grayscale(1)]", className)}
+      className={cn("shrink-0", className)}
     >
       <g transform={`translate(0 1) scale(${20 / 48})`} fill="none">
         <BullArt />
