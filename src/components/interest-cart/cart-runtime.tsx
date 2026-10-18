@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { createInterestCart, summariseWeek, type InterestCart } from "@/lib/interest-cart/cart";
 import { CART_CHANGED_EVENT, cartStore } from "@/lib/interest-cart/store";
-import { clearHeldTap, holdTap, readHeldTap } from "@/lib/interest-cart/held-tap";
+import { clearHeldTap, holdTap, readHeldTap, returnAfterTap } from "@/lib/interest-cart/held-tap";
+import { readSessionUserId } from "@/lib/interest-cart/session";
 import type { CartDirection, CartWeek } from "@/lib/interest-cart/types";
 import { publishCartRuntime, type CartRuntime } from "@/components/interest-cart/gate";
 import { CartPanel } from "@/components/interest-cart/cart-panel";
@@ -51,18 +52,25 @@ export function CartRuntimeHost() {
   // The session is read on the device: the local adapter is keyed by it.
   useEffect(() => {
     const supabase = createClient();
-    let alive = true;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (alive) setUserId(data.session?.user.id ?? null);
-    });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserId(session?.user.id ?? null);
     });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  // Sign-up, sign-in and sign-out run on the server, which writes the session
+  // cookie and redirects. The browser client hears nothing of that, so
+  // onAuthStateChange never fires and the cart stayed signed out until a
+  // reload. Reading the cookie again on every navigation picks it up.
+  useEffect(() => {
+    let alive = true;
+    void readSessionUserId(createClient()).then((id) => {
+      if (alive) setUserId(id);
+    });
     return () => {
       alive = false;
-      data.subscription.unsubscribe();
     };
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (!cart) return;
@@ -115,8 +123,8 @@ export function CartRuntimeHost() {
     (ticker: string, direction: CartDirection) => {
       if (!cart) {
         holdTap(ticker, direction);
-        const here = `${window.location.pathname}${window.location.search}`;
-        router.push(`/sign-up?next=${encodeURIComponent(here)}`);
+        const back = returnAfterTap(window.location.pathname, window.location.search, ticker);
+        router.push(`/sign-up?next=${encodeURIComponent(back)}`);
         return;
       }
       setThisWeek((w) => bump(w ?? summariseWeek(weekKey(weekStartOf(new Date())), []), ticker, direction));
