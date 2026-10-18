@@ -6,6 +6,7 @@ import { buildLanding } from "@/lib/landing/build-landing";
 import { LandingPage } from "@/components/landing/landing-page";
 import { MarketTapeFallback, MarketTapeSlot } from "@/components/markets/market-tape-slot";
 import { interestCartOpenTo } from "@/lib/flags/interest-cart";
+import { gatedSiteOn } from "@/lib/flags/gated-site";
 
 export const metadata: Metadata = {
   title: "Stoa - Think clearly. Invest better.",
@@ -22,10 +23,15 @@ export const metadata: Metadata = {
 export default async function RootPage() {
   const userId = await getSessionUserId();
   if (userId) redirect("/home");
-  const data = await buildLanding();
+  const built = await buildLanding();
+  const gated = gatedSiteOn();
+  // Behind the signed-out wall nothing plays for a visitor: the lead keeps its
+  // poster and loses its playback and embed links, so none reach the page.
+  const data = gated && built.lead ? { ...built, lead: { ...built.lead, playbackUrl: null, embedUrl: null } } : built;
   return (
     <LandingPage
       data={data}
+      gated={gated}
       cartOn={interestCartOpenTo(null)}
       tape={
         <Suspense fallback={<MarketTapeFallback />}>

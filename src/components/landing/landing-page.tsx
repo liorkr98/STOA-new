@@ -26,19 +26,22 @@ import { CartTap } from "@/components/interest-cart/cart-tap";
  * behind an account. What a stranger gets instead is today's headlines and
  * the wall of analysts.
  */
-const ACTIONS = (
-  <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
-    <Link href="/sign-up" className={buttonClass("ink", "lg", "w-full sm:w-auto")}>
-      Sign up
-    </Link>
-    <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
-      Log in
-    </Link>
-    <Link href="/feed" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
-      Watch now
-    </Link>
-  </div>
-);
+function actions(gated: boolean) {
+  return (
+    <div className="flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-3">
+      <Link href="/sign-up" className={buttonClass("ink", "lg", "w-full sm:w-auto")}>
+        Sign up
+      </Link>
+      <Link href="/sign-in" className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
+        Log in
+      </Link>
+      {/* Behind the signed-out wall the Feed is members-only, so Watch now starts an account. */}
+      <Link href={gated ? "/sign-up?next=%2Ffeed" : "/feed"} className={buttonClass("ghost", "lg", "w-full sm:w-auto")}>
+        Watch now
+      </Link>
+    </div>
+  );
+}
 
 function Reveal({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("landing-reveal", className)}>{children}</div>;
@@ -46,7 +49,7 @@ function Reveal({ children, className }: { children: React.ReactNode; className?
 
 /* ---------- Section 1: the doors ---------- */
 
-function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
+function Doors({ data, tape, gated }: { data: LandingPayload; tape?: ReactNode; gated: boolean }) {
   const a = data.activity;
   const quiet = a.publicationsToday === 0 && a.analystsToday === 0;
   const when = a.window === "week" ? "this week" : "today";
@@ -62,7 +65,7 @@ function Doors({ data, tape }: { data: LandingPayload; tape?: ReactNode }) {
         <p className="mt-6 max-w-[46ch] font-display text-body leading-relaxed text-text-mute">
           Independent analysts publish their research on video.
         </p>
-        <div className="mt-8">{ACTIONS}</div>
+        <div className="mt-8">{actions(gated)}</div>
         <p className="mt-4 text-ticker text-text-mute">Watch a few videos free, then join to keep watching.</p>
         {quiet ? null : (
           <p className="num mt-6 text-ticker text-text-mute">{activity}</p>
@@ -170,8 +173,11 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-/** The wall of faces: twenty-plus portraits at mixed sizes, gap-free, no metrics of any kind. */
-export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: number }) {
+/**
+ * The wall of faces: twenty-plus portraits at mixed sizes, gap-free, no metrics of any kind.
+ * `linked`: each face opens its profile. Off behind the signed-out wall, where profiles are gated.
+ */
+export function FacesWall({ faces, cols = 4, linked = true }: { faces: LandingFace[]; cols?: number; linked?: boolean }) {
   if (faces.length === 0) return null;
   const inputs = faces.map((f, i) => ({ id: f.handle, size: i < 2 ? ("spotlight" as const) : i < 5 ? ("medium" as const) : ("standard" as const) }));
   const placed = new Map(packTiles(inputs, cols, { complete: true }).map((p) => [p.id, p]));
@@ -185,10 +191,9 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
       {shown.map((f) => {
         const p = placed.get(f.handle)!;
         return (
-          <Link
+          <Face
             key={f.handle}
-            href={`/analyst/${f.handle}`}
-            className="landing-face group relative overflow-hidden rounded-panel bg-surface-2 focus-ring"
+            href={linked ? `/analyst/${f.handle}` : null}
             style={{ gridColumn: `${p.col + 1} / span ${p.w}`, gridRow: `${p.row + 1} / span ${p.h}` }}
           >
             {f.avatarUrl ? (
@@ -203,7 +208,7 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
               <div className={cn("truncate font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]", p.size === "standard" ? "text-ticker" : "text-body")}>{f.displayName}</div>
               {p.size !== "standard" ? <div className="truncate text-ticker text-white/85">{f.specialty}</div> : null}
             </div>
-          </Link>
+          </Face>
         );
       })}
     </div>
@@ -211,7 +216,22 @@ export function FacesWall({ faces, cols = 4 }: { faces: LandingFace[]; cols?: nu
   );
 }
 
-function Split({ data }: { data: LandingPayload }) {
+function Face({ href, style, children }: { href: string | null; style: React.CSSProperties; children: ReactNode }) {
+  if (!href) {
+    return (
+      <div className="landing-face group relative overflow-hidden rounded-panel bg-surface-2" style={style}>
+        {children}
+      </div>
+    );
+  }
+  return (
+    <Link href={href} className="landing-face group relative overflow-hidden rounded-panel bg-surface-2 focus-ring" style={style}>
+      {children}
+    </Link>
+  );
+}
+
+function Split({ data, gated }: { data: LandingPayload; gated: boolean }) {
   if (data.faces.length === 0) return null;
   return (
     <section aria-label="Creators" className="gutter-x mx-auto mt-24 max-w-[var(--w-standard)]">
@@ -221,28 +241,43 @@ function Split({ data }: { data: LandingPayload }) {
             <h2 className="font-display text-headline font-semibold tracking-tight">Most popular creators</h2>
             <p className="num mt-2 text-ticker text-text-mute">Analysts people follow. A face, a name, a specialty.</p>
             <div className="mt-6 hidden md:block">
-              <FacesWall faces={data.faces} cols={4} />
+              <FacesWall faces={data.faces} cols={4} linked={!gated} />
             </div>
             <div className="mt-6 md:hidden">
-              <FacesWall faces={data.faces} cols={3} />
+              <FacesWall faces={data.faces} cols={3} linked={!gated} />
             </div>
           </Reveal>
         </div>
       </div>
       <Reveal className="mt-20 text-center">
-        <div>{ACTIONS}</div>
+        <div>{actions(gated)}</div>
       </Reveal>
     </section>
   );
 }
 
-/** `cartOn`: FEATURE_INTEREST_CART is on for signed-out visitors (src/lib/flags). */
-export function LandingPage({ data, tape, cartOn = false }: { data: LandingPayload; tape?: ReactNode; cartOn?: boolean }) {
+/**
+ * `cartOn`: FEATURE_INTEREST_CART is on for signed-out visitors (src/lib/flags).
+ * `gated`: FEATURE_GATED_SITE is on. The lead arrives without playback (the
+ * page strips it), faces do not link to the gated profiles, and Watch now
+ * starts an account.
+ */
+export function LandingPage({
+  data,
+  tape,
+  cartOn = false,
+  gated = false,
+}: {
+  data: LandingPayload;
+  tape?: ReactNode;
+  cartOn?: boolean;
+  gated?: boolean;
+}) {
   return (
     <div className="pb-24">
-      <Doors data={data} tape={tape} />
+      <Doors data={data} tape={tape} gated={gated} />
       <TodayLite data={data} cartOn={cartOn} />
-      <Split data={data} />
+      <Split data={data} gated={gated} />
     </div>
   );
 }
