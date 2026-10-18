@@ -19,7 +19,7 @@ Object.assign(globalThis, {
 
 const { createInterestCart, summariseWeek } = await import("@/lib/interest-cart/cart");
 const { TemporaryLocalCartStore } = await import("@/lib/interest-cart/store");
-const { holdTap, readHeldTap, clearHeldTap } = await import("@/lib/interest-cart/held-tap");
+const { holdTap, readHeldTap, clearHeldTap, returnAfterTap } = await import("@/lib/interest-cart/held-tap");
 const { weekStartOf, addWeeks, weekKey, weekRangeLabel, weekBounds } = await import("@/lib/interest-cart/week");
 
 function fresh(userId = "u1") {
@@ -133,4 +133,10 @@ test("the week's price move is the last close in the week over the close before 
   const pct = weekMove([day(8, 90), day(9, 100), day(12, 101), day(14, 103.1), day(19, 120)], from, to);
   assert.equal(pct?.toFixed(1), "3.1");
   assert.equal(weekMove([day(9, 100)], from, to), null);
+});
+
+test("a signed-out tap returns to its page after sign-up, the landing page to the ticker", () => {
+  assert.equal(returnAfterTap("/", "", "msft"), "/markets/MSFT", "the landing page would bounce a member to Today");
+  assert.equal(returnAfterTap("/markets/NVDA", "", "NVDA"), "/markets/NVDA");
+  assert.equal(returnAfterTap("/search", "?q=nv", "NVDA"), "/search?q=nv");
 });

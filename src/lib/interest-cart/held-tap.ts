@@ -58,3 +58,14 @@ export function clearHeldTap(id: string): void {
     /* nothing to clear */
   }
 }
+
+/**
+ * Where sign-up sends a person who tapped while signed out: back to the page
+ * they tapped on. The landing page is the exception, because it sends every
+ * signed-in visitor to Today, so a tap there returns to the ticker's own page,
+ * where the tap they just made is on screen.
+ */
+export function returnAfterTap(pathname: string, search: string, ticker: string): string {
+  if (pathname === "/") return `/markets/${encodeURIComponent(ticker.toUpperCase())}`;
+  return `${pathname}${search}`;
+}
