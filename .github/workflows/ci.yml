@@ -41,6 +41,9 @@ jobs:
 
       # The Interest Cart ships dark behind FEATURE_INTEREST_CART. Both states
       # run here until launch, when the flag and the off-state suite go.
+      - name: Media link tests
+        run: npm run test:media
+
       - name: Back navigation tests (Interest Cart on)
         run: npm run test:nav
         env:

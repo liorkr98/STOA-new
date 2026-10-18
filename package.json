@@ -34,6 +34,7 @@
     "test:cart": "TZ=Asia/Jerusalem FEATURE_INTEREST_CART=on node --conditions=react-server --import tsx --test src/lib/interest-cart/cart.test.ts src/lib/interest-cart/session.test.ts src/lib/flags/interest-cart.test.ts",
     "test:cart-off": "FEATURE_INTEREST_CART=off node --experimental-test-module-mocks --import tsx --test src/lib/interest-cart/off.test.ts",
     "check:cart-bundle": "node scripts/check-interest-cart-bundle.mjs",
+    "test:media": "node --import tsx --test src/lib/media/media.test.ts",
     "test:contrast": "node --import tsx --test src/lib/design/contrast.test.ts",
     "test:rls": "node --import tsx --test tests/rls/rls.test.ts",
     "test:users": "npx tsx scripts/simulate-users.ts",
