@@ -6,6 +6,7 @@ import {
   type EngagementEventInput,
   type EngagementKind,
 } from "@/lib/db/engagement";
+import { wallRefusal } from "@/lib/gate/server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,9 @@ export const dynamic = "force-dynamic";
  * impressions and plays are worth counting anonymously.
  */
 export async function POST(req: Request) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
+
   const body = (await req.json().catch(() => null)) as { events?: unknown } | null;
   const raw = Array.isArray(body?.events) ? body!.events : null;
   if (!raw) {

@@ -42,6 +42,7 @@ async function handleStats() {
 export const GET = withHandler(
   {
     route: "GET /api/stats/platform",
+    wall: true,
     auth: "none",
     rateLimit: { name: "stats-platform", limit: 120, windowSeconds: 60, by: "ip" },
   },

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { canReadReport, meetsPlanRank } from "@/lib/access/can-read";
 import { getVideoAsset } from "@/lib/db/videos";
 import { getVideoProvider } from "@/lib/video/provider";
+import { wallRefusal } from "@/lib/gate/server";
 
 /**
  * Signed playback token (Part D). The paid-media gate: the viewer must pass
@@ -11,6 +12,9 @@ import { getVideoProvider } from "@/lib/video/provider";
  * RLS on video_assets protects metadata, this protects the stream itself.
  */
 export async function GET(req: Request) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
+
   const supabase = await createClient();
   const {
     data: { user },

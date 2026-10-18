@@ -3,6 +3,7 @@ import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { wallAllows } from "@/lib/gate/server";
 import { rateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { logRequest, newRequestId } from "@/lib/log";
 import { ApiError, errorResponse, toApiError } from "./errors";
@@ -29,6 +30,11 @@ export interface HandlerConfig {
   auth?: AuthMode;
   rateLimit?: { name: string; limit: number; windowSeconds: number; by?: RateLimitBy };
   idempotency?: { scope: string };
+  /**
+   * Returns Stoa content, so it sits behind the signed-out wall: with
+   * FEATURE_GATED_SITE on, a request without a verified session gets a 401.
+   */
+  wall?: boolean;
 }
 
 export interface HandlerContext<P> {
@@ -89,6 +95,10 @@ export function withHandler<P = Record<string, never>>(
         if (authMode === "required" && !user) {
           throw new ApiError("unauthorized", "Sign in to continue");
         }
+      }
+
+      if (config.wall && !(await wallAllows())) {
+        throw new ApiError("unauthorized", "Sign in to use Stoa.");
       }
 
       if (config.rateLimit) {

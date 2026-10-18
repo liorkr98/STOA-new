@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SITE_URL } from "@/lib/seo/site";
 import { allowedCaptionUrl } from "@/lib/video/caption-url";
+import { wallRefusal } from "@/lib/gate/server";
 
 /**
  * Serves a clip's caption track from our own origin.
@@ -20,6 +21,9 @@ import { allowedCaptionUrl } from "@/lib/video/caption-url";
 
 const ONE_HOUR = 60 * 60;
 export async function GET(request: Request) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
+
   const src = new URL(request.url).searchParams.get("src");
   if (!src) return new NextResponse("Missing src", { status: 400 });
 

@@ -4,6 +4,7 @@ import { getQuotesBatch } from "@/lib/engine/market";
 import { countPublishedByTickerBetween } from "@/lib/db/reports";
 import { getCycleWindow } from "@/lib/dispatch/cycle";
 import type { TodayTicker } from "@/lib/today/types";
+import { wallRefusal } from "@/lib/gate/server";
 
 const MAX_SYMBOLS = 12;
 
@@ -14,6 +15,9 @@ const MAX_SYMBOLS = 12;
  * here.
  */
 export async function GET(req: Request) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
+
   const raw = new URL(req.url).searchParams.get("symbols") ?? "";
   const symbols = raw
     .split(",")

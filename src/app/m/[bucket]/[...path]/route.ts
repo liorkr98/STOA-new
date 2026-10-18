@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isPrivateBucket, isSafeObjectPath } from "@/lib/media/storage-url";
 import { signMediaUrls } from "@/lib/media/sign";
+import { wallRefusal } from "@/lib/gate/server";
 
 /**
  * A stored image from a private bucket (report images, chart snapshots, demo
@@ -10,6 +11,8 @@ import { signMediaUrls } from "@/lib/media/sign";
  * has to change and a link handed to a reader stops working within hours.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ bucket: string; path: string[] }> }) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
   const { bucket, path: segments } = await params;
   const path = segments.join("/");
   if (!isPrivateBucket(bucket) || !isSafeObjectPath(path)) return new NextResponse("Not found", { status: 404 });

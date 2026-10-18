@@ -224,6 +224,7 @@ async function handleSearch(req: Request) {
 export const GET = withHandler(
   {
     route: "GET /api/search",
+    wall: true,
     auth: "none",
     rateLimit: { name: "search", limit: 60, windowSeconds: 60, by: "user-or-ip" },
   },

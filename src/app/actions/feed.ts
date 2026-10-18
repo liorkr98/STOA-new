@@ -7,6 +7,7 @@ import { listComments, listLikedCommentIds } from "@/lib/db/comments";
 import { toFeedComment } from "@/lib/feed/comments";
 import type { FeedComment } from "@/lib/feed/types";
 import type { Comment } from "@/lib/types";
+import { wallAllows } from "@/lib/gate/server";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -48,6 +49,7 @@ export async function postFeedComment(reportId: string, body: string, parentId: 
 
 /** Newest comments for one publication, with this reader's likes painted on. */
 export async function loadFeedComments(reportId: string, authorId: string): Promise<FeedComment[]> {
+  if (!(await wallAllows())) return [];
   const comments = await listComments(reportId, 50);
   const userId = await getSessionUserId();
   const likedIds = userId ? await listLikedCommentIds(userId, comments.map((c) => c.id)) : new Set<string>();

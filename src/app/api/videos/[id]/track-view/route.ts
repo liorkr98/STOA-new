@@ -11,6 +11,7 @@ import { withHandler } from "@/lib/http/handler";
 export const POST = withHandler<{ id: string }>(
   {
     route: "POST /api/videos/[id]/track-view",
+    wall: true,
     auth: "optional",
     rateLimit: { name: "track-view", limit: 120, windowSeconds: 60, by: "ip" },
   },

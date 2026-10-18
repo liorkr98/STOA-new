@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 export const GET = withHandler<{ id: string }>(
   {
     route: "GET /api/videos/reports/[id]/status",
+    wall: true,
     auth: "optional",
     rateLimit: { name: "clip-status", limit: 60, windowSeconds: 60, by: "ip" },
   },

@@ -32,6 +32,7 @@ async function handleDispatch(req: Request) {
 export const GET = withHandler(
   {
     route: "GET /api/dispatch",
+    wall: true,
     auth: "none",
     rateLimit: { name: "dispatch", limit: 120, windowSeconds: 60, by: "user-or-ip" },
   },

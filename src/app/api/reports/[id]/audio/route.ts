@@ -7,6 +7,7 @@ import { AI_COST } from "@/lib/ai/credits";
 import { buildAudioBriefScript } from "@/lib/ai/audio-brief-script";
 import { hasTtsProvider, synthesizeSpeech } from "@/lib/ai/tts";
 import { CALL_JOIN, publicationRow, stanceChips } from "@/lib/db/publication-row";
+import { wallRefusal } from "@/lib/gate/server";
 
 const BUCKET = "report-audio";
 const SIGNED_TTL_S = 60 * 60;
@@ -21,6 +22,9 @@ function audioPath(reportId: string): string {
  * file. 404 when no brief has been generated yet.
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const refused = await wallRefusal();
+  if (refused) return refused;
+
   const { id } = await ctx.params;
   const allowed = await canReadReport(id);
   if (!allowed) return NextResponse.json({ error: "locked" }, { status: 403 });

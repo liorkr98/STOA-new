@@ -5,6 +5,7 @@ import { listPublishedByAuthors } from "@/lib/db/reports";
 import { listReadyClipsForReports } from "@/lib/db/video-clips";
 import { attachViewerSocial, reportsToPublications } from "@/lib/feed/build-publications";
 import type { FeedPublication } from "@/lib/feed/types";
+import { wallAllows } from "@/lib/gate/server";
 
 /** How far back an analyst's recent work reaches, counted from their newest piece. */
 const RECENT_SPAN_MS = 7 * 24 * 3_600_000;
@@ -22,6 +23,7 @@ const MAX_FACES = 16;
  * stream itself.
  */
 export async function loadFaceStories(analystIds: string[]): Promise<Record<string, FeedPublication[]>> {
+  if (!(await wallAllows())) return {};
   const ids = [...new Set(analystIds)].slice(0, MAX_FACES);
   if (ids.length === 0) return {};
   const [reports, userId] = await Promise.all([
