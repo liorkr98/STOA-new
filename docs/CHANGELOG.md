@@ -10,6 +10,59 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-18: The signed-out wall (built, shipped dark)
+
+**Behind a flag, off in production.** `FEATURE_GATED_SITE`, read only in
+`src/lib/flags/gated-site.ts`: `off` (unset, the default) leaves the site exactly as it was;
+`on` puts everything but a short public list behind sign-in. **Do not switch it on before
+Bunny token authentication is on** (entry below): until then the wall stops the site handing
+out clip links, but a clip's address can still be fetched directly, so it saves almost no
+Bunny bandwidth.
+
+**What a visitor with no account gets once it is on**
+
+- The landing page, sign-in and sign-up, Pricing, About, Contact and every legal page. Nothing
+  else, analyst profiles included.
+- Everywhere else, a sign-in prompt at the same address that names what is behind it ("Sign in
+  to read this publication", "Sign in to see the research on NVDA", "Sign in to open the
+  Feed"), with the sign-in form, and back to that address after signing in. The page behind it
+  never runs, so none of its content is in the response, for a browser or a crawler.
+- Shared links still preview properly: the prompt carries the publication's title, the
+  analyst's name and an image (a generated card for publications and tickers, the profile
+  cover for analysts). Never the body. Search engines are told not to index it.
+- The landing page plays nothing: the lead shows its poster only, with no playback or player
+  link in the page. The Today headlines stay as text teasers. Faces no longer link to profiles.
+  "Watch now" starts an account.
+- Content endpoints and server actions refuse a visitor without a verified session: search,
+  the Dispatch data, platform stats, Today's ticker counts, clip status, audio, captions,
+  report images (`/m/`), Feed comments, face stories and claim votes. Market prices stay open
+  (the landing page's price tape uses them).
+- The session is verified against Supabase's signing key, not just read from the cookie, so a
+  hand-made cookie does not get through.
+- The sitemap lists only the public pages, and every page behind the wall carries
+  `X-Robots-Tag: noindex` for signed-in readers too. The sitemap is generated at build time,
+  so the flag takes effect on a deploy (as every Vercel setting does).
+
+**Notes**
+
+- **The public Dispatch page disappears under the wall** (it is signed-out-only: members are
+  sent to Today). Marked for deletion once the wall is on for good, rather than left as a page
+  nobody can reach.
+- The Interest Cart's signed-out tap now exists only on the landing page; the tap, sign-up
+  and replay path was re-run under the wall.
+- **At launch, delete the flag** (the module, its checks in middleware, the landing page,
+  the sitemap, `wallAllows`/`wallRefusal`, the `/signed-out` not-found branch),
+  `npm run test:gated-off`, and keep `npm run test:gated` and `scripts/check-gated-site.mjs`.
+
+**Checks:** `npm run test:gated` and `npm run test:gated-off` in CI, and a CI job that builds
+with the flag on, serves it and requests every gated address signed out
+(`scripts/check-gated-site.mjs`): the prompt, noindex, no media URL, endpoints refused, the
+landing page playing nothing, the sitemap public-only. Run against real data, it also checks
+that sentences from a paid and a free publication appear nowhere, and that a signed-in session
+opens every page.
+
+---
+
 ## 2026-10-18: Media links stop being public (security, ahead of the wall)
 
 **Why:** an outside check found every clip downloadable with no account. Most live clips sit in

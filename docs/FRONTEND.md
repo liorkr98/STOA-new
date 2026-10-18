@@ -838,6 +838,20 @@ week, and the cart shows what held their attention. Data model and backend:
 
 ## PART 3 — PUBLIC PAGES (logged out)
 
+### 3.0 The signed-out wall (`FEATURE_GATED_SITE`, 2026-10-18, off by default)
+
+With the flag on, a visitor without a verified session can open only the pages in
+`PUBLIC_PAGES` (`src/lib/gate/routes.ts`): `/`, sign-in, sign-up, password reset, consent,
+Pricing, About, Contact and the legal pages. Every other address is answered by
+`/signed-out` (rewritten in `src/middleware.ts`, so the address bar keeps the page the reader
+asked for): `<AuthForm>` with a heading that names what is behind it (`gatedHeadline`) and,
+for a publication, its title and analyst. Its metadata carries the link preview (title,
+analyst, image: `/api/og/report`, `/api/og/stock`, or the profile cover) and `noindex`.
+Content endpoints use `wall: true` in `withHandler` or `wallRefusal()`; server actions use
+`wallAllows()` (`src/lib/gate/server.ts`). The landing page takes `gated`: the lead loses its
+playback (poster only), `FacesWall` drops its links (`linked={false}`), Watch now goes to
+sign-up. With the flag off, `/signed-out` is a 404 and nothing else changes.
+
 ### 3.1 Homepage — `/` (public Stoa Dispatch)
 
 Logged-out visitors land on the **public** daily Dispatch — same editorial design as
