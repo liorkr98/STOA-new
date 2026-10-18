@@ -92,3 +92,30 @@ export async function updateSession(request: NextRequest) {
 
   return response;
 }
+
+/**
+ * Whether this request carries a session Supabase signed, checked against the
+ * project's public signing key (ES256, cached), so a hand-made cookie does not
+ * pass. Reads the cookies as `updateSession` left them, refreshed if it ran.
+ * Used by the signed-out wall (src/middleware.ts).
+ */
+export async function hasVerifiedSession(request: NextRequest): Promise<boolean> {
+  if (!hasAuthCookie(request)) return false;
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return false;
+  try {
+    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll() {
+          /* read-only: updateSession owns refreshing */
+        },
+      },
+    });
+    const { data, error } = await supabase.auth.getClaims();
+    return !error && typeof data?.claims?.sub === "string" && data.claims.role === "authenticated";
+  } catch {
+    return false;
+  }
+}

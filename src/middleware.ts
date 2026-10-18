@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { hasVerifiedSession, updateSession } from "@/lib/supabase/middleware";
+import { gatedSiteOn } from "@/lib/flags/gated-site";
+import { isOpenPath } from "@/lib/gate/routes";
 
 /**
  * The /dev/* fixture routes render every surface with fictional data. In
@@ -30,7 +32,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return updateSession(request);
+  const response = await updateSession(request);
+  if (!gatedSiteOn() || isOpenPath(pathname)) return response;
+
+  // The signed-out wall (FEATURE_GATED_SITE). Every page not on the public
+  // list needs a verified session. Without one the request is answered by the
+  // sign-in prompt at the same address: the page itself never runs, so none
+  // of its content is in the response. Nothing behind the wall is indexed.
+  if (await hasVerifiedSession(request)) {
+    response.headers.set("X-Robots-Tag", "noindex");
+    return response;
+  }
+  const prompt = request.nextUrl.clone();
+  prompt.pathname = "/signed-out";
+  prompt.search = `?from=${encodeURIComponent(`${pathname}${request.nextUrl.search}`)}`;
+  const walled = NextResponse.rewrite(prompt);
+  for (const cookie of response.cookies.getAll()) walled.cookies.set(cookie);
+  walled.headers.set("X-Robots-Tag", "noindex");
+  walled.headers.set("Cache-Control", "private, no-store");
+  return walled;
 }
 
 /**

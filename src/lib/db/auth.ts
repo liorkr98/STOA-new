@@ -87,3 +87,22 @@ export async function getVerifiedSessionEmail(): Promise<string | null> {
     return null;
   }
 }
+
+/**
+ * The signed-in user's id from a session Supabase signed, checked against the
+ * project's public signing key (`getClaims`, local and cached): a hand-made
+ * cookie returns null. For the signed-out wall's own checks, where the
+ * unverified `getSessionUserId` would let a forged cookie through.
+ */
+export const getVerifiedUserId = cache(async (): Promise<string | null> => {
+  try {
+    const store = await cookies();
+    if (!store.getAll().some((c) => c.name.startsWith("sb-"))) return null;
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getClaims();
+    if (error || data?.claims?.role !== "authenticated" || typeof data.claims.sub !== "string") return null;
+    return data.claims.sub;
+  } catch {
+    return null;
+  }
+});
