@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { SITE_URL } from "@/lib/seo/site";
+import { allowedCaptionUrl } from "@/lib/video/caption-url";
 
 /**
  * Serves a clip's caption track from our own origin.
@@ -10,21 +12,13 @@ import { NextResponse } from "next/server";
  * and nothing plays. Proxying the VTT keeps the track same-origin, so the video
  * needs no CORS at all and captions work whatever the CDN is configured to do.
  *
- * The upstream host is pinned to the configured CDN so this cannot be pointed
- * at an arbitrary URL.
+ * Only Stoa's own library: the upstream host must be the configured pull zone
+ * and the path a clip's caption file, so this cannot be used to fetch anything
+ * else from that zone or from any other. The request names Stoa as its
+ * referrer, which the pull zone's referrer rule requires.
  */
 
-const ONE_DAY = 60 * 60 * 24;
-
-function allowedHost(url: URL): boolean {
-  const cdn = process.env.BUNNY_STREAM_CDN_HOSTNAME?.trim();
-  if (url.protocol !== "https:") return false;
-  if (cdn && url.hostname === cdn) return true;
-  // Any pull zone in the provider's CDN domain, so a hostname change does not
-  // silently drop every caption track.
-  return url.hostname.endsWith(".b-cdn.net");
-}
-
+const ONE_HOUR = 60 * 60;
 export async function GET(request: Request) {
   const src = new URL(request.url).searchParams.get("src");
   if (!src) return new NextResponse("Missing src", { status: 400 });
@@ -35,9 +29,11 @@ export async function GET(request: Request) {
   } catch {
     return new NextResponse("Bad src", { status: 400 });
   }
-  if (!allowedHost(upstream)) return new NextResponse("Host not allowed", { status: 400 });
+  if (!allowedCaptionUrl(upstream, process.env.BUNNY_STREAM_CDN_HOSTNAME)) {
+    return new NextResponse("Not a Stoa caption file", { status: 400 });
+  }
 
-  const res = await fetch(upstream, { cache: "no-store" }).catch(() => null);
+  const res = await fetch(upstream, { cache: "no-store", headers: { Referer: `${SITE_URL}/` } }).catch(() => null);
   if (!res?.ok) return new NextResponse("Captions unavailable", { status: 404 });
 
   const body = await res.text();
@@ -45,7 +41,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       "Content-Type": "text/vtt; charset=utf-8",
-      "Cache-Control": `public, max-age=${ONE_DAY}, immutable`,
+      "Cache-Control": `private, max-age=${ONE_HOUR}`,
     },
   });
 }
