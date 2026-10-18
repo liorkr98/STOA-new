@@ -10,6 +10,50 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-18: Media links stop being public (security, ahead of the wall)
+
+**Why:** an outside check found every clip downloadable with no account. Most live clips sit in
+the `demo-clips` storage folder, which was public; Bunny clips were protected only by a
+"sent from stoamarket.ai" header anyone can fake; and the database handed every clip's link to
+anyone holding the site's public key. This batch is independent of the signed-out wall
+(`FEATURE_GATED_SITE`): it is live for everyone, flag or no flag.
+
+**What changed**
+
+- Clip links (video, poster, preview, captions) are read with the server key and signed before
+  they leave the server (`src/lib/media/sign.ts`, `withMedia` in `src/lib/db/video-clips.ts`).
+  A link handed out works for four hours.
+- Report images, card images, chart screenshots and diagrams are drawn through a Stoa address
+  (`/m/<bucket>/<path>`) that answers with a link valid for four hours. Saved reports did not
+  change: they keep the original address as an identifier (`mediaSrc` in
+  `src/lib/media/storage-url.ts`).
+- A shared report link's preview picture is now a generated card (headline, analyst, ticker,
+  `/api/og/report`) instead of the first chart screenshot, which becomes private.
+- The captions relay fetches only caption files from Stoa's own Bunny library, sends Stoa as
+  the referrer the library requires, and is no longer cached publicly.
+- Once this is live, `demo-clips`, `report-images` and `chart-snapshots` are switched to
+  private. Avatars and covers stay public.
+
+**What needs Krisi**
+
+- **Apply `0069_clip_media_server_only.sql`** (after this batch is on main; safe before too).
+  It removes the five link columns from what anonymous and signed-in readers can select.
+  Rehearsed in PGlite.
+- **Bunny token authentication. Owner: Krisi. Target: Friday 23 October 2026 (proposed;
+  Krisi to confirm).** Until it is on, a Bunny clip's address can still be fetched
+  directly by anyone who fakes the referrer, and **the signed-out wall saves almost no Bunny
+  bandwidth**. Steps: switch on URL token authentication on the pull zone and embed token
+  authentication on the Stream library, then set `BUNNY_CDN_TOKEN_KEY` and
+  `BUNNY_EMBED_TOKEN_KEY` in Vercel and redeploy. Do it in one sitting: with the switch on and
+  no key, every Bunny clip stops playing; with a key set and the switch off, check one clip
+  plays on a preview deploy before production (the signed address carries the token in its
+  path). `FEATURE_GATED_SITE` must not be switched on in production before this is done.
+- **Anonymous read audit:** `docs/backend/anon-read-audit.md`. What a visitor with no account
+  can read from every table, with what to tighten first (reader privacy on `profiles`, who read
+  and liked what) and the database functions to check.
+
+---
+
 ## 2026-10-13: The Interest Cart (built, shipped dark)
 
 **Behind a flag, off in production**
