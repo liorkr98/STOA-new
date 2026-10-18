@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo/site";
 import { UNIVERSE } from "@/lib/universe";
 import { allTickerCoverage, listLockedReportRoutes } from "@/lib/db/reports";
+import { gatedSiteOn } from "@/lib/flags/gated-site";
+import { isPublicPage } from "@/lib/gate/routes";
 
 export const revalidate = 3600;
 
@@ -70,6 +72,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/accessibility`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/compliance-brief`, changeFrequency: "yearly", priority: 0.1 },
   ];
+
+  // Behind the signed-out wall only the public pages are listed: a crawler
+  // would get the sign-in prompt everywhere else.
+  if (gatedSiteOn()) {
+    return [...staticRoutes, { url: `${SITE_URL}/contact`, changeFrequency: "yearly" as const, priority: 0.2 }].filter((r) =>
+      isPublicPage(new URL(r.url).pathname),
+    );
+  }
 
   const [tickers, reports] = await Promise.all([tickerRoutes(), reportRoutes()]);
   return [...staticRoutes, ...tickers, ...reports];
