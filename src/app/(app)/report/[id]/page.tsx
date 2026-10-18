@@ -9,7 +9,6 @@ import { listCardsForReport } from "@/lib/db/publication-cards";
 import { bunnyEmbedUrl, isBunnyConfigured } from "@/lib/video/bunny";
 import { resolveClipPlayback } from "@/lib/demo/clips";
 import { readStoredVideoEdit, sealStoredEdit } from "@/lib/compose/overlays";
-import { analyzeChartBody } from "@/lib/reports/chart-screenshots";
 import { readMinutes } from "@/lib/reports/reading";
 import { listComments, listLikedCommentIds } from "@/lib/db/comments";
 import { toFeedComment } from "@/lib/feed/comments";
@@ -34,16 +33,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const report = await getReport(id);
-  // The first chart's captured screenshot becomes the link-preview image.
-  const firstChartUrl = analyzeChartBody(report?.body).screenshotUrls[0];
+  // The link-preview image is a generated card (title, analyst, ticker): the
+  // report's own images are private and expire, and a preview is fetched
+  // later by someone who is not signed in.
   return {
     title: report?.title ?? "Report",
     alternates: { canonical: `/report/${id}` },
     openGraph: {
       title: report?.title ?? "Report",
       description: report?.summary ?? undefined,
-      images: firstChartUrl ? [{ url: firstChartUrl, width: 800 }] : [],
+      images: report ? [{ url: `/api/og/report?id=${id}`, width: 1200, height: 630 }] : [],
     },
+    twitter: report ? { card: "summary_large_image", images: [`/api/og/report?id=${id}`] } : undefined,
   };
 }
 

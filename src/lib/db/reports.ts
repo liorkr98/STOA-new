@@ -491,3 +491,22 @@ export async function countPublishedByTickerBetween(
   }
   return counts;
 }
+
+/** What a link preview may show of a publication: its title, analyst and ticker, never its body. */
+export type ReportPreview = { title: string; analyst: string | null; ticker: string | null };
+
+export async function getReportPreview(id: string): Promise<ReportPreview | null> {
+  try {
+    const { data } = await createPublicClient()
+      .from("reports")
+      .select("title, ticker, status, author:profiles!reports_author_id_fkey(display_name)")
+      .eq("id", id)
+      .eq("status", "published")
+      .maybeSingle();
+    if (!data) return null;
+    const row = data as unknown as { title: string | null; ticker: string | null; author: { display_name: string | null } | null };
+    return { title: row.title ?? "", analyst: row.author?.display_name ?? null, ticker: row.ticker ?? null };
+  } catch {
+    return null;
+  }
+}
