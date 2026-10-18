@@ -29,6 +29,8 @@ export function AuthForm({
   notice,
   providers,
   next,
+  heading,
+  lede,
 }: {
   mode: "sign-in" | "sign-up";
   refHandle?: string;
@@ -39,6 +41,9 @@ export function AuthForm({
   providers?: OAuthProvider[];
   /** Where to return after signing in or up, e.g. `/feed` from the Feed's wall. */
   next?: string;
+  /** The signed-out wall's prompt names what is behind it (src/app/(marketing)/signed-out). */
+  heading?: string;
+  lede?: React.ReactNode;
 }) {
   const carry = next ? `?next=${encodeURIComponent(next)}` : "";
   const action = mode === "sign-in" ? signIn : signUp;
@@ -46,11 +51,12 @@ export function AuthForm({
 
   return (
     <div className="mx-auto w-full max-w-sm">
-      <h1 className="t-headline">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
+      <h1 className="t-headline">{heading ?? (mode === "sign-in" ? "Welcome back" : "Create your account")}</h1>
       <p className="t-body mt-2">
-        {mode === "sign-in"
-          ? "Sign in to follow analysts and manage your subscriptions."
-          : "Follow analysts, unlock research, and build your reading list."}
+        {lede ??
+          (mode === "sign-in"
+            ? "Sign in to follow analysts and manage your subscriptions."
+            : "Follow analysts, unlock research, and build your reading list.")}
       </p>
 
       <div className="mt-8">
