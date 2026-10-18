@@ -205,8 +205,9 @@ state: skeleton pill for avatar only, nav renders instantly (never block the who
 resolution).
 
 **The cart mark (2026-10-13).** Both clusters carry `<CartTrigger>` (section 2.17) after search:
-the bull and bear pair, grey for an empty week, with this week's tap count on an ink badge. It
-is absent on Compose.
+the bull and bear pair, with this week's tap count on an ink badge. An empty week draws the pair
+in grey and apart, side by side with a gap, because two grey silhouettes overlapping read as one
+shape at nav size. It is absent on Compose.
 
 **Mobile (< 768px):** wordmark on the left, then search, the cart mark, Compose (pencil), Inbox (unread dot)
 and the avatar on the right. **There is no overflow menu.** Feed, Today, Explore and Markets
@@ -821,9 +822,15 @@ week, and the cart shows what held their attention. Data model and backend:
   coverage band (`/markets/T#coverage`). Never a net figure or a sign on a count.
 - **Empty and signed out:** a designed card on white: what a tap is, where taps come from, that the cart clears every
   Monday, last week's ticker count when there was one, and one action.
-- **Signed out:** a tap is held (`held-tap.ts`) and the visitor goes to sign-up with `next`; once
-  a session exists, off the sign-up pages, the tap replays under its held id (so a reload
-  mid-replay cannot count it twice), the held copy clears and the toast fires.
+- **Signed out:** a tap is held (`held-tap.ts`) and the visitor goes to sign-up with `next`
+  (`returnAfterTap`: the page they tapped on, except the landing page, which sends members to
+  Today, so a tap there returns to the ticker's page). Once a session exists, off the sign-up
+  pages, the tap replays under its held id (so a reload mid-replay cannot count it twice), the
+  held copy clears and the toast fires. Sign-up writes the session cookie on the server, which
+  the browser's Supabase client is never told about, so the runtime reads the session again on
+  every navigation (`session.ts`) rather than waiting for `onAuthStateChange`.
+- **The landing lead** keeps its taps out of the Today glimpse's fade: with the cart on, only
+  the headline list fades.
 - **Temporary storage:** taps live in the browser behind `InterestCartStore`
   (`TemporaryLocalCartStore`, keyed by user id) until `interest_taps` exists.
 

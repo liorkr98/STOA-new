@@ -57,10 +57,23 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 **Verified, and what was not**
 
-- The held-tap replay was verified by giving the browser an existing demo account's session
-  after the signed-out tap, not by completing the real sign-up form with a new account. **Before
-  release, run the sign-up handoff once by hand end to end with a brand-new account:** tap
-  signed out, sign up, confirm the tap lands once.
+- The held-tap replay was first verified by giving the browser an existing demo account's
+  session, which reloaded the page and hid a bug. Bar's real sign-up run (2026-10-18) found it.
+
+**Fixes from the real sign-up run (2026-10-18)**
+
+- After signing up, the cart stayed signed out (grey mark, no toast, "Join Stoa to start a
+  cart") until a reload. Sign-up sets the session on the server and the browser's copy of the
+  sign-in library is never told, so the cart now re-reads the session on every page change.
+  The toast fires as the reader lands. `npm run test:cart` covers it without a reload, and a
+  browser run (tap on the landing page, new account, skip onboarding, check the cart, no
+  reload) passed at 1440 and 390 and failed as Bar saw it on the old code.
+- A tap on the landing page returned the new member to Today, because the landing page sends
+  every signed-in visitor there. It now returns them to that ticker's page, where the tap shows.
+- On the landing page the lead's bull and bear sat under the glimpse's fade. Only the headline
+  list fades now (cart on; with it off the page is unchanged).
+- The empty-week nav mark read as one grey blob. The two animals now stand apart in grey; the
+  coloured mark with a count is unchanged.
 
 **What needs Krisi**
 
