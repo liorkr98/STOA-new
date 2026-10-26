@@ -54,6 +54,19 @@ Bunny bandwidth.
   the sitemap, `wallAllows`/`wallRefusal`, the `/signed-out` not-found branch),
   `npm run test:gated-off`, and keep `npm run test:gated` and `scripts/check-gated-site.mjs`.
 
+**One unexplained stall (recorded 2026-10-26).** On 2026-10-18 the cart's signed-out tap,
+sign-up and replay test was run under the wall against a freshly started local production
+server (`next start`, both flags on). The first desktop run timed out after 30 seconds
+waiting for the onboarding page's "Skip for now" button; the phone-width run straight after
+it, on the same server, passed, and so did five more desktop runs. That run saved no
+screenshot or step timings, so which page was on screen is not known. On 2026-10-26 the test
+was given step timings and a failure screenshot and run on six more freshly started servers:
+five passed (onboarding loading within a second of the session being set), and the one
+failure was caused by the test harness itself (an old loop stopped that server mid-run, and
+the browser showed Stoa's offline page), so it says nothing about the original. **Not
+explained, not reproduced.** If it recurs, the step log and screenshot will show whether the
+wall's prompt, the offline page or a slow first render was on screen.
+
 **Checks:** `npm run test:gated` and `npm run test:gated-off` in CI, and a CI job that builds
 with the flag on, serves it and requests every gated address signed out
 (`scripts/check-gated-site.mjs`): the prompt, noindex, no media URL, endpoints refused, the
