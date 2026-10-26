@@ -1,14 +1,18 @@
 name: Vercel Production Deploy
 
-# Triggers a Vercel production build on every push to main.
-# Git integration alone often fails silently — use a Deploy Hook (recommended).
-#
-# One-time setup:
-#   1. Vercel → Project → Settings → Git → Deploy Hooks → Create (branch: main)
-#   2. GitHub → repo Settings → Secrets → Actions → VERCEL_DEPLOY_HOOK = hook URL
+# Production ships only after CI has passed on that exact commit. Vercel's own
+# deploy-on-push for main is off (vercel.json, git.deploymentEnabled.main =
+# false), so this workflow is the only way main reaches production:
+#   - automatically, when the CI run for a push to main completes successfully
+#     and that commit is still main's newest (a newer commit waits for its own
+#     CI run);
+#   - by hand (Run workflow), which checks the same thing first.
+# It deploys through the Vercel Deploy Hook for main (VERCEL_DEPLOY_HOOK).
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -18,6 +22,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Only after a green CI run (or a manual run, which checks CI itself below).
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -26,9 +32,34 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: prj_S05cHjfIQVLDIygss1VM6CZuNIC0
     steps:
+      - name: Main's newest commit has passed CI
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          head=$(gh api "repos/${{ github.repository }}/commits/main" -q .sha)
+          if [ -n "$RUN_SHA" ] && [ "$RUN_SHA" != "$head" ]; then
+            echo "::notice::CI passed for ${RUN_SHA:0:7}, but main has moved on to ${head:0:7}; that commit deploys after its own CI run."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ci=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$head&per_page=1" -q '.workflow_runs[0].conclusion // "none"')
+          if [ "$ci" != "success" ]; then
+            echo "::error::CI for main's newest commit ${head:0:7} is '$ci', not success. Not deploying."
+            exit 1
+          fi
+          echo "CI passed for ${head:0:7}. Deploying."
+          echo "go=true" >> "$GITHUB_OUTPUT"
+
       - name: Decide deploy method
         id: plan
         run: |
+          if [ "${{ steps.guard.outputs.go }}" != "true" ]; then
+            echo "method=skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [ -n "$DEPLOY_HOOK" ]; then
             echo "method=hook" >> "$GITHUB_OUTPUT"
           elif [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ]; then
