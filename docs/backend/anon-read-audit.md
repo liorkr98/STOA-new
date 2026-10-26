@@ -12,11 +12,14 @@ are listed from the migrations for you to check.
 
 ## Fix first
 
-1. **Clip media links.** `video_clips` returns every published clip's Bunny guid and
-   playback, poster, preview and caption URLs (117 rows). **Fixed by migration
-   `0069_clip_media_server_only.sql`**, written and rehearsed in PGlite: anon and
-   authenticated lose SELECT on those five columns only. The code that reads around it is on
-   `fix/media-exposure`; apply 0069 after that is on main (it is also safe before).
+**Work this list in order; the order is deliberate.** Item 1 ranks first because it is reading
+behaviour tied to named accounts on a research product: what someone reads here can reveal
+what they are researching, buying or worried about, and it should never be public.
+
+1. **Who read and liked what.** `report_views` (1,422 rows on 2026-10-26, `viewer_id` per
+   view) and `likes` (`user_id` per like) are fully readable: anyone can list every
+   publication a given account has opened, and when. Recommendation: no anon read on
+   `report_views`; `likes` as counts only.
 2. **Reader privacy on `profiles`.** All 57 profiles, including the 14 plain reader accounts,
    expose `marketing_opt_in`, `marketing_opt_in_at`, `age_attested_at`, `referred_by` and
    `profile_config`, and the retired scoring columns (`score`, `rating`, `tier`,
@@ -24,9 +27,11 @@ are listed from the migrations for you to check.
    scoring" holds on screen but not in the API. Recommendation: column grants for anon limited
    to what a public profile shows (`id, handle, display_name, role, avatar_url, cover_url, bio,
    headline, followers_count, verified, created_at`).
-3. **Who read and liked what.** `report_views` (1,375 rows, `viewer_id` per view) and `likes`
-   (`user_id` per like) are fully readable: anyone can list what a given account has read.
-   Recommendation: no anon read on `report_views`; `likes` counts only.
+3. **Clip media links.** `video_clips` returns every published clip's Bunny guid and
+   playback, poster, preview and caption URLs (117 rows). **Fixed by migration
+   `0069_clip_media_server_only.sql`**, written and rehearsed in PGlite: anon and
+   authenticated lose SELECT on those five columns only. The code that reads around it is on
+   main since 2026-10-18, so 0069 can be applied now; still readable on 2026-10-26.
 
 ## Readable by design, worth a decision
 
