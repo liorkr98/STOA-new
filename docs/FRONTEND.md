@@ -820,6 +820,17 @@ week, and the cart shows what held their attention. Data model and backend:
   draws both at 18px. Under it the company name and, small and quiet, "Price this week"
   (`--up` / `--down`, from `cartTickerInfo`). Then links to the ticker in Markets and to its
   coverage band (`/markets/T#coverage`). Never a net figure or a sign on a count.
+- **Removing a ticker (2026-10-26):** each row in the **current** week ends its links line with
+  a "Remove" text button, spoken as "Remove NVDA from this week". It takes the whole ticker out
+  of the week, both sides, with no confirmation, and raises a toast with Undo that restores the
+  row exactly. Words, not an icon, on the links line: well away from the counts and nothing
+  like a tap control. Where the device hovers it shows on row hover or focus; on touch it is
+  always visible, with a 44px target (`.tap-target`). Past weeks render no control: a closed
+  week is a record. There is no edit: changing one's mind is a tap on the other side, and the
+  row shows 1 bull / 1 bear on purpose. Re-tapping a removed ticker the same week starts a fresh
+  count. The panel has its own toaster (`PANEL_TOASTER`) inside the modal, so Undo is clickable
+  and reachable by Tab while the panel is open. Removal is a soft delete in the data layer
+  (`removeTicker` / `restoreRemoval`, `docs/backend/interest-cart.md`).
 - **Empty and signed out:** a designed card on white: what a tap is, where taps come from, that the cart clears every
   Monday, last week's ticker count when there was one, and one action.
 - **Signed out:** a tap is held (`held-tap.ts`) and the visitor goes to sign-up with `next`

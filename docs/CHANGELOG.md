@@ -10,6 +10,40 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-26: Remove a ticker from the cart (behind FEATURE_INTEREST_CART)
+
+**What a reader notices (cart on)**
+
+- In the cart, each ticker in the current week has "Remove". It takes the whole ticker out of
+  the week, both sides, at once, with "NVDA removed from this week" and Undo. Undo brings the
+  row back exactly. Past weeks have no control: a closed week is a record.
+- The count on the nav mark and the "1 ticker · 1 tap" line update immediately. Removing the
+  last ticker shows the usual empty week. Tapping a removed ticker again the same week starts
+  a fresh count.
+- No way to flip a side or edit a count, by design: a reader who changes their mind taps the
+  other side, and the week shows 1 bull / 1 bear.
+- On a computer "Remove" appears when the row is hovered or focused; on a phone it is always
+  there, with a full-size touch target.
+
+**Data: soft delete.** Nothing is ever deleted. Removed taps are kept and marked (when, which
+removal, why), so Undo can restore exactly them and any future all-readers total can leave them
+out without losing the fact that a tap happened. The tap toast's existing Undo now works the
+same way (it used to delete the tap).
+
+**Found and fixed while testing:** the Undo toast appeared under the open panel's backdrop and
+could not be clicked, and the panel's focus trap kept Tab away from it. The panel now has its
+own toast area inside it.
+
+**What needs Krisi:** the draft `0068_interest_taps.sql` now includes soft delete (removal
+columns, `interest_cart_remove_ticker` / `interest_cart_undo_tap` / `interest_cart_restore`,
+no delete grant, a trigger that lets an update touch only the removal columns, counts that skip
+removed taps). Rehearsed in PGlite: 17 checks, including a past week refused, another
+reader's taps untouchable, a tap's direction uneditable and deletes refused. The spec
+(`docs/backend/interest-cart.md`) has a new section, "Removing a ticker: soft delete, never
+hard delete". Review it before writing the Supabase store.
+
+---
+
 ## 2026-10-18: Media links stop being public (security, ahead of the wall)
 
 **Why:** an outside check found every clip downloadable with no account. Most live clips sit in
