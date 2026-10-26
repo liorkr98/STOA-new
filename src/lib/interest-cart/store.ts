@@ -1,4 +1,4 @@
-import type { CartTap } from "@/lib/interest-cart/types";
+import type { CartRemoval, CartTap } from "@/lib/interest-cart/types";
 import { weekKeyOf } from "@/lib/interest-cart/week";
 
 /**
@@ -10,13 +10,23 @@ import { weekKeyOf } from "@/lib/interest-cart/week";
 export interface InterestCartStore {
   /** Adds a tap. A tap whose id is already stored is ignored, not counted twice. */
   insert(tap: CartTap): Promise<{ inserted: boolean }>;
-  /** Removes this person's newest tap on a ticker and returns it. */
-  removeLatest(userId: string, ticker: string): Promise<CartTap | null>;
-  /** This person's taps made in [fromIso, toIso). */
+  /**
+   * Marks this person's newest counted tap on a ticker removed and returns it.
+   * Soft: the tap is kept. Nothing in a store ever deletes a tap.
+   */
+  removeLatest(userId: string, ticker: string, removal: CartRemoval): Promise<CartTap | null>;
+  /** Marks every counted tap on a ticker in [fromIso, toIso) removed, under one removal id. Returns how many. */
+  removeTicker(userId: string, ticker: string, fromIso: string, toIso: string, removal: CartRemoval): Promise<number>;
+  /** Counts again exactly the taps one removal took out. Returns how many. */
+  restore(userId: string, removalId: string): Promise<number>;
+  /** This person's counted (not removed) taps made in [fromIso, toIso). */
   listBetween(userId: string, fromIso: string, toIso: string): Promise<CartTap[]>;
-  /** The keys of every week this person tapped in, bucketed in their local time. */
+  /** The keys of every week this person has a counted tap in, bucketed in their local time. */
   listWeekKeys(userId: string, weekStartsOn: number): Promise<string[]>;
 }
+
+/** Counted: made and not removed. */
+export const isCounted = (t: CartTap) => !t.removedAt;
 
 export const CART_CHANGED_EVENT = "stoa-cart-changed";
 const KEY_PREFIX = "stoa:cart:v1:";
@@ -55,26 +65,52 @@ export class TemporaryLocalCartStore implements InterestCartStore {
     return { inserted: true };
   }
 
-  async removeLatest(userId: string, ticker: string): Promise<CartTap | null> {
+  async removeLatest(userId: string, ticker: string, removal: CartRemoval): Promise<CartTap | null> {
     const taps = this.read(userId);
     let at = -1;
     taps.forEach((t, i) => {
-      if (t.ticker === ticker && (at < 0 || t.createdAt >= taps[at].createdAt)) at = i;
+      if (t.ticker === ticker && isCounted(t) && (at < 0 || t.createdAt >= taps[at].createdAt)) at = i;
     });
     if (at < 0) return null;
-    const [removed] = taps.splice(at, 1);
+    taps[at] = { ...taps[at], ...marked(removal) };
     this.write(userId, taps);
-    return removed;
+    return taps[at];
+  }
+
+  async removeTicker(userId: string, ticker: string, fromIso: string, toIso: string, removal: CartRemoval): Promise<number> {
+    let count = 0;
+    const taps = this.read(userId).map((t) => {
+      if (t.ticker !== ticker || !isCounted(t) || t.createdAt < fromIso || t.createdAt >= toIso) return t;
+      count += 1;
+      return { ...t, ...marked(removal) };
+    });
+    if (count > 0) this.write(userId, taps);
+    return count;
+  }
+
+  async restore(userId: string, removalId: string): Promise<number> {
+    let count = 0;
+    const taps = this.read(userId).map((t) => {
+      if (t.removalId !== removalId) return t;
+      count += 1;
+      return { ...t, removedAt: null, removalId: null, removedReason: null };
+    });
+    if (count > 0) this.write(userId, taps);
+    return count;
   }
 
   async listBetween(userId: string, fromIso: string, toIso: string): Promise<CartTap[]> {
-    return this.read(userId).filter((t) => t.createdAt >= fromIso && t.createdAt < toIso);
+    return this.read(userId).filter((t) => isCounted(t) && t.createdAt >= fromIso && t.createdAt < toIso);
   }
 
   async listWeekKeys(userId: string, weekStartsOn: number): Promise<string[]> {
-    const keys = new Set(this.read(userId).map((t) => weekKeyOf(new Date(t.createdAt), weekStartsOn)));
+    const keys = new Set(this.read(userId).filter(isCounted).map((t) => weekKeyOf(new Date(t.createdAt), weekStartsOn)));
     return [...keys].sort().reverse();
   }
+}
+
+function marked(removal: CartRemoval): Pick<CartTap, "removedAt" | "removalId" | "removedReason"> {
+  return { removedAt: removal.at.toISOString(), removalId: removal.id, removedReason: removal.reason };
 }
 
 let store: InterestCartStore | null = null;

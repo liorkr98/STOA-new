@@ -24,7 +24,23 @@ export type CartTap = {
   videoSeconds: number | null;
   /** UTC. Weeks are worked out from it when read, in local time. */
   createdAt: string;
+  /**
+   * Soft delete. A removed tap is kept, never deleted: it stops counting in
+   * the reader's cart and in any all-readers total, but the fact that it was
+   * made survives, and Undo can bring it back. Absent on taps stored before
+   * removal existed, which reads as not removed.
+   */
+  removedAt?: string | null;
+  /** Taps removed together (a whole ticker's week) share one id, so Undo restores exactly them. */
+  removalId?: string | null;
+  /** "undo": the tap's own Undo. "remove": the reader took the ticker out of the week. */
+  removedReason?: CartRemovalReason | null;
 };
+
+export type CartRemovalReason = "undo" | "remove";
+
+/** One soft removal: its id groups the taps it touched. */
+export type CartRemoval = { id: string; at: Date; reason: CartRemovalReason };
 
 /** What a caller may add to a tap beyond the four required fields. */
 export type CartTapContext = {

@@ -36,7 +36,7 @@ export function summariseWeek(weekStart: string, taps: CartTap[]): CartWeek {
 }
 
 /**
- * The cart for one signed-in person. These four calls are the whole API.
+ * The cart for one signed-in person. These calls are the whole API.
  * Signed-out taps never reach here: they are held (held-tap.ts) and replayed
  * through `addTap` once there is a session.
  */
@@ -66,9 +66,30 @@ export function createInterestCart(store: InterestCartStore, userId: string) {
       return { tap, inserted };
     },
 
-    async undoLastTap(ticker: string): Promise<CartTap | null> {
+    /** The tap toast's Undo: the newest counted tap on a ticker stops counting (kept, not deleted). */
+    async undoLastTap(ticker: string, now: Date = new Date()): Promise<CartTap | null> {
       const symbol = normaliseTicker(ticker);
-      return symbol ? store.removeLatest(userId, symbol) : null;
+      return symbol ? store.removeLatest(userId, symbol, { id: newId(), at: now, reason: "undo" }) : null;
+    },
+
+    /**
+     * Takes a ticker out of the CURRENT week: every tap on it, both sides.
+     * Only the week containing `now`; a closed week is a record and cannot be
+     * edited. Soft: the taps are kept and `restoreRemoval` brings exactly
+     * them back. Tapping the ticker again starts a fresh count.
+     */
+    async removeTicker(ticker: string, now: Date = new Date()): Promise<{ removalId: string; removed: number } | null> {
+      const symbol = normaliseTicker(ticker);
+      if (!symbol) return null;
+      const { fromIso, toIso } = weekBounds(weekStartOf(now));
+      const removalId = newId();
+      const removed = await store.removeTicker(userId, symbol, fromIso, toIso, { id: removalId, at: now, reason: "remove" });
+      return removed > 0 ? { removalId, removed } : null;
+    },
+
+    /** Undo for `removeTicker`: the same taps count again, so the row is exactly as it was. */
+    async restoreRemoval(removalId: string): Promise<number> {
+      return store.restore(userId, removalId);
     },
 
     /** A week by its start: a Date anywhere in it, or its YYYY-MM-DD key. */

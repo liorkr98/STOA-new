@@ -140,3 +140,99 @@ test("a signed-out tap returns to its page after sign-up, the landing page to th
   assert.equal(returnAfterTap("/markets/NVDA", "", "NVDA"), "/markets/NVDA");
   assert.equal(returnAfterTap("/search", "?q=nv", "NVDA"), "/search?q=nv");
 });
+
+/* ---------- Removing a ticker from the week ---------- */
+
+const NOW = new Date(2026, 9, 14, 12); // Wednesday, week of 12 Oct
+const stored = (userId = "u1") => JSON.parse(memory.get(`stoa:cart:v1:${userId}`) ?? "[]") as Array<Record<string, unknown>>;
+
+async function seededWeek() {
+  const cart = fresh();
+  const at = new Date(2026, 9, 13, 10);
+  for (let i = 0; i < 7; i++) await cart.addTap("NVDA", "bull", "site", { at });
+  await cart.addTap("NVDA", "bear", "site", { at });
+  await cart.addTap("TSLA", "bear", "site", { at });
+  return cart;
+}
+
+test("remove: the whole ticker leaves the week, both sides, and the totals follow", async () => {
+  const cart = await seededWeek();
+  const done = await cart.removeTicker("nvda", NOW);
+  assert.equal(done?.removed, 8);
+  const week = await cart.getWeek(NOW);
+  assert.deepEqual(week.rows, [{ ticker: "TSLA", bull: 0, bear: 1, total: 1 }]);
+  assert.equal(week.tickers, 1);
+  assert.equal(week.taps, 1, "the nav badge reads this week's taps");
+});
+
+test("remove is a soft delete: every tap is kept, marked, under one removal id", async () => {
+  const cart = await seededWeek();
+  const done = await cart.removeTicker("NVDA", NOW);
+  const rows = stored();
+  assert.equal(rows.length, 9, "no tap was deleted");
+  const nvda = rows.filter((t) => t.ticker === "NVDA");
+  assert.ok(nvda.every((t) => t.removalId === done?.removalId && t.removedReason === "remove" && typeof t.removedAt === "string"));
+  assert.ok(rows.filter((t) => t.ticker === "TSLA").every((t) => !t.removedAt));
+});
+
+test("undo restores the row and the count exactly", async () => {
+  const cart = await seededWeek();
+  const before = await cart.getWeek(NOW);
+  const done = await cart.removeTicker("NVDA", NOW);
+  assert.equal(await cart.restoreRemoval(done!.removalId), 8);
+  assert.deepEqual(await cart.getWeek(NOW), before);
+  assert.ok(stored().every((t) => !t.removedAt && !t.removalId));
+});
+
+test("removing the last ticker leaves an empty week", async () => {
+  const cart = fresh();
+  await cart.addTap("AMD", "bull", "site", { at: new Date(2026, 9, 13, 9) });
+  await cart.removeTicker("AMD", NOW);
+  const week = await cart.getWeek(NOW);
+  assert.equal(week.taps, 0);
+  assert.equal(week.tickers, 0);
+  assert.deepEqual(await cart.listWeeks(), [], "an emptied week does not count as a week with taps");
+});
+
+test("past weeks cannot be edited: removing only ever touches the current week", async () => {
+  const cart = fresh();
+  await cart.addTap("NVDA", "bull", "site", { at: new Date(2026, 9, 7, 10) }); // last week
+  await cart.addTap("NVDA", "bull", "site", { at: new Date(2026, 9, 13, 10) }); // this week
+  await cart.removeTicker("NVDA", NOW);
+  assert.deepEqual((await cart.getWeek("2026-10-05")).rows, [{ ticker: "NVDA", bull: 1, bear: 0, total: 1 }]);
+  assert.equal((await cart.getWeek(NOW)).taps, 0);
+  assert.equal(await cart.removeTicker("NVDA", NOW), null, "nothing left to remove this week");
+});
+
+test("removed taps stay removed across a reload", async () => {
+  const cart = await seededWeek();
+  await cart.removeTicker("NVDA", NOW);
+  const reloaded = createInterestCart(new TemporaryLocalCartStore(), "u1");
+  assert.deepEqual((await reloaded.getWeek(NOW)).rows.map((r) => r.ticker), ["TSLA"]);
+});
+
+test("re-tapping a removed ticker the same week starts a fresh count; the removed taps stay removed", async () => {
+  const cart = await seededWeek();
+  const done = await cart.removeTicker("NVDA", NOW);
+  await cart.addTap("NVDA", "bear", "site", { at: NOW });
+  const row = (await cart.getWeek(NOW)).rows.find((r) => r.ticker === "NVDA");
+  assert.deepEqual(row, { ticker: "NVDA", bull: 0, bear: 1, total: 1 });
+  assert.equal(stored().filter((t) => t.removalId === done?.removalId).length, 8);
+});
+
+test("the tap toast's Undo is a soft delete too", async () => {
+  const cart = fresh();
+  await cart.addTap("AMD", "bull", "site", { at: new Date(2026, 9, 13, 9) });
+  await cart.undoLastTap("AMD", NOW);
+  assert.equal((await cart.getWeek(NOW)).taps, 0);
+  const [tap] = stored();
+  assert.equal(tap.removedReason, "undo");
+  assert.equal(await cart.undoLastTap("AMD", NOW), null, "an undone tap is not undone twice");
+});
+
+test("taps stored before removal existed still count", async () => {
+  memory.clear();
+  memory.set("stoa:cart:v1:u1", JSON.stringify([{ id: "old", userId: "u1", ticker: "IBM", direction: "bull", source: "site", videoId: null, videoChannel: null, videoSeconds: null, createdAt: new Date(2026, 9, 13, 9).toISOString() }]));
+  const cart = createInterestCart(new TemporaryLocalCartStore(), "u1");
+  assert.equal((await cart.getWeek(NOW)).taps, 1);
+});
