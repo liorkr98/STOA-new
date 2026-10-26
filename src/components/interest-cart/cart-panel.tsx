@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
+import { Toaster } from "sonner";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { buttonClass } from "@/components/ui/button";
@@ -12,6 +13,13 @@ import { useInterestCart } from "@/components/interest-cart/gate";
 import { cartTickerInfo, type CartTickerInfo } from "@/app/actions/interest-cart";
 import type { CartRow, CartWeek } from "@/lib/interest-cart/types";
 import { RESET_DAY, addWeeks, parseWeekKey, weekBounds, weekKey, weekRangeLabel, weekStartOf } from "@/lib/interest-cart/week";
+
+/**
+ * Toasts raised from inside the open panel (a removal's Undo) go to a toaster
+ * that lives inside it: the page's own toaster sits outside the modal, where
+ * the scrim takes the click and the focus trap keeps Tab away from Undo.
+ */
+export const PANEL_TOASTER = "cart-panel";
 
 /** Compose owns the whole screen: no cart there. */
 export function cartAllowedOn(pathname: string): boolean {
@@ -90,6 +98,22 @@ function OpenPanel({ onClosed }: { onClosed: () => void }) {
           className="cart-panel fixed inset-0 z-[75] flex flex-col bg-paper outline-none md:inset-y-0 md:left-auto md:right-0 md:w-[420px] md:border-l md:border-border md:shadow-card"
         >
           <CartBody onClose={requestClose} leaveTo={leaveTo} />
+          <Toaster
+            id={PANEL_TOASTER}
+            // Bottom right sits inside the 420px panel on a computer; a phone
+            // draws toasts across the bottom whatever the position.
+            position="bottom-right"
+            aria-live="polite"
+            toastOptions={{
+              style: {
+                background: "var(--surface)",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-panel)",
+                fontFamily: "var(--font-sans)",
+              },
+            }}
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
@@ -201,29 +225,61 @@ function CartBody({ onClose, leaveTo }: { onClose: () => void; leaveTo: LeaveTo 
           </nav>
 
           <div className="scroll-area scroll-bare min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(var(--safe-bottom)+2rem)]">
-            {week && week.taps > 0 ? (
-              <>
-                <p className="num mt-3 text-ticker text-text-mute">
-                  {plural(week.tickers, "ticker", "tickers")} · {plural(week.taps, "tap", "taps")}
-                  {isCurrent ? ` · resets ${RESET_DAY}` : ""}
-                </p>
-                <ul className="mt-2 flex flex-col gap-3">
-                  {week.rows.map((row) => (
-                    <CartRowItem key={row.ticker} row={row} info={info[`${shownKey}:${row.ticker}`]} leaveTo={leaveTo} />
-                  ))}
-                </ul>
-                <p className="mt-6 text-ticker text-text-mute">
-                  Soon, taps you make while watching finance videos on YouTube will land here too.
-                </p>
-              </>
-            ) : week ? (
-              <EmptyWeek current={isCurrent} lastWeek={isCurrent ? lastWeek : null} leaveTo={leaveTo} />
+            {week ? (
+              <WeekContents
+                week={week}
+                current={isCurrent}
+                lastWeek={isCurrent ? lastWeek : null}
+                info={(ticker) => info[`${shownKey}:${ticker}`]}
+                onRemove={isCurrent ? runtime?.removeTicker : undefined}
+                leaveTo={leaveTo}
+              />
             ) : null}
           </div>
         </>
       ) : (
         <SignedOut leaveTo={leaveTo} />
       )}
+    </>
+  );
+}
+
+/** "2 tickers · 5 taps", plus when it resets for the current week. */
+export function weekSummary(week: CartWeek, current: boolean): string {
+  return `${plural(week.tickers, "ticker", "tickers")} · ${plural(week.taps, "tap", "taps")}${current ? ` · resets ${RESET_DAY}` : ""}`;
+}
+
+/**
+ * One week's rows, or its empty state. Only the current week gets
+ * `onRemove`: a closed week is a record and its rows carry no control.
+ */
+export function WeekContents({
+  week,
+  current,
+  lastWeek,
+  info,
+  onRemove,
+  leaveTo,
+}: {
+  week: CartWeek;
+  current: boolean;
+  lastWeek: CartWeek | null;
+  info: (ticker: string) => CartTickerInfo | undefined;
+  onRemove?: (ticker: string) => void;
+  leaveTo: LeaveTo;
+}) {
+  if (week.taps === 0) return <EmptyWeek current={current} lastWeek={lastWeek} leaveTo={leaveTo} />;
+  return (
+    <>
+      <p className="num mt-3 text-ticker text-text-mute">{weekSummary(week, current)}</p>
+      <ul className="mt-2 flex flex-col gap-3">
+        {week.rows.map((row) => (
+          <CartRowItem key={row.ticker} row={row} info={info(row.ticker)} onRemove={current ? onRemove : undefined} leaveTo={leaveTo} />
+        ))}
+      </ul>
+      <p className="mt-6 text-ticker text-text-mute">
+        Soon, taps you make while watching finance videos on YouTube will land here too.
+      </p>
     </>
   );
 }
@@ -236,7 +292,17 @@ function prefixed(weekKeyStr: string, r: Record<string, CartTickerInfo>): Record
  * Layout C: the side that won drawn larger, the other beside it smaller and
  * quieter; a tie draws both at the same size. Never a net figure.
  */
-function CartRowItem({ row, info, leaveTo }: { row: CartRow; info?: CartTickerInfo; leaveTo: LeaveTo }) {
+function CartRowItem({
+  row,
+  info,
+  onRemove,
+  leaveTo,
+}: {
+  row: CartRow;
+  info?: CartTickerInfo;
+  onRemove?: (ticker: string) => void;
+  leaveTo: LeaveTo;
+}) {
   const tie = row.bull === row.bear;
   const lead = row.bull >= row.bear ? "bull" : "bear";
   const sides = (lead === "bull" ? ["bull", "bear"] : ["bear", "bull"]) as ("bull" | "bear")[];
@@ -244,7 +310,7 @@ function CartRowItem({ row, info, leaveTo }: { row: CartRow; info?: CartTickerIn
   const markets = `/markets/${encodeURIComponent(row.ticker)}`;
 
   return (
-    <li className="py-3">
+    <li className="group py-3">
       <div className="flex items-center justify-between gap-3">
         <span className="cart-ticker text-title text-text">{row.ticker}</span>
         <span className="flex items-center gap-3" aria-label={`${plural(row.bull, "bull tap", "bull taps")}, ${plural(row.bear, "bear tap", "bear taps")}`}>
@@ -287,6 +353,20 @@ function CartRowItem({ row, info, leaveTo }: { row: CartRow; info?: CartTickerIn
         >
           Analysts covering {row.ticker}
         </Link>
+        {onRemove ? (
+          // Words, not an icon, at the end of the links line: well away from
+          // the bull and bear counts and nothing like a tap control. On a
+          // device that hovers it shows on hover or focus; on touch it is
+          // always there, with a 44px target from .tap-target.
+          <button
+            type="button"
+            aria-label={`Remove ${row.ticker} from this week`}
+            onClick={() => onRemove(row.ticker)}
+            className="focus-ring tap-target ml-auto rounded-inner text-text-mute underline-offset-2 hover:text-text hover:underline [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
+          >
+            Remove
+          </button>
+        ) : null}
       </div>
     </li>
   );

@@ -26,6 +26,8 @@ export type CartRuntime = {
   thisWeek: CartWeek | null;
   rowFor: (ticker: string) => CartRow | null;
   tap: (ticker: string, direction: CartDirection) => void;
+  /** Takes a ticker out of this week (all its taps), with Undo on the toast. */
+  removeTicker: (ticker: string) => void;
   isOpen: boolean;
   open: () => void;
   close: () => void;

@@ -11,7 +11,7 @@ import { clearHeldTap, holdTap, readHeldTap, returnAfterTap } from "@/lib/intere
 import { readSessionUserId } from "@/lib/interest-cart/session";
 import type { CartDirection, CartWeek } from "@/lib/interest-cart/types";
 import { publishCartRuntime, type CartRuntime } from "@/components/interest-cart/gate";
-import { CartPanel } from "@/components/interest-cart/cart-panel";
+import { CartPanel, PANEL_TOASTER } from "@/components/interest-cart/cart-panel";
 import { weekKey, weekStartOf } from "@/lib/interest-cart/week";
 
 /** Pages a held tap must not replay on: the person is still signing up. */
@@ -24,6 +24,14 @@ function added(cart: InterestCart, ticker: string) {
     id: `cart-${ticker}`,
     action: { label: "Undo", onClick: () => void cart.undoLastTap(ticker) },
   });
+}
+
+/** A ticker taken out of the week on screen before the store has answered. */
+export function without(week: CartWeek, ticker: string): CartWeek {
+  const gone = week.rows.find((r) => r.ticker === ticker);
+  if (!gone) return week;
+  const rows = week.rows.filter((r) => r.ticker !== ticker);
+  return { ...week, rows, tickers: rows.length, taps: week.taps - gone.total };
 }
 
 /** A tap counted on screen before the store has answered. */
@@ -136,6 +144,30 @@ export function CartRuntimeHost() {
     [cart, router],
   );
 
+  const removeTicker = useCallback(
+    (ticker: string) => {
+      if (!cart) return;
+      const symbol = ticker.toUpperCase();
+      setThisWeek((w) => (w ? without(w, symbol) : w));
+      // The tap toast's Undo would now find nothing to take back.
+      toast.dismiss(`cart-${symbol}`);
+      void cart
+        .removeTicker(symbol)
+        .then((done) => {
+          if (!done) return;
+          toast(`${symbol} removed from this week`, {
+            id: `cart-remove-${symbol}`,
+            // Removing happens in the open panel: its own toaster, so Undo is
+            // clickable and reachable by keyboard there.
+            toasterId: PANEL_TOASTER,
+            action: { label: "Undo", onClick: () => void cart.restoreRemoval(done.removalId) },
+          });
+        })
+        .catch(() => toast.error(`Could not remove ${symbol}. Try again.`));
+    },
+    [cart],
+  );
+
   const rowFor = useCallback(
     (ticker: string) => thisWeek?.rows.find((r) => r.ticker === ticker.toUpperCase()) ?? null,
     [thisWeek],
@@ -145,8 +177,8 @@ export function CartRuntimeHost() {
   const close = useCallback(() => setOpen(false), []);
 
   const value = useMemo<CartRuntime>(
-    () => ({ cart, signedIn: Boolean(userId), thisWeek: cart ? thisWeek : null, rowFor, tap, isOpen, open, close }),
-    [cart, userId, thisWeek, rowFor, tap, isOpen, open, close],
+    () => ({ cart, signedIn: Boolean(userId), thisWeek: cart ? thisWeek : null, rowFor, tap, removeTicker, isOpen, open, close }),
+    [cart, userId, thisWeek, rowFor, tap, removeTicker, isOpen, open, close],
   );
 
   useEffect(() => {
