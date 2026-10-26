@@ -28,15 +28,19 @@ The app runs the whole cart against one interface, `InterestCartStore`
 `TemporaryLocalCartStore`, which keeps taps in the browser's localStorage, keyed by user id.
 Taps made today do not follow a reader to another device and are not carried into the table.
 
-Swapping in Supabase means writing one class, `SupabaseCartStore`, with the same four methods,
+Swapping in Supabase means writing one class, `SupabaseCartStore`, with the same six methods,
 and changing the one line in `cartStore()`. No component changes:
 
 | Interface method | Supabase call |
 |---|---|
 | `insert(tap)` | `insert` into `interest_taps` with `onConflict: "id"`, `ignoreDuplicates: true`; `inserted` = a row came back |
-| `removeLatest(userId, ticker)` | select the newest id for (`auth.uid()`, ticker) via the ticker index, then delete it by id |
-| `listBetween(userId, from, to)` | `rpc("interest_cart_week", { p_from, p_to })` (or a range select) |
-| `listWeekKeys(userId, startsOn)` | `rpc("interest_cart_weeks", { p_time_zone, p_week_starts_on })` |
+| `removeLatest(userId, ticker, removal)` | `rpc("interest_cart_undo_tap", { p_ticker })`: the tap toast's Undo, a soft removal |
+| `removeTicker(userId, ticker, from, to, removal)` | `rpc("interest_cart_remove_ticker", { p_ticker, p_from, p_to })` |
+| `restore(userId, removalId)` | `rpc("interest_cart_restore", { p_removal_id })` |
+| `listBetween(userId, from, to)` | `rpc("interest_cart_week", { p_from, p_to })` (counted taps only) |
+| `listWeekKeys(userId, startsOn)` | `rpc("interest_cart_weeks", { p_time_zone, p_week_starts_on })` (counted taps only) |
+
+The browser's `removal.id` is not sent: the database makes the removal id and returns it.
 
 The browser passes its IANA zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`).
 
@@ -55,22 +59,60 @@ All of this goes through `src/lib/db/*` like every other Supabase call.
 | `video_channel` | text, null | Extension only. |
 | `video_seconds` | integer, null | Extension only: seconds into the video when tapped. |
 | `created_at` | timestamptz, not null | UTC, **stamped by a trigger**. A client cannot backdate a tap into an earlier week. |
+| `removed_at` | timestamptz, null | Soft delete. Null while the tap counts. Stamped by the database, never the client. |
+| `removal_id` | uuid, null | Taps removed together (a ticker's whole week) share one id; Undo restores exactly them. |
+| `removed_reason` | text, null | `undo` (the tap toast's Undo) or `remove` (the reader took the ticker out of the week). |
 
-A check constraint keeps the three video columns null unless `source = 'extension'`.
+A check constraint keeps the three video columns null unless `source = 'extension'`, and another
+keeps the three removal columns all set or all null.
+
+## Removing a ticker: soft delete, never hard delete
+
+A reader can take a ticker out of the **current** week from the cart panel: every tap on it,
+both sides, in one go, with Undo on the toast. Bar's rule (2026-10-26): **rows are never
+deleted.** A removal marks the taps (`removed_at`, `removal_id`, `removed_reason`) and keeps
+them, because:
+
+- **Undo needs them.** Undo clears the marks on exactly the taps of that removal, so the row
+  comes back with the same bull and bear counts.
+- **Any all-readers weekly total must exclude removed taps without losing the fact that a tap
+  happened.** Counts read `where removed_at is null`; the rows stay for anything that later needs
+  to know a tap was made and withdrawn.
+- **Deleting rows outright makes the numbers dishonest later.**
+
+Rules the database enforces, not only the panel:
+
+- **Only the current week.** `interest_cart_remove_ticker(p_ticker, p_from, p_to)` refuses unless
+  `now()` falls inside `[p_from, p_to)` and the range is at most 8 days (a week, with room for a
+  clock change). A closed week is a record.
+- **Restore only soon after.** `interest_cart_restore(p_removal_id)` restores only a removal made
+  in the last hour (Undo lives on a toast), so a closed week cannot be edited by restoring later.
+- **Removing does not block.** Tapping the ticker again the same week inserts a new, counted tap:
+  a fresh count. The removed taps stay removed.
+- **No editing.** A tap's direction, ticker and time can never change: a trigger allows an update
+  to touch only the three removal columns, and stamps `removed_at` itself. Changing one's mind is
+  a tap on the other side, which the cart shows as 1 bull / 1 bear on purpose.
+- **The tap toast's Undo is a soft removal too** (`interest_cart_undo_tap`, reason `undo`): the
+  newest counted tap on that ticker stops counting and is kept.
+- There is still **no `delete` privilege** for anyone but the service role. Account deletion
+  cascades from `profiles` as before.
 
 ## Row-level security
 
 A person only ever reads their own taps. This is enforced in the database, not in the component:
 
-- `select`, `insert` and `delete` policies all require `user_id = auth.uid()`.
-- There is no `update` policy, so taps cannot be edited by anyone through the API.
+- `select`, `insert` and `update` policies all require `user_id = auth.uid()`. There is no
+  `delete` policy or grant: nobody deletes a tap through the API.
+- `update` is granted on the three removal columns only, and a trigger refuses any update that
+  touches another column. In practice the app only updates through the three removal functions.
 - `anon` has no access at all.
 - Both aggregate functions are `security invoker` (RLS still applies). They also filter on
   `auth.uid()` in their own `where`, so they cannot return another person's rows even if
   someone later adds a broader policy.
 
 Worth adding to `tests/rls/rls.test.ts` once applied: user A inserts, user B selects and gets
-nothing; B cannot delete A's tap; nobody can update a tap; anon selects nothing.
+nothing; B cannot remove or restore A's taps; nobody can delete a tap or change its ticker,
+direction or time; removing a ticker in a past week is refused; anon selects nothing.
 
 ## Indexes
 
@@ -78,13 +120,17 @@ nothing; B cannot delete A's tap; nobody can update a tap; anon selects nothing.
   cart read is an equality on `user_id` plus a range on `created_at` (the week's UTC bounds).
   This index serves that read, the week list and the nav badge count without touching any
   other user's rows.
-- `(user_id, ticker, created_at desc)`: Undo, which removes this person's newest tap on a ticker.
+- `(user_id, ticker, created_at desc)`: the tap's Undo (newest counted tap on a ticker) and
+  removing a ticker from the week.
+- `(removal_id) where removal_id is not null`: restoring one removal.
 - The primary key on `id` makes the idempotent replay a cheap conflict check.
 
 ## The weekly per-user aggregate
 
 A plain view cannot take the reader's time zone, and a week is a *local* week, so the
 aggregate ships as two security-invoker SQL functions, which behave like parameterised views:
+
+Both count only taps that have not been removed (`removed_at is null`).
 
 - `interest_cart_week(p_from, p_to)` returns `ticker, bull, bear, total` for the caller,
   most-tapped first. The app computes `p_from` / `p_to` from the reader's local Monday
@@ -100,6 +146,8 @@ Not built and not in the migration, but its shape is drafted there, commented ou
 reviewed with the table: `interest_cart_global_weekly`, a materialized view of `week_start,
 ticker, bull, bear, people`.
 
+- It counts only taps that have not been removed (`where removed_at is null`); the removed rows
+  stay in the table.
 - It holds no user ids.
 - It drops any ticker fewer than 10 distinct people tapped that week, so a rare ticker cannot
   point at one person.
@@ -187,7 +235,9 @@ moment of attention. Merging them would make a follow look like a view.
 
 ## What Krisi needs to do
 
-1. Review and apply `0068_interest_taps.sql` (remove the DRAFT header when applying).
+1. Review and apply `0068_interest_taps.sql` (remove the DRAFT header when applying). It now
+   includes soft delete (removal columns, the removal functions, no delete grant): review that
+   section before writing the store.
 2. Add the RLS cases above to `npm run test:rls`.
 3. Write `SupabaseCartStore` in `src/lib/db/` and swap it into `cartStore()`. Decide whether
    to import the temporary browser taps on first sign-in (as follows did) or let them go.
