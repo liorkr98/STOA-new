@@ -31,6 +31,7 @@ test("a duration inside a sentence is not an accessibility line", () => {
   assert.equal(isAccessibilityLine("wait 5 seconds and buy"), false);
   assert.equal(isAccessibilityLine("2 minutes, 1 second"), true);
   assert.equal(isAccessibilityLine("דקה אחת ו 5 שניות"), true);
+  assert.equal(isAccessibilityLine("6 דקות, 54 שניות"), true);
 });
 
 test("chapter headings without a timestamp are skipped", () => {

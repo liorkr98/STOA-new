@@ -1,7 +1,12 @@
 import { parseSegmentBlocks, transcriptLanguage, type Segment } from "@/lib/transcript";
 
-const PANEL_IDS = ["engagement-panel-searchable-transcript", "PAmodern_transcript_view"];
-const PANEL_SELECTOR = PANEL_IDS.map((id) => `ytd-engagement-panel-section-list-renderer[target-id="${id}"]`).join(",");
+/**
+ * Every engagement panel, whatever it is called. The transcript has lived in
+ * "engagement-panel-searchable-transcript", "PAmodern_transcript_view" and,
+ * in YouTube's newest layout, a panel with no name at all, so the panel is
+ * found by what it holds (transcript lines), never by its name.
+ */
+const PANEL_SELECTOR = "ytd-engagement-panel-section-list-renderer";
 const SEGMENT_SELECTOR = "ytd-transcript-segment-renderer, transcript-segment-view-model";
 const OPEN_BUTTON = "ytd-video-description-transcript-section-renderer button";
 const EXPANDED = "ENGAGEMENT_PANEL_VISIBILITY_EXPANDED";
@@ -13,7 +18,7 @@ const STYLE_ID = "stoa-transcript-quiet";
  * pushed off screen: it stays where it is, see-through, under the page and
  * unclickable, for the second or two it takes to load.
  */
-const QUIET_CSS = `${PANEL_IDS.map((id) => `ytd-engagement-panel-section-list-renderer[target-id="${id}"].stoa-quiet`).join(",")}{position:fixed!important;top:0!important;right:0!important;width:360px!important;height:480px!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}`;
+const QUIET_CSS = `${PANEL_SELECTOR}.stoa-quiet{position:fixed!important;top:0!important;right:0!important;width:360px!important;height:480px!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}`;
 
 export type PanelTranscript = { segments: Segment[]; language: string; label: string | null };
 
@@ -50,11 +55,16 @@ function readPanel(panel: HTMLElement, duration?: number): PanelTranscript | nul
 export async function readTranscriptFromPanel(videoId: string, duration?: number): Promise<PanelTranscript | null> {
   const onVideo = () => new URLSearchParams(location.search).get("v") === videoId;
 
-  const open = panels().find((p) => p.getAttribute("visibility") === EXPANDED);
+  const open = panels().find((p) => p.getAttribute("visibility") === EXPANDED && p.querySelector(SEGMENT_SELECTOR));
   if (open) {
     const read = readPanel(open, duration);
     if (read) return read;
   }
+  // Panels the reader already has open (comments, chapters) are left alone.
+  const alreadyOpen = new Set(panels().filter((p) => p.getAttribute("visibility") === EXPANDED));
+  const quiet = (p: HTMLElement) => {
+    if (!alreadyOpen.has(p)) p.classList.add("stoa-quiet");
+  };
 
   const button = await waitFor(() => (onVideo() ? document.querySelector<HTMLButtonElement>(OPEN_BUTTON) : null), 20_000);
   if (!button || !onVideo()) return null;
@@ -67,9 +77,9 @@ export async function readTranscriptFromPanel(videoId: string, duration?: number
   }
 
   // Marked before the click, so the panel is never drawn visible for a frame.
-  const marker = new MutationObserver(() => panels().forEach((p) => p.classList.add("stoa-quiet")));
-  marker.observe(document.body, { childList: true, subtree: true });
-  panels().forEach((p) => p.classList.add("stoa-quiet"));
+  const marker = new MutationObserver(() => panels().forEach(quiet));
+  marker.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["visibility"] });
+  panels().forEach(quiet);
   const scroll = window.scrollY;
 
   try {

@@ -38,7 +38,9 @@ export function fontFaces(url: (path: string) => string): string {
 
 /** Shared by the card's shadow root and the panel's. */
 export const BASE_CSS = `
-:host { all: initial; ${TOKENS} }
+/* \`all\` does not reset direction: on Hebrew or Arabic YouTube the card would
+ * inherit right-to-left and mirror. The card is English and stays left-to-right. */
+:host { all: initial; direction: ltr; unicode-bidi: isolate; ${TOKENS} }
 * { box-sizing: border-box; }
 button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; margin: 0; }
 button:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
