@@ -3,21 +3,21 @@
 :root { --ink: #101418; --paper: #fafafa; --surface: #ffffff; --mute: #5b6470; --border: #e6e8eb; --coral: #ff5a47; }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); }
-body { font: 400 16px/1.55 "Stoa Inter", Inter, system-ui, sans-serif; display: flex; justify-content: center; padding: 48px 16px; }
+body { font: 400 16px/1.55 "Stoa Inter", Inter, system-ui, sans-serif; display: flex; justify-content: center; padding: 28px 16px; }
 main { width: 100%; max-width: 560px; }
-.mark { display: flex; align-items: flex-end; gap: 4px; height: 28px; margin-bottom: 28px; }
+.mark { display: flex; align-items: flex-end; gap: 4px; height: 28px; margin-bottom: 18px; }
 .mark span { display: block; width: 6px; border-radius: 2px; background: var(--ink); }
-h1 { margin: 0; font: 700 32px/1.15 "Stoa Bricolage", "Bricolage Grotesque", system-ui, sans-serif; }
-.deck { margin: 12px 0 0; color: var(--mute); font-size: 17px; }
-ul { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 14px; }
-li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+h1 { margin: 0; font: 700 30px/1.15 "Stoa Bricolage", "Bricolage Grotesque", system-ui, sans-serif; }
+.deck { margin: 8px 0 0; color: var(--mute); font-size: 16px; }
+ul { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 8px; }
+li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px 16px; line-height: 1.45; }
 li strong { display: block; font-weight: 600; }
 li span { color: var(--mute); font-size: 15px; }
-.actions { display: flex; gap: 12px; align-items: center; margin-top: 32px; flex-wrap: wrap; }
+.actions { display: flex; gap: 12px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
 button { font: 600 16px/1 "Stoa Inter", Inter, system-ui, sans-serif; min-height: 48px; padding: 0 24px; border-radius: 999px; cursor: pointer; border: 0; }
 button.agree { background: var(--coral); color: var(--ink); }
 button.later { background: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 0 8px; }
 button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.small { margin-top: 20px; color: var(--mute); font-size: 14px; }
+.small { margin-top: 14px; color: var(--mute); font-size: 14px; }
 .small a { color: var(--ink); }
-.done { margin-top: 32px; padding: 16px; border-radius: 14px; background: #f2f3f5; }
+.done { margin-top: 20px; padding: 16px; border-radius: 14px; background: #f2f3f5; }
