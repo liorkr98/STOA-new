@@ -10,7 +10,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 mock.module("@/app/actions/interest-cart", { namedExports: { cartTickerInfo: async () => ({}), interestCartAccess: async () => ({ open: true, recheck: false }) } });
 
-const { WeekContents, weekSummary } = await import("@/components/interest-cart/cart-panel");
+const { WeekContents, weekSummary, videoClock, videoMomentUrl } = await import("@/components/interest-cart/cart-panel");
 const { cartMarkLabel } = await import("@/components/interest-cart/cart-trigger-impl");
 const { without } = await import("@/components/interest-cart/cart-runtime");
 const { summariseWeek } = await import("@/lib/interest-cart/cart");
@@ -18,7 +18,7 @@ const { summariseWeek } = await import("@/lib/interest-cart/cart");
 const tap = (ticker: string, direction: "bull" | "bear") => ({ id: Math.random().toString(36), userId: "u", ticker, direction, source: "site" as const, videoId: null, videoChannel: null, videoSeconds: null, createdAt: "2026-10-13T10:00:00.000Z" });
 const week = summariseWeek("2026-10-12", [...Array(7)].map(() => tap("NVDA", "bull")).concat([tap("NVDA", "bear"), tap("TSLA", "bear")]));
 type WeekProps = Parameters<typeof WeekContents>[0];
-const render = (props: Pick<WeekProps, "week" | "current" | "onRemove">) =>
+const render = (props: Pick<WeekProps, "week" | "current" | "onRemove"> & Partial<Pick<WeekProps, "sources">>) =>
   renderToStaticMarkup(h(WeekContents, { lastWeek: null, info: () => undefined, leaveTo: () => () => undefined, ...props }));
 
 test("the current week's rows each carry a remove control named for the ticker", () => {
@@ -53,4 +53,18 @@ test("the nav badge drops at once on removal and comes back on Undo", () => {
   assert.equal(cartMarkLabel(removed.taps), "Your cart, 1 tap this week");
   assert.equal(cartMarkLabel(without(removed, "TSLA").taps), "Your cart");
   assert.equal(without(week, "AAPL"), week, "removing a ticker not in the week changes nothing");
+});
+
+test("each row offers Where you saw it, closed until asked", () => {
+  const html = render({ week, current: true, onRemove: () => undefined, sources: async () => [] });
+  assert.equal(html.match(/Where you saw it/g)?.length, 2);
+  assert.match(html, /aria-expanded="false"/);
+  assert.doesNotMatch(render({ week, current: true, onRemove: () => undefined }), /Where you saw it/);
+});
+
+test("a source opens the video at the second of the tap", () => {
+  assert.equal(videoMomentUrl("uhiQzbgiICY", 395.7), "https://www.youtube.com/watch?v=uhiQzbgiICY&t=395s");
+  assert.equal(videoMomentUrl("uhiQzbgiICY", 0), "https://www.youtube.com/watch?v=uhiQzbgiICY");
+  assert.equal(videoClock(395), "6:35");
+  assert.equal(videoClock(3723), "1:02:03");
 });

@@ -820,6 +820,14 @@ week, and the cart shows what held their attention. Data model and backend:
   draws both at 18px. Under it the company name and, small and quiet, "Price this week"
   (`--up` / `--down`, from `cartTickerInfo`). Then links to the ticker in Markets and to its
   coverage band (`/markets/T#coverage`). Never a net figure or a sign on a count.
+- **Where you saw it (2026-10-28):** under the links line, a quiet "Where you saw it" button
+  (`aria-expanded`, a small chevron) opens the row's taps that week, newest first
+  (`createInterestCart(...).sources`). A tap made beside a YouTube video shows its side (the
+  animal at 14px), the channel, the video title (truncated, `dir="auto"` so a Hebrew title
+  reads right to left) and the moment ("6:35"); the line opens
+  `youtube.com/watch?v=<id>&t=<seconds>s` in a new tab. A tap made on Stoa shows "Added on Stoa"
+  and the page it was made on, linking there. Older taps without a title show "YouTube video".
+  Each line is a 44px target. Only the reader ever sees these.
 - **Removing a ticker (2026-10-26):** each row in the **current** week ends its links line with
   a "Remove" text button, spoken as "Remove NVDA from this week". It takes the whole ticker out
   of the week, both sides, with no confirmation, and raises a toast with Undo that restores the

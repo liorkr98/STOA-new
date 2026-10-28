@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toaster } from "sonner";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/design/cn";
 import { buttonClass } from "@/components/ui/button";
 import { BearIcon, BullIcon } from "@/components/interest-cart/animals";
 import { useInterestCart } from "@/components/interest-cart/gate";
 import { cartTickerInfo, type CartTickerInfo } from "@/app/actions/interest-cart";
-import type { CartRow, CartWeek } from "@/lib/interest-cart/types";
+import type { CartRow, CartTap, CartWeek } from "@/lib/interest-cart/types";
 import { RESET_DAY, addWeeks, parseWeekKey, weekBounds, weekKey, weekRangeLabel, weekStartOf } from "@/lib/interest-cart/week";
 
 /**
@@ -232,6 +232,7 @@ function CartBody({ onClose, leaveTo }: { onClose: () => void; leaveTo: LeaveTo 
                 lastWeek={isCurrent ? lastWeek : null}
                 info={(ticker) => info[`${shownKey}:${ticker}`]}
                 onRemove={isCurrent ? runtime?.removeTicker : undefined}
+                sources={runtime?.cart ? (ticker) => runtime.cart!.sources(week.weekStart, ticker) : undefined}
                 leaveTo={leaveTo}
               />
             ) : null}
@@ -259,6 +260,7 @@ export function WeekContents({
   lastWeek,
   info,
   onRemove,
+  sources,
   leaveTo,
 }: {
   week: CartWeek;
@@ -266,6 +268,8 @@ export function WeekContents({
   lastWeek: CartWeek | null;
   info: (ticker: string) => CartTickerInfo | undefined;
   onRemove?: (ticker: string) => void;
+  /** "Where you saw it": the row's taps this week, newest first. */
+  sources?: (ticker: string) => Promise<CartTap[]>;
   leaveTo: LeaveTo;
 }) {
   if (week.taps === 0) return <EmptyWeek current={current} lastWeek={lastWeek} leaveTo={leaveTo} />;
@@ -274,7 +278,14 @@ export function WeekContents({
       <p className="num mt-3 text-ticker text-text-mute">{weekSummary(week, current)}</p>
       <ul className="mt-2 flex flex-col gap-3">
         {week.rows.map((row) => (
-          <CartRowItem key={row.ticker} row={row} info={info(row.ticker)} onRemove={current ? onRemove : undefined} leaveTo={leaveTo} />
+          <CartRowItem
+            key={row.ticker}
+            row={row}
+            info={info(row.ticker)}
+            onRemove={current ? onRemove : undefined}
+            sources={sources}
+            leaveTo={leaveTo}
+          />
         ))}
       </ul>
       <p className="mt-6 text-ticker text-text-mute">
@@ -296,13 +307,31 @@ function CartRowItem({
   row,
   info,
   onRemove,
+  sources,
   leaveTo,
 }: {
   row: CartRow;
   info?: CartTickerInfo;
   onRemove?: (ticker: string) => void;
+  sources?: (ticker: string) => Promise<CartTap[]>;
   leaveTo: LeaveTo;
 }) {
+  const [open, setOpen] = useState(false);
+  const [taps, setTaps] = useState<CartTap[] | null>(null);
+  const listId = `cart-sources-${row.ticker}`;
+
+  // Read when opened, and again when the row's counts change while open.
+  useEffect(() => {
+    if (!open || !sources) return;
+    let alive = true;
+    void sources(row.ticker).then((t) => {
+      if (alive) setTaps(t);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [open, sources, row.ticker, row.bull, row.bear]);
+
   const tie = row.bull === row.bear;
   const lead = row.bull >= row.bear ? "bull" : "bear";
   const sides = (lead === "bull" ? ["bull", "bear"] : ["bear", "bull"]) as ("bull" | "bear")[];
@@ -368,6 +397,107 @@ function CartRowItem({
           </button>
         ) : null}
       </div>
+      {sources ? (
+        <div className="mt-2">
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={listId}
+            onClick={() => setOpen((o) => !o)}
+            className="focus-ring tap-target inline-flex items-center gap-1 rounded-inner text-ticker text-text-mute hover:text-text"
+          >
+            Where you saw it
+            <ChevronDown size={14} aria-hidden className={cn("transition-transform duration-150", open && "rotate-180")} />
+          </button>
+          {open ? (
+            <ul id={listId} className="mt-1.5 flex flex-col">
+              {taps === null ? (
+                <li className="py-2 text-ticker text-text-mute">Loading…</li>
+              ) : taps.length === 0 ? (
+                <li className="py-2 text-ticker text-text-mute">No taps to show.</li>
+              ) : (
+                taps.map((tap) => <SourceLine key={tap.id} tap={tap} leaveTo={leaveTo} />)
+              )}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+/** "6:35" or "1:02:03". */
+export function videoClock(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = String(s % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+}
+
+/** youtube.com/watch?v=<id>&t=<seconds>s: the video at the moment of the tap. */
+export function videoMomentUrl(videoId: string, seconds: number | null): string {
+  const t = seconds && seconds > 0 ? `&t=${Math.floor(seconds)}s` : "";
+  return `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}${t}`;
+}
+
+/**
+ * One tap behind a row: the side tapped, then where. A tap beside a YouTube
+ * video opens that video at the second it was made, in a new tab; a tap on
+ * Stoa says so and links to its page. Titles keep their own direction
+ * (`dir="auto"`), so a Hebrew title reads right to left inside the line.
+ */
+function SourceLine({ tap, leaveTo }: { tap: CartTap; leaveTo: LeaveTo }) {
+  const Icon = tap.direction === "bull" ? BullIcon : BearIcon;
+  const side = tap.direction === "bull" ? "Bull" : "Bear";
+  const line = "focus-ring flex min-h-11 items-center gap-2.5 rounded-inner px-2 -mx-2 py-1.5 text-ticker hover:bg-surface-2";
+
+  if (tap.source === "extension" && tap.videoId) {
+    const title = tap.videoTitle || "YouTube video";
+    const at = tap.videoSeconds != null ? videoClock(tap.videoSeconds) : null;
+    return (
+      <li>
+        <a
+          href={videoMomentUrl(tap.videoId, tap.videoSeconds)}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${side} tap. ${title}${tap.videoChannel ? `, ${tap.videoChannel}` : ""}${at ? `, at ${at}` : ""}. Opens YouTube in a new tab`}
+          className={line}
+        >
+          <Icon size={14} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-text-mute">{tap.videoChannel ?? "YouTube"}</span>
+            <span dir="auto" className="block truncate text-start text-text">
+              {title}
+            </span>
+          </span>
+          {at ? <span className="num shrink-0 text-text-mute">{at}</span> : null}
+        </a>
+      </li>
+    );
+  }
+
+  const path = tap.sourcePath ?? null;
+  const body = (
+    <>
+      <Icon size={14} />
+      <span className="min-w-0 flex-1">
+        <span className="block text-text-mute">Added on Stoa</span>
+        {path ? <span className="block truncate text-text">{path}</span> : null}
+      </span>
+    </>
+  );
+  return (
+    <li>
+      {path ? (
+        <Link href={path} onClick={leaveTo(path)} aria-label={`${side} tap, added on Stoa at ${path}`} className={line}>
+          {body}
+        </Link>
+      ) : (
+        <span aria-label={`${side} tap, added on Stoa`} className={cn(line, "hover:bg-transparent")}>
+          {body}
+        </span>
+      )}
     </li>
   );
 }
