@@ -14,7 +14,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); }
 body { width: 360px; min-height: 460px; font: 400 14px/1.4 "Stoa Inter", Inter, system-ui, sans-serif; font-feature-settings: "tnum" 1; }
-main { display: flex; flex-direction: column; min-height: 460px; padding: 20px 20px 20px; }
+main { display: flex; flex-direction: column; min-height: 500px; padding: 20px 20px 20px; }
 .top { display: flex; align-items: baseline; justify-content: space-between; }
 h1 { margin: 0; font: 700 22px/1.1 "Stoa Bricolage", "Bricolage Grotesque", system-ui, sans-serif; }
 .tag { color: var(--mute); font-size: 13px; }
@@ -27,7 +27,7 @@ li:last-child { border-bottom: 0; }
 .side.minor { opacity: 0.6; font-size: 12px; font-weight: 500; }
 .example li { opacity: 0.55; }
 .empty { color: var(--mute); margin-top: 6px; font-size: 13px; }
-label.quiet { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; min-height: 44px; cursor: pointer; }
+label.quiet { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; min-height: 44px; cursor: pointer; }
 label.quiet input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); cursor: pointer; }
 .hint { color: var(--mute); font-size: 12px; margin-top: -4px; }
 .grow { flex: 1; }

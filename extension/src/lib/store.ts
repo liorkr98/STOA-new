@@ -7,9 +7,18 @@ export type Stored = {
   taps: LocalTap[];
   siteWeek: SiteWeek | null;
   quiet: boolean;
+  /** When the reader agreed on the first-run screen. Nothing is read or sent before. */
+  consentedAt: string | null;
+  /** The popup's on/off switch. Off: the extension does nothing on YouTube. */
+  enabled: boolean;
 };
 
-export const DEFAULTS: Stored = { session: null, taps: [], siteWeek: null, quiet: false };
+export const DEFAULTS: Stored = { session: null, taps: [], siteWeek: null, quiet: false, consentedAt: null, enabled: true };
+
+/** Whether the extension may read and send anything at all. */
+export function active(stored: Pick<Stored, "consentedAt" | "enabled">): boolean {
+  return Boolean(stored.consentedAt) && stored.enabled;
+}
 
 export async function readStored(): Promise<Stored> {
   const got = (await browser.storage.local.get(Object.keys(DEFAULTS) as (keyof Stored)[])) as Partial<Stored>;

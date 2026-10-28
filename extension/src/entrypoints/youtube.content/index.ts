@@ -1,5 +1,5 @@
 import { ask } from "@/lib/messages";
-import { readStored } from "@/lib/store";
+import { active, readStored } from "@/lib/store";
 import { Overlay } from "@/lib/ui/overlay";
 import { fontFaces } from "@/lib/ui/styles";
 import { PlaybackClock, onWatchChange, readVideo } from "@/lib/youtube/watch";
@@ -68,16 +68,34 @@ export default defineContentScript({
       report(videoId, items.length ? "found" : "none", new Set(items.map((i) => i.ticker)).size);
     }
 
-    const stop = onWatchChange((videoId) => {
+    // Nothing is read or sent before the reader agrees, or while the
+    // extension is switched off in the popup.
+    let on = false;
+    const begin = (videoId: string | null) => {
       current = videoId;
       overlay.clear();
       clock.stop();
+      if (!on) return;
       if (!videoId) {
         report(null, "none");
         return;
       }
       clock.start();
       void start(videoId);
+    };
+    let stop = () => undefined as void;
+    void readStored().then((stored) => {
+      on = active(stored);
+      stop = onWatchChange(begin);
+    });
+    browser.storage.onChanged.addListener((changes) => {
+      if (!("consentedAt" in changes) && !("enabled" in changes)) return;
+      void readStored().then((stored) => {
+        const now = active(stored);
+        if (now === on) return;
+        on = now;
+        begin(current);
+      });
     });
     ctx.onInvalidated(() => {
       stop();

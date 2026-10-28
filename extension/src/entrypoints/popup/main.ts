@@ -32,7 +32,19 @@ function videoLine(): string {
   return `<p class="here">${here.count} ${here.count === 1 ? "stock" : "stocks"} in this video</p>`;
 }
 
+function renderSetup() {
+  document.getElementById("app")!.innerHTML = `
+    <div class="top"><h1>Stoa Interest Cart</h1></div>
+    <p class="empty">Before it starts, Stoa needs your OK: one screen on what it reads and what it sends.</p>
+    <div class="grow"></div>
+    <button class="cart" id="setup">Review and agree</button>`;
+  document.getElementById("setup")!.addEventListener("click", () => {
+    void browser.tabs.create({ url: browser.runtime.getURL("/welcome.html") }).then(() => window.close());
+  });
+}
+
 function render(stored: Stored) {
+  if (!stored.consentedAt) return renderSetup();
   const rows = weekCounts(stored).slice(0, 8);
   const example = rows.length === 0;
   const list = (example ? EXAMPLE : rows)
@@ -42,15 +54,18 @@ function render(stored: Stored) {
     ? `Saving to Stoa as ${esc(stored.session.email ?? "you")} · <button class="link" id="signout">Sign out</button>`
     : "Not signed in. Taps stay on this device until you save them.";
   document.getElementById("app")!.innerHTML = `
-    ${videoLine()}
+    ${stored.enabled ? videoLine() : ""}
     <div class="top"><h1>This week</h1>${example ? `<span class="tag">Example</span>` : ""}</div>
     <ul class="${example ? "example" : ""}" aria-label="${example ? "Example of" : ""} this week's top stocks">${list}</ul>
     ${example ? `<p class="empty">Tap a bull or a bear beside a YouTube video and your week fills up here.</p>` : ""}
-    <label class="quiet"><span>Quiet mode</span><input type="checkbox" id="quiet" ${stored.quiet ? "checked" : ""} /></label>
-    <p class="hint">No pop-ups. Only the "In this video" line.</p>
+    <label class="quiet"><span>On YouTube</span><input type="checkbox" role="switch" id="enabled" ${stored.enabled ? "checked" : ""} /></label>
+    <p class="hint">Off: nothing is read or shown on YouTube.</p>
+    <label class="quiet"><span>Quiet mode</span><input type="checkbox" id="quiet" ${stored.quiet ? "checked" : ""} ${stored.enabled ? "" : "disabled"} /></label>
+    <p class="hint">No pop-ups. Only the "In this video" line. Alt+Shift+Q</p>
     <div class="grow"></div>
     <p class="who">${who}</p>
     <button class="cart" id="cart">Open my cart on Stoa</button>`;
+  document.getElementById("enabled")!.addEventListener("change", (e) => void writeStored({ enabled: (e.target as HTMLInputElement).checked }));
   document.getElementById("quiet")!.addEventListener("change", (e) => void writeStored({ quiet: (e.target as HTMLInputElement).checked }));
   document.getElementById("signout")?.addEventListener("click", () => void browser.runtime.sendMessage({ type: "signout" }));
   document.getElementById("cart")!.addEventListener("click", () => {

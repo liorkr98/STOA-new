@@ -2,7 +2,7 @@ import { stoaFetch } from "@/lib/api";
 import { STOA_PAGES, type BridgeRequest } from "@/lib/bridge";
 import { answerSite, flushTaps, liveSession } from "@/lib/sync";
 import { STOA, type DetectAnswer, type Request, type TabStatus } from "@/lib/messages";
-import { readStored, writeStored } from "@/lib/store";
+import { active, readStored, writeStored } from "@/lib/store";
 import type { LocalTap, TickerInfo, VideoTicker } from "@/lib/types";
 
 const infoCache = new Map<string, { at: number; info: TickerInfo }>();
@@ -96,7 +96,13 @@ async function showQuiet(): Promise<void> {
   await browser.action.setBadgeText({ text: quiet ? "Q" : "" });
 }
 
-function handle(request: Request, tabId?: number): Promise<unknown> {
+/** What the YouTube page may ask only once the reader has agreed and the extension is on. */
+const NEEDS_CONSENT = new Set<Request["type"]>(["lookup", "detect", "info", "tap"]);
+
+async function handle(request: Request, tabId?: number): Promise<unknown> {
+  if (NEEDS_CONSENT.has(request.type) && !active(await readStored())) {
+    return request.type === "lookup" || request.type === "detect" ? { items: null, error: "not active" } : null;
+  }
   switch (request.type) {
     case "lookup":
       return lookup(request.videoId);
@@ -120,7 +126,15 @@ function handle(request: Request, tabId?: number): Promise<unknown> {
   }
 }
 
+async function openWelcomeIfNeeded(): Promise<void> {
+  const { consentedAt } = await readStored();
+  if (!consentedAt) await browser.tabs.create({ url: browser.runtime.getURL("/welcome.html") });
+}
+
 export default defineBackground(() => {
+  browser.runtime.onInstalled.addListener(({ reason }) => {
+    if (reason === "install" || reason === "update") void openWelcomeIfNeeded();
+  });
   // Replies through sendResponse and `return true`: Chrome only accepts a
   // returned promise from version 146, and every older Chrome would answer
   // the page with nothing.
