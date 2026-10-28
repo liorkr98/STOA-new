@@ -128,5 +128,10 @@ The store takes 1 to 5 screenshots at 1280 x 800 (or 640 x 400). Taken from Bar'
 4. `4-in-this-video.png`: the "In this video" line after a run of quick picks.
 5. `5-consent.png`: the first-run screen.
 
+These were taken on Bar's Chrome, where YouTube is in Hebrew (`1-card` to `4-in-this-video`), and
+the consent screen in a test browser from the same build. For an English listing, retake 1 to 4
+on English YouTube (YouTube's own menus and titles would then read in English); the Stoa card
+itself is identical.
+
 Optional: the popup (it renders at 360 px wide, so it goes inside a 1280 x 800 frame), and the
 small promo tile `store-assets/promo-440x280.png`.

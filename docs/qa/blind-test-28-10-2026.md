@@ -12,7 +12,7 @@ Branch `feat/interest-cart-extension`. The prompt, the alias table and the rules
 | Transcripts read | 10 of 10, both runs |
 | Cards found (run 1) | 42 |
 | Cards I'm unsure about | 7 (Caterpillar, Intel, Chevron on r2pmF9zJobE; Meta on S1qUsBnFG_s; Nebius on LSoYG4ZuyIU; Meta on hblOwlplNoo; TQQQ on pyijqV6899Q) |
-| Likely misses | 3 (CIFR, Broadcom as a card, the Tom Nash rapid-fire list) |
+| Likely misses | 4 (CIFR, VGT, Broadcom as a card, the Tom Nash rapid-fire list) |
 | Run-to-run agreement, ticker with type and side | **88%** (43 of 49) |
 | Run-to-run agreement, which tickers were found at all | **96%** (47 of 49) |
 | Cards that agreed exactly | 38 of 43 distinct cards (88%) |
@@ -92,6 +92,7 @@ Ticker Symbol: YOU · English · Stocks I'm buying list · 21:58 · https://www.
 **Flags**
 
 - Broadcom got only a chip: 37 seconds of airtime and no outright "buy", although the whole video is "stocks I'm buying". The title is a buy list, so arguably every name in it should be a card.
+- **Missed: VGT.** The speaker discusses the Vanguard Information Technology ETF (3:42 to 4:45) with an outright buy. The AI found it in both runs, but VGT is not in the alias table's ETF list and the symbol list holds no ETFs, so the code matched nothing and dropped it. (Found in the same runs' raw answers after this report was first written.)
 
 ### 5. 5 Stocks to Buy Creating $232 Billion for Investors
 
