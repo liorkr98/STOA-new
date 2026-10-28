@@ -393,3 +393,215 @@ now streamed with room for 64,000 tokens. The runs below are all after that fix.
    names, and should lift run-to-run agreement above where it started.
 4. Then re-run these ten again to confirm, and add a fresh handful of unseen videos, since these
    ten have now been used for tuning too.
+
+---
+
+## Second re-run: the three follow-ups, plus five unseen videos (28 Oct 2026, night)
+
+Applied: (1) the broad-market funds (SPY, VOO, IVV, QQQ, DIA, IWM and similar) count only when
+the speaker names the fund; (2) picks in a list get a chip with the speaker's side, a card still
+needs 45+ seconds of discussion or an outright buy / avoid said while discussing the name, and
+the speaker reading out their own holdings is filtered again; (3) the two reads are merged by
+agreement: a ticker only if both reads found it, a card only if both made it one. Stored results
+`v7`. Same method: Bar's Chrome, the real extension, each video twice with the stored result
+cleared. Five videos nobody had used before were added, from the last month: two Hebrew
+(Micha.Stocks, Dvir Shalom), three English (a portfolio "what I'm buying", a multi-speaker CNBC
+panel, a dividend ETF).
+
+One more bug turned up on a fresh video and was fixed: SCHD (said by ticker, written by the AI as
+"Schwab US Dividend Equity ETF") did not match the list's "Schwab U.S. Dividend Equity ETF", so
+the dividend video came back empty in both runs. After the fix it gives SCHD, a bull card, in both
+of two further runs; the table below uses those two.
+
+### The numbers
+
+| | Before any fix | Fixes 1 to 5 | Follow-ups (now) |
+|---|---|---|---|
+| **Ten known videos**: agreement on ticker, type and side | 88% (43 of 49) | 73% (57 of 78) | **87%** (58 of 67) |
+| Ten known videos: same tickers found | 96% | 86% | **90%** |
+| Ten known videos: cards / chips (run 1) | 42 / 7 | 64 / 5 | **44 / 22** |
+| **Five unseen videos**: agreement on ticker, type and side | | | **83%** (19 of 23) |
+| Five unseen videos: same tickers found | | | **87%** |
+| Five unseen videos: cards / chips (run 1) | | | 11 / 10 |
+| All fifteen | | | **86%** agreement, 89% same tickers |
+
+Agreement is back to where it started, with the misses fixed and the noise gone:
+
+- **Kept from fixes 1 to 5:** CIFR found in Dvir Shalom's video, VGT a card in the Ticker Symbol:
+  YOU video (identical in both runs, 11 of 11), Tom Nash's rapid-fire list caught.
+- **Noise removed:** Tom Nash's list is now 13 chips and 2 cards (Arm and AppLovin, which he
+  actually discusses), not 15 cards; Dvir Shalom's read-out of his holdings is filtered again; the
+  S&P 500 no longer becomes an SPY card in market recaps.
+- **Unseen videos look right:** Micha's three stocks (Adobe, HubSpot, Spotify) identical in both
+  runs; the CNBC panel identical in both runs; Dvir Shalom's portfolio video gives the defensive
+  names he explains one by one (PepsiCo, Procter & Gamble, Waste Connections as cards; Walmart,
+  T-Mobile, McDonald's, Lockheed as chips); the dividend video gives SCHD.
+
+### What is still not right
+
+- **Two reads that must agree can drop a real name.** In Dvir Shalom's neocloud video, Nebius and
+  Applied Digital are discussed but one of the two reads missed them, so they are gone in both
+  runs. The price of requiring agreement: fewer one-off extras, a few real names lost.
+- **Broadcom in "stocks I'm buying" is a chip again.** By design of follow-up 2 (44 seconds and no
+  outright "buy"), but it was one of the original misses.
+- **The same borderline sides still flip:** Intel on Micha's earnings preview, Nebius on the Hogue
+  video, Tesla on the IBD recap. These are names the speakers discuss without a clear call; the
+  merge already shows them with no side when the two reads disagree within a run.
+- **Market recaps still carry sector funds as chips** (RSP, XBI, IBB, TQQQ in the IBD recap) that
+  come and go between runs.
+- **The fresh "what I'm buying" portfolio video (Kai)** gives only chips plus one bear card on
+  Marriott; Micron and Broadcom each appear in one run only.
+
+### Per video
+
+#### Micha.Stocks, earnings preview (r2pmF9zJobE, he) agreement 6/8
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| MSFT | Microsoft | [2:59](https://www.youtube.com/watch?v=r2pmF9zJobE&t=179s) | Card, no side | Card, no side | Yes |
+| GOOGL | Alphabet | [4:45](https://www.youtube.com/watch?v=r2pmF9zJobE&t=285s) | Card, no side | Card, no side (conditional) | Yes |
+| LLY | Eli Lilly | [7:22](https://www.youtube.com/watch?v=r2pmF9zJobE&t=442s) | Card, bull | Card, bull | Yes |
+| MA | Mastercard | [9:29](https://www.youtube.com/watch?v=r2pmF9zJobE&t=569s) | Card, bull | Card, bull | Yes |
+| CAT | Caterpillar | [10:38](https://www.youtube.com/watch?v=r2pmF9zJobE&t=638s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+| AMZN | Amazon | [11:49](https://www.youtube.com/watch?v=r2pmF9zJobE&t=709s) | Card, bull | Card, bull | Yes |
+| INTC | Intel | [12:57](https://www.youtube.com/watch?v=r2pmF9zJobE&t=777s) | Card, bull | Card, no side | **No** |
+| CVX | Chevron | [15:45](https://www.youtube.com/watch?v=r2pmF9zJobE&t=945s) | not found | Card, no side | **No** |
+
+#### Dvir Shalom, neoclouds (S1qUsBnFG_s, he) agreement 3/4
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| META | Meta | [3:24](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=204s) | Card, bull | Card, bull | Yes |
+| CRWV | CoreWeave | [3:40](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=220s) | Card, bear | Card, bear | Yes |
+| IREN | IREN | [4:16](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=256s) | Card, bear | Card, bear | Yes |
+| CIFR | Cipher Digital | [4:16](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=256s) | Chip, bear | Card, bear | **No** |
+
+#### ElevateTrading, penny stocks (VaHXDUGKSdY, he) agreement 0/0
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| (none) | | | | | |
+
+#### Ticker Symbol: YOU, stocks I'm buying (P8b2tsNSxRQ, en) agreement 11/11
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| VGT | Vanguard Information Technology ETF | [3:42](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=222s) | Card, bull | Card, bull | Yes |
+| NVDA | Nvidia | [6:31](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=391s) | Card, bull | Card, bull | Yes |
+| GOOGL | Alphabet | [8:07](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=487s) | Card, bull | Card, bull | Yes |
+| AVGO | Broadcom | [9:51](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=591s) | Chip, bull | Chip, bull | Yes |
+| TSM | TSMC | [10:35](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=635s) | Card, bull | Card, bull | Yes |
+| MU | Micron Technology | [11:44](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=704s) | Card, bull | Card, bull | Yes |
+| VRT | Vertiv | [13:39](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=819s) | Card, bull | Card, bull | Yes |
+| IREN | IREN | [14:53](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=893s) | Card, bull | Card, bull | Yes |
+| META | Meta | [16:28](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=988s) | Card, bull | Card, bull | Yes |
+| PLTR | Palantir | [17:40](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=1060s) | Card, bull | Card, bull | Yes |
+| CRWD | CrowdStrike | [19:00](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=1140s) | Card, bull | Card, bull | Yes |
+
+#### Joseph Hogue, 5 stocks to buy (LSoYG4ZuyIU, en) agreement 10/12
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| CRWV | CoreWeave | [9:54](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=594s) | Card, bear | Card, bear | Yes |
+| NBIS | Nebius | [12:48](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=768s) | Card, no side | Card, no side | Yes |
+| APLD | Applied Digital | [15:12](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=912s) | Card, bear | Card, bear | Yes |
+| ORCL | Oracle | [17:27](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1047s) | Card, bear | Card, bear | Yes |
+| AMZN | Amazon | [19:17](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1157s) | Card, no side | Card, no side | Yes |
+| META | Meta | [20:48](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1248s) | Card, no side | not found | **No** |
+| GOOGL | Alphabet | [20:54](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1254s) | Card, no side | not found | **No** |
+| NVDA | Nvidia | [22:54](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1374s) | Card, bull | Card, bull | Yes |
+| MU | Micron Technology | [24:16](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1456s) | Card, bull | Card, bull | Yes |
+| AVGO | Broadcom | [25:30](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1530s) | Card, bull | Card, bull | Yes |
+| TSM | TSMC | [26:58](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1618s) | Card, bull | Card, bull | Yes |
+| ANET | Arista Networks | [28:25](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1705s) | Card, bull | Card, bull | Yes |
+
+#### Stock Market Mentor, Lumentum (O8EYOyljHyA, en) agreement 1/1
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| LITE | Lumentum | [0:09](https://www.youtube.com/watch?v=O8EYOyljHyA&t=9s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
+#### Schwab Network, market recap (hblOwlplNoo, en) agreement 3/3
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| META | Meta | [1:43](https://www.youtube.com/watch?v=hblOwlplNoo&t=103s) | Card, bull | Card, bull | Yes |
+| TSLA | Tesla | [5:27](https://www.youtube.com/watch?v=hblOwlplNoo&t=327s) | Card, no side | Card, no side | Yes |
+| LRCX | Lam Research | [6:55](https://www.youtube.com/watch?v=hblOwlplNoo&t=415s) | Card, bear | Card, bear | Yes |
+
+#### Investor's Business Daily, market recap (pyijqV6899Q, en) agreement 8/11
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| RSP | Invesco S&P 500 Equal Weight ETF | [10:01](https://www.youtube.com/watch?v=pyijqV6899Q&t=601s) | Chip, bull | Chip, bull | Yes |
+| IGV | iShares Expanded Tech-Software Sector ETF | [12:35](https://www.youtube.com/watch?v=pyijqV6899Q&t=755s) | Card, bull | Card, bull | Yes |
+| XBI | SPDR S&P Biotech ETF | [13:40](https://www.youtube.com/watch?v=pyijqV6899Q&t=820s) | Chip, bull | not found | **No** |
+| IBB | iShares Biotechnology ETF | [13:49](https://www.youtube.com/watch?v=pyijqV6899Q&t=829s) | Chip, bull | not found | **No** |
+| ARKG | ARK Genomic Revolution ETF | [14:05](https://www.youtube.com/watch?v=pyijqV6899Q&t=845s) | Card, no side | Card, no side (conditional) | Yes |
+| TQQQ | ProShares UltraPro QQQ | [15:30](https://www.youtube.com/watch?v=pyijqV6899Q&t=930s) | Chip, bull (conditional) | Chip, bull (conditional) | Yes |
+| TSLA | Tesla | [15:45](https://www.youtube.com/watch?v=pyijqV6899Q&t=945s) | Card, no side (conditional) | Card, no side (conditional) | Yes |
+| NUE | Nucor | [18:47](https://www.youtube.com/watch?v=pyijqV6899Q&t=1127s) | Card, bull | Card, bull | Yes |
+| THC | Tenet Healthcare | [21:02](https://www.youtube.com/watch?v=pyijqV6899Q&t=1262s) | Card, no side | Card, no side | Yes |
+| CAKE | Cheesecake Factory | [22:55](https://www.youtube.com/watch?v=pyijqV6899Q&t=1375s) | Chip, bull (conditional) | Chip, bull (conditional) | Yes |
+| STX | Seagate Technology | [24:43](https://www.youtube.com/watch?v=pyijqV6899Q&t=1483s) | Chip, bear | not found | **No** |
+
+#### Tom Nash, major buy (ZEImdkhIF6g, en) agreement 15/16
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| CRWD | CrowdStrike | [2:16](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=136s) | Chip, bull | Chip, bull | Yes |
+| AMD | AMD | [2:16](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=136s) | Chip, bull | Chip, bull | Yes |
+| ASML | ASML | [2:20](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=140s) | Chip, bull | Chip, bull | Yes |
+| AAPL | Apple | [2:20](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=140s) | Chip, bull | Chip, bull | Yes |
+| NVDA | Nvidia | [9:59](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=599s) | Chip, bull | Chip, bull | Yes |
+| TSM | TSMC | [10:06](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=606s) | Chip, bull | not found | **No** |
+| VRT | Vertiv | [10:15](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=615s) | Chip, bull | Chip, bull | Yes |
+| ZS | Zscaler | [11:28](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=688s) | Chip, bull | Chip, bull | Yes |
+| ZETA | Zeta Global | [11:28](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=688s) | Chip, bull | Chip, bull | Yes |
+| SNOW | Snowflake | [11:32](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=692s) | Chip, bull | Chip, bull | Yes |
+| PLTR | Palantir | [11:32](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=692s) | Chip, bull | Chip, bull | Yes |
+| CRM | Salesforce | [11:32](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=692s) | Chip, bull | Chip, bull | Yes |
+| NOW | ServiceNow | [11:34](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=694s) | Chip, bull | Chip, bull | Yes |
+| TSLA | Tesla | [11:36](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=696s) | Chip, bull | Chip, bull | Yes |
+| APP | Applovin | [12:37](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=757s) | Card, bull | Card, bull | Yes |
+| ARM | Arm | [14:22](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=862s) | Card, bull | Card, bull | Yes |
+
+#### Stealth Wealth, SoFi preview (5PsNbwmc4Hc, en) agreement 1/1
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| SOFI | SoFi Technologies | [0:00](https://www.youtube.com/watch?v=5PsNbwmc4Hc&t=0s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
+#### NEW: Micha.Stocks, "שלוש המניות האלו עושות משהו שכולם חיכו לו" (90jA5j6vIRQ, he) agreement 3/3
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| ADBE | Adobe | [3:31](https://www.youtube.com/watch?v=90jA5j6vIRQ&t=211s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+| HUBS | HubSpot | [5:28](https://www.youtube.com/watch?v=90jA5j6vIRQ&t=328s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+| SPOT | Spotify Technology | [8:32](https://www.youtube.com/watch?v=90jA5j6vIRQ&t=512s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
+#### NEW: Dvir Shalom, "השינוי הגדול שעשיתי בתיק ההשקעות שלי" (36 min) (xYKSxOPKgaI, he) agreement 8/10
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| USO | United States Oil Fund | [7:59](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=479s) | Card, no side | Card, no side | Yes |
+| GD | General Dynamics | [16:24](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=984s) | Chip, bull | Card, bull | **No** |
+| LMT | Lockheed Martin | [18:00](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1080s) | Chip, bull | Chip, bull | Yes |
+| MCD | McDonald's | [18:19](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1099s) | Chip, bull | Chip, bull | Yes |
+| PEP | PepsiCo | [19:03](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1143s) | Card, bull | Card, bull | Yes |
+| PG | Procter & Gamble | [20:03](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1203s) | Card, bull | Card, bull | Yes |
+| WMT | Walmart | [20:58](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1258s) | Chip, bull | Chip, bull | Yes |
+| TMUS | T-Mobile US | [21:17](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1277s) | Chip, bull | Chip, bull | Yes |
+| WCN | Waste Connections, Inc. Common Shares | [22:01](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1321s) | Card, bull | Card, bull | Yes |
+| SCHD | Schwab U.S. Dividend Equity ETF | [22:56](https://www.youtube.com/watch?v=xYKSxOPKgaI&t=1376s) | not found | Card, bull | **No** |
+
+#### NEW: Smart Money with Kai, "My Portfolio Passed $500K. Here's What I'm Buying" (pJpAj9LvTU8, en) agreement 3/5
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| AMZN | Amazon | [6:52](https://www.youtube.com/watch?v=pJpAj9LvTU8&t=412s) | Chip, bull | Chip, bull | Yes |
+| GOOGL | Alphabet | [7:27](https://www.youtube.com/watch?v=pJpAj9LvTU8&t=447s) | Chip, bull | Chip, bull | Yes |
+| AVGO | Broadcom | [8:05](https://www.youtube.com/watch?v=pJpAj9LvTU8&t=485s) | Chip, bull | not found | **No** |
+| MAR | Marriott International | [8:19](https://www.youtube.com/watch?v=pJpAj9LvTU8&t=499s) | Card, bear | Card, bear | Yes |
+| MU | Micron Technology | [3:55](https://www.youtube.com/watch?v=pJpAj9LvTU8&t=235s) | not found | Chip, bull | **No** |
+
+#### NEW: CNBC Television, "The Investment Committee prepares for a pivotal week" (muWuVTk-OLs, en) agreement 4/4
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| GOOGL | Alphabet | [4:27](https://www.youtube.com/watch?v=muWuVTk-OLs&t=267s) | Card, bull (conditional) | Card, bull | Yes |
+| META | Meta | [4:40](https://www.youtube.com/watch?v=muWuVTk-OLs&t=280s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+| AMD | AMD | [6:07](https://www.youtube.com/watch?v=muWuVTk-OLs&t=367s) | Chip, bear | Chip, bear | Yes |
+| AVGO | Broadcom | [6:07](https://www.youtube.com/watch?v=muWuVTk-OLs&t=367s) | Chip, bull | Chip, bull | Yes |
+
+#### NEW: Investor Intellect, "My Top Dividend ETF Just Dipped, Here's What I'm Buying" (runs after the SCHD fix) (1EstjaHoV5E, en) agreement 1/1
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| SCHD | Schwab U.S. Dividend Equity ETF | [0:00](https://www.youtube.com/watch?v=1EstjaHoV5E&t=0s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
