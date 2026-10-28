@@ -29,6 +29,8 @@ export type VideoTickerIndex = {
 };
 
 export const MAX_SEGMENTS = 6000;
+/** About three hours of speech. Longer transcripts are refused before any AI read. */
+export const MAX_TRANSCRIPT_CHARS = 150_000;
 const MAX_TEXT = 400;
 
 export const DetectRequestSchema = z.object({

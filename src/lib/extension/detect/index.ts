@@ -2,7 +2,8 @@ import "server-only";
 
 import { listSymbolNames } from "@/lib/db/tickers";
 import { videoTickerIndex } from "@/lib/db/video-ticker-index";
-import { DETECT_MODEL, readMentions } from "@/lib/extension/detect/model";
+import { costUsd, estimateUsd, logCost, recordSpend, withinBudget } from "@/lib/extension/detect/budget";
+import { DETECT_MAX_TOKENS, DETECT_MODEL, readMentions, transcriptChars } from "@/lib/extension/detect/model";
 import { createResolver, type Resolver } from "@/lib/extension/detect/resolve";
 import { applyRules, type Mention } from "@/lib/extension/detect/rules";
 import type { DetectRequest, VideoTickerIndex } from "@/lib/extension/types";
@@ -37,14 +38,23 @@ export async function cachedVideo(videoId: string): Promise<VideoTickerIndex | n
   return videoTickerIndex().get(videoId);
 }
 
+/** Today's spending cap is reached: no new AI reads until midnight UTC; stored answers still served. */
+export class DetectionPaused extends Error {}
+
 /** The video's tickers: the stored answer when there is one, otherwise read now and stored. */
-export async function detectVideo(req: DetectRequest): Promise<{ entry: VideoTickerIndex; cached: boolean }> {
+export async function detectVideo(req: DetectRequest, userId: string): Promise<{ entry: VideoTickerIndex; cached: boolean }> {
   const hit = await videoTickerIndex().get(req.videoId);
   if (hit) return { entry: hit, cached: true };
   let job = inFlight.get(req.videoId);
   if (!job) {
+    if (!(await withinBudget(estimateUsd(transcriptChars(req), DETECT_MAX_TOKENS)))) {
+      throw new DetectionPaused("Today's detection budget is used up");
+    }
     job = (async () => {
-      const [mentions, resolve] = await Promise.all([readMentions(req), currentResolver()]);
+      const [{ mentions, inputTokens, outputTokens }, resolve] = await Promise.all([readMentions(req), currentResolver()]);
+      const usd = costUsd(inputTokens, outputTokens);
+      const dayTotal = await recordSpend(usd);
+      await logCost({ videoId: req.videoId, userId, inputTokens, outputTokens, usd, dayTotal, at: new Date().toISOString() });
       if (process.env.NODE_ENV === "development") console.info(`[detect] ${req.videoId}`, JSON.stringify(mentions));
       const entry: VideoTickerIndex = {
         videoId: req.videoId,

@@ -1,6 +1,6 @@
 import { stoaFetch } from "@/lib/api";
 import { STOA_PAGES, type BridgeRequest } from "@/lib/bridge";
-import { answerSite, flushTaps } from "@/lib/sync";
+import { answerSite, flushTaps, liveSession } from "@/lib/sync";
 import { STOA, type DetectAnswer, type Request, type TabStatus } from "@/lib/messages";
 import { readStored, writeStored } from "@/lib/store";
 import type { LocalTap, TickerInfo, VideoTicker } from "@/lib/types";
@@ -17,12 +17,20 @@ async function lookup(videoId: string): Promise<DetectAnswer> {
   }
 }
 
+/**
+ * A new AI read needs a signed-in reader: Stoa pays for it. Signed out, the
+ * extension still shows any video someone signed in has already opened
+ * (`lookup`), and reads nothing new.
+ */
 async function detect(request: Extract<Request, { type: "detect" }>): Promise<DetectAnswer> {
+  const session = await liveSession();
+  if (!session) return { items: null, error: "signed out" };
   try {
-    const res = await stoaFetch<{ items: VideoTicker[] }>("/api/extension/detect", {
-      method: "POST",
-      body: JSON.stringify({ videoId: request.videoId, language: request.language, segments: request.segments }),
-    });
+    const res = await stoaFetch<{ items: VideoTicker[] }>(
+      "/api/extension/detect",
+      { method: "POST", body: JSON.stringify({ videoId: request.videoId, language: request.language, segments: request.segments }) },
+      session.accessToken,
+    );
     return { items: res.items };
   } catch (e) {
     return { items: null, error: (e as Error).message };

@@ -1,4 +1,5 @@
 import { ask } from "@/lib/messages";
+import { readStored } from "@/lib/store";
 import { Overlay } from "@/lib/ui/overlay";
 import { fontFaces } from "@/lib/ui/styles";
 import { PlaybackClock, onWatchChange, readVideo } from "@/lib/youtube/watch";
@@ -37,6 +38,11 @@ export default defineContentScript({
       if (!items) {
         if (known.error) {
           console.debug(`[stoa] Stoa is not reachable: ${known.error}`);
+          report(videoId, "none");
+          return;
+        }
+        // Signed out, nothing new is read: Stoa only answers signed-in readers.
+        if (!(await readStored()).session) {
           report(videoId, "none");
           return;
         }

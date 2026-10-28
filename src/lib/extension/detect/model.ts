@@ -55,14 +55,20 @@ function transcriptText(req: DetectRequest): string {
 
 export class DetectionUnavailable extends Error {}
 
+export const DETECT_MAX_TOKENS = 16000;
+
+export function transcriptChars(req: DetectRequest): number {
+  return transcriptText(req).length;
+}
+
 /** Asks Claude Haiku which companies are discussed, and when. Tickers are not its job. */
-export async function readMentions(req: DetectRequest): Promise<Mention[]> {
+export async function readMentions(req: DetectRequest): Promise<{ mentions: Mention[]; inputTokens: number; outputTokens: number }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new DetectionUnavailable("ANTHROPIC_API_KEY is not set on the server");
   const client = new Anthropic({ apiKey });
   const response = await client.messages.parse({
     model: DETECT_MODEL,
-    max_tokens: 16000,
+    max_tokens: DETECT_MAX_TOKENS,
     output_config: { effort: "high", format: zodOutputFormat(OutputSchema) },
     system: SYSTEM,
     messages: [
@@ -72,6 +78,7 @@ export async function readMentions(req: DetectRequest): Promise<Mention[]> {
       },
     ],
   });
-  if (response.stop_reason === "refusal") return [];
-  return response.parsed_output?.mentions ?? [];
+  const usage = { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens };
+  if (response.stop_reason === "refusal") return { mentions: [], ...usage };
+  return { mentions: response.parsed_output?.mentions ?? [], ...usage };
 }
