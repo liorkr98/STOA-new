@@ -48,7 +48,7 @@ export function cleanName(listed: string): string {
     .replace(/\s*[-–]\s*$/, "")
     .replace(/\s*\((?:the|[a-z]{2,4})\)\s*$/i, "")
     .replace(/^the\s+/i, "")
-    .replace(/\s+(?:american depositary|sponsored adr|ordinary shares|common stock).*$/i, "")
+    .replace(/[\s,]+(?:american depositary|sponsored adr|ordinary shares|common stock|common shares).*$/i, "")
     .trim();
   for (let i = 0; i < 4; i++) {
     const next = name.replace(TAIL, "").replace(/[\s,&]+$/, "").trim();

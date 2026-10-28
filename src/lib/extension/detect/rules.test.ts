@@ -51,6 +51,8 @@ test("funds resolve and are labelled ETF; unknown names are dropped", () => {
   assert.equal(resolve("Vanguard Information Technology ETF", "ticker symbol VGT")?.ticker, "VGT");
   assert.equal(resolve("Vanguard Information Technology Index Fund", "")?.ticker, "VGT");
   assert.equal(resolve("Invesco QQQ", "triple Q")?.ticker, "QQQ");
+  assert.equal(resolve("Schwab US Dividend Equity ETF", "")?.ticker, "SCHD");
+  assert.equal(resolve("Some dividend fund", "SCHD")?.ticker, "SCHD");
 });
 
 test("a broad-market fund counts only when the speaker names the fund", () => {

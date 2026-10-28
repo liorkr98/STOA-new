@@ -12,6 +12,7 @@ test("the rule strips legal suffixes and listing tails", () => {
   assert.equal(cleanName("Seagate Technology Holdings PLC"), "Seagate Technology");
   assert.equal(cleanName("IREN Limited"), "IREN");
   assert.equal(cleanName("Unusual Machines, Inc."), "Unusual Machines");
+  assert.equal(cleanName("Waste Connections, Inc. Common Shares"), "Waste Connections");
   assert.equal(cleanName("Teva Pharmaceutical Industries Limited American Depositary Shares"), "Teva Pharmaceutical Industries");
 });
 

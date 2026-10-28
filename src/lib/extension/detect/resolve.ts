@@ -21,6 +21,7 @@ export function normaliseName(raw: string): string {
   const cut = raw.split(/\s+-\s+|\s+–\s+/)[0] ?? raw;
   const words = cut
     .toLowerCase()
+    .replace(/\bu\.\s?s\.?(?=\s|$)/g, "us")
     .replace(/[’`]/g, "'")
     .replace(/(?<=\p{L})'s\b/gu, "s")
     .replace(/[^\p{L}\p{N}' ]+/gu, " ")
@@ -103,6 +104,9 @@ export function createResolver(symbols: SymbolEntry[]) {
   function byWords(key: string): Resolved | null {
     const alias = ETF_ALIASES[key] ?? ALIASES[key];
     if (alias) return entry(alias);
+    // A fund's own ticker, when that is exactly what the speaker said ("SCHD").
+    const said = key.toUpperCase();
+    if (ETFS[said]) return entry(said);
     if (key.length < 3) return null;
     const exact = byName.get(key);
     if (exact) return entry(exact.symbol);
