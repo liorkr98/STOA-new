@@ -45,6 +45,20 @@ export function normaliseFund(raw: string): string {
 }
 
 /**
+ * Funds that stand for the market itself. A speaker saying "the S&P 500" or
+ * "the Nasdaq" means the index, which never pops up; only a speaker who names
+ * the fund ("SPY", "the Vanguard S&P ETF", "Triple Q") means the fund.
+ */
+export const BROAD_MARKET = new Set(["SPY", "VOO", "IVV", "SPLG", "VTI", "ITOT", "QQQ", "QQQM", "DIA", "IWM"]);
+
+const FUND_MARKERS = /\b(?:etf|fund|trust|spdr|ishares|vanguard|invesco|schwab|triple q|qqq)\b|קרן|תעודת\s*(?:סל|צל|צהל)/iu;
+
+/** Whether the words heard name a fund rather than an index: its ticker, or a fund word. */
+export function namesTheFund(ticker: string, heardAs: string): boolean {
+  return new RegExp(`\\b${ticker}\\b`, "i").test(heardAs) || FUND_MARKERS.test(heardAs);
+}
+
+/**
  * First words too common to name one company on their own. A distinctive
  * first word ("cipher", "nebius") can stand for a renamed company; these
  * cannot.
@@ -116,11 +130,14 @@ export function createResolver(symbols: SymbolEntry[]) {
   }
 
   return function resolve(company: string, heardAs: string): Resolved | null {
+    let hit: Resolved | null = null;
     for (const raw of [company, heardAs]) {
-      const hit = byWords(normaliseName(raw));
-      if (hit) return hit;
+      hit = byWords(normaliseName(raw));
+      if (hit) break;
     }
-    return byFirstWord(normaliseName(company));
+    hit ??= byFirstWord(normaliseName(company));
+    if (hit && BROAD_MARKET.has(hit.ticker) && !namesTheFund(hit.ticker, heardAs)) return null;
+    return hit;
   };
 }
 
