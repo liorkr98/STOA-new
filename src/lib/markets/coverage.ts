@@ -194,3 +194,18 @@ export async function firstCallsRecent(limit: number): Promise<FirstCallRow[]> {
       .map((s) => ({ symbol: s.symbol, direction: s.stance, coveredAt: s.at, reportId: s.reportId, authorId: s.authorId }));
   });
 }
+
+/** How many analysts have a live publication on this ticker, with or without a stance. */
+export async function analystsCovering(symbol: string): Promise<number> {
+  const sym = symbol.toUpperCase();
+  return cachedPage(`coverage:analysts:${sym}`, COVERAGE_TTL_S, async () => {
+    const { data, error } = await createPublicClient()
+      .from("reports")
+      .select("author_id")
+      .eq("ticker", sym)
+      .in("status", LIVE_STATUSES)
+      .limit(1000);
+    if (error || !data) return 0;
+    return new Set(data.map((r) => r.author_id as string)).size;
+  });
+}

@@ -1,0 +1,36 @@
+@font-face { font-family: "Stoa Inter"; src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Stoa Mono"; src: url("/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; }
+@font-face { font-family: "Stoa Mono"; src: url("/fonts/jetbrains-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; }
+@font-face { font-family: "Stoa Bricolage"; src: url("/fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; }
+
+:root {
+  --ink: #101418;
+  --paper: #fafafa;
+  --surface: #ffffff;
+  --mute: #5b6470;
+  --border: #e6e8eb;
+  --border-strong: #c9ced4;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { width: 360px; min-height: 460px; font: 400 14px/1.4 "Stoa Inter", Inter, system-ui, sans-serif; font-feature-settings: "tnum" 1; }
+main { display: flex; flex-direction: column; min-height: 460px; padding: 20px 20px 20px; }
+.top { display: flex; align-items: baseline; justify-content: space-between; }
+h1 { margin: 0; font: 700 22px/1.1 "Stoa Bricolage", "Bricolage Grotesque", system-ui, sans-serif; }
+.tag { color: var(--mute); font-size: 13px; }
+ul { list-style: none; margin: 14px 0 0; padding: 0; }
+li { display: flex; align-items: center; justify-content: space-between; min-height: 40px; border-bottom: 1px solid var(--border); }
+li:last-child { border-bottom: 0; }
+.ticker { font: 600 14px/1 "Stoa Mono", "JetBrains Mono", ui-monospace, monospace; }
+.sides { display: inline-flex; align-items: center; gap: 12px; }
+.side { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 17px; }
+.side.minor { opacity: 0.6; font-size: 12px; font-weight: 500; }
+.example li { opacity: 0.55; }
+.empty { color: var(--mute); margin-top: 6px; font-size: 13px; }
+label.quiet { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; min-height: 44px; cursor: pointer; }
+label.quiet input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+.hint { color: var(--mute); font-size: 12px; margin-top: -4px; }
+.grow { flex: 1; }
+.who { color: var(--mute); font-size: 12px; margin-bottom: 10px; text-align: center; }
+button.cart { width: 100%; min-height: 44px; border: 0; border-radius: 10px; background: var(--ink); color: var(--paper); font: 600 15px/1 "Stoa Inter", Inter, system-ui, sans-serif; cursor: pointer; }
+button.cart:focus-visible, label.quiet input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }

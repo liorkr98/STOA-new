@@ -36,4 +36,37 @@ export type LocalTap = {
   /** held: signed out. sent: Stoa accepted it. delivered: in the cart on Stoa. */
   status: "held" | "sent" | "delivered";
   undone: boolean;
+  /** An undo on a delivered tap, once the site has applied it to the cart. */
+  undoDelivered?: boolean;
 };
+
+/** The card's line and the More info panel. Mirrors `TickerInfo` in src/lib/extension/ticker-info.ts. */
+export type TickerInfo = {
+  symbol: string;
+  name: string;
+  industry: string | null;
+  etf: boolean;
+  price: number | null;
+  changePercent: number | null;
+  marketCap: number | null;
+  pe: number | null;
+  low52: number | null;
+  high52: number | null;
+  nextEarnings: string | null;
+  description: string | null;
+  closes: number[];
+  analysts: number;
+};
+
+/** The extension's own session on Stoa, handed over by the site. */
+export type StoaSession = {
+  accessToken: string;
+  refreshToken: string;
+  /** Unix seconds. */
+  expiresAt: number;
+  userId: string;
+  email: string | null;
+};
+
+/** The cart's current week as the site last reported it. */
+export type SiteWeek = { userId: string; weekStart: string; rows: WeekRow[]; syncedAt: string };

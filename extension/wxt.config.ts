@@ -26,6 +26,7 @@ export default defineConfig({
       matches: ["https://www.stoamarket.ai/*", "https://stoamarket.ai/*", "http://localhost:3000/*"],
     },
     action: { default_title: "Stoa" },
+    web_accessible_resources: [{ resources: ["fonts/*.woff2"], matches: ["*://www.youtube.com/*"] }],
   },
   vite: () => ({
     define: { __STOA_ORIGIN__: JSON.stringify(STOA_ORIGIN) },

@@ -324,3 +324,19 @@ for (const [themeName, theme] of [["light", light], ["dark", dark]] as const) {
     assert.ok(r >= 4.5, `--paper on --ink is ${r.toFixed(2)}:1`);
   });
 }
+
+test("the YouTube extension draws the same animals, on its two measured tints", () => {
+  const ext = readFileSync("extension/src/lib/ui/animals.ts", "utf8");
+  const value = (key: string) => ext.match(new RegExp(`\\b${key}: "(#[0-9A-Fa-f]{6})"`))?.[1]?.toLowerCase();
+  assert.equal(value("bull"), bullBody.light, "extension bull body must be the light bull");
+  assert.equal(value("bear"), bearBody.light, "extension bear body must be the light bear");
+  assert.deepEqual([value("bullMuzzle"), value("bearMuzzle"), value("bearFeatures")], fixedParts, "extension muzzles and features");
+  const tints = ext.slice(ext.indexOf("ANIMAL_TINT"));
+  const bullTint = tints.match(/bull: "(#[0-9A-Fa-f]{6})"/)?.[1]?.toLowerCase();
+  const bearTint = tints.match(/bear: "(#[0-9A-Fa-f]{6})"/)?.[1]?.toLowerCase();
+  assert.ok(bullTint && bearTint, "ANIMAL_TINT must give a bull and a bear tint");
+  const law = readFileSync("docs/DESIGN_LANGUAGE.md", "utf8").toLowerCase();
+  assert.ok(law.includes(`\`${bullTint}\``) && law.includes(`\`${bearTint}\``), "DESIGN_LANGUAGE.md must record the extension tints");
+  assert.ok(ratio(bullBody.light, bullTint!) >= 3, `bull on its tint is ${ratio(bullBody.light, bullTint!).toFixed(2)}:1`);
+  assert.ok(ratio(bearBody.light, bearTint!) >= 3, `bear on its tint is ${ratio(bearBody.light, bearTint!).toFixed(2)}:1`);
+});

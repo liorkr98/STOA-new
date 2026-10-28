@@ -125,6 +125,11 @@ gain 7.3, on loss 4.7.
   added here, and to `test:contrast`, before an animal is drawn on it. (The Feed's stance card
   is 95% white over the video, which over a dark frame is about `#F2F2F2` and measures 2.99;
   while the cart is on it is drawn opaque white instead.)
+  **The YouTube extension's tap buttons (2026-10-28),** from the approved extension mockup: each
+  animal on a 7% tint of its own body colour over white, bull on `#F1F8F5`, bear on `#FDF4F4`,
+  measured 3.11 and 3.10. Only those two buttons, only in the extension (its card is paper in both
+  of YouTube's themes); the colours live in `extension/src/lib/ui/animals.ts`, a copy of this
+  file's light values that `test:contrast` checks.
 
   **Measured** (bull / bear; a graphic needs 3:1). Light: card 3.36 / 3.35, paper 3.22 / 3.21,
   well 3.02 / 3.02. Dark: card 7.81 / 6.23, paper 8.48 / 6.77, well 7.30 / 5.83. Inside the
