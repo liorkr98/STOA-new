@@ -47,11 +47,14 @@ function memoryLimit(key: string, limit: number, windowSeconds: number): RateLim
   const now = Date.now();
   const windowMs = windowSeconds * 1000;
   const hits = (memoryHits.get(key) ?? []).filter((t) => now - t < windowMs);
-  hits.push(now);
+  // Only an allowed request is counted. Counting refused ones too kept a
+  // client that retries locked out for good: each refusal pushed the window on.
+  const success = hits.length < limit;
+  if (success) hits.push(now);
   memoryHits.set(key, hits);
   const remaining = Math.max(0, limit - hits.length);
   return {
-    success: hits.length <= limit,
+    success,
     limit,
     remaining,
     reset: now + windowMs,
