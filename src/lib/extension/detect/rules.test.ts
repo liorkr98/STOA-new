@@ -16,6 +16,10 @@ const symbols: SymbolEntry[] = [
   { symbol: "KHC", name: "The Kraft Heinz Company -", exchange: "NASDAQ", marketCap: 1 },
   { symbol: "UMAC", name: "Unusual Machines, Inc.", exchange: "AMEX", marketCap: 1 },
   { symbol: "JPM", name: "JP Morgan Chase & Co.", exchange: "NYSE", marketCap: 9 },
+  { symbol: "CIFR", name: "Cipher Digital Inc. -", exchange: "NASDAQ", marketCap: 1 },
+  { symbol: "ADI", name: "Analog Devices, Inc.", exchange: "NASDAQ", marketCap: 1 },
+  { symbol: "AMT", name: "American Tower Corporation", exchange: "NYSE", marketCap: 1 },
+  { symbol: "AXP", name: "American Express Company", exchange: "NYSE", marketCap: 1 },
 ];
 const resolve = createResolver(symbols);
 
@@ -44,6 +48,16 @@ test("funds resolve and are labelled ETF; unknown names are dropped", () => {
   assert.deepEqual(resolve("Financial Select Sector SPDR Fund", "XLF"), { ticker: "XLF", name: "Financial Select Sector SPDR", etf: true });
   assert.equal(resolve("Some Private Startup", "")?.ticker, undefined);
   assert.equal(resolve("Bitcoin", "איביט")?.ticker, "IBIT");
+  assert.equal(resolve("Vanguard Information Technology ETF", "ticker symbol VGT")?.ticker, "VGT");
+  assert.equal(resolve("Vanguard Information Technology Index Fund", "")?.ticker, "VGT");
+  assert.equal(resolve("Invesco QQQ", "triple Q")?.ticker, "QQQ");
+});
+
+test("a renamed company is found by its distinctive first word, a common one is not", () => {
+  assert.equal(resolve("Cipher Mining", "סייפר")?.ticker, "CIFR");
+  assert.equal(resolve("Cipher Mining Inc.", "")?.ticker, "CIFR");
+  assert.equal(resolve("Analog Semiconductors", "")?.ticker, "ADI");
+  assert.equal(resolve("American Airlines Group", "")?.ticker, undefined);
 });
 
 const m = (company: string, start: number, end: number, extra: Partial<Mention> = {}): Mention => ({

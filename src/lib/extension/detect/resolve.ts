@@ -33,6 +33,30 @@ export function normaliseName(raw: string): string {
 
 const US = new Set(["NYSE", "NASDAQ", "AMEX"]);
 
+const FUND_WORDS = new Set(["etf", "etn", "fund", "trust", "shares", "index", "the", "portfolio"]);
+
+/** A fund's name without the words every fund name has: "Vanguard Information Technology ETF" to "vanguard information technology". */
+export function normaliseFund(raw: string): string {
+  return normaliseName(raw)
+    .replace(/'/g, "")
+    .split(" ")
+    .filter((w) => !FUND_WORDS.has(w))
+    .join(" ");
+}
+
+/**
+ * First words too common to name one company on their own. A distinctive
+ * first word ("cipher", "nebius") can stand for a renamed company; these
+ * cannot.
+ */
+const COMMON_FIRST = new Set([
+  "american", "global", "united", "first", "general", "national", "international", "digital", "capital",
+  "new", "north", "south", "west", "east", "great", "western", "eastern", "pacific", "atlantic", "advanced",
+  "applied", "energy", "health", "healthcare", "bank", "china", "us", "usa", "world", "data", "power", "royal",
+  "southern", "northern", "central", "community", "citizens", "home", "life", "smart", "blue", "green", "golden",
+  "silver", "black", "red", "white", "alpha", "beta", "delta", "omega", "nova", "star", "sun", "solar", "ai",
+]);
+
 function better(a: SymbolEntry, b: SymbolEntry): SymbolEntry {
   if (US.has(a.exchange) !== US.has(b.exchange)) return US.has(a.exchange) ? a : b;
   return (a.marketCap ?? 0) >= (b.marketCap ?? 0) ? a : b;
@@ -54,6 +78,7 @@ export function createResolver(symbols: SymbolEntry[]) {
     byName.set(key, seen ? better(seen, s) : s);
   }
   const names = [...byName.entries()];
+  const funds = Object.entries(ETFS).map(([symbol, name]) => [normaliseFund(name), symbol] as const);
 
   const entry = (ticker: string, etf = false): Resolved | null => {
     if (ETFS[ticker]) return { ticker, name: shortName(ticker, ETFS[ticker]!), etf: true };
@@ -67,8 +92,9 @@ export function createResolver(symbols: SymbolEntry[]) {
     if (key.length < 3) return null;
     const exact = byName.get(key);
     if (exact) return entry(exact.symbol);
-    const etf = Object.entries(ETFS).find(([, n]) => normaliseName(n) === key);
-    if (etf) return entry(etf[0]);
+    const fundKey = normaliseFund(key);
+    const etf = fundKey ? funds.find(([n]) => n === fundKey) : undefined;
+    if (etf) return entry(etf[1]);
     if (key.length < 4) return null;
     let best: SymbolEntry | null = null;
     for (const [name, s] of names) {
@@ -77,12 +103,24 @@ export function createResolver(symbols: SymbolEntry[]) {
     return best ? entry(best.symbol) : null;
   }
 
+  /**
+   * Last resort, for a company that renamed itself ("Cipher Mining" is now
+   * listed as Cipher Digital): a distinctive first word that begins exactly
+   * one listed name.
+   */
+  function byFirstWord(key: string): Resolved | null {
+    const first = key.split(" ")[0] ?? "";
+    if (first.length < 5 || COMMON_FIRST.has(first) || !/^\p{L}+$/u.test(first)) return null;
+    const hits = names.filter(([name]) => name === first || name.startsWith(`${first} `));
+    return hits.length === 1 ? entry(hits[0]![1].symbol) : null;
+  }
+
   return function resolve(company: string, heardAs: string): Resolved | null {
     for (const raw of [company, heardAs]) {
       const hit = byWords(normaliseName(raw));
       if (hit) return hit;
     }
-    return null;
+    return byFirstWord(normaliseName(company));
   };
 }
 
