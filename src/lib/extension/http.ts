@@ -50,6 +50,8 @@ export async function extensionRoute(
     }
     return withExtensionCors(req, await fn(user));
   } catch (err) {
-    return withExtensionCors(req, errorResponse(toApiError(err)));
+    const apiError = toApiError(err);
+    if (apiError.status >= 500) console.error(`[extension] ${req.method} ${new URL(req.url).pathname} failed`, err);
+    return withExtensionCors(req, errorResponse(apiError));
   }
 }

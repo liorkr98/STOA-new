@@ -5,6 +5,7 @@
  */
 export const SHORT_NAMES: Record<string, string> = {
   AAPL: "Apple",
+  AMD: "AMD",
   AMZN: "Amazon",
   AVGO: "Broadcom",
   BAC: "Bank of America",

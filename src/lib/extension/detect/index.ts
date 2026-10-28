@@ -56,7 +56,11 @@ export async function detectVideo(req: DetectRequest, userId: string): Promise<{
     job = (async () => {
       // Two independent reads, merged: one read alone came back with a
       // different side on about one ticker in ten (blind test, 28 Oct 2026).
-      const [reads, resolve] = await Promise.all([Promise.all(Array.from({ length: READS }, () => readMentions(req))), currentResolver()]);
+      const [settled, resolve] = await Promise.all([Promise.allSettled(Array.from({ length: READS }, () => readMentions(req))), currentResolver()]);
+      // One failed read (a timeout, an answer cut short) leaves the other to stand alone.
+      const reads = settled.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+      for (const r of settled) if (r.status === "rejected") console.error(`[detect] ${req.videoId} read failed`, r.reason);
+      if (reads.length === 0) throw (settled[0] as PromiseRejectedResult).reason;
       const inputTokens = reads.reduce((n, r) => n + r.inputTokens, 0);
       const outputTokens = reads.reduce((n, r) => n + r.outputTokens, 0);
       const usd = reads.reduce((n, r) => n + costUsd(r.inputTokens, r.outputTokens), 0);

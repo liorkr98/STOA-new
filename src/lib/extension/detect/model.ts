@@ -55,7 +55,7 @@ function transcriptText(req: DetectRequest): string {
 
 export class DetectionUnavailable extends Error {}
 
-export const DETECT_MAX_TOKENS = 16000;
+export const DETECT_MAX_TOKENS = 64000;
 
 export function transcriptChars(req: DetectRequest): number {
   return transcriptText(req).length;
@@ -66,7 +66,10 @@ export async function readMentions(req: DetectRequest): Promise<{ mentions: Ment
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new DetectionUnavailable("ANTHROPIC_API_KEY is not set on the server");
   const client = new Anthropic({ apiKey });
-  const response = await client.messages.parse({
+  // Streamed: the model's thinking shares the answer's token allowance, and a
+  // long, name-dense video can need more than a non-streamed call may ask
+  // for. A cut-off answer used to arrive as broken JSON and the read was lost.
+  const stream = client.messages.stream({
     model: DETECT_MODEL,
     max_tokens: DETECT_MAX_TOKENS,
     output_config: { effort: "high", format: zodOutputFormat(OutputSchema) },
@@ -78,7 +81,12 @@ export async function readMentions(req: DetectRequest): Promise<{ mentions: Ment
       },
     ],
   });
+  const response = await stream.finalMessage();
   const usage = { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens };
   if (response.stop_reason === "refusal") return { mentions: [], ...usage };
-  return { mentions: response.parsed_output?.mentions ?? [], ...usage };
+  if (response.stop_reason === "max_tokens") throw new Error(`Answer cut off at ${usage.outputTokens} tokens`);
+  const text = response.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+  const parsed = OutputSchema.safeParse(JSON.parse(text));
+  if (!parsed.success) throw new Error("Answer did not match the schema");
+  return { mentions: parsed.data.mentions, ...usage };
 }
