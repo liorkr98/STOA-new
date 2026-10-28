@@ -229,3 +229,33 @@ export async function listSectorPeers(sector: string, exclude: string, limit = 6
 export function featuredUniverseEntry(ticker: string): UniverseEntry | undefined {
   return UNIVERSE.find((u) => u.ticker === ticker.toUpperCase());
 }
+
+/**
+ * Every listed symbol with its name, for matching a company someone named to
+ * its ticker (the YouTube extension's detection). About 8,000 rows: read in
+ * pages, because one select stops at 1,000, and kept per server instance.
+ */
+let symbolList: { at: number; rows: { symbol: string; name: string; exchange: string; marketCap: number | null }[] } | null = null;
+const SYMBOL_LIST_MS = 12 * 60 * 60 * 1000;
+
+export async function listSymbolNames(): Promise<{ symbol: string; name: string; exchange: string; marketCap: number | null }[]> {
+  if (symbolList && Date.now() - symbolList.at < SYMBOL_LIST_MS) return symbolList.rows;
+  const db = createPublicClient();
+  const rows: { symbol: string; name: string; exchange: string; marketCap: number | null }[] = [];
+  const page = 1000;
+  for (let from = 0; from < 50_000; from += page) {
+    const { data, error } = await db
+      .from("tickers")
+      .select("symbol, name, exchange, market_cap")
+      .eq("status", "active")
+      .order("symbol")
+      .range(from, from + page - 1);
+    if (error) throw error;
+    for (const r of data ?? []) {
+      rows.push({ symbol: r.symbol as string, name: (r.name as string) ?? "", exchange: (r.exchange as string) ?? "", marketCap: (r.market_cap as number | null) ?? null });
+    }
+    if (!data || data.length < page) break;
+  }
+  symbolList = { at: Date.now(), rows };
+  return rows;
+}
