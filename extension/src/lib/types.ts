@@ -30,6 +30,8 @@ export type LocalTap = {
   videoId: string | null;
   videoChannel: string | null;
   videoSeconds: number | null;
+  /** The video's title as the page showed it at the tap. */
+  videoTitle?: string | null;
   at: string;
   /** Who it was saved for; null while signed out. */
   userId: string | null;

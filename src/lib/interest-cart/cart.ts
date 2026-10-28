@@ -22,6 +22,19 @@ function newId(): string {
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
+const MAX_TITLE = 300;
+
+function cleanText(raw: string | null | undefined, max: number): string | null {
+  const t = (raw ?? "").replace(/\s+/g, " ").trim();
+  return t ? t.slice(0, max) : null;
+}
+
+/** A site path only: starts with one "/", no scheme or host, at most 300 characters. */
+export function cleanPath(raw: string | null | undefined): string | null {
+  const p = (raw ?? "").trim();
+  return /^\/(?!\/)[^\s]*$/.test(p) ? p.slice(0, MAX_TITLE) : null;
+}
+
 /** Taps to rows: bull and bear counted apart, most-tapped first. */
 export function summariseWeek(weekStart: string, taps: CartTap[]): CartWeek {
   const byTicker = new Map<string, CartRow>();
@@ -60,6 +73,8 @@ export function createInterestCart(store: InterestCartStore, userId: string) {
         videoId: fromVideo ? (context.videoId ?? null) : null,
         videoChannel: fromVideo ? (context.videoChannel ?? null) : null,
         videoSeconds: fromVideo ? (context.videoSeconds ?? null) : null,
+        videoTitle: fromVideo ? cleanText(context.videoTitle, MAX_TITLE) : null,
+        sourcePath: fromVideo ? null : cleanPath(context.sourcePath),
         createdAt: (context.at ?? new Date()).toISOString(),
       };
       const { inserted } = await store.insert(tap);
@@ -98,6 +113,16 @@ export function createInterestCart(store: InterestCartStore, userId: string) {
       const start = weekStartOf(at ?? new Date());
       const { fromIso, toIso } = weekBounds(start);
       return summariseWeek(weekKey(start), await store.listBetween(userId, fromIso, toIso));
+    },
+
+    /** "Where you saw it": the counted taps on one ticker in one week, newest first. */
+    async sources(weekStart: string, ticker: string): Promise<CartTap[]> {
+      const symbol = normaliseTicker(ticker);
+      const at = parseWeekKey(weekStart);
+      if (!symbol || !at) return [];
+      const { fromIso, toIso } = weekBounds(weekStartOf(at));
+      const taps = await store.listBetween(userId, fromIso, toIso);
+      return taps.filter((t) => t.ticker === symbol).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
 
     /** Every week with at least one tap, newest first. */

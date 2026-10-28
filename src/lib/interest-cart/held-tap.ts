@@ -12,18 +12,21 @@ export type HeldTap = {
   ticker: string;
   direction: CartDirection;
   heldAt: string;
+  /** The page the tap was made on, for "Where you saw it". */
+  path?: string;
 };
 
 const HELD_KEY = "stoa:cart:held";
 /** A held tap older than this is dropped rather than replayed into a later week. */
 const HELD_FOR_MS = 24 * 60 * 60 * 1000;
 
-export function holdTap(ticker: string, direction: CartDirection): HeldTap {
+export function holdTap(ticker: string, direction: CartDirection, path?: string): HeldTap {
   const held: HeldTap = {
     id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}`,
     ticker,
     direction,
     heldAt: new Date().toISOString(),
+    path,
   };
   try {
     window.localStorage.setItem(HELD_KEY, JSON.stringify(held));

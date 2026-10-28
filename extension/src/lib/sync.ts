@@ -51,6 +51,7 @@ export function flushTaps(): Promise<void> {
               videoId: t.videoId,
               videoChannel: t.videoChannel,
               videoSeconds: t.videoSeconds,
+              videoTitle: t.videoTitle ?? null,
               at: t.at,
             })),
           }),
@@ -81,6 +82,7 @@ const toBridge = (t: LocalTap): BridgeTap => ({
   videoId: t.videoId,
   videoChannel: t.videoChannel,
   videoSeconds: t.videoSeconds,
+  videoTitle: t.videoTitle ?? null,
   createdAt: t.at,
 });
 

@@ -15,6 +15,7 @@ const Tap = z.object({
   videoId: z.string().regex(/^[\w-]{11}$/).nullable(),
   videoChannel: z.string().max(128).nullable(),
   videoSeconds: z.number().int().min(0).max(86_400).nullable(),
+  videoTitle: z.string().max(300).nullable().optional(),
   at: z.iso.datetime(),
 });
 const Body = z.object({ taps: z.array(Tap).min(1).max(100) });
@@ -50,6 +51,7 @@ export function POST(req: NextRequest) {
             videoId: t.videoId,
             videoChannel: t.videoChannel,
             videoSeconds: t.videoSeconds,
+            videoTitle: t.videoTitle ?? null,
             at: tapMoment(t.at, now),
           });
           accepted.push(tap);

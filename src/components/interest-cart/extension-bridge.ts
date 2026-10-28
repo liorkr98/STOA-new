@@ -74,6 +74,7 @@ export function useExtensionBridge(cart: InterestCart | null, userId: string | n
             videoId: t.videoId,
             videoChannel: t.videoChannel,
             videoSeconds: t.videoSeconds,
+            videoTitle: t.videoTitle ?? null,
             at: new Date(t.createdAt),
           });
           if (inserted) added += 1;

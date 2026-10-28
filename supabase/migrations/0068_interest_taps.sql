@@ -25,6 +25,11 @@ create table if not exists interest_taps (
   video_id text check (video_id is null or length(video_id) <= 64),
   video_channel text check (video_channel is null or length(video_channel) <= 128),
   video_seconds integer check (video_seconds is null or video_seconds >= 0),
+  -- Extension taps only: the video's title as the page showed it at the tap,
+  -- for the cart's "Where you saw it". Visible only to the tapper (RLS below).
+  video_title text check (video_title is null or length(video_title) <= 300),
+  -- Site taps only: the Stoa page the tap was made on ("/markets/NVDA").
+  source_path text check (source_path is null or (length(source_path) <= 300 and source_path ~ '^/[^/]')),
   -- UTC. Weeks are worked out when read, in the reader's local time.
   created_at timestamptz not null default now(),
   -- Soft delete. A removed tap is kept: it stops counting, Undo can bring
@@ -34,8 +39,9 @@ create table if not exists interest_taps (
   removal_id uuid,
   removed_reason text check (removed_reason in ('undo', 'remove')),
   constraint interest_taps_video_fields_from_extension check (
-    source = 'extension' or (video_id is null and video_channel is null and video_seconds is null)
+    source = 'extension' or (video_id is null and video_channel is null and video_seconds is null and video_title is null)
   ),
+  constraint interest_taps_source_path_from_site check (source = 'site' or source_path is null),
   constraint interest_taps_removal_all_or_none check (
     (removed_at is null and removal_id is null and removed_reason is null)
     or (removed_at is not null and removal_id is not null and removed_reason is not null)
@@ -75,9 +81,11 @@ create index if not exists interest_taps_removal_idx
 create or replace function interest_taps_guard_update() returns trigger
 language plpgsql as $$
 begin
-  if (new.id, new.user_id, new.ticker, new.direction, new.source, new.video_id, new.video_channel, new.video_seconds, new.created_at)
+  if (new.id, new.user_id, new.ticker, new.direction, new.source, new.video_id, new.video_channel, new.video_seconds,
+      new.video_title, new.source_path, new.created_at)
      is distinct from
-     (old.id, old.user_id, old.ticker, old.direction, old.source, old.video_id, old.video_channel, old.video_seconds, old.created_at) then
+     (old.id, old.user_id, old.ticker, old.direction, old.source, old.video_id, old.video_channel, old.video_seconds,
+      old.video_title, old.source_path, old.created_at) then
     raise exception 'interest_taps: a tap cannot be edited, only removed or restored';
   end if;
   if new.removed_at is not null and old.removed_at is null then
@@ -255,3 +263,13 @@ grant execute on function interest_cart_weeks(text, integer) to authenticated;
 -- -- Read through a server route with the service key; refresh with
 -- -- `refresh materialized view concurrently` from a cron, hourly.
 -- -------------------------------------------------------------------
+
+-- "Where you saw it" (2026-10-28): the cart lists a ticker's taps in a week,
+-- newest first, with the video or page each came from. A plain select under
+-- RLS (the caller's own rows only), served by interest_taps_user_ticker_time_idx:
+--   select id, direction, source, video_id, video_channel, video_title,
+--          video_seconds, source_path, created_at
+--   from interest_taps
+--   where user_id = auth.uid() and ticker = $1
+--     and created_at >= $2 and created_at < $3 and removed_at is null
+--   order by created_at desc;

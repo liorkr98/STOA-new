@@ -236,3 +236,22 @@ test("taps stored before removal existed still count", async () => {
   const cart = createInterestCart(new TemporaryLocalCartStore(), "u1");
   assert.equal((await cart.getWeek(NOW)).taps, 1);
 });
+
+test("Where you saw it: a ticker's counted taps in a week, newest first, with their source", async () => {
+  const cart = fresh();
+  const day = (h: number) => new Date(2026, 9, 27, h);
+  await cart.addTap("NVDA", "bull", "extension", { videoId: "abcdefghijk", videoChannel: "Micha.Stocks", videoTitle: "  שלוש   המניות ", videoSeconds: 395, at: day(9) });
+  await cart.addTap("NVDA", "bear", "site", { sourcePath: "/markets/NVDA", videoTitle: "ignored on a site tap", at: day(11) });
+  await cart.addTap("NVDA", "bull", "site", { sourcePath: "https://evil.example/x", at: day(12) });
+  await cart.addTap("AMD", "bull", "site", { at: day(10) });
+  await cart.undoLastTap("NVDA", day(13));
+  const taps = await cart.sources("2026-10-26", "nvda");
+  assert.deepEqual(
+    taps.map((t) => [t.direction, t.source, t.videoTitle ?? null, t.sourcePath ?? null, t.videoSeconds]),
+    [
+      ["bear", "site", null, "/markets/NVDA", null],
+      ["bull", "extension", "שלוש המניות", null, 395],
+    ],
+  );
+  assert.deepEqual(await cart.sources("2026-10-19", "NVDA"), []);
+});

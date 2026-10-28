@@ -16,6 +16,16 @@ const CONFIRM_MS = 2000;
 
 export type Video = { videoId: string; channel: string | null };
 
+/** The watch page's title and channel as YouTube draws them right now. */
+export function pageVideo(): { title: string | null; channel: string | null } {
+  const title =
+    document.querySelector<HTMLElement>("ytd-watch-metadata #title h1, ytd-watch-metadata h1")?.innerText?.trim() ||
+    document.title.replace(/^\(\d+\)\s*/, "").replace(/\s+-\s+YouTube$/, "").trim() ||
+    null;
+  const channel = document.querySelector<HTMLElement>("ytd-watch-metadata ytd-channel-name a, ytd-video-owner-renderer ytd-channel-name a")?.innerText?.trim() || null;
+  return { title, channel };
+}
+
 export function confirmWords(direction: Direction): string {
   return direction === "bull" ? "interested" : "cautious";
 }
@@ -158,12 +168,15 @@ export class Overlay {
   }
 
   private async tap(ticker: string, direction: Direction): Promise<string> {
+    // Title and channel are read from the page at the moment of the tap.
+    const page = pageVideo();
     const { tapId } = await ask({
       type: "tap",
       ticker,
       direction,
       videoId: this.video?.videoId ?? null,
-      videoChannel: this.video?.channel ?? null,
+      videoChannel: page.channel ?? this.video?.channel ?? null,
+      videoTitle: page.title,
       videoSeconds: this.clock.time,
     });
     return tapId;

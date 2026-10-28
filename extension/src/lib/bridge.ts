@@ -11,6 +11,7 @@ export type BridgeTap = {
   videoId: string | null;
   videoChannel: string | null;
   videoSeconds: number | null;
+  videoTitle?: string | null;
   createdAt: string;
 };
 

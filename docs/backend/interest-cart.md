@@ -58,13 +58,16 @@ All of this goes through `src/lib/db/*` like every other Supabase call.
 | `video_id` | text, null | Extension only. |
 | `video_channel` | text, null | Extension only. |
 | `video_seconds` | integer, null | Extension only: seconds into the video when tapped. |
+| `video_title` | text, null | Extension only: the video's title as the page showed it at the tap (at most 300 characters). For "Where you saw it". |
+| `source_path` | text, null | Site only: the Stoa page the tap was made on (`/markets/NVDA`). For "Where you saw it". |
 | `created_at` | timestamptz, not null | UTC, **stamped by a trigger**. A client cannot backdate a tap into an earlier week. |
 | `removed_at` | timestamptz, null | Soft delete. Null while the tap counts. Stamped by the database, never the client. |
 | `removal_id` | uuid, null | Taps removed together (a ticker's whole week) share one id; Undo restores exactly them. |
 | `removed_reason` | text, null | `undo` (the tap toast's Undo) or `remove` (the reader took the ticker out of the week). |
 
-A check constraint keeps the three video columns null unless `source = 'extension'`, and another
-keeps the three removal columns all set or all null.
+A check constraint keeps the four video columns null unless `source = 'extension'`, another keeps
+`source_path` null unless `source = 'site'`, and another keeps the three removal columns all set
+or all null. The update guard treats the title and path like every other tap field: never edited.
 
 ## Removing a ticker: soft delete, never hard delete
 
@@ -124,6 +127,16 @@ direction or time; removing a ticker in a past week is refused; anon selects not
   removing a ticker from the week.
 - `(removal_id) where removal_id is not null`: restoring one removal.
 - The primary key on `id` makes the idempotent replay a cheap conflict check.
+
+## "Where you saw it" (2026-10-28)
+
+Each row in the cart can expand into the taps behind it, newest first: for an extension tap the
+channel, the video title, the minute and the side tapped, linking to the video at that second
+(`youtube.com/watch?v=<id>&t=<seconds>s`); for a site tap "Added on Stoa" and the page. The
+`SupabaseCartStore` needs nothing new for it: `listBetween` already returns the week's counted
+taps, and the cart filters one ticker (`createInterestCart(...).sources`). If a direct read is
+preferred, the draft lists the select at its end; `interest_taps_user_ticker_time_idx` serves it.
+Like every tap, these rows are visible only to the person who made them (RLS).
 
 ## The weekly per-user aggregate
 
@@ -262,7 +275,7 @@ All extension routes answer CORS for the extension's origin only, and refuse oth
 | `GET /api/extension/ticker?symbol=` | extension | The card's line and the More info panel: name, industry, live price and today's move (Finnhub, falling back to the snapshot), market cap, P/E, 52-week range, next earnings, two sentences of description, three months of closes, how many analysts have a live publication on it. Cached 30 seconds. |
 | `POST /api/extension/session` | a Stoa page, same origin, with the reader's cookie | Makes the extension a session of its own for the signed-in reader (below). Refused from any other origin; no CORS. 20/hour per user. |
 | `POST /api/extension/session/refresh` | extension | `{ refreshToken }` to a fresh pair. |
-| `POST /api/extension/taps` | extension, bearer token | Up to 100 taps. Each goes through `createInterestCart(...).addTap(ticker, direction, "extension", { id, videoId, videoChannel, videoSeconds, at })`, the same module as a site tap. A held tap keeps the moment it was made if that is within the last week, else it is stamped now (the table's trigger will stamp `created_at` itself). 120/minute per user. |
+| `POST /api/extension/taps` | extension, bearer token | Up to 100 taps, each with the video's id, channel, title and second. Each goes through `createInterestCart(...).addTap(ticker, direction, "extension", { id, videoId, videoChannel, videoSeconds, at })`, the same module as a site tap. A held tap keeps the moment it was made if that is within the last week, else it is stamped now (the table's trigger will stamp `created_at` itself). 120/minute per user. |
 
 ### Sign-in
 

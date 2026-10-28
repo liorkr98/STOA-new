@@ -22,6 +22,8 @@ export type BridgeTap = {
   videoId: string | null;
   videoChannel: string | null;
   videoSeconds: number | null;
+  /** The video's title at the tap; absent from taps made before titles were kept. */
+  videoTitle?: string | null;
   createdAt: string;
 };
 

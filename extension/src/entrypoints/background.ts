@@ -58,6 +58,7 @@ async function tap(request: Extract<Request, { type: "tap" }>): Promise<{ tapId:
     videoId: request.videoId,
     videoChannel: request.videoChannel,
     videoSeconds: request.videoSeconds === null ? null : Math.max(0, Math.round(request.videoSeconds)),
+    videoTitle: request.videoTitle?.replace(/\s+/g, " ").trim().slice(0, 300) || null,
     at: new Date().toISOString(),
     userId: stored.session?.userId ?? null,
     status: "held",

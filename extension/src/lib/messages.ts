@@ -6,7 +6,15 @@ export type Request =
   | { type: "lookup"; videoId: string }
   | { type: "detect"; videoId: string; language: string; segments: Segment[] }
   | { type: "info"; ticker: string }
-  | { type: "tap"; ticker: string; direction: Direction; videoId: string | null; videoChannel: string | null; videoSeconds: number | null }
+  | {
+      type: "tap";
+      ticker: string;
+      direction: Direction;
+      videoId: string | null;
+      videoChannel: string | null;
+      videoTitle: string | null;
+      videoSeconds: number | null;
+    }
   | { type: "undo"; tapId: string }
   | { type: "open"; path: string }
   | { type: "signout" }

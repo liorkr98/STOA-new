@@ -6,7 +6,7 @@
 
 export type CartDirection = "bull" | "bear";
 
-/** Where a tap was made. Only the site writes taps today. */
+/** Where a tap was made: on the Stoa site, or beside a YouTube video through the extension. */
 export type CartSource = "site" | "extension";
 
 /** One tap, as stored. Mirrors the planned `interest_taps` row. */
@@ -22,6 +22,10 @@ export type CartTap = {
   videoChannel: string | null;
   /** Extension taps only: seconds into the video when the reader tapped. */
   videoSeconds: number | null;
+  /** Extension taps only: the video's title as the page showed it at the tap. Absent on older taps. */
+  videoTitle?: string | null;
+  /** Site taps only: the Stoa page the tap was made on ("/markets/NVDA"). Absent on older taps. */
+  sourcePath?: string | null;
   /** UTC. Weeks are worked out from it when read, in local time. */
   createdAt: string;
   /**
@@ -49,6 +53,9 @@ export type CartTapContext = {
   videoId?: string | null;
   videoChannel?: string | null;
   videoSeconds?: number | null;
+  videoTitle?: string | null;
+  /** Site taps: the page the tap was made on. */
+  sourcePath?: string | null;
   /** Only for tests and replays: when the tap happened. */
   at?: Date;
 };

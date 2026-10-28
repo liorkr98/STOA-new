@@ -117,7 +117,7 @@ export function CartRuntimeHost() {
     if (!held) return;
     replaying.current = true;
     void cart
-      .addTap(held.ticker, held.direction, "site", { id: held.id })
+      .addTap(held.ticker, held.direction, "site", { id: held.id, sourcePath: held.path })
       .then(({ inserted }) => {
         clearHeldTap(held.id);
         if (inserted) added(cart, held.ticker);
@@ -130,15 +130,16 @@ export function CartRuntimeHost() {
 
   const tap = useCallback(
     (ticker: string, direction: CartDirection) => {
+      const here = `${window.location.pathname}${window.location.search}`;
       if (!cart) {
-        holdTap(ticker, direction);
+        holdTap(ticker, direction, here);
         const back = returnAfterTap(window.location.pathname, window.location.search, ticker);
         router.push(`/sign-up?next=${encodeURIComponent(back)}`);
         return;
       }
       setThisWeek((w) => bump(w ?? summariseWeek(weekKey(weekStartOf(new Date())), []), ticker, direction));
       void cart
-        .addTap(ticker, direction, "site")
+        .addTap(ticker, direction, "site", { sourcePath: here })
         .then(() => added(cart, ticker))
         .catch(() => toast.error("Could not add that to your cart. Try again."));
     },
