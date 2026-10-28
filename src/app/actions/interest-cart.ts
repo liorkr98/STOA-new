@@ -4,7 +4,7 @@ import { listTickerRows } from "@/lib/db/tickers";
 import { getCandles } from "@/lib/engine/market/candles";
 import { normaliseTicker } from "@/lib/interest-cart/cart";
 import { weekMove } from "@/lib/interest-cart/price";
-import { companyName } from "@/lib/format";
+import { shortName } from "@/lib/extension/names";
 import { getVerifiedSessionEmail } from "@/lib/db/auth";
 import { interestCartFlag, interestCartOpenTo } from "@/lib/flags/interest-cart";
 
@@ -45,7 +45,8 @@ export async function cartTickerInfo(
       symbols.map(async (s) => [s, weekMove(await getCandles(s, "3M").catch(() => []), fromIso, toIso)] as const),
     ),
   ]);
-  const names = new Map(rows.map((r) => [r.symbol, companyName(r.name)]));
+  // The same short names the extension shows ("JPMorgan Chase", "Nvidia").
+  const names = new Map(rows.map((r) => [r.symbol, r.name ? shortName(r.symbol, r.name) : null]));
   return Object.fromEntries(
     moves.map(([s, pct]) => [s, { name: names.get(s) ?? null, weekMovePct: pct }]),
   );
