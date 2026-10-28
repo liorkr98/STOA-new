@@ -10,6 +10,36 @@ backend handoff `docs/BACKEND_BRIEF.md`.
 
 ---
 
+## 2026-10-28: The Stoa extension for YouTube (behind FEATURE_INTEREST_CART, not merged)
+
+**What a reader notices (with the extension installed and the cart open to them)**
+
+- On a YouTube video, when a stock gets real airtime (45 seconds or more, or the speaker says
+  outright to buy or avoid it), a small Stoa card slides in beside the video: the ticker, what
+  the company is, the live price and today's move, and a bull and a bear with this week's
+  counts. Quick picks the speaker takes a side on only join a quiet "In this video" line.
+  Earnings calendars, passing examples, portfolio lists, sponsors and indexes never show.
+- A tap shows "JPM added · interested" with Undo for two seconds and lands in the cart with
+  the video, the channel and the moment. Left alone for eight seconds, the card folds into the
+  line; a closed ticker never pops again in that video. Nothing shows in fullscreen.
+- More info opens a narrow panel with a three-month line, two sentences on the company,
+  market cap, P/E, 52-week range, next earnings and how many Stoa analysts cover it.
+- The toolbar popup lists this week's top stocks, has Quiet mode, and opens the cart on Stoa.
+- Signed out, taps still work; "4 stocks picked · Save to Stoa" opens sign-up, and they are
+  saved after the reader signs in.
+
+**Found and fixed while building:** YouTube now refuses its transcript panel's own request
+unless it carries a token from YouTube's anti-abuse check, so reading it directly is not
+possible; the extension opens the panel out of sight instead. Chrome before version 146 drops a
+promise returned from a message listener, so the background answers through `sendResponse`.
+
+**What needs Krisi:** `ANTHROPIC_API_KEY` in Vercel; the DRAFT `0070_video_ticker_index.sql`
+(until then a temporary 30-day cache); pointing `/api/extension/taps` at the Supabase cart
+store once 0068 is in, which retires the site's temporary bridge. Full list:
+`docs/backend/interest-cart.md`, "The YouTube extension" and "What Krisi needs to do".
+
+---
+
 ## 2026-10-26: Remove a ticker from the cart (behind FEATURE_INTEREST_CART)
 
 **What a reader notices (cart on)**

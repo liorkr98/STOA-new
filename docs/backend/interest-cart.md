@@ -7,9 +7,9 @@ The draft migration is `supabase/migrations/0068_interest_taps.sql`, headed
 ## What the cart is
 
 A reader taps a bull or a bear beside a ticker. Each tap lands in that reader's cart for the
-week. At the end of the week the cart shows which tickers actually held their attention. Later
-a Chrome extension will spot tickers discussed in YouTube finance videos and send taps from
-there too.
+week. At the end of the week the cart shows which tickers actually held their attention. The
+Stoa Chrome extension (`extension/`, built 2026-10-28) spots tickers discussed in YouTube
+finance videos and sends taps from there too: see "The YouTube extension" below.
 
 Product rules the backend must keep:
 
@@ -18,8 +18,8 @@ Product rules the backend must keep:
 - The cart resets weekly. A week starts Monday 00:00 in the reader's own time zone.
 - Older weeks stay readable.
 - Saving needs an account. A signed-out tap is held on the device and replayed after sign-up.
-- Every tap records its source: `site` now, `extension` later. Extension taps also carry the
-  video id, the channel and the moment in the video.
+- Every tap records its source: `site` or `extension`. Extension taps also carry the video id,
+  the channel and the moment in the video.
 
 ## What exists today (temporary)
 
@@ -233,6 +233,114 @@ ticker, bull, bear, people`.
 follows. The cart deliberately does not use it: a follow is a standing choice, a tap is a
 moment of attention. Merging them would make a follow look like a view.
 
+## The YouTube extension (2026-10-28)
+
+The extension lives in `extension/` (WXT, Manifest V3, permissions: the YouTube host and
+`storage` only). On a YouTube watch page it reads the transcript inside the reader's own browser,
+asks Stoa which stocks the video discusses, and slides a card in beside the video at that
+moment with a bull and a bear. Its id is pinned by a public key in its manifest:
+`aobmhpgimghcngjppdbcglejomfgioan` (`src/lib/extension/id.ts`).
+
+### Why the transcript is read in the browser
+
+From a server, YouTube refuses captions (cloud addresses are blocked, and caption files come back
+empty without a browser token). In the reader's browser, the extension first tries the request
+YouTube's own transcript panel makes. YouTube now attaches a token from its own anti-abuse check
+to that request and answers 400 without it; that token is YouTube's to make, not ours, so the
+extension does not try to produce it. It falls back to opening the transcript panel out of sight
+(see-through, under the page, unclickable) for the second it takes to load, reads its lines, and
+closes it. Only the timestamped lines go to Stoa, once per video.
+
+### Routes
+
+All extension routes answer CORS for the extension's origin only, and refuse others.
+
+| Route | Who calls it | What it does |
+|---|---|---|
+| `GET /api/extension/detect?videoId=` | extension | The stored result for a video, or `items: null`. Asked first, so a video already read never has its transcript read again. 240/hour per address. |
+| `POST /api/extension/detect` | extension | `{ videoId, language, segments }`. Claude Haiku (`claude-haiku-5-5`, key `ANTHROPIC_API_KEY`, server only) returns which companies are discussed, when, the speaker's own stance, any explicit rating and whether it is conditional, as structured JSON. It never supplies a ticker: code maps the company to one through the symbol list (`tickers`, read in pages) and an alias table (`src/lib/extension/detect/aliases.ts`, which also lists the common ETFs the symbol list lacks). Then the rules (`rules.ts`): a card for 45+ seconds of discussion or an explicit buy/avoid, a chip on the "In this video" line for a quick pick with a side, nothing for earnings calendars, passing examples, portfolio lists, sponsors, indexes and coins. 30/hour per address on a miss. |
+| `GET /api/extension/ticker?symbol=` | extension | The card's line and the More info panel: name, industry, live price and today's move (Finnhub, falling back to the snapshot), market cap, P/E, 52-week range, next earnings, two sentences of description, three months of closes, how many analysts have a live publication on it. Cached 30 seconds. |
+| `POST /api/extension/session` | a Stoa page, same origin, with the reader's cookie | Makes the extension a session of its own for the signed-in reader (below). Refused from any other origin; no CORS. 20/hour per user. |
+| `POST /api/extension/session/refresh` | extension | `{ refreshToken }` to a fresh pair. |
+| `POST /api/extension/taps` | extension, bearer token | Up to 100 taps. Each goes through `createInterestCart(...).addTap(ticker, direction, "extension", { id, videoId, videoChannel, videoSeconds, at })`, the same module as a site tap. A held tap keeps the moment it was made if that is within the last week, else it is stamped now (the table's trigger will stamp `created_at` itself). 120/minute per user. |
+
+### Sign-in
+
+The reader signs in on stoamarket.ai as usual. The site never hands its own session over:
+refreshing one Supabase session from two places makes Supabase revoke it and would sign the
+reader out of the site. Instead, when a Stoa page sees the extension (`externally_connectable`,
+only Stoa's origin can message it, and only at its id) and the extension is not signed in as
+this reader, the page asks `/api/extension/session`, which makes a second session for the same
+account (an admin sign-in link the server redeems itself; no email is sent), and passes it to
+the extension. The extension refreshes it on its own and drops it when Stoa says sign in again.
+Signing in as someone else on the same browser does not carry the previous reader's taps over.
+
+Signed out, taps still work and are kept in the extension. A small card ("4 stocks picked ·
+Save to Stoa") opens sign-up; once the reader is signed in and on any Stoa page, the session is
+handed over and every held tap is sent.
+
+### Where taps go today (temporary)
+
+`/api/extension/taps` checks the account and shapes each tap, but there is nothing to write it
+to until `interest_taps` exists, and the cart itself is kept in the reader's browser
+(`TemporaryLocalCartStore`). So the route uses `ExtensionRelayStore`
+(`src/lib/interest-cart/relay-store.ts`), which keeps nothing, and the extension holds each
+accepted tap until the reader's next Stoa page, where `useExtensionBridge`
+(`src/components/interest-cart/extension-bridge.ts`) pulls them into the cart under their own ids
+(a second run cannot count one twice), applies Undos made after delivery, and sends the week's
+counts back for the card. It runs on load, when the tab returns, every 30 seconds and after the
+cart changes.
+
+When `SupabaseCartStore` exists: use it in `/api/extension/taps` instead of
+`ExtensionRelayStore`, read the card's weekly counts from `interest_cart_week` through a new
+`GET /api/extension/week` (bearer), and delete the bridge's pull and ack steps (keep the
+session hand-over). Extension taps then reach the table the moment they are made.
+
+### The table: `video_ticker_index` (DRAFT 0070)
+
+`supabase/migrations/0070_video_ticker_index.sql`, headed **DRAFT - DO NOT APPLY**. One row per
+ticker per video: `video_id`, `ticker`, `kind` (card or line), `start_seconds`, `end_seconds`,
+`stance` (bull, bear or null), `conditional`, `etf`, `name`, `what`, `language`, `model`,
+`detected_at`; primary key `(video_id, ticker)`. A companion `video_ticker_reads` (one row per
+video read) remembers videos read that had no ticker worth showing, so they are not paid for
+again. No transcript is stored, here or anywhere. RLS on, nothing granted to `anon` or
+`authenticated`: only the server reads and writes it with the service key. A re-read replaces a
+video's rows in one transaction.
+
+Until it is applied, `TemporaryVideoIndexCache` (`src/lib/db/video-ticker-index.ts`) keeps each
+video's result in the app cache (Upstash when configured, otherwise one server instance's
+memory) for 30 days, and on a developer's machine in `.next/cache`. Swapping in a Supabase store
+means one class with `get` and `put`, and the one line in `videoTickerIndex()`.
+
+### The four concerns, for the extension
+
+**Scalability.** The AI is paid once per video, not per viewer: every later viewer is a primary
+key lookup. Haiku costs a fraction of a cent per 20-minute transcript. Popular finance
+channels publish a few videos a day each, so even 1,000 channels is a few thousand reads a day.
+Two viewers opening the same new video at once share one read on a server instance (in-flight
+map); across instances a rare double read is harmless (same result, last write wins). The ticker
+info route reads market data that is already cached per symbol. Taps: the extension is the
+likeliest source of runaway writes, hence the per-user limit on `/api/extension/taps` (and the
+`check_rate_limit` RPC once taps hit the table).
+
+**Caching.** Video results: by video id, 30 days, then read again (videos do not change, but the
+symbol list and alias table improve). Ticker info: 30 seconds on the server and in the
+extension, so a price on the card is at most about a minute old. Personal data (taps, counts)
+is never cached on a server or a CDN: the card's counts come from the extension's own storage
+and the site's report of the week, refreshed on every Stoa visit.
+
+**Rendering.** Nothing is server-rendered for the extension: it draws its own card in a shadow
+root in YouTube's right-hand column (never over the video, hidden in fullscreen), and the More
+info panel in a second shadow root over the page. Stoa's site renders nothing new apart from the
+bridge, a client hook inside the cart's runtime, so it ships only to readers the cart is open
+to.
+
+**Regionality.** Store times in UTC; the card's "this week" follows the reader's device clock,
+like the cart. Keep the extension routes in the same Vercel region as Supabase. The AI call goes
+to Anthropic's API (US). What goes there is the video's public transcript, never anything about
+the reader. Taps with video and channel are viewing context tied to a person: they belong in the
+data export and are deleted with the account like every tap. Counsel should see this.
+
 ## What Krisi needs to do
 
 1. Review and apply `0068_interest_taps.sql` (remove the DRAFT header when applying). It now
@@ -242,3 +350,11 @@ moment of attention. Merging them would make a follow look like a view.
 3. Write `SupabaseCartStore` in `src/lib/db/` and swap it into `cartStore()`. Decide whether
    to import the temporary browser taps on first sign-in (as follows did) or let them go.
 4. Decide retention and the global total's time zone before the extension ships.
+5. Review and apply `0070_video_ticker_index.sql` (remove the DRAFT header), then write the
+   Supabase `VideoTickerIndexStore` and swap it into `videoTickerIndex()`.
+6. Set `ANTHROPIC_API_KEY` in Vercel (Production and Preview), server only.
+7. With `SupabaseCartStore` in place: point `/api/extension/taps` at it and remove the bridge's
+   pull and ack (section "Where taps go today").
+8. Before a Chrome Web Store release: the store copy gets its own id; add it to
+   `NEXT_PUBLIC_STOA_EXTENSION_IDS` and build the extension with
+   `WXT_STOA_ORIGIN=https://www.stoamarket.ai`.

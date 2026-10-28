@@ -278,7 +278,7 @@ export function WeekContents({
         ))}
       </ul>
       <p className="mt-6 text-ticker text-text-mute">
-        Soon, taps you make while watching finance videos on YouTube will land here too.
+        Taps you make beside finance videos on YouTube, with the Stoa extension, land here too.
       </p>
     </>
   );

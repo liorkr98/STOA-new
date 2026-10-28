@@ -844,6 +844,22 @@ week, and the cart shows what held their attention. Data model and backend:
   the headline list fades.
 - **Temporary storage:** taps live in the browser behind `InterestCartStore`
   (`TemporaryLocalCartStore`, keyed by user id) until `interest_taps` exists.
+- **The YouTube extension (2026-10-28, `extension/`).** Its own surface, drawn by the extension
+  in YouTube's right-hand column, never over the video and never in fullscreen; Stoa-branded
+  and unlike YouTube's own UI. One card at a time (ticker in mono, the name, the moment and a
+  close; what the company is, the live price and today's move; bull and bear with this week's
+  counts, More info, Open on Stoa). A tap swaps the buttons for two seconds to "JPM added ·
+  interested" (bear: "cautious") with Undo. Untouched for eight seconds of playback the card
+  folds into a quiet "In this video" line of ticker chips under where it was; a chip reopens it,
+  and a closed ticker never pops again in that video. More info is a 420px panel over the page
+  with a light dim, the video playing on. The toolbar popup lists this week's top stocks
+  (layout C, "Example" rows until the reader has taps), Quiet mode (no pop-ups, only the line)
+  and "Open my cart on Stoa" (`/home?cart=open`, which opens the panel). Signed out, a small
+  "N stocks picked · Save to Stoa" card opens sign-up. The card is paper in both of YouTube's
+  themes; the line follows YouTube's theme. The animals sit on two measured tints recorded in
+  `docs/DESIGN_LANGUAGE.md` 1.3. Mono for tickers only: prices and times are Inter with even
+  digits. Data and sign-in: `docs/backend/interest-cart.md`, "The YouTube extension". The
+  cart's footer line now says extension taps land in the cart.
 
 ---
 

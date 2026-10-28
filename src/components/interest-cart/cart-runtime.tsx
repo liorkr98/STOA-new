@@ -13,6 +13,7 @@ import type { CartDirection, CartWeek } from "@/lib/interest-cart/types";
 import { publishCartRuntime, type CartRuntime } from "@/components/interest-cart/gate";
 import { CartPanel, PANEL_TOASTER } from "@/components/interest-cart/cart-panel";
 import { weekKey, weekStartOf } from "@/lib/interest-cart/week";
+import { useExtensionBridge } from "@/components/interest-cart/extension-bridge";
 
 /** Pages a held tap must not replay on: the person is still signing up. */
 const AUTH_FLOW = ["/sign-in", "/sign-up", "/auth", "/onboarding", "/consent-required", "/forgot-password", "/reset-password"];
@@ -175,6 +176,21 @@ export function CartRuntimeHost() {
 
   const open = useCallback(() => setOpen(true), []);
   const close = useCallback(() => setOpen(false), []);
+
+  useExtensionBridge(cart, userId);
+
+  // The extension's "Open my cart on Stoa" lands on /home?cart=open.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("cart") !== "open") return;
+    url.searchParams.delete("cart");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    // After this render, so the panel's own history entry sits on the clean
+    // address. Not cancelled on cleanup: the address is already clean, so a
+    // second run of this effect (React's development double run) would not
+    // open it again.
+    window.setTimeout(() => setOpen(true), 0);
+  }, [pathname]);
 
   const value = useMemo<CartRuntime>(
     () => ({ cart, signedIn: Boolean(userId), thisWeek: cart ? thisWeek : null, rowFor, tap, removeTicker, isOpen, open, close }),

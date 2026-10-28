@@ -28,7 +28,9 @@ function render(stored: Stored) {
   const list = (example ? EXAMPLE : rows)
     .map((r) => `<li><span class="ticker">${esc(r.ticker)}</span><span class="sides">${sides(r)}</span></li>`)
     .join("");
-  const who = stored.session ? `Saving to Stoa as ${esc(stored.session.email ?? "you")}` : "Not signed in. Taps stay on this device until you save them.";
+  const who = stored.session
+    ? `Saving to Stoa as ${esc(stored.session.email ?? "you")} · <button class="link" id="signout">Sign out</button>`
+    : "Not signed in. Taps stay on this device until you save them.";
   document.getElementById("app")!.innerHTML = `
     <div class="top"><h1>This week</h1>${example ? `<span class="tag">Example</span>` : ""}</div>
     <ul class="${example ? "example" : ""}" aria-label="${example ? "Example of" : ""} this week's top stocks">${list}</ul>
@@ -39,6 +41,7 @@ function render(stored: Stored) {
     <p class="who">${who}</p>
     <button class="cart" id="cart">Open my cart on Stoa</button>`;
   document.getElementById("quiet")!.addEventListener("change", (e) => void writeStored({ quiet: (e.target as HTMLInputElement).checked }));
+  document.getElementById("signout")?.addEventListener("click", () => void browser.runtime.sendMessage({ type: "signout" }));
   document.getElementById("cart")!.addEventListener("click", () => {
     void browser.tabs.create({ url: `${STOA}/home?cart=open` }).then(() => window.close());
   });

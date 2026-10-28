@@ -8,7 +8,8 @@ export type Request =
   | { type: "info"; ticker: string }
   | { type: "tap"; ticker: string; direction: Direction; videoId: string | null; videoChannel: string | null; videoSeconds: number | null }
   | { type: "undo"; tapId: string }
-  | { type: "open"; path: string };
+  | { type: "open"; path: string }
+  | { type: "signout" };
 
 export type DetectAnswer = { items: VideoTicker[] | null; error?: string };
 

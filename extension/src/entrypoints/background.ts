@@ -1,4 +1,6 @@
 import { stoaFetch } from "@/lib/api";
+import { STOA_PAGES, type BridgeRequest } from "@/lib/bridge";
+import { answerSite, flushTaps } from "@/lib/sync";
 import { STOA, type DetectAnswer, type Request } from "@/lib/messages";
 import { readStored, writeStored } from "@/lib/store";
 import type { LocalTap, TickerInfo, VideoTicker } from "@/lib/types";
@@ -53,7 +55,11 @@ async function tap(request: Extract<Request, { type: "tap" }>): Promise<{ tapId:
     status: "held",
     undone: false,
   };
-  await writeStored({ taps: [...stored.taps, local] });
+  const weekAgo = Date.now() - 8 * 86_400_000;
+  // An undone tap that was never sent has nowhere to go; it is forgotten after a week.
+  const kept = stored.taps.filter((t) => !(t.undone && t.status === "held" && new Date(t.at).getTime() < weekAgo));
+  await writeStored({ taps: [...kept, local] });
+  if (stored.session) void flushTaps();
   return { tapId: local.id };
 }
 
@@ -82,6 +88,8 @@ function handle(request: Request): Promise<unknown> {
       return undo(request.tapId);
     case "open":
       return open(request.path);
+    case "signout":
+      return writeStored({ session: null, siteWeek: null }).then(() => null);
   }
 }
 
@@ -94,4 +102,14 @@ export default defineBackground(() => {
     handle(request).then(sendResponse, () => sendResponse(null));
     return true;
   });
+
+  // A Stoa page: hands over the session, collects taps for the cart.
+  browser.runtime.onMessageExternal.addListener((request: BridgeRequest, sender, sendResponse) => {
+    const origin = sender.origin ?? (sender.url ? new URL(sender.url).origin : "");
+    if (!STOA_PAGES.includes(origin)) return undefined;
+    answerSite(request).then(sendResponse, () => sendResponse(null));
+    return true;
+  });
+
+  void flushTaps();
 });

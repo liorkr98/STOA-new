@@ -11,7 +11,11 @@ import { defineConfig } from "wxt";
  * copy on any machine has the id the site talks to. It is a public key; the
  * private half is not in the repository and is not needed to load it.
  */
-const STOA_ORIGIN = process.env.WXT_STOA_ORIGIN ?? "http://localhost:3000";
+const STOA_ORIGIN = (process.env.WXT_STOA_ORIGIN ?? "http://localhost:3000").replace(/\/$/, "");
+/** Only the Stoa this build talks to may hand it a session or read its taps. */
+const STOA_PAGES = STOA_ORIGIN.includes("stoamarket.ai")
+  ? ["https://www.stoamarket.ai/*", "https://stoamarket.ai/*"]
+  : [`${STOA_ORIGIN}/*`];
 
 export default defineConfig({
   srcDir: "src",
@@ -23,7 +27,7 @@ export default defineConfig({
     permissions: ["storage"],
     host_permissions: ["*://www.youtube.com/*"],
     externally_connectable: {
-      matches: ["https://www.stoamarket.ai/*", "https://stoamarket.ai/*", "http://localhost:3000/*"],
+      matches: STOA_PAGES,
     },
     action: { default_title: "Stoa" },
     web_accessible_resources: [{ resources: ["fonts/*.woff2"], matches: ["*://www.youtube.com/*"] }],
