@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createResolver, normaliseName, type SymbolEntry } from "@/lib/extension/detect/resolve";
-import { applyRules, type Mention } from "@/lib/extension/detect/rules";
+import { applyRules, mergeReads, type Mention } from "@/lib/extension/detect/rules";
 
 const symbols: SymbolEntry[] = [
   { symbol: "GS", name: "Goldman Sachs Group, Inc. (The)", exchange: "NYSE", marketCap: 1 },
@@ -96,4 +96,21 @@ test("stretches add up, and the card sits on the longest one", () => {
   const out = applyRules([m("Goldman Sachs", 10, 30), m("גולמן סקס", 200, 230, { conditional: true })], resolve);
   assert.equal(out.length, 1);
   assert.deepEqual([out[0]!.kind, out[0]!.start, out[0]!.end, out[0]!.conditional], ["card", 200, 230, true]);
+});
+
+const vt = (ticker: string, kind: "card" | "line", stance: "bull" | "bear" | null, start = 0, conditional = false) => ({
+  ticker, name: ticker, what: null, etf: false, kind, start, end: start + 60, stance, conditional,
+});
+
+test("two reads merge: union of tickers, a card if either, no side where they disagree", () => {
+  const out = mergeReads(
+    [vt("CAT", "card", null, 100), vt("INTC", "card", "bull", 200), vt("V", "line", "bull", 50)],
+    [vt("CAT", "card", "bull", 110, true), vt("INTC", "card", "bull", 210), vt("CVX", "card", null, 300), vt("V", "card", "bull", 55)],
+  );
+  assert.deepEqual(out.map((t) => [t.ticker, t.kind, t.stance, t.conditional, t.start]), [
+    ["V", "card", "bull", false, 55],
+    ["CAT", "card", null, true, 100],
+    ["INTC", "card", "bull", false, 200],
+    ["CVX", "card", null, false, 300],
+  ]);
 });

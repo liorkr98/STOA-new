@@ -78,3 +78,32 @@ export function applyRules(mentions: Mention[], resolve: Resolver): VideoTicker[
   }
   return out.sort((a, b) => a.start - b.start);
 }
+
+/**
+ * Two independent reads of the same video, merged. A ticker either read found
+ * is kept; a card if either read made it one. Where the two disagree on the
+ * speaker's side, no side is shown rather than a guess, and a view hedged in
+ * either read is marked conditional. The card sits on the stretch of the read
+ * that made it a card (the first read when both did).
+ */
+export function mergeReads(a: VideoTicker[], b: VideoTicker[]): VideoTicker[] {
+  const byTicker = new Map(a.map((t) => [t.ticker, t]));
+  const out: VideoTicker[] = [];
+  for (const t of a) {
+    const other = b.find((x) => x.ticker === t.ticker);
+    if (!other) {
+      out.push(t);
+      continue;
+    }
+    const base = t.kind === "card" || other.kind !== "card" ? t : other;
+    out.push({
+      ...base,
+      kind: t.kind === "card" || other.kind === "card" ? "card" : "line",
+      stance: t.stance === other.stance ? t.stance : null,
+      conditional: t.conditional || other.conditional,
+      what: base.what ?? (base === t ? other.what : t.what),
+    });
+  }
+  for (const t of b) if (!byTicker.has(t.ticker)) out.push(t);
+  return out.sort((x, y) => x.start - y.start);
+}

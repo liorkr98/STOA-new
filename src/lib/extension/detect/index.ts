@@ -5,7 +5,10 @@ import { videoTickerIndex } from "@/lib/db/video-ticker-index";
 import { costUsd, estimateUsd, logCost, recordSpend, withinBudget } from "@/lib/extension/detect/budget";
 import { DETECT_MAX_TOKENS, DETECT_MODEL, readMentions, transcriptChars } from "@/lib/extension/detect/model";
 import { createResolver, type Resolver } from "@/lib/extension/detect/resolve";
-import { applyRules, type Mention } from "@/lib/extension/detect/rules";
+import { applyRules, mergeReads, type Mention } from "@/lib/extension/detect/rules";
+
+/** Independent AI reads per new video, merged (`mergeReads`). */
+const READS = 2;
 import type { DetectRequest, VideoTickerIndex } from "@/lib/extension/types";
 
 let resolver: { at: number; resolve: Resolver } | null = null;
@@ -47,19 +50,27 @@ export async function detectVideo(req: DetectRequest, userId: string): Promise<{
   if (hit) return { entry: hit, cached: true };
   let job = inFlight.get(req.videoId);
   if (!job) {
-    if (!(await withinBudget(estimateUsd(transcriptChars(req), DETECT_MAX_TOKENS)))) {
+    if (!(await withinBudget(READS * estimateUsd(transcriptChars(req), DETECT_MAX_TOKENS)))) {
       throw new DetectionPaused("Today's detection budget is used up");
     }
     job = (async () => {
-      const [{ mentions, inputTokens, outputTokens }, resolve] = await Promise.all([readMentions(req), currentResolver()]);
-      const usd = costUsd(inputTokens, outputTokens);
+      // Two independent reads, merged: one read alone came back with a
+      // different side on about one ticker in ten (blind test, 28 Oct 2026).
+      const [reads, resolve] = await Promise.all([Promise.all(Array.from({ length: READS }, () => readMentions(req))), currentResolver()]);
+      const inputTokens = reads.reduce((n, r) => n + r.inputTokens, 0);
+      const outputTokens = reads.reduce((n, r) => n + r.outputTokens, 0);
+      const usd = reads.reduce((n, r) => n + costUsd(r.inputTokens, r.outputTokens), 0);
       const dayTotal = await recordSpend(usd);
       await logCost({ videoId: req.videoId, userId, inputTokens, outputTokens, usd, dayTotal, at: new Date().toISOString() });
-      if (process.env.NODE_ENV === "development") console.info(`[detect] ${req.videoId}`, JSON.stringify(mentions));
+      const segments = [...req.segments].sort((a, b) => a.start - b.start);
+      const lists = reads.map((r, i) => {
+        if (process.env.NODE_ENV === "development") console.info(`[detect] ${req.videoId} read ${i + 1}`, JSON.stringify(r.mentions));
+        return applyRules(toLineEnds(r.mentions, segments), resolve);
+      });
       const entry: VideoTickerIndex = {
         videoId: req.videoId,
         language: req.language,
-        items: applyRules(toLineEnds(mentions, [...req.segments].sort((a, b) => a.start - b.start)), resolve),
+        items: lists.reduce((merged, list) => mergeReads(merged, list)),
         model: DETECT_MODEL,
         detectedAt: new Date().toISOString(),
       };
