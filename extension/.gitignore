@@ -2,3 +2,4 @@
 .wxt
 node_modules
 *.pem
+.output-store

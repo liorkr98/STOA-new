@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "cd .. && eslint extension",
     "test": "node --import tsx --test src/lib/*.test.ts src/lib/youtube/*.test.ts",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "zip:store": "WXT_STORE=1 WXT_STOA_ORIGIN=https://www.stoamarket.ai wxt zip"
   },
   "devDependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

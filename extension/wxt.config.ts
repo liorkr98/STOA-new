@@ -11,6 +11,8 @@ import { defineConfig } from "wxt";
  * copy on any machine has the id the site talks to. It is a public key; the
  * private half is not in the repository and is not needed to load it.
  */
+/** The Chrome Web Store build: no `key` (the store refuses one and assigns its own id). */
+const STORE = process.env.WXT_STORE === "1";
 const STOA_ORIGIN = (process.env.WXT_STOA_ORIGIN ?? "http://localhost:3000").replace(/\/$/, "");
 /** Only the Stoa this build talks to may hand it a session or read its taps. */
 const STOA_PAGES = STOA_ORIGIN.includes("stoamarket.ai")
@@ -19,17 +21,17 @@ const STOA_PAGES = STOA_ORIGIN.includes("stoamarket.ai")
 
 export default defineConfig({
   srcDir: "src",
-  outDir: ".output",
+  outDir: STORE ? ".output-store" : ".output",
   manifest: {
-    name: "Stoa for YouTube",
-    description: "Spot the stocks a YouTube video is discussing and add them to your Stoa Interest Cart.",
-    key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA43399C7l5NPg1oqLpDvFIb13brfwupyGMaNhiK2DWx4eMDK7DaSD0Rpt2GYYBBPfAKUbJrLs4LxmVRdy2M6vkjxKaN3WtYHPy4lrQBkJZYY0BFZAquy8RpmEWE8kvJwrOZoDzSDCGExAcIGInpz6k4ePb3XWCSTnfRAsKu4nFoqvpJrynwBRx22rbeBKNhpg2WNZaMW8IWJmlQP5AX1hK/96imeBbiXqh9X3R3Q+dyALT0ZY3luyFRB0fJ/i37/N/ZodQ6ts2XMs2NF6LCBdip1sTNROZuLc2qEPXYMLwwXc+/pKIG2NMNhJBAWbG9lajYZ299yQP9cRZousnaSLfQIDAQAB",
+    name: "Stoa Interest Cart",
+    description: "Spot the stocks a finance video discusses and tap a bull or a bear into your Stoa Interest Cart. Works with YouTube.",
+    ...(STORE ? {} : { key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA43399C7l5NPg1oqLpDvFIb13brfwupyGMaNhiK2DWx4eMDK7DaSD0Rpt2GYYBBPfAKUbJrLs4LxmVRdy2M6vkjxKaN3WtYHPy4lrQBkJZYY0BFZAquy8RpmEWE8kvJwrOZoDzSDCGExAcIGInpz6k4ePb3XWCSTnfRAsKu4nFoqvpJrynwBRx22rbeBKNhpg2WNZaMW8IWJmlQP5AX1hK/96imeBbiXqh9X3R3Q+dyALT0ZY3luyFRB0fJ/i37/N/ZodQ6ts2XMs2NF6LCBdip1sTNROZuLc2qEPXYMLwwXc+/pKIG2NMNhJBAWbG9lajYZ299yQP9cRZousnaSLfQIDAQAB" }),
     permissions: ["storage"],
     host_permissions: ["*://www.youtube.com/*"],
     externally_connectable: {
       matches: STOA_PAGES,
     },
-    action: { default_title: "Stoa" },
+    action: { default_title: "Stoa Interest Cart" },
     commands: {
       _execute_action: { suggested_key: { default: "Alt+Shift+S" }, description: "Open Stoa" },
       "toggle-quiet": { suggested_key: { default: "Alt+Shift+Q" }, description: "Turn Quiet mode on or off" },
