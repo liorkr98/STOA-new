@@ -34,14 +34,14 @@ For each stretch of discussion return one entry:
 - start_seconds / end_seconds: from the first to the last line of this stretch, using the bracketed seconds.
 - role:
   main_discussion: the speaker actually analyses this name.
-  quick_pick: a brief named pick or call, usually in a list of picks.
+  quick_pick: a brief named pick or call, usually in a list of picks. A rapid run of names the speaker rattles off as ideas, favourites or things they like or own and would add to ("Nvidia, AMD, TSMC, Vertiv..."), each said with a lean, is a run of quick picks: one entry per name, never "other".
   passing_example: named in passing to illustrate something else.
   earnings_calendar: read out from a list of upcoming earnings or events.
   portfolio_list: read out as a holding or a list of holdings without analysis.
   sponsor: a sponsor, broker or app being promoted.
   other: anything else.
 - speaker_stance: the speaker's OWN view in this stretch (bullish, bearish, neutral, mixed, or none). Views the speaker quotes from analysts, banks or other people do not count. Judge once for the whole stretch.
-- explicit_rating: buy if the speaker says outright they would buy or recommend buying (for example "קנייה", "אני קונה"); avoid if they say outright to avoid or sell (for example "נמנע", "מתרחק", "לא נוגע"); hold; otherwise none.
+- explicit_rating: buy if the speaker says outright they would buy or recommend buying (for example "קנייה", "אני קונה"); avoid if they say outright to avoid or sell (for example "נמנע", "מתרחק", "לא נוגע"); hold; otherwise none. When the video presents itself as a list of stocks the speaker is buying or recommending ("stocks I'm buying", "5 stocks to buy", "מניות שאני קונה"), each name the speaker presents as one of those picks is buy, even without the word itself. Names mentioned in that video only for contrast or context are not.
 - conditional: true when the view is hedged on a condition (for example "if it breaks 200", "only after earnings"). A buy or avoid with a condition ("buy above 46.56") is still explicit_rating buy or avoid, with conditional true.
 - what: at most five plain English words on what the company is (for example "Largest US bank").
 
