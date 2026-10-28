@@ -34,7 +34,9 @@ export class TemporaryVideoIndexCache implements VideoTickerIndexStore {
   private readonly devDir = process.env.NODE_ENV === "development" ? path.join(process.cwd(), ".next", "cache", "stoa-video-index") : null;
 
   async get(videoId: string): Promise<VideoTickerIndex | null> {
-    const hit = (await cacheGet<VideoTickerIndex>(KEY(videoId))) ?? (await this.readDev(videoId));
+    // On a developer's machine the file is the only copy, so deleting it
+    // clears the video (a fresh read for testing); memory would keep serving it.
+    const hit = this.devDir ? await this.readDev(videoId) : await cacheGet<VideoTickerIndex>(KEY(videoId));
     if (!hit) return null;
     const age = Date.now() - new Date(hit.detectedAt).getTime();
     return age < VIDEO_INDEX_TTL_SECONDS * 1000 ? hit : null;
