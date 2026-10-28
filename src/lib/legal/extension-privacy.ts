@@ -33,7 +33,7 @@ export const EXTENSION_PRIVACY_CONTENT: LegalSectionContent[] = [
     bullets: [
       "The video's id, first, to check whether Stoa already knows which stocks that video discusses. If it does, nothing else is sent.",
       "If it does not, and you are signed in: the captions text with its timings, the caption language and the video's id. This happens once per video, for the first signed-in viewer only.",
-      "When you tap a bull or a bear: the ticker, which side you tapped, the video's id, the channel's name and the second in the video you tapped at.",
+      "When you tap a bull or a bear: the ticker, which side you tapped, and the video it came from: the video's id, its title and channel name as the page shows them at that moment, and the second in the video you tapped at.",
       "Your Stoa sign-in, so Stoa knows whose cart a tap belongs to.",
       "Never your browsing history, your YouTube account or watch history, your comments, or anything from any other site.",
     ],
@@ -49,7 +49,9 @@ export const EXTENSION_PRIVACY_CONTENT: LegalSectionContent[] = [
   {
     title: "Your taps",
     bullets: [
-      "Taps are saved to your Interest Cart on Stoa, tied to your Stoa account, with the video, channel and moment. You can see them in your cart and remove a ticker from the current week.",
+      "Taps are saved to your Interest Cart on Stoa, tied to your Stoa account. Each tap keeps the video it came from (its title, channel and the moment you tapped), so your cart can show \"Where you saw it\" and take you back to that moment. A tap made on Stoa itself keeps the Stoa page it was made on.",
+      "Where you saw each stock is visible only to you. It is not shown to analysts, other readers or anyone else, and it is not part of any total Stoa shows.",
+      "You can see your taps in your cart and remove a ticker from the current week.",
       "If you tap while signed out, the taps are kept only in the extension on your computer until you sign in, then saved to your cart.",
       "Your taps are deleted with your Stoa account.",
     ],

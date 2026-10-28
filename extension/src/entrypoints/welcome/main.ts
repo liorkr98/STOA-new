@@ -10,7 +10,10 @@ const POINTS: [string, string][] = [
   ["It only works on youtube.com.", "It does nothing on any other site, and it never sees your other tabs."],
   ["It reads the captions of the video you are watching to find stocks.", "Only on a video page, and only the video in front of you."],
   ["Stoa receives the captions text and the video's id.", "Never your browsing history, your YouTube account or what else you watch."],
-  ["Your taps are saved to your Stoa cart.", "Each bull or bear you tap goes to your Interest Cart on Stoa, with the video and the moment you tapped."],
+  [
+    "Your taps are saved to your Stoa cart, with the video they came from.",
+    "Each tap keeps the video's title, its channel and the moment you tapped, so your cart can show where you saw each stock. Only you can see it.",
+  ],
   ["You can turn it off in the popup.", "Click the Stoa icon in Chrome's toolbar and switch it off. Removing the extension removes everything it kept."],
 ];
 

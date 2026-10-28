@@ -96,7 +96,7 @@ What the form asks, and the answers that match what the code does today.
 | Personal communications | No | |
 | Location | No | |
 | Web history | **Yes, to be safe (legal to confirm)** | For each YouTube video page opened, its video id is sent to Stoa to look up stocks; when the user is signed in and Stoa has not seen the video, the id goes with the user's sign-in. Taps carry the video id, channel and second. Nothing about any other page or site. |
-| User activity | **Yes** | Taps (ticker, bull or bear, video, channel, moment). Playback time is read in the browser and never sent, except as the moment of a tap. |
+| User activity | **Yes** | Taps (ticker, bull or bear, and the video they came from: id, title, channel, moment), shown back only to the user in their cart. Playback time is read in the browser and never sent, except as the moment of a tap. |
 | Website content | **Yes** | The captions text of the video being watched, sent to Stoa once per video so the stocks can be found. |
 
 **Certifications** (all three can be ticked as the code stands):
