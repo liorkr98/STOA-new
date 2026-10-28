@@ -1,0 +1,202 @@
+# Blind test: 10 new videos (28 Oct 2026)
+
+Branch `feat/interest-cart-extension`. The prompt, the alias table and the rules were **not changed** during this test: detection ran exactly as tuned on the first six videos (stored-result version `v4`, Claude Haiku at high effort). Each video was opened in Bar's Chrome with the real extension, which read the transcript itself and asked Stoa running locally. Then the stored result was deleted and the video opened again for a second, independent AI read.
+
+**How to read the tables.** A *card* pops up beside the video; a *chip* only joins the "In this video" line. *Starts at* links to the moment the card (or chip) belongs to, from run 1 (run 2 when only run 2 found it). *Same* means both runs found the ticker with the same type and the same side; the *conditional* flag and the exact start time are not compared.
+
+## Summary
+
+| | |
+|---|---|
+| Videos | 10 (3 Hebrew, 7 English, 10 channels) |
+| Transcripts read | 10 of 10, both runs |
+| Cards found (run 1) | 42 |
+| Cards I'm unsure about | 7 (Caterpillar, Intel, Chevron on r2pmF9zJobE; Meta on S1qUsBnFG_s; Nebius on LSoYG4ZuyIU; Meta on hblOwlplNoo; TQQQ on pyijqV6899Q) |
+| Likely misses | 3 (CIFR, Broadcom as a card, the Tom Nash rapid-fire list) |
+| Run-to-run agreement, ticker with type and side | **88%** (43 of 49) |
+| Run-to-run agreement, which tickers were found at all | **96%** (47 of 49) |
+| Cards that agreed exactly | 38 of 43 distinct cards (88%) |
+
+Nine of the ten videos gave the same tickers in both runs; only the Micha.Stocks earnings preview did not (Visa and Chevron appeared once). The disagreements are almost all about the *side* (bull, bear or none) on companies the speaker discussed without a clear call.
+
+## The videos
+
+### 1. מייקרוסופט, גוגל ואמזון מדווחות, מה הן חייבות להראות לכם - חלק 2
+
+Micha.Stocks · Hebrew · Earnings preview, many companies · 18:46 · https://www.youtube.com/watch?v=r2pmF9zJobE
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| MSFT | Microsoft Corporation | [2:59](https://www.youtube.com/watch?v=r2pmF9zJobE&t=179s) | Card, no side | Card, no side | Yes |
+| GOOGL | Alphabet Inc. | [4:45](https://www.youtube.com/watch?v=r2pmF9zJobE&t=285s) | Card, no side | Card, no side | Yes |
+| LLY | Eli Lilly and Company | [7:22](https://www.youtube.com/watch?v=r2pmF9zJobE&t=442s) | Card, bull | Card, bull | Yes |
+| MA | Mastercard Incorporated | [9:29](https://www.youtube.com/watch?v=r2pmF9zJobE&t=569s) | Card, bull | Card, bull | Yes |
+| V | Visa Inc. | [9:35](https://www.youtube.com/watch?v=r2pmF9zJobE&t=575s) | Chip, bull | not found | **No** |
+| CAT | Caterpillar, Inc. | [10:38](https://www.youtube.com/watch?v=r2pmF9zJobE&t=638s) | Card, no side | Card, bull (conditional) | **No** |
+| AMZN | Amazon.com, Inc. | [11:49](https://www.youtube.com/watch?v=r2pmF9zJobE&t=709s) | Card, bull | Card, bull | Yes |
+| INTC | Intel Corporation | [12:57](https://www.youtube.com/watch?v=r2pmF9zJobE&t=777s) | Card, bull | Card, no side | **No** |
+| CVX | Chevron Corporation | [15:45](https://www.youtube.com/watch?v=r2pmF9zJobE&t=945s) | Card, no side | not found | **No** |
+
+**Flags**
+
+- Least stable video of the ten. Visa (chip) and Chevron (card) appeared in run 1 only. Caterpillar had no side in run 1 and a conditional bull in run 2; Intel was bull in run 1 and no side in run 2.
+- Microsoft and Alphabet have no side in both runs. For an earnings preview that is plausible (the speaker sets out what to watch), but worth a look.
+
+### 2. מה קורה בסקטור הניו קלאודס? IREN CIFR CRWV NBIS
+
+Dvir Shalom (דביר שלום) · Hebrew · Sector deep dive · 29:56 · https://www.youtube.com/watch?v=S1qUsBnFG_s
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| META | Meta Platforms, Inc. | [3:26](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=206s) | Card, bull | Card, bull | Yes |
+| CRWV | CoreWeave, Inc. | [3:40](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=220s) | Card, bear | Card, bear | Yes |
+| IREN | IREN Limited | [5:09](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=309s) | Card, bear | Card, bear (conditional) | Yes |
+| NBIS | Nebius Group N.V. | [5:12](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=312s) | Card, bear | Card, bear (conditional) | Yes |
+| APLD | Applied Digital Corporation | [5:12](https://www.youtube.com/watch?v=S1qUsBnFG_s&t=312s) | Card, bear | Card, bear (conditional) | Yes |
+
+**Flags**
+
+- **Missed: CIFR.** It is in the title. The AI named "Cipher Mining" in both runs; the company has since renamed itself Cipher Digital, and the symbol list knows only the new name, so the code matched nothing and dropped it.
+- The stretches are very long and overlap (Applied Digital runs 0:47 to 28:49 in run 2), because the speaker discusses the five names together. Each card pops at its ticker's longest stretch, so several cards want the same few minutes.
+- Meta is a bull card in a neocloud video. In the raw answer the speaker discusses Meta at length (3:26 to 13:20) as the neoclouds' customer, with a "hold". Plausible, but worth a look.
+
+### 3. שמתי 100,000 שקל על המניה הזו (ועוד 3 מניות שאני קונה עכשיו)
+
+ElevateTrading · Hebrew · Stocks I'm buying (penny stocks) · 8:07 · https://www.youtube.com/watch?v=VaHXDUGKSdY
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| (none) | | | | | |
+
+**Flags**
+
+- No cards, in both runs, and that looks right. The video is about OTC penny stocks (NXGB, BCDS, AGCI, UGZ, VMAG) that are not listed on NYSE, Nasdaq, AMEX or TASE, so none resolves to a ticker Stoa covers. The AI did find and rate all of them.
+
+### 4. Top Stocks I'm Buying To Get Rich Without Getting Lucky
+
+Ticker Symbol: YOU · English · Stocks I'm buying list · 21:58 · https://www.youtube.com/watch?v=P8b2tsNSxRQ
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| NVDA | NVIDIA Corporation | [6:31](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=391s) | Card, bull | Card, bull | Yes |
+| GOOGL | Alphabet Inc. | [8:07](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=487s) | Card, bull | Card, bull | Yes |
+| AVGO | Broadcom Inc. | [9:49](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=589s) | Chip, bull | Chip, bull | Yes |
+| TSM | Taiwan Semiconductor Manufacturing Company Ltd. | [10:37](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=637s) | Card, bull | Card, bull | Yes |
+| MU | Micron Technology, Inc. | [11:40](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=700s) | Card, bull | Card, bull | Yes |
+| VRT | Vertiv Holdings, LLC Class A | [13:39](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=819s) | Card, bull | Card, bull | Yes |
+| IREN | IREN Limited | [14:51](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=891s) | Card, bull | Card, bull | Yes |
+| META | Meta Platforms, Inc. | [16:28](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=988s) | Card, bull | Card, bull | Yes |
+| PLTR | Palantir Technologies Inc. | [17:42](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=1062s) | Card, bull | Card, bull | Yes |
+| CRWD | CrowdStrike Holdings, Inc. | [19:00](https://www.youtube.com/watch?v=P8b2tsNSxRQ&t=1140s) | Card, bull | Card, bull | Yes |
+
+**Flags**
+
+- Broadcom got only a chip: 37 seconds of airtime and no outright "buy", although the whole video is "stocks I'm buying". The title is a buy list, so arguably every name in it should be a card.
+
+### 5. 5 Stocks to Buy Creating $232 Billion for Investors
+
+Let's Talk Money! with Joseph Hogue, CFA · English · List, over 30 minutes · 33:24 · https://www.youtube.com/watch?v=LSoYG4ZuyIU
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| CRWV | CoreWeave, Inc. | [2:32](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=152s) | Card, bear | Card, bear | Yes |
+| NBIS | Nebius Group N.V. | [12:48](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=768s) | Card, no side | Card, bear | **No** |
+| APLD | Applied Digital Corporation | [15:12](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=912s) | Card, bear | Card, bear | Yes |
+| ORCL | Oracle Corporation | [17:27](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1047s) | Card, bear | Card, bear | Yes |
+| AMZN | Amazon.com, Inc. | [19:20](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1160s) | Card, no side | Card, no side | Yes |
+| NVDA | NVIDIA Corporation | [22:54](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1374s) | Card, bull | Card, bull | Yes |
+| MU | Micron Technology, Inc. | [24:16](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1456s) | Card, bull | Card, bull | Yes |
+| AVGO | Broadcom Inc. | [25:30](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1530s) | Card, bull | Card, bull | Yes |
+| TSM | Taiwan Semiconductor Manufacturing Company Ltd. | [26:58](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1618s) | Card, bull | Card, bull | Yes |
+| ANET | Arista Networks, Inc. | [28:25](https://www.youtube.com/watch?v=LSoYG4ZuyIU&t=1705s) | Card, bull | Card, bull | Yes |
+
+**Flags**
+
+- Ten cards for a "5 stocks to buy" video: five bull (NVDA, MU, AVGO, TSM, ANET) and five bear or no side (CRWV, NBIS, APLD, ORCL, AMZN). The bear half looks like the speaker contrasting the AI spenders with the suppliers he picks; plausible, but check the first half.
+- Nebius had no side in run 1 and bear in run 2.
+- CoreWeave's card starts at 2:32 in run 1 and 9:54 in run 2 (same ticker and side, different stretch chosen).
+
+### 6. Here's where I buy Lumentum ($LITE)
+
+Stock Market Mentor · English · Single-stock deep dive · 12:37 · https://www.youtube.com/watch?v=O8EYOyljHyA
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| LITE | Lumentum Holdings Inc. | [0:09](https://www.youtube.com/watch?v=O8EYOyljHyA&t=9s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
+**Flags**
+
+- Clean. One card for the one stock, bull with a condition (a buy level).
+
+### 7. Stock Market Slides After META & TSLA Earnings, LRCX Sees Supply Hitting Backlog
+
+Schwab Network · English · Market recap · 9:14 · https://www.youtube.com/watch?v=hblOwlplNoo
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| META | Meta Platforms, Inc. | [1:35](https://www.youtube.com/watch?v=hblOwlplNoo&t=95s) | Card, bull | Card, bull | Yes |
+| TSLA | Tesla, Inc. | [5:27](https://www.youtube.com/watch?v=hblOwlplNoo&t=327s) | Card, no side | Card, no side | Yes |
+| LRCX | Lam Research Corporation | [6:55](https://www.youtube.com/watch?v=hblOwlplNoo&t=415s) | Card, no side | Card, no side | Yes |
+
+**Flags**
+
+- Meta is bull although the title says the market slid after Meta's earnings. The speaker's own view can differ from the market's move, so this may be right; worth a look.
+
+### 8. Growth Leads Before Fed, Huge Earnings; Tesla, Nucor, Tenet Healthcare In Focus
+
+Investor's Business Daily · English · Market recap, heavy jargon, over 30 minutes · 30:52 · https://www.youtube.com/watch?v=pyijqV6899Q
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| XLV | Health Care Select Sector SPDR Fund | [13:35](https://www.youtube.com/watch?v=pyijqV6899Q&t=815s) | Chip, bull | Chip, bull | Yes |
+| XBI | SPDR S&P Biotech ETF | [13:40](https://www.youtube.com/watch?v=pyijqV6899Q&t=820s) | Chip, bull | Chip, bull | Yes |
+| TQQQ | ProShares UltraPro QQQ | [15:30](https://www.youtube.com/watch?v=pyijqV6899Q&t=930s) | Chip, bull (conditional) | Card, bull (conditional) | **No** |
+| TSLA | Tesla, Inc. | [15:54](https://www.youtube.com/watch?v=pyijqV6899Q&t=954s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+| NUE | Nucor Corporation | [18:47](https://www.youtube.com/watch?v=pyijqV6899Q&t=1127s) | Card, bull | Card, bull | Yes |
+| THC | Tenet Healthcare Corporation | [21:02](https://www.youtube.com/watch?v=pyijqV6899Q&t=1262s) | Card, no side | Card, no side | Yes |
+| CAKE | The Cheesecake Factory Incorporated | [22:55](https://www.youtube.com/watch?v=pyijqV6899Q&t=1375s) | Chip, bull | Chip, bull (conditional) | Yes |
+| STX | Seagate Technology Holdings PLC | [24:43](https://www.youtube.com/watch?v=pyijqV6899Q&t=1483s) | Chip, bear | Chip, bear | Yes |
+
+**Flags**
+
+- The three cards are exactly the three names in the title (Tesla, Nucor, Tenet Healthcare).
+- TQQQ was a chip in run 1 and a card in run 2.
+- Heavy jargon (buy points, bases, leveraged funds) caused no visible confusion.
+
+### 9. MAJOR BUY: Last EASY Wealth Opportunity For Decades
+
+Tom Nash · English · Thematic, ends in picks · 15:44 · https://www.youtube.com/watch?v=ZEImdkhIF6g
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| ARM | Arm Holdings plc | [12:03](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=723s) | Card, bull | Card, bull | Yes |
+| APP | Applovin Corporation | [12:37](https://www.youtube.com/watch?v=ZEImdkhIF6g&t=757s) | Card, bull (conditional) | Card, bull | Yes |
+
+**Flags**
+
+- **Likely miss.** At 9:56 to 11:37 the speaker runs through a bullish list (Nvidia, AMD, TSMC, Vertiv, Zscaler, Zeta, Snowflake, Palantir, Salesforce, ServiceNow). The AI labelled those "other" rather than "quick pick", and the rules drop "other", so none became even a chip.
+- AppLovin's conditional flag differs between runs.
+
+### 10. Don't Say I Didn't Tell You | SOFI Earnings Preview
+
+Stealth Wealth Investing · English · Single-stock earnings preview · 10:06 · https://www.youtube.com/watch?v=5PsNbwmc4Hc
+
+| Ticker | Name | Starts at | Run 1 | Run 2 | Same |
+|---|---|---|---|---|---|
+| SOFI | SoFi Technologies, Inc. | [0:00](https://www.youtube.com/watch?v=5PsNbwmc4Hc&t=0s) | Card, bull (conditional) | Card, bull (conditional) | Yes |
+
+**Flags**
+
+- Clean. One card, bull with a condition (an earnings preview).
+
+## Videos where no transcript could be read
+
+None. All ten transcripts were read in both runs, including two in YouTube's newest transcript layout.
+
+Two attempts on the Tom Nash video (ZEImdkhIF6g) were refused, not for the transcript but by Stoa's own limit of 30 new AI reads per hour from one address, which this test's volume (20 reads in about an hour, plus the earlier six-video runs) used up. That exposed a bug in the in-memory rate limiter, which counted refused requests too and so never let a retrying client back in; it is fixed in its own commit on this branch. Both runs of that video then completed normally and are the ones reported above.
+
+## Method notes
+
+- Videos picked on 28 Oct 2026 from YouTube searches limited to the last month, none of the six tuning videos, ten different channels.
+- Raw AI answers (company names, roles, stances, never the transcript) were logged locally on the development server only and were used to explain the flags above.
+- The fixes this suggests are listed separately, after this report, and none has been applied.
