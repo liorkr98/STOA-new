@@ -1,4 +1,5 @@
 import { ALIASES, ETFS, ETF_ALIASES } from "@/lib/extension/detect/aliases";
+import { shortName } from "@/lib/extension/names";
 
 /** One listed symbol, as the resolver needs it. */
 export type SymbolEntry = { symbol: string; name: string; exchange: string; marketCap: number | null };
@@ -55,9 +56,9 @@ export function createResolver(symbols: SymbolEntry[]) {
   const names = [...byName.entries()];
 
   const entry = (ticker: string, etf = false): Resolved | null => {
-    if (ETFS[ticker]) return { ticker, name: ETFS[ticker]!, etf: true };
+    if (ETFS[ticker]) return { ticker, name: shortName(ticker, ETFS[ticker]!), etf: true };
     const s = bySymbol.get(ticker);
-    return s ? { ticker: s.symbol, name: displayName(s.name), etf } : null;
+    return s ? { ticker: s.symbol, name: shortName(s.symbol, s.name), etf } : null;
   };
 
   function byWords(key: string): Resolved | null {
@@ -86,11 +87,3 @@ export function createResolver(symbols: SymbolEntry[]) {
 }
 
 export type Resolver = ReturnType<typeof createResolver>;
-
-/** "NICE Ltd - American Depositary Shares ..." to "NICE Ltd". */
-export function displayName(listed: string): string {
-  return (listed.split(/\s+-\s+|\s+–\s+/)[0] ?? listed)
-    .replace(/\s*-\s*$/, "")
-    .replace(/\s*\(The\)\s*$/i, "")
-    .trim();
-}

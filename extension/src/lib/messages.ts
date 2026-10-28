@@ -9,7 +9,12 @@ export type Request =
   | { type: "tap"; ticker: string; direction: Direction; videoId: string | null; videoChannel: string | null; videoSeconds: number | null }
   | { type: "undo"; tapId: string }
   | { type: "open"; path: string }
-  | { type: "signout" };
+  | { type: "signout" }
+  | { type: "status"; videoId: string | null; state: VideoState; count: number }
+  | { type: "tabStatus"; tabId: number };
+
+/** What the page in a tab found, for the popup's line about this video. */
+export type VideoState = "reading" | "found" | "none";
 
 export type DetectAnswer = { items: VideoTicker[] | null; error?: string };
 
@@ -19,7 +24,11 @@ export type Answer<R extends Request> = R extends { type: "lookup" | "detect" }
     ? TickerInfo | null
     : R extends { type: "tap" }
       ? { tapId: string }
-      : null;
+      : R extends { type: "tabStatus" }
+        ? TabStatus | null
+        : null;
+
+export type TabStatus = { videoId: string | null; state: VideoState; count: number };
 
 export function ask<R extends Request>(request: R): Promise<Answer<R>> {
   return browser.runtime.sendMessage(request) as Promise<Answer<R>>;

@@ -1,4 +1,4 @@
-import { STOA } from "@/lib/messages";
+import { STOA, type TabStatus } from "@/lib/messages";
 import { readStored, weekCounts, writeStored, type Stored } from "@/lib/store";
 import type { WeekRow } from "@/lib/types";
 import { bearSvg, bullSvg } from "@/lib/ui/animals";
@@ -22,6 +22,16 @@ function sides(r: WeekRow): string {
   return r.bull > r.bear ? bull(true) + bear(false) : bear(true) + bull(false);
 }
 
+let here: TabStatus | null = null;
+
+/** One quiet line about the video in the current tab, only on a YouTube video. */
+function videoLine(): string {
+  if (!here?.videoId) return "";
+  if (here.state === "reading") return `<p class="here">Looking for stocks in this video…</p>`;
+  if (here.state === "none") return `<p class="here">No stocks detected in this video</p>`;
+  return `<p class="here">${here.count} ${here.count === 1 ? "stock" : "stocks"} in this video</p>`;
+}
+
 function render(stored: Stored) {
   const rows = weekCounts(stored).slice(0, 8);
   const example = rows.length === 0;
@@ -32,6 +42,7 @@ function render(stored: Stored) {
     ? `Saving to Stoa as ${esc(stored.session.email ?? "you")} · <button class="link" id="signout">Sign out</button>`
     : "Not signed in. Taps stay on this device until you save them.";
   document.getElementById("app")!.innerHTML = `
+    ${videoLine()}
     <div class="top"><h1>This week</h1>${example ? `<span class="tag">Example</span>` : ""}</div>
     <ul class="${example ? "example" : ""}" aria-label="${example ? "Example of" : ""} this week's top stocks">${list}</ul>
     ${example ? `<p class="empty">Tap a bull or a bear beside a YouTube video and your week fills up here.</p>` : ""}
@@ -47,5 +58,11 @@ function render(stored: Stored) {
   });
 }
 
-void readStored().then(render);
+async function load() {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  here = tab?.id !== undefined ? ((await browser.runtime.sendMessage({ type: "tabStatus", tabId: tab.id })) as TabStatus | null) : null;
+  render(await readStored());
+}
+
+void load();
 browser.storage.onChanged.addListener(() => void readStored().then(render));

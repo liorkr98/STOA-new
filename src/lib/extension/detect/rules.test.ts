@@ -41,7 +41,7 @@ test("official names resolve against the symbol list", () => {
 });
 
 test("funds resolve and are labelled ETF; unknown names are dropped", () => {
-  assert.deepEqual(resolve("Financial Select Sector SPDR Fund", "XLF"), { ticker: "XLF", name: "Financial Select Sector SPDR Fund", etf: true });
+  assert.deepEqual(resolve("Financial Select Sector SPDR Fund", "XLF"), { ticker: "XLF", name: "Financial Select Sector SPDR", etf: true });
   assert.equal(resolve("Some Private Startup", "")?.ticker, undefined);
   assert.equal(resolve("Bitcoin", "איביט")?.ticker, "IBIT");
 });

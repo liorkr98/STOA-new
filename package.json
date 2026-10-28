@@ -48,7 +48,7 @@
     "demo:video:generate": "tsx scripts/demo-video-generate.ts",
     "demo:video:upload": "tsx scripts/demo-video-upload.ts",
     "demo:video:check": "tsx scripts/demo-video-check.ts",
-    "test:extension": "node --conditions=react-server --import tsx --test src/lib/extension/detect/rules.test.ts"
+    "test:extension": "node --conditions=react-server --import tsx --test src/lib/extension/detect/rules.test.ts src/lib/extension/names.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.71",

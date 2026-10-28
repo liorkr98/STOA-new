@@ -30,6 +30,10 @@ export default defineConfig({
       matches: STOA_PAGES,
     },
     action: { default_title: "Stoa" },
+    commands: {
+      _execute_action: { suggested_key: { default: "Alt+Shift+S" }, description: "Open Stoa" },
+      "toggle-quiet": { suggested_key: { default: "Alt+Shift+Q" }, description: "Turn Quiet mode on or off" },
+    },
     web_accessible_resources: [{ resources: ["fonts/*.woff2"], matches: ["*://www.youtube.com/*"] }],
   },
   vite: () => ({

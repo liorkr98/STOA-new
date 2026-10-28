@@ -1,7 +1,7 @@
 import { stoaFetch } from "@/lib/api";
 import { STOA_PAGES, type BridgeRequest } from "@/lib/bridge";
 import { answerSite, flushTaps } from "@/lib/sync";
-import { STOA, type DetectAnswer, type Request } from "@/lib/messages";
+import { STOA, type DetectAnswer, type Request, type TabStatus } from "@/lib/messages";
 import { readStored, writeStored } from "@/lib/store";
 import type { LocalTap, TickerInfo, VideoTicker } from "@/lib/types";
 
@@ -74,7 +74,21 @@ async function open(path: string): Promise<null> {
   return null;
 }
 
-function handle(request: Request): Promise<unknown> {
+/** Per tab: the video it shows and what was found, for the popup. Gone when the worker sleeps, which is fine. */
+const tabStatus = new Map<number, TabStatus>();
+
+async function toggleQuiet(): Promise<void> {
+  const { quiet } = await readStored();
+  await writeStored({ quiet: !quiet });
+}
+
+/** A small "Q" on the toolbar icon while Quiet mode is on, however it was switched. */
+async function showQuiet(): Promise<void> {
+  const { quiet } = await readStored();
+  await browser.action.setBadgeText({ text: quiet ? "Q" : "" });
+}
+
+function handle(request: Request, tabId?: number): Promise<unknown> {
   switch (request.type) {
     case "lookup":
       return lookup(request.videoId);
@@ -90,6 +104,11 @@ function handle(request: Request): Promise<unknown> {
       return open(request.path);
     case "signout":
       return writeStored({ session: null, siteWeek: null }).then(() => null);
+    case "status":
+      if (tabId !== undefined) tabStatus.set(tabId, { videoId: request.videoId, state: request.state, count: request.count });
+      return Promise.resolve(null);
+    case "tabStatus":
+      return Promise.resolve(tabStatus.get(request.tabId) ?? null);
   }
 }
 
@@ -99,9 +118,18 @@ export default defineBackground(() => {
   // the page with nothing.
   browser.runtime.onMessage.addListener((request: Request, sender, sendResponse) => {
     if (sender.id !== browser.runtime.id) return undefined;
-    handle(request).then(sendResponse, () => sendResponse(null));
+    handle(request, sender.tab?.id).then(sendResponse, () => sendResponse(null));
     return true;
   });
+
+  browser.commands.onCommand.addListener((command) => {
+    if (command === "toggle-quiet") void toggleQuiet();
+  });
+  browser.tabs.onRemoved.addListener((tabId) => tabStatus.delete(tabId));
+  browser.storage.onChanged.addListener((changes) => {
+    if ("quiet" in changes) void showQuiet();
+  });
+  void showQuiet();
 
   // A Stoa page: hands over the session, collects taps for the cart.
   browser.runtime.onMessageExternal.addListener((request: BridgeRequest, sender, sendResponse) => {

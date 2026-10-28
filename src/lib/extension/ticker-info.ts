@@ -7,7 +7,7 @@ import { getTickerRow } from "@/lib/db/tickers";
 import { finnhub } from "@/lib/market";
 import { analystsCovering } from "@/lib/markets/coverage";
 import { ETFS } from "@/lib/extension/detect/aliases";
-import { displayName } from "@/lib/extension/detect/resolve";
+import { shortName } from "@/lib/extension/names";
 
 /** What the card and the More info panel show for one ticker. Mirrored in extension/src/lib/types.ts. */
 export type TickerInfo = {
@@ -51,7 +51,7 @@ export async function tickerInfo(symbol: string): Promise<TickerInfo> {
   const price = quote.price ?? (snapshot?.quote.available ? snapshot.quote.price : null);
   return {
     symbol: sym,
-    name: row?.name ? displayName(row.name) : (ETFS[sym] ?? sym),
+    name: shortName(sym, row?.name ?? ETFS[sym] ?? sym),
     industry: profile.industry ?? row?.sector ?? null,
     etf: profile.isEtf || Boolean(ETFS[sym]),
     price,

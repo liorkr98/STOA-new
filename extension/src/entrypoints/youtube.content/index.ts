@@ -20,7 +20,14 @@ export default defineContentScript({
     const clock = new PlaybackClock(() => overlay.tick());
     const overlay = new Overlay(clock);
 
+    const report = (videoId: string | null, state: "reading" | "found" | "none", count = 0) =>
+      void ask({ type: "status", videoId, state, count }).catch(() => undefined);
+
+    // Anything that goes wrong (no captions, Stoa unreachable, detection
+    // refused) draws nothing on the page: the card simply never appears, and
+    // only the toolbar popup says no stocks were detected.
     async function start(videoId: string) {
+      report(videoId, "reading");
       // A video someone has already opened is answered from Stoa's store,
       // without reading its transcript again.
       const known = await ask({ type: "lookup", videoId });
@@ -30,12 +37,14 @@ export default defineContentScript({
       if (!items) {
         if (known.error) {
           console.debug(`[stoa] Stoa is not reachable: ${known.error}`);
+          report(videoId, "none");
           return;
         }
         const read = await readVideo(videoId);
         if (current !== videoId) return;
         if (read.kind !== "transcript") {
           console.debug(`[stoa] ${videoId}: skipped (${read.reason})`);
+          if (read.reason !== "left") report(videoId, "none");
           return;
         }
         channel = read.details.channel;
@@ -43,19 +52,24 @@ export default defineContentScript({
         if (current !== videoId) return;
         if (!detected.items) {
           console.debug(`[stoa] ${videoId}: detection failed (${detected.error ?? "unknown"})`);
+          report(videoId, "none");
           return;
         }
         items = detected.items;
       }
       channel ??= document.querySelector<HTMLElement>("ytd-watch-metadata ytd-channel-name a")?.innerText.trim() || null;
       overlay.load({ videoId, channel }, items);
+      report(videoId, items.length ? "found" : "none", new Set(items.map((i) => i.ticker)).size);
     }
 
     const stop = onWatchChange((videoId) => {
       current = videoId;
       overlay.clear();
       clock.stop();
-      if (!videoId) return;
+      if (!videoId) {
+        report(null, "none");
+        return;
+      }
       clock.start();
       void start(videoId);
     });

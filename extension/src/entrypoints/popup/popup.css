@@ -35,3 +35,4 @@ label.quiet input { width: 20px; height: 20px; margin: 0; accent-color: var(--in
 button.cart { width: 100%; min-height: 44px; border: 0; border-radius: 10px; background: var(--ink); color: var(--paper); font: 600 15px/1 "Stoa Inter", Inter, system-ui, sans-serif; cursor: pointer; }
 button.cart:focus-visible, label.quiet input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 button.link { border: 0; background: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.here { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; background: #f2f3f5; color: var(--mute); font-size: 13px; }
