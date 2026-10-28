@@ -18,7 +18,9 @@ export interface VideoTickerIndexStore {
   put(entry: VideoTickerIndex): Promise<void>;
 }
 
-const KEY = (videoId: string) => `video-tickers:v1:${videoId}`;
+/** Bump when detection changes enough that stored results should be read again. */
+const VERSION = "v4";
+const KEY = (videoId: string) => `video-tickers:${VERSION}:${videoId}`;
 
 /**
  * TEMPORARY. Keeps each video's result in the app cache (Upstash Redis when
@@ -43,7 +45,7 @@ export class TemporaryVideoIndexCache implements VideoTickerIndexStore {
     if (!this.devDir) return;
     try {
       await mkdir(this.devDir, { recursive: true });
-      await writeFile(path.join(this.devDir, `${entry.videoId}.json`), JSON.stringify(entry));
+      await writeFile(path.join(this.devDir, `${entry.videoId}.${VERSION}.json`), JSON.stringify(entry));
     } catch {
       /* the in-memory copy still serves this run */
     }
@@ -52,7 +54,7 @@ export class TemporaryVideoIndexCache implements VideoTickerIndexStore {
   private async readDev(videoId: string): Promise<VideoTickerIndex | null> {
     if (!this.devDir) return null;
     try {
-      return JSON.parse(await readFile(path.join(this.devDir, `${videoId}.json`), "utf8")) as VideoTickerIndex;
+      return JSON.parse(await readFile(path.join(this.devDir, `${videoId}.${VERSION}.json`), "utf8")) as VideoTickerIndex;
     } catch {
       return null;
     }

@@ -159,6 +159,9 @@ export const ETF_ALIASES: Record<string, string> = {
   "ishares bitcoin trust": "IBIT",
   "blackrock bitcoin etf": "IBIT",
   "bitcoin etf": "IBIT",
+  "איביט": "IBIT",
+  "אי ביט": "IBIT",
+  "אייביט": "IBIT",
   "regional banks etf": "KRE",
   "semiconductor etf": "SMH",
 };

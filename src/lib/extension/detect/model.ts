@@ -42,8 +42,10 @@ For each stretch of discussion return one entry:
   other: anything else.
 - speaker_stance: the speaker's OWN view in this stretch (bullish, bearish, neutral, mixed, or none). Views the speaker quotes from analysts, banks or other people do not count. Judge once for the whole stretch.
 - explicit_rating: buy if the speaker says outright they would buy or recommend buying (for example "קנייה", "אני קונה"); avoid if they say outright to avoid or sell (for example "נמנע", "מתרחק", "לא נוגע"); hold; otherwise none.
-- conditional: true when the view is hedged on a condition (for example "if it breaks 200", "only after earnings").
+- conditional: true when the view is hedged on a condition (for example "if it breaks 200", "only after earnings"). A buy or avoid with a condition ("buy above 46.56") is still explicit_rating buy or avoid, with conditional true.
 - what: at most five plain English words on what the company is (for example "Largest US bank").
+
+When the speaker discusses a cryptocurrency or a commodity and names a fund to hold it through (for example "buy IBIT" while talking about bitcoin, or GLD for gold), report the whole stretch about that coin or commodity, from where that discussion starts, as the fund: asset_type etf, company the fund's name (iShares Bitcoin Trust), with the stance and rating the speaker gives it. Only a coin or commodity with no fund named is crypto or commodity.
 
 Merge consecutive mentions of the same name into one stretch. A name discussed again much later is a new stretch. Leave out names that are only mentioned with no discussion if they are not quick picks.`;
 
@@ -61,7 +63,7 @@ export async function readMentions(req: DetectRequest): Promise<Mention[]> {
   const response = await client.messages.parse({
     model: DETECT_MODEL,
     max_tokens: 16000,
-    output_config: { effort: "medium", format: zodOutputFormat(OutputSchema) },
+    output_config: { effort: "high", format: zodOutputFormat(OutputSchema) },
     system: SYSTEM,
     messages: [
       {

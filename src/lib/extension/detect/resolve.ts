@@ -89,5 +89,8 @@ export type Resolver = ReturnType<typeof createResolver>;
 
 /** "NICE Ltd - American Depositary Shares ..." to "NICE Ltd". */
 export function displayName(listed: string): string {
-  return (listed.split(/\s+-\s+|\s+–\s+/)[0] ?? listed).replace(/\s*-\s*$/, "").trim();
+  return (listed.split(/\s+-\s+|\s+–\s+/)[0] ?? listed)
+    .replace(/\s*-\s*$/, "")
+    .replace(/\s*\(The\)\s*$/i, "")
+    .trim();
 }
