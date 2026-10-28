@@ -9,7 +9,7 @@
     "zip": "wxt zip",
     "typecheck": "tsc --noEmit",
     "lint": "cd .. && eslint extension",
-    "test": "node --import tsx --test src/**/*.test.ts",
+    "test": "node --import tsx --test src/lib/*.test.ts",
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
