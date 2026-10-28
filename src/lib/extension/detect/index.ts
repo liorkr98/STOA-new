@@ -54,8 +54,8 @@ export async function detectVideo(req: DetectRequest, userId: string): Promise<{
       throw new DetectionPaused("Today's detection budget is used up");
     }
     job = (async () => {
-      // Two independent reads, merged: one read alone came back with a
-      // different side on about one ticker in ten (blind test, 28 Oct 2026).
+      // Two independent reads, merged by agreement (`mergeReads`): one read
+      // alone changed its answer on about one ticker in ten between runs.
       const [settled, resolve] = await Promise.all([Promise.allSettled(Array.from({ length: READS }, () => readMentions(req))), currentResolver()]);
       // One failed read (a timeout, an answer cut short) leaves the other to stand alone.
       const reads = settled.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
@@ -74,7 +74,8 @@ export async function detectVideo(req: DetectRequest, userId: string): Promise<{
       const entry: VideoTickerIndex = {
         videoId: req.videoId,
         language: req.language,
-        items: lists.reduce((merged, list) => mergeReads(merged, list)),
+        // With one read lost (a timeout), the other stands alone.
+        items: lists.length > 1 ? lists.reduce((merged, list) => mergeReads(merged, list)) : lists[0]!,
         model: DETECT_MODEL,
         detectedAt: new Date().toISOString(),
       };

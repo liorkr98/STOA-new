@@ -33,8 +33,9 @@ const length = (m: Mention) => Math.max(0, m.end_seconds - m.start_seconds);
 
 /**
  * The noise filter. Of everything named in a video, a ticker earns:
- *   a pop-up card    discussed 45+ seconds in all, or given an explicit buy / avoid;
- *   a chip in the    a quick pick the speaker takes a side on;
+ *   a pop-up card    discussed 45+ seconds in all, or given an explicit buy / avoid
+ *                    while the speaker discusses it;
+ *   a chip in the    a quick pick the speaker takes a side on, rated or not;
  *   "In this video" line
  *   nothing          earnings calendars, passing examples, portfolio lists, sponsor
  *                    and broker plugs, indexes, coins, and names that resolve to no
@@ -59,10 +60,13 @@ export function applyRules(mentions: Mention[], resolve: Resolver): VideoTicker[
   for (const [ticker, { name, etf, stretches }] of byTicker) {
     const total = stretches.reduce((sum, m) => sum + length(m), 0);
     const rated = stretches.find((m) => m.explicit_rating === "buy" || m.explicit_rating === "avoid");
+    // A rating said in passing inside a list of picks makes a chip; only a
+    // rating given while the speaker actually discusses the name pops a card.
+    const ratedInDiscussion = stretches.some((m) => m.role === "main_discussion" && (m.explicit_rating === "buy" || m.explicit_rating === "avoid"));
     const longest = stretches.reduce((a, b) => (length(b) > length(a) ? b : a));
     const lead = rated ?? longest;
     const stance = stanceOf(lead);
-    const kind: VideoTicker["kind"] | null = total >= CARD_SECONDS || rated ? "card" : stance ? "line" : null;
+    const kind: VideoTicker["kind"] | null = total >= CARD_SECONDS || ratedInDiscussion ? "card" : stance ? "line" : null;
     if (!kind) continue;
     out.push({
       ticker,
@@ -80,30 +84,27 @@ export function applyRules(mentions: Mention[], resolve: Resolver): VideoTicker[
 }
 
 /**
- * Two independent reads of the same video, merged. A ticker either read found
- * is kept; a card if either read made it one. Where the two disagree on the
- * speaker's side, no side is shown rather than a guess, and a view hedged in
- * either read is marked conditional. The card sits on the stretch of the read
- * that made it a card (the first read when both did).
+ * Two independent reads of the same video, merged by agreement: a ticker is
+ * kept only if both reads found it, and is a card only if both made it one
+ * (otherwise a chip). Where the two disagree on the speaker's side, no side
+ * is shown rather than a guess; a view hedged in either read is marked
+ * conditional. The second read is a check, not a source of extra names: a
+ * union of the two let in names one read alone saw, which changed from run
+ * to run (blind-test re-run, 28 Oct 2026).
  */
 export function mergeReads(a: VideoTicker[], b: VideoTicker[]): VideoTicker[] {
-  const byTicker = new Map(a.map((t) => [t.ticker, t]));
   const out: VideoTicker[] = [];
   for (const t of a) {
     const other = b.find((x) => x.ticker === t.ticker);
-    if (!other) {
-      out.push(t);
-      continue;
-    }
-    const base = t.kind === "card" || other.kind !== "card" ? t : other;
+    if (!other) continue;
+    const card = t.kind === "card" && other.kind === "card";
     out.push({
-      ...base,
-      kind: t.kind === "card" || other.kind === "card" ? "card" : "line",
+      ...t,
+      kind: card ? "card" : "line",
       stance: t.stance === other.stance ? t.stance : null,
       conditional: t.conditional || other.conditional,
-      what: base.what ?? (base === t ? other.what : t.what),
+      what: t.what ?? other.what,
     });
   }
-  for (const t of b) if (!byTicker.has(t.ticker)) out.push(t);
   return out.sort((x, y) => x.start - y.start);
 }

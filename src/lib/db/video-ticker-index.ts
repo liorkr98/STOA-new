@@ -19,7 +19,7 @@ export interface VideoTickerIndexStore {
 }
 
 /** Bump when detection changes enough that stored results should be read again. */
-const VERSION = "v6";
+const VERSION = "v7";
 const KEY = (videoId: string) => `video-tickers:${VERSION}:${videoId}`;
 
 /**

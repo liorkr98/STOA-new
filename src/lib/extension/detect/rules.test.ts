@@ -53,6 +53,15 @@ test("funds resolve and are labelled ETF; unknown names are dropped", () => {
   assert.equal(resolve("Invesco QQQ", "triple Q")?.ticker, "QQQ");
 });
 
+test("a broad-market fund counts only when the speaker names the fund", () => {
+  assert.equal(resolve("SPDR S&P 500 ETF Trust", "the S&P 500")?.ticker, undefined);
+  assert.equal(resolve("Invesco QQQ Trust", "the Nasdaq")?.ticker, undefined);
+  assert.equal(resolve("SPDR S&P 500 ETF Trust", "SPY")?.ticker, "SPY");
+  assert.equal(resolve("Invesco QQQ Trust", "triple Q")?.ticker, "QQQ");
+  assert.equal(resolve("Vanguard S&P 500 ETF", "the Vanguard S&P ETF")?.ticker, "VOO");
+  assert.equal(resolve("SPDR S&P 500 ETF Trust", "תעודת סל על ה-S&P")?.ticker, "SPY");
+});
+
 test("a renamed company is found by its distinctive first word, a common one is not", () => {
   assert.equal(resolve("Cipher Mining", "סייפר")?.ticker, "CIFR");
   assert.equal(resolve("Cipher Mining Inc.", "")?.ticker, "CIFR");
@@ -76,6 +85,17 @@ test("45 seconds or an explicit rating earn a card; a quick pick with a side ear
     resolve,
   );
   assert.deepEqual(out.map((v) => [v.ticker, v.kind, v.stance]), [["GS", "card", "bull"], ["AAPL", "line", "bull"], ["META", "card", "bear"]]);
+});
+
+test("a rated quick pick is a chip; rated in discussion it is a card", () => {
+  const out = applyRules(
+    [
+      m("Apple", 10, 15, { role: "quick_pick", explicit_rating: "buy" }),
+      m("Meta Platforms", 100, 120, { explicit_rating: "avoid", speaker_stance: "bearish" }),
+    ],
+    resolve,
+  );
+  assert.deepEqual(out.map((v) => [v.ticker, v.kind, v.stance]), [["AAPL", "line", "bull"], ["META", "card", "bear"]]);
 });
 
 test("noise is filtered: calendars, examples, portfolios, sponsors, indexes", () => {
@@ -102,15 +122,15 @@ const vt = (ticker: string, kind: "card" | "line", stance: "bull" | "bear" | nul
   ticker, name: ticker, what: null, etf: false, kind, start, end: start + 60, stance, conditional,
 });
 
-test("two reads merge: union of tickers, a card if either, no side where they disagree", () => {
+test("two reads merge by agreement: both must find it, both must make it a card, sides must match", () => {
   const out = mergeReads(
-    [vt("CAT", "card", null, 100), vt("INTC", "card", "bull", 200), vt("V", "line", "bull", 50)],
-    [vt("CAT", "card", "bull", 110, true), vt("INTC", "card", "bull", 210), vt("CVX", "card", null, 300), vt("V", "card", "bull", 55)],
+    [vt("CAT", "card", null, 100), vt("INTC", "card", "bull", 200), vt("V", "line", "bull", 50), vt("MSFT", "card", "bull", 10)],
+    [vt("CAT", "card", "bull", 110, true), vt("INTC", "card", "bull", 210), vt("CVX", "card", null, 300), vt("V", "card", "bull", 55), vt("MSFT", "card", "bull", 12)],
   );
-  assert.deepEqual(out.map((t) => [t.ticker, t.kind, t.stance, t.conditional, t.start]), [
-    ["V", "card", "bull", false, 55],
-    ["CAT", "card", null, true, 100],
-    ["INTC", "card", "bull", false, 200],
-    ["CVX", "card", null, false, 300],
+  assert.deepEqual(out.map((t) => [t.ticker, t.kind, t.stance, t.conditional]), [
+    ["MSFT", "card", "bull", false],
+    ["V", "line", "bull", false],
+    ["CAT", "card", null, true],
+    ["INTC", "card", "bull", false],
   ]);
 });

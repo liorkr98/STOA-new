@@ -315,9 +315,9 @@ means one class with `get` and `put`, and the one line in `videoTickerIndex()`.
 ### The four concerns, for the extension
 
 **Scalability.** The AI is paid once per video, not per viewer: every later viewer is a primary
-key lookup. Each new video gets two independent reads, merged (a ticker either read found is
-kept; where the two disagree on the speaker's side, none is shown), because one read alone
-changed its answer on about one ticker in ten between runs. Haiku costs a fraction of a cent per
+key lookup. Each new video gets two independent reads, merged by agreement (a ticker only if
+both reads found it, a card only if both made it one, no side where they disagree), because
+one read alone changed its answer on about one ticker in ten between runs. Haiku costs a fraction of a cent per
 20-minute transcript per read. A daily cap (`DETECT_DAILY_BUDGET_USD`) stops new reads past it. Popular finance
 channels publish a few videos a day each, so even 1,000 channels is a few thousand reads a day.
 Two viewers opening the same new video at once share one read on a server instance (in-flight
