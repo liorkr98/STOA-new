@@ -18,7 +18,7 @@ export function MintInviteForm() {
   const [state, action] = useActionState<InviteActionState, FormData>(mintInvite, null);
 
   return (
-    <form action={action} className="rounded-[var(--radius-card)] border border-border bg-surface p-5">
+    <form action={action} className="rounded-panel border border-border bg-surface p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
         <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-body">
           Note
@@ -55,7 +55,7 @@ export function MintInviteForm() {
         <Submit />
       </div>
       {state?.error && (
-        <p role="alert" className="mt-3 text-body text-[var(--down)]">
+        <p role="alert" className="mt-3 text-body text-[var(--error)]">
           {state.error}
         </p>
       )}

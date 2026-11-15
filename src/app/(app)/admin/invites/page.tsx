@@ -52,7 +52,7 @@ export default async function AdminInvitesPage() {
             return (
               <li
                 key={invite.id}
-                className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-panel border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="num text-body">
