@@ -3,6 +3,7 @@ import { getSessionProfile } from "@/lib/db/auth";
 import { TopNav } from "@/components/layout/top-nav";
 import { NavSkeleton } from "@/components/layout/nav-skeleton";
 import { Footer } from "@/components/layout/footer";
+import { isInviteOnly } from "@/lib/access/gate";
 
 export default function MarketingLayout({
   children,
@@ -23,12 +24,12 @@ export default function MarketingLayout({
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
-      <Footer />
+      <Footer closedPreview={isInviteOnly()} />
     </div>
   );
 }
 
 async function MarketingNav() {
   const profile = await getSessionProfile();
-  return <TopNav profile={profile} />;
+  return <TopNav profile={profile} closedPreview={isInviteOnly() && !profile} />;
 }

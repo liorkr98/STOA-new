@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isInviteAllowlistedPath, isInviteOnly, isMachinePath } from "@/lib/access/gate";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
@@ -30,17 +31,26 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (isInviteOnly() && !isMachinePath(pathname)) {
+    const signedIn = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+    if (!signedIn && !isInviteAllowlistedPath(pathname)) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
   return updateSession(request);
 }
 
 /**
- * Excludes static assets, webhooks, and the read-only public JSON endpoints.
- * Those last ones authenticate themselves where they need to and never depend on
- * a refreshed cookie, so running the session refresh on them only added a
- * Supabase Auth round trip to every quote, search and stats request.
+ * Excludes static assets and webhooks. Public JSON (quotes, search, stats, og)
+ * used to skip this matcher; under invite-only they must hit the gate, and
+ * signed-in users still skip the Auth round trip inside updateSession.
  */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|sentry-tunnel|api/webhooks|api/market|api/stats|api/search|api/og|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf|map)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|sentry-tunnel|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf|map)$).*)",
   ],
 };

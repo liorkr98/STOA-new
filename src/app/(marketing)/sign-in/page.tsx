@@ -4,6 +4,8 @@ import { getSessionUserId } from "@/lib/db/auth";
 import { AuthForm } from "@/components/auth/auth-form";
 import { getEnabledOAuthProviders } from "@/lib/auth/providers";
 import { sameOriginPath } from "@/lib/pwa/urls";
+import { isInviteOnly } from "@/lib/access/gate";
+import { canCreateAccount } from "@/lib/access/request";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -16,7 +18,10 @@ export default async function SignInPage({
   const { error, reason, registered } = params;
   const next = sameOriginPath(params.next, "") || undefined;
   if (userId) redirect(next ?? "/home");
-  const providers = await getEnabledOAuthProviders();
+  const [providers, canJoin] = await Promise.all([
+    getEnabledOAuthProviders(),
+    canCreateAccount(),
+  ]);
   // Sign-up sends people here with ?registered=1 when the address still has
   // to be confirmed. It used to be read by nothing, so the page just said
   // "Welcome back" to someone who had never been here.
@@ -33,6 +38,8 @@ export default async function SignInPage({
         notice={notice}
         providers={providers}
         next={next}
+        inviteOnly={isInviteOnly()}
+        canJoin={canJoin}
       />
     </div>
   );

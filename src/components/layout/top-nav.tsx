@@ -33,7 +33,15 @@ function AvatarCircle({ profile, className }: { profile: Profile; className?: st
   return <Avatar src={profile.avatar_url} name={profile.display_name} size={30} className={className} />;
 }
 
-export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; unreadCount?: number }) {
+export function TopNav({
+  profile,
+  unreadCount = 0,
+  closedPreview = false,
+}: {
+  profile: Profile | null;
+  unreadCount?: number;
+  closedPreview?: boolean;
+}) {
   const pathname = usePathname();
   const isAnalyst = profile?.role === "analyst" || profile?.role === "admin";
   // The avatar is the single entry to the owner's profile area. It opens their
@@ -41,8 +49,9 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
   // page, so theirs opens on Library instead.
   const hasPublicProfile = isAnalyst;
   const avatarHref = hasPublicProfile ? "/profile" : "/saved";
-  const items = ITEMS;
+  const items = closedPreview && !profile ? [] : ITEMS;
   const logoHref = profile ? DEFAULT_HREF : "/";
+  const hideJoin = closedPreview && !profile;
 
   return (
     <header className="header-elevate sticky top-0 z-40 border-b border-border bg-paper pt-[var(--safe-top)] gutter-x">
@@ -76,14 +85,19 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
 
         {/* Desktop right cluster */}
         <div className="hidden items-center gap-3 md:flex">
-          <NavSearch />
-          <CartTrigger />
+          {!hideJoin && <NavSearch />}
+          {!hideJoin && <CartTrigger />}
           {profile ? (
             <>
               <Link href={isAnalyst ? "/studio/compose" : "/become-analyst"} className={buttonClass("ink", "sm")}>
                 <PenLine size={15} />
                 {isAnalyst ? "Compose" : "Become analyst"}
               </Link>
+              {profile.role === "admin" && (
+                <Link href="/admin/invites" className="focus-ring rounded-button px-3 py-1.5 text-body text-text-mute hover:text-text">
+                  Invites
+                </Link>
+              )}
               <Link
                 href="/inbox"
                 aria-label="Notifications"
@@ -107,9 +121,11 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               <Link href="/sign-in" className="focus-ring rounded-button px-3 py-1.5 text-body text-text-mute hover:text-text">
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("ink", "sm")}>
-                Join Stoa
-              </Link>
+              {!hideJoin && (
+                <Link href="/sign-up" className={buttonClass("ink", "sm")}>
+                  Join Stoa
+                </Link>
+              )}
             </>
           )}
         </div>
@@ -118,14 +134,16 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
             the bottom bar, and Settings and Sign out live in the profile area's
             Account group, which the avatar leads to. */}
         <div className="flex min-w-0 shrink-0 items-center gap-0.5 md:hidden">
-          <Link
-            href="/search"
-            aria-label="Search"
-            className="focus-ring flex h-10 w-10 items-center justify-center rounded-button text-text-mute"
-          >
-            <Search size={19} strokeWidth={1.7} />
-          </Link>
-          <CartTrigger />
+          {!hideJoin && (
+            <Link
+              href="/search"
+              aria-label="Search"
+              className="focus-ring flex h-10 w-10 items-center justify-center rounded-button text-text-mute"
+            >
+              <Search size={19} strokeWidth={1.7} />
+            </Link>
+          )}
+          {!hideJoin && <CartTrigger />}
           {profile ? (
             <>
               <Link
@@ -164,9 +182,11 @@ export function TopNav({ profile, unreadCount = 0 }: { profile: Profile | null; 
               >
                 Sign in
               </Link>
-              <Link href="/sign-up" className={buttonClass("ink", "sm", "ml-1")}>
-                Join
-              </Link>
+              {!hideJoin && (
+                <Link href="/sign-up" className={buttonClass("ink", "sm", "ml-1")}>
+                  Join
+                </Link>
+              )}
             </>
           )}
         </div>

@@ -1,7 +1,11 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sameOriginPath } from "@/lib/pwa/urls";
 import { postAuthPath } from "@/lib/auth/post-auth";
+import { INVITE_COOKIE, isFreshAuthUser, isInviteOnly } from "@/lib/access/gate";
+import { consumeInvite } from "@/lib/db/invites";
 
 /**
  * OAuth callback. Supabase redirects here with a PKCE code after Google /
@@ -47,11 +51,28 @@ export async function GET(req: Request) {
     return NextResponse.redirect(back);
   }
 
-  await supabase.rpc("ensure_user_profile");
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user && isInviteOnly() && isFreshAuthUser(user.created_at)) {
+    const token = (await cookies()).get(INVITE_COOKIE)?.value?.trim() ?? "";
+    const spent = token ? await consumeInvite(token, user.id) : false;
+    if (!spent) {
+      await supabase.auth.signOut();
+      try {
+        await createAdminClient().auth.admin.deleteUser(user.id);
+      } catch {
+        // Without a delete they could retry OAuth and look like a returning user.
+      }
+      const back = new URL("/sign-in", url.origin);
+      back.searchParams.set("error", "oauth");
+      back.searchParams.set("reason", "Stoa is invite-only. Use the link you were sent.");
+      return NextResponse.redirect(back);
+    }
+  }
+
+  await supabase.rpc("ensure_user_profile");
 
   if (refHandle && user) {
     const { data: referrer } = await supabase

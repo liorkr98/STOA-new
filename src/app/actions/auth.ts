@@ -6,7 +6,10 @@ import type { AuthState } from "@/lib/types";
 import { recordMarketingOptInIfChecked } from "@/app/actions/consent";
 import { recordSignupConsentsAsAdmin } from "@/lib/db/legal";
 import { alertNewSignup } from "@/lib/slack/alerts";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { INVITE_COOKIE, isInviteOnly } from "@/lib/access/gate";
+import { consumeInvite, peekInvite } from "@/lib/db/invites";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/seo/site";
 import { postAuthPath } from "@/lib/auth/post-auth";
 import { appUrl, originFromForwarded, sameOriginPath } from "@/lib/pwa/urls";
@@ -96,6 +99,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     return { error: "You must confirm you are 18 years of age or older." };
   }
 
+  let inviteToken: string | null = null;
+  if (isInviteOnly()) {
+    inviteToken = (await cookies()).get(INVITE_COOKIE)?.value?.trim() || null;
+    const peek = inviteToken ? await peekInvite(inviteToken) : { ok: false };
+    if (!peek.ok) {
+      return { error: "Stoa is invite-only. Use the link you were sent." };
+    }
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -119,6 +131,18 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   // client; gating it on the session (as it used to be) silently discarded every
   // confirmed signup's consent and stopped the user at the consent wall on their
   // first sign-in, having already agreed.
+  if (data.user && inviteToken) {
+    const spent = await consumeInvite(inviteToken, data.user.id);
+    if (!spent) {
+      try {
+        await createAdminClient().auth.admin.deleteUser(data.user.id);
+      } catch {
+        // The account may still exist; they will be blocked on the next try.
+      }
+      return { error: "This invite is no longer valid." };
+    }
+  }
+
   if (data.user) {
     try {
       await recordSignupConsentsAsAdmin(data.user.id, {
