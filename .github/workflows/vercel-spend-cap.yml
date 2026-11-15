@@ -1,0 +1,36 @@
+name: Cap Vercel on-demand spend
+
+# Applies the $1 team on-demand budget (pause at 100%) and attaches the
+# #ops webhook. Safe to re-run: if the cap is already in place, the script
+# exits without rotating the webhook secret.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/set-vercel-spend-cap.mjs"
+      - ".github/workflows/vercel-spend-cap.yml"
+  workflow_dispatch:
+
+jobs:
+  cap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Set $1 on-demand budget with pause
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN is not in GitHub secrets, so this job cannot set the budget."
+            echo "Set a team on-demand budget of \$1 with pause at https://vercel.com/liors-projects-7c36f7fa/~/settings/billing"
+            echo "Webhook: https://www.stoamarket.ai/api/webhooks/vercel-spend"
+            exit 0
+          fi
+          node scripts/set-vercel-spend-cap.mjs

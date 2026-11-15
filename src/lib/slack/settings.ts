@@ -11,7 +11,8 @@ export type AlertKey =
   | "report_published"
   | "cron_failure"
   | "cron_success"
-  | "paypal_webhook_error";
+  | "paypal_webhook_error"
+  | "vercel_spend";
 
 export type AlertDefinition = {
   key: AlertKey;
@@ -83,6 +84,13 @@ export const ALERT_DEFINITIONS: AlertDefinition[] = [
     label: "PayPal webhook error",
     description: "PayPal webhook handler threw",
     channel: "bugs",
+    defaultDelivery: "immediate",
+  },
+  {
+    key: "vercel_spend",
+    label: "Vercel spend cap",
+    description: "On-demand usage hit 50%, 75%, or 100% of the $1 overage cap. Production pauses at 100%.",
+    channel: "ops",
     defaultDelivery: "immediate",
   },
 ];
