@@ -220,6 +220,61 @@ export async function alertNewSignup(
   );
 }
 
+export async function alertVercelSpend(
+  payload: {
+    id: string;
+    type: string;
+    budgetAmount: number;
+    currentSpend: number;
+    thresholdPercent: number;
+    scope: string;
+  },
+  opts?: AlertOpts,
+) {
+  const recovered = payload.type === "budget.recovered";
+  const atOrOverCap = !recovered && payload.thresholdPercent >= 100;
+  const spend = Number.isFinite(payload.currentSpend)
+    ? payload.currentSpend.toFixed(2)
+    : "0.00";
+  const budget = Number.isFinite(payload.budgetAmount) ? payload.budgetAmount : 1;
+  const headline = recovered
+    ? "Vercel spend recovered under the cap"
+    : atOrOverCap
+      ? "Vercel spend cap reached. Production may pause"
+      : `Vercel spend at ${payload.thresholdPercent}% of the cap`;
+  const detail = recovered
+    ? `On-demand usage is back under $${budget}. The Pro seat ($20) is unchanged.`
+    : atOrOverCap
+      ? `On-demand usage hit the $${budget} cap. Vercel will pause production so the bill stays at the $20 Pro seat plus at most $${budget}. Unpause from the billing page only after you decide to allow more spend.`
+      : `On-demand usage is $${spend} of the $${budget} cap (${payload.thresholdPercent}%). Production pauses at 100%. The $20 Pro seat is billed separately and is not part of this cap.`;
+
+  await dispatchAlert(
+    {
+      alertKey: "vercel_spend",
+      text: headline,
+      digestSummary: `${payload.thresholdPercent}% ($${spend} / $${budget})`,
+      digestDetail: payload,
+      blocks: [
+        slackHeader(headline),
+        slackFields([
+          { label: "Scope", value: payload.scope || "team" },
+          { label: "Threshold", value: `${payload.thresholdPercent}%` },
+          { label: "Spent", value: `$${spend}` },
+          { label: "Cap", value: `$${budget}` },
+        ]),
+        slackText(detail),
+        slackActions([
+          slackButton(
+            "Open Vercel billing",
+            "https://vercel.com/liors-projects-7c36f7fa/~/settings/billing",
+          ),
+        ]),
+      ],
+    },
+    opts,
+  );
+}
+
 export async function alertReportPublished(
   payload: {
     reportId: string;

@@ -7,6 +7,7 @@ import {
   alertPaypalWebhookError,
   alertReportPurchase,
   alertReportPublished,
+  alertVercelSpend,
 } from "./alerts";
 import type { SlackChannel } from "./channels";
 
@@ -134,6 +135,19 @@ export async function runAllAlertTests(): Promise<AlertTestResult[]> {
         ok: true,
         summary: { refreshed: 0, test: true },
       }),
+    ),
+    runTest("vercel-spend", "Vercel spend cap", "ops", () =>
+      alertVercelSpend(
+        {
+          id: "test-spend-id",
+          type: "budget.reached",
+          budgetAmount: 1,
+          currentSpend: 0.5,
+          thresholdPercent: 50,
+          scope: "team",
+        },
+        force,
+      ),
     ),
   ]);
 }

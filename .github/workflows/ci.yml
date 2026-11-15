@@ -33,6 +33,9 @@ jobs:
       - name: Colour and type law
         run: npm run test:contrast
 
+      - name: Webhook signature tests
+        run: npm run test:webhooks
+
       - name: Valuation tests
         run: npm run test:valuation
 

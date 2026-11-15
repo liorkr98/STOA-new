@@ -4,6 +4,7 @@
       "main": false
     }
   },
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_AUTHOR_LOGIN\" = \"dependabot[bot]\" ] || [ \"${VERCEL_GIT_COMMIT_REF#cursor/}\" != \"$VERCEL_GIT_COMMIT_REF\" ]",
   "crons": [
     {
       "path": "/api/cron/refresh-ticker-metrics",
