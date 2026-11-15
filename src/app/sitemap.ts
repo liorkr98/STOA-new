@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { isInviteOnly } from "@/lib/access/gate";
 import { SITE_URL } from "@/lib/seo/site";
 import { UNIVERSE } from "@/lib/universe";
 import { allTickerCoverage, listLockedReportRoutes } from "@/lib/db/reports";
@@ -54,6 +55,10 @@ async function tickerRoutes(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (isInviteOnly()) {
+    return [{ url: `${SITE_URL}/`, changeFrequency: "monthly", priority: 0.1 }];
+  }
+
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
     // No /feed: a crawler would see three clips and the sign-up wall, not a page worth indexing.

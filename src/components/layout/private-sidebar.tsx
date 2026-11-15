@@ -13,7 +13,13 @@ import { useInterestCart } from "@/components/interest-cart/gate";
 
 /** A section page, or (Cart) the overlay that opens over the current page. */
 type NavItem = { label: string; href: string; opensCart?: true };
-type NavGroup = { key: string; label: string; analystOnly?: boolean; items: NavItem[] };
+type NavGroup = {
+  key: string;
+  label: string;
+  analystOnly?: boolean;
+  adminOnly?: boolean;
+  items: NavItem[];
+};
 
 /**
  * One nav map for the whole private area, shared by the desktop rail and the
@@ -52,10 +58,27 @@ const GROUPS: NavGroup[] = [
       { label: "Settings", href: "/settings" },
     ],
   },
+  {
+    key: "admin",
+    label: "Admin",
+    adminOnly: true,
+    items: [
+      { label: "Invites", href: "/admin/invites" },
+      { label: "Applications", href: "/admin/applications" },
+      { label: "Contact", href: "/admin/contact" },
+      { label: "Integrations", href: "/admin/integrations" },
+    ],
+  },
 ];
 
-function visibleGroups(isAnalyst: boolean) {
-  return GROUPS.filter((g) => !g.analystOnly || isAnalyst);
+function visibleGroups(profile: Profile) {
+  const isAnalyst = profile.role === "analyst" || profile.role === "admin";
+  const isAdmin = profile.role === "admin";
+  return GROUPS.filter((g) => {
+    if (g.adminOnly) return isAdmin;
+    if (g.analystOnly) return isAnalyst;
+    return true;
+  });
 }
 
 /**
@@ -63,9 +86,9 @@ function visibleGroups(isAnalyst: boolean) {
  * path. That keeps /studio/audience on "Audience" rather than also lighting up
  * "Publications" (/studio), while /studio/compose still resolves to Publications.
  */
-function activeHref(pathname: string, isAnalyst: boolean) {
+function activeHref(pathname: string, profile: Profile) {
   let best = "";
-  for (const g of visibleGroups(isAnalyst)) {
+  for (const g of visibleGroups(profile)) {
     for (const it of g.items) {
       if (it.opensCart) continue;
       const matches = pathname === it.href || pathname.startsWith(it.href + "/");
@@ -79,8 +102,8 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname();
   const cart = useInterestCart();
   const isAnalyst = profile.role === "analyst" || profile.role === "admin";
-  const active = activeHref(pathname, isAnalyst);
-  const groups = visibleGroups(isAnalyst);
+  const active = activeHref(pathname, profile);
+  const groups = visibleGroups(profile);
 
   return (
     <aside className="sticky top-[var(--nav-h)] hidden h-[calc(var(--app-h)-var(--nav-h))] w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-5 md:flex">
@@ -170,9 +193,8 @@ export function PrivateSidebar({ profile }: { profile: Profile }) {
 export function PrivateMobileNav({ profile }: { profile: Profile }) {
   const pathname = usePathname();
   const cart = useInterestCart();
-  const isAnalyst = profile.role === "analyst" || profile.role === "admin";
-  const active = activeHref(pathname, isAnalyst);
-  const groups = visibleGroups(isAnalyst);
+  const active = activeHref(pathname, profile);
+  const groups = visibleGroups(profile);
   // The private layout persists across route changes, so the panel would stay
   // open after navigating. Tagging it with the path it was opened on closes it
   // on the next route during render, with no effect to reset it.

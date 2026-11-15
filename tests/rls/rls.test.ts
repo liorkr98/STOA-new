@@ -39,7 +39,7 @@ async function signIn(email: string): Promise<SupabaseClient | null> {
 
 test("anon cannot read admin-only tables", { skip }, async () => {
   const anon = anonClient();
-  for (const table of ["audit_log", "deletion_requests", "contact_messages"]) {
+  for (const table of ["audit_log", "deletion_requests", "contact_messages", "invites", "invite_redemptions"]) {
     const { data } = await anon.from(table).select("*").limit(1);
     assert.deepEqual(data ?? [], [], `anon must not read ${table}`);
   }

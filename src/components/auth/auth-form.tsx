@@ -29,6 +29,8 @@ export function AuthForm({
   notice,
   providers,
   next,
+  inviteOnly = false,
+  canJoin = true,
 }: {
   mode: "sign-in" | "sign-up";
   refHandle?: string;
@@ -39,6 +41,8 @@ export function AuthForm({
   providers?: OAuthProvider[];
   /** Where to return after signing in or up, e.g. `/feed` from the Feed's wall. */
   next?: string;
+  inviteOnly?: boolean;
+  canJoin?: boolean;
 }) {
   const carry = next ? `?next=${encodeURIComponent(next)}` : "";
   const action = mode === "sign-in" ? signIn : signUp;
@@ -49,7 +53,9 @@ export function AuthForm({
       <h1 className="t-headline">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
       <p className="t-body mt-2">
         {mode === "sign-in"
-          ? "Sign in to follow analysts and manage your subscriptions."
+          ? inviteOnly
+            ? "Sign in with the account you already have."
+            : "Sign in to follow analysts and manage your subscriptions."
           : "Follow analysts, unlock research, and build your reading list."}
       </p>
 
@@ -225,12 +231,16 @@ export function AuthForm({
 
       <p className="mt-6 text-body text-text-mute">
         {mode === "sign-in" ? (
-          <>
-            New to Stoa?{" "}
-            <Link href={`/sign-up${carry}`} className="text-accent hover:underline">
-              Create an account
-            </Link>
-          </>
+          canJoin ? (
+            <>
+              New to Stoa?{" "}
+              <Link href={`/sign-up${carry}`} className="text-accent hover:underline">
+                Create an account
+              </Link>
+            </>
+          ) : inviteOnly ? (
+            <>Stoa is invite-only. Use the link you were sent, or sign in if you already have an account.</>
+          ) : null
         ) : (
           <>
             Already have an account?{" "}

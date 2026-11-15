@@ -44,6 +44,9 @@ jobs:
       - name: Media link tests
         run: npm run test:media
 
+      - name: Invite-gate tests
+        run: npm run test:access
+
       - name: Back navigation tests (Interest Cart on)
         run: npm run test:nav
         env:

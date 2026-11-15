@@ -33,7 +33,8 @@ const groups = [
   },
 ];
 
-export function Footer() {
+export function Footer({ closedPreview = false }: { closedPreview?: boolean }) {
+  const shown = closedPreview ? groups.filter((g) => g.title === "Legal") : groups;
   return (
     <footer className="gutter-x border-t border-border bg-surface pb-[max(2.5rem,var(--safe-bottom))]">
       <div className="mx-auto grid w-full max-w-[var(--w-wide)] gap-10 py-14 md:grid-cols-[1.5fr_repeat(3,1fr)]">
@@ -43,7 +44,7 @@ export function Footer() {
             A marketplace for independent stock research. Think clearly. Invest better.
           </p>
         </div>
-        {groups.map((g) => (
+        {shown.map((g) => (
           <div key={g.title} className="flex flex-col gap-3">
             <span className="t-meta">{g.title}</span>
             <ul className="flex flex-col gap-2">
